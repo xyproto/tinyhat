@@ -20,7 +20,7 @@ cp "$top/config/grub-early.cfg" "$work/early.cfg"
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
-	biosdisk part_msdos xfs search search_label normal linux linux16 vbe echo test sleep reboot halt configfile
+	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile
 mkdir -p "$work/efi/EFI/BOOT"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
