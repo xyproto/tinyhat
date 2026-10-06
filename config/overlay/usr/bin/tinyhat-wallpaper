@@ -1,8 +1,22 @@
 #!/bin/sh
-hide=${XDG_CONFIG_HOME:-$HOME/.config}/tinyhat/hide-help
+confdir=${XDG_CONFIG_HOME:-$HOME/.config}/tinyhat
+hide=$confdir/hide-help
+mode=$confdir/wallpaper
 pidfile=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-swaybg.pid
-if [ "${1-}" = --toggle ]; then
-	mkdir -p "${hide%/*}"
+if [ "${1-}" = --cycle ]; then
+	mkdir -p "$confdir"
+	case $(cat "$mode" 2>/dev/null) in
+	0) n=1 ;;
+	1) n=2 ;;
+	2) n=3 ;;
+	*) if [ -e "$hide" ]; then n=3; else n=0; fi ;;
+	esac
+	if [ "$n" = 3 ]; then
+		rm -f "$hide"
+	fi
+	echo "$n" >"$mode"
+elif [ "${1-}" = --toggle ]; then
+	mkdir -p "$confdir"
 	if [ -e "$hide" ]; then
 		rm -f "$hide"
 	else
@@ -10,8 +24,15 @@ if [ "${1-}" = --toggle ]; then
 	fi
 fi
 old=$(cat "$pidfile" 2>/dev/null)
-set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
-[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
+case $(cat "$mode" 2>/dev/null) in
+0) set -- -c 008080 ;;
+1) set -- -c 000000 ;;
+2) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
+	;;
+*) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
+	[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
+	;;
+esac
 swaybg "$@" &
 echo $! >"$pidfile"
 if [ -n "$old" ] && [ "$(cat "/proc/$old/comm" 2>/dev/null)" = swaybg ]; then

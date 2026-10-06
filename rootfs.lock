@@ -340,6 +340,7 @@ extra wayland 1.26.0-1.0 wayland-1.26.0-1.0-i686.pkg.tar.zst 9c818f117dc319475d8
 extra webrtc-audio-processing 0.3.1-4.0 webrtc-audio-processing-0.3.1-4.0-i686.pkg.tar.zst c0915549c83636378bc3ad61cd2fdcc7f87bad8a58d643a1d635ab1410fc3e03
 core which 2.25-1.0 which-2.25-1.0-i686.pkg.tar.zst ca456224f39197c2d6194eeb295d48743698b3a3cbc0edf03c223b00c14385f7
 extra wireplumber 0.4.14-1.1 wireplumber-0.4.14-1.1-i686.pkg.tar.zst 08c315c691d2f7bdae81fbb82afc7c8606c40687f1805758813f64115598cc45
+extra xcursor-vanilla-dmz 0.4.5.3-1.0 xcursor-vanilla-dmz-0.4.5.3-1.0-any.pkg.tar.zst 1945b8d0f616e932a16af5af6f9d6dfb7739d3231dc0c939c620a2c3b4370a58
 core xfsprogs 7.1.1-1.0 xfsprogs-7.1.1-1.0-i686.pkg.tar.zst 0fd132882620c288b8d1d57003e14d8d4f5cc3f76226a78c1f73998b23919407
 extra xkeyboard-config 2.48-1.0 xkeyboard-config-2.48-1.0-any.pkg.tar.zst bfc6629670a1387e60a319a25119474eb4df7bcdb84983095601906b6ac10797
 extra xorg-xprop 1.2.8-1.0 xorg-xprop-1.2.8-1.0-i686.pkg.tar.zst 3abdb9d066b5b6d732a4dbf212b03929ff3f79900ec683c8c8ef0e817679248e
