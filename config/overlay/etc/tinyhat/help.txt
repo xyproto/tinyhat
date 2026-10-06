@@ -1,20 +1,24 @@
 Tiny Hat
 
-Alt+Space	Menu (also the Applications button or right-click)
-Ctrl+Alt+T	Terminal
-Ctrl+Alt+P	Program in C in Orbiton (2x Ctrl+Space to run)
-Ctrl+Alt+I	Program a game in Fennel and LÖVE (2x Ctrl+Space to run)
-Ctrl+Alt+F	Web browser
-Ctrl+Alt+S	ScummVM
-Ctrl+Alt+D	DOSBox-X
+Alt+Space	Application Menu
 Alt+Shift+W	Close a window (Alt+F4 also works)
+Alt+Tab	Jump between windows
 Alt+Shift+F	Toggle fullscreen
-Alt+Enter	Toggle fullscreen in ScummVM and DOSBox-X
-Alt+Tab	Switch between windows
+Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Volume
-Print	Screenshot to ~/Pictures
+
+Ctrl+Alt+D	Launch DOSBox-X
+Ctrl+Alt+F	Web browser
+Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
-Ctrl+Alt+H	Hide this help (press again to show it)
+Ctrl+Alt+I	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
+Ctrl+Alt+P	Example game in C (2x Ctrl+Space to run)
+Ctrl+Alt+S	ScummVM
+Ctrl+Alt+T	Terminal
+Ctrl+Alt+Z	ZSNES 2
+
+Right click desktop	Toggle background
+PrtSc	Screenshot to ~/Pictures
 
 USB sticks and CDs show up in /media and as D: in DOSBox-X.
 Put DOS games in ~/DOS, which is C: in DOSBox-X.

@@ -15,6 +15,7 @@ patch -Np1 -i /patches/dwl/trim.patch
 patch -Np1 -i /patches/dwl/center.patch
 patch -Np1 -i /patches/dwl/menubutton.patch
 patch -Np1 -i /patches/dwl/barline.patch
+patch -Np1 -i /patches/dwl/cursor.patch
 cp /patches/dwl/config.h config.h
 make PREFIX=/usr CFLAGS="$CFLAGS -DWLR_USE_UNSTABLE -std=c11"
 make PREFIX=/usr DESTDIR=/out/dwl install
