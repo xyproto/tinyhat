@@ -18,14 +18,14 @@ while :; do
 	fi
 	bat=
 	for b in /sys/class/power_supply/BAT*/capacity; do
-		[ -r "$b" ] && bat=" | bat $(cat "$b")%"
+		[ -r "$b" ] && bat=" | B $(cat "$b")%"
 	done
 	share=
 	if [ -f "${XDG_RUNTIME_DIR:-/tmp}/tinyhat-share.pid" ]; then
-		share="sharing http://$(tinyhat-addr):3000 | "
+		share="S http://$(tinyhat-addr):3000 | "
 	fi
 	systemctl -q is-active dropbear.service && share="${share}ssh on | "
-	printf '%s%s%s%s%s | %s\n' "$warn" "$share" "${wifi:+wifi $wifi | }" "${vol:+vol $vol}" "$bat" "$(date '+%a %d %b %H:%M')"
+	printf '%s%s%s%s%s | %s\n' "$warn" "$share" "${wifi:+W $wifi | }" "${vol:+V $vol}" "$bat" "$(date '+%Y-%m-%d %H:%M')"
 	n=$((n + 1))
 	sleep 5
 done
