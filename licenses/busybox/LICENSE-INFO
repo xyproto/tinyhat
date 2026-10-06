@@ -1,0 +1,4 @@
+name: busybox
+version: 1.36.1-2.0
+url: https://www.busybox.net
+license: GPL

@@ -1,0 +1,4 @@
+name: linux-firmware-intel
+version: 20260916-1.0
+url: https://gitlab.com/kernel-firmware/linux-firmware
+license: LicenseRef-WHENCE AND Apache-2.0 AND GPL-2.0-only AND LicenseRef-intel

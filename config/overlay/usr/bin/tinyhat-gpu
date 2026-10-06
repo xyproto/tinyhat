@@ -1,0 +1,2 @@
+#!/bin/sh
+SDL_RENDER_DRIVER=opengles2 exec nice -n -5 "$@"

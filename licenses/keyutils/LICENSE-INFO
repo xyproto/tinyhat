@@ -1,0 +1,4 @@
+name: keyutils
+version: 1.6.3-4.0
+url: https://www.kernel.org/
+license: GPL-2.0-or-later AND LGPL-2.1-or-later

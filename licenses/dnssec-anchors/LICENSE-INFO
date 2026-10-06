@@ -1,0 +1,4 @@
+name: dnssec-anchors
+version: 20250524-1.0
+url: https://data.iana.org/root-anchors/
+license: custom:none

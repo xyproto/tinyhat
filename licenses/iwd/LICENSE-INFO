@@ -1,0 +1,4 @@
+name: iwd
+version: 2.22-1.0
+url: https://git.kernel.org/cgit/network/wireless/iwd.git/
+license: LGPL-2.1-or-later

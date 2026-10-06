@@ -1,0 +1,4 @@
+name: libjpeg-turbo
+version: 3.1.4.1-1.0
+url: https://libjpeg-turbo.org/
+license: BSD-3-Clause AND IJG

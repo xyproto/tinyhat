@@ -1,0 +1,4 @@
+name: pacman-mirrorlist
+version: 20260322-1.2
+url: https://www.archlinux.org/mirrorlist/
+license: GPL-2.0-or-later

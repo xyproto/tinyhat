@@ -1,0 +1,4 @@
+name: xfsprogs
+version: 7.1.1-1.0
+url: https://xfs.wiki.kernel.org
+license: GPL-2.0-only AND LGPL-2.1-only

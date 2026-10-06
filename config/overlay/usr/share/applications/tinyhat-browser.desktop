@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Web browser
+Icon=web-browser
+Comment=NetSurf web browser
+Exec=netsurf-gtk3
+Terminal=false
+Categories=Network;WebBrowser;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=C library reference
+Icon=help-contents
+Comment=Beej's Guide to the C Library
+Exec=netsurf-gtk3 file:///usr/share/tinyhat/c-guide/bgclr/index.html
+Terminal=false
+Categories=Development;

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Volume
+Icon=multimedia-volume-control
+Comment=Audio mixer
+Exec=tinyhat-term alsamixer
+Terminal=false
+Categories=AudioVideo;Audio;Mixer;

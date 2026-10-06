@@ -1,0 +1,4 @@
+run:
+	love .
+
+.PHONY: run

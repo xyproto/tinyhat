@@ -1,0 +1,4 @@
+name: linux
+version: 7.2.9
+url: https://www.kernel.org/
+license: GPL-2.0-only WITH Linux-syscall-note

@@ -1,0 +1,4 @@
+name: fuse2
+version: 2.9.9-6.0
+url: https://github.com/libfuse/libfuse
+license: GPL-2.0-only AND LGPL-2.1-only

@@ -1,0 +1,4 @@
+name: libxau
+version: 1.0.12-1.0
+url: https://xorg.freedesktop.org/
+license: MIT-open-group

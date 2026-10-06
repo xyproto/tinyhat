@@ -1,0 +1,12 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -1670,6 +1670,9 @@
+ 		}
+ 	}
+ 
++	drwl_setscheme(m->drw, colors[SchemeSel]);
++	drwl_rect(m->drw, 0, m->b.height - 1, m->b.width, 1, 1, 1);
++
+ 	wlr_scene_buffer_set_dest_size(m->scene_buffer,
+ 		m->b.real_width, m->b.real_height);
+ 	wlr_scene_node_set_position(&m->scene_buffer->node, m->m.x,

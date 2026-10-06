@@ -1,0 +1,4 @@
+name: xorg-xprop
+version: 1.2.8-1.0
+url: https://gitlab.freedesktop.org/xorg/app/xprop
+license: MIT-open-group

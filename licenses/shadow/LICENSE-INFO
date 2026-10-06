@@ -1,0 +1,4 @@
+name: shadow
+version: 4.18.0-1.3
+url: https://github.com/shadow-maint/shadow
+license: BSD-3-Clause

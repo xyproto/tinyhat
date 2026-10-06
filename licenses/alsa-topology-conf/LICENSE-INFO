@@ -1,0 +1,4 @@
+name: alsa-topology-conf
+version: 1.2.5.1-4.0
+url: https://alsa-project.org/
+license: BSD

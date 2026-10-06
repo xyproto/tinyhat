@@ -1,0 +1,2 @@
+vendor/archlinuxarm/** filter=lfs diff=lfs merge=lfs -text
+vendor/db/** filter=lfs diff=lfs merge=lfs -text

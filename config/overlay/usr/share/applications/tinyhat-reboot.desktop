@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Reboot
+Icon=view-refresh
+Comment=Restart the computer
+Exec=doas systemctl reboot
+Terminal=false
+Categories=System;

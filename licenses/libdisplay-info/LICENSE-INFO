@@ -1,0 +1,4 @@
+name: libdisplay-info
+version: 0.3.0
+url: https://gitlab.freedesktop.org/emersion/libdisplay-info
+license: MIT

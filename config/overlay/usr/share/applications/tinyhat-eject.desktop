@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Safely remove USB sticks and CDs
+Icon=media-eject
+Comment=Unmount everything in /media
+Exec=tinyhat-eject
+Terminal=false
+Categories=System;

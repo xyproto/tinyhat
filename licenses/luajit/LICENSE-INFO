@@ -1,0 +1,4 @@
+name: luajit
+version: 2.1.1753364724-1.0
+url: https://luajit.org/
+license: MIT

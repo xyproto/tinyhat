@@ -1,0 +1,52 @@
+--- a/dwl.c	2026-10-06 00:51:50.680143478 +0200
++++ b/dwl.c	2026-10-06 00:51:50.687102364 +0200
+@@ -568,6 +568,18 @@
+ 
+ 	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof(m->ltsymbol));
+ 
++	wl_list_for_each(c, &clients, link) {
++		unsigned int bw;
++		if (c->mon != m || !VISIBLEON(c, m) || client_is_unmanaged(c))
++			continue;
++		bw = c->isfullscreen ? 0 : borderpx;
++		if (c->bw != bw) {
++			c->bw = bw;
++			if (c->isfloating || !m->lt[m->sellt]->arrange)
++				resize(c, c->geom, 0);
++		}
++	}
++
+ 	/* We move all clients (except fullscreen and unmanaged) to LyrTile while
+ 	 * in floating layout to avoid "real" floating clients be always on top */
+ 	wl_list_for_each(c, &clients, link) {
+@@ -2070,6 +2082,7 @@
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+ 			continue;
++		c->bw = 0;
+ 		resize(c, m->w, 0);
+ 		n++;
+ 	}
+@@ -2423,6 +2436,14 @@
+ 	/* Update scene-graph, including borders */
+ 	wlr_scene_node_set_position(&c->scene->node, c->geom.x, c->geom.y);
+ 	wlr_scene_node_set_position(&c->scene_surface->node, c->bw, c->bw);
++	if (c->isfullscreen) {
++		struct wlr_surface *s = client_surface(c);
++		if (s->current.width > 0 && s->current.height > 0
++				&& (s->current.width < c->geom.width || s->current.height < c->geom.height))
++			wlr_scene_node_set_position(&c->scene_surface->node,
++					MAX(0, (c->geom.width - s->current.width) / 2),
++					MAX(0, (c->geom.height - s->current.height) / 2));
++	}
+ 	wlr_scene_rect_set_size(c->border[0], c->geom.width, c->bw);
+ 	wlr_scene_rect_set_size(c->border[1], c->geom.width, c->bw);
+ 	wlr_scene_rect_set_size(c->border[2], c->bw, c->geom.height - 2 * c->bw);
+@@ -2957,6 +2978,7 @@
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+ 			continue;
++		c->bw = n == 1 ? 0 : borderpx;
+ 		if (i < m->nmaster) {
+ 			resize(c, (struct wlr_box){.x = m->w.x, .y = m->w.y + my, .width = mw,
+ 				.height = (m->w.height - my) / (MIN(n, m->nmaster) - i)}, 0);

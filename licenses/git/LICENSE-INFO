@@ -1,0 +1,4 @@
+name: git
+version: 2.55.0-1.1
+url: https://git-scm.com/
+license: GPL-2.0-only

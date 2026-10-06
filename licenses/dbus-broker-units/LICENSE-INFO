@@ -1,0 +1,4 @@
+name: dbus-broker-units
+version: 36-1.0
+url: https://github.com/bus1/dbus-broker/wiki
+license: Apache-2.0

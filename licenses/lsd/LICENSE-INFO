@@ -1,0 +1,4 @@
+name: lsd
+version: 1.1.5-1.0
+url: https://github.com/lsd-rs/lsd
+license: Apache-2.0

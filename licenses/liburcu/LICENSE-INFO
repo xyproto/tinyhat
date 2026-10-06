@@ -1,0 +1,4 @@
+name: liburcu
+version: 0.15.7-1.0
+url: https://lttng.org/urcu
+license: LGPL2.1

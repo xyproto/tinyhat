@@ -1,0 +1,4 @@
+name: libyaml
+version: 0.2.5-3.0
+url: https://pyyaml.org/wiki/LibYAML
+license: MIT

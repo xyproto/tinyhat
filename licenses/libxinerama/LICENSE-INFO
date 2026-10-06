@@ -1,0 +1,4 @@
+name: libxinerama
+version: 1.1.6-1.0
+url: https://xorg.freedesktop.org/
+license: MIT AND MIT-open-group AND X11

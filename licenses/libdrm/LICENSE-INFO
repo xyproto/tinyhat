@@ -1,0 +1,4 @@
+name: libdrm
+version: 2.4.134-1.0
+url: https://dri.freedesktop.org/
+license: MIT

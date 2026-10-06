@@ -1,0 +1,51 @@
+--- a/src/video/wayland/SDL_waylandvideo.c	2026-10-06 00:52:43.468593727 +0200
++++ b/src/video/wayland/SDL_waylandvideo.c	2026-10-06 00:52:43.548005022 +0200
+@@ -857,7 +857,14 @@
+         { 1152, 864 },
+         { 1024, 768 },
+         { 800, 600 },
+-        { 640, 480 }
++        { 640, 480 },
++
++        // DOS modes, shown at 4:3 on CRTs
++        { 720, 400 },
++        { 640, 400 },
++        { 640, 350 },
++        { 320, 240 },
++        { 320, 200 }
+     };
+ 
+     int i;
+--- a/src/video/wayland/SDL_waylandwindow.c	2026-10-06 00:52:43.468773789 +0200
++++ b/src/video/wayland/SDL_waylandwindow.c	2026-10-06 00:52:43.549908505 +0200
+@@ -91,6 +91,7 @@
+ {
+     WAYLAND_MODE_SCALE_UNDEFINED,
+     WAYLAND_MODE_SCALE_ASPECT,
++    WAYLAND_MODE_SCALE_ASPECT43,
+     WAYLAND_MODE_SCALE_STRETCH,
+     WAYLAND_MODE_SCALE_NONE
+ };
+@@ -105,6 +106,8 @@
+         if (scale_hint) {
+             if (!SDL_strcasecmp(scale_hint, "aspect")) {
+                 scale_mode = WAYLAND_MODE_SCALE_ASPECT;
++            } else if (!SDL_strcasecmp(scale_hint, "aspect43")) {
++                scale_mode = WAYLAND_MODE_SCALE_ASPECT43;
+             } else if (!SDL_strcasecmp(scale_hint, "none")) {
+                 scale_mode = WAYLAND_MODE_SCALE_NONE;
+             } else {
+@@ -358,6 +361,13 @@
+                 output_height = SDL_lroundf((float)window_height * ((float)output_width / (float)window_width));
+             }
+         } break;
++        case WAYLAND_MODE_SCALE_ASPECT43:
++            if (output_width * 3 > output_height * 4) {
++                output_width = output_height * 4 / 3;
++            } else {
++                output_height = output_width * 3 / 4;
++            }
++            break;
+         default:
+             break;
+         }

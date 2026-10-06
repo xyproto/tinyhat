@@ -1,0 +1,4 @@
+name: libx11
+version: 1.8.13-1.0
+url: https://gitlab.freedesktop.org/xorg/lib/libx11
+license: MIT AND X11

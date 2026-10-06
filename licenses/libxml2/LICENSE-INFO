@@ -1,0 +1,4 @@
+name: libxml2
+version: 2.15.1-4.0
+url: https://gitlab.gnome.org/GNOME/libxml2/-/wikis/home
+license: MIT

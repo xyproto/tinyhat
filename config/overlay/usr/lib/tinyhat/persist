@@ -1,0 +1,49 @@
+#!/bin/sh
+label=THDATA
+min_mib=64
+dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/var/lib/bluetooth pacman-gnupg:/etc/pacman.d/gnupg dropbear:/etc/dropbear state:/var/lib/tinyhat"
+
+msg() { echo "Tiny Hat: $*"; }
+
+create() {
+	boot=$(blkid -L TINYHAT) || return 1
+	disk=/dev/$(lsblk -no PKNAME "$boot" | head -n1)
+	[ -b "$disk" ] || return 1
+	free=$(sfdisk -F -q "$disk" 2>/dev/null | awk 'END { print $3 }')
+	[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
+	msg "creating persistent storage on the rest of the USB stick (one time only)"
+	echo ",,L" | sfdisk --append --no-reread -q "$disk" 2>/dev/null || return 1
+	partx -a "$disk" 2>/dev/null || partx -u "$disk"
+	udevadm settle -t 10
+	part=$(lsblk -lnpo NAME,TYPE "$disk" | awk '$2 == "part" { p = $1 } END { print p }')
+	[ -b "$part" ] && [ "$part" != "$boot" ] || return 1
+	TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -K -L "$label" "$part" || return 1
+	mount -o noatime "$part" /persist || return 1
+	for d in $dirs; do
+		mkdir -p "/persist/${d%%:*}"
+		cp -a "${d#*:}/." "/persist/${d%%:*}/" 2>/dev/null
+	done
+	chmod 700 /persist/iwd /persist/bluetooth
+	umount /persist
+	udevadm settle -t 10
+}
+
+mkdir -p /persist
+part=$(blkid -L "$label") || { create && part=$(blkid -L "$label"); } || exit 0
+mount -o noatime,lazytime "$part" /persist || exit 0
+case " $(cat /proc/cmdline) " in
+*" tinyhat.persistlog "*) dirs="$dirs journal:/var/log/journal" ;;
+esac
+for d in $dirs; do
+	mkdir -p "/persist/${d%%:*}" "${d#*:}"
+	mount --bind "/persist/${d%%:*}" "${d#*:}"
+done
+if [ -d /persist/journal ]; then journalctl --flush 2>/dev/null; fi
+if [ -f /persist/timezone ] && tz=$(cat /persist/timezone) && [ -f "/usr/share/zoneinfo/$tz" ]; then
+	ln -sf "../usr/share/zoneinfo/$tz" /etc/localtime
+	grep -qx LOCAL /etc/adjtime && hwclock --hctosys
+fi
+if [ -f /persist/vconsole.conf ]; then
+	cp /persist/vconsole.conf /etc/vconsole.conf
+	systemctl --no-block restart systemd-vconsole-setup.service
+fi

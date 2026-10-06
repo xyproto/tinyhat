@@ -1,0 +1,4 @@
+name: libelf
+version: 0.188-1.0
+url: https://sourceware.org/elfutils/
+license: LGPL3 AND GPL3

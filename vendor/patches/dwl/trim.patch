@@ -1,0 +1,32 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -9,6 +9,7 @@
+ #include <libdrm/drm_fourcc.h>
+ #include <signal.h>
+ #include <stdio.h>
++#include <malloc.h>
+ #include <stdlib.h>
+ #include <sys/wait.h>
+ #include <time.h>
+@@ -310,6 +311,7 @@
+ static void destroylock(SessionLock *lock, int unlocked);
+ static void destroylocksurface(struct wl_listener *listener, void *data);
+ static void destroynotify(struct wl_listener *listener, void *data);
++static void trimheap(void *data);
+ static void destroypointerconstraint(struct wl_listener *listener, void *data);
+ static void destroysessionlock(struct wl_listener *listener, void *data);
+ static void destroykeyboardgroup(struct wl_listener *listener, void *data);
+@@ -1532,6 +1534,13 @@
+ 		wl_list_remove(&c->maximize.link);
+ 	}
+ 	free(c);
++	wl_event_loop_add_idle(event_loop, trimheap, NULL);
++}
++
++static void
++trimheap(void *data)
++{
++	malloc_trim(0);
+ }
+ 
+ void

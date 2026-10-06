@@ -1,0 +1,4 @@
+name: glib2
+version: 2.80.0-2.0
+url: https://gitlab.gnome.org/GNOME/glib
+license: LGPL-2.1-or-later

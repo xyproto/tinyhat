@@ -1,0 +1,4 @@
+name: leancrypto
+version: 1.9.0-1.0
+url: https://leancrypto.org
+license: GPL-2.0-or-later AND LicenseRef-BSDvariant AND LicenseRef-leancrypto

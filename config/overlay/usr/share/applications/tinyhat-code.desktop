@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=C programming
+Icon=applications-development
+Comment=Edit and build an SDL3 example in C
+Exec=tinyhat-code
+Terminal=false
+Categories=Development;

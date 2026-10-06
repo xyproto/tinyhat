@@ -1,0 +1,4 @@
+name: libmikmod
+version: 3.3.14-1.0
+url: https://mikmod.sourceforge.net
+license: LGPL-2.0-or-later

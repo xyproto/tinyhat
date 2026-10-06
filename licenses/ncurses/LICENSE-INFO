@@ -1,0 +1,4 @@
+name: ncurses
+version: 6.4_20230520-3.0
+url: https://invisible-island.net/ncurses/ncurses.html
+license: MIT-open-group

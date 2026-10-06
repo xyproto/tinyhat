@@ -1,0 +1,4 @@
+name: sed
+version: 4.10-2.0
+url: https://www.gnu.org/software/sed/
+license: GPL-3.0-or-later

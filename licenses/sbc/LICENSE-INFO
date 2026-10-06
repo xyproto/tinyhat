@@ -1,0 +1,4 @@
+name: sbc
+version: 2.2-1.0
+url: https://git.kernel.org/pub/scm/bluetooth/sbc.git
+license: GPL-2.0-or-later AND LGPL-2.1-or-later

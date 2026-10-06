@@ -1,0 +1,4 @@
+name: coreutils
+version: 9.11-2.0
+url: https://www.gnu.org/software/coreutils/
+license: GPL-3.0-or-later AND GFDL-1.3-or-later

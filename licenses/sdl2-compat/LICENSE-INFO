@@ -1,0 +1,4 @@
+name: sdl2-compat
+version: 2.32.74
+url: https://github.com/libsdl-org/sdl2-compat
+license: Zlib

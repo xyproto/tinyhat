@@ -1,0 +1,4 @@
+name: libarchive
+version: 3.8.1-1.1
+url: https://libarchive.org/
+license: BSD-2-Clause

@@ -1,0 +1,20 @@
+#!/bin/sh
+hide=${XDG_CONFIG_HOME:-$HOME/.config}/tinyhat/hide-help
+pidfile=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-swaybg.pid
+if [ "${1-}" = --toggle ]; then
+	mkdir -p "${hide%/*}"
+	if [ -e "$hide" ]; then
+		rm -f "$hide"
+	else
+		: >"$hide"
+	fi
+fi
+old=$(cat "$pidfile" 2>/dev/null)
+set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
+[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
+swaybg "$@" &
+echo $! >"$pidfile"
+if [ -n "$old" ] && [ "$(cat "/proc/$old/comm" 2>/dev/null)" = swaybg ]; then
+	sleep 0.3
+	kill "$old"
+fi

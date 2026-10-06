@@ -1,0 +1,4 @@
+name: bzip2
+version: 1.0.8-6.3
+url: https://sourceware.org/bzip2/
+license: BSD

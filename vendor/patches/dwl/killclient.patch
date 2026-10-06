@@ -1,0 +1,58 @@
+--- a/dwl.c	2026-10-06 08:27:44.104301680 +0200
++++ b/dwl.c	2026-10-06 08:27:44.121154722 +0200
+@@ -2013,12 +2013,53 @@
+ 	return 0;
+ }
+ 
++typedef struct {
++	Client *c;
++	pid_t pid;
++	struct wl_event_source *timer;
++} PendingKill;
++
++static int
++forcekill(void *data)
++{
++	PendingKill *p = data;
++	Client *c;
++	pid_t pid;
++
++	wl_list_for_each(c, &clients, link) {
++		if (c != p->c)
++			continue;
++		pid = 0;
++		wl_client_get_credentials(c->surface.xdg->client->client, &pid, NULL, NULL);
++		if (pid == p->pid)
++			kill(p->pid, SIGKILL);
++		break;
++	}
++	wl_event_source_remove(p->timer);
++	free(p);
++	return 0;
++}
++
+ void
+ killclient(const Arg *arg)
+ {
+ 	Client *sel = focustop(selmon);
+-	if (sel)
+-		client_send_close(sel);
++	PendingKill *p;
++	pid_t pid = 0;
++
++	if (!sel)
++		return;
++	client_send_close(sel);
++	if (client_is_unmanaged(sel))
++		return;
++	wl_client_get_credentials(sel->surface.xdg->client->client, &pid, NULL, NULL);
++	if (pid <= 1 || pid == getpid())
++		return;
++	p = ecalloc(1, sizeof(*p));
++	p->c = sel;
++	p->pid = pid;
++	p->timer = wl_event_loop_add_timer(event_loop, forcekill, p);
++	wl_event_source_timer_update(p->timer, 3000);
+ }
+ 
+ void

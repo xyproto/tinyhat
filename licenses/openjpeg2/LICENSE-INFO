@@ -1,0 +1,4 @@
+name: openjpeg2
+version: 2.5.4-1.0
+url: https://github.com/uclouvain/openjpeg
+license: BSD-2-Clause AND MIT

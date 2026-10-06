@@ -1,0 +1,4 @@
+name: util-linux
+version: 2.41.3-2.3
+url: https://github.com/util-linux/util-linux
+license: BSD-2-Clause AND BSD-3-Clause AND BSD-4-Clause-UC AND GPL-2.0-only AND GPL-2.0-or-later AND GPL-3.0-or-later AND ISC AND LGPL-2.1-or-later AND LicenseRef-PublicDomain

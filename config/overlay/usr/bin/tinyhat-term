@@ -1,0 +1,5 @@
+#!/bin/sh
+if [ $# -gt 0 ]; then
+	exec foot -T "$1" sh -c '"$@" || { printf "\nPress Enter to close."; read -r _; }' sh "$@"
+fi
+exec foot

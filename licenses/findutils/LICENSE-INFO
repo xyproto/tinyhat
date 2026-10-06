@@ -1,0 +1,4 @@
+name: findutils
+version: 4.11.0-1.0
+url: https://www.gnu.org/software/findutils/
+license: GPL-3.0-or-later

@@ -1,0 +1,4 @@
+name: libsecret
+version: 0.21.8.2-1.0
+url: https://gnome.pages.gitlab.gnome.org/libsecret/
+license: LGPL-2.1-or-later

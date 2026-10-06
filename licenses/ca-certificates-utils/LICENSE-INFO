@@ -1,0 +1,4 @@
+name: ca-certificates-utils
+version: 20240618-1.0
+url: https://src.fedoraproject.org/rpms/ca-certificates
+license: GPL-2.0-or-later

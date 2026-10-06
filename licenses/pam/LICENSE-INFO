@@ -1,0 +1,4 @@
+name: pam
+version: 1.5.2-1.0
+url: http://linux-pam.org
+license: GPL2

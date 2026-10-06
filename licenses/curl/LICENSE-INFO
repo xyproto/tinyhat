@@ -1,0 +1,4 @@
+name: curl
+version: 8.22.0-1.1
+url: https://curl.se/
+license: curl

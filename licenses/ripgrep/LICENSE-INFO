@@ -1,0 +1,4 @@
+name: ripgrep
+version: 14.1.1-1.0
+url: https://github.com/BurntSushi/ripgrep
+license: MIT AND custom

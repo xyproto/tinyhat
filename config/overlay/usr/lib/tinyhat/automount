@@ -1,0 +1,53 @@
+#!/bin/sh
+action=$1
+dev=$2
+notice() {
+	for b in /run/user/*/tinyhat-bar; do
+		[ -p "$b" ] || continue
+		runuser -u "$(stat -c %U "$b")" -- env XDG_RUNTIME_DIR="${b%/*}" tinyhat-notice "$1" 6
+	done
+}
+cleanup() {
+	for d in /media/*/; do
+		d=${d%/}
+		[ -d "$d" ] && ! mountpoint -q "$d" && rmdir "$d" 2>/dev/null
+	done
+}
+if [ "$action" = remove ]; then
+	[ -b "$dev" ] && [ -n "$(blkid -o value -s TYPE "$dev")" ] && exit 0
+	findmnt -rno TARGET -S "$dev" | while read -r m; do
+		case $m in
+		/media/?*) systemd-mount --umount "$m" 2>/dev/null || umount -l "$m" ;;
+		esac
+	done
+	cleanup
+	exit 0
+fi
+[ -b "$dev" ] || exit 0
+findmnt -rn -S "$dev" >/dev/null && exit 0
+type=$(blkid -o value -s TYPE "$dev")
+label=$(blkid -o value -s LABEL "$dev")
+case $label in TINYHAT | THDATA) exit 0 ;; esac
+[ -n "$type" ] || exit 0
+name=$(printf '%s' "${label:-${dev##*/}}" | tr -c 'A-Za-z0-9._-' '_')
+dir=/media/$name
+mountpoint -q "$dir" && dir=/media/${name}_${dev##*/}
+uid=$(id -u tinyhat 2>/dev/null || echo 1000)
+opts=noatime
+case $type in
+vfat) opts=$opts,uid=$uid,gid=$uid,fmask=0022,dmask=0022,flush ;;
+exfat) opts=$opts,uid=$uid,gid=$uid,fmask=0022,dmask=0022 ;;
+ntfs) type=ntfs3 opts=$opts,uid=$uid,gid=$uid ;;
+iso9660 | udf) opts=ro ;;
+esac
+what="USB stick"
+case ${dev##*/}:$(readlink -f "/sys/class/block/${dev##*/}") in
+sr*) what=CD ;;
+*/usb* | */mmc*) ;;
+*) what="Hard disk" ;;
+esac
+if systemd-mount --collect -t "$type" -o "$opts" "$dev" "$dir"; then
+	notice "$what: $dir"
+else
+	cleanup
+fi

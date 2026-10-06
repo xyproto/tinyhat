@@ -1,0 +1,4 @@
+name: libevent
+version: 2.1.13-2.0
+url: https://libevent.org/
+license: BSD-3-Clause-Modification

@@ -1,0 +1,4 @@
+name: pacman
+version: 7.1.0.r9.g54d9411-1.6
+url: https://www.archlinux.org/pacman/
+license: GPL-2.0-or-later
