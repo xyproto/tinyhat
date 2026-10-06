@@ -7,8 +7,12 @@ OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell awk '!/^#/ { print $$1 }' sources.txt))
 QEMU_MEM ?= 1024
 
+ifeq (,$(findstring -j,$(MAKEFLAGS)))
+MAKEFLAGS += -j$(shell nproc)
+endif
+
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img
+.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck
 
 all: tinyhat32.img
 
@@ -25,6 +29,9 @@ lock:
 	python3 scripts/pkg.py lock config/buildroot.txt buildroot.lock
 	python3 scripts/pkg.py lock config/initramfs.txt initramfs.lock
 	python3 scripts/pkg.py lock config/licenses.txt licenses.lock
+
+patchcheck:
+	scripts/patchcheck.sh
 
 fetch: $(LOCKS:%.lock=$(B)/.fetched-%) sources
 
@@ -81,7 +88,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-fa61eb012cd55af72b394063db88ca10e5ebe66a.tar.gz $(wildcard vendor/patches/orbiton/*)
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-f9e82501b558dc8c0632e7d5909b9845c985dfcc.tar.gz $(wildcard vendor/patches/orbiton/*)
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
