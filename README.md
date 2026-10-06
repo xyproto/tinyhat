@@ -4,14 +4,14 @@ This is a Linux distro based on Arch Linux and archlinux32, with a few custom pa
 
 This `README.md` file, design choices and package selection is human made. AI tooling has been used for creating the Makefile, adding test scripts, debugging why some program fails to start etc.
 
-Time consuming testing on real hardware has been done by me.
+Time consuming testing on real hardware has been done by a human.
 
 ### Goals
 
 The goals for this distro are:
 
 * Use less than 100M of memory after booting.
-* Use around 500M of disk space.
+* Use around 500M of disk space (currently uses a bit more, but still usable on a 1GB USB stick).
 * Use modern libraries, frameworks and protocols (SDL3, Wayland).
 * To be possible to use on a 32-bit or 64-bit x86 machine with little ram and disk space, for:
   * Retro gaming (ScummVM, DosBox-X and ZSNES).
