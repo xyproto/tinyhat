@@ -47,3 +47,6 @@ if [ -f /persist/vconsole.conf ]; then
 	cp /persist/vconsole.conf /etc/vconsole.conf
 	systemctl --no-block restart systemd-vconsole-setup.service
 fi
+if [ -f /persist/shadow ]; then
+	cp /persist/shadow /etc/shadow
+fi
