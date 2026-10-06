@@ -4,7 +4,7 @@ xfsprogs dosfstools exfatprogs mtools ntfs-3g tinyxxd
 alsa-utils pipewire pipewire-alsa wireplumber
 bluez bluez-utils bluetui
 iwd impala
-wayland libxkbcommon libinput pixman libdrm seatd hwdata fcft foot foot-terminfo ttf-dejavu terminus-font mesa libglvnd archlinux-wallpaper
+wayland libxkbcommon libinput pixman libdrm seatd hwdata fcft foot foot-terminfo ttf-dejavu terminus-font mesa libglvnd archlinux-wallpaper xcursor-vanilla-dmz
 a52dec faad2 libmad libmpeg2 giflib fribidi libtheora libmikmod libjpeg-turbo libpng libvorbis flac freetype2 libsndfile libslirp
 linux-firmware-radeon linux-firmware-intel linux-firmware-realtek linux-firmware-atheros linux-firmware-broadcom
 fish htop tcc make pkgconf dropbear git tig cairo syncthing

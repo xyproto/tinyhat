@@ -3,7 +3,7 @@ set -eu
 umask 022
 rm -rf /work/orbiton /work/go /out/orbiton && mkdir -p /work/orbiton /work/go && cd /work/orbiton
 tar --no-same-owner -xf /src/go1.26.8.linux-386.tar.gz -C /work/go --strip-components=1
-tar --no-same-owner -xf /src/orbiton-4bdfcf9f502df6ff19b7c33ea53233eab6d4653c.tar.gz --strip-components=1
+tar --no-same-owner -xf /src/orbiton-fa61eb012cd55af72b394063db88ca10e5ebe66a.tar.gz --strip-components=1
 for p in /patches/orbiton/*.patch; do patch -Np1 -i "$p"; done
 cd v2
 export GOROOT=/work/go GOPATH=/work/gopath GOCACHE=/work/gocache GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
