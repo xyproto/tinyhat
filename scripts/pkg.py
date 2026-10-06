@@ -32,7 +32,7 @@ def read_list(path):
 
 
 def download(url, dest):
-    tmp = dest + ".part"
+    tmp = f"{dest}.part.{os.getpid()}"
     print(f"  get {url}", file=sys.stderr)
     req = urllib.request.Request(url, headers={"User-Agent": "tinyhat-build/1.0"})
     with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
