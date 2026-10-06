@@ -36,6 +36,7 @@ extra default-cursors 3-1.0 default-cursors-3-1.0-any.pkg.tar.zst d2795a1daee6f1
 extra desktop-file-utils 0.28-1.0 desktop-file-utils-0.28-1.0-i686.pkg.tar.zst aa84785588752d5b6e2e3f664d3ead0ebc72d70cf10cc80878801edf08a702bb
 core device-mapper 2.03.39-1.0 device-mapper-2.03.39-1.0-i686.pkg.tar.zst 5d84a44595edab45a54cc0cd0632bc664ec296a7d34081a432b1b6aeaf14fb5e
 core diffutils 3.12-2.0 diffutils-3.12-2.0-i686.pkg.tar.zst 391eee44335ddd8c08436c73935bd1d085533d030155a45486fa48120bbc4be9
+core dosfstools 4.2-5.0 dosfstools-4.2-5.0-i686.pkg.tar.zst 81752759b302f887d0452314cd2c695bae52e2b8b55ae2f284f0605b938eb629
 extra duktape 2.7.0-7.0 duktape-2.7.0-7.0-i686.pkg.tar.zst 52d4e1e3d0c718d266bf566e049cc1106ee462835d62542fdba3da2fbb1947bd
 core e2fsprogs 1.47.2-1.0 e2fsprogs-1.47.2-1.0-i686.pkg.tar.zst 6b6662ed9bf19ac6a8c237ac5089221c22b9e882d45f425169fd6f612568dce0
 core expat 2.8.5-1.0 expat-2.8.5-1.0-i686.pkg.tar.zst 8658f2a6f473dbfeb4ad1ae22af5215aebb5e3ae9e9c1e438e0b676320073064
@@ -194,6 +195,7 @@ extra meson 1.4.0-2.0 meson-1.4.0-2.0-any.pkg.tar.zst 98bf5f4869b28364554f6d8bc1
 core mpfr 4.2.2-1.0 mpfr-4.2.2-1.0-i686.pkg.tar.zst bfe0ca7e0248456c1e73c75f0cc1b07238877721e312d478ce70633ae9cf2fd1
 extra mpg123 1.33.4-1.0 mpg123-1.33.4-1.0-i686.pkg.tar.zst 274e47db46f51170fea98b4aa9b734fc74656b43d35d6341d9121f6f2d9327d5
 extra mtdev 1.1.7-1.0 mtdev-1.1.7-1.0-i686.pkg.tar.zst eba3deb7207ff77d1578d72a04eee1d3805f216f4848463230d6301fbc4ea392
+extra mtools 1:4.0.49-1.0 mtools-1:4.0.49-1.0-i686.pkg.tar.zst 44eb93db849f79a786036250a0ff1c28e4a2ec6d07a1831e3d30507c2c2e329c
 extra nasm 3.01-1.0 nasm-3.01-1.0-i686.pkg.tar.zst 683ff8bd716953541cc09d3082ab07ae6cb6baf9773907dff7bf643d761f0a04
 core ncurses 6.4_20230520-3.0 ncurses-6.4_20230520-3.0-i686.pkg.tar.zst 1686625a67555a8d97ade9adfcf8eb59eeeba73cddd4143a3c1562d97f073965
 core nettle 4.0-1.0 nettle-4.0-1.0-i686.pkg.tar.zst b8594314b325679439285517b6602ae007f704a736782a6547c90a8ab561daea
