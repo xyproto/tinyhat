@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=NetHack
+Icon=face-devilish
+Comment=Classic dungeon adventure
+Exec=tinyhat-term nethack
+Terminal=false
+Categories=Game;RolePlaying;

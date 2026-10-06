@@ -1,0 +1,4 @@
+name: gnutls
+version: 3.8.13-3.0
+url: https://www.gnutls.org/
+license: GPL-3.0-or-later AND LGPL-2.1-or-later

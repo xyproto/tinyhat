@@ -1,0 +1,4 @@
+name: libxcursor
+version: 1.2.3-1.0
+url: https://gitlab.freedesktop.org/xorg/lib/libxcursor
+license: HPND-sell-variant

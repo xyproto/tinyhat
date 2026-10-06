@@ -1,0 +1,4 @@
+name: impala
+version: 0.2.4-1.0
+url: https://github.com/pythops/impala
+license: GPL-3.0-only

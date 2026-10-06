@@ -1,0 +1,3 @@
+libjack.so=pipewire-jack jack=pipewire-jack dbus-units=dbus-broker-units libxtables.so=iptables
+libwebrtc_audio_processing.so=webrtc-audio-processing
+pipewire-session-manager=wireplumber

@@ -1,0 +1,4 @@
+name: pcre2
+version: 10.48-1.0
+url: https://github.com/PCRE2Project/pcre2
+license: BSD-2-Clause AND BSD-3-Clause WITH PCRE2-exception

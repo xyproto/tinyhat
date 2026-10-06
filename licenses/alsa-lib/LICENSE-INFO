@@ -1,0 +1,4 @@
+name: alsa-lib
+version: 1.2.16.1-1.0
+url: https://www.alsa-project.org
+license: LGPL-2.1-or-later

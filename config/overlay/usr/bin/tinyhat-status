@@ -1,0 +1,31 @@
+#!/bin/sh
+wifi=
+vol=
+n=0
+warn=
+mountpoint -q /persist || warn="running live | "
+while :; do
+	if [ $((n % 6)) -eq 0 ]; then
+		wifi=
+		systemctl -q is-active iwd.service &&
+		for w in /sys/class/net/*/wireless; do
+			[ -d "$w" ] || continue
+			dev=${w%/wireless}
+			wifi=$(iwctl station "${dev##*/}" show 2>/dev/null | sed -n 's/^ *Connected network *//p' | sed 's/ *$//')
+			[ -n "$wifi" ] && break
+		done
+		vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{ v = int($2 * 100 + 0.5); print ($3 == "[MUTED]") ? "muted" : v "%" }')
+	fi
+	bat=
+	for b in /sys/class/power_supply/BAT*/capacity; do
+		[ -r "$b" ] && bat=" | bat $(cat "$b")%"
+	done
+	share=
+	if [ -f "${XDG_RUNTIME_DIR:-/tmp}/tinyhat-share.pid" ]; then
+		share="sharing http://$(tinyhat-addr):3000 | "
+	fi
+	systemctl -q is-active dropbear.service && share="${share}ssh on | "
+	printf '%s%s%s%s%s | %s\n' "$warn" "$share" "${wifi:+wifi $wifi | }" "${vol:+vol $vol}" "$bat" "$(date '+%a %d %b %H:%M')"
+	n=$((n + 1))
+	sleep 5
+done

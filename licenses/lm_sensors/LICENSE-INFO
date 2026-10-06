@@ -1,0 +1,4 @@
+name: lm_sensors
+version: 1:3.6.2-1.0
+url: https://hwmon.wiki.kernel.org/lm_sensors
+license: GPL-2.0-only OR LGPL-2.1-only

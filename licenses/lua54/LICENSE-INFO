@@ -1,0 +1,4 @@
+name: lua54
+version: 5.4.9-1.0
+url: https://www.lua.org/
+license: MIT

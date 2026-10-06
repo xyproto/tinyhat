@@ -1,0 +1,4 @@
+name: fontconfig
+version: 2:2.14.1-2.0
+url: https://www.freedesktop.org/wiki/Software/fontconfig/
+license: custom

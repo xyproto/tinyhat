@@ -1,0 +1,4 @@
+name: xz
+version: 5.8.4-1.0
+url: https://tukaani.org/xz/
+license: GPL-2.0-or-later AND 0BSD AND LicenseRef-Public-Domain AND LGPL-2.1-or-later

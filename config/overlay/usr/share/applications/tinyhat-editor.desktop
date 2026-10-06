@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Orbiton
+Icon=accessories-text-editor
+Comment=Text editor
+Exec=tinyhat-term o
+Terminal=false
+Categories=Utility;TextEditor;

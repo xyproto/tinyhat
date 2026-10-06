@@ -1,0 +1,4 @@
+name: ldns
+version: 1.9.2-1.0
+url: https://www.nlnetlabs.nl/projects/ldns/
+license: custom:BSD

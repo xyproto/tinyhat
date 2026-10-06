@@ -1,0 +1,288 @@
+diff -Naur sdl-orig/src/video/wayland/SDL_waylandframebuffer.c sdl/src/video/wayland/SDL_waylandframebuffer.c
+--- a/src/video/wayland/SDL_waylandframebuffer.c	1970-01-01 01:00:00.000000000 +0100
++++ b/src/video/wayland/SDL_waylandframebuffer.c	2026-10-05 12:01:59.668006949 +0200
+@@ -0,0 +1,170 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#include "SDL_internal.h"
++
++#ifdef SDL_VIDEO_DRIVER_WAYLAND
++
++#include "../SDL_sysvideo.h"
++#include "SDL_waylandframebuffer.h"
++#include "SDL_waylandvideo.h"
++#include "SDL_waylandwindow.h"
++
++#define WAYLAND_FRAMEBUFFER_PROPERTY "SDL.internal.wayland.framebuffer"
++
++typedef struct Wayland_FramebufferBuffer
++{
++    struct wl_buffer *buffer;
++    void *data;
++    bool busy;
++} Wayland_FramebufferBuffer;
++
++typedef struct Wayland_Framebuffer
++{
++    Wayland_SHMPool *pool;
++    Wayland_FramebufferBuffer buffers[2];
++    void *pixels;
++    int width;
++    int height;
++    int pitch;
++} Wayland_Framebuffer;
++
++static void framebuffer_buffer_release(void *data, struct wl_buffer *wl_buffer)
++{
++    ((Wayland_FramebufferBuffer *)data)->busy = false;
++}
++
++static const struct wl_buffer_listener framebuffer_buffer_listener = {
++    framebuffer_buffer_release
++};
++
++static Wayland_Framebuffer *GetFramebuffer(SDL_Window *window)
++{
++    return (Wayland_Framebuffer *)SDL_GetPointerProperty(SDL_GetWindowProperties(window), WAYLAND_FRAMEBUFFER_PROPERTY, NULL);
++}
++
++void Wayland_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window)
++{
++    Wayland_Framebuffer *fb = GetFramebuffer(window);
++
++    if (!fb) {
++        return;
++    }
++    SDL_ClearProperty(SDL_GetWindowProperties(window), WAYLAND_FRAMEBUFFER_PROPERTY);
++
++    for (int i = 0; i < SDL_arraysize(fb->buffers); ++i) {
++        if (fb->buffers[i].buffer) {
++            wl_buffer_destroy(fb->buffers[i].buffer);
++        }
++    }
++    Wayland_ReleaseSHMPool(fb->pool);
++    SDL_free(fb->pixels);
++    SDL_free(fb);
++}
++
++bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch)
++{
++    Wayland_Framebuffer *fb;
++    int w, h;
++
++    Wayland_DestroyWindowFramebuffer(_this, window);
++
++    SDL_GetWindowSizeInPixels(window, &w, &h);
++    if (w <= 0 || h <= 0) {
++        return SDL_SetError("Invalid window size");
++    }
++
++    fb = (Wayland_Framebuffer *)SDL_calloc(1, sizeof(*fb));
++    if (!fb) {
++        return false;
++    }
++    fb->width = w;
++    fb->height = h;
++    fb->pitch = w * 4;
++    fb->pixels = SDL_calloc(h, fb->pitch);
++    fb->pool = Wayland_AllocSHMPool(fb->pitch * h * (int)SDL_arraysize(fb->buffers));
++    if (!fb->pixels || !fb->pool) {
++        Wayland_ReleaseSHMPool(fb->pool);
++        SDL_free(fb->pixels);
++        SDL_free(fb);
++        return false;
++    }
++
++    for (int i = 0; i < SDL_arraysize(fb->buffers); ++i) {
++        fb->buffers[i].buffer = Wayland_AllocBufferFromPoolWithFormat(fb->pool, w, h, WL_SHM_FORMAT_XRGB8888, &fb->buffers[i].data,
++                                                                     &framebuffer_buffer_listener, &fb->buffers[i]);
++        if (!fb->buffers[i].buffer) {
++            SDL_SetPointerProperty(SDL_GetWindowProperties(window), WAYLAND_FRAMEBUFFER_PROPERTY, fb);
++            Wayland_DestroyWindowFramebuffer(_this, window);
++            return SDL_SetError("Couldn't create Wayland framebuffer");
++        }
++    }
++
++    SDL_SetPointerProperty(SDL_GetWindowProperties(window), WAYLAND_FRAMEBUFFER_PROPERTY, fb);
++    *format = SDL_PIXELFORMAT_XRGB8888;
++    *pixels = fb->pixels;
++    *pitch = fb->pitch;
++    return true;
++}
++
++bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects)
++{
++    SDL_VideoData *viddata = _this->internal;
++    SDL_WindowData *wind = window->internal;
++    Wayland_Framebuffer *fb = GetFramebuffer(window);
++    Wayland_FramebufferBuffer *buf = NULL;
++
++    if (!fb) {
++        return SDL_SetError("Window has no framebuffer");
++    }
++
++    for (int attempt = 0; attempt < 2 && !buf; ++attempt) {
++        for (int i = 0; i < SDL_arraysize(fb->buffers); ++i) {
++            if (!fb->buffers[i].busy) {
++                buf = &fb->buffers[i];
++                break;
++            }
++        }
++        if (!buf && attempt == 0) {
++            WAYLAND_wl_display_roundtrip(viddata->display);
++        }
++    }
++    if (!buf) {
++        buf = &fb->buffers[0];
++    }
++
++    SDL_memcpy(buf->data, fb->pixels, (size_t)fb->pitch * fb->height);
++
++    wl_surface_attach(wind->surface, buf->buffer, 0, 0);
++    if (rects && numrects > 0) {
++        for (int i = 0; i < numrects; ++i) {
++            wl_surface_damage_buffer(wind->surface, rects[i].x, rects[i].y, rects[i].w, rects[i].h);
++        }
++    } else {
++        wl_surface_damage_buffer(wind->surface, 0, 0, fb->width, fb->height);
++    }
++    buf->busy = true;
++    wl_surface_commit(wind->surface);
++    WAYLAND_wl_display_flush(viddata->display);
++    return true;
++}
++
++#endif // SDL_VIDEO_DRIVER_WAYLAND
+diff -Naur sdl-orig/src/video/wayland/SDL_waylandframebuffer.h sdl/src/video/wayland/SDL_waylandframebuffer.h
+--- a/src/video/wayland/SDL_waylandframebuffer.h	1970-01-01 01:00:00.000000000 +0100
++++ b/src/video/wayland/SDL_waylandframebuffer.h	2026-10-05 12:01:59.666071116 +0200
+@@ -0,0 +1,31 @@
++/*
++  Simple DirectMedia Layer
++  Copyright (C) 1997-2026 Sam Lantinga <slouken@libsdl.org>
++
++  This software is provided 'as-is', without any express or implied
++  warranty.  In no event will the authors be held liable for any damages
++  arising from the use of this software.
++
++  Permission is granted to anyone to use this software for any purpose,
++  including commercial applications, and to alter it and redistribute it
++  freely, subject to the following restrictions:
++
++  1. The origin of this software must not be misrepresented; you must not
++     claim that you wrote the original software. If you use this software
++     in a product, an acknowledgment in the product documentation would be
++     appreciated but is not required.
++  2. Altered source versions must be plainly marked as such, and must not be
++     misrepresented as being the original software.
++  3. This notice may not be removed or altered from any source distribution.
++*/
++
++#include "SDL_internal.h"
++
++#ifndef SDL_waylandframebuffer_h_
++#define SDL_waylandframebuffer_h_
++
++extern bool Wayland_CreateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, SDL_PixelFormat *format, void **pixels, int *pitch);
++extern bool Wayland_UpdateWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window, const SDL_Rect *rects, int numrects);
++extern void Wayland_DestroyWindowFramebuffer(SDL_VideoDevice *_this, SDL_Window *window);
++
++#endif
+diff -Naur sdl-orig/src/video/wayland/SDL_waylandshmbuffer.c sdl/src/video/wayland/SDL_waylandshmbuffer.c
+--- a/src/video/wayland/SDL_waylandshmbuffer.c	2026-01-01 18:48:19.000000000 +0100
++++ b/src/video/wayland/SDL_waylandshmbuffer.c	2026-10-05 12:01:33.515556277 +0200
+@@ -160,23 +160,32 @@
+     return shmPool;
+ }
+ 
+-struct wl_buffer *Wayland_AllocBufferFromPool(Wayland_SHMPool *shmPool, int width, int height, void **data)
++struct wl_buffer *Wayland_AllocBufferFromPoolWithFormat(Wayland_SHMPool *shmPool, int width, int height, uint32_t shm_format,
++                                                         void **data, const struct wl_buffer_listener *listener, void *user_data)
+ {
+-    const Uint32 SHM_FMT = WL_SHM_FORMAT_ARGB8888;
+-
+     if (!shmPool || !width || !height || !data) {
+         return NULL;
+     }
+ 
++    if (shmPool->offset + width * height * 4 > shmPool->shm_pool_size) {
++        SDL_SetError("SHM pool is too small.");
++        return NULL;
++    }
++
+     *data = (Uint8 *)shmPool->shm_pool_memory + shmPool->offset;
+-    struct wl_buffer *buffer = wl_shm_pool_create_buffer(shmPool->shm_pool, shmPool->offset, width, height, width * 4, SHM_FMT);
+-    wl_buffer_add_listener(buffer, &buffer_listener, shmPool);
++    struct wl_buffer *buffer = wl_shm_pool_create_buffer(shmPool->shm_pool, shmPool->offset, width, height, width * 4, shm_format);
++    wl_buffer_add_listener(buffer, listener, user_data);
+ 
+     shmPool->offset += width * height * 4;
+ 
+     return buffer;
+ }
+ 
++struct wl_buffer *Wayland_AllocBufferFromPool(Wayland_SHMPool *shmPool, int width, int height, void **data)
++{
++    return Wayland_AllocBufferFromPoolWithFormat(shmPool, width, height, WL_SHM_FORMAT_ARGB8888, data, &buffer_listener, shmPool);
++}
++
+ void Wayland_ReleaseSHMPool(Wayland_SHMPool *shmPool)
+ {
+     if (shmPool) {
+diff -Naur sdl-orig/src/video/wayland/SDL_waylandshmbuffer.h sdl/src/video/wayland/SDL_waylandshmbuffer.h
+--- a/src/video/wayland/SDL_waylandshmbuffer.h	2026-01-01 18:48:19.000000000 +0100
++++ b/src/video/wayland/SDL_waylandshmbuffer.h	2026-10-05 12:08:30.217686365 +0200
+@@ -25,9 +25,13 @@
+ #define SDL_waylandshmbuffer_h_
+ 
+ typedef struct Wayland_SHMPool Wayland_SHMPool;
++struct wl_buffer;
++struct wl_buffer_listener;
+ 
+ extern Wayland_SHMPool *Wayland_AllocSHMPool(int size);
+ extern struct wl_buffer *Wayland_AllocBufferFromPool(Wayland_SHMPool *shmPool, int width, int height, void **data);
++extern struct wl_buffer *Wayland_AllocBufferFromPoolWithFormat(Wayland_SHMPool *shmPool, int width, int height, uint32_t shm_format,
++                                                                void **data, const struct wl_buffer_listener *listener, void *user_data);
+ extern void Wayland_ReleaseSHMPool(Wayland_SHMPool *shmPool);
+ 
+ #endif
+diff -Naur sdl-orig/src/video/wayland/SDL_waylandvideo.c sdl/src/video/wayland/SDL_waylandvideo.c
+--- a/src/video/wayland/SDL_waylandvideo.c	2026-09-08 21:47:22.000000000 +0200
++++ b/src/video/wayland/SDL_waylandvideo.c	2026-10-05 12:01:33.515796614 +0200
+@@ -36,6 +36,7 @@
+ #include "SDL_waylandmouse.h"
+ #include "SDL_waylandopengles.h"
+ #include "SDL_waylandvideo.h"
++#include "SDL_waylandframebuffer.h"
+ #include "SDL_waylandvulkan.h"
+ #include "SDL_waylandwindow.h"
+ 
+@@ -648,6 +649,9 @@
+ 
+     device->CreateSDLWindow = Wayland_CreateWindow;
+     device->ShowWindow = Wayland_ShowWindow;
++    device->CreateWindowFramebuffer = Wayland_CreateWindowFramebuffer;
++    device->UpdateWindowFramebuffer = Wayland_UpdateWindowFramebuffer;
++    device->DestroyWindowFramebuffer = Wayland_DestroyWindowFramebuffer;
+     device->HideWindow = Wayland_HideWindow;
+     device->RaiseWindow = Wayland_RaiseWindow;
+     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;

@@ -1,0 +1,13 @@
+#!/bin/sh
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+if systemctl -q is-active dropbear.service; then
+	doas systemctl stop dropbear.service
+	tinyhat-firewall close 22
+	notice "SSH server stopped"
+else
+	doas systemctl start dropbear.service
+	tinyhat-firewall open 22
+	addr=$(tinyhat-addr)
+	notice "SSH server running: ssh tinyhat@${addr:-this-computer} (password: tinyhat)"
+fi

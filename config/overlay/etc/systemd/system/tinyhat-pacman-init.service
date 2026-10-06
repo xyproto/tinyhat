@@ -1,0 +1,15 @@
+[Unit]
+Description=Initialize the pacman keyring
+After=tinyhat-persist.service time-sync.target
+ConditionPathExists=!/etc/pacman.d/gnupg/trustdb.gpg
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Nice=19
+IOSchedulingClass=idle
+ExecStart=/usr/bin/pacman-key --init
+ExecStart=/usr/bin/pacman-key --populate archlinux32 archlinux
+
+[Install]
+WantedBy=multi-user.target

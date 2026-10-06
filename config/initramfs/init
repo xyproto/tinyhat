@@ -1,0 +1,73 @@
+#!/bin/busybox sh
+/bin/busybox --install -s /bin
+export PATH=/bin
+
+mount -t devtmpfs -o mode=0755,nosuid dev /dev
+mount -t proc -o nosuid,nodev,noexec proc /proc
+mount -t sysfs -o nosuid,nodev,noexec sys /sys
+mount -t tmpfs -o mode=0755,nosuid,nodev run /run
+
+label=TINYHAT
+toram=auto
+for arg in $(cat /proc/cmdline); do
+	case $arg in
+	tinyhat.label=*) label=${arg#*=} ;;
+	tinyhat.toram | tinyhat.toram=1) toram=1 ;;
+	tinyhat.toram=0) toram=0 ;;
+	tinyhat.shell) sh ;;
+	esac
+done
+
+rescue() {
+	echo "Tiny Hat: $*"
+	echo "Dropping to a shell. Type 'exit' to try booting again."
+	setsid cttyhack sh
+}
+
+find_label() {
+	for b in /sys/class/block/*; do
+		d=/dev/${b##*/}
+		[ -b "$d" ] || continue
+		[ "$(dd if="$d" bs=4 count=1 2>/dev/null)" = XFSB ] || continue
+		[ "$(dd if="$d" bs=1 skip=108 count=12 2>/dev/null | tr -d '\0')" = "$1" ] && echo "$d" && return 0
+	done
+	return 1
+}
+
+uptime() { read -r up _ </proc/uptime; echo "${up%.*}"; }
+
+deadline=$(($(uptime) + 30))
+while :; do
+	dev=$(find_label "$label") && break
+	if [ "$(uptime)" -ge $deadline ]; then
+		rescue "no partition labeled $label found"
+		deadline=$(($(uptime) + 30))
+	fi
+	sleep 0.2
+done
+
+mkdir -p /run/tinyhat/boot /run/tinyhat/lower /run/tinyhat/rw /newroot
+mount -t xfs -o ro,noatime "$dev" /run/tinyhat/boot || rescue "could not mount $dev"
+sfs=/run/tinyhat/boot/tinyhat/root.sfs
+if [ "$toram" = auto ]; then
+	toram=0
+	mem_kb=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
+	sfs_kb=$(($(stat -c %s "$sfs") / 1024))
+	[ "$mem_kb" -ge $((sfs_kb + 300 * 1024)) ] && toram=1
+fi
+if [ "$toram" = 1 ]; then
+	echo "Tiny Hat: copying the system to RAM, this takes a moment..."
+	mount -t tmpfs -o size=90%,mode=0755 ram /run/tinyhat/rw
+	cp "$sfs" /run/tinyhat/rw/root.sfs && sfs=/run/tinyhat/rw/root.sfs
+else
+	mount -t tmpfs -o size=75%,mode=0755 rw /run/tinyhat/rw
+fi
+mount -t squashfs -o ro,loop "$sfs" /run/tinyhat/lower || rescue "could not mount $sfs"
+mkdir -p /run/tinyhat/rw/upper /run/tinyhat/rw/work
+mount -t overlay -o lowerdir=/run/tinyhat/lower,upperdir=/run/tinyhat/rw/upper,workdir=/run/tinyhat/rw/work overlay /newroot || rescue "could not mount the overlay"
+umount -l /run/tinyhat/lower /run/tinyhat/rw /run/tinyhat/boot
+
+echo "$dev" >/run/tinyhat/bootdev
+mount --move /run /newroot/run
+umount /sys /proc
+exec switch_root /newroot /usr/lib/systemd/systemd

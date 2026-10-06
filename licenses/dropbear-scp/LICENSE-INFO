@@ -1,0 +1,4 @@
+name: dropbear-scp
+version: 2026.94-1.0
+url: https://github.com/mkj/dropbear
+license: MIT

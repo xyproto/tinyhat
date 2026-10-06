@@ -1,0 +1,4 @@
+name: nftables
+version: 1:1.1.3-1.0
+url: https://netfilter.org/projects/nftables/
+license: GPL-2.0-only

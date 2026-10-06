@@ -1,0 +1,4 @@
+name: libgpg-error
+version: 1.61-1.0
+url: https://www.gnupg.org
+license: LGPL-2.1-or-later AND BSD-3-Clause OR LGPL-2.1-or-later AND FSFULLR AND GPL-2.0-or-later

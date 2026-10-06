@@ -1,0 +1,46 @@
+#!/bin/sh
+mkdir -p "$HOME/DOS"
+set -- -conf /etc/tinyhat/dosbox-x.conf -userconf "$@"
+set -- "$@" -set "midi fluid.soundfont=$(tinyhat-soundfont)"
+removable=
+harddisk=
+for d in /media/*/; do
+	mountpoint -q "$d" || continue
+	dev=$(findmnt -no SOURCE --target "$d")
+	case $(readlink -f "/sys/class/block/${dev##*/}") in
+	*/usb* | */mmc*) [ -n "$removable" ] || removable=$d ;;
+	*/block/sr*) [ -n "$removable" ] || removable=$d ;;
+	*) [ -n "$harddisk" ] || harddisk=$d ;;
+	esac
+done
+set -- "$@" -c "@echo off" -c "mount y /usr/share/tinyhat/dos -ro" -c "set PATH=Z:\\;Y:\\"
+drivec="the DOS folder in your home directory"
+drived=
+drivee=
+if [ -n "$harddisk" ] && [ -n "$(find "$harddisk" -maxdepth 1 \( -iname command.com -o -iname autoexec.bat \) -print -quit)" ]; then
+	set -- "$@" -c "mount c \"$harddisk\"" -c "mount e \"$HOME/DOS\""
+	drivee=$drivec
+	drivec="the DOS hard disk of this PC"
+else
+	set -- "$@" -c "mount c \"$HOME/DOS\""
+	if [ -n "$harddisk" ]; then
+		set -- "$@" -c "mount e \"$harddisk\""
+		drivee="the hard disk of this PC"
+	fi
+fi
+if [ -n "$removable" ]; then
+	case $(findmnt -no FSTYPE --target "$removable") in
+	iso9660 | udf) set -- "$@" -c "mount d \"$removable\" -t cdrom" ;;
+	*) set -- "$@" -c "mount d \"$removable\"" ;;
+	esac
+	drived="the USB stick or CD"
+fi
+set -- "$@" -c "cls" -c "c:" -c "echo Tiny Hat DOS" -c "echo." -c "echo C:  $drivec"
+[ -z "$drived" ] || set -- "$@" -c "echo D:  $drived"
+[ -z "$drivee" ] || set -- "$@" -c "echo E:  $drivee"
+set -- "$@" -c "echo." \
+	-c "echo DIR lists files, CD NAME enters a folder, CD .. goes back." \
+	-c "echo K lists the programs here. Type a program name to run it." \
+	-c "echo Alt+Enter: fullscreen   Ctrl+F10: grab or release the mouse   EXIT: quit" \
+	-c "echo." -c "@echo on"
+SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec nice -n -5 dosbox-x "$@"

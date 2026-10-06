@@ -1,0 +1,4 @@
+name: glibc
+version: 2.44+r24+g16be1518495f-1.0
+url: https://www.gnu.org/software/libc
+license: GPL-2.0-or-later AND LGPL-2.1-or-later

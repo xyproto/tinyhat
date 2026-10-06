@@ -1,0 +1,17 @@
+[Unit]
+Description=Tiny Hat persistent storage
+DefaultDependencies=no
+After=local-fs.target systemd-udev-trigger.service
+Before=systemd-user-sessions.service dropbear.service iwd.service bluetooth.service systemd-timesyncd.service shutdown.target
+Conflicts=shutdown.target
+ConditionKernelCommandLine=!tinyhat.nopersist
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/tinyhat/persist
+StandardOutput=journal+console
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=multi-user.target

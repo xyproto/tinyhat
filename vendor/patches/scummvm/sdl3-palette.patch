@@ -1,0 +1,13 @@
+--- a/backends/graphics/surfacesdl/surfacesdl-graphics.cpp	2026-10-06 00:57:56.347532755 +0200
++++ b/backends/graphics/surfacesdl/surfacesdl-graphics.cpp	2026-10-06 00:57:56.371691328 +0200
+@@ -3195,7 +3195,9 @@
+ 
+ int SurfaceSdlGraphicsManager::SDL_SetColors(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int ncolors) {
+ #if SDL_VERSION_ATLEAST(3, 0, 0)
+-	SDL_Palette *palette = SDL_CreateSurfacePalette(surface);
++	SDL_Palette *palette = SDL_GetSurfacePalette(surface);
++	if (!palette)
++		palette = SDL_CreateSurfacePalette(surface);
+ 	if (palette) {
+ 		return !SDL_SetPaletteColors(palette, colors, firstcolor, ncolors) ? 1 : 0;
+ 	}

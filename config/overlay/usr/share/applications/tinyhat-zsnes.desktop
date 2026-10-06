@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ZSNES
+Icon=input-gaming
+Comment=Super Nintendo emulator
+Exec=zsnes
+Terminal=false
+Categories=Game;Emulator;

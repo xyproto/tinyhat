@@ -1,0 +1,4 @@
+name: libpsl
+version: 0.21.2-1.0
+url: https://github.com/rockdaboot/libpsl
+license: MIT

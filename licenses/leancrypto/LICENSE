@@ -1,0 +1,629 @@
+Copyright (C) 2022 - 2026, Stephan Mueller <smueller@chronox.de>
+
+See LICENSE.* for the applicable license.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESS OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE, ALL OF
+WHICH ARE HEREBY DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+USE OF THIS SOFTWARE, EVEN IF NOT ADVISED OF THE POSSIBILITY OF SUCH
+DAMAGE.
+
+================================================================================
+
+The Dilithium signature code is derived in parts from the code distribution
+provided with https://github.com/pq-crystals/dilithium. The license for the
+original code is:
+
+ That code is released under Public Domain
+ (https://creativecommons.org/share-your-work/public-domain/cc0/);
+ or Apache 2.0 License (https://www.apache.org/licenses/LICENSE-2.0.html).
+
+================================================================================
+
+The Kyber KEM code is derived in parts from the code distribution provided with
+https://github.com/pq-crystals/kyber. The license for the original code is:
+
+ That code is released under Public Domain
+ (https://creativecommons.org/share-your-work/public-domain/cc0/).
+
+================================================================================
+
+The Kyber KEM ARMv8 code is derived in parts from the code distribution
+provided with https://github.com/psanal2018/kyber-arm64. The license for the
+original code is:
+
+ MIT License
+
+ Copyright (c) 2021 Pakize Sanal, Emrah Karagoz, Hwajeong Seo,
+ Reza Azarderakhsh, Mehran Mozaffari-Kermani
+
+================================================================================
+
+For sym/src/aes_sbox.c:
+
+The AES block cipher code is derived in parts from the code distribution
+provided with https://github.com/kokke/tiny-AES-c. The license for the original
+code is:
+
+ This is free and unencumbered software released into the public domain.
+
+================================================================================
+
+For
+aead/src/asm/ARMv8/gcm_neon.S,
+hash/src/asm/AVX2/KeccakP-1600-AVX2.S,
+hash/src/asm/AVX512/KeccakP-1600-AVX512.S,
+hash/src/asm/ARMv8A/KeccakP-1600-armv8a-ce.S,
+hash/src/asm/ARMv8A/sha2-512-ARMv8.S,
+hash/src/asm/ARMv8A/sha2-256-ARMv8.S,
+hash/src/asm/AVX2/sha2-512-AVX2.S,
+hash/src/asm/AVX2/sha2-512-AVX2_windows.S,
+hash/src/asm/AVX2/sha2-256-AVX2.S,
+hash/src/asm/AVX2/sha2-256-AVX2_windows.S,
+hash/src/asm/riscv64/sha2-512-riscv.S,
+hash/src/asm/riscv64/sha2-256-riscv.S,
+sym/src/asm/ARMv8/aes_armv8_ce.S,
+sym/src/asm/AESNI_x86_64/aes_aesni_x86_64.S,
+sym/src/asm/ARMv8/chacha20_neon.S,
+sym/src/asm/ARMv7/chacha20_neon_armv7.S,
+sym/src/asm/riscv64/chacha20_riscv64_v_zbb.S
+
+    Copyright (c) 2006-2017, CRYPTOGAMS by <appro@openssl.org>
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions
+    are met:
+
+        *	Redistributions of source code must retain copyright notices,
+        this list of conditions and the following disclaimer.
+
+        *	Redistributions in binary form must reproduce the above
+        copyright notice, this list of conditions and the following
+        disclaimer in the documentation and/or other materials
+        provided with the distribution.
+
+        *	Neither the name of the CRYPTOGAMS nor the names of its
+        copyright holder and contributors may be used to endorse or
+        promote products derived from this software without specific
+        prior written permission.
+
+    ALTERNATIVELY, provided that this notice is retained in full, this
+    product may be distributed under the terms of the GNU General Public
+    License (GPL), in which case the provisions of the GPL apply INSTEAD OF
+    those given above.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER AND CONTRIBUTORS
+    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+    A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+    OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+    SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+    LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+    DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+    THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+================================================================================
+
+The SHA3 / SHAKE assembler implementations and the associated glue code in
+hash/src/keccak_asm_glue.h, code in hash/src/asm/ARMv8A/ and
+hash/src/asm/ARMv7A-NEON/ are derived in parts from the code distribution
+provided with https://github.com/XKCP/XKCP.
+
+This code is licensed with:
+
+The redistribution and use of this software (with or without changes) is
+allowed without the payment of fees or royalties provided that the terms
+of the licenses of the different source files used is respected. Most of the
+source and header files in the XKCP are released to the public domain and
+associated to the CC0 (http://creativecommons.org/publicdomain/zero/1.0/) deed,
+but there are exceptions.
+
+================================================================================
+
+The Keccak assembler implementation in hash/src/asm/riscv is derived in parts
+from the code distribution provided with
+https://github.com/AsmOptC-RiscV/Assembly-Optimized-C-RiscV
+
+This code is MIT licensed.
+
+================================================================================
+
+The x86intrin code in internal/api/ext_x86_*.h are derived from GCC and Clang.
+The only reason why this code is duplicated is the fact that the compiler code
+cannot be included into kernel code code as is. Thus, the functions used by
+leancrypto are extracted - I wished this would not have been necessary.
+
+Anyhow, the GCC code is: GPL 3. The LLVM code is: Apache License v2.0.
+
+NOTE: The presence of GPL 3 code is NOT considered to taint the leancrypto code
+base to the GPL 3 restrictions, because all duplicated code is only and
+exclusively inline code (i.e. the upstream code is also inline code) to invoke
+the proper compiler intrinsics. Therefore, the duplicated code must be
+viewed identically to the regular code which by common approach will not
+levy the GPL 3 restrictions on the consuming code. Therefore, in light of this
+consideration, leancrypto is still assumed to retain the original license
+mentioned above.
+
+Once GCC and Clang could be brought to de-entangle declarations for library code
+from the actual intrinsic declarations to invoke compiler built-ins, this
+duplicated code can be removed.
+
+================================================================================
+
+The following files are licensed under the Apache License 2.0, copyright:
+Copyright 2022 The OpenSSL Project Authors. All Rights Reserved.
+
+sym/src/aes_ct.c
+sym/src/asm/riscv64/riscv64_aes_asm.S
+sym/src/asm/riscv64/riscv64_aes_zkn_asm.S
+
+================================================================================
+
+The following files are licensed under the Creative Commons Legal Code CC0 1.0
+Universal license. The original files are obtained from
+https://github.com/PQClean/PQClean
+
+hash/src/asm/ARMv8_2x/keccakx2_armce.S
+hash/src/shake_2x_armv8.c
+signature/src/armv8/NTT_params.h
+signature/src/armv8/dilithium_intt_armv8.S
+signature/src/armv8/dilithium_ntt_armv8.S
+signature/src/armv8/dilithium_poly_armv8.S
+signature/src/armv8/macros.inc
+signature/src/armv8/macros_common.inc
+
+================================================================================
+
+The following files are licensed under the Creative Commons Legal Code CC0 1.0
+Universal license. The original files are obtained from
+https://github.com/dilithium-coretexm/dilithium-cortexm.git
+
+kem/src/armv7/kyber_fastinvntt_armv7.S
+kem/src/armv7/kyber_fastntt_armv7.S
+kem/src/armv7/kyber_poly_armv7.S
+signature/src/armv7/dilithium_ntt_armv7.S
+signature/src/armv7/dilithium_poly_armv7.S
+signature/src/armv7/dilithium_pointwise_smull_armv7.S
+signature/src/armv7/dilithium_ntt_consts.h
+
+================================================================================
+
+The following files are licensed under the ISC license. The original files are
+obtained from https://github.com/jedisct1/libsodium.git
+
+Copyright (c) 2013-2026
+Frank Denis <j at pureftpd dot org>
+
+curve25519/src/ed25519.c
+curve25519/src/ed25519_ref10.c
+curve25519/src/ed25519_ref10.h
+curve25519/src/ed25519_ref10_fe_51.h
+curve25519/src/ed25519_ref10_fe_25_5.h
+curve25519/src/fe_25_5/*
+curve25519/src/fe_51/*
+curve25519/src/x25519_scalarmult.c
+curve25519/src/x25519_scalarmult.h
+curve25519/src/avx/consts.S
+curve25519/src/avx/curve25519_avx_asm.S
+curve25519/src/avx/curve25519_avx.c
+curve25519/src/avx/fe51.h
+curve25519/src/avx/fe51_invert.c
+curve25519/src/avx/fe51_mul.S
+curve25519/src/avx/fe51_nsquare.S
+curve25519/src/avx/fe51_pack.S
+curve25519/src/avx/fe_frombytes_avx.c
+curve25519/src/avx/fe.h
+curve25519/src/avx/ladder.h
+curve25519/src/avx/ladder.S
+
+================================================================================
+
+The following files are licensed under the CC0 1.0 Universal. The original files
+are obtained from https://github.com/ascon/ascon-c
+
+hash/src/asm/ascon_avx512/*
+hash/src/asm/ascon_arm_neon/*
+
+================================================================================
+
+The following files are licensed under the CC0 1.0 Universal. The original files
+are obtained from https://github.com/Emill/X25519-AArch64
+
+curve25519/src/armv8/X25519-AArch64.S
+
+================================================================================
+
+The following files are licensed under the following license. The original files
+are obtained from https://github.com/Emill/X25519-Cortex-M4
+
+curve25519/src/armv7/x25519-cortex-m4-gcc.S
+
+Copyright (c) 2017, Emil Lenngren
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form, except as embedded into a Nordic
+   Semiconductor ASA or Dialog Semiconductor PLC integrated circuit in a product
+   or a software update for such product, must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+================================================================================
+
+The following file is licensed under the following license. The original file
+is obtained from https://github.com/peterferrie/aes
+
+sym/src/aes_no_sbox.c
+
+  Copyright © 2015 Odzhan, Peter Ferrie. All Rights Reserved.
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are
+  met:
+
+  1. Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+
+  2. Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+
+  3. The name of the author may not be used to endorse or promote products
+  derived from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY AUTHORS "AS IS" AND ANY EXPRESS OR
+  IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+  DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+  SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+  STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+  ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGE.
+
+================================================================================
+
+The BIKE KEM code is derived in parts from the code distribution provided with
+https://github.com/awslabs/bike-kem. The license for the original code is:
+
+Apache 2.0 License (https://www.apache.org/licenses/LICENSE-2.0.html).
+
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+
+================================================================================
+
+The HQC KEM C code is derived in parts from the code distribution provided with
+https://github.com/PQClean/PQClean/. The license for the original code is:
+
+Public Domain
+
+The files derived from this source contain a reference in their comment headers.
+
+================================================================================
+
+The HQC KEM AVX code is derived in parts from the code distribution provided
+with https://pqc-hqc.org/. The license for the original code is:
+
+Public Domain
+
+The files derived from this source contain a reference in their comment headers.
+
+================================================================================
+
+The Sphincs+ / SLH-DSA code is derived in parts from the code distribution
+provided with https://github.com/sphincs/sphincsplus. The license for the
+original code is:
+
+"This work is hereby placed into the public domain."
+
+The affected code is provided under slh-dsa/src and properly marked.
+
+================================================================================
+
+The ASN.1, X.509 and PKCS#7 parser code is derived in parts from the Linux
+kernel. The license of the original code is:
+
+SPDX-License-Identifier: GPL-2.0-or-later
+
+Copyright (C) 2012 Red Hat, Inc. All Rights Reserved.
+Written by David Howells (dhowells@redhat.com)
+
+Red Hat granted the following additional license to the leancrypto project:
+SPDX-License-Identifier: BSD-3-Clause
+
+The following files are affected:
+
+asn1/api/lc_asn1.h
+asn1/src/asn1_ber_bytecode.h
+asn1/src/asn1_common.c
+asn1/src/asn1_compiler.c
+asn1/src/asn1_decoder.c
+asn1/src/asn1_decoder.h
+asn1/src/asn1.h
+asn1/src/asymmetric_type.c
+asn1/src/asymmetric_type.h
+asn1/src/build_OID_registry
+asn1/src/oid_registry.c
+asn1/src/oid_registry_data.c
+asn1/src/oid_registry.h
+asn1/src/pkcs7_parser.c
+asn1/src/pkcs7_trust.c
+asn1/src/pkcs7_verify.c
+asn1/src/x509_cert_parser.c
+asn1/src/x509_parser.h
+asn1/src/x509_public_key.c
+
+
+Further, the license of the original code is:
+
+This code is derived in parts from the Linux kernel
+License: SPDX-License-Identifier: GPL-2.0-only
+
+Copyright (C) 2019 James.Bottomley@HansenPartnership.com
+
+James Bottomley granted the following additional license to the leancrypto
+project: SPDX-License-Identifier: BSD-3-Clause
+
+The following files are affected:
+
+asn1/src/asn1_encoder_helper.c
+
+
+The associated asn1/src/*_asn1 files are derived from different RFCs and draft
+RFCs as marked in the header of those files and subject to the following
+license:
+
+BSD-3-Clause
+
+Copyright (C) 2008 IETF Trust and the persons identified as authors
+of the code
+
+================================================================================
+
+The following files are licensed under the following license. The original files
+are obtained from https://github.com/Ji-Peng/PQRV
+
+hash/src/asm/riscv64/fips202_rv64im.S
+hash/src/asm/riscv64/fips202_rv64imb.S
+ml-kem/src/riscv64/kyber_cbd_rvv.h
+ml-kem/src/riscv64/kyber_consts_rvv_vlen128.*
+ml-kem/src/riscv64/kyber_consts_rvv_vlen256.*
+ml-kem/src/riscv64/kyber_indcpa_riscv.h
+ml-kem/src/riscv64/kyber_indcpa_rvv.h
+ml-kem/src/riscv64/kyber_indcpa_rvv_vlen128.*
+ml-kem/src/riscv64/kyber_indcpa_rvv_vlen256.*
+ml-kem/src/riscv64/kyber_poly_rvv.h
+ml-kem/src/riscv64/kyber_polyvec_rvv.h
+ml-kem/src/riscv64/kyber_zetas_riscv.c
+ml-kem/src/riscv64/ntt_dualissue_plant_rv64im.S
+ml-kem/src/riscv64/ntt_rvv_vlen128.*
+ml-kem/src/riscv64/ntt_rvv_vlen256.*
+ml-dsa/src/riscv64/dilithium_ntt_rv64im.h
+ml-dsa/src/riscv64/ntt_8l_dualissue_plant_rv64im.S
+ml-dsa/src/riscv64/dilithium_poly_riscv64.h
+ml-dsa/src/riscv64/dilithium_polyvec_riscv64.h
+ml-dsa/src/riscv64/dilithium_consts_rvv.c
+ml-dsa/src/riscv64/dilithium_consts_rvv.h
+ml-dsa/src/riscv64/dilithium_ntt_rvv.h
+ml-dsa/src/riscv64/ntt_rvv.S
+
+The MIT license, the text of which is below, applies to PQRV in general.
+
+Copyright (c) 2026 Jipeng Zhang (jp-zhang@outlook.com)
+SPDX-License-Identifier: MIT
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+
+The error code definitions used for the EFI compilation are licensed as:
+SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note.
+
+Note, the same considerations as mentioned above for the x86intrin with respect
+to GPL and not tainting the leancrypto code base accordingly considering that
+these files only contain macros that are inlined into the code. The duplication
+is only made for environments where the POSIX error declarations are not
+available (e.g. the EFI environment).
+
+This affects the following files:
+
+internal/api/errno_private.h
+internal/api/errno_private_base.h
+
+================================================================================
+
+The Curve448 C-implementation is in parts from
+Copyright 2017-2020 The OpenSSL Project Authors. All Rights Reserved.
+Copyright 2015-2016 Cryptography Research, Inc.
+Modifications Copyright 2020 David Schatz
+
+Licensed under the Apache License 2.0 (the "License").  You may not use
+this file except in compliance with the License.  You can obtain a copy
+in the file LICENSE in the source distribution or at
+https://www.openssl.org/source/license.html
+
+Originally written by Mike Hamburg
+
+This affects the following files:
+
+curve448/api/lc_ed448.h
+curve448/api/lc_x448.h
+curve448/src/arch32_intrinsics.h
+curve448/src/constant_time.h
+curve448/src/curve448.c
+curve448/src/curve448_tables.c
+curve448/src/curve448utils.h
+curve448/src/ed448.c
+curve448/src/f_generic.c
+curve448/src/f_impl.c
+curve448/src/f_impl.h
+curve448/src/field.h
+curve448/src/point_448.h
+curve448/src/scalar.c
+curve448/src/word.h
+curve448/src/x448.c
+
+================================================================================
+
+The Curve448 AVX2-implementation is in parts from
+Kaushik Nath,  Indian Statistical Institute, Kolkata, India, and
+Palash Sarkar, Indian Statistical Institute, Kolkata, India.
+
+Copyright (c) 2020, Kaushik Nath and Palash Sarkar.
+
+Permission to use this code is granted.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+* Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright
+  notice, this list of conditions and the following disclaimer in the
+  documentation and/or other materials provided with the distribution.
+
+* The names of the contributors may not be used to endorse or promote
+  products derived from this software without specific prior written
+  permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHORS ""AS IS"" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+This affects the following files:
+
+curve448/src/avx2/gf_p4482241_arith.h
+curve448/src/avx2/gf_p4482241_inv.c
+curve448/src/avx2/gf_p4482241_pack.c
+curve448/src/avx2/gf_p4482241_pack.h
+curve448/src/avx2/gf_p4482241_type.h
+curve448/src/avx2/curve448_mladder.S
+curve448/src/avx2/curve448_mladder_base.S
+curve448/src/avx2/gf_p4482241_makeunique.S
+curve448/src/avx2/gf_p4482241_mul.S
+curve448/src/avx2/gf_p4482241_mulx.S
+curve448/src/avx2/gf_p4482241_nsqr.S
+curve448/src/avx2/gf_p4482241_nsqrx.S
+curve448/src/avx2/curve448_scalarmult_avx2.c
+curve448/src/avx2/curve448_const.S
+
+================================================================================
+
+The Poly1305 implementation is in parts from
+https://github.com/floodyberry/poly1305-donna marked as "PUBLIC DOMAIN"
+
+This affects the following files:
+hash/api/poly1305.h
+hash/src/poly1305-32.h
+hash/src/poly1305-64.h
+hash/src/poly1305.c
+
+================================================================================
+
+The ChaCha20 AVX2 accelerated implementation is in parts from
+https://github.com/YuriMyakotin/ChaCha20-SIMD which uses the following license:
+
+MIT License
+Copyright (c) 2023 Yury Myakotin
+
+This affects the following files:
+sym/src/asm/AVX2/chacha20_impl_avx2.c
+sym/src/asm/AVX512/chacha20_impl_avx512.c
+
+================================================================================
+
+The AES GCM implementation is in parts from
+https://github.com/mko-x/SharedAES-GCM which uses the following license:
+
+THIS SOURCE CODE IS HEREBY PLACED INTO THE PUBLIC DOMAIN FOR THE GOOD OF ALL
+
+This affects the following files:
+aead/src/gcm.c
+
+================================================================================
+
+The re-implementation of the sbsigntools require the integration of the
+following file which are licensed under GPLv3. The files originate from
+http://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git.
+
+Note, this license applies ONLY to the sbsigntools implemented by leancrypto as
+this file is not otherwise used by leancrypto at all. Therefore, licensing of
+leancrypto in general is unaffected.
+
+If anyone is concerned by the license, the meson option "sbsigntools" should
+be disabled to prevent the compilation of this code and the tools using them.
+Leancrypto is unaffected by this as the tools are consumers of leancrypto.
+
+apps/src/image.c
+apps/src/image.h
+apps/src/coff/pe.h
+apps/src/coff/external.h
+apps/src/efivars.h
+apps/src/sbvarsign.c
+apps/src/sbsiglist.c
+apps/src/sbattach.c
+
+================================================================================
+
+The GCC auxiliary support implementations are derived in parts from
+https://github.com/glitchub/arith64 which uses the following license:
+
+This software is released as-is into the public domain, as described at
+https://unlicense.org. Do whatever you like with it.
+
+This affects the following files:
+internal/src/arith64.c

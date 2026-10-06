@@ -1,0 +1,4 @@
+name: libcolord
+version: 1.4.8-1.0
+url: https://www.freedesktop.org/software/colord/
+license: GPL-2.0-or-later

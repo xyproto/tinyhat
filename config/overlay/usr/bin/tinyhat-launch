@@ -1,0 +1,14 @@
+#!/bin/sh
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+name=
+for f in /usr/share/applications/*.desktop; do
+	if grep -qxF "Exec=$*" "$f"; then
+		name=$(sed -n 's/^Name=//p' "$f" | head -n 1)
+		break
+	fi
+done
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+notice "Launching ${name:-${1##*/}}..."
+(sleep 30; notice "") &
+"$@"
+notice ""

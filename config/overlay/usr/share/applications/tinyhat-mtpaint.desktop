@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=mtPaint
+Icon=insert-image
+Comment=Painting and image editing
+Exec=mtpaint
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;

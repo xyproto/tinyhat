@@ -1,0 +1,4 @@
+name: iana-etc
+version: 20260617-1.0
+url: https://www.iana.org/protocols
+license: custom:none

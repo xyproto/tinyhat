@@ -1,0 +1,4 @@
+name: pcre
+version: 8.45-5.0
+url: https://www.pcre.org/
+license: BSD

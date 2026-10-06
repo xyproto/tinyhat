@@ -1,0 +1,3 @@
+ACTION=="add|change", SUBSYSTEM=="block", KERNEL!="loop*|ram*|zram*", ENV{ID_FS_USAGE}=="filesystem", ENV{ID_FS_LABEL}!="TINYHAT|THDATA", ENV{ID_FS_TYPE}=="vfat|exfat|ntfs|iso9660|udf|ext2|ext3|ext4|xfs", RUN+="/usr/bin/systemd-run --no-block --collect --quiet /usr/lib/tinyhat/automount add $devnode"
+ACTION=="change", SUBSYSTEM=="block", KERNEL=="sr*", ENV{ID_FS_USAGE}!="filesystem", RUN+="/usr/bin/systemd-run --no-block --collect --quiet /usr/lib/tinyhat/automount remove $devnode"
+ACTION=="remove", SUBSYSTEM=="block", KERNEL!="loop*|ram*|zram*", RUN+="/usr/bin/systemd-run --no-block --collect --quiet /usr/lib/tinyhat/automount remove $devnode"

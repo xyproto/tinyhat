@@ -1,0 +1,10 @@
+#!/bin/sh
+vars="WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP SDL_VIDEODRIVER SDL_FRAMEBUFFER_ACCELERATION SDL_RENDER_DRIVER SDL_VIDEO_WAYLAND_MODE_SCALING"
+systemctl --user import-environment $vars
+dbus-update-activation-environment --systemd $vars 2>/dev/null
+tinyhat-wallpaper
+mkdir -p "$HOME/cprojects"
+for d in /etc/skel/cprojects/*/; do
+	d=${d%/}
+	[ -e "$HOME/cprojects/${d##*/}" ] || cp -r "$d" "$HOME/cprojects/${d##*/}"
+done

@@ -1,0 +1,4 @@
+name: libslirp
+version: 4.9.5-1.0
+url: https://gitlab.freedesktop.org/slirp/libslirp
+license: BSD AND MIT

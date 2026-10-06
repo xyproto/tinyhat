@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=LibreSprite
+Icon=image-x-generic
+Comment=Animated sprite and pixel art editor
+Exec=tinyhat-gpu libresprite
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;

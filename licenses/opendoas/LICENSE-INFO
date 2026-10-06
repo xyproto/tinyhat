@@ -1,0 +1,4 @@
+name: opendoas
+version: 6.8.2-3.0
+url: https://github.com/Duncaen/OpenDoas
+license: custom:ISC

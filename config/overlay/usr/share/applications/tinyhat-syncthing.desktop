@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Syncthing on/off
+Icon=emblem-synchronizing
+Comment=Start or stop file synchronization
+Exec=tinyhat-syncthing
+Terminal=false
+Categories=Network;FileTransfer;

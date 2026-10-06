@@ -1,0 +1,32 @@
+#!/bin/sh
+cache=${XDG_CACHE_HOME:-$HOME/.cache}/tinyhat
+mkdir -p "$cache"
+fixup=
+case ${1:-} in
+-f) rm -f "$cache"/scanned-* ;;
+--fixup) fixup=1 ;;
+esac
+exec 9>"${XDG_RUNTIME_DIR:-/tmp}/tinyhat-scummvm.lock"
+flock 9
+for d in /media/*/; do
+	[ -z "$fixup" ] && [ -d "$d" ] || continue
+	id=$(findmnt -no UUID --target "$d" 2>/dev/null)
+	[ -n "$id" ] || id=$(basename "$d")
+	[ -e "$cache/scanned-$id" ] && continue
+	nice -n 19 ionice -c 3 scummvm --add --recursive --path="$d" >"$cache/scan-$id.log" 2>&1 &&
+		: >"$cache/scanned-$id"
+done
+ini=$HOME/.config/scummvm/scummvm.ini
+if [ -d /usr/share/games/fotaq ] && ! grep -qsx 'path=/usr/share/games/fotaq' "$ini"; then
+	scummvm --add --path=/usr/share/games/fotaq >"$cache/scan-fotaq.log" 2>&1
+fi
+[ -f "$ini" ] || exit 0
+awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }
+	$1 == "gameid" && ($2 == "tentacle" || $2 == "samnmax") { g[t] = 1 }
+	$1 == "path" { p[t] = $2 }
+	$1 == "music_driver" { m[t] = 1 }
+	END { for (t in g) if (!(t in m) && (t in p)) print t "=" p[t] }' "$ini" |
+while IFS== read -r t p; do
+	grep -qsF -e '.$-I' -e ';&%I' "$p"/*.001 "$p"/*.LA1 && continue
+	sed -i "/^\[$t\]\$/a music_driver=adlib" "$ini"
+done

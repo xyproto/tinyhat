@@ -1,0 +1,4 @@
+name: 6502
+version: 0.1 (built into Grafx2)
+url: https://github.com/redcode/6502
+license: GPL-3.0-or-later

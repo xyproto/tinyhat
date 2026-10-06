@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Date and time
+Icon=appointment-soon
+Comment=Set the clock when there is no network time
+Exec=foot -T "Date and time" -W 60x10 tinyhat-clock
+Terminal=false
+Categories=Settings;

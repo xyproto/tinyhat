@@ -1,0 +1,4 @@
+name: gdbm
+version: 1.23-1.0
+url: https://www.gnu.org/software/gdbm/gdbm.html
+license: GPL3

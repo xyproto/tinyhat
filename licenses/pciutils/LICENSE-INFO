@@ -1,0 +1,4 @@
+name: pciutils
+version: 3.15.0-1.0
+url: https://mj.ucw.cz/sw/pciutils/
+license: GPL-2.0-only

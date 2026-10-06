@@ -1,0 +1,33 @@
+--- a/dwl.c	2026-10-06 08:20:24.431682616 +0200
++++ b/dwl.c	2026-10-06 08:20:24.448350333 +0200
+@@ -324,6 +324,7 @@
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
+ static int reloadkeymap(int signo, void *data);
++static void setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data);
+ static void unblocksignals(void);
+ static void incnmaster(const Arg *arg);
+ static void inputdevice(struct wl_listener *listener, void *data);
+@@ -1817,6 +1818,12 @@
+ 	wlr_renderer_destroy(old_drw);
+ }
+ 
++void
++setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data)
++{
++	wlr_scene_buffer_set_filter_mode(buffer, *(enum wlr_scale_filter_mode *)data);
++}
++
+ int
+ reloadkeymap(int signo, void *data)
+ {
+@@ -2488,6 +2495,9 @@
+ 	/* Update scene-graph, including borders */
+ 	wlr_scene_node_set_position(&c->scene->node, c->geom.x, c->geom.y);
+ 	wlr_scene_node_set_position(&c->scene_surface->node, c->bw, c->bw);
++	wlr_scene_node_for_each_buffer(&c->scene_surface->node, setfilter,
++			c->isfullscreen ? &(enum wlr_scale_filter_mode){WLR_SCALE_FILTER_NEAREST}
++			: &(enum wlr_scale_filter_mode){WLR_SCALE_FILTER_BILINEAR});
+ 	if (c->isfullscreen) {
+ 		struct wlr_surface *s = client_surface(c);
+ 		if (s->current.width > 0 && s->current.height > 0

@@ -1,0 +1,2 @@
+#!/bin/sh
+awk '/^MemTotal:/ { print int($2 / 1024) }' /proc/meminfo

@@ -1,0 +1,17 @@
+--- a/src/gui/sdlmain.cpp	2026-10-06 00:38:49.578466385 +0200
++++ b/src/gui/sdlmain.cpp	2026-10-06 00:38:49.595786982 +0200
+@@ -6327,6 +6327,14 @@
+                 }
+             }
+ #endif
++#if defined(C_SDL2)
++            if (event.type == SDL_KEYDOWN && !event.key.repeat &&
++                    (event.key.keysym.sym == SDLK_RETURN || event.key.keysym.sym == SDLK_KP_ENTER) &&
++                    (event.key.keysym.mod & KMOD_ALT) && !(event.key.keysym.mod & (KMOD_CTRL | KMOD_SHIFT | KMOD_GUI))) {
++                SwitchFullScreen(true);
++                break;
++            }
++#endif
+ #if defined (MACOSX)
+             /* On macs CMD-Q is the default key to close an application */
+             if (event.key.keysym.sym == SDLK_q &&

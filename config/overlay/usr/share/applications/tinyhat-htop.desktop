@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=htop
+Icon=utilities-system-monitor
+Comment=Process viewer
+Exec=tinyhat-term htop
+Terminal=false
+Categories=System;Monitor;

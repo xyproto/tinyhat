@@ -1,0 +1,27 @@
+#!/bin/sh
+settime() {
+	doas timedatectl set-ntp false 2>/dev/null
+	doas timedatectl set-time "$1"
+	rc=$?
+	doas timedatectl set-ntp true 2>/dev/null
+	return $rc
+}
+if [ "${1-}" = --set ]; then
+	settime "$2"
+	exit
+fi
+while :; do
+	printf '\nCurrent date is %s\n' "$(date '+%a %Y-%m-%d')"
+	printf 'Enter new date (yyyy-mm-dd): '
+	read -r d || exit 0
+	printf 'Current time is %s\n' "$(date '+%H:%M:%S')"
+	printf 'Enter new time (hh:mm): '
+	read -r t || exit 0
+	[ -n "$d$t" ] || exit 0
+	if settime "${d:-$(date +%Y-%m-%d)} ${t:-$(date +%H:%M:%S)}"; then
+		printf '\nThe clock is now %s\n' "$(date '+%a %Y-%m-%d %H:%M')"
+		sleep 2
+		exit 0
+	fi
+	echo 'Invalid date or time, please try again. Press Enter to keep the current value.'
+done

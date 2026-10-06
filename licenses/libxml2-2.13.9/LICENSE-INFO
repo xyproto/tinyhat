@@ -1,0 +1,4 @@
+name: libxml2-2.13.9
+version: 2.13.9 without ICU (libxml2.so.2 for LLVM)
+url: https://gitlab.gnome.org/GNOME/libxml2
+license: MIT

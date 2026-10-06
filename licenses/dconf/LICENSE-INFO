@@ -1,0 +1,4 @@
+name: dconf
+version: 0.49.0-1.0
+url: https://wiki.gnome.org/Projects/dconf
+license: LGPL-2.1-or-later

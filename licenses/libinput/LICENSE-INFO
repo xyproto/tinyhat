@@ -1,0 +1,4 @@
+name: libinput
+version: 1.32.0-1.0
+url: https://wayland.freedesktop.org/libinput/doc/latest/
+license: MIT

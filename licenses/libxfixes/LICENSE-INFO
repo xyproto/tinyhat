@@ -1,0 +1,4 @@
+name: libxfixes
+version: 6.0.2-1.0
+url: https://xorg.freedesktop.org/
+license: MIT AND HPND-sell-variant

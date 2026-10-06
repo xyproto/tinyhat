@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Bluetooth
+Icon=bluetooth
+Comment=Connect Bluetooth mice, keyboards and gamepads
+Exec=tinyhat-term bluetui
+Terminal=false
+Categories=Settings;HardwareSettings;

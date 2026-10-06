@@ -1,0 +1,4 @@
+name: libcups
+version: 2:2.4.17-1.0
+url: https://openprinting.github.io/cups/
+license: Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND Zlib AND BSD-2-Clause

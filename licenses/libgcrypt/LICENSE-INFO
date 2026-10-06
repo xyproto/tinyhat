@@ -1,0 +1,4 @@
+name: libgcrypt
+version: 1.12.4-1.0
+url: https://www.gnupg.org
+license: BSD-3-Clause AND BSD-3-Clause OR GPL-2.0-only AND GPL-2.0-or-later AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND X11 AND LicenseRef-scancode-public-domain AND LicenseRef-OCB1

@@ -1,0 +1,4 @@
+name: gzip
+version: 1.15-1.0
+url: https://www.gnu.org/software/gzip/
+license: GPL-3.0-or-later

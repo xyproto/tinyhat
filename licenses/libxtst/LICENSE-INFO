@@ -1,0 +1,4 @@
+name: libxtst
+version: 1.2.5-1.0
+url: https://gitlab.freedesktop.org/xorg/lib/libxtst
+license: MIT-open-group AND HPND-sell-variant AND X11 AND HPND-doc AND HPND-doc-sell

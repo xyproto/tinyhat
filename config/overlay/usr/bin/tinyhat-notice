@@ -1,0 +1,9 @@
+#!/bin/sh
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+stamp=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-notice
+[ -p "$bar" ] || exit 0
+echo $$ >"$stamp"
+printf 'notice %s\n' "$1" >"$bar"
+[ -n "${2:-}" ] || exit 0
+id=$$
+(sleep "$2"; [ "$(cat "$stamp" 2>/dev/null)" = "$id" ] && printf 'notice \n' >"$bar") &

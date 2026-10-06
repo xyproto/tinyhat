@@ -1,0 +1,1 @@
+EARLYOOM_ARGS="-m 6 -s 15 -r 0 --avoid '(^|/)(dwl|foot|swaylock|fuzzel|pipewire|wireplumber|iwd|systemd|systemd-.*|dbus-broker.*|fish)$' --prefer '(^|/)(scummvm|dosbox-x|zsnes|elinks|tcc)$'"

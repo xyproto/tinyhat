@@ -1,0 +1,4 @@
+name: gtk-update-icon-cache
+version: 1:4.16.7-1.0
+url: https://www.gtk.org/
+license: LGPL-2.1-or-later
