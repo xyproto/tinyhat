@@ -27,7 +27,7 @@ linux-7.2.9.tar.xz b4c5dfbe51a364a6c7f03869200f88c8e1f77403539005f14b7fc6bc91b8d
 lua-5.4.9.tar.gz 2335b6c582a52654f94612bf10d2f4672805d05329aa6568b1d8cd9e5c6fb8e6 https://www.lua.org/ftp/lua-5.4.9.tar.gz
 meson-1.12.1.tar.gz ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743 https://github.com/mesonbuild/meson/releases/download/1.12.1/meson-1.12.1.tar.gz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
-orbiton-fa61eb012cd55af72b394063db88ca10e5ebe66a.tar.gz 4e8ee4771ee38d10231885281a4a554d475beb04ce46ffdececa6df2d9e45b38 https://github.com/xyproto/orbiton/archive/fa61eb012cd55af72b394063db88ca10e5ebe66a.tar.gz
+orbiton-f9e82501b558dc8c0632e7d5909b9845c985dfcc.tar.gz c22635fa6067a6c755c2e92901edee91b2476b3fff7347bcdb7d3cd1e9f5ab84 https://github.com/xyproto/orbiton/archive/f9e82501b558dc8c0632e7d5909b9845c985dfcc.tar.gz
 raylib-6.0.tar.gz 2b3ee1e2120c7a0796b33062c7e9a694dd8a8caa56a96319ac8c8ecf54a90d0b https://github.com/raysan5/raylib/archive/refs/tags/6.0.tar.gz
 recoil-6.4.5.tar.gz 2259153957d52eae9d952b63826654752784bcc0bd4a89a13fa98b30d85755b1 https://downloads.sourceforge.net/project/recoil/recoil/6.4.5/recoil-6.4.5.tar.gz
 scummvm-2026.3.0.tar.xz b863a81e1598df8bc4aa0c33e3d9b1c8bbede1879d94d91568a4f200057677e7 https://downloads.scummvm.org/frs/scummvm/2026.3.0/scummvm-2026.3.0.tar.xz
