@@ -1,0 +1,30 @@
+#!/bin/sh
+f=$HOME/report-$(date +%Y-%m-%d-%H%M%S).txt
+{
+	echo "== system"
+	uname -a
+	cat /etc/os-release
+	date -u '+%Y-%m-%dT%H:%M:%SZ'
+	uptime
+	echo "== memory"
+	free -m
+	echo "== storage"
+	lsblk -f
+	df -h
+	echo "== cpu"
+	lscpu
+	echo "== pci"
+	lspci
+	echo "== usb"
+	lsusb
+	echo "== network"
+	ip -br a
+	echo "== services"
+	systemctl --failed --no-legend
+	echo "== journal errors"
+	doas journalctl -p err -b --no-pager | tail -n 100
+	echo "== kernel messages"
+	doas dmesg | tail -n 200
+} >"$f" 2>&1
+echo "Saved $f"
+exec tinyhat-notice "Report saved to ${f##*/}" 3
