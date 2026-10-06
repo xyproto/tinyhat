@@ -9,12 +9,13 @@ Ctrl+Alt+Up / Down	Volume
 
 Ctrl+Alt+D	Launch DOSBox-X
 Ctrl+Alt+F	Web browser
+Ctrl+Alt+I	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
-Ctrl+Alt+I	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
+Ctrl+Alt+M	ScummVM
 Ctrl+Alt+P	Example game in C (2x Ctrl+Space to run)
-Ctrl+Alt+S	ScummVM
-Ctrl+Alt+T	Terminal
+Ctrl+Alt+S	Toggle sharing
+Ctrl+Alt+T / Ctrl+Alt+R	Terminal
 Ctrl+Alt+Z	ZSNES 2
 
 Right click desktop	Toggle background
