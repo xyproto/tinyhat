@@ -1,0 +1,49 @@
+--- a/dwl.c	2026-10-06 00:51:50.724593871 +0200
++++ b/dwl.c	2026-10-06 00:51:50.731399879 +0200
+@@ -443,6 +443,7 @@
+ static Monitor *selmon;
+ 
+ static char stext[256];
++static char notice[128];
+ static struct wl_event_source *status_event_source;
+ 
+ static const struct wlr_buffer_impl buffer_impl = {
+@@ -1625,7 +1626,11 @@
+ 	x = drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, m->ltsymbol, 0);
+ 
+ 	if ((w = m->b.width - tw - x) > m->b.height) {
+-		if (c) {
++		if (notice[0]) {
++			int nw = TEXTW(m, notice);
++			drwl_setscheme(m->drw, colors[SchemeSel]);
++			drwl_text(m->drw, x, 0, w, m->b.height, nw < w ? (w - nw) / 2 + m->lrpad / 2 : m->lrpad / 2, notice, 0);
++		} else if (c) {
+ 			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
+ 			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
+ 			if (c && c->isfloating)
+@@ -2045,6 +2050,7 @@
+ 	} else {
+ 		applyrules(c);
+ 	}
++	notice[0] = '\0';
+ 	drawbars();
+ 
+ unset_fullscreen:
+@@ -2928,9 +2934,14 @@
+ 		die("read:");
+ 
+ 	status[n] = '\0';
+-	status[strcspn(status, "\n")] = '\0';
+-
+-	strncpy(stext, status, sizeof(stext));
++	for (char *line = status, *next; line && *line; line = next) {
++		if ((next = strchr(line, '\n')))
++			*next++ = '\0';
++		if (!strncmp(line, "notice", 6))
++			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
++		else
++			snprintf(stext, sizeof(stext), "%s", line);
++	}
+ 	drawbars();
+ 
+ 	return 0;

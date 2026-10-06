@@ -1,0 +1,4 @@
+name: raylib
+version: 6.0 on SDL3
+url: https://www.raylib.com/
+license: Zlib

@@ -1,0 +1,4 @@
+name: libassuan
+version: 3.0.0-1.2
+url: https://www.gnupg.org/related_software/libassuan/
+license: FSFULLR AND GPL-2.0-or-later AND LGPL-2.1-or-later

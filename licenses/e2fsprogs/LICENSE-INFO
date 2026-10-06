@@ -1,0 +1,4 @@
+name: e2fsprogs
+version: 1.47.2-1.0
+url: http://e2fsprogs.sourceforge.net
+license: GPL AND LGPL AND MIT

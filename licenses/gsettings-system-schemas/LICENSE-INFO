@@ -1,0 +1,4 @@
+name: gsettings-system-schemas
+version: 50.1-1.0
+url: https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas
+license: LGPL-2.1-or-later

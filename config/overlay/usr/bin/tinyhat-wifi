@@ -1,0 +1,3 @@
+#!/bin/sh
+systemctl -q is-active iwd.service || doas systemctl start iwd.service
+exec tinyhat-term impala

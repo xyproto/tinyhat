@@ -1,0 +1,4 @@
+name: nasm
+version: 3.01-1.0
+url: https://ww.nasm.us
+license: BSD-2-Clause

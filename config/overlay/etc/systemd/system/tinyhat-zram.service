@@ -1,0 +1,13 @@
+[Unit]
+Description=Compressed swap in RAM
+DefaultDependencies=no
+Before=swap.target
+ConditionKernelCommandLine=!tinyhat.nozram
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/tinyhat/zram
+
+[Install]
+WantedBy=swap.target

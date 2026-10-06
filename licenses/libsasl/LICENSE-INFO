@@ -1,0 +1,4 @@
+name: libsasl
+version: 2.1.28-3.0
+url: https://www.cyrusimap.org/sasl/
+license: custom

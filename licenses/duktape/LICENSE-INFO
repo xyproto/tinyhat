@@ -1,0 +1,4 @@
+name: duktape
+version: 2.7.0-7.0
+url: https://duktape.org/
+license: MIT

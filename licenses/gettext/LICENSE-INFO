@@ -1,0 +1,4 @@
+name: gettext
+version: 1.0-2.0
+url: https://www.gnu.org/software/gettext/
+license: GFDL-1.2-only AND GPL-2.0-only AND GPL-2.0-or-later AND LGPL-2.0-only

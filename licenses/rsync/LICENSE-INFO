@@ -1,0 +1,4 @@
+name: rsync
+version: 3.2.7-3.0
+url: https://rsync.samba.org/
+license: GPL3

@@ -1,0 +1,12 @@
+[Unit]
+Description=Open the ports allowed in the Tiny Hat firewall
+After=nftables.service tinyhat-persist.service
+Requires=nftables.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/tinyhat-firewall apply
+
+[Install]
+WantedBy=multi-user.target

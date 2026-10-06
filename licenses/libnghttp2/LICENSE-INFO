@@ -1,0 +1,4 @@
+name: libnghttp2
+version: 1.70.0-1.0
+url: https://nghttp2.org/
+license: MIT

@@ -1,0 +1,94 @@
+--- a/dwl.c	2026-10-06 01:55:44.015186258 +0200
++++ b/dwl.c	2026-10-06 01:55:44.041698526 +0200
+@@ -323,6 +323,8 @@
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
++static int reloadkeymap(int signo, void *data);
++static void unblocksignals(void);
+ static void incnmaster(const Arg *arg);
+ static void inputdevice(struct wl_listener *listener, void *data);
+ static int keybinding(uint32_t mods, xkb_keysym_t sym);
+@@ -1815,6 +1817,46 @@
+ 	wlr_renderer_destroy(old_drw);
+ }
+ 
++int
++reloadkeymap(int signo, void *data)
++{
++	char path[4096], line[256] = "", *variant;
++	const char *home = getenv("HOME");
++	struct xkb_rule_names names = xkb_rules;
++	struct xkb_context *context;
++	struct xkb_keymap *keymap;
++	FILE *f;
++
++	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
++	if ((f = fopen(path, "r"))) {
++		if (!fgets(line, sizeof(line), f))
++			line[0] = '\0';
++		fclose(f);
++	}
++	line[strcspn(line, "\r\n")] = '\0';
++	if ((variant = strchr(line, ' '))) {
++		*variant++ = '\0';
++		names.variant = variant;
++	}
++	if (line[0])
++		names.layout = line;
++	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
++	if ((keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))) {
++		wlr_keyboard_set_keymap(&kb_group->wlr_group->keyboard, keymap);
++		xkb_keymap_unref(keymap);
++	}
++	xkb_context_unref(context);
++	return 0;
++}
++
++void
++unblocksignals(void)
++{
++	sigset_t set;
++	sigemptyset(&set);
++	sigprocmask(SIG_SETMASK, &set, NULL);
++}
++
+ void
+ handlesig(int signo)
+ {
+@@ -1872,6 +1914,10 @@
+ 	 * processing.
+ 	 */
+ 	const Key *k;
++	Client *c = selmon ? focustop(selmon) : NULL;
++	if (c && c->isfullscreen && CLEANMASK(mods) == WLR_MODIFIER_ALT
++			&& xkb_keysym_to_lower(sym) == XKB_KEY_space)
++		return 0;
+ 	for (k = keys; k < END(keys); k++) {
+ 		if (CLEANMASK(mods) == CLEANMASK(k->mod)
+ 				&& xkb_keysym_to_lower(sym) == xkb_keysym_to_lower(k->keysym)
+@@ -2486,6 +2532,7 @@
+ 		if (child_pid == 0) {
+ 			close(STDIN_FILENO);
+ 			setsid();
++			unblocksignals();
+ 			execl("/bin/sh", "/bin/sh", "-c", startup_cmd, NULL);
+ 			die("startup: execl:");
+ 		}
+@@ -2864,6 +2911,8 @@
+ 
+ 	kb_group = createkeyboardgroup();
+ 	wl_list_init(&kb_group->destroy.link);
++	reloadkeymap(SIGUSR1, NULL);
++	wl_event_loop_add_signal(event_loop, SIGUSR1, reloadkeymap, NULL);
+ 
+ 	output_mgr = wlr_output_manager_v1_create(dpy);
+ 	wl_signal_add(&output_mgr->events.apply, &output_mgr_apply);
+@@ -2902,6 +2951,7 @@
+ 		open("/dev/null", O_RDWR);
+ 		dup2(STDERR_FILENO, STDOUT_FILENO);
+ 		setsid();
++		unblocksignals();
+ 		execvp(((char **)arg->v)[0], (char **)arg->v);
+ 		die("dwl: execvp %s failed:", ((char **)arg->v)[0]);
+ 	}

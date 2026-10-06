@@ -1,0 +1,4 @@
+name: boost-libs
+version: 1.83.0-7.0
+url: https://www.boost.org/
+license: custom

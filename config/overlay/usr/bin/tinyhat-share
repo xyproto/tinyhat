@@ -1,0 +1,16 @@
+#!/bin/sh
+dir=$HOME/Shared
+pidfile=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-share.pid
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+if [ -f "$pidfile" ] && kill "$(cat "$pidfile")" 2>/dev/null; then
+	rm -f "$pidfile"
+	tinyhat-firewall close 3000
+	notice "Stopped sharing ~/Shared"
+	exit 0
+fi
+mkdir -p "$dir"
+tinyhat-firewall open 3000
+setsid -f sh -c 'echo $$ >"$1"; exec algernon -x -n -q --nolimit --addr=:3000 "$2"' sh "$pidfile" "$dir"
+addr=$(tinyhat-addr)
+notice "Sharing ~/Shared at http://${addr:-this-computer}:3000"

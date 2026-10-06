@@ -1,0 +1,4 @@
+name: pipewire-alsa
+version: 1:0.3.65-6.0
+url: https://pipewire.org
+license: MIT

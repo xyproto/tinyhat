@@ -1,0 +1,4 @@
+name: libmaxminddb
+version: 1.14.1-1.0
+url: https://maxmind.github.io/libmaxminddb/
+license: Apache-2.0

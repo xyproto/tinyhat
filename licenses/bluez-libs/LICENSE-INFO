@@ -1,0 +1,4 @@
+name: bluez-libs
+version: 5.79-1.0
+url: http://www.bluez.org/
+license: LGPL-2.1-only

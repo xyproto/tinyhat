@@ -1,0 +1,13 @@
+#!/bin/sh
+tz=$(timedatectl list-timezones | fuzzel --dmenu --prompt "Timezone ❯ ") || exit 0
+[ -n "$tz" ] || exit 0
+keep=
+if [ "$(timedatectl show -p LocalRTC --value)" = yes ] && [ "$(timedatectl show -p NTPSynchronized --value)" != yes ]; then
+	keep=$(date '+%Y-%m-%d %H:%M:%S')
+fi
+doas timedatectl set-timezone "$tz" || exit 1
+[ -z "$keep" ] || tinyhat-clock --set "$keep"
+if mountpoint -q /persist; then
+	echo "$tz" | doas tee /persist/timezone >/dev/null
+fi
+exec tinyhat-notice "Timezone: $tz" 4

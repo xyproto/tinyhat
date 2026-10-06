@@ -1,0 +1,4 @@
+name: cc65
+version: 2.19 (git 71746c8)
+url: https://cc65.github.io/
+license: Zlib

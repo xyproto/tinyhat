@@ -1,0 +1,4 @@
+name: libksba
+version: 1.8.1-1.0
+url: https://www.gnupg.org/related_software/libksba/
+license: GPL-2.0-only AND GPL-3.0-only AND LGPL-3.0-only

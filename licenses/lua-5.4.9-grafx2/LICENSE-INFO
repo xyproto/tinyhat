@@ -1,0 +1,4 @@
+name: lua-5.4.9-grafx2
+version: 5.4.9 (built into Grafx2)
+url: https://www.lua.org/
+license: MIT

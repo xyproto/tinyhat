@@ -1,0 +1,4 @@
+name: audit
+version: 3.0.9-2.0
+url: https://people.redhat.com/sgrubb/audit
+license: GPL2 AND LGPL2.1

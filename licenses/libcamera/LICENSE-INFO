@@ -1,0 +1,4 @@
+name: libcamera
+version: 0.0.4-1.3
+url: https://libcamera.org/
+license: LGPL2.1 AND GPL2

@@ -1,0 +1,4 @@
+name: libxcrypt
+version: 4.5.2-1.0
+url: https://github.com/besser82/libxcrypt/
+license: LGPL

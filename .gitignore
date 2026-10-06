@@ -1,0 +1,9 @@
+/build/
+/tinyhat32.img
+/tinyhat32.img.tmp
+*.part
+/vendor/pkg/
+/vendor/src/
+/vendor/soundfont/
+*.pyc
+*.pyo

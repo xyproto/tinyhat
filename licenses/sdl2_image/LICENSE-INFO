@@ -1,0 +1,4 @@
+name: sdl2_image
+version: 2.8.12
+url: https://github.com/libsdl-org/SDL_image
+license: Zlib

@@ -1,0 +1,11 @@
+--- a/src/gui/sdlmain.cpp	2026-10-05 21:12:42.271398817 +0200
++++ b/src/gui/sdlmain.cpp	2026-10-05 21:12:42.288717999 +0200
+@@ -1925,8 +1925,6 @@
+ 
+ 	if(isModeswicthSet) {
+ 		flags = SDL_WINDOW_FULLSCREEN;
+-		width = vga.draw.width;
+-		height = vga.draw.height;
+ 	}
+ 
+         displayMode.w = width;

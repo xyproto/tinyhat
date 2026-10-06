@@ -1,0 +1,4 @@
+name: libmakepkg-dropins
+version: 20-2.0
+url: https://gitlab.archlinux.org/pacman/libmakepkg-dropins
+license: GPL-2.0-or-later

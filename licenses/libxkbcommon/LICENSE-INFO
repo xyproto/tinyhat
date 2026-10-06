@@ -1,0 +1,4 @@
+name: libxkbcommon
+version: 1.13.2-1.0
+url: https://xkbcommon.org/
+license: MIT

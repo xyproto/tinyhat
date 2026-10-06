@@ -1,0 +1,4 @@
+name: linux-api-headers
+version: 7.2-1.0
+url: https://www.gnu.org/software/libc
+license: GPL-2.0-only

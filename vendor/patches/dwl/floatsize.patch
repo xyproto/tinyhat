@@ -1,0 +1,19 @@
+--- a/dwl.c	2026-10-06 08:31:36.779219657 +0200
++++ b/dwl.c	2026-10-06 08:31:36.795694172 +0200
+@@ -1055,6 +1055,16 @@
+ 		return;
+ 	}
+ 
++	if (c->isfloating && !c->isfullscreen && !c->resize) {
++		struct wlr_box g;
++		client_get_geometry(c, &g);
++		if (g.width > 0 && g.height > 0
++				&& (g.width + 2 * (int)c->bw != c->geom.width
++					|| g.height + 2 * (int)c->bw != c->geom.height)) {
++			c->geom.width = g.width + 2 * c->bw;
++			c->geom.height = g.height + 2 * c->bw;
++		}
++	}
+ 	resize(c, c->geom, (c->isfloating && !c->isfullscreen));
+ 
+ 	/* mark a pending resize as completed */

@@ -1,0 +1,11 @@
+[Unit]
+Description=Start Bluetooth when paired devices exist
+After=tinyhat-persist.service
+ConditionPathExistsGlob=/var/lib/bluetooth/*/??:??:??:??:??:??
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl start --no-block bluetooth.service
+
+[Install]
+WantedBy=bluetooth.target

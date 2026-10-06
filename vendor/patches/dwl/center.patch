@@ -1,0 +1,14 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -2163,6 +2163,11 @@
+ 	} else {
+ 		applyrules(c);
+ 	}
++	if (c->isfloating && !c->isfullscreen && c->mon) {
++		c->geom.x = c->mon->w.x + MAX(0, (c->mon->w.width - c->geom.width) / 2);
++		c->geom.y = c->mon->w.y + MAX(0, (c->mon->w.height - c->geom.height) / 2);
++		resize(c, c->geom, 0);
++	}
+ 	notice[0] = '\0';
+ 	drawbars();
+ 

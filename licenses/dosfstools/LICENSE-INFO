@@ -1,0 +1,4 @@
+name: dosfstools
+version: 4.2-5.0
+url: https://github.com/dosfstools/dosfstools
+license: GPL-3.0-or-later

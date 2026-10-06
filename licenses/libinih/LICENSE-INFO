@@ -1,0 +1,4 @@
+name: libinih
+version: 62-2.0
+url: https://github.com/benhoyt/inih
+license: BSD-3-Clause

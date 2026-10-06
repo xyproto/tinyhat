@@ -1,0 +1,126 @@
+--- a/main.c
++++ b/main.c
+@@ -97,6 +98,88 @@
+ };
+ 
+ // Create a wl_buffer with the specified dimensions and content
++static const char *text_path;
++
++static void render_text(cairo_t *cairo, uint32_t width, uint32_t height) {
++	char lines[48][160];
++	int n = 0;
++	FILE *f = text_path ? fopen(text_path, "r") : NULL;
++	if (!f) {
++		return;
++	}
++	while (n < 48 && fgets(lines[n], sizeof(lines[n]), f)) {
++		lines[n][strcspn(lines[n], "\n")] = '\0';
++		n++;
++	}
++	fclose(f);
++	if (n == 0) {
++		return;
++	}
++
++	double size = height / 56.0 < 11 ? 11 : height / 56.0;
++	cairo_select_font_face(cairo, "DejaVu Sans Mono",
++		CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
++	cairo_set_font_size(cairo, size);
++	cairo_font_extents_t fe;
++	cairo_font_extents(cairo, &fe);
++	cairo_text_extents_t te;
++
++	double keyw = 0, descw = 0, headw = 0;
++	for (int i = 0; i < n; i++) {
++		char *tab = strchr(lines[i], '\t');
++		if (tab) {
++			*tab = '\0';
++			cairo_text_extents(cairo, lines[i], &te);
++			keyw = te.x_advance > keyw ? te.x_advance : keyw;
++			cairo_text_extents(cairo, tab + 1, &te);
++			descw = te.x_advance > descw ? te.x_advance : descw;
++			*tab = '\t';
++		} else {
++			cairo_text_extents(cairo, lines[i], &te);
++			headw = te.x_advance > headw ? te.x_advance : headw;
++		}
++	}
++
++	const double pi = 3.14159265358979;
++	double pad = size, gap = size * 1.5, margin = size * 2;
++	double w = keyw + gap + descw > headw ? keyw + gap + descw : headw;
++	double pw = w + 2 * pad, ph = n * fe.height + 2 * pad;
++	double x = width - pw - margin, y = margin * 1.5, r = size * 0.8;
++	if (x < margin) {
++		x = margin;
++	}
++
++	cairo_new_sub_path(cairo);
++	cairo_arc(cairo, x + pw - r, y + r, r, -pi / 2, 0);
++	cairo_arc(cairo, x + pw - r, y + ph - r, r, 0, pi / 2);
++	cairo_arc(cairo, x + r, y + ph - r, r, pi / 2, pi);
++	cairo_arc(cairo, x + r, y + r, r, pi, 3 * pi / 2);
++	cairo_close_path(cairo);
++	cairo_set_source_u32(cairo, 0x16161ed0);
++	cairo_fill_preserve(cairo);
++	cairo_set_line_width(cairo, 2);
++	cairo_set_source_u32(cairo, 0x1a9e96ff);
++	cairo_stroke(cairo);
++
++	for (int i = 0; i < n; i++) {
++		double ty = y + pad + i * fe.height + fe.ascent;
++		char *tab = strchr(lines[i], '\t');
++		if (tab) {
++			*tab = '\0';
++			cairo_set_source_u32(cairo, 0x7dcfffff);
++			cairo_move_to(cairo, x + pad, ty);
++			cairo_show_text(cairo, lines[i]);
++			cairo_set_source_u32(cairo, 0xc0caf5ff);
++			cairo_move_to(cairo, x + pad + keyw + gap, ty);
++			cairo_show_text(cairo, tab + 1);
++		} else {
++			cairo_set_source_u32(cairo, i == 0 ? 0x1a9e96ff : 0xa9b1d6ff);
++			cairo_move_to(cairo, x + pad, ty);
++			cairo_show_text(cairo, lines[i]);
++		}
++	}
++}
++
+ static struct wl_buffer *draw_buffer(const struct swaybg_output *output,
+ 		cairo_surface_t *surface, uint32_t buffer_width, uint32_t buffer_height) {
+ 	uint32_t bg_color = output->config->color ? output->config->color : 0x000000ff;
+@@ -132,6 +215,7 @@
+ 		render_background_image(cairo, surface,
+ 			output->config->mode, buffer_width, buffer_height);
+ 	}
++	render_text(cairo, buffer_width, buffer_height);
+ 
+ 	// return wl_buffer for caller to use and destroy
+ 	struct wl_buffer *wl_buf = buffer.buffer;
+@@ -481,6 +565,7 @@
+ 		{"image", required_argument, NULL, 'i'},
+ 		{"mode", required_argument, NULL, 'm'},
+ 		{"output", required_argument, NULL, 'o'},
++		{"text", required_argument, NULL, 't'},
+ 		{"version", no_argument, NULL, 'v'},
+ 		{0, 0, 0, 0}
+ 	};
+@@ -506,7 +591,7 @@
+ 	int c;
+ 	while (1) {
+ 		int option_index = 0;
+-		c = getopt_long(argc, argv, "c:hi:m:o:v", long_options, &option_index);
++		c = getopt_long(argc, argv, "c:hi:m:o:t:v", long_options, &option_index);
+ 		if (c == -1) {
+ 			break;
+ 		}
+@@ -518,6 +603,9 @@
+ 				continue;
+ 			}
+ 			break;
++		case 't':
++			text_path = optarg;
++			break;
+ 		case 'i':  // image
+ 			config->image_path = optarg;
+ 			break;

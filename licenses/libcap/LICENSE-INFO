@@ -1,0 +1,4 @@
+name: libcap
+version: 2.78-1.0
+url: https://sites.google.com/site/fullycapable/
+license: BSD-3-Clause OR GPL-2.0-only

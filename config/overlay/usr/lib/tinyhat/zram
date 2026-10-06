@@ -1,0 +1,4 @@
+#!/bin/sh
+kib=$(awk '/^MemTotal:/ { print int($2 / 2) }' /proc/meminfo)
+dev=$(zramctl --find --algorithm zstd --size "${kib}KiB") || exit 1
+mkswap -q "$dev" && swapon --priority 100 "$dev"

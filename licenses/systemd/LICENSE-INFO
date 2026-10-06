@@ -1,0 +1,4 @@
+name: systemd
+version: 259.5-1.0
+url: https://www.github.com/systemd/systemd
+license: LGPL-2.1-or-later AND CC0-1.0 AND GPL-2.0-or-later AND MIT-0

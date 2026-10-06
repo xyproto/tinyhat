@@ -1,0 +1,4 @@
+name: libngtcp2
+version: 1.25.0-1.0
+url: https://github.com/ngtcp2/ngtcp2
+license: MIT

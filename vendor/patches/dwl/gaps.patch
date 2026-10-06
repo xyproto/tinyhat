@@ -1,0 +1,70 @@
+--- a/dwl.c	2026-10-06 01:51:08.307064993 +0200
++++ b/dwl.c	2026-10-06 01:51:08.437025250 +0200
+@@ -1628,10 +1628,10 @@
+ 	if ((w = m->b.width - tw - x) > m->b.height) {
+ 		if (notice[0]) {
+ 			int nw = TEXTW(m, notice);
+-			drwl_setscheme(m->drw, colors[SchemeSel]);
++			drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 			drwl_text(m->drw, x, 0, w, m->b.height, nw < w ? (w - nw) / 2 + m->lrpad / 2 : m->lrpad / 2, notice, 0);
+ 		} else if (c) {
+-			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
++			drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
+ 			if (c && c->isfloating)
+ 				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
+@@ -2971,7 +2971,7 @@
+ void
+ tile(Monitor *m)
+ {
+-	unsigned int mw, my, ty;
++	unsigned int mw, my, ty, g, r;
+ 	int i, n = 0;
+ 	Client *c;
+ 
+@@ -2981,23 +2981,27 @@
+ 	if (n == 0)
+ 		return;
+ 
++	g = n > 1 ? gappx : 0;
+ 	if (n > m->nmaster)
+-		mw = m->nmaster ? (int)roundf(m->w.width * m->mfact) : 0;
++		mw = m->nmaster ? (int)roundf((m->w.width - 3 * g) * m->mfact) : 0;
+ 	else
+-		mw = m->w.width;
+-	i = my = ty = 0;
++		mw = m->w.width - 2 * g;
++	i = 0;
++	my = ty = g;
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+ 			continue;
+ 		c->bw = n == 1 ? 0 : borderpx;
+ 		if (i < m->nmaster) {
+-			resize(c, (struct wlr_box){.x = m->w.x, .y = m->w.y + my, .width = mw,
+-				.height = (m->w.height - my) / (MIN(n, m->nmaster) - i)}, 0);
+-			my += c->geom.height;
++			r = MIN(n, m->nmaster) - i;
++			resize(c, (struct wlr_box){.x = m->w.x + g, .y = m->w.y + my, .width = mw,
++				.height = (m->w.height - my - r * g) / r}, 0);
++			my += c->geom.height + g;
+ 		} else {
+-			resize(c, (struct wlr_box){.x = m->w.x + mw, .y = m->w.y + ty,
+-				.width = m->w.width - mw, .height = (m->w.height - ty) / (n - i)}, 0);
+-			ty += c->geom.height;
++			r = n - i;
++			resize(c, (struct wlr_box){.x = m->w.x + mw + (mw ? 2 * g : g), .y = m->w.y + ty,
++				.width = m->w.width - mw - (mw ? 3 * g : 2 * g), .height = (m->w.height - ty - r * g) / r}, 0);
++			ty += c->geom.height + g;
+ 		}
+ 		i++;
+ 	}
+@@ -3247,7 +3251,7 @@
+ 
+ 	m->b.scale = m->wlr_output->scale;
+ 	m->lrpad = m->drw->font->height;
+-	m->b.height = m->drw->font->height + 2;
++	m->b.height = m->drw->font->height + 2 + 2 * barvpad;
+ 	m->b.real_height = (int)((float)m->b.height / m->wlr_output->scale);
+ }
+ 

@@ -1,0 +1,4 @@
+name: libxcb
+version: 1.17.0-1.0
+url: https://gitlab.freedesktop.org/xorg/lib/libxcb
+license: X11

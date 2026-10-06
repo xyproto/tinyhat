@@ -1,0 +1,22 @@
+#!/bin/sh
+export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria BROWSER=netsurf-gtk3
+log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+for try in 1 2 3; do
+	udevadm settle -t 30 2>/dev/null
+	start=$(cut -d. -f1 /proc/uptime)
+	rm -f "$bar"
+	mkfifo -m 600 "$bar"
+	tinyhat-status >"$bar" &
+	status=$!
+	MALLOC_MMAP_THRESHOLD_=131072 MALLOC_TRIM_THRESHOLD_=131072 dwl -s tinyhat-autostart <"$bar" >"$log" 2>&1
+	rc=$?
+	kill "$status" 2>/dev/null
+	rm -f "$bar"
+	[ "$rc" = 0 ] && exit 0
+	[ $(($(cut -d. -f1 /proc/uptime) - start)) -ge 20 ] && break
+	grep -q 'Could not initialize renderer\|Failed to create renderer' "$log" && export WLR_RENDERER=pixman
+	sleep 3
+done
+tail -n 15 "$log"
+echo "The graphical session stopped. The log is in $log. Type tinyhat-session to start it again."

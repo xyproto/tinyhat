@@ -1,0 +1,75 @@
+#!/bin/sh
+saved=/var/lib/tinyhat/firewall-ports
+
+usage() {
+	echo "usage: ${0##*/} status | enable | disable | allow PORT[/tcp|/udp] | deny PORT[/tcp|/udp] | open PORT[/proto] | close PORT[/proto]" >&2
+	exit 2
+}
+
+[ "$(id -u)" = 0 ] || exec doas "$0" "$@"
+
+split() {
+	port=${1%/*}
+	proto=tcp
+	case $1 in */udp) proto=udp ;; */tcp | *[0-9]) ;; *) usage ;; esac
+	case $port in '' | *[!0-9]*) usage ;; esac
+}
+
+set_add() { nft add element inet tinyhat "${2}_open" "{ $1 }" 2>/dev/null; }
+set_del() { nft delete element inet tinyhat "${2}_open" "{ $1 }" 2>/dev/null; }
+
+case ${1:-status} in
+status)
+	if nft list table inet tinyhat >/dev/null 2>&1; then
+		echo "Status: active"
+		echo "Open TCP ports: $(nft -j list set inet tinyhat tcp_open 2>/dev/null | grep -o '"elem": \[[^]]*\]' | tr -dc '0-9,' | tr ',' ' ')"
+		echo "Open UDP ports: $(nft -j list set inet tinyhat udp_open 2>/dev/null | grep -o '"elem": \[[^]]*\]' | tr -dc '0-9,' | tr ',' ' ')"
+		[ -s "$saved" ] && echo "Allowed at boot: $(tr '\n' ' ' <"$saved")"
+	else
+		echo "Status: inactive"
+	fi
+	;;
+enable)
+	nft -f /etc/nftables.conf && "$0" apply && echo "Firewall enabled"
+	;;
+disable)
+	nft delete table inet tinyhat 2>/dev/null
+	echo "Firewall disabled"
+	;;
+apply)
+	[ -f "$saved" ] || exit 0
+	while read -r p; do
+		[ -n "$p" ] || continue
+		split "$p"
+		set_add "$port" "$proto"
+	done <"$saved"
+	;;
+allow)
+	[ -n "${2:-}" ] || usage
+	split "$2"
+	set_add "$port" "$proto"
+	mkdir -p "${saved%/*}"
+	grep -qx "$port/$proto" "$saved" 2>/dev/null || echo "$port/$proto" >>"$saved"
+	echo "Allowed $port/$proto"
+	;;
+deny)
+	[ -n "${2:-}" ] || usage
+	split "$2"
+	set_del "$port" "$proto"
+	[ -f "$saved" ] && sed -i "\\|^$port/$proto\$|d" "$saved"
+	echo "Denied $port/$proto"
+	;;
+open)
+	[ -n "${2:-}" ] || usage
+	split "$2"
+	set_add "$port" "$proto"
+	;;
+close)
+	[ -n "${2:-}" ] || usage
+	split "$2"
+	grep -qx "$port/$proto" "$saved" 2>/dev/null || set_del "$port" "$proto"
+	;;
+*)
+	usage
+	;;
+esac

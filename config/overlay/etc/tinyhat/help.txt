@@ -1,0 +1,22 @@
+Tiny Hat
+
+Alt+Space	Menu (also the Applications button or right-click)
+Ctrl+Alt+T	Terminal
+Ctrl+Alt+P	Program in C in Orbiton (2x Ctrl+Space to run)
+Ctrl+Alt+I	Program a game in Fennel and LÖVE (2x Ctrl+Space to run)
+Ctrl+Alt+F	Web browser
+Ctrl+Alt+S	ScummVM
+Ctrl+Alt+D	DOSBox-X
+Alt+Shift+W	Close a window (Alt+F4 also works)
+Alt+Shift+F	Toggle fullscreen
+Alt+Enter	Toggle fullscreen in ScummVM and DOSBox-X
+Alt+Tab	Switch between windows
+Ctrl+Alt+Up / Down	Volume
+Print	Screenshot to ~/Pictures
+Ctrl+Alt+L	Lock the screen
+Ctrl+Alt+H	Hide this help (press again to show it)
+
+USB sticks and CDs show up in /media and as D: in DOSBox-X.
+Put DOS games in ~/DOS, which is C: in DOSBox-X.
+A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:.
+Flight of the Amazon Queen is ready to play in ScummVM.

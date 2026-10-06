@@ -1,0 +1,4 @@
+name: libssh2
+version: 1.11.1-7.0
+url: https://www.libssh2.org/
+license: BSD-3-Clause

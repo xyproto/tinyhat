@@ -1,0 +1,4 @@
+name: libxext
+version: 1.3.7-1.0
+url: https://gitlab.freedesktop.org/xorg/lib/libxext
+license: LicenseRef-libxext

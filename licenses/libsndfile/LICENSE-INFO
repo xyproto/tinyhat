@@ -1,0 +1,4 @@
+name: libsndfile
+version: 1.2.0-1.0
+url: https://libsndfile.github.io/libsndfile/
+license: LGPL2.1

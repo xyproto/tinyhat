@@ -1,0 +1,4 @@
+name: man-pages
+version: 6.19-1.0
+url: https://www.kernel.org/doc/man-pages/
+license: BSD-2-Clause AND BSD-3-Clause AND BSD-4.3TAHOE AND BSD-4-Clause-UC AND GPL-1.0-or-later AND GPL-2.0-only AND GPL-2.0-or-later AND GPL-3.0-or-later AND LGPL-3.0-linking-exception AND LGPL-3.0-or-later AND LicenseRef-Public-Domain AND LicenseRef-UltraPermissive AND Linux-man-pages-1-para AND Linux-man-pages-copyleft AND Linux-man-pages-copyleft-2-para AND Linux-man-pages-copyleft-var AND MIT AND Spencer-94

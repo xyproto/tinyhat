@@ -1,0 +1,4 @@
+name: wayland
+version: 1.26.0-1.0
+url: https://wayland.freedesktop.org/
+license: MIT

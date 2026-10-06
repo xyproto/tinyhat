@@ -1,0 +1,4 @@
+name: gawk
+version: 5.4.1-1.0
+url: https://www.gnu.org/software/gawk/
+license: GPL-3.0-or-later

@@ -1,0 +1,4 @@
+name: grep
+version: 3.12-2.1
+url: https://www.gnu.org/software/grep/
+license: GPL3

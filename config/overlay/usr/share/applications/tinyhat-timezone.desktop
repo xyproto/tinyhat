@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Timezone
+Icon=preferences-desktop-locale
+Comment=Choose the timezone for the clock
+Exec=tinyhat-timezone
+Terminal=false
+Categories=Settings;

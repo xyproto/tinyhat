@@ -1,0 +1,4 @@
+name: mpfr
+version: 4.2.2-1.0
+url: https://www.mpfr.org/
+license: GPL-3.0-or-later AND LGPL-3.0-or-later

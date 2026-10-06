@@ -1,0 +1,4 @@
+name: libmnl
+version: 1.0.5-2.0
+url: https://www.netfilter.org/projects/libmnl/
+license: LGPL2.1

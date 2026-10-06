@@ -1,0 +1,4 @@
+name: libsamplerate
+version: 0.2.2-3.0
+url: https://libsndfile.github.io/libsamplerate/
+license: BSD

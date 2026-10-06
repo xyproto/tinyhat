@@ -1,0 +1,4 @@
+name: strace
+version: 6.10-1.0
+url: https://strace.io/
+license: LGPL-2.1-or-later

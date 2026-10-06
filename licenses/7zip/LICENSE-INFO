@@ -1,0 +1,4 @@
+name: 7zip
+version: 25.01-1.0
+url: https://www.7-zip.org
+license: LGPL-2.1-or-later AND BSD-3-Clause AND LicenseRef-UnRAR

@@ -1,0 +1,4 @@
+name: json-glib
+version: 1.10.8-1.0
+url: https://gnome.pages.gitlab.gnome.org/json-glib/
+license: LGPL-2.1-or-later

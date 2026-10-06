@@ -1,0 +1,4 @@
+name: love
+version: 11.5-1.0
+url: http://love2d.org/
+license: zlib

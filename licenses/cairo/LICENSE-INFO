@@ -1,0 +1,4 @@
+name: cairo
+version: 1.18.4-1.0
+url: https://cairographics.org/
+license: LGPL-2.1-only OR MPL-1.1

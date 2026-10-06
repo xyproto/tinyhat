@@ -1,0 +1,4 @@
+name: at-spi2-core
+version: 2.54.0-2.0
+url: https://gitlab.gnome.org/GNOME/at-spi2-core
+license: LGPL-2.1-or-later

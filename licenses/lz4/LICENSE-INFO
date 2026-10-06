@@ -1,0 +1,4 @@
+name: lz4
+version: 1:1.10.0-2.0
+url: https://lz4.github.io/lz4/
+license: GPL-2.0-or-later

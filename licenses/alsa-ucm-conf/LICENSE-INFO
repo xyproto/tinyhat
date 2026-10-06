@@ -1,0 +1,4 @@
+name: alsa-ucm-conf
+version: 1.2.16.1-1.0
+url: https://alsa-project.org/
+license: BSD-3-Clause

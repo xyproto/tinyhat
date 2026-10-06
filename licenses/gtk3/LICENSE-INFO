@@ -1,0 +1,4 @@
+name: gtk3
+version: 1:3.24.43-2.0
+url: https://www.gtk.org/
+license: LGPL-2.1-or-later

@@ -1,0 +1,4 @@
+name: ncdu
+version: 1.16-2.0
+url: https://dev.yorhel.nl/ncdu
+license: MIT

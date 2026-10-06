@@ -1,0 +1,17 @@
+filesystem glibc bash coreutils util-linux kmod procps-ng sed grep gawk findutils less which file tar gzip zstd
+systemd shadow
+xfsprogs dosfstools exfatprogs mtools ntfs-3g tinyxxd
+alsa-utils pipewire pipewire-alsa wireplumber
+bluez bluez-utils bluetui
+iwd impala
+wayland libxkbcommon libinput pixman libdrm seatd hwdata fcft foot foot-terminfo ttf-dejavu terminus-font mesa libglvnd archlinux-wallpaper
+a52dec faad2 libmad libmpeg2 giflib fribidi libtheora libmikmod libjpeg-turbo libpng libvorbis flac freetype2 libsndfile libslirp
+linux-firmware-radeon linux-firmware-intel linux-firmware-realtek linux-firmware-atheros linux-firmware-broadcom
+fish htop tcc make pkgconf dropbear git tig cairo syncthing
+opendoas
+libmnl
+dropbear-scp zip unzip unrar 7zip unarj lhasa cabextract innoextract rsync ncdu
+the_silver_searcher ripgrep
+earlyoom
+pacman archlinux32-keyring archlinux-keyring pacman-mirrorlist
+ft2-clone nasm mandoc man-pages sl nethack tinyionice mc lsd fastfetch algernon brightnessctl grim clang gcc ttf-jetbrains-mono iputils mtr ldns strace joe goaccess tty-solitaire jomon libresprite fennel love mtpaint lazygit netsurf nftables

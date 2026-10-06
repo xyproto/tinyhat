@@ -1,0 +1,4 @@
+name: libpciaccess
+version: 0.19-1.0
+url: https://gitlab.freedesktop.org/xorg/lib/libpciaccess
+license: LicenseRef-libpciaccess

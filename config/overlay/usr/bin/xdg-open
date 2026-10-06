@@ -1,0 +1,7 @@
+#!/bin/sh
+[ $# -eq 1 ] || { echo "usage: xdg-open FILE|URL" >&2; exit 1; }
+case $1 in
+*://* | *.html | *.htm | *.md | *.xhtml) exec ${BROWSER:-netsurf-gtk3} "$1" ;;
+esac
+[ -d "$1" ] && exec foot mc "$1"
+exec foot o "$1"

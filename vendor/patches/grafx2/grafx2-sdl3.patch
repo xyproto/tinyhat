@@ -1,0 +1,570 @@
+--- a/src/help.c
++++ b/src/help.c
+@@ -752,7 +752,20 @@
+ #endif
+   Print_in_window(146,y,buffer,STATS_DATA_COLOR,MC_Black);
+   y+=8;
+-#if defined(USE_SDL) || defined(USE_SDL2)
++#if defined(USE_SDL3)
++  {
++    int v = SDL_GetVersion();
++    snprintf(buffer,20,"%d.%d.%d", SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
++    Print_in_window(10,y,"SDL version:",STATS_TITLE_COLOR,MC_Black);
++    Print_in_window(146,y,buffer,STATS_DATA_COLOR,MC_Black);
++    y+=8;
++    v = IMG_Version();
++    Print_in_window(10,y,"SDL_image version:",STATS_TITLE_COLOR,MC_Black);
++    snprintf(buffer,20,"%d.%d.%d", SDL_VERSIONNUM_MAJOR(v), SDL_VERSIONNUM_MINOR(v), SDL_VERSIONNUM_MICRO(v));
++    Print_in_window(146+16,y,buffer,STATS_DATA_COLOR,MC_Black);
++    y+=8;
++  }
++#elif defined(USE_SDL) || defined(USE_SDL2)
+   {
+     const SDL_version * imgver;
+ #if defined(USE_SDL2)
+@@ -778,7 +791,12 @@
+   }
+ #endif
+   Print_in_window(10,y,"Build options:",STATS_TITLE_COLOR,MC_Black);
+-#if (defined(USE_SDL) || defined(USE_SDL2)) && !defined(NOTTF)
++#if defined(USE_SDL3) && !defined(NOTTF)
++  {
++    int v = TTF_Version();
++    snprintf(buffer,20,"%s (%d.%d.%d)","TTF fonts",SDL_VERSIONNUM_MAJOR(v),SDL_VERSIONNUM_MINOR(v),SDL_VERSIONNUM_MICRO(v));
++  }
++#elif (defined(USE_SDL) || defined(USE_SDL2)) && !defined(NOTTF)
+   {
+     const SDL_version * ttfver = TTF_Linked_Version();
+     if (ttfver != NULL)
+--- a/src/init.c
++++ b/src/init.c
+@@ -1407,6 +1407,20 @@
+ #if defined(USE_SDL)
+   else if (SDL_VideoModeOK(width, height, 8, SDL_FULLSCREEN))
+     supported = 1; // supported
++#elif defined(USE_SDL3)
++  else
++  {
++    int count = 0;
++    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(SDL_GetPrimaryDisplay(), &count);
++    if (modes)
++    {
++      int i;
++      for (i = 0; i < count; i++)
++        if (modes[i]->w == width && modes[i]->h == height)
++          supported = 1;
++      SDL_free(modes);
++    }
++  }
+ #elif defined(USE_SDL2)
+   else if (SDL_GetDisplayMode(0, mode, &dm) == 0) {
+     if (width == dm.w && height == dm.h)
+@@ -1554,6 +1568,19 @@
+     // Note that we voluntarily omit the first entry: the default mode.
+     qsort(&Video_mode[1], Nb_video_modes - 1, sizeof(T_Video_mode), Compare_video_modes);
+   }
++#elif defined(USE_SDL3)
++  {
++    int num_modes = 0, mode;
++    SDL_DisplayID display = SDL_GetPrimaryDisplay();
++    SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(display, &num_modes);
++    const SDL_DisplayMode *desktop;
++
++    for (mode = num_modes - 1; mode >= 0; mode--)
++      Set_video_mode(modes[mode]->w, modes[mode]->h, mode, 1);
++    SDL_free(modes);
++    if ((desktop = SDL_GetDesktopDisplayMode(display)) != NULL)
++      Set_video_mode(desktop->w, desktop->h, num_modes + 1, 1);
++  }
+ #elif defined(USE_SDL2)
+   {
+     SDL_DisplayMode dm;
+--- a/src/input.c
++++ b/src/input.c
+@@ -925,20 +925,32 @@
+     return 0;
+ }
+ 
++#if defined(USE_SDL3)
++#define SDL_BORDERS_OK true
++#define KEYEVENT_SYM(e) ((e)->key)
++#define KEYEVENT_KEYSYM(e) ((SDL_Keysym){ (e)->scancode, (e)->key, (e)->mod })
++#define WINDOWEVENT_TYPE(e) ((e).type)
++#elif defined(USE_SDL) || defined(USE_SDL2)
++#define SDL_BORDERS_OK 0
++#define KEYEVENT_SYM(e) ((e)->keysym.sym)
++#define KEYEVENT_KEYSYM(e) ((e)->keysym)
++#define WINDOWEVENT_TYPE(e) ((e).window.event)
++#endif
++
+ #if defined(USE_SDL) || defined(USE_SDL2)
+ static int Handle_key_press(SDL_KeyboardEvent * event)
+ {
+     //Appui sur une touche du clavier
+     int modifier;
+   
+-    Key = Keysym_to_keycode(event->keysym);
+-    Key_ANSI = Keysym_to_ANSI(event->keysym);
++    Key = Keysym_to_keycode(KEYEVENT_KEYSYM(event));
++    Key_ANSI = Keysym_to_ANSI(KEYEVENT_KEYSYM(event));
+ #if defined(USE_SDL)
+     Key_UNICODE = event->keysym.unicode;
+     if (Key_UNICODE == 0)
+ #endif
+       Key_UNICODE = Key_ANSI;
+-    switch(event->keysym.sym)
++    switch(KEYEVENT_SYM(event))
+     {
+       case SDLK_RSHIFT:
+       case SDLK_LSHIFT:
+@@ -1068,9 +1080,9 @@
+ static int Handle_key_release(SDL_KeyboardEvent * event)
+ {
+     int modifier;
+-    int released_key = Keysym_to_keycode(event->keysym) & 0x0FFF;
++    int released_key = Keysym_to_keycode(KEYEVENT_KEYSYM(event)) & 0x0FFF;
+   
+-    switch(event->keysym.sym)
++    switch(KEYEVENT_SYM(event))
+     {
+       case SDLK_RSHIFT:
+       case SDLK_LSHIFT:
+@@ -1578,8 +1590,13 @@
+ #endif
+ 
+ #if defined(USE_SDL2)
++#if defined(USE_SDL3)
++          case SDL_EVENT_WINDOW_FIRST ... SDL_EVENT_WINDOW_LAST:
++              switch(event.type)
++#else
+           case SDL_WINDOWEVENT:
+               switch(event.window.event)
++#endif
+               {
+                 case SDL_WINDOWEVENT_RESIZED: // change by external event (user or window manager)
+                   GFX2_Log(GFX2_DEBUG, "SDL_WINDOWEVENT_RESIZED %d %dx%d\n", event.window.windowID, event.window.data1, event.window.data2);
+@@ -1618,7 +1635,7 @@
+                   {
+                     // correct position by taking window decoration into account
+                     int offset_x, offset_y;
+-                    if (SDL_GetWindowBordersSize(SDL_GetWindowFromID(event.window.windowID), &offset_y, &offset_x, NULL, NULL) == 0) {
++                    if (SDL_GetWindowBordersSize(SDL_GetWindowFromID(event.window.windowID), &offset_y, &offset_x, NULL, NULL) == SDL_BORDERS_OK) {
+                       Config.Window_pos_x -= offset_x;
+                       Config.Window_pos_y -= offset_y;
+                     }
+@@ -1638,7 +1655,7 @@
+                   GFX2_Log(GFX2_DEBUG, "SDL_WINDOWEVENT_FOCUS_LOST %d\n", event.window.windowID);
+                   break;
+                 default:
+-                  GFX2_Log(GFX2_DEBUG, "Unhandled SDL_WINDOWEVENT : %d\n", event.window.event);
++                  GFX2_Log(GFX2_DEBUG, "Unhandled SDL_WINDOWEVENT : %d\n", WINDOWEVENT_TYPE(event));
+               }
+               break;
+ #endif
+@@ -1740,16 +1757,25 @@
+           
+ #if defined(USE_SDL2)
+           case SDL_DROPFILE:
++#if defined(USE_SDL3)
++              GFX2_Log(GFX2_DEBUG, "SDL_DROPFILE: %s\n", event.drop.data);
++              Drop_file_name = strdup(event.drop.data);
++#else
+               GFX2_Log(GFX2_DEBUG, "SDL_DROPFILE: %s\n", event.drop.file);
+               Drop_file_name = strdup(event.drop.file);
+               SDL_free(event.drop.file);
++#endif
+               break;
+ #if SDL_VERSION_ATLEAST(2, 0, 5)
+           // SDL_DROPTEXT, SDL_DROPBEGIN, and SDL_DROPCOMPLETE
+           // are available since SDL 2.0.5.
+           case SDL_DROPTEXT:
++#if defined(USE_SDL3)
++              GFX2_Log(GFX2_DEBUG, "SDL_DROPTEXT: \"%s\"\n", event.drop.data);
++#else
+               GFX2_Log(GFX2_DEBUG, "SDL_DROPTEXT: \"%s\"\n", event.drop.file);
+               SDL_free(event.drop.file);
++#endif
+               break;
+           case SDL_DROPBEGIN:
+               GFX2_Log(GFX2_DEBUG, "SDL_DROPBEGIN\n");
+@@ -1765,7 +1791,9 @@
+               break;
+ #endif
+ 
++#if !defined(USE_SDL3)
+           case SDL_SYSWMEVENT:
++#endif
+ #if defined(USE_SDL) && defined(__WIN32__)
+               if(event.syswm.msg->msg  == WM_DROPFILES)
+               {
+--- a/src/loadsave.c
++++ b/src/loadsave.c
+@@ -1140,15 +1140,15 @@
+     return;
+   }
+ 
+-  if (surface->format->BytesPerPixel == 1)
++  if (SURFACE_BYTES_PER_PIXEL(surface) == 1)
+   {
+     // 8bpp image
+     Pre_load(context, surface->w, surface->h, file_size ,FORMAT_MISC, PIXEL_SIMPLE, 8);
+ 
+     // Read palette
+-    if (surface->format->palette)
++    if (SURFACE_PALETTE(surface))
+     {
+-      Get_SDL_Palette(surface->format->palette, context->Palette);
++      Get_SDL_Palette(SURFACE_PALETTE(surface), context->Palette);
+     }
+ 
+     for (y_pos=0; y_pos<context->Height; y_pos++)
+@@ -1164,7 +1164,7 @@
+   {
+     {
+       // Hi/Trucolor
+-      Pre_load(context, surface->w, surface->h, file_size ,FORMAT_ALL_IMAGES, PIXEL_SIMPLE, 8 * surface->format->BytesPerPixel);
++      Pre_load(context, surface->w, surface->h, file_size ,FORMAT_ALL_IMAGES, PIXEL_SIMPLE, 8 * SURFACE_BYTES_PER_PIXEL(surface));
+     }
+ 
+     for (y_pos=0; y_pos<context->Height; y_pos++)
+@@ -1172,6 +1172,13 @@
+       for (x_pos=0; x_pos<context->Width; x_pos++)
+       {
+         pixel = Get_SDL_pixel_hicolor(surface, x_pos, y_pos);
++#if defined(USE_SDL3)
++        {
++          Uint8 r, g, b;
++          SDL_GetRGB(pixel, SDL_GetPixelFormatDetails(surface->format), SDL_GetSurfacePalette(surface), &r, &g, &b);
++          Set_pixel_24b(context, x_pos, y_pos, r, g, b);
++        }
++#else
+         Set_pixel_24b(
+           context,
+           x_pos,
+@@ -1179,6 +1186,7 @@
+           ((pixel & surface->format->Rmask) >> surface->format->Rshift) << surface->format->Rloss,
+           ((pixel & surface->format->Gmask) >> surface->format->Gshift) << surface->format->Gloss,
+           ((pixel & surface->format->Bmask) >> surface->format->Bshift) << surface->format->Bloss);
++#endif
+       }
+     }
+   }
+--- a/src/main.c
++++ b/src/main.c
+@@ -758,11 +758,19 @@
+ 
+ #if defined(USE_SDL) || defined(USE_SDL2)
+   // SDL
++#if defined(USE_SDL3)
++  if (!SDL_Init(SDL_INIT_VIDEO
++#if defined(USE_JOYSTICK)
++               | SDL_INIT_JOYSTICK
++#endif
++              ))
++#else
+   if (SDL_Init(SDL_INIT_VIDEO
+ #if defined(USE_JOYSTICK)
+                | SDL_INIT_JOYSTICK
+ #endif
+               ) < 0)
++#endif
+   {
+     // The program can't continue without that anyway
+     printf("Couldn't initialize SDL.\n");
+--- a/src/Makefile
++++ b/src/Makefile
+@@ -739,6 +739,10 @@
+             COPT += $(shell $(PKG_CONFIG) --cflags x11)
+           endif
+         endif
++        ifeq ($(API),sdl3)
++          COPT += -Isdl3shim -DSDL_ENABLE_OLD_NAMES -D__no_tifflib__ $(shell $(PKG_CONFIG) --cflags sdl3 sdl3-image)
++          LOPT += $(shell $(PKG_CONFIG) --libs sdl3 sdl3-image)
++        endif
+         ifeq ($(API),sdl2)
+           LOPT += $(shell sdl2-config --libs) -lSDL2_image
+           ifneq ($(NO_X11),1)
+@@ -754,8 +758,12 @@
+           COPT += -DNO_X11
+         endif
+         LOPT += $(TTFLOPT)
++        ifeq ($(API),sdl3)
++        LOPT += $(shell $(PKG_CONFIG) --libs libpng)
++        else
+         LOPT += $(shell $(PKG_CONFIG) --libs libpng `$(PKG_CONFIG) --exists libtiff-4 && echo libtiff-4`)
+         LOPT += $(shell $(PKG_CONFIG) --exists libtiff-4 || echo -ltiff)
++        endif
+         LOPT += $(LUALOPT)
+         OBJDIR = ../obj/unix
+         FCLOPT = -lfontconfig
+@@ -846,6 +854,10 @@
+   APIOBJ = sdlscreen.o
+   COPT += -DUSE_SDL2
+ endif
++ifeq ($(API),sdl3)
++  APIOBJ = sdlscreen.o
++  COPT += -DUSE_SDL2 -DUSE_SDL3
++endif
+ ifeq ($(API),win32)
+   APIOBJ = win32screen.o
+ endif
+--- a/src/sdl3shim/SDL_endian.h
++++ b/src/sdl3shim/SDL_endian.h
+@@ -0,0 +1 @@
++#include "SDL.h"
+--- a/src/sdl3shim/SDL.h
++++ b/src/sdl3shim/SDL.h
+@@ -0,0 +1,16 @@
++#ifndef GFX2_SDL3SHIM_H
++#define GFX2_SDL3SHIM_H
++#include <strings.h>
++#include <SDL3/SDL.h>
++#include <SDL3/SDL_oldnames.h>
++
++typedef struct SDL_Keysym
++{
++    SDL_Scancode scancode;
++    SDL_Keycode sym;
++    SDL_Keymod mod;
++} SDL_Keysym;
++
++#define SDL_TICKS_PASSED(A, B) ((Sint32)((B) - (A)) <= 0)
++
++#endif
+--- a/src/sdl3shim/SDL_image.h
++++ b/src/sdl3shim/SDL_image.h
+@@ -0,0 +1 @@
++#include <SDL3_image/SDL_image.h>
+--- a/src/sdl3shim/SDL_keyboard.h
++++ b/src/sdl3shim/SDL_keyboard.h
+@@ -0,0 +1 @@
++#include "SDL.h"
+--- a/src/sdl3shim/SDL_syswm.h
++++ b/src/sdl3shim/SDL_syswm.h
+@@ -0,0 +1 @@
++/* SDL3 has no SDL_syswm.h */
+--- a/src/sdl3shim/SDL_ttf.h
++++ b/src/sdl3shim/SDL_ttf.h
+@@ -0,0 +1 @@
++#include <SDL3_ttf/SDL_ttf.h>
+--- a/src/sdlscreen.c
++++ b/src/sdlscreen.c
+@@ -153,18 +153,32 @@
+   // SDL2
+   if (Window_SDL == NULL)
+   {
++#if defined(USE_SDL3)
++    Window_SDL = SDL_CreateWindow("GrafX2", *width, *height, (fullscreen?SDL_WINDOW_FULLSCREEN:SDL_WINDOW_RESIZABLE));
++    if (Config.Window_pos_x != 9999 && Config.Window_pos_y != 9999)
++      SDL_SetWindowPosition(Window_SDL, Config.Window_pos_x, Config.Window_pos_y);
++    SDL_SetWindowIcon(Window_SDL, icon);
++    Renderer_SDL = SDL_CreateRenderer(Window_SDL, NULL);
++    SDL_SetRenderVSync(Renderer_SDL, 1);
++    SDL_StartTextInput(Window_SDL);
++#else
+     Window_SDL = SDL_CreateWindow("GrafX2",
+                                   Config.Window_pos_x != 9999 ? Config.Window_pos_x : (int)SDL_WINDOWPOS_UNDEFINED,
+                                   Config.Window_pos_y != 9999 ? Config.Window_pos_y : (int)SDL_WINDOWPOS_UNDEFINED,
+                                   *width, *height, (fullscreen?SDL_WINDOW_FULLSCREEN:SDL_WINDOW_RESIZABLE));
+     SDL_SetWindowIcon(Window_SDL, icon);
+     Renderer_SDL = SDL_CreateRenderer(Window_SDL, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
++#endif
+     SDL_SetRenderDrawColor(Renderer_SDL, 0, 0, 0, SDL_ALPHA_OPAQUE);
+   }
+   else
+   {
+     SDL_SetWindowSize(Window_SDL, *width, *height);
++#if defined(USE_SDL3)
++    SDL_SetWindowFullscreen(Window_SDL, fullscreen ? true : false);
++#else
+     SDL_SetWindowFullscreen(Window_SDL, fullscreen?SDL_WINDOW_FULLSCREEN:0);
++#endif
+   }
+   //SDL_GetWindowSize(Window_SDL, width, height);
+   if (Texture_SDL != NULL)
+@@ -172,14 +186,23 @@
+   Texture_SDL = SDL_CreateTexture(Renderer_SDL, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+                                   Screen_width * Pixel_width, Screen_height * Pixel_height);
+   SDL_SetTextureScaleMode(Texture_SDL, SDL_ScaleModeNearest);
++#if defined(USE_SDL3)
++  SDL_SetTextureBlendMode(Texture_SDL, SDL_BLENDMODE_NONE);
++#endif
+   render_dstrect.x = 0;
+   render_dstrect.y = 0;
+   render_dstrect.w = Screen_width * Pixel_width * render_scale_x;
+   render_dstrect.h = Screen_height * Pixel_height * render_scale_y;
+   if (Screen_SDL != NULL)
+     SDL_FreeSurface(Screen_SDL);
++#if defined(USE_SDL3)
++  Screen_SDL = SDL_CreateSurface(Screen_width * Pixel_width, Screen_height * Pixel_height, SDL_PIXELFORMAT_INDEX8);
++  if (Screen_SDL != NULL)
++    SDL_CreateSurfacePalette(Screen_SDL);
++#else
+   Screen_SDL = SDL_CreateRGBSurface(0, Screen_width * Pixel_width, Screen_height * Pixel_height, 8, 0, 0, 0, 0);
+ #endif
++#endif
+ 
+   // Trick borrowed to Barrage (http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg737265.html) :
+   // Showing the cursor but setting it to fully transparent allows us to get absolute mouse coordinates,
+@@ -190,12 +213,20 @@
+   if (cur != NULL)
+   {
+     SDL_SetCursor(cur);
++#if defined(USE_SDL3)
++    SDL_ShowCursor();
++#else
+     SDL_ShowCursor(SDL_ENABLE); // show the SDL 1 pixel transparent cursor
++#endif
+   }
+   else
+   {
+     // failed to create the 1 pixel transparent cursor
++#if defined(USE_SDL3)
++    SDL_HideCursor();
++#else
+     SDL_ShowCursor(SDL_DISABLE); // Hide the SDL mouse cursor, we use our own internal one
++#endif
+   }
+ }
+ 
+@@ -226,9 +257,13 @@
+ 
+   if (RGBcopy == NULL)
+   {
++#if defined(USE_SDL3)
++    RGBcopy = SDL_CreateSurface(Screen_SDL->w, Screen_SDL->h, SDL_PIXELFORMAT_XRGB8888);
++#else
+     RGBcopy = SDL_CreateRGBSurface(0,
+     Screen_SDL->w, Screen_SDL->h,
+     32, 0, 0, 0, 0);
++#endif
+   }
+   // conversion ARGB
+   SDL_BlitSurface(Screen_SDL, &source_rect, RGBcopy, &source_rect);
+@@ -244,7 +279,15 @@
+ void GFX2_UpdateScreen(void)
+ {
+   SDL_RenderClear(Renderer_SDL);
++#if defined(USE_SDL3)
++  {
++    SDL_FRect dst;
++    SDL_RectToFRect(&render_dstrect, &dst);
++    SDL_RenderTexture(Renderer_SDL, Texture_SDL, NULL, &dst);
++  }
++#else
+   SDL_RenderCopy(Renderer_SDL, Texture_SDL, NULL, &render_dstrect);
++#endif
+   SDL_RenderPresent(Renderer_SDL);
+ }
+ #endif
+@@ -387,7 +430,7 @@
+   int y;
+ 
+   // Support seulement des images 256 couleurs
+-  if (source->format->BytesPerPixel != 1)
++  if (SURFACE_BYTES_PER_PIXEL(source) != 1)
+     return NULL;
+ 
+   if (dest==NULL)
+@@ -438,7 +481,7 @@
+ {
+   byte * ptr;
+ 
+-  switch(bmp->format->BytesPerPixel)
++  switch(SURFACE_BYTES_PER_PIXEL(bmp))
+   {
+     case 4:
+     default:
+@@ -490,7 +533,11 @@
+ #else
+   // When using SDL2, we need to force screen update so the
+   // 8bit => True color conversion will be performed
++#if defined(USE_SDL3)
++  i = SDL_SetPaletteColors(SDL_GetSurfacePalette(Screen_SDL), PaletteSDL, firstcolor, ncolors) ? 0 : -1;
++#else
+   i = SDL_SetPaletteColors(Screen_SDL->format->palette, PaletteSDL, firstcolor, ncolors);
++#endif
+   if (i == 0)
+     Update_rect(0, 0, Screen_SDL->w, Screen_SDL->h);
+   return i;
+@@ -589,7 +636,11 @@
+ {
+ #if defined(USE_SDL2)
+   // SDL 2.x
++#if defined(USE_SDL3)
++  SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, flag ? true : false);
++#else
+   SDL_EventState(SDL_DROPFILE, flag ? SDL_ENABLE : SDL_DISABLE);
++#endif
+ #else
+   // SDL 1.x
+   // Inform Windows that we accept drag-n-drop events or not
+@@ -756,9 +807,13 @@
+     else
+     {
+       Uint32 pink;
++#if defined(USE_SDL3)
++      pink = SDL_MapSurfaceRGB(icon, 255, 0, 255);
++#else
+       pink = SDL_MapRGB(icon->format, 255, 0, 255);
++#endif
+ 
+-      if (icon->format->BitsPerPixel == 8)
++      if (SURFACE_BYTES_PER_PIXEL(icon) == 1)
+       {
+         // NOTE : disable use of color key because SDL/SDL2
+         // gets the transparency information from the .gif and .png
+@@ -811,7 +866,11 @@
+ {
+ #if defined(USE_SDL2)
+   // SDL_ShowSimpleMessageBox() returns 0 on success
++#if defined(USE_SDL3)
++  if (SDL_ShowSimpleMessageBox(type, caption, text, Window_SDL))
++#else
+   if (SDL_ShowSimpleMessageBox(type, caption, text, Window_SDL) == 0)
++#endif
+   {
+     return 1;
+   }
+--- a/src/sdlscreen.h
++++ b/src/sdlscreen.h
+@@ -26,6 +26,14 @@
+ #ifndef SDLSCREEN_H_INCLUDED
+ #define SDLSCREEN_H_INCLUDED
+ 
++#if defined(USE_SDL3)
++#define SURFACE_BYTES_PER_PIXEL(s) SDL_BYTESPERPIXEL((s)->format)
++#define SURFACE_PALETTE(s) SDL_GetSurfacePalette(s)
++#else
++#define SURFACE_BYTES_PER_PIXEL(s) ((s)->format->BytesPerPixel)
++#define SURFACE_PALETTE(s) ((s)->format->palette)
++#endif
++
+ #include <SDL.h>
+ #include "struct.h"
+ #include "global.h"
+--- a/src/text.c
++++ b/src/text.c
+@@ -516,7 +516,12 @@
+ #endif
+ 
+   // Text rendering: creates a 8bit surface with its dedicated palette
+-#ifdef SDL_TTF_VERSION_ATLEAST_2_0_18
++#if defined(USE_SDL3)
++  if (antialias)
++    text_surface=TTF_RenderText_Shaded_Wrapped(font, str, 0, fg_color, bg_color, 0);
++  else
++    text_surface=TTF_RenderText_Solid_Wrapped(font, str, 0, fg_color, 0);
++#elif defined(SDL_TTF_VERSION_ATLEAST_2_0_18)
+   // use the TTF_Render*_*_Wrapped() functions
+   #ifdef __ANDROID__
+   if (antialias)
+@@ -557,7 +562,7 @@
+   }
+   
+   // Import palette
+-  Get_SDL_Palette(text_surface->format->palette, palette);
++  Get_SDL_Palette(SURFACE_PALETTE(text_surface), palette);
+   
+   if (antialias)
+   {

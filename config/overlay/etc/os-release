@@ -1,0 +1,8 @@
+NAME="Tiny Hat"
+PRETTY_NAME="Tiny Hat"
+ID=tinyhat
+ID_LIKE=arch
+BUILD_ID=rolling
+ANSI_COLOR="38;2;220;50;47"
+HOME_URL="https://github.com/xyproto/tinyhat"
+LOGO=tinyhat

@@ -1,0 +1,4 @@
+name: xxhash
+version: 0.8.4-1.0
+url: https://cyan4973.github.io/xxHash/
+license: GPL2 AND BSD

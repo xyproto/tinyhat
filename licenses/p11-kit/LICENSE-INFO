@@ -1,0 +1,4 @@
+name: p11-kit
+version: 0.26.5-1.0
+url: https://p11-glue.freedesktop.org
+license: BSD-3-Clause

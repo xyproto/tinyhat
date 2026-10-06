@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=DOSBox-X
+Icon=media-floppy
+Comment=DOS emulator, with the first FAT drive as C:
+Exec=tinyhat-dosbox
+Terminal=false
+Categories=Game;Emulator;

@@ -1,0 +1,16 @@
+#!/bin/sh
+conf=$HOME/.config/tinyhat/keyboard
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+choice=$(awk '/^! layout/ { f = 1; next } /^!/ { f = 0 } f && NF { c = $1; $1 = ""; sub(/^ +/, ""); print $0 " (" c ")" }' \
+	/usr/share/X11/xkb/rules/base.lst | sort | fuzzel --dmenu --prompt "Keyboard layout ❯ ") || exit 0
+code=${choice##*(}
+code=${code%)}
+[ -n "$code" ] || exit 0
+mkdir -p "${conf%/*}"
+echo "$code" >"$conf"
+pid=$(pidof dwl) && kill -USR1 $pid
+if doas localectl set-x11-keymap "$code" 2>/dev/null && mountpoint -q /persist; then
+	doas cp /etc/vconsole.conf /persist/vconsole.conf
+fi
+notice "Keyboard layout: $choice"

@@ -1,0 +1,4 @@
+name: sdl3
+version: 3.4.18 with the Tiny Hat Wayland framebuffer patch
+url: https://libsdl.org/
+license: Zlib

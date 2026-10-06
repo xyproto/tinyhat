@@ -1,0 +1,4 @@
+name: libsysprof-capture
+version: 3.48.0-4.0
+url: https://wiki.gnome.org/Apps/Sysprof
+license: BSD

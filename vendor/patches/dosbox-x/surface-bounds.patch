@@ -1,0 +1,21 @@
+--- a/src/output/output_surface.cpp	2026-10-05 20:56:32.509693787 +0200
++++ b/src/output/output_surface.cpp	2026-10-05 20:56:32.527156801 +0200
+@@ -626,6 +626,18 @@
+             }
+             else
+             {
++#if defined(C_SDL2)
++                SDL_Surface *s = SDL_GetWindowSurface(sdl.window);
++                if (s == NULL)
++                    return false;
++                sdl.surface = s;
++                if (GFX_IsFullscreen() || sdl.clip.x < 0 || sdl.clip.y < 0 || sdl.clip.x + (int)sdl.draw.width > s->w || sdl.clip.y + (int)sdl.draw.height > s->h) {
++                    if ((int)sdl.draw.width > s->w || (int)sdl.draw.height > s->h)
++                        return false;
++                    sdl.clip.x = (s->w - (int)sdl.draw.width) / 2;
++                    sdl.clip.y = (s->h - (int)sdl.draw.height) / 2;
++                }
++#endif
+                 if (SDL_MUSTLOCK(sdl.surface) && SDL_LockSurface(sdl.surface))
+                     return false;
+                 pixels = (uint8_t *)sdl.surface->pixels;

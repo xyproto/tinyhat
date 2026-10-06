@@ -1,0 +1,4 @@
+name: argon2
+version: 20190702-7.0
+url: https://github.com/P-H-C/phc-winner-argon2
+license: Apache AND custom:CC0

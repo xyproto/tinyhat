@@ -1,0 +1,4 @@
+name: fontconfig-2.18.3
+version: 2.18.3 (replaces the archlinux32 package)
+url: https://www.freedesktop.org/wiki/Software/fontconfig/
+license: HPND AND MIT
