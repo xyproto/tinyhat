@@ -3,13 +3,17 @@ set -eu
 umask 022
 root=$1
 shift
+top=$(dirname "$(dirname "$(readlink -f "$0")")")
+mkdir -p "$top/build/ccache"
 exec setarch i686 bwrap \
 	--bind "$root" / \
 	--dev /dev --proc /proc --tmpfs /tmp \
+	--bind "$top/build/ccache" /ccache \
 	--ro-bind /etc/resolv.conf /etc/resolv.conf \
 	--unshare-all --uid 0 --gid 0 --hostname tinyhat-build \
 	--clearenv \
-	--setenv PATH /usr/bin \
+	--setenv PATH /usr/lib/ccache/bin:/usr/bin \
+	--setenv CCACHE_DIR /ccache \
 	--setenv HOME /root \
 	--setenv LANG C.UTF-8 \
 	--setenv MAKEFLAGS "-j$(nproc)" \
