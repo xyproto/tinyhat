@@ -19,6 +19,10 @@ SRC = os.path.join(TOP, "vendor", "src")
 SOURCES = [
     ("linux", "7.2.9", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
      "linux-7.2.9.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
+    ("make", "4.4.1", "https://www.gnu.org/software/make/", "GPL-3.0-or-later",
+     "make-4.4.1.tar.gz", ["COPYING"]),
+    ("llvm-project", "15.0.7", "https://llvm.org/", "Apache-2.0 WITH LLVM-exception",
+     "llvm-project-15.0.7.src.tar.xz", ["LICENSE.TXT"]),
     ("dosbox-x", "2026.10.01", "https://dosbox-x.com/", "GPL-2.0-or-later",
      "dosbox-x-2026.10.01.tar.gz", ["COPYING"]),
     ("zsnes", "2.3.6", "https://github.com/xyproto/zsnes", "GPL-2.0-or-later",

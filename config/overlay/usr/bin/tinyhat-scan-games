@@ -22,6 +22,13 @@ if [ -d /usr/share/games/fotaq ] && ! grep -qsx 'path=/usr/share/games/fotaq' "$
 fi
 [ -f "$ini" ] || exit 0
 awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }
+	$1 == "path" { p[t] = $2 }
+	$1 == "savepath" { s[t] = 1 }
+	END { for (t in p) if (!(t in s)) print t "=" p[t] }' "$ini" |
+while IFS== read -r t p; do
+	sed -i "/^\[$t\]\$/a savepath=$p" "$ini"
+done
+awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }
 	$1 == "gameid" && ($2 == "tentacle" || $2 == "samnmax") { g[t] = 1 }
 	$1 == "path" { p[t] = $2 }
 	$1 == "music_driver" { m[t] = 1 }
