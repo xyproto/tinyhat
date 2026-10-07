@@ -16,6 +16,7 @@ core automake 1.18.1-1.1 automake-1.18.1-1.1-any.pkg.tar.zst aa9bc2e17cc6e785046
 extra avahi 0.8+22+gfd482a7-3.2 avahi-0.8+22+gfd482a7-3.2-i686.pkg.tar.zst f5593997272202bfa4dc978983e66026646c79ce63c08534222ae33d22508731
 core bash 5.3.9-1.1 bash-5.3.9-1.1-i686.pkg.tar.zst 8ff7830c5fe703e912eb0fc5ba2c090ff07b891898ad0737c56c7816706c7a1c
 core binutils 2.46-1.5 binutils-2.46-1.5-i686.pkg.tar.zst a495f4dd4702fed97034c199df86cb16f8b9520fd7e2c2a03b886754c7cf76b4
+core bison 3.8.2-8.2 bison-3.8.2-8.2-i686.pkg.tar.zst 2bf359b22bea2f3ce5122b5118b5c8fbfbc7850e04fb1dcf76fa2eea2146c5dc
 core brotli 1.1.0-1.0 brotli-1.1.0-1.0-i686.pkg.tar.zst f4be75194acd92a9f9450a7c265872b54a0c64a69b469407698af24fb38a738f
 core bzip2 1.0.8-6.3 bzip2-1.0.8-6.3-i686.pkg.tar.zst 6e6e5b82d844f12bccb0c58d4fedde076d5b19fa1fc9e018f0fab03304b5cdf3
 core ca-certificates 20240618-1.0 ca-certificates-20240618-1.0-any.pkg.tar.zst 72dd0e45fe4b4d24e94c43595be61e6c8739128787ae06c1f6d5ed00c4f43280

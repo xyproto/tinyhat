@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=librepaint
+Icon=insert-image
+Comment=Draw and paint
+Exec=librepaint
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;

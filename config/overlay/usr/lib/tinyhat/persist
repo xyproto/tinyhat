@@ -3,6 +3,10 @@ label=THDATA
 min_mib=64
 dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/var/lib/bluetooth pacman-gnupg:/etc/pacman.d/gnupg dropbear:/etc/dropbear state:/var/lib/tinyhat"
 
+case " $(cat /proc/cmdline) " in
+*" tinyhat.nopersist "*) exit 0 ;;
+esac
+
 msg() { echo "Tiny Hat: $*"; }
 
 create() {

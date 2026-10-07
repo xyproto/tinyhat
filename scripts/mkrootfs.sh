@@ -30,7 +30,7 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder make llvm clang tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -40,8 +40,9 @@ sed -i "/^Requires.private:/d" "$root/usr/lib/pkgconfig/fluidsynth.pc"
 rm -rf "$root"/usr/include/SDL2 "$root"/usr/bin/sdl2-config "$root"/usr/share/aclocal
 rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
 find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
-sstrip "$root/usr/bin/zsnes" "$root/usr/bin/dosbox-x" "$root/usr/bin/scummvm" "$root/usr/bin/dwl" "$root/usr/bin/fuzzel" "$root/usr/bin/grafx2-sdl3"
-strip --strip-unneeded "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libSDL2-2.0.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
+sstrip "$root/usr/bin/zsnes" "$root/usr/bin/dosbox-x" "$root/usr/bin/scummvm" "$root/usr/bin/dwl" "$root/usr/bin/fuzzel" "$root/usr/bin/grafx2-sdl3" "$root/usr/bin/algernon" "$root/usr/bin/syncthing"
+sstrip "$root/usr/lib/dri/swrast_dri.so"
+strip --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libSDL2-2.0.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
 
 localpkgs=
 while IFS='|' read -r o name ver lic url provides desc; do
@@ -73,6 +74,9 @@ libxml2-legacy|libxml2-legacy|2.13.9-1|MIT|https://gitlab.gnome.org/GNOME/libxml
 gdb|gdb|17.1-1|GPL-3.0-or-later|https://www.sourceware.org/gdb/||GNU debugger, without Python
 cc65|cc65|2.19+71746c8-1|Zlib|https://cc65.github.io/||6502 and 65816 C compiler and assembler
 wordgrinder|wordgrinder|0.8-1|MIT|http://cowlark.com/wordgrinder/||Word processor for the terminal
+make|make|4.4.1-1|GPL-3.0-or-later|https://www.gnu.org/software/make/||GNU make, built without Guile support
+llvm|llvm-libs|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|llvm-libs=15.0.7|LLVM runtime libraries, built for X86 and AMDGPU
+clang|clang|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|clang=15.0.7|C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU
 EOF
 
 for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do
@@ -153,6 +157,8 @@ for t in /usr/share/icons/*/; do
 	[ -f "$t/index.theme" ] && gtk-update-icon-cache -q -f "$t" 2>/dev/null || true
 done
 useradd -m -u 1000 -U -G wheel,audio,video,input,games,lp,storage,optical -s /usr/bin/fish tinyhat
+mkdir -p /home/tinyhat/downloads
+chown tinyhat:tinyhat /home/tinyhat/downloads
 echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1

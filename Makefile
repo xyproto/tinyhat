@@ -108,6 +108,26 @@ $(B)/.grafx2: $(B)/.sdl3_image $(B)/.sdl3_ttf recipes/grafx2.sh vendor/src/grafx
 	scripts/recipe.sh $(B)/buildroot grafx2 >$(B)/grafx2.log 2>&1 || { tail -40 $(B)/grafx2.log; exit 1; }
 	@touch $@
 
+$(B)/.x32-binutils: $(B)/.buildroot recipes/binutils-x32.sh vendor/src/binutils-2.45.1.tar.xz
+	scripts/recipe.sh $(B)/buildroot binutils-x32 >$(B)/binutils-x32.log 2>&1 || { tail -40 $(B)/binutils-x32.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-gcc-stage1: $(B)/.x32-binutils recipes/gcc-x32-stage1.sh vendor/src/gcc-15.2.0.tar.xz
+	scripts/recipe.sh $(B)/buildroot gcc-x32-stage1 >$(B)/gcc-x32-stage1.log 2>&1 || { tail -40 $(B)/gcc-x32-stage1.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-headers: $(B)/.buildroot scripts/mkheaders.sh vendor/src/linux-$(KVER).tar.xz
+	scripts/mkheaders.sh $(KVER)
+	@touch $@
+
+$(B)/.x32-glibc: $(B)/.x32-gcc-stage1 $(B)/.x32-headers recipes/glibc-x32.sh vendor/src/glibc-2.44.tar.xz
+	scripts/recipe.sh $(B)/buildroot glibc-x32 >$(B)/glibc-x32.log 2>&1 || { tail -40 $(B)/glibc-x32.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-gcc: $(B)/.x32-glibc recipes/gcc-x32-final.sh vendor/src/gcc-15.2.0.tar.xz
+	scripts/recipe.sh $(B)/buildroot gcc-x32-final >$(B)/gcc-x32-final.log 2>&1 || { tail -40 $(B)/gcc-x32-final.log; exit 1; }
+	@touch $@
+
 $(B)/.make: $(B)/.buildroot recipes/make.sh vendor/src/make-4.4.1.tar.gz
 	scripts/recipe.sh $(B)/buildroot make >$(B)/make.log 2>&1 || { tail -40 $(B)/make.log; exit 1; }
 	@touch $@
@@ -116,7 +136,7 @@ $(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.t
 	scripts/recipe.sh $(B)/buildroot llvm >$(B)/llvm.log 2>&1 || { tail -40 $(B)/llvm.log; exit 1; }
 	@touch $@
 
-$(B)/.tinyhat-gui: $(B)/.buildroot recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c
+$(B)/.tinyhat-gui: $(B)/.buildroot recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/librepaint.c
 	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
 	@touch $@
 
@@ -174,11 +194,11 @@ $(B)/.scummvm: $(B)/.sdl3 $(B)/.fluidsynth recipes/scummvm.sh vendor/src/scummvm
 
 $(B)/vmlinuz: config/kernel-i686.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
 	@mkdir -p $(B)
-	scripts/mkkernel.sh $(KVER) "" $(CURDIR)/config/kernel-i686.fragment
+	scripts/mkkernel.sh $(KVER) i386 $(B)/vmlinuz $(CURDIR)/config/kernel-i686.fragment
 
-$(B)/vmlinuz-rt: config/kernel-i686.fragment config/kernel-i686-rt.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
+$(B)/vmlinuz-x32: config/kernel-i686.fragment config/kernel-x32.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
 	@mkdir -p $(B)
-	scripts/mkkernel.sh $(KVER) rt $(CURDIR)/config/kernel-i686.fragment $(CURDIR)/config/kernel-i686-rt.fragment
+	scripts/mkkernel.sh $(KVER) x86_64 $(B)/vmlinuz-x32 $(CURDIR)/config/kernel-i686.fragment $(CURDIR)/config/kernel-x32.fragment
 
 $(B)/initramfs.img: $(B)/.fetched-initramfs config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
@@ -200,7 +220,7 @@ $(B)/.licenses: $(LOCKS:%.lock=$(B)/.fetched-%) $(SOURCES) scripts/mklicenses.py
 	python3 scripts/mklicenses.py
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/vmlinuz-rt $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 

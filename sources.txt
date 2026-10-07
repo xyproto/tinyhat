@@ -24,6 +24,11 @@ libparserutils-0.2.4-5.1-i686.pkg.tar.zst f31b88f910690b9a10601737fd02af5a70cc2c
 libxml2-2.13.9.tar.xz a2c9ae7b770da34860050c309f903221c67830c86e4a7e760692b803df95143a https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.9.tar.xz
 libxml2-2.15.1.tar.xz c008bac08fd5c7b4a87f7b8a71f283fa581d80d80ff8d2efd3b26224c39bc54c https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.1.tar.xz
 linux-7.2.9.tar.xz b4c5dfbe51a364a6c7f03869200f88c8e1f77403539005f14b7fc6bc91b8d8ba https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.9.tar.xz
+llvm-project-15.0.7.src.tar.xz 8b5fcb24b4128cf04df1b0b9410ce8b1a729cb3c544e6da885d234280dedeac6 https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7/llvm-project-15.0.7.src.tar.xz
+make-4.4.1.tar.gz dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3 https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
+binutils-2.45.1.tar.xz 5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5 https://ftp.gnu.org/gnu/binutils/binutils-2.45.1.tar.xz
+gcc-15.2.0.tar.xz 438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e https://ftp.gnu.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz
+glibc-2.44.tar.xz 37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz
 lua-5.4.9.tar.gz 2335b6c582a52654f94612bf10d2f4672805d05329aa6568b1d8cd9e5c6fb8e6 https://www.lua.org/ftp/lua-5.4.9.tar.gz
 meson-1.12.1.tar.gz ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743 https://github.com/mesonbuild/meson/releases/download/1.12.1/meson-1.12.1.tar.gz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz

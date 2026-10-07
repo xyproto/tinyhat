@@ -118,6 +118,7 @@ usr/bin/sensord
 usr/bin/gcr-viewer-gtk4
 usr/bin/tc
 usr/lib/libxml2-legacy
+usr/lib/gtk-3.0/3.0.0/printbackends/libprintbackends-cups.so
 usr/bin/pinentry-gnome3
 usr/bin/pinentry-qt
 usr/bin/pinentry-qt5
@@ -227,3 +228,16 @@ usr/share/applications/mtpaint.desktop
 usr/share/applications/love.desktop
 usr/bin/alsoft-config
 usr/bin/makemhr
+usr/bin/autopoint
+usr/bin/envsubst
+usr/bin/gettext
+usr/bin/gettext.sh
+usr/bin/gettextize
+usr/bin/msg*
+usr/bin/ngettext
+usr/bin/po-fetch
+usr/bin/printf_gettext
+usr/bin/printf_ngettext
+usr/bin/recode-sr-latin
+usr/bin/spit
+usr/bin/xgettext
