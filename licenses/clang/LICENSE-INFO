@@ -1,4 +1,0 @@
-name: clang
-version: 15.0.7-8.0
-url: https://clang.llvm.org/
-license: custom:Apache 2.0 with LLVM Exception
