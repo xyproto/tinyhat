@@ -23,6 +23,7 @@ core ca-certificates-mozilla 3.107-1.0 ca-certificates-mozilla-3.107-1.0-i686.pk
 core ca-certificates-utils 20240618-1.0 ca-certificates-utils-20240618-1.0-any.pkg.tar.zst 6f9242cbe0ae5a41d537ef8e321d1f8517418b354ddc8e07c3cf2897ce2a3280
 extra cairo 1.18.4-1.0 cairo-1.18.4-1.0-i686.pkg.tar.zst 255fee1e4d8eb056cdb310e7e107e47675585d20666461b14d118de8dfd84801
 extra cantarell-fonts 1:0.303.1-2.0 cantarell-fonts-1:0.303.1-2.0-any.pkg.tar.zst a129966e3568997fdc82ba7331b71eb0b369fb4f8af983e30a7d7aed7b14a389
+extra ccache 4.7.4-2.0 ccache-4.7.4-2.0-i686.pkg.tar.zst 40c7f77a4f6c8f6dd64446059c604e5187ee4421b6d018c9e4e9ff8961faea8e
 extra cmake 3.25.1-1.0 cmake-3.25.1-1.0-i686.pkg.tar.zst c6f120b5898d96862724b573204d54a3df50bb9ffddb1f0ff8a47f764a9dbc00
 core coreutils 9.11-2.0 coreutils-9.11-2.0-i686.pkg.tar.zst 8754c113d7e886e9795fbfe60e39c75bb0184729b33ae591f0d245cbbc529fe2
 core cryptsetup 2.7.2-1.1 cryptsetup-2.7.2-1.1-i686.pkg.tar.zst 4cdbd1e72bf900bb1b5a66d1638f51bec1323c6e77a62fa27e9ca1482cd0fdcb
@@ -75,6 +76,7 @@ core guile 3.0.11-1.0 guile-3.0.11-1.0-i686.pkg.tar.zst 96e3bd3a589523ba0cfce65b
 core gzip 1.15-1.0 gzip-1.15-1.0-i686.pkg.tar.zst 66e36d2990d014fc13eb895963c39cd8c0f47b03446a1b8e78909e96696bef43
 extra harfbuzz 7.1.0-1.0 harfbuzz-7.1.0-1.0-i686.pkg.tar.zst ceed36aaa81fe27577c52ea70f672860e56db5ceaeaefa6f2151b9e4c103547f
 extra hicolor-icon-theme 0.18-1.0 hicolor-icon-theme-0.18-1.0-any.pkg.tar.zst b54be406b7784dae8220267f14c879da766d5d41090ea5d11c581a88b17dfe1b
+extra hiredis 1.2.0-3.0 hiredis-1.2.0-3.0-i686.pkg.tar.zst 0a688fb4d1d97d6465efa2c1f3a94b761338e67fc484b2518dfe67864898a948
 core hwdata 0.411-1.0 hwdata-0.411-1.0-any.pkg.tar.zst a481f36f0ff918a63ebddb93207471c31d322b92bf0ba72d7fc177e06ac296ab
 core iana-etc 20260617-1.0 iana-etc-20260617-1.0-any.pkg.tar.zst e9c97fc00667649144ded7893588fc7fbf9e99fb577fb039279dbe3ea3a9bfdb
 core icu 78.3-1.0 icu-78.3-1.0-i686.pkg.tar.zst 0ae5fa15bc254c38b0b69b34fb725fd5120d48952898c6d04f9a93d1b26deee8

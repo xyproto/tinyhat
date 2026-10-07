@@ -2,6 +2,7 @@
 set -eu
 umask 022
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
+export PATH="/usr/lib/ccache/bin:$PATH"
 ver=$1
 frag=$2
 src=$top/build/linux-$ver
