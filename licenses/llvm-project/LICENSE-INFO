@@ -1,0 +1,4 @@
+name: llvm-project
+version: 15.0.7
+url: https://llvm.org/
+license: Apache-2.0 WITH LLVM-exception
