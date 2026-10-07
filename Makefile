@@ -20,9 +20,17 @@ tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initr
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-tinyhat64.img:
-	@echo "tinyhat64.img is not supported yet" >&2
-	@false
+#tinyhatx32.img:
+#	@echo "tinyhat32x.img (-mx32) is not supported yet" >&2
+#	@false
+#
+#tinyhat64.img:
+#	@echo "tinyhat64.img is not supported yet" >&2
+#	@false
+#
+#tinyhatrpi4.img:
+#	@echo "tinyhatrpi4.img is not supported yet" >&2
+#	@false
 
 lock:
 	REFRESH=1 python3 scripts/pkg.py lock config/rootfs.txt rootfs.lock
@@ -100,6 +108,18 @@ $(B)/.grafx2: $(B)/.sdl3_image $(B)/.sdl3_ttf recipes/grafx2.sh vendor/src/grafx
 	scripts/recipe.sh $(B)/buildroot grafx2 >$(B)/grafx2.log 2>&1 || { tail -40 $(B)/grafx2.log; exit 1; }
 	@touch $@
 
+$(B)/.make: $(B)/.buildroot recipes/make.sh vendor/src/make-4.4.1.tar.gz
+	scripts/recipe.sh $(B)/buildroot make >$(B)/make.log 2>&1 || { tail -40 $(B)/make.log; exit 1; }
+	@touch $@
+
+$(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.tar.xz
+	scripts/recipe.sh $(B)/buildroot llvm >$(B)/llvm.log 2>&1 || { tail -40 $(B)/llvm.log; exit 1; }
+	@touch $@
+
+$(B)/.tinyhat-gui: $(B)/.buildroot recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c
+	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
+	@touch $@
+
 $(B)/.wordgrinder: $(B)/.buildroot recipes/wordgrinder.sh vendor/src/wordgrinder-0.8.tar.gz
 	scripts/recipe.sh $(B)/buildroot wordgrinder >$(B)/wordgrinder.log 2>&1 || { tail -40 $(B)/wordgrinder.log; exit 1; }
 	@touch $@
@@ -154,7 +174,11 @@ $(B)/.scummvm: $(B)/.sdl3 $(B)/.fluidsynth recipes/scummvm.sh vendor/src/scummvm
 
 $(B)/vmlinuz: config/kernel-i686.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
 	@mkdir -p $(B)
-	scripts/mkkernel.sh $(KVER) $(CURDIR)/config/kernel-i686.fragment
+	scripts/mkkernel.sh $(KVER) "" $(CURDIR)/config/kernel-i686.fragment
+
+$(B)/vmlinuz-rt: config/kernel-i686.fragment config/kernel-i686-rt.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
+	@mkdir -p $(B)
+	scripts/mkkernel.sh $(KVER) rt $(CURDIR)/config/kernel-i686.fragment $(CURDIR)/config/kernel-i686-rt.fragment
 
 $(B)/initramfs.img: $(B)/.fetched-initramfs config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
@@ -176,7 +200,7 @@ $(B)/.licenses: $(LOCKS:%.lock=$(B)/.fetched-%) $(SOURCES) scripts/mklicenses.py
 	python3 scripts/mklicenses.py
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/vmlinuz-rt $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 
