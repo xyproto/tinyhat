@@ -34,7 +34,6 @@ core ca-certificates-utils 20240618-1.0 ca-certificates-utils-20240618-1.0-any.p
 extra cabextract 1.11-3.0 cabextract-1.11-3.0-i686.pkg.tar.zst 520eb69251b68a7b502d9609d3987082ba4be31c543b742cba456511ed6c8f2e
 extra cairo 1.18.4-1.0 cairo-1.18.4-1.0-i686.pkg.tar.zst 255fee1e4d8eb056cdb310e7e107e47675585d20666461b14d118de8dfd84801
 extra cantarell-fonts 1:0.303.1-2.0 cantarell-fonts-1:0.303.1-2.0-any.pkg.tar.zst a129966e3568997fdc82ba7331b71eb0b369fb4f8af983e30a7d7aed7b14a389
-extra clang 15.0.7-8.0 clang-15.0.7-8.0-i686.pkg.tar.zst 49fb22d579938de30032bce917a5a28b854c0786fe5240e3065143aeaffeeb8c
 core coreutils 9.11-2.0 coreutils-9.11-2.0-i686.pkg.tar.zst 8754c113d7e886e9795fbfe60e39c75bb0184729b33ae591f0d245cbbc529fe2
 core cryptsetup 2.7.2-1.1 cryptsetup-2.7.2-1.1-i686.pkg.tar.zst 4cdbd1e72bf900bb1b5a66d1638f51bec1323c6e77a62fa27e9ca1482cd0fdcb
 core curl 8.22.0-1.1 curl-8.22.0-1.1-i686.pkg.tar.zst 3556a67de75be7031e874ef4a9ec91909142964fd783ea27579ede58fd941b15
@@ -73,7 +72,6 @@ extra ft2-clone 2.17-1.0 ft2-clone-2.17-1.0-i686.pkg.tar.zst 2442331dd76afd48d3d
 extra fuse-common 3.16.2-1.0 fuse-common-3.16.2-1.0-i686.pkg.tar.zst eaba4b216f359be99d4f4a492a014cecfb29a6b0ad4f02af1ec7d31206b79e49
 extra fuse2 2.9.9-6.0 fuse2-2.9.9-6.0-i686.pkg.tar.zst a5d8151f4c4e3352abb568855df974db67934b12420a005af4e5968ff82d2fe0
 core gawk 5.4.1-1.0 gawk-5.4.1-1.0-i686.pkg.tar.zst 78fb6a3aa0865ac6039fe44e9ce7a8bb04d1bcb39283b0d14280e663732b1dde
-core gc 8.2.12-1.0 gc-8.2.12-1.0-i686.pkg.tar.zst 35717c43228be3a3e22efea42e65633c6dcb8fb8571fb49a78b9b28cc4f090df
 core gcc 15.2.1+r604+g0b99615a8aef-1.1 gcc-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst 20e8dc9c825bbb40f005dcb9b25d5339d42e2640e087ad8f685e72e0d833361f
 core gcc-libs 15.2.1+r604+g0b99615a8aef-1.1 gcc-libs-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst 9a0842c4595aa55ebfdc896fc899736eefe7a337d6e0582e700c38bc56432fd7
 core gdbm 1.23-1.0 gdbm-1.23-1.0-i686.pkg.tar.zst 5a282fa74572004799b70c9a32acec7822387f43be617a6fdd884c1459a41375
@@ -99,7 +97,6 @@ extra gsettings-desktop-schemas 50.1-1.0 gsettings-desktop-schemas-50.1-1.0-any.
 extra gsettings-system-schemas 50.1-1.0 gsettings-system-schemas-50.1-1.0-any.pkg.tar.zst 4aaae8515dd478f23c5bccaed50c2763aae96c9d92cbdf2535c94076d53e6191
 extra gtk-update-icon-cache 1:4.16.7-1.0 gtk-update-icon-cache-1:4.16.7-1.0-i686.pkg.tar.zst 72d7a01948ef5a958ea4564024c6ad296d6989bbb6e33a7294700b3e7a30368c
 extra gtk3 1:3.24.43-2.0 gtk3-1:3.24.43-2.0-i686.pkg.tar.zst 5c140b65a2fcc4e62c04d77d4b1a91e82f8f9d943ef2790a438c35450519ddf3
-core guile 3.0.11-1.0 guile-3.0.11-1.0-i686.pkg.tar.zst 96e3bd3a589523ba0cfce65b40b5479e38b43bf717f032333ee86561563e65d5
 core gzip 1.15-1.0 gzip-1.15-1.0-i686.pkg.tar.zst 66e36d2990d014fc13eb895963c39cd8c0f47b03446a1b8e78909e96696bef43
 extra harfbuzz 7.1.0-1.0 harfbuzz-7.1.0-1.0-i686.pkg.tar.zst ceed36aaa81fe27577c52ea70f672860e56db5ceaeaefa6f2151b9e4c103547f
 extra htop 3.2.1-1.0 htop-3.2.1-1.0-i686.pkg.tar.zst dc4185e32658d57630106fa1eca0bb08f421b162c3c5e28c8065435672cd7ac1
@@ -119,7 +116,6 @@ core keyutils 1.6.3-4.0 keyutils-1.6.3-4.0-i686.pkg.tar.zst 86579b80c4fe08d47d77
 core kmod 34.2-1.1 kmod-34.2-1.1-i686.pkg.tar.zst d8c64cae46d408f174deaf4546718d007aa0a1951d867a0485878fb47f0a9d5c
 core krb5 1.20.1-1.0 krb5-1.20.1-1.0-i686.pkg.tar.zst 327c9735375bd246e7c4889cfb002a25d69391c56d960528260e09445e10a861
 extra lame 3.101.r6531-1.0 lame-3.101.r6531-1.0-i686.pkg.tar.zst fbe88f01db385d3dd8afffe7b0e6e9e1a826de38ec6e3714a9ace91d60f26b84
-extra lazygit 0.65.1-1.0 lazygit-0.65.1-1.0-i686.pkg.tar.zst bbc1d9c9293634dbbd81f364b196426dd45919a152a0d92e204bea79d6e7a238
 extra lcms2 2.19.1-1.0 lcms2-2.19.1-1.0-i686.pkg.tar.zst fc1c0d08b74421711e834f96cedfac78dab0ed929efa44deb71de880de07b047
 core ldns 1.9.2-1.0 ldns-1.9.2-1.0-i686.pkg.tar.zst 17c2cc9fc74f3b62610dea630a8fae228a101cb39ff5fe4ba48ac25e9d23ec59
 core leancrypto 1.9.0-1.0 leancrypto-1.9.0-1.0-i686.pkg.tar.zst f121b4e4fcc39f03d65e8d0cd1684101224cc753d060c28c57a912c129c0b8d2
@@ -134,7 +130,6 @@ core libcap-ng 0.8.5-1.0 libcap-ng-0.8.5-1.0-i686.pkg.tar.zst 932b49ab8bc7874742
 extra libcloudproviders 0.4.1-1.0 libcloudproviders-0.4.1-1.0-i686.pkg.tar.zst dc8f0d69622ad1436357b17d44b3c36a5d71a29536166b0f6daad80f936e1bdb
 extra libcolord 1.4.8-1.0 libcolord-1.4.8-1.0-i686.pkg.tar.zst affdc4b332d004b537983a60a8bd114042c5bbdfb4987e316f05d857ba2de47f
 extra libcss 0.9.1-6.0 libcss-0.9.1-6.0-i686.pkg.tar.zst 0a3d4cceb1c3662327063389f59435e4478e0f57771c3b62a43d649b0bbe925c
-extra libcups 2:2.4.17-1.0 libcups-2:2.4.17-1.0-i686.pkg.tar.zst 8fba7081d3519d6b3d0666fc7ee293d0131e60dbc831699402c5d4be7f887cf4
 extra libdaemon 0.14-6.0 libdaemon-0.14-6.0-i686.pkg.tar.zst fea7d473505d5bed22a9143d53030012eb0d44a9098c95459d55f41c03a66b18
 extra libdatrie 0.2.14-1.0 libdatrie-0.2.14-1.0-i686.pkg.tar.zst 71ce2f6e0081b0659fc0ac7ea7076e29a6a77df559cc264e21dae927189ea941
 extra libdom 0.4.2-1.0 libdom-0.4.2-1.0-i686.pkg.tar.zst 3943bca0bb0a0f0c953afb8ac26ff400b6db6765edef9ada5fb67deeb458ec62
@@ -245,7 +240,6 @@ core linux-firmware-intel 20260916-1.0 linux-firmware-intel-20260916-1.0-any.pkg
 core linux-firmware-radeon 20260916-1.0 linux-firmware-radeon-20260916-1.0-any.pkg.tar.zst f5207708fe52d3f4488ebf0d3d280ce0103b816dafae8d08a8c8dde1e23026e7
 core linux-firmware-realtek 20260916-1.0 linux-firmware-realtek-20260916-1.0-any.pkg.tar.zst 982e630874fe7f0fdabbee2bea883a0e60b70ee4ec45048398ab2ec721fb0cdd
 core linux-firmware-whence 20260916-1.0 linux-firmware-whence-20260916-1.0-any.pkg.tar.zst 45c69d7f3734c670f4fc189b85acc49aabceeb084256a29867cbe02d72d52174
-extra llvm-libs 15.0.7-2.1 llvm-libs-15.0.7-2.1-i686.pkg.tar.zst ee04f59233356a3a06caf0ae505322e45d9ca347ecd1fb78db84f4596b0f4015
 extra lm_sensors 1:3.6.2-1.0 lm_sensors-1:3.6.2-1.0-i686.pkg.tar.zst 877715f9043dfdeb38d2e792f919ba4adf7b4f7390cde827a4ac370865878f42
 extra love 11.5-1.0 love-11.5-1.0-i686.pkg.tar.zst 80bf756d36ec83cbec1bb6bdcd6274debfcd2325b39c77c963b33b6145f33f86
 extra lsd 1.1.5-1.0 lsd-1.1.5-1.0-i686.pkg.tar.zst d2e751f848e93889d9960b8d317cd6abdd5c19b1e48b362f14309831f5e567a6
@@ -255,7 +249,6 @@ extra luajit 2.1.1753364724-1.0 luajit-2.1.1753364724-1.0-i686.pkg.tar.zst f9cf4
 extra lv2 1.18.10-2.0 lv2-1.18.10-2.0-i686.pkg.tar.zst abb42326870ad90d7daa8977fed06b67b22bf6f05a9540bf1c0d75ed08ffc9ad
 core lz4 1:1.10.0-2.0 lz4-1:1.10.0-2.0-i686.pkg.tar.zst 1966d636e3c07845e57587a0e44d8b49a24ee3ef289557005c502848c863a683
 core lzo 2.10-5.1 lzo-2.10-5.1-i686.pkg.tar.zst 3fc2096a8e38544eafeb5a8282f13387184c4af624efc2b7f79113fd376d8955
-core make 4.4.1-3.0 make-4.4.1-3.0-i686.pkg.tar.zst 406118ee5cafc9354a72066a5434e7fe7d4b54a6de5d66f6039891744e61f194
 core man-pages 6.19-1.0 man-pages-6.19-1.0-any.pkg.tar.zst 1b5b4e00dab048c0ebbeb86c78dd1b0d25380da7c1143f2d18b2835e50fc6f28
 extra mandoc 1.14.6-5.0 mandoc-1.14.6-5.0-i686.pkg.tar.zst ecf87687e467340ae4fa69c37f44a93c6aacae9458c6a312badbf7aa995a2349
 extra mc 4.8.33-1.0 mc-4.8.33-1.0-i686.pkg.tar.zst 56977eae2abd8c2814164636ca63ac1591b559f54327192613a571ba9f38f647

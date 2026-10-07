@@ -7,15 +7,19 @@ Alt+Shift+F	Toggle fullscreen
 Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Volume
 
+Ctrl+Alt+A	Scan for ScummVM games
+Ctrl+Alt+B	librepaint
 Ctrl+Alt+D	Launch DOSBox-X
 Ctrl+Alt+F	Web browser
+Ctrl+Alt+H	Toggle sharing
 Ctrl+Alt+I	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
-Ctrl+Alt+M	ScummVM
+Ctrl+Alt+M	mtPaint
 Ctrl+Alt+P	Example game in C (2x Ctrl+Space to run)
-Ctrl+Alt+S	Toggle sharing
+Ctrl+Alt+S	ScummVM
 Ctrl+Alt+T / Ctrl+Alt+R	Terminal
+Ctrl+Alt+W	DOS programming (Open Watcom)
 Ctrl+Alt+Z	ZSNES 2
 
 Right click desktop	Toggle background

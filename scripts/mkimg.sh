@@ -31,7 +31,7 @@ truncate -s "${esp_mib}M" "$work/esp.img"
 	/bin/sh -c 'mkfs.fat -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI'
 
 content=$(du -sm --apparent-size "$work/root" | cut -f1)
-part_mib=$((content + content / 20 + 48))
+part_mib=$((content + content / 32 + 12))
 truncate -s "${part_mib}M" "$work/part.img"
 TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -L TINYHAT \
 	-m crc=1,finobt=0,rmapbt=0,reflink=0,bigtime=1,inobtcount=0,metadir=0 \
