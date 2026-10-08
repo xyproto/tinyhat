@@ -31,13 +31,18 @@ static GtkWidget *gstatus;
 static tw_drive gdrives[TW_MAX_DRIVES];
 static int gndrives;
 static GPid gpid;
-static int gin = -1, gout = -1;
+static int gin = -1, gout = -1, gerrfd = -1;
 static GIOChannel *gchan;
+static GIOChannel *gerrchan;
 static char gline[1024];
 static size_t glinelen;
 static uint64_t gtotal;
 static int grunning;
+static int gfinished;
 static char gtmdir[256];
+static char gstderr[2048];
+static size_t gerrlen;
+static char gspawnerr[512];
 
 static char *tw_fmt_size(uint64_t n, char *buf, size_t cap)
 {
@@ -138,12 +143,37 @@ static int tw_scan(tw_drive *out, int max)
 	}
 	closedir(d);
 #endif
+	{
+		const char *tt = getenv("TW_TEST_TARGET");
+		if (tt && n < max) {
+			snprintf(out[n].dev, sizeof(out[n].dev), "%s", tt);
+			snprintf(out[n].name, sizeof(out[n].name), "test target");
+			out[n].size = 0;
+			n++;
+		}
+	}
 	return n;
 }
 
 static void tw_set_status(const char *s)
 {
 	gtk_label_set_text(GTK_LABEL(gstatus), s);
+}
+
+static void tw_pump(void)
+{
+	while (gtk_events_pending())
+		gtk_main_iteration();
+}
+
+static void tw_error_dialog(const char *text)
+{
+	GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
+		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+		GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", text);
+	gtk_window_set_title(GTK_WINDOW(d), "Tiny Hat USB writer");
+	gtk_dialog_run(GTK_DIALOG(d));
+	gtk_widget_destroy(d);
 }
 
 static void tw_done_state(const char *msg)
@@ -226,6 +256,43 @@ static void tw_answer(const char *a)
 
 static gboolean tw_on_line(const char *line);
 
+static void tw_failed_state(void)
+{
+	char msg[2400];
+	if (gerrlen) {
+		char *p = gstderr;
+		while (*p) {
+			if (*p == '\n' || *p == '\r')
+				*p = ' ';
+			p++;
+		}
+		snprintf(msg, sizeof(msg), "Writing failed: %s", gstderr);
+	} else {
+		snprintf(msg, sizeof(msg),
+			 "Writing failed. Root access is required: try running this program with sudo.");
+	}
+	tw_error_dialog(msg);
+	tw_done_state(msg);
+}
+
+static gboolean tw_on_err_io(GIOChannel *src, GIOCondition cond, gpointer data)
+{
+	char buf[512];
+	gsize got = 0;
+	(void)cond;
+	(void)data;
+	g_io_channel_read_chars(src, buf, sizeof(buf), &got, NULL);
+	if (got && gerrlen < sizeof(gstderr) - 1) {
+		size_t room = sizeof(gstderr) - 1 - gerrlen;
+		if (got > room)
+			got = room;
+		memcpy(gstderr + gerrlen, buf, got);
+		gerrlen += got;
+		gstderr[gerrlen] = 0;
+	}
+	return TRUE;
+}
+
 static gboolean tw_on_io(GIOChannel *src, GIOCondition cond, gpointer data)
 {
 	char buf[512];
@@ -248,8 +315,8 @@ static gboolean tw_on_io(GIOChannel *src, GIOCondition cond, gpointer data)
 		}
 	}
 	if (st == G_IO_STATUS_EOF || st == G_IO_STATUS_ERROR) {
-		if (grunning)
-			tw_done_state("Finished. The drive is ready.");
+		if (grunning && !gfinished)
+			tw_failed_state();
 		gchan = NULL;
 		return FALSE;
 	}
@@ -282,15 +349,12 @@ static gboolean tw_on_line(const char *line)
 		gtk_widget_destroy(d);
 		tw_answer(r == GTK_RESPONSE_YES ? "YES\n" : "NO\n");
 	} else if (!strcmp(line, "DONE")) {
+		gfinished = 1;
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(gprog), 1.0);
 		tw_done_state("Finished. The drive is ready.");
 	} else if (!strncmp(line, "ERROR ", 6)) {
-		GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", line + 6);
-		gtk_window_set_title(GTK_WINDOW(d), "Write failed");
-		gtk_dialog_run(GTK_DIALOG(d));
-		gtk_widget_destroy(d);
+		gfinished = 1;
+		tw_error_dialog(line + 6);
 		tw_done_state(line + 6);
 	}
 	return TRUE;
@@ -301,8 +365,28 @@ static void tw_on_child(GPid pid, gint status, gpointer data)
 	(void)status;
 	(void)data;
 	g_spawn_close_pid(pid);
-	if (grunning)
-		tw_done_state("Finished. The drive is ready.");
+	if (grunning && !gfinished)
+		tw_failed_state();
+}
+
+static int tw_gui_ask(void *ud, const char *text)
+{
+	GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
+		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+		GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s", text);
+	gint r;
+	gtk_window_set_title(GTK_WINDOW(d), "Overwrite?");
+	r = gtk_dialog_run(GTK_DIALOG(d));
+	gtk_widget_destroy(d);
+	return r == GTK_RESPONSE_YES;
+}
+
+static void tw_gui_note(void *ud, const char *line)
+{
+	(void)ud;
+	tw_pump();
+	tw_on_line(line);
+	tw_pump();
 }
 
 static int tw_start_flow(const char *self, const char *target)
@@ -339,11 +423,15 @@ static int tw_start_flow(const char *self, const char *target)
 #else
 	char *prog = g_find_program_in_path("pkexec");
 	char **pargv;
+	GError *ge = NULL;
 	int ok;
 	if (!prog)
 		prog = g_find_program_in_path("doas");
-	if (!prog)
+	if (!prog) {
+		snprintf(gspawnerr, sizeof(gspawnerr),
+			 "Writing to a drive needs root access. Install pkexec or doas, or start this program with sudo.");
 		return -1;
+	}
 	pargv = g_new0(char *, 5);
 	pargv[0] = prog;
 	pargv[1] = (char *)self;
@@ -351,7 +439,11 @@ static int tw_start_flow(const char *self, const char *target)
 	pargv[3] = (char *)target;
 	ok = g_spawn_async_with_pipes(NULL, pargv, NULL,
 				      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
-				      NULL, NULL, &gpid, &gin, &gout, NULL, NULL);
+				      NULL, NULL, &gpid, &gin, &gout, &gerrfd, &ge);
+	if (!ok && ge) {
+		snprintf(gspawnerr, sizeof(gspawnerr), "%s", ge->message);
+		g_error_free(ge);
+	}
 	g_free(pargv);
 	g_free(prog);
 	return ok ? 0 : -1;
@@ -364,16 +456,42 @@ static void tw_start_write(void)
 	char self[4096];
 	if (idx < 0 || idx >= gndrives || grunning)
 		return;
+	gtotal = 0;
+	glinelen = 0;
+	gerrlen = 0;
+	gfinished = 0;
+	gspawnerr[0] = 0;
+	gstderr[0] = 0;
+	gerrfd = -1;
+	if (geteuid() == 0) {
+		tw_image img;
+		tw_hooks hk;
+		if (tw_load_image(NULL, &img) < 0) {
+			tw_error_dialog("No tinyhat.img.gz found");
+			return;
+		}
+		grunning = 1;
+		gtk_widget_set_sensitive(gwrite, FALSE);
+		gtk_widget_set_sensitive(grefresh, FALSE);
+		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(gprog), 0.0);
+		gtk_progress_bar_set_text(GTK_PROGRESS_BAR(gprog), NULL);
+		tw_set_status("Writing, this takes a few minutes");
+		hk.ask = tw_gui_ask;
+		hk.note = tw_gui_note;
+		hk.ud = NULL;
+		tw_do_write(&img, gdrives[idx].dev, &hk);
+		if (grunning)
+			tw_done_state("Finished. The drive is ready.");
+		return;
+	}
 	if (tw_exe_path(self, sizeof(self)) < 0) {
-		tw_set_status("Cannot locate the program");
+		tw_error_dialog("Cannot locate the program");
 		return;
 	}
 	if (tw_start_flow(self, gdrives[idx].dev) < 0) {
-		tw_set_status("Need pkexec or doas to write to a drive");
+		tw_error_dialog(gspawnerr[0] ? gspawnerr : "Could not start the writer");
 		return;
 	}
-	gtotal = 0;
-	glinelen = 0;
 	grunning = 1;
 	gtk_widget_set_sensitive(gwrite, FALSE);
 	gtk_widget_set_sensitive(grefresh, FALSE);
@@ -384,6 +502,12 @@ static void tw_start_write(void)
 	g_io_channel_set_encoding(gchan, NULL, NULL);
 	g_io_channel_set_close_on_unref(gchan, TRUE);
 	g_io_add_watch(gchan, G_IO_IN | G_IO_HUP | G_IO_ERR, tw_on_io, NULL);
+	if (gerrfd >= 0) {
+		gerrchan = g_io_channel_unix_new(gerrfd);
+		g_io_channel_set_encoding(gerrchan, NULL, NULL);
+		g_io_channel_set_close_on_unref(gerrchan, TRUE);
+		g_io_add_watch(gerrchan, G_IO_IN | G_IO_HUP | G_IO_ERR, tw_on_err_io, NULL);
+	}
 	g_child_watch_add(gpid, tw_on_child, NULL);
 }
 
