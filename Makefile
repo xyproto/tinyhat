@@ -1,4 +1,6 @@
 KVER := 7.2.9
+VERSION := 0.1.0
+DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 LOCKS := rootfs.lock buildroot.lock initramfs.lock licenses.lock
 SOUNDFONT := vendor/soundfont/TinyHat-GM-0.790.sf3
@@ -12,7 +14,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck
+.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck dist
 
 all: tinyhat32.img
 
@@ -40,6 +42,10 @@ lock:
 
 patchcheck:
 	scripts/patchcheck.sh
+
+dist: tinyhat32.img
+	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $<
+	@ls -l $(B)/dist
 
 fetch: $(LOCKS:%.lock=$(B)/.fetched-%) sources
 
@@ -136,7 +142,7 @@ $(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.t
 	scripts/recipe.sh $(B)/buildroot llvm >$(B)/llvm.log 2>&1 || { tail -40 $(B)/llvm.log; exit 1; }
 	@touch $@
 
-$(B)/.tinyhat-gui: $(B)/.buildroot recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/librepaint.c
+$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/librepaint.c
 	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
 	@touch $@
 
