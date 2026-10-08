@@ -118,7 +118,7 @@ usr/bin/sensord
 usr/bin/gcr-viewer-gtk4
 usr/bin/tc
 usr/lib/libxml2-legacy
-usr/lib/gtk-3.0/3.0.0/printbackends/libprintbackends-cups.so
+usr/lib/gtk-3.0/3.0.0/printbackends/libprintbackend-cups.so
 usr/bin/pinentry-gnome3
 usr/bin/pinentry-qt
 usr/bin/pinentry-qt5
