@@ -4,7 +4,7 @@ This is a Linux distro based on Arch Linux and archlinux32, with a few custom pa
 
 This `README.md` file, design choices and package selection is human made. AI tooling has been used for creating the Makefile, adding test scripts, debugging why some program fails to start etc.
 
-Time consuming testing on real hardware has been done by a human.
+Time consuming testing on real hardware has been done by a human (me).
 
 ### Goals
 
