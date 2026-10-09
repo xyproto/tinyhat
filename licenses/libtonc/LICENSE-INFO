@@ -1,0 +1,4 @@
+name: libtonc
+version: 1.4.3 (git c5af1b2)
+url: https://github.com/gbadev-org/libtonc
+license: MIT
