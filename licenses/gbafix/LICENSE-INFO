@@ -1,0 +1,4 @@
+name: gbafix
+version: 1.2.0 (from gba-tools)
+url: https://github.com/devkitPro/gba-tools
+license: LGPL-2.0-or-later

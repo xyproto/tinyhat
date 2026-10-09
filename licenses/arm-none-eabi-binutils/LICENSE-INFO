@@ -1,0 +1,4 @@
+name: arm-none-eabi-binutils
+version: 2.47-1.0
+url: https://www.gnu.org/software/binutils/
+license: GPL

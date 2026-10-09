@@ -8,6 +8,9 @@ extra alsa-lib 1.2.16.1-1.0 alsa-lib-1.2.16.1-1.0-i686.pkg.tar.zst 89003b90f497d
 extra alsa-topology-conf 1.2.5.1-4.0 alsa-topology-conf-1.2.5.1-4.0-any.pkg.tar.zst 4c0031c48a6f8a4b3ddc626f24855201e5f881050ee44163274461c562a3fa91
 extra alsa-ucm-conf 1.2.16.1-1.0 alsa-ucm-conf-1.2.16.1-1.0-any.pkg.tar.zst 13024cd99f5c67f355968019f3c42264e9023e8a279be2660d14468555c40bdf
 extra argon2 20190702-7.0 argon2-20190702-7.0-i686.pkg.tar.zst d6e6ec8bf0e9fad3d1d06fb545c0eeef00e9023b908e0dd02a1d6c5913ec1fd8
+extra arm-none-eabi-binutils 2.47-1.0 arm-none-eabi-binutils-2.47-1.0-i686.pkg.tar.zst 07b9242a6b83680d128c83245c51ea98903286cf12ee304ec8c81a54861d8c80
+extra arm-none-eabi-gcc 16.2.0-1.0 arm-none-eabi-gcc-16.2.0-1.0-i686.pkg.tar.zst 988ca4cfaa15bd7a7eab2b891a52d67c4f68d8f4cc3fd83af497b10c9d3deb9d
+extra arm-none-eabi-newlib 4.4.0.20231231-1.0 arm-none-eabi-newlib-4.4.0.20231231-1.0-any.pkg.tar.zst 84a7019f93e6ef93ffa873b6999cb48bca430fda05ce4d5f0106013216a166d7
 extra at-spi2-core 2.54.0-2.0 at-spi2-core-2.54.0-2.0-i686.pkg.tar.zst ab24fac815d48a0dc683e3511410fa1689eaec03f46a8ad03787b93c9b72e91e
 core attr 2.6.0-1.0 attr-2.6.0-1.0-i686.pkg.tar.zst 11b9cd74f9dbd2ce40f94397c0c3e49a605dab6c68e2f6f8763060ddffc8962a
 core audit 3.0.9-2.0 audit-3.0.9-2.0-i686.pkg.tar.zst 64dd331ae4e4eb7f14398951da71a16eff5d5ee8f70744131c79792e772bfd9c

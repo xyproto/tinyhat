@@ -1,1 +1,1 @@
-openssh libgfortran iso-codes adwaita-fonts iptables perl perl-error perl-mailtools perl-timedate libasan liblsan libtsan libubsan libobjc xcb-proto xorgproto sdl2 hicolor-icon-theme compiler-rt libisl libmpc icu geoip-database sdl2_image llvm-libs libcups
+openssh libgfortran iso-codes adwaita-fonts iptables perl perl-error perl-mailtools perl-timedate libasan liblsan libtsan libubsan libobjc xcb-proto xorgproto sdl2 hicolor-icon-theme compiler-rt icu geoip-database sdl2_image llvm-libs libcups

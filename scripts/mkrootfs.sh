@@ -20,6 +20,9 @@ done
 rm -f "$root/usr/lib/libdom.so.0.4.2" "$root/usr/lib/libhubbub.so.0.3.8" "$root/usr/lib/libparserutils.so.0.2.5" \
 	"$root/usr/lib/libnsutils.so.0.1.1" "$root/usr/lib/libnsbmp.so.0.1.7"
 bsdtar -xpf "$(pkgfile gcc)" -C "$root" 'usr/lib/gcc/i686-pc-linux-gnu/*/crt*.o' 'usr/lib/gcc/i686-pc-linux-gnu/*/libgcc*.a'
+a=usr/lib/gcc/arm-none-eabi/16.2.0
+bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
+	"$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
 ln -sf clang "$root/usr/bin/cc"
 bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
 bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
@@ -30,7 +33,7 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder make llvm clang tinyhat-gui; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder gba mgba make llvm clang tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -66,7 +69,7 @@ zsnes|zsnes|2.3.6-1|GPL-2.0-or-later|https://github.com/xyproto/zsnes||Super Nin
 dosbox-x|dosbox-x|2026.10.01-1|GPL-2.0-or-later|https://dosbox-x.com/||DOS emulator, with the Tiny Hat patches
 scummvm|scummvm|2026.3.0-1|GPL-3.0-or-later|https://www.scummvm.org/||Engine for classic adventure games
 fluidsynth|fluidsynth|2.6.1-1|LGPL-2.1-or-later|https://www.fluidsynth.org/||SoundFont synthesizer with PipeWire output
-orbiton|orbiton|0+f9e82501-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE, with Fennel support
+orbiton|orbiton|2.74.6-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
 grafx2|grafx2|0+f84cb09d-1|GPL-2.0-only|http://grafx2.eu/||Pixel art paint program, ported to SDL3
 fontconfig|fontconfig|2:2.18.3-1|HPND AND MIT|https://www.freedesktop.org/wiki/Software/fontconfig/||Font configuration library
 libxml2|libxml2|2.15.1-5|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library, built without ICU
@@ -74,6 +77,8 @@ libxml2-legacy|libxml2-legacy|2.13.9-1|MIT|https://gitlab.gnome.org/GNOME/libxml
 gdb|gdb|17.1-1|GPL-3.0-or-later|https://www.sourceware.org/gdb/||GNU debugger, without Python
 cc65|cc65|2.19+71746c8-1|Zlib|https://cc65.github.io/||6502 and 65816 C compiler and assembler
 wordgrinder|wordgrinder|0.8-1|MIT|http://cowlark.com/wordgrinder/||Word processor for the terminal
+gba|gba-dev|1-1|MIT AND LGPL-2.0-or-later|https://github.com/gbadev-org/libtonc||libtonc, startup code, gba.specs and gbafix for GBA programming
+mgba|mgba|0.10.5-1|MPL-2.0|https://mgba.io/||Game Boy Advance emulator, SDL frontend
 make|make|4.4.1-1|GPL-3.0-or-later|https://www.gnu.org/software/make/||GNU make, built without Guile support
 llvm|llvm-libs|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|llvm-libs=15.0.7|LLVM runtime libraries, built for X86 and AMDGPU
 clang|clang|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|clang=15.0.7|C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU

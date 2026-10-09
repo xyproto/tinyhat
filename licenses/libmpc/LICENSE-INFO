@@ -1,0 +1,4 @@
+name: libmpc
+version: 1.4.1-1.0
+url: http://www.multiprecision.org/
+license: LGPL-3.0-only

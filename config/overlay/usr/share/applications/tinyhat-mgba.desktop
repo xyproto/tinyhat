@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=mGBA
+Icon=input-gaming
+Comment=Game Boy Advance emulator (open a .gba file from a terminal: mgba game.gba)
+Exec=tinyhat-term mgba
+Terminal=false
+Categories=Game;Emulator;
