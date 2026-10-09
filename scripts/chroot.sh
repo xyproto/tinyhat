@@ -4,11 +4,11 @@ umask 022
 root=$1
 shift
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
-mkdir -p "$top/build/ccache"
+mkdir -p "$HOME/.ccache"
 exec setarch i686 bwrap \
 	--bind "$root" / \
 	--dev /dev --proc /proc --tmpfs /tmp \
-	--bind "$top/build/ccache" /ccache \
+	--bind "$HOME/.ccache" /ccache \
 	--ro-bind /etc/resolv.conf /etc/resolv.conf \
 	--unshare-all --uid 0 --gid 0 --hostname tinyhat-build \
 	--clearenv \

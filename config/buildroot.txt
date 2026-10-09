@@ -4,3 +4,4 @@ wayland wayland-protocols libglvnd mesa gtk3 vte3 libxkbcommon libinput pixman l
 alsa-lib pipewire libpng zlib freetype2 libslirp ncurses libsndfile
 a52dec faad2 libmad libmpeg2 giflib fribidi libtheora libvorbis flac libjpeg-turbo libmikmod
 grub
+arm-none-eabi-binutils arm-none-eabi-gcc arm-none-eabi-newlib

@@ -102,7 +102,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-f9e82501b558dc8c0632e7d5909b9845c985dfcc.tar.gz $(wildcard vendor/patches/orbiton/*)
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-2.74.6.tar.gz $(wildcard vendor/patches/orbiton/*)
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
@@ -144,6 +144,14 @@ $(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.t
 
 $(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c
 	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
+	@touch $@
+
+$(B)/.gba: $(B)/.buildroot recipes/gba.sh vendor/src/libtonc-c5af1b2cb019dcde43216596390490bc07800b21.tar.gz vendor/src/gba-tools-v1.2.0.tar.gz $(wildcard programs/gba/*)
+	scripts/recipe.sh $(B)/buildroot gba >$(B)/gba.log 2>&1 || { tail -40 $(B)/gba.log; exit 1; }
+	@touch $@
+
+$(B)/.mgba: $(B)/.sdl2-compat recipes/mgba.sh vendor/src/mgba-0.10.5.tar.gz
+	scripts/recipe.sh $(B)/buildroot mgba >$(B)/mgba.log 2>&1 || { tail -40 $(B)/mgba.log; exit 1; }
 	@touch $@
 
 $(B)/.wordgrinder: $(B)/.buildroot recipes/wordgrinder.sh vendor/src/wordgrinder-0.8.tar.gz
@@ -226,7 +234,7 @@ $(B)/.licenses: $(LOCKS:%.lock=$(B)/.fetched-%) $(SOURCES) scripts/mklicenses.py
 	python3 scripts/mklicenses.py
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 

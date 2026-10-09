@@ -1,0 +1,4 @@
+name: arm-none-eabi-newlib
+version: 4.4.0.20231231-1.0
+url: https://www.sourceware.org/newlib/
+license: BSD

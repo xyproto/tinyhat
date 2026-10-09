@@ -1,0 +1,4 @@
+name: arm-none-eabi-gcc
+version: 16.2.0-1.0
+url: https://gcc.gnu.org/
+license: GPL AND LGPL AND FDL
