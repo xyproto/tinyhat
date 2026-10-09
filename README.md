@@ -31,11 +31,17 @@ It also includes MemTest86+.
 
 ### Installation
 
+#### From Linux, UNIX or FreeBSD
+
 * Download the `tinyhat32.img` (or clone this repo, install all required dependencies and run `make`).
 * Run `sudo fdisk -l` to list all drives, try to identify the USB drive you want to flash the image to.
-* Remember the drive name, for example `/dev/sdq`. Be 100% sure to use the USB drive and not internal harddrives!
+* Remember the drive name, for example `/dev/sdq`. Be 100% sure to use the USB drive and not an internal harddrive!
 * Run this command, but replace `sdq` with your drive. Please wait and think for 3 seconds and double check the `of` value before pressing return:
    * `sudo dd if=tinyhat32.img of=/dev/sdq bs=4M conv=fsync status=progress`
+
+#### From Windows
+
+* Download and run the `.exe` from the release page, which includes the image and a tiny GUI program for writing the image to a removable drive. (Experimental feature, needs testing).
 
 ### Booting
 
