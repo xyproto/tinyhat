@@ -8,7 +8,7 @@ Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Volume
 
 Ctrl+Alt+A	Scan for ScummVM games
-Ctrl+Alt+B	librepaint
+Ctrl+Alt+B	LibreSprite
 Ctrl+Alt+D	Launch DOSBox-X
 Ctrl+Alt+F	Web browser
 Ctrl+Alt+H	Toggle sharing

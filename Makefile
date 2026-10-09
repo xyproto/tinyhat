@@ -142,7 +142,7 @@ $(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.t
 	scripts/recipe.sh $(B)/buildroot llvm >$(B)/llvm.log 2>&1 || { tail -40 $(B)/llvm.log; exit 1; }
 	@touch $@
 
-$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/librepaint.c
+$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c
 	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
 	@touch $@
 
