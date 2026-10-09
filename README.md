@@ -41,7 +41,7 @@ It also includes MemTest86+.
 
 #### From Windows
 
-* Download and run the `.exe` from the release page, which includes the image and a tiny GUI program for writing the image to a removable drive. (Experimental feature, needs testing).
+* Download and run the `.exe` from the [release page](https://github.com/xyproto/tinyhat/releases), which includes the image and a tiny GUI program for writing the image to a removable drive. (Experimental feature, needs testing).
 
 ### Booting
 
