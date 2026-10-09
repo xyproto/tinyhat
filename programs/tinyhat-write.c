@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <dirent.h>
 #include <gtk/gtk.h>
+#include <signal.h>
 
 #ifdef __APPLE__
 #include <CoreFoundation/CoreFoundation.h>
@@ -43,6 +44,8 @@ static char gtmdir[256];
 static char gstderr[2048];
 static size_t gerrlen;
 static char gspawnerr[512];
+static guint gwatch;
+static int gsawline;
 
 static char *tw_fmt_size(uint64_t n, char *buf, size_t cap)
 {
@@ -176,8 +179,35 @@ static void tw_error_dialog(const char *text)
 	gtk_widget_destroy(d);
 }
 
+static gboolean tw_on_watchdog(gpointer data)
+{
+	(void)data;
+	gwatch = 0;
+	if (grunning && !gsawline && !gfinished) {
+		GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+			"No authentication prompt has appeared. Keep waiting?");
+		gint r;
+		gtk_window_set_title(GTK_WINDOW(d), "Waiting for authentication");
+		r = gtk_dialog_run(GTK_DIALOG(d));
+		gtk_widget_destroy(d);
+		if (r != GTK_RESPONSE_YES) {
+			if (gpid)
+				kill(gpid, SIGKILL);
+			tw_error_dialog("Canceled. To write without a password prompt, start this program with sudo.");
+			tw_done_state("Canceled");
+		}
+	}
+	return FALSE;
+}
+
 static void tw_done_state(const char *msg)
 {
+	if (gwatch) {
+		g_source_remove(gwatch);
+		gwatch = 0;
+	}
 	tw_set_status(msg);
 	gtk_widget_set_sensitive(gwrite, TRUE);
 	gtk_widget_set_sensitive(grefresh, TRUE);
@@ -325,6 +355,7 @@ static gboolean tw_on_io(GIOChannel *src, GIOCondition cond, gpointer data)
 
 static gboolean tw_on_line(const char *line)
 {
+	gsawline = 1;
 	if (!strncmp(line, "SIZE ", 5)) {
 		gtotal = strtoull(line + 5, NULL, 10);
 	} else if (!strncmp(line, "PROGRESS ", 9)) {
@@ -460,6 +491,7 @@ static void tw_start_write(void)
 	glinelen = 0;
 	gerrlen = 0;
 	gfinished = 0;
+	gsawline = 0;
 	gspawnerr[0] = 0;
 	gstderr[0] = 0;
 	gerrfd = -1;
@@ -502,6 +534,7 @@ static void tw_start_write(void)
 	g_io_channel_set_encoding(gchan, NULL, NULL);
 	g_io_channel_set_close_on_unref(gchan, TRUE);
 	g_io_add_watch(gchan, G_IO_IN | G_IO_HUP | G_IO_ERR, tw_on_io, NULL);
+	gwatch = g_timeout_add_seconds(10, tw_on_watchdog, NULL);
 	if (gerrfd >= 0) {
 		gerrchan = g_io_channel_unix_new(gerrfd);
 		g_io_channel_set_encoding(gerrchan, NULL, NULL);
