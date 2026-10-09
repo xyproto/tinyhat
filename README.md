@@ -16,7 +16,7 @@ The goals for this distro are:
 * To be possible to use on a 32-bit or 64-bit x86 machine with little ram and disk space, for:
   * Retro gaming (ScummVM, DosBox-X and ZSNES).
   * Playing whichever DOS games are on the first harddrive, after booting from an USB stick.
-  * Creating graphics / pixel art (LibreSprite).
+  * Creating graphics / pixel art (the next release will include LibreSprite).
   * Creating music / tracking (Fast Tracker II / ft2-clone).
   * Programming in C with SDL3 and/or Raylib and/or fluidsynth, with tab completion in Orbiton.
   * Debugging with gdb and Orbiton.
