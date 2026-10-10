@@ -1,0 +1,4 @@
+name: tic80-argparse
+version: 0d5f5d07 (bundled with TIC-80)
+url: https://github.com/cofyc/argparse
+license: MIT

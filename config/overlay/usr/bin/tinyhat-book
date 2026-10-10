@@ -2,4 +2,4 @@
 dir=$HOME/Books
 mkdir -p "$dir"
 [ -e "$dir/book.md" ] || cp /etc/skel/Books/book.md "$dir/book.md"
-cd "$dir" && exec foot -T "Writing a book" o book.md
+cd "$dir" && exec foot -T "Writing a book" o --book-mode-text book.md

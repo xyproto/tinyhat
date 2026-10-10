@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Pixelc sprite and tile editor
+Icon=applications-graphics
+Comment=Pixel art, sprites, tiles and animations, saved in ~/Pictures/Pixelc
+Exec=tinyhat-pixelc
+Terminal=false
+Categories=Graphics;

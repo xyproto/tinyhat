@@ -10,7 +10,6 @@ extra alsa-lib 1.2.16.1-1.0 alsa-lib-1.2.16.1-1.0-i686.pkg.tar.zst 89003b90f497d
 extra alsa-topology-conf 1.2.5.1-4.0 alsa-topology-conf-1.2.5.1-4.0-any.pkg.tar.zst 4c0031c48a6f8a4b3ddc626f24855201e5f881050ee44163274461c562a3fa91
 extra alsa-ucm-conf 1.2.16.1-1.0 alsa-ucm-conf-1.2.16.1-1.0-any.pkg.tar.zst 13024cd99f5c67f355968019f3c42264e9023e8a279be2660d14468555c40bdf
 extra alsa-utils 1.2.8-1.0 alsa-utils-1.2.8-1.0-i686.pkg.tar.zst 5d700e103171cd1e3369d9bb6b0427ede3d69339c9db2d8adbb6923110fb87c7
-core archlinux-keyring 20250807.1-1.0 archlinux-keyring-20250807.1-1.0-any.pkg.tar.zst 7c4b87d4c5587519ec7a128cd8fe7038a498b8da3dbfff233eb602d36ccaf278
 extra archlinux-wallpaper 1.6.1-7.0 archlinux-wallpaper-1.6.1-7.0-any.pkg.tar.zst 956acfa334c4b04a10c9d40b6ea5b01aba19d619d244dc10fd817a4e0cf76a69
 core archlinux32-keyring 20251214-1.0 archlinux32-keyring-20251214-1.0-any.pkg.tar.zst 7600cd9ddabbbbb5643b0235646670d070a4848030fbe10c77939ea3aeee29a0
 extra argon2 20190702-7.0 argon2-20190702-7.0-i686.pkg.tar.zst d6e6ec8bf0e9fad3d1d06fb545c0eeef00e9023b908e0dd02a1d6c5913ec1fd8
@@ -197,7 +196,6 @@ core libpsl 0.21.2-1.0 libpsl-0.21.2-1.0-i686.pkg.tar.zst 75152f6c4a64833ed95ab8
 core libquadmath 15.2.1+r604+g0b99615a8aef-1.1 libquadmath-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst dc60b63c3cb5bae4aa13a27463d6ee1033e89a2eed93c3308b903d9d216c7fdd
 extra libresprite 1.2-2.0 libresprite-1.2-2.0-i686.pkg.tar.zst 6ec609ff7e3dcf89937c36e890e3549cc7b4dd6c293b0d0707bc5ea5307ad44a
 extra libretro-nestopia 1:20260906.172210.g0a46d231849e-1.0 libretro-nestopia-1:20260906.172210.g0a46d231849e-1.0-i686.pkg.tar.zst 19e8b7cd86fcb01687ed6f71118430ed84bfb8c8e7f98c9be9599fd1c12351d1
-extra libretro-picodrive 20260402.125053.gf0d4a0118a97-1.0 libretro-picodrive-20260402.125053.gf0d4a0118a97-1.0-i686.pkg.tar.zst 70e8e6534da81aebcee417068db69e8336d8fb01dca040b0cc42c9498d11d63a
 extra librsvg 2:2.58.3-1.0 librsvg-2:2.58.3-1.0-i686.pkg.tar.zst 25c9b28f3fd30e43371e54fd9ab005c68d48f488f1c1563dff5433aea93918d1
 extra libsamplerate 0.2.2-3.0 libsamplerate-0.2.2-3.0-i686.pkg.tar.zst 20b0d9a8da2448dee572d6af9c649115a8eaa736b7b9d042cd55ceaf9ccbc1d8
 core libsasl 2.1.28-3.0 libsasl-2.1.28-3.0-i686.pkg.tar.zst b9c806c80a47181d8c4df28150adab6be72a02de963247deba4381ba863e5c84
@@ -335,7 +333,6 @@ extra tinycompress 1.2.8-1.1 tinycompress-1.2.8-1.1-i686.pkg.tar.zst 49c0d89ea5c
 extra tinyionice 1.0.4-2.0 tinyionice-1.0.4-2.0-i686.pkg.tar.zst 6fa244c789d68dd6a84ba62fbe5b9c5d39e16133d7f1a70a3b804a687e819df9
 extra tinysparql 3.11.1-1.0 tinysparql-3.11.1-1.0-i686.pkg.tar.zst 5310a4171209b326c695cb2d87b6dc186003988fd3066d135e53e35835ed0dc0
 extra tinyxml2 11.0.0-1.0 tinyxml2-11.0.0-1.0-i686.pkg.tar.zst 8f49eb72cb6694c5687b96361c01be220d1c370e154a2fb3a812177e59af5b97
-extra tinyxxd 1.3.16-1.0 tinyxxd-1.3.16-1.0-i686.pkg.tar.zst 0bc3f91c1a38a64ef871fcc40b4efcf8903d0271fb12b8b4c4966de58e30c6ff
 core tpm2-tss 3.2.0-3.1 tpm2-tss-3.2.0-3.1-i686.pkg.tar.zst 1583422bb4f9fab49161e3ab1f8bf094d17c61571867abe1569b3655f8c8c8fc
 extra ttf-dejavu 2.37+18+g9b5d1b2f-7.0 ttf-dejavu-2.37+18+g9b5d1b2f-7.0-any.pkg.tar.zst fe12f820977757d35f978cc58c80cc9ccca721fbaf20737d18e60b8b1761b49b
 extra ttf-jetbrains-mono 2.304-2.0 ttf-jetbrains-mono-2.304-2.0-any.pkg.tar.zst 54c9073697a4d992b4d9f0bf78d0636411f97b7f8a28293a4ea9a83f905aad38

@@ -1,0 +1,4 @@
+name: furnace-fmt
+version: bundled with Furnace
+url: https://github.com/fmtlib/fmt
+license: MIT

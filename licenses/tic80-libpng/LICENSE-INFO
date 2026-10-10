@@ -1,0 +1,4 @@
+name: tic80-libpng
+version: ed217e3e (bundled with TIC-80)
+url: https://github.com/glennrp/libpng
+license: Libpng

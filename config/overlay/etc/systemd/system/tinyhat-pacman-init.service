@@ -9,7 +9,7 @@ RemainAfterExit=yes
 Nice=19
 IOSchedulingClass=idle
 ExecStart=/usr/bin/pacman-key --init
-ExecStart=/usr/bin/pacman-key --populate archlinux32 archlinux
+ExecStart=/usr/bin/pacman-key --populate archlinux32
 ExecStartPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 
 [Install]

@@ -1,0 +1,4 @@
+name: vice
+version: 3.9
+url: https://vice-emu.sourceforge.io/
+license: GPL-2.0-or-later
