@@ -9,11 +9,13 @@ mount -t tmpfs -o mode=0755,nosuid,nodev run /run
 
 label=TINYHAT
 toram=auto
+persist=1
 for arg in $(cat /proc/cmdline); do
 	case $arg in
 	tinyhat.label=*) label=${arg#*=} ;;
 	tinyhat.toram | tinyhat.toram=1) toram=1 ;;
 	tinyhat.toram=0) toram=0 ;;
+	tinyhat.nopersist) persist=0 ;;
 	tinyhat.shell) sh ;;
 	esac
 done
@@ -53,7 +55,7 @@ if [ "$toram" = auto ]; then
 	toram=0
 	mem_kb=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
 	sfs_kb=$(($(stat -c %s "$sfs") / 1024))
-	[ "$mem_kb" -ge $((sfs_kb + 300 * 1024)) ] && toram=1
+	[ "$mem_kb" -ge $((sfs_kb + 250 * 1024)) ] && toram=1
 fi
 if [ "$toram" = 1 ]; then
 	echo "Tiny Hat: copying the system to RAM, this takes a moment..."
@@ -63,9 +65,19 @@ else
 	mount -t tmpfs -o size=75%,mode=0755 rw /run/tinyhat/rw
 fi
 mount -t squashfs -o ro,loop "$sfs" /run/tinyhat/lower || rescue "could not mount $sfs"
-mkdir -p /run/tinyhat/rw/upper /run/tinyhat/rw/work
-mount -t overlay -o lowerdir=/run/tinyhat/lower,upperdir=/run/tinyhat/rw/upper,workdir=/run/tinyhat/rw/work overlay /newroot || rescue "could not mount the overlay"
+mkdir -p /run/tinyhat/data
+if [ "$persist" = 1 ] && data=$(find_label THDATA) && mount -t xfs -o noatime,lazytime "$data" /run/tinyhat/data; then
+	root=root-$(od -An -tu4 -j8 -N4 "$sfs" | tr -d ' ')
+	mkdir -p "/run/tinyhat/data/$root/upper" "/run/tinyhat/data/$root/work"
+	mount -t overlay -o lowerdir=/run/tinyhat/lower,upperdir=/run/tinyhat/data/$root/upper,workdir=/run/tinyhat/data/$root/work overlay /newroot &&
+		echo "$root" >/run/tinyhat/persistroot
+fi
+if [ ! -f /run/tinyhat/persistroot ]; then
+	mkdir -p /run/tinyhat/rw/upper /run/tinyhat/rw/work
+	mount -t overlay -o lowerdir=/run/tinyhat/lower,upperdir=/run/tinyhat/rw/upper,workdir=/run/tinyhat/rw/work overlay /newroot || rescue "could not mount the overlay"
+fi
 umount -l /run/tinyhat/lower /run/tinyhat/rw /run/tinyhat/boot
+mountpoint -q /run/tinyhat/data && umount -l /run/tinyhat/data
 
 echo "$dev" >/run/tinyhat/bootdev
 mount --move /run /newroot/run

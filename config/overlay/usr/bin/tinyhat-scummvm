@@ -7,4 +7,4 @@ if [ -f "$ini" ] && [ ! -e "$HOME/.config/scummvm/.tinyhat-surfacesdl" ]; then
 fi
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/tinyhat-scummvm.lock"
 flock 9
-SDL_RENDER_DRIVER=${TINYHAT_SCUMMVM_RENDER:-opengles2} exec nice -n -5 scummvm --soundfont="$(tinyhat-soundfont)" "$@"
+LD_BIND_NOW=1 SDL_RENDER_DRIVER=${TINYHAT_SCUMMVM_RENDER:-opengles2} exec nice -n -5 scummvm --soundfont="$(tinyhat-soundfont)" "$@"

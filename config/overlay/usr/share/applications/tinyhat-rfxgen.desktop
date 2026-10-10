@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=rFXGen
+Icon=audio-x-generic
+Comment=Make chip sound effects and samples (export WAV for ft2-clone)
+Exec=rfxgen
+Terminal=false
+Categories=AudioVideo;Audio;

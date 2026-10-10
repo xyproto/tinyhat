@@ -14,4 +14,4 @@ dropbear-scp zip unzip unrar 7zip unarj lhasa cabextract innoextract rsync ncdu
 the_silver_searcher ripgrep
 earlyoom
 pacman archlinux32-keyring archlinux-keyring pacman-mirrorlist
-ft2-clone nasm mandoc man-pages sl nethack tinyionice mc lsd fastfetch algernon brightnessctl grim gcc ttf-jetbrains-mono iputils mtr ldns strace joe goaccess tty-solitaire jomon libresprite fennel love mtpaint arm-none-eabi-binutils arm-none-eabi-gcc arm-none-eabi-newlib netsurf nftables
+ft2-clone nasm mandoc man-pages sl tinyionice mc lsd fastfetch algernon brightnessctl grim gcc ttf-jetbrains-mono iputils mtr ldns strace joe goaccess tty-solitaire jomon libresprite fennel love mtpaint bonzomatic sox twolame ccache arm-none-eabi-binutils arm-none-eabi-gcc arm-none-eabi-newlib netsurf nftables

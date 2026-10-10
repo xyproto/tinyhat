@@ -179,6 +179,8 @@ static void tw_error_dialog(const char *text)
 	gtk_widget_destroy(d);
 }
 
+static void tw_done_state(const char *msg);
+
 static gboolean tw_on_watchdog(gpointer data)
 {
 	(void)data;
