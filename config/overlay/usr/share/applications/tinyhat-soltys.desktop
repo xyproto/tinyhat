@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Soltys
+Icon=applications-games
+Comment=Fairy-tale adventure from Poland, played in ScummVM
+Exec=tinyhat-launch tinyhat-game soltys
+Terminal=false
+Categories=Game;AdventureGame;

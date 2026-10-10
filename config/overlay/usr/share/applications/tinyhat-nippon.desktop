@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Nippon Safes Inc.
+Icon=applications-games
+Comment=Comedy adventure with three playable characters, played in ScummVM
+Exec=tinyhat-launch tinyhat-game nippon
+Terminal=false
+Categories=Game;AdventureGame;

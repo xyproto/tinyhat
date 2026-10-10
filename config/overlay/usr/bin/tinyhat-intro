@@ -1,0 +1,7 @@
+#!/bin/sh
+dir=$HOME/cprojects/dos-intro
+mkdir -p "$dir"
+for f in intro.asm Makefile; do
+	[ -e "$dir/$f" ] || cp "/etc/skel/cprojects/dos-intro/$f" "$dir/$f"
+done
+cd "$dir" && exec foot -T "256 byte demoscene intro" o intro.asm

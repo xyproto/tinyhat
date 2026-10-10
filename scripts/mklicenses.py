@@ -39,8 +39,8 @@ SOURCES = [
      "libxml2-2.15.1.tar.xz", ["Copyright"]),
     ("libxml2-2.13.9", "2.13.9 without ICU (libxml2.so.2 for LLVM)", "https://gitlab.gnome.org/GNOME/libxml2", "MIT",
      "libxml2-2.13.9.tar.xz", ["Copyright"]),
-    ("orbiton", "main (d7d68564)", "https://github.com/xyproto/orbiton", "BSD-3-Clause",
-     "orbiton-d7d68564319040ef95d872e49601ca729e345ee0.tar.gz", ["LICENSE"]),
+    ("orbiton", "main (80679da9)", "https://github.com/xyproto/orbiton", "BSD-3-Clause",
+     "orbiton-80679da9d30712b9a5ba21071bbdc9adb1c9ec03.tar.gz", ["LICENSE"]),
     ("grafx2", "master (f84cb09d) ported to SDL3", "http://grafx2.eu/", "GPL-2.0-only",
      "grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz", ["LICENSE", "doc/gpl-2.0.txt"]),
     ("lua-5.4.9-grafx2", "5.4.9 (built into Grafx2)", "https://www.lua.org/", "MIT",
@@ -57,6 +57,38 @@ SOURCES = [
      "rfxgen-5.0.tar.gz", ["LICENSE"]),
     ("mgba", "0.10.5", "https://mgba.io/", "MPL-2.0",
      "mgba-0.10.5.tar.gz", ["LICENSE"]),
+    ("vtgbte", "master (1a9f4603)", "https://github.com/paul-arutyunov/vtGBte", "MIT",
+     "vtGBte-1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz", ["LICENSE"]),
+    ("blastem", "libretro master (1e0de94d)", "https://github.com/libretro/blastem", "GPL-3.0-or-later AND BSD-3-Clause AND Zlib",
+     "blastem-1e0de94dc7e669c0925a22c0fccf6cdc837af0a0.tar.gz", ["COPYING", "libchdr/LICENSE.txt", "zlib/LICENSE"]),
+    ("vice", "3.9", "https://vice-emu.sourceforge.io/", "GPL-2.0-or-later",
+     "vice-3.9.tar.gz", ["COPYING", "README"]),
+    ("tic80", "1.3.1", "https://github.com/nesbox/TIC-80", "MIT",
+     "tic80-1.3.1.tar.gz", ["LICENSE"]),
+    ("tic80-argparse", "0d5f5d07 (bundled with TIC-80)", "https://github.com/cofyc/argparse", "MIT",
+     "tic80-argparse-0d5f5d07.tar.gz", ["LICENSE"]),
+    ("tic80-blip-buf", "330226d9 (bundled with TIC-80)", "https://github.com/nesbox/blip-buf", "LGPL-2.1-or-later",
+     "tic80-blip-buf-330226d9.tar.gz", ["license.txt"]),
+    ("tic80-giflib", "1aa11b06 (bundled with TIC-80)", "https://github.com/nesbox/giflib", "MIT",
+     "tic80-giflib-1aa11b06.tar.gz", ["COPYING"]),
+    ("tic80-jsmn", "25647e69 (bundled with TIC-80)", "https://github.com/zserge/jsmn", "MIT",
+     "tic80-jsmn-25647e69.tar.gz", ["LICENSE"]),
+    ("tic80-libpng", "ed217e3e (bundled with TIC-80)", "https://github.com/glennrp/libpng", "Libpng",
+     "tic80-libpng-ed217e3e.tar.gz", ["LICENSE"]),
+    ("tic80-lua", "75ea9ccb (bundled with TIC-80)", "https://github.com/lua/lua", "MIT",
+     "tic80-lua-75ea9ccb.tar.gz", ["lua.h"]),
+    ("tic80-naett", "10a96244 (bundled with TIC-80)", "https://github.com/erkkah/naett", "MIT",
+     "tic80-naett-10a96244.tar.gz", ["LICENSE"]),
+    ("tic80-zip", "296ff242 (bundled with TIC-80)", "https://github.com/kuba--/zip", "Unlicense",
+     "tic80-zip-296ff242.tar.gz", ["LICENSE.txt"]),
+    ("tic80-zlib", "51b7f2ab (bundled with TIC-80)", "https://github.com/madler/zlib", "Zlib",
+     "tic80-zlib-51b7f2ab.tar.gz", ["LICENSE"]),
+    ("furnace", "0.6.8.3", "https://github.com/tildearrow/furnace", "GPL-2.0-or-later",
+     "furnace-0.6.8.3.tar.gz", ["LICENSE"]),
+    ("furnace-fmt", "bundled with Furnace", "https://github.com/fmtlib/fmt", "MIT",
+     "furnace-fmt-e57ca2e3.tar.gz", ["LICENSE.rst"]),
+    ("furnace-adpcm", "bundled with Furnace", "https://github.com/superctr/adpcm", "MIT",
+     "furnace-adpcm-ef7a2171.tar.gz", ["LICENSE"]),
     ("wordgrinder", "0.8", "http://cowlark.com/wordgrinder/", "MIT",
      "wordgrinder-0.8.tar.gz", ["licenses/"]),
     ("sdl2_image", "2.8.12", "https://github.com/libsdl-org/SDL_image", "Zlib",
@@ -188,6 +220,24 @@ def main():
         with open(os.path.join(path, "LICENSE"), "wb") as f:
             f.write(z.read("readme.txt"))
     info(path, "Flight of the Amazon Queen (CD talkie, MP3)", "1.1", "https://www.scummvm.org/games/#games-queen", "LicenseRef-FOTAQ-Freeware")
+
+    path = os.path.join(OUT, "beneath-a-steel-sky")
+    os.makedirs(path)
+    with zipfile.ZipFile(os.path.join(SRC, "BASS-Floppy-1.3.zip")) as z:
+        with open(os.path.join(path, "LICENSE"), "wb") as f:
+            f.write(z.read("readme.txt"))
+    info(path, "Beneath a Steel Sky (floppy)", "1.3", "https://www.scummvm.org/games/#games-sky", "LicenseRef-BASS-Freeware")
+
+    for name, title, version, zipname, member, url in (
+            ("lure-of-the-temptress", "Lure of the Temptress", "1.1", "lure-1.1.zip", "lure/LICENSE.txt", "https://www.scummvm.org/games/#games-lure"),
+            ("soltys", "Soltys", "1.0", "soltys-en-v1.0.zip", "license.txt", "https://www.scummvm.org/games/#games-soltys"),
+            ("nippon-safes", "Nippon Safes Inc.", "1.0", "nippon-1.0.zip", "readme.txt", "https://www.scummvm.org/games/#games-nippon")):
+        path = os.path.join(OUT, name)
+        os.makedirs(path)
+        with zipfile.ZipFile(os.path.join(SRC, zipname)) as z:
+            with open(os.path.join(path, "LICENSE"), "wb") as f:
+                f.write(z.read(member))
+        info(path, title, version, url, "LicenseRef-" + name + "-Freeware")
 
     for name, title, zipname in (("beej-bgc", "Beej's Guide to C Programming", "beej-bgc.zip"),
                                  ("beej-bgclr", "Beej's Guide to the C Library", "beej-bgclr.zip")):

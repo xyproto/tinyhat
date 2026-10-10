@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p "$HOME/cprojects/gb-tiles"
+cd "$HOME/cprojects/gb-tiles" && exec foot -T "vtGBte" vtgbte

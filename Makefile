@@ -102,7 +102,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-d7d68564319040ef95d872e49601ca729e345ee0.tar.gz
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-80679da9d30712b9a5ba21071bbdc9adb1c9ec03.tar.gz
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
@@ -238,7 +238,35 @@ $(B)/.licenses: $(LOCKS:%.lock=$(B)/.fetched-%) $(SOURCES) scripts/mklicenses.py
 	python3 scripts/mklicenses.py
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/.vtgbte: $(B)/.buildroot recipes/vtgbte.sh vendor/src/vtGBte-1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz
+	scripts/recipe.sh $(B)/buildroot vtgbte >$(B)/vtgbte.log 2>&1 || { tail -40 $(B)/vtgbte.log; exit 1; }
+	@touch $@
+
+$(B)/.testcontroller: $(B)/.sdl3 recipes/testcontroller.sh vendor/src/SDL3-3.4.18.tar.gz
+	scripts/recipe.sh $(B)/buildroot testcontroller >$(B)/testcontroller.log 2>&1 || { tail -40 $(B)/testcontroller.log; exit 1; }
+	@touch $@
+
+$(B)/.blastem: $(B)/.buildroot recipes/blastem.sh vendor/src/blastem-1e0de94dc7e669c0925a22c0fccf6cdc837af0a0.tar.gz
+	scripts/recipe.sh $(B)/buildroot blastem >$(B)/blastem.log 2>&1 || { tail -40 $(B)/blastem.log; exit 1; }
+	@touch $@
+
+$(B)/.retro: $(B)/.sdl3 recipes/retro.sh $(wildcard programs/retro/*)
+	scripts/recipe.sh $(B)/buildroot retro >$(B)/retro.log 2>&1 || { tail -40 $(B)/retro.log; exit 1; }
+	@touch $@
+
+$(B)/.vice: $(B)/.buildroot $(B)/.sdl2-compat $(B)/.sdl2_image recipes/vice.sh vendor/src/vice-3.9.tar.gz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst vendor/src/xa-2.4.1-2.0-i686.pkg.tar.zst
+	scripts/recipe.sh $(B)/buildroot vice >$(B)/vice.log 2>&1 || { tail -40 $(B)/vice.log; exit 1; }
+	@touch $@
+
+$(B)/.tic80: $(B)/.buildroot $(B)/.sdl2-compat recipes/tic80.sh vendor/src/tic80-1.3.1.tar.gz vendor/src/tic80-argparse-0d5f5d07.tar.gz vendor/src/tic80-blip-buf-330226d9.tar.gz vendor/src/tic80-giflib-1aa11b06.tar.gz vendor/src/tic80-jsmn-25647e69.tar.gz vendor/src/tic80-libpng-ed217e3e.tar.gz vendor/src/tic80-lua-75ea9ccb.tar.gz vendor/src/tic80-naett-10a96244.tar.gz vendor/src/tic80-zip-296ff242.tar.gz vendor/src/tic80-zlib-51b7f2ab.tar.gz
+	scripts/recipe.sh $(B)/buildroot tic80 >$(B)/tic80.log 2>&1 || { tail -40 $(B)/tic80.log; exit 1; }
+	@touch $@
+
+$(B)/.furnace: $(B)/.buildroot $(B)/.sdl2-compat recipes/furnace.sh vendor/src/furnace-0.6.8.3.tar.gz vendor/src/furnace-fmt-e57ca2e3.tar.gz vendor/src/furnace-adpcm-ef7a2171.tar.gz
+	scripts/recipe.sh $(B)/buildroot furnace >$(B)/furnace.log 2>&1 || { tail -40 $(B)/furnace.log; exit 1; }
+	@touch $@
+
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/nippon-1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 

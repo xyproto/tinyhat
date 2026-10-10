@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Write a book in Orbiton
+Icon=accessories-text-editor
+Comment=Write a book in Markdown, one chapter at a time
+Exec=tinyhat-book
+Terminal=false
+Categories=Office;
