@@ -1,6 +1,6 @@
 #!/bin/sh
 mkdir -p "$HOME/downloads"
-export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria BROWSER=netsurf-gtk3
+export XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria BROWSER=netsurf-gtk3 SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
 for try in 1 2 3; do

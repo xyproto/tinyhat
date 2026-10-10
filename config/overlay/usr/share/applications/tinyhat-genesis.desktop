@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Genesis emulator (BlastEm)
+Icon=applications-games
+Comment=Play Sega Genesis and Mega Drive games from ~/ROMs/genesis or a USB stick. A, Z, X, Enter and arrows, F5 saves, F9 loads
+Exec=tinyhat-emulate genesis
+Terminal=false
+Categories=Game;Emulator;

@@ -1,0 +1,23 @@
+#!/bin/sh
+cd "$HOME" || exit 1
+mkdir -p Shared
+set --
+for f in *; do
+	case $f in
+	Shared | DOS | downloads | "*") ;;
+	*) set -- "$@" "$f" ;;
+	esac
+done
+if [ $# -eq 0 ]; then
+	tinyhat-notice "There is nothing to put in ~/Shared yet" 5
+	exit 0
+fi
+out=Shared/tinyhat-work-$(date +%Y-%m-%d-%H%M).zip
+tinyhat-notice "Zipping your work into ~/Shared..." 30
+if zip -r -q -y "$out.part" "$@" && mv -f "$out.part" "$out"; then
+	tinyhat-notice "Saved ~/$out ($(du -h "$out" | cut -f1))" 8
+else
+	rm -f "$out.part"
+	tinyhat-notice "Could not create the zip file in ~/Shared" 8
+	exit 1
+fi

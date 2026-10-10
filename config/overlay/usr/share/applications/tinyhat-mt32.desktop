@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MT-32 music for DOS games
+Icon=audio-x-generic
+Comment=Use your Roland MT-32 ROM files for music in DOSBox-X and ScummVM
+Exec=tinyhat-term tinyhat-mt32
+Terminal=false
+Categories=Settings;AudioVideo;

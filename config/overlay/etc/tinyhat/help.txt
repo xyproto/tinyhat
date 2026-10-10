@@ -8,26 +8,31 @@ Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Audio volume
 
 Ctrl+Alt+A	Scan for ScummVM games
-Ctrl+Alt+B	Bonzomatic (GL >= 4.1)
+Ctrl+Alt+B	Bluetooth devices
+Ctrl+Alt+C	Example game in C (2x Ctrl+Space to run)
 Ctrl+Alt+D	Launch DOSBox-X
 Ctrl+Alt+E	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
-Ctrl+Alt+F	Web browser
 Ctrl+Alt+G	Example GBA program in C (2x Ctrl+Space to run)
 Ctrl+Alt+H	Toggle sharing
 Ctrl+Alt+I	LibreSprite
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
 Ctrl+Alt+M	mtPaint
-Ctrl+Alt+P	Example game in C (2x Ctrl+Space to run)
+Ctrl+Alt+N	Netsurf web browser
+Ctrl+Alt+O	DOS programming (Open Watcom)
+Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
+Ctrl+Alt+Q	Flight of the Amazon Queen
 Ctrl+Alt+S	ScummVM
 Ctrl+Alt+T / Ctrl+Alt+R	Terminal
-Ctrl+Alt+W	DOS programming (Open Watcom)
+Ctrl+Alt+W	Write a book in Orbiton
+Ctrl+Alt+X	256 byte demoscene intro (2x Ctrl+Space to run)
 Ctrl+Alt+Z	ZSNES 2
 
 Right click desktop	Toggle background
 PrtSc	Screenshot to ~/Pictures
+Ctrl+Alt+Shift+Q	Power off
+Ctrl+Alt+Del	Reboot
 
 USB sticks and CDs show up in /media and as D: in DOSBox-X.
 Put DOS games in ~/DOS, which is C: in DOSBox-X.
 A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:.
-Flight of the Amazon Queen is ready to play in ScummVM.

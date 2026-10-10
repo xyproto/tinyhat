@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Flight of the Amazon Queen
+Icon=applications-games
+Comment=Adventure game with speech, played in ScummVM
+Exec=tinyhat-launch tinyhat-game fotaq
+Terminal=false
+Categories=Game;AdventureGame;

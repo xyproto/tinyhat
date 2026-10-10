@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Point-and-click adventure programming
+Icon=applications-games
+Comment=Make a point-and-click adventure game in Lua with the LÖVE engine
+Exec=tinyhat-adventure
+Terminal=false
+Categories=Development;

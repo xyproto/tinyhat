@@ -1,7 +1,6 @@
-NAME = hat-in-the-stars
+NAME = the-tiny-hat
 LOVE = 11.5
-FILES = conf.lua main.lua game.fnl
-FENNEL = $(firstword $(wildcard /usr/share/lua/5.4/fennel.lua /usr/share/lua/5.3/fennel.lua /usr/share/lua/5.1/fennel.lua fennel.lua))
+FILES = conf.lua main.lua adventure.lua
 
 run:
 	love .
@@ -9,7 +8,6 @@ run:
 $(NAME).love: $(FILES)
 	rm -f $@
 	zip -9 -q $@ $(FILES)
-	zip -9 -q -j $@ $(FENNEL)
 
 win32 win64: $(NAME).love
 	[ -f love-$(LOVE)-$@.zip ] || curl -fLO https://github.com/love2d/love/releases/download/$(LOVE)/love-$(LOVE)-$@.zip
@@ -22,6 +20,6 @@ win32 win64: $(NAME).love
 	@echo "$(NAME)-$@.zip is ready to be shared with Windows users"
 
 clean:
-	rm -rf $(NAME).love $(NAME)-win32 $(NAME)-win32.zip $(NAME)-win64 $(NAME)-win64.zip
+	rm -rf $(NAME).love $(NAME)-win32 $(NAME)-win64 $(NAME)-win32.zip $(NAME)-win64.zip
 
 .PHONY: run win32 win64 clean

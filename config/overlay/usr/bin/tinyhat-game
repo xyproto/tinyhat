@@ -1,0 +1,9 @@
+#!/bin/sh
+dir=/usr/share/games/$1
+tinyhat-scan-games --fixup
+target=$(awk -F= -v d="$dir" '/^\[/ { t = substr($0, 2, length($0) - 2) } $1 == "path" && $2 == d { print t; exit }' "$HOME/.config/scummvm/scummvm.ini" 2>/dev/null)
+if [ -z "$target" ]; then
+	tinyhat-notice "Could not find the game in $dir" 6
+	exit 1
+fi
+exec tinyhat-scummvm "$target"

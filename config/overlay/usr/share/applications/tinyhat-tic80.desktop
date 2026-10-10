@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=TIC-80 fantasy console
+Icon=applications-games
+Comment=Make tiny games and demos in Lua or Fennel, with built-in code, sprite, map, sound and music editors
+Exec=tic80
+Terminal=false
+Categories=Development;Game;

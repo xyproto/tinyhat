@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Gamepads
+Icon=input-gaming
+Comment=Test, set up or pair gamepads for games and emulators
+Exec=tinyhat-gamepad
+Terminal=false
+Categories=Settings;HardwareSettings;

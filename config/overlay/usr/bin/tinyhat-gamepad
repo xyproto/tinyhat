@@ -1,0 +1,26 @@
+#!/bin/sh
+dir=$HOME/.config/tinyhat
+db=$dir/gamecontrollerdb.txt
+test="Test or set up a gamepad"
+pair="Pair a Bluetooth gamepad"
+reset="Forget my gamepad setups"
+choice=$(printf '%s\n%s\n%s\n' "$test" "$pair" "$reset" | fuzzel --dmenu --prompt "Gamepads ❯ ") || exit 0
+case $choice in
+"$test")
+	mkdir -p "$dir"
+	log=$(mktemp) || exit 1
+	(cd "$dir" && SDL_RENDER_DRIVER=opengles2 testcontroller >"$log" 2>&1)
+	awk '/Mapping complete:/ { getline; sub(/^INFO: /, ""); print }' "$log" | while IFS= read -r mapping; do
+		guid=${mapping%%,*}
+		[ -f "$db" ] && grep -v "^$guid," "$db" >"$db.tmp" && mv -f "$db.tmp" "$db"
+		printf '%s\n' "$mapping" >>"$db"
+		tinyhat-notice "Saved the gamepad setup, games started from now on will use it" 6
+	done
+	rm -f "$log"
+	;;
+"$pair") exec tinyhat-bluetui ;;
+"$reset")
+	rm -f "$db"
+	tinyhat-notice "Gamepads use the built-in setups again" 5
+	;;
+esac
