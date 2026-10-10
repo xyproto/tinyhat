@@ -102,7 +102,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-80679da9d30712b9a5ba21071bbdc9adb1c9ec03.tar.gz
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-fa8722804b6b75e697ea4ec8ea05c75420f07199.tar.gz
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
@@ -156,10 +156,6 @@ $(B)/.mgba: $(B)/.sdl2-compat recipes/mgba.sh vendor/src/mgba-0.10.5.tar.gz
 
 $(B)/.rfxgen: $(B)/.raylib recipes/rfxgen.sh vendor/src/rfxgen-5.0.tar.gz
 	scripts/recipe.sh $(B)/buildroot rfxgen >$(B)/rfxgen.log 2>&1 || { tail -40 $(B)/rfxgen.log; exit 1; }
-	@touch $@
-
-$(B)/.wordgrinder: $(B)/.buildroot recipes/wordgrinder.sh vendor/src/wordgrinder-0.8.tar.gz
-	scripts/recipe.sh $(B)/buildroot wordgrinder >$(B)/wordgrinder.log 2>&1 || { tail -40 $(B)/wordgrinder.log; exit 1; }
 	@touch $@
 
 $(B)/.sdl3_image: $(B)/.sdl3 recipes/sdl3_image.sh vendor/src/SDL3_image-3.4.8.tar.gz
@@ -266,7 +262,19 @@ $(B)/.furnace: $(B)/.buildroot $(B)/.sdl2-compat recipes/furnace.sh vendor/src/f
 	scripts/recipe.sh $(B)/buildroot furnace >$(B)/furnace.log 2>&1 || { tail -40 $(B)/furnace.log; exit 1; }
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.wordgrinder $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/nippon-1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/.pixelc: $(B)/.buildroot $(B)/.sdl2-compat $(B)/.sdl2_image recipes/pixelc.sh vendor/src/pixelc-9b885c4865bc577131722ee248346abe55a1c410.tar.gz
+	scripts/recipe.sh $(B)/buildroot pixelc >$(B)/pixelc.log 2>&1 || { tail -40 $(B)/pixelc.log; exit 1; }
+	@touch $@
+
+$(B)/.tinyxxd: $(B)/.buildroot recipes/tinyxxd.sh vendor/src/tinyxxd-1.3.17.tar.gz
+	scripts/recipe.sh $(B)/buildroot tinyxxd >$(B)/tinyxxd.log 2>&1 || { tail -40 $(B)/tinyxxd.log; exit 1; }
+	@touch $@
+
+$(B)/.qemacs: $(B)/.buildroot recipes/qemacs.sh vendor/src/qemacs-befd7a816ec824e36bccf3d91c10559bf6752400.tar.gz
+	scripts/recipe.sh $(B)/buildroot qemacs >$(B)/qemacs.log 2>&1 || { tail -40 $(B)/qemacs.log; exit 1; }
+	@touch $@
+
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.qemacs $(B)/.tinyxxd $(B)/.pixelc $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/nippon-1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 

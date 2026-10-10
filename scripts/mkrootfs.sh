@@ -26,19 +26,23 @@ bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a
 ln -sf clang "$root/usr/bin/cc"
 bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
 bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
-for p in linux-api-headers libxcrypt; do
+for p in linux-api-headers libxcrypt libglvnd glu glew glfw; do
 	bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/include/*'
+done
+for p in libglvnd glu glew glfw; do
+	bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/lib/pkgconfig/*'
 done
 python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace tinyhat-gui; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace pixelc tinyxxd qemacs tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
 rm -rf "$root"/usr/include/libxml2 "$root"/usr/bin/xml2-config "$root"/usr/include/wlroots-* "$root"/usr/include/libdisplay-info "$root"/usr/share/wayland-sessions
-find "$root/usr/lib/pkgconfig" -type f ! -name sdl3.pc ! -name sdl3-image.pc ! -name sdl3-ttf.pc ! -name raylib.pc ! -name fluidsynth.pc -delete
+find "$root/usr/lib/pkgconfig" -type f ! -name sdl3.pc ! -name sdl3-image.pc ! -name sdl3-ttf.pc ! -name raylib.pc ! -name fluidsynth.pc \
+	! -name gl.pc ! -name opengl.pc ! -name glx.pc ! -name egl.pc ! -name glesv2.pc ! -name libglvnd.pc ! -name glu.pc ! -name glew.pc ! -name glfw3.pc -delete
 sed -i "/^Requires.private:/d" "$root/usr/lib/pkgconfig/fluidsynth.pc"
 rm -rf "$root"/usr/include/SDL2 "$root"/usr/bin/sdl2-config "$root"/usr/share/aclocal
 rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
@@ -69,14 +73,13 @@ zsnes|zsnes|2.3.6-1|GPL-2.0-or-later|https://github.com/xyproto/zsnes||Super Nin
 dosbox-x|dosbox-x|2026.10.01-1|GPL-2.0-or-later|https://dosbox-x.com/||DOS emulator, with the Tiny Hat patches
 scummvm|scummvm|2026.3.0-1|GPL-3.0-or-later|https://www.scummvm.org/||Engine for classic adventure games
 fluidsynth|fluidsynth|2.6.1-1|LGPL-2.1-or-later|https://www.fluidsynth.org/||SoundFont synthesizer with PipeWire output
-orbiton|orbiton|2.74.6+80679da9-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
+orbiton|orbiton|2.74.6+fa872280-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
 grafx2|grafx2|0+f84cb09d-1|GPL-2.0-only|http://grafx2.eu/||Pixel art paint program, ported to SDL3
 fontconfig|fontconfig|2:2.18.3-1|HPND AND MIT|https://www.freedesktop.org/wiki/Software/fontconfig/||Font configuration library
 libxml2|libxml2|2.15.1-5|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library, built without ICU
 libxml2-legacy|libxml2-legacy|2.13.9-1|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library with the older libxml2.so.2 ABI
 gdb|gdb|17.1-1|GPL-3.0-or-later|https://www.sourceware.org/gdb/||GNU debugger, without Python
 cc65|cc65|2.19+71746c8-1|Zlib|https://cc65.github.io/||6502 and 65816 C compiler and assembler
-wordgrinder|wordgrinder|0.8-1|MIT|http://cowlark.com/wordgrinder/||Word processor for the terminal
 gba|gba-dev|1-1|MIT AND LGPL-2.0-or-later|https://github.com/gbadev-org/libtonc||libtonc, startup code, gba.specs and gbafix for GBA programming
 mgba|mgba|0.10.5-1|MPL-2.0|https://mgba.io/||Game Boy Advance emulator, SDL frontend
 rfxgen|rfxgen|5.0-1|Zlib|https://github.com/raysan5/rfxgen||Sound effect and chip sound generator
@@ -89,6 +92,9 @@ retro|tinyhat-retro|1-1|MIT|https://github.com/xyproto/tinyhat||Small SDL3 front
 vice|vice|3.9-1|GPL-2.0-or-later|https://vice-emu.sourceforge.io/||Commodore 64 emulator (x64sc) with the SDL2 UI
 tic80|tic-80|1.3.1-1|MIT AND LGPL-2.1-or-later AND Libpng AND Zlib AND Unlicense|https://tic80.com/||TIC-80 fantasy console with Lua and Fennel
 furnace|furnace|0.6.8.3-1|GPL-2.0-or-later|https://tildearrow.org/furnace/||Chiptune tracker for many old sound chips
+pixelc|pixelc|0+9b885c48-1|GPL-3.0-only AND MIT|https://github.com/renehorstmann/Pixelc||Pixel art and tile editor
+tinyxxd|tinyxxd|1.3.17-1|GPL-2.0-only AND MIT|https://github.com/xyproto/tinyxxd|xxd|Drop-in replacement and standalone version of the hex dump utility that comes with Vim
+qemacs|qemacs|0+befd7a81-1|MIT|https://github.com/qemacs/qemacs||Quick Emacs, a small Emacs-like text editor by Fabrice Bellard
 EOF
 
 for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do
@@ -148,7 +154,7 @@ mkdir -p "$root/usr/share/licenses/tinyhat"
 cp -a licenses/. "$root/usr/share/licenses/tinyhat/"
 
 
-sed -i 's|^#\(Server = https://mirror.archlinux32.org/\)|\1|' "$root/etc/pacman.d/mirrorlist"
+sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu|mirror\.yandex\.ru)/)@\1@' "$root/etc/pacman.d/mirrorlist"
 grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 grep -q '^NoExtract' "$root/etc/pacman.conf"

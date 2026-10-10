@@ -1,0 +1,9 @@
+#!/bin/sh
+dir=$HOME/Pictures/Pixelc
+mkdir -p "$dir" && cd "$dir" || exit 1
+ln -sfn /usr/share/pixelc/res res
+start=$(date +%s)
+pixelc "$@" && exit 0
+[ $(($(date +%s) - start)) -lt 5 ] || exit 1
+tinyhat-notice "This graphics card lacks OpenGL 3.3, using the slower software renderer" 6
+LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=3.3FC MESA_GLSL_VERSION_OVERRIDE=330 exec pixelc "$@"

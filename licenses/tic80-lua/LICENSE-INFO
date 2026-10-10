@@ -1,0 +1,4 @@
+name: tic80-lua
+version: 75ea9ccb (bundled with TIC-80)
+url: https://github.com/lua/lua
+license: MIT

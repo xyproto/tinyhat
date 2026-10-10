@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=QEmacs
+Icon=accessories-text-editor
+Comment=Quick Emacs, a small Emacs-like editor by Fabrice Bellard
+Exec=tinyhat-term qemacs
+Terminal=false
+Categories=Utility;TextEditor;

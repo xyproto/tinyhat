@@ -1,0 +1,4 @@
+name: tic80-blip-buf
+version: 330226d9 (bundled with TIC-80)
+url: https://github.com/nesbox/blip-buf
+license: LGPL-2.1-or-later

@@ -1,0 +1,4 @@
+name: libretro-nestopia
+version: 1:20260906.172210.g0a46d231849e-1.0
+url: https://github.com/libretro/nestopia
+license: GPL-2.0-only
