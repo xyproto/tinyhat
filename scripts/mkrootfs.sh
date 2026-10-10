@@ -33,7 +33,7 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder gba mgba make llvm clang tinyhat-gui; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 wordgrinder gba mgba rfxgen make llvm clang tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -69,7 +69,7 @@ zsnes|zsnes|2.3.6-1|GPL-2.0-or-later|https://github.com/xyproto/zsnes||Super Nin
 dosbox-x|dosbox-x|2026.10.01-1|GPL-2.0-or-later|https://dosbox-x.com/||DOS emulator, with the Tiny Hat patches
 scummvm|scummvm|2026.3.0-1|GPL-3.0-or-later|https://www.scummvm.org/||Engine for classic adventure games
 fluidsynth|fluidsynth|2.6.1-1|LGPL-2.1-or-later|https://www.fluidsynth.org/||SoundFont synthesizer with PipeWire output
-orbiton|orbiton|2.74.6-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
+orbiton|orbiton|2.74.6+d7d68564-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
 grafx2|grafx2|0+f84cb09d-1|GPL-2.0-only|http://grafx2.eu/||Pixel art paint program, ported to SDL3
 fontconfig|fontconfig|2:2.18.3-1|HPND AND MIT|https://www.freedesktop.org/wiki/Software/fontconfig/||Font configuration library
 libxml2|libxml2|2.15.1-5|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library, built without ICU
@@ -79,6 +79,7 @@ cc65|cc65|2.19+71746c8-1|Zlib|https://cc65.github.io/||6502 and 65816 C compiler
 wordgrinder|wordgrinder|0.8-1|MIT|http://cowlark.com/wordgrinder/||Word processor for the terminal
 gba|gba-dev|1-1|MIT AND LGPL-2.0-or-later|https://github.com/gbadev-org/libtonc||libtonc, startup code, gba.specs and gbafix for GBA programming
 mgba|mgba|0.10.5-1|MPL-2.0|https://mgba.io/||Game Boy Advance emulator, SDL frontend
+rfxgen|rfxgen|5.0-1|Zlib|https://github.com/raysan5/rfxgen||Sound effect and chip sound generator
 make|make|4.4.1-1|GPL-3.0-or-later|https://www.gnu.org/software/make/||GNU make, built without Guile support
 llvm|llvm-libs|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|llvm-libs=15.0.7|LLVM runtime libraries, built for X86 and AMDGPU
 clang|clang|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|clang=15.0.7|C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU
@@ -168,7 +169,7 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable nftables.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service
+systemctl enable nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-pacman-restore.service
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf

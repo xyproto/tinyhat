@@ -1,0 +1,106 @@
+#!/bin/sh
+# Renders one note of a General MIDI instrument to a WAV file, ready to load as a sample in ft2-clone.
+usage() {
+	cat >&2 <<EOF
+usage: sf2wav [-d] [-s soundfont] [-r rate] [-v velocity] [-t release] instrument note seconds out.wav
+
+  instrument  General MIDI program number 1-128, for example 1 piano, 34 bass, 81 square lead
+  note        note name such as C4, F#3 or Bb5 (C4 is middle C), or a MIDI note number 0-127
+  seconds     how long the key is held, for example 0.5
+  -d          use the drum kit; the note picks the drum, for example 36 kick, 38 snare, 42 hi-hat
+  -s          soundfont to use (default: the system soundfont)
+  -r          sample rate (default: 44100)
+  -v          velocity 1-127 (default: 100)
+  -t          seconds of release to keep after the key is let go (default: 1)
+
+The WAV file is mono and 16-bit. With sox installed, it is also normalized and trailing silence is cut.
+EOF
+	exit 1
+}
+
+drums=0
+soundfont=
+rate=44100
+velocity=100
+release=1
+while getopts 'ds:r:v:t:h' opt; do
+	case $opt in
+	d) drums=1 ;;
+	s) soundfont=$OPTARG ;;
+	r) rate=$OPTARG ;;
+	v) velocity=$OPTARG ;;
+	t) release=$OPTARG ;;
+	*) usage ;;
+	esac
+done
+shift $((OPTIND - 1))
+[ $# -eq 4 ] || usage
+instrument=$1
+note=$2
+seconds=$3
+out=$4
+
+if [ -z "$soundfont" ]; then
+	soundfont=$(tinyhat-soundfont 2>/dev/null)
+	[ -n "$soundfont" ] || soundfont=/usr/share/soundfonts/default.sf2
+fi
+[ -f "$soundfont" ] || { echo "sf2wav: soundfont $soundfont not found" >&2; exit 1; }
+
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+
+midi=$(awk -v instrument="$instrument" -v note="$note" -v seconds="$seconds" -v velocity="$velocity" \
+	-v release="$release" -v drums="$drums" '
+function fail(msg) { print "sf2wav: " msg > "/dev/stderr"; exit 1 }
+function midinote(s,    letter, base, rest, octave, n) {
+	if (s ~ /^[0-9]+$/) return s + 0
+	letter = toupper(substr(s, 1, 1))
+	base = index("C D EF G A B", letter) - 1
+	if (base < 0 || letter == " ") fail("unknown note " s)
+	rest = substr(s, 2)
+	n = base
+	while (rest ~ /^[#b]/) {
+		n += substr(rest, 1, 1) == "#" ? 1 : -1
+		rest = substr(rest, 2)
+	}
+	if (rest !~ /^-?[0-9]+$/) fail("unknown note " s)
+	return n + (rest + 1) * 12
+}
+function vlq(v,    bytes, out, i) {
+	v = int(v)
+	bytes[0] = v % 128
+	i = 0
+	while (v >= 128) {
+		v = int(v / 128)
+		bytes[++i] = v % 128 + 128
+	}
+	out = ""
+	for (; i >= 0; i--) out = out sprintf("\\%03o", bytes[i])
+	return out
+}
+function b(v) { return sprintf("\\%03o", v) }
+BEGIN {
+	n = midinote(note)
+	if (n < 0 || n > 127) fail("note " note " is outside the MIDI range")
+	if (!drums && (instrument < 1 || instrument > 128)) fail("instrument must be 1-128")
+	ch = drums ? 9 : 0
+	ticks_per_second = 192
+	track = vlq(0) b(255) b(81) b(3) b(7) b(161) b(32)
+	if (!drums) track = track vlq(0) b(192 + ch) b(instrument - 1)
+	track = track vlq(0) b(144 + ch) b(n) b(velocity)
+	track = track vlq(seconds * ticks_per_second) b(128 + ch) b(n) b(0)
+	track = track vlq(release * ticks_per_second) b(255) b(1) b(0)
+	track = track vlq(0) b(255) b(47) b(0)
+	len = gsub(/\\/, "\\", track)
+	print "MThd" b(0) b(0) b(0) b(6) b(0) b(0) b(0) b(1) b(0) b(96) \
+		"MTrk" b(int(len / 16777216) % 256) b(int(len / 65536) % 256) b(int(len / 256) % 256) b(len % 256) track
+}') || exit 1
+printf "$midi" >"$tmp/note.mid"
+
+fluidsynth -n -i -q -R 0 -C 0 -r "$rate" -F "$tmp/note.wav" -T wav "$soundfont" "$tmp/note.mid" >/dev/null 2>&1 ||
+	{ echo "sf2wav: fluidsynth failed" >&2; exit 1; }
+if command -v sox >/dev/null; then
+	sox "$tmp/note.wav" -c 1 -b 16 "$out" norm -1 reverse silence 1 0.01 0.05% reverse
+else
+	mv "$tmp/note.wav" "$out"
+fi

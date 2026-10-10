@@ -43,4 +43,4 @@ set -- "$@" -c "echo." \
 	-c "echo K lists the programs here. Type a program name to run it." \
 	-c "echo Alt+Enter: fullscreen   Ctrl+F10: grab or release the mouse   EXIT: quit" \
 	-c "echo." -c "@echo on"
-SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec nice -n -5 dosbox-x "$@"
+LD_BIND_NOW=1 SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec nice -n -5 dosbox-x "$@"

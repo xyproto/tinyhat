@@ -1,0 +1,4 @@
+name: sox
+version: 14.4.2+r184+gf3094754-1.0
+url: https://sox.sourceforge.net/
+license: GPL2 AND LGPL2.1

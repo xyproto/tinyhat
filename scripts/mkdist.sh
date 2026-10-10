@@ -9,10 +9,12 @@ base=${DIST_URL:-$home/releases/download}
 out=$top/build/dist
 stage=$out/src/tinyhat-write-$ver
 mkdir -p "$out"
-if [ ! -f "$out/img.gz" ] || [ "$img" -nt "$out/img.gz" ]; then
-	gzip -c -9 "$img" >"$out/img.gz.tmp"
-	mv "$out/img.gz.tmp" "$out/img.gz"
+gz=$out/tinyhat32-$ver.img.gz
+if [ ! -f "$gz" ] || [ "$img" -nt "$gz" ]; then
+	gzip -c -9 "$img" >"$gz.tmp"
+	mv "$gz.tmp" "$gz"
 fi
+ln -f "$gz" "$out/img.gz"
 x86_64-w64-mingw32-windres "$top/programs/tinyhat-write-win32.rc" -o "$out/win-res.o"
 cd "$out"
 x86_64-w64-mingw32-gcc -Os -s -static -mwindows -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
@@ -21,6 +23,7 @@ rm -f "$out/win-res.o"
 cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
 	-o "$out/tinyhat-$ver-linux-x86_64" "$top/programs/tinyhat-write.c" \
 	$(pkg-config --cflags --libs gtk+-3.0)
+rm -f "$out/img.gz"
 rm -rf "$out/src"
 mkdir -p "$stage"
 cp "$top/programs/tinyhat-write.c" "$top/programs/tinyhat-write-core.h" "$stage/"
@@ -46,4 +49,4 @@ class TinyhatWriter < Formula
   end
 end
 EOF
-ls -l "$out/tinyhat-$ver.exe" "$out/tinyhat-$ver-linux-x86_64" "$out/tinyhat-write-$ver.tar.gz" "$out/tinyhat-writer.rb"
+ls -l "$gz" "$out/tinyhat-$ver.exe" "$out/tinyhat-$ver-linux-x86_64" "$out/tinyhat-write-$ver.tar.gz" "$out/tinyhat-writer.rb"

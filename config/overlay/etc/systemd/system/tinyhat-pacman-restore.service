@@ -1,0 +1,15 @@
+[Unit]
+Description=Reinstall pacman packages after a Tiny Hat upgrade
+After=tinyhat-persist.service tinyhat-pacman-init.service
+Before=systemd-user-sessions.service
+ConditionPathExists=/run/tinyhat/persistroot
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/lib/tinyhat/pacman-restore
+StandardOutput=journal+console
+TimeoutStartSec=30min
+
+[Install]
+WantedBy=multi-user.target

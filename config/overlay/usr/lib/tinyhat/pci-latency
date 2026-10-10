@@ -1,0 +1,4 @@
+#!/bin/sh
+setpci -s '*:*' latency_timer=20
+setpci -s '0:0' latency_timer=0
+setpci -d '*:*:04xx' latency_timer=80
