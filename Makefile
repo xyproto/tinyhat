@@ -1,5 +1,5 @@
 KVER := 7.2.9
-VERSION := 0.2.0
+VERSION := 0.3.0
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 LOCKS := rootfs.lock buildroot.lock initramfs.lock licenses.lock
