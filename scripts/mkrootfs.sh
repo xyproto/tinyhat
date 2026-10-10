@@ -65,7 +65,7 @@ sdl3-man|sdl3-man|3.4.18-1|Zlib|https://libsdl.org/||Man pages for SDL3, SDL3_im
 raylib|raylib|6.0-1|Zlib|https://www.raylib.com/||raylib 6.0 on SDL3 and OpenGL 2.1
 libdisplay-info|libdisplay-info|0.3.0-1|MIT|https://gitlab.freedesktop.org/emersion/libdisplay-info||EDID and DisplayID library
 wlroots|wlroots0.19|0.19.3-1|MIT|https://gitlab.freedesktop.org/wlroots/wlroots||Modular Wayland compositor library
-dwl|dwl|0.8-1|GPL-3.0-only|https://codeberg.org/dwl/dwl||dwm for Wayland, with the Tiny Hat patches
+dwl|dwl|0.8-2|GPL-3.0-only|https://codeberg.org/dwl/dwl||dwm for Wayland, with the Tiny Hat patches
 fuzzel|fuzzel|1.8.1-1|MIT|https://codeberg.org/dnkl/fuzzel||Application launcher for Wayland
 swaylock|swaylock|1.8.6-1|MIT|https://github.com/swaywm/swaylock||Screen locker for Wayland
 swaybg|swaybg|1.2.2-1|MIT|https://github.com/swaywm/swaybg||Wallpaper tool for Wayland, with the Tiny Hat help text patch
@@ -73,7 +73,7 @@ zsnes|zsnes|2.3.6-1|GPL-2.0-or-later|https://github.com/xyproto/zsnes||Super Nin
 dosbox-x|dosbox-x|2026.10.01-1|GPL-2.0-or-later|https://dosbox-x.com/||DOS emulator, with the Tiny Hat patches
 scummvm|scummvm|2026.3.0-1|GPL-3.0-or-later|https://www.scummvm.org/||Engine for classic adventure games
 fluidsynth|fluidsynth|2.6.1-1|LGPL-2.1-or-later|https://www.fluidsynth.org/||SoundFont synthesizer with PipeWire output
-orbiton|orbiton|2.74.6+fa872280-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
+orbiton|orbiton|2.74.6+7e604093-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
 grafx2|grafx2|0+f84cb09d-1|GPL-2.0-only|http://grafx2.eu/||Pixel art paint program, ported to SDL3
 fontconfig|fontconfig|2:2.18.3-1|HPND AND MIT|https://www.freedesktop.org/wiki/Software/fontconfig/||Font configuration library
 libxml2|libxml2|2.15.1-5|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library, built without ICU

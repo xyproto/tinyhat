@@ -36,7 +36,7 @@ make-4.4.1.tar.gz dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658f
 meson-1.12.1.tar.gz ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743 https://github.com/mesonbuild/meson/releases/download/1.12.1/meson-1.12.1.tar.gz
 mgba-0.10.5.tar.gz 91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14 https://github.com/mgba-emu/mgba/archive/refs/tags/0.10.5.tar.gz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
-orbiton-fa8722804b6b75e697ea4ec8ea05c75420f07199.tar.gz 77cdc3943fd4746536618b9d81f3435758c13baac6bdc0284c5e91fa7302845b https://github.com/xyproto/orbiton/archive/fa8722804b6b75e697ea4ec8ea05c75420f07199.tar.gz
+orbiton-7e604093837db40421a1976b9f64c49e548f3fbd.tar.gz 31811e77a9a9c0679d02cb1d086eccea8bdaae795e009a844035c91721c04d4d https://github.com/xyproto/orbiton/archive/7e604093837db40421a1976b9f64c49e548f3fbd.tar.gz
 raylib-6.0.tar.gz 2b3ee1e2120c7a0796b33062c7e9a694dd8a8caa56a96319ac8c8ecf54a90d0b https://github.com/raysan5/raylib/archive/refs/tags/6.0.tar.gz
 recoil-6.4.5.tar.gz 2259153957d52eae9d952b63826654752784bcc0bd4a89a13fa98b30d85755b1 https://downloads.sourceforge.net/project/recoil/recoil/6.4.5/recoil-6.4.5.tar.gz
 rfxgen-5.0.tar.gz 2b47c266c2a995a25da6b64fad44740cee2ec6c348c20c7f1d1e847a51683ef1 https://github.com/raysan5/rfxgen/archive/refs/tags/5.0.tar.gz
