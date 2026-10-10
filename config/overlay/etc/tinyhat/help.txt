@@ -2,7 +2,7 @@ Tiny Hat
 
 Alt+Space	Application Menu
 Alt+Shift+W	Close window (Alt+F4 also works)
-Alt+Tab	Jump between windows
+Alt+Tab	Jump between windows (with one window: toggle the desktop)
 Alt+Shift+F	Toggle fullscreen
 Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Audio volume
@@ -11,7 +11,7 @@ Ctrl+Alt+A	Scan for ScummVM games
 Ctrl+Alt+B	Bluetooth devices
 Ctrl+Alt+C	Example game in C (2x Ctrl+Space to run)
 Ctrl+Alt+D	Launch DOSBox-X
-Ctrl+Alt+E	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
+Ctrl+Alt+F	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
 Ctrl+Alt+G	Example GBA program in C (2x Ctrl+Space to run)
 Ctrl+Alt+H	Toggle sharing
 Ctrl+Alt+I	LibreSprite
