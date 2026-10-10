@@ -1,5 +1,6 @@
 // Hello GBA: a hat you can move around with the D-pad, drawn in bitmap mode 3.
-// Build it with "make" and run it in mGBA with "make run".
+// In Orbiton, press Ctrl+Space to build, or twice quickly to build and run it in mGBA.
+// From a terminal, "make" builds it and "make run" runs it.
 #include <tonc.h>
 
 #define HAT_W 24

@@ -35,9 +35,10 @@ make-4.4.1.tar.gz dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658f
 meson-1.12.1.tar.gz ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743 https://github.com/mesonbuild/meson/releases/download/1.12.1/meson-1.12.1.tar.gz
 mgba-0.10.5.tar.gz 91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14 https://github.com/mgba-emu/mgba/archive/refs/tags/0.10.5.tar.gz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
-orbiton-2.74.6.tar.gz c3eb0dec81895873f3d49e9f4c4a572b85e7a9f0ee697a934f3897ca876af1e0 https://github.com/xyproto/orbiton/archive/refs/tags/v2.74.6.tar.gz
+orbiton-d7d68564319040ef95d872e49601ca729e345ee0.tar.gz 04ac5d3294c6a0324dfc485d44ec595676211173d415786fbbd8d049170165cb https://github.com/xyproto/orbiton/archive/d7d68564319040ef95d872e49601ca729e345ee0.tar.gz
 raylib-6.0.tar.gz 2b3ee1e2120c7a0796b33062c7e9a694dd8a8caa56a96319ac8c8ecf54a90d0b https://github.com/raysan5/raylib/archive/refs/tags/6.0.tar.gz
 recoil-6.4.5.tar.gz 2259153957d52eae9d952b63826654752784bcc0bd4a89a13fa98b30d85755b1 https://downloads.sourceforge.net/project/recoil/recoil/6.4.5/recoil-6.4.5.tar.gz
+rfxgen-5.0.tar.gz 2b47c266c2a995a25da6b64fad44740cee2ec6c348c20c7f1d1e847a51683ef1 https://github.com/raysan5/rfxgen/archive/refs/tags/5.0.tar.gz
 scummvm-2026.3.0.tar.xz b863a81e1598df8bc4aa0c33e3d9b1c8bbede1879d94d91568a4f200057677e7 https://downloads.scummvm.org/frs/scummvm/2026.3.0/scummvm-2026.3.0.tar.xz
 sdl2-compat-2.32.74.tar.gz ec68abde77e2e459c8abc4f9587b8976b5d2a657b2bfda2fb3a079b0f8924588 https://github.com/libsdl-org/sdl2-compat/releases/download/release-2.32.74/sdl2-compat-2.32.74.tar.gz
 SDL2_image-2.8.12.tar.gz 393f5efb50536ec13ca4f4affb69cc9966d3c3f969e6c5e701faddf9f9785381 https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.12/SDL2_image-2.8.12.tar.gz

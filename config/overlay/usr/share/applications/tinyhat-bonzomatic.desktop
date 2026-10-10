@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Bonzomatic (GL >= 4.1)
+Icon=applications-graphics
+Comment=Live shader coding tool for demosceners
+Exec=tinyhat-bonzomatic
+Terminal=false
+Categories=Development;Graphics;

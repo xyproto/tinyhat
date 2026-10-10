@@ -1,0 +1,9 @@
+[Unit]
+Description=Shorter PCI latency timers for steadier frame times
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/tinyhat/pci-latency
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+name: hiredis
+version: 1.2.0-3.0
+url: https://github.com/redis/hiredis/
+license: BSD

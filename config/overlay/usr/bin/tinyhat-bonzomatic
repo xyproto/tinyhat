@@ -1,0 +1,6 @@
+#!/bin/sh
+start=$(date +%s)
+bonzomatic "$@" && exit 0
+[ $(($(date +%s) - start)) -lt 5 ] || exit 1
+tinyhat-notice "This graphics card lacks OpenGL 4.1, using the slower software renderer" 6
+LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe MESA_GL_VERSION_OVERRIDE=4.1FC MESA_GLSL_VERSION_OVERRIDE=410 exec bonzomatic "$@"

@@ -10,6 +10,7 @@ Nice=19
 IOSchedulingClass=idle
 ExecStart=/usr/bin/pacman-key --init
 ExecStart=/usr/bin/pacman-key --populate archlinux32 archlinux
+ExecStartPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 
 [Install]
 WantedBy=multi-user.target

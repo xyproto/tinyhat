@@ -18,3 +18,4 @@ grep -q '"audio.driver", "pipewire"' src/gui/midi_synth.h
 find . -name Makefile -exec sed -i "s/ -O2 / -O3 /g" {} +
 make
 make install DESTDIR=/out/dosbox-x
+rm -f /out/dosbox-x/usr/share/dosbox-x/SarasaGothicFixed.ttf

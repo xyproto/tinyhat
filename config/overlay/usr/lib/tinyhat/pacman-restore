@@ -1,0 +1,35 @@
+#!/bin/sh
+cur=$(cat /run/tinyhat/persistroot 2>/dev/null) || exit 0
+mountpoint -q /persist || exit 0
+old=$(ls -d /persist/root-[0-9]* 2>/dev/null | grep -vx "/persist/$cur" | sort -t- -k2 -n | tail -n1)
+[ -n "$old" ] || exit 0
+
+msg() { echo "Tiny Hat: $*"; }
+
+files=
+names=
+deps=
+for desc in "$old"/upper/var/lib/pacman/local/*/desc; do
+	[ -f "$desc" ] || continue
+	set -- $(awk '/^%NAME%$/ { getline; n = $0 } /^%VERSION%$/ { getline; v = $0 } /^%REASON%$/ { getline; r = $0 } END { if (n != "") print n, v, r + 0 }' "$desc")
+	[ -n "$1" ] && ! pacman -Q "$1" >/dev/null 2>&1 || continue
+	names="$names $1"
+	[ "$3" = 1 ] && deps="$deps $1"
+	for f in "$old/upper/var/cache/pacman/pkg/$1-$2-"*.pkg.tar.*; do
+		case $f in *.sig | *"*"*) continue ;; esac
+		mkdir -p /var/cache/pacman/pkg
+		cp -f "$f" /var/cache/pacman/pkg/ && files="$files /var/cache/pacman/pkg/${f##*/}"
+	done
+done
+if [ -n "$names" ]; then
+	msg "reinstalling the packages installed with pacman before Tiny Hat was upgraded:$names"
+	pacman -U --noconfirm --needed $files >/dev/null 2>&1 || pacman -Sy --noconfirm --needed $names ||
+		echo "$names" >/persist/pacman-not-restored.txt
+	[ -n "$deps" ] && pacman -D --asdeps $deps >/dev/null 2>&1
+fi
+for d in /persist/root-[0-9]*; do
+	case $d in
+	"/persist/$cur" | *"*"*) ;;
+	/persist/root-[0-9]*) rm -rf "$d" ;;
+	esac
+done

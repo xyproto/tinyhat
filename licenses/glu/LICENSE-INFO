@@ -1,0 +1,4 @@
+name: glu
+version: 9.0.3-3.0
+url: https://gitlab.freedesktop.org/mesa/glu
+license: SGI-B-2.0 AND MIT

@@ -1,0 +1,4 @@
+name: ccache
+version: 4.7.4-2.0
+url: https://ccache.dev/
+license: GPL3
