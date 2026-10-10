@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Back up my files
+Name=Back up home folder to another drive
 Icon=drive-harddisk
 Comment=Save your home folder to another drive
 Exec=tinyhat-backup

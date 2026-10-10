@@ -1,0 +1,4 @@
+name: tic80-giflib
+version: 1aa11b06 (bundled with TIC-80)
+url: https://github.com/nesbox/giflib
+license: MIT

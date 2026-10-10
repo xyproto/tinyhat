@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Furnace chiptune tracker
+Icon=audio-x-generic
+Comment=Make music for the C64, NES, Genesis, Game Boy, Amiga and many other sound chips
+Exec=furnace
+Terminal=false
+Categories=AudioVideo;Audio;Music;

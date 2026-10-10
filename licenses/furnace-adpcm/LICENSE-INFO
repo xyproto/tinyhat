@@ -1,0 +1,4 @@
+name: furnace-adpcm
+version: bundled with Furnace
+url: https://github.com/superctr/adpcm
+license: Unlicense

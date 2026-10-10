@@ -1,0 +1,4 @@
+name: tic80-zlib
+version: 51b7f2ab (bundled with TIC-80)
+url: https://github.com/madler/zlib
+license: Zlib

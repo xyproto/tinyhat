@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=WordGrinder
-Icon=accessories-text-editor
-Comment=Word processor for writing text
-Exec=tinyhat-term wordgrinder
-Terminal=false
-Categories=Office;WordProcessor;
