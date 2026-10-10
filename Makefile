@@ -102,7 +102,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-fa8722804b6b75e697ea4ec8ea05c75420f07199.tar.gz
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-7e604093837db40421a1976b9f64c49e548f3fbd.tar.gz
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
