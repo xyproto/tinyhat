@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=vtGBte Game Boy tile editor
+Icon=applications-graphics
+Comment=Draw Game Boy tiles with the keyboard (h for help), saved in ~/cprojects/gb-tiles
+Exec=tinyhat-vtgbte
+Terminal=false
+Categories=Graphics;Development;

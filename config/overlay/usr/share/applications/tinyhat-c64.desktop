@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=C64 emulator (VICE)
+Icon=applications-games
+Comment=Commodore 64 emulator. Put .d64, .prg, .t64 and .crt files in ~/ROMs/c64. F12 opens the menu
+Exec=tinyhat-emulate c64
+Terminal=false
+Categories=Game;Emulator;

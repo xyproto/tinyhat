@@ -17,9 +17,11 @@ for d in /media/*/; do
 		: >"$cache/scanned-$id"
 done
 ini=$HOME/.config/scummvm/scummvm.ini
-if [ -d /usr/share/games/fotaq ] && ! grep -qsx 'path=/usr/share/games/fotaq' "$ini"; then
-	scummvm --add --path=/usr/share/games/fotaq >"$cache/scan-fotaq.log" 2>&1
-fi
+for g in fotaq bass lure soltys nippon; do
+	if [ -d "/usr/share/games/$g" ] && ! grep -qsx "path=/usr/share/games/$g" "$ini"; then
+		scummvm --add --path="/usr/share/games/$g" >"$cache/scan-$g.log" 2>&1
+	fi
+done
 [ -f "$ini" ] || exit 0
 awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }
 	$1 == "path" { p[t] = $2 }

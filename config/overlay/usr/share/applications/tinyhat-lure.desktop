@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Lure of the Temptress
+Icon=applications-games
+Comment=Medieval fantasy adventure from Revolution Software, played in ScummVM
+Exec=tinyhat-launch tinyhat-game lure
+Terminal=false
+Categories=Game;AdventureGame;

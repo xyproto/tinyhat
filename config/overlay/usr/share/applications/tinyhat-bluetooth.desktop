@@ -3,6 +3,6 @@ Type=Application
 Name=Bluetooth
 Icon=bluetooth
 Comment=Connect Bluetooth mice, keyboards and gamepads
-Exec=tinyhat-term bluetui
+Exec=tinyhat-bluetui
 Terminal=false
 Categories=Settings;HardwareSettings;

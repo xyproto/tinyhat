@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ProTracker 2 clone
+Icon=audio-x-generic
+Comment=Amiga music tracker
+Exec=pt2-clone
+Terminal=false
+Categories=AudioVideo;Audio;Music;
