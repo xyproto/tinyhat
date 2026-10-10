@@ -1,5 +1,5 @@
 KVER := 7.2.9
-VERSION := 0.2.0
+VERSION := 0.3.0
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 LOCKS := rootfs.lock buildroot.lock initramfs.lock licenses.lock
@@ -21,18 +21,6 @@ all: tinyhat32.img
 tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mbr.py
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
-
-#tinyhatx32.img:
-#	@echo "tinyhat32x.img (-mx32) is not supported yet" >&2
-#	@false
-#
-#tinyhat64.img:
-#	@echo "tinyhat64.img is not supported yet" >&2
-#	@false
-#
-#tinyhatrpi4.img:
-#	@echo "tinyhatrpi4.img is not supported yet" >&2
-#	@false
 
 lock:
 	REFRESH=1 python3 scripts/pkg.py lock config/rootfs.txt rootfs.lock
