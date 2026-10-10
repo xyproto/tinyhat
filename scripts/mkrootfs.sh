@@ -154,7 +154,7 @@ mkdir -p "$root/usr/share/licenses/tinyhat"
 cp -a licenses/. "$root/usr/share/licenses/tinyhat/"
 
 
-sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu|mirror\.yandex\.ru)/)@\1@' "$root/etc/pacman.d/mirrorlist"
+sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu)/)@\1@' "$root/etc/pacman.d/mirrorlist"
 grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 grep -q '^NoExtract' "$root/etc/pacman.conf"
