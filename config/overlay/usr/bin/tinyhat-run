@@ -1,0 +1,4 @@
+#!/bin/sh
+cmd=$(printf '' | fuzzel --dmenu --prompt "Run ❯ ") || exit 0
+[ -n "$cmd" ] || exit 0
+exec setsid -f sh -c "$cmd"

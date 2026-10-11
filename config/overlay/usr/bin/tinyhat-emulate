@@ -22,6 +22,8 @@ if [ -z "$game" ]; then
 		if [ "$1" = c64 ]; then
 			game=$(printf 'Start BASIC\n%s' "$list" | fuzzel --dmenu --prompt "$name ❯ ") || exit 0
 			[ "$game" = "Start BASIC" ] && game=
+		elif [ -z "$list" ] && [ "$1" = snes ]; then
+			exec zsnes
 		elif [ -z "$list" ]; then
 			tinyhat-notice "Put $name games in ~/ROMs/$1 or on a USB stick" 6
 			exit 0

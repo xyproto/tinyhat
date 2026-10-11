@@ -109,19 +109,16 @@ cp -a "$modules/." "$root/"
 install -Dm644 vendor/soundfont/TinyHat-GM-0.790.sf3 "$root/usr/share/soundfonts/TinyHat-GM-0.790.sf3"
 install -Dm644 vendor/soundfont/GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/GeneralUser-GS-2.0.3.sf3"
 ln -sf GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/default.sf2"
-mkdir -p "$root/usr/share/games/fotaq"
-python3 -m zipfile -e vendor/src/FOTAQ_Talkie-1.1.zip "$root/usr/share/games/fotaq"
-chmod 644 "$root"/usr/share/games/fotaq/*
 mkdir -p "$root/usr/share/games/bass"
 python3 -m zipfile -e vendor/src/BASS-Floppy-1.3.zip "$root/usr/share/games/bass"
 chmod 644 "$root"/usr/share/games/bass/*
 python3 -m zipfile -e vendor/src/lure-1.1.zip "$root/usr/share/games"
-for g in soltys-en-v1.0:soltys nippon-1.0:nippon; do
+for g in soltys-en-v1.0:soltys; do
 	mkdir -p "$root/usr/share/games/${g#*:}"
 	python3 -m zipfile -e "vendor/src/${g%:*}.zip" "$root/usr/share/games/${g#*:}"
 done
-chmod 755 "$root"/usr/share/games/lure "$root"/usr/share/games/soltys "$root"/usr/share/games/nippon
-chmod 644 "$root"/usr/share/games/lure/* "$root"/usr/share/games/soltys/* "$root"/usr/share/games/nippon/*
+chmod 755 "$root"/usr/share/games/lure "$root"/usr/share/games/soltys
+chmod 644 "$root"/usr/share/games/lure/* "$root"/usr/share/games/soltys/*
 mkdir -p "$root/usr/lib/watcom"
 bsdtar -xf vendor/src/open-watcom-2026-10-01.tar.xz -C "$root/usr/lib/watcom" \
 	--exclude './binl/*.sym' --exclude './binl/w??axp' --exclude './binl/wccppc' --exclude './binl/wccmps' \

@@ -19,7 +19,9 @@ while read -r file sum url; do
 		missing=$((missing + 1))
 		echo "$file: missing from vendor/src (run make sources)" >&2
 	fi
-	if ! curl -sfIL --max-time 20 -o /dev/null "$url"; then
+	if ! curl -sfIL --max-time 20 -o /dev/null "$url" &&
+		! curl -sfL --max-time 20 -r 0-0 -o /dev/null "$url" &&
+		! curl -sfIL --max-time 20 -o /dev/null "$url"; then
 		echo "$file: URL is not reachable: $url" >&2
 		rc=1
 	fi

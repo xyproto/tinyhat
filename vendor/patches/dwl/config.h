@@ -34,6 +34,7 @@ static const Rule rules[] = {
 	{ NULL,               "DOSBox-X", 0,            1,           -1 },
 	{ NULL,               "ScummVM",  0,            1,           -1 },
 	{ NULL,               "ZSNES",    0,            1,           -1 },
+	{ NULL,               "TIC-80",   0,            1,           -1 },
 	{ NULL,               "Tiny Hat", 0,            1,           -1 },
 	{ NULL,               "Fasttracker II", 0,      1,           -1 },
 };
@@ -133,19 +134,19 @@ static const char *gbacmd[] = { "tinyhat-gba", NULL };
 static const char *bluetoothcmd[] = { "tinyhat-bluetui", NULL };
 static const char *cyclecmd[] = { "tinyhat-wallpaper", "--cycle", NULL };
 static const char *scummvmcmd[] = { "tinyhat-launch", "tinyhat-scummvm", NULL };
-static const char *scangamescmd[] = { "tinyhat-scan-games", NULL };
+static const char *scangamescmd[] = { "tinyhat-scan-games", "-f", NULL };
 static const char *playcmd[] = { "tinyhat-launch", "tinyhat-play", NULL };
 static const char *vicemd[] = { "tinyhat-launch", "tinyhat-emulate", "c64", NULL };
 static const char *dosboxcmd[] = { "tinyhat-launch", "tinyhat-dosbox", NULL };
-static const char *zsnescmd[] = { "tinyhat-launch", "tinyhat-emulate", "snes", NULL };
+static const char *zsnescmd[] = { "tinyhat-launch", "zsnes", NULL };
 static const char *tic80cmd[] = { "tinyhat-launch", "tic80", NULL };
 static const char *screenshotcmd[] = { "tinyhat-screenshot", NULL };
 static const char *browsercmd[] = { "netsurf-gtk3", NULL };
 static const char *watcomcmd[] = { "tinyhat-watcom", NULL };
 static const char *adventurecmd[] = { "tinyhat-adventure", NULL };
-static const char *bookcmd[] = { "tinyhat-book", NULL };
 static const char *introcmd[] = { "tinyhat-intro", NULL };
-static const char *mtpaintcmd[] = { "mtpaint", NULL };
+static const char *wificmd[] = { "tinyhat-wifi", NULL };
+static const char *runcmd[] = { "tinyhat-run", NULL };
 static const char *librespritecmd[] = { "tinyhat-gpu", "libresprite", NULL };
 static const char *keyboardcmd[] = { "tinyhat-keyboard", NULL };
 static const char *sharecmd[] = { "tinyhat-share", NULL };
@@ -167,11 +168,11 @@ static const Key keys[] = {
 	{ MODKEY,                    XKB_KEY_Return,      spawn,            {.v = termcmd} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_t,  spawn,            {.v = tic80cmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_r,  spawn,            {.v = scangamescmd} },
+	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_r,  spawn,            {.v = termcmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_c,  spawn,            {.v = codecmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_f,  spawn,            {.v = fennelcmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_g,  spawn,            {.v = gbacmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_m,  spawn,            {.v = mtpaintcmd} },
+	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_m,  spawn,            {.v = playcmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_i,  spawn,            {.v = librespritecmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_s,  spawn,            {.v = scummvmcmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_h,  spawn,            {.v = sharecmd} },
@@ -180,10 +181,10 @@ static const Key keys[] = {
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_x,  spawn,            {.v = introcmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_z,  spawn,            {.v = zsnescmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_n,  spawn,            {.v = browsercmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_a,  spawn,            {.v = playcmd} },
+	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_a,  spawn,            {.v = scangamescmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_v,  spawn,            {.v = vicemd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_o,  spawn,            {.v = watcomcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_w,  spawn,            {.v = bookcmd} },
+	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_w,  spawn,            {.v = wificmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_p,  spawn,            {.v = adventurecmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_k,  spawn,            {.v = keyboardcmd} },
 	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_l,  spawn,            {.v = lockcmd} },
@@ -191,6 +192,7 @@ static const Key keys[] = {
 	{ WLR_MODIFIER_ALT,          XKB_KEY_space,       spawn,            {.v = menucmd} },
 	{ WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_W, killclient,       {0} },
 	{ WLR_MODIFIER_ALT,          XKB_KEY_F4,          killclient,       {0} },
+	{ WLR_MODIFIER_ALT,          XKB_KEY_F2,          spawn,            {.v = runcmd} },
 	{ MODKEY,                    XKB_KEY_q,           killclient,       {0} },
 	{ MODKEY,                    XKB_KEY_r,           spawn,            {.v = menucmd} },
 	{ WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_F, togglefullscreen, {0} },
