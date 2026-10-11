@@ -26,8 +26,15 @@ The goals for this distro are:
   * Using a simple browser (Netsurf) + packet sniffer (jomon) + ssh client / server / scp (dropbear).
 * Be straightforward to use for old DOS and Arch Linux users alike.
 * Be not impossible to use for brand new users.
+* Have reproducible builds.
 
 It also includes MemTest86+.
+
+### Reproducible builds
+
+* Each release has a `SHA256SUMS` file with the SHA256 hash sum, as well as a detached GPG signature for the hash sum named `SHA256SUMS.asc`.
+* One can veryfy the image hash sum file with `gpg --verify SHA256SUMS.asc SHA256SUMS` and then `sha256sum -c SHA256SUMS`.
+* Each build of the image (`tinyhat32.img`). is reproducible and bit-identical.
 
 ### Installation
 
