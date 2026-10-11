@@ -36,7 +36,7 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace tinyxxd qemacs tinyhat-gui; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace pvsneslib png2xpm tinyxxd qemacs tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -94,6 +94,8 @@ tic80|tic-80|1.3.1-1|MIT AND LGPL-2.1-or-later AND Libpng AND Zlib AND Unlicense
 furnace|furnace|0.6.8.3-1|GPL-2.0-or-later|https://tildearrow.org/furnace/||Chiptune tracker for many old sound chips
 tinyxxd|tinyxxd|1.3.17-1|GPL-2.0-only AND MIT|https://github.com/xyproto/tinyxxd|xxd|Drop-in replacement and standalone version of the hex dump utility that comes with Vim
 qemacs|qemacs|0+befd7a81-1|MIT|https://github.com/qemacs/qemacs||Quick Emacs, a small Emacs-like text editor by Fabrice Bellard
+pvsneslib|pvsneslib|0+e090f001-1|MIT|https://github.com/alekmaul/pvsneslib||SNES game library with 816-tcc, wla-dx and graphics tools
+png2xpm|png2xpm|0+9eb268ec-1|BSD-3-Clause|https://github.com/xyproto/xpm||Convert PNG images to XPM format
 EOF
 
 for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do

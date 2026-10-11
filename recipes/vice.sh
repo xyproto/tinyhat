@@ -8,6 +8,9 @@ bsdtar -xf /src/xa-2.4.1-2.0-i686.pkg.tar.zst -C /work/vice/flex usr/bin
 printf '#!/bin/sh\nfor f; do sed -i "s/\\r$//" "$f"; done\n' >/work/vice/flex/usr/bin/dos2unix
 chmod 755 /work/vice/flex/usr/bin/dos2unix
 export PATH="/work/vice/flex/usr/bin:$PATH" LIBRARY_PATH=/work/vice/flex/usr/lib CPATH=/work/vice/flex/usr/include
+CFLAGS="$CFLAGS -O3"
+CXXFLAGS="$CXXFLAGS -O3"
+export CFLAGS CXXFLAGS
 ./configure --prefix=/usr --enable-sdl2ui --with-sdlsound --without-alsa --without-pulse \
 	--disable-html-docs --disable-pdf-docs --without-flac --without-vorbis --without-mpg123 --without-lame \
 	--disable-ffmpeg --disable-ethernet --disable-catweasel --disable-hardsid --disable-parsid --disable-midi \
@@ -15,7 +18,7 @@ export PATH="/work/vice/flex/usr/bin:$PATH" LIBRARY_PATH=/work/vice/flex/usr/lib
 make -j"$(nproc)"
 make DESTDIR=/out/vice install
 cd /out/vice/usr
-find bin -type f ! -name x64sc ! -name c1541 -delete
+find bin -type f ! -name x64sc ! -name x64 ! -name c1541 -delete
 find bin -type l -delete
 rm -rf share/doc share/man share/info share/applications share/icons share/metainfo
 cd share/vice

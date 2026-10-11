@@ -1,9 +1,6 @@
 #!/bin/sh
 set -eu
 umask 022
-CFLAGS="$CFLAGS -O3"
-CXXFLAGS="$CXXFLAGS -O3"
-export CFLAGS CXXFLAGS
 rm -rf /work/dosbox-x && mkdir -p /work/dosbox-x && cd /work/dosbox-x
 tar --no-same-owner -xf /src/dosbox-x-2026.10.01.tar.gz --strip-components=1
 for p in /patches/dosbox-x/*.patch; do patch -Np1 -i "$p"; done

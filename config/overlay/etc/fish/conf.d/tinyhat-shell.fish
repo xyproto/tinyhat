@@ -8,6 +8,8 @@ end
 set -gx WATCOM /usr/lib/watcom
 set -gx INCLUDE $WATCOM/h
 contains -- $WATCOM/binl $PATH; or set -a PATH $WATCOM/binl
+set -gx PVSNESLIB_HOME /usr/share/pvsneslib
+contains -- $PVSNESLIB_HOME/devkitsnes/bin $PATH; or set -a PATH $PVSNESLIB_HOME/devkitsnes/bin
 
 if test -d ~/.local/bin; and not contains -- ~/.local/bin $PATH
     set -p PATH ~/.local/bin
