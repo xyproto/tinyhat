@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Download and run The Last Super
+Icon=applications-games
+Comment=Free SNES homebrew by Dr. Ludos
+Exec=tinyhat-play "the last super"
+Terminal=false
+Categories=Game;

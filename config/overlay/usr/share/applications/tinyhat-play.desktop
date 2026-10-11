@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Games
+Icon=applications-games
+Comment=Type a freeware game name and press Play
+Exec=tinyhat-play
+Terminal=false
+Categories=Game;

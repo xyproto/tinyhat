@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 umask 022
-CFLAGS=$(echo "$CFLAGS" | sed 's/-Os/-O3/')
-CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/-Os/-O3/')
+CFLAGS="$CFLAGS -O3"
+CXXFLAGS="$CXXFLAGS -O3"
 export CFLAGS CXXFLAGS
 rm -rf /work/dosbox-x && mkdir -p /work/dosbox-x && cd /work/dosbox-x
 tar --no-same-owner -xf /src/dosbox-x-2026.10.01.tar.gz --strip-components=1
@@ -15,7 +15,6 @@ grep -q '"audio.driver", "pipewire"' src/gui/midi_synth.h
 ./configure --prefix=/usr --enable-sdl2 --disable-x11 --enable-core-inline \
 	--disable-opengl --disable-debug --disable-avcodec --enable-libfluidsynth --enable-libslirp \
 	--disable-printer --disable-sdlnet
-find . -name Makefile -exec sed -i "s/ -O2 / -O3 /g" {} +
 make
 make install DESTDIR=/out/dosbox-x
 rm -f /out/dosbox-x/usr/share/dosbox-x/SarasaGothicFixed.ttf

@@ -1,6 +1,6 @@
 #!/bin/sh
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
-notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; return 0; }
 
 if [ $# -eq 0 ]; then
 	f=$(tinyhat-pick "Import a game" "$HOME") || exit 0
@@ -9,6 +9,19 @@ if [ $# -eq 0 ]; then
 fi
 
 for f in "$@"; do
+	case $f in
+	*://*)
+		urlname=${f%%\?*}
+		urlname=${urlname##*/}
+		[ -n "$urlname" ] || urlname=download.bin
+		mkdir -p "$HOME/downloads"
+		if ! curl -fL "$f" -o "$HOME/downloads/$urlname"; then
+			echo "tinyhat-import: download failed: $f" >&2
+			continue
+		fi
+		f=$HOME/downloads/$urlname
+		;;
+	esac
 	if [ ! -f "$f" ]; then
 		echo "tinyhat-import: no such file: $f" >&2
 		continue

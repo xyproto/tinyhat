@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ "$(tinyhat-mem)" -lt 900 ]; then
+if [ "$(tinyhat-mem total)" -lt 900 ]; then
 	echo /usr/share/soundfonts/GeneralUser-GS-2.0.3.sf3
 else
 	echo /usr/share/soundfonts/TinyHat-GM-0.790.sf3
