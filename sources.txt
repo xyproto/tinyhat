@@ -8,7 +8,6 @@ dwl-0.8.tar.gz 3080087e7f613bf6a350934231fd9ed478d04cd2a2f30da8a96cdf2066f59412 
 FatBoy-v0.790.7z 330aad903459a8363f822ee5ac1c24beb01321196baca2bbee0c5fbfda0c6870 https://archive.org/download/fat-boy-v-0.790.7z/FatBoy-v0.790.7z
 fluidsynth-2.6.1.tar.gz 3d258a3bf97cc20c59eeebfe62c2432fae88adda74d3ad098681c76e0ebf446b https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.6.1.tar.gz
 fontconfig-2.18.3.tar.xz 4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3 https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/2.18.3/fontconfig-2.18.3.tar.xz
-FOTAQ_Talkie-1.1.zip a25cdd5e003a0a5e402af99b218cc7ea81ad032cb36b8c05df3bd1167038d8a8 https://downloads.scummvm.org/frs/extras/Flight%20of%20the%20Amazon%20Queen/FOTAQ_Talkie-1.1.zip
 BASS-Floppy-1.3.zip d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818 https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
 fuzzel-1.8.1.tar.gz f1dcd487d1cdb9f37be2535184503c265f5df5bd2571e9e0dfc193d00fd08aa2 https://codeberg.org/dnkl/fuzzel/archive/1.8.1.tar.gz
 gba-tools-v1.2.0.tar.gz 1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32 https://github.com/devkitPro/gba-tools/archive/refs/tags/v1.2.0.tar.gz
@@ -58,7 +57,6 @@ zsnes-2.3.6.tar.gz eabf0e75d389d52fea096fa44718ab3551e06b732d0dbcafd8b657706fe6c
 vtGBte-1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz 9d9c61b9ae3bb0ef50b4c4ec383d55ab5ca7190be6030c37729feb7f66591a1c https://github.com/paul-arutyunov/vtGBte/archive/1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz
 lure-1.1.zip f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108 https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip
 soltys-en-v1.0.zip 87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6 https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip
-nippon-1.0.zip 53e7e2c60065e4aed193169bbcdcfd1113fa68d3efe1c8240ba073c0e20d613f https://downloads.scummvm.org/frs/extras/Nippon%20Safes/nippon-1.0.zip
 blastem-1e0de94dc7e669c0925a22c0fccf6cdc837af0a0.tar.gz 2d3b7eeee80f15ca4b24591e77fc3bdfdecdaf6e988f442e7950a71929e31277 https://github.com/libretro/blastem/archive/1e0de94dc7e669c0925a22c0fccf6cdc837af0a0.tar.gz
 vice-3.9.tar.gz 40202b63455e26b87ecc63eb5a52322c6fa3f57cab12acf0c227cf9f4daec370 https://sourceforge.net/projects/vice-emu/files/releases/vice-3.9.tar.gz/download
 flex-2.6.4-5.2-i686.pkg.tar.zst 12027edb047dfa48a2e6ffdf75f9c11356021e922f98197da984744ceb8dfac2 https://mirror.archlinux32.org/i686/core/flex-2.6.4-5.2-i686.pkg.tar.zst
