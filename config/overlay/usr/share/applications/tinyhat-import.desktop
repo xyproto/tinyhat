@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Import games
+Icon=applications-games
+Comment=Add games you own: cartridge dumps, GOG installers and DOS archives end up in the right place
+Exec=tinyhat-import
+Terminal=false
+Categories=Game;

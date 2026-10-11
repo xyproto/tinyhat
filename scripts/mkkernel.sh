@@ -25,7 +25,7 @@ make -s ARCH=$arch olddefconfig
 for f in "$@"; do
 	python3 "$top/scripts/kcheck.py" "$f" .config
 done
-make -s ARCH=$arch -j"$(nproc)" KBUILD_BUILD_USER=tinyhat KBUILD_BUILD_HOST=tinyhat bzImage modules
+make -s ARCH=$arch -j"$(nproc)" KBUILD_BUILD_USER=tinyhat KBUILD_BUILD_HOST=tinyhat KBUILD_BUILD_TIMESTAMP="@${SOURCE_DATE_EPOCH:-315532800}" bzImage modules
 rm -rf "$modules"
 make -s ARCH=$arch INSTALL_MOD_PATH="$modules/usr" INSTALL_MOD_STRIP=1 modules_install
 rm -rf "$top/build/xpadneo-$arch"

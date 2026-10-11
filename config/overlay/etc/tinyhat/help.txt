@@ -21,9 +21,9 @@ Ctrl+Alt+M	mtPaint
 Ctrl+Alt+N	Netsurf web browser
 Ctrl+Alt+O	DOS programming (Open Watcom)
 Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
-Ctrl+Alt+Q	Flight of the Amazon Queen
+Ctrl+Alt+R	Terminal
 Ctrl+Alt+S	ScummVM
-Ctrl+Alt+T / Ctrl+Alt+R	Terminal
+Ctrl+Alt+T	TIC-80
 Ctrl+Alt+W	Write a book in Orbiton
 Ctrl+Alt+X	256 byte demoscene intro (2x Ctrl+Space to run)
 Ctrl+Alt+Z	ZSNES 2
@@ -36,3 +36,4 @@ Ctrl+Alt+Del	Reboot
 USB sticks and CDs show up in /media and as D: in DOSBox-X.
 Put DOS games in ~/DOS, which is C: in DOSBox-X.
 A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:.
+Bring your own games with tinyhat-import: cartridge dumps, GOG installers and DOS archives.

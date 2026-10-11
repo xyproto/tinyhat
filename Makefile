@@ -1,5 +1,6 @@
-KVER := 7.2.9
 VERSION := 0.3.0
+KVER := 7.2.9
+export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 LOCKS := rootfs.lock buildroot.lock initramfs.lock licenses.lock
@@ -14,11 +15,11 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck dist
+.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck sourcecheck dist
 
 all: tinyhat32.img
 
-tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mbr.py
+tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mbr.py scripts/xfsnormalize.py
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
@@ -30,6 +31,9 @@ lock:
 
 patchcheck:
 	scripts/patchcheck.sh
+
+sourcecheck:
+	scripts/sourcecheck.sh
 
 dist: tinyhat32.img
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $<
@@ -130,7 +134,7 @@ $(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.t
 	scripts/recipe.sh $(B)/buildroot llvm >$(B)/llvm.log 2>&1 || { tail -40 $(B)/llvm.log; exit 1; }
 	@touch $@
 
-$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c
+$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/tinyhat-pick.c
 	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
 	@touch $@
 
@@ -250,10 +254,6 @@ $(B)/.furnace: $(B)/.buildroot $(B)/.sdl2-compat recipes/furnace.sh vendor/src/f
 	scripts/recipe.sh $(B)/buildroot furnace >$(B)/furnace.log 2>&1 || { tail -40 $(B)/furnace.log; exit 1; }
 	@touch $@
 
-$(B)/.pixelc: $(B)/.buildroot $(B)/.sdl2-compat $(B)/.sdl2_image recipes/pixelc.sh vendor/src/pixelc-9b885c4865bc577131722ee248346abe55a1c410.tar.gz
-	scripts/recipe.sh $(B)/buildroot pixelc >$(B)/pixelc.log 2>&1 || { tail -40 $(B)/pixelc.log; exit 1; }
-	@touch $@
-
 $(B)/.tinyxxd: $(B)/.buildroot recipes/tinyxxd.sh vendor/src/tinyxxd-1.3.17.tar.gz
 	scripts/recipe.sh $(B)/buildroot tinyxxd >$(B)/tinyxxd.log 2>&1 || { tail -40 $(B)/tinyxxd.log; exit 1; }
 	@touch $@
@@ -262,7 +262,7 @@ $(B)/.qemacs: $(B)/.buildroot recipes/qemacs.sh vendor/src/qemacs-befd7a816ec824
 	scripts/recipe.sh $(B)/buildroot qemacs >$(B)/qemacs.log 2>&1 || { tail -40 $(B)/qemacs.log; exit 1; }
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.qemacs $(B)/.tinyxxd $(B)/.pixelc $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/nippon-1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/FOTAQ_Talkie-1.1.zip vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/nippon-1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 
