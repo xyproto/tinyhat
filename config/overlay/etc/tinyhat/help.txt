@@ -7,7 +7,7 @@ Alt+Shift+F	Toggle fullscreen
 Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Audio volume
 
-Ctrl+Alt+A	Scan for ScummVM games
+Ctrl+Alt+A	Download and run a SNES homebrew game
 Ctrl+Alt+B	Bluetooth devices
 Ctrl+Alt+C	Example game in C (2x Ctrl+Space to run)
 Ctrl+Alt+D	Launch DOSBox-X
@@ -21,9 +21,10 @@ Ctrl+Alt+M	mtPaint
 Ctrl+Alt+N	Netsurf web browser
 Ctrl+Alt+O	DOS programming (Open Watcom)
 Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
-Ctrl+Alt+R	Terminal
+Ctrl+Alt+R	Scan for ScummVM games
 Ctrl+Alt+S	ScummVM
 Ctrl+Alt+T	TIC-80
+Ctrl+Alt+V	C64 (VICE)
 Ctrl+Alt+W	Write a book in Orbiton
 Ctrl+Alt+X	256 byte demoscene intro (2x Ctrl+Space to run)
 Ctrl+Alt+Z	ZSNES 2
