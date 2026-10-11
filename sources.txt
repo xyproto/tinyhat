@@ -14,7 +14,7 @@ fuzzel-1.8.1.tar.gz f1dcd487d1cdb9f37be2535184503c265f5df5bd2571e9e0dfc193d00fd0
 gba-tools-v1.2.0.tar.gz 1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32 https://github.com/devkitPro/gba-tools/archive/refs/tags/v1.2.0.tar.gz
 gcc-15.2.0.tar.xz 438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e https://ftp.gnu.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz
 gcem-012ae73c6d0a2cb09ffe86475f5c6fba3926e200.zip 28159274c54e9640354852e172d10d88eb159f4e7f2fea42edbcd20105ed3526 https://github.com/kthohr/gcem/archive/012ae73c6d0a2cb09ffe86475f5c6fba3926e200.zip
-gdb-17.1.tar.xz 14996f5f74c9f68f5a543fdc45bca7800207f91f92aeea6c2e791822c7c6d876 https://mirrors.kernel.org/gnu/gdb/gdb-17.1.tar.xz
+gdb-17.1.tar.xz 14996f5f74c9f68f5a543fdc45bca7800207f91f92aeea6c2e791822c7c6d876 https://ftp.gnu.org/gnu/gdb/gdb-17.1.tar.xz
 GeneralUser-GS-2.0.3.sf2 9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/GeneralUser-GS.sf2
 GeneralUser-GS-LICENSE.txt 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca16b9b8b405be https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/documentation/LICENSE.txt
 glibc-2.44.tar.xz 37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz
@@ -36,7 +36,7 @@ make-4.4.1.tar.gz dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658f
 meson-1.12.1.tar.gz ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743 https://github.com/mesonbuild/meson/releases/download/1.12.1/meson-1.12.1.tar.gz
 mgba-0.10.5.tar.gz 91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14 https://github.com/mgba-emu/mgba/archive/refs/tags/0.10.5.tar.gz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
-orbiton-7e604093837db40421a1976b9f64c49e548f3fbd.tar.gz 31811e77a9a9c0679d02cb1d086eccea8bdaae795e009a844035c91721c04d4d https://github.com/xyproto/orbiton/archive/7e604093837db40421a1976b9f64c49e548f3fbd.tar.gz
+orbiton-000899eea22a1c8a5d2a61c83981551171bcc66b.tar.gz b31a14781e267f36ce06cb2b41ded5bd643f362d52b25ad89f780ec636b99f64 https://github.com/xyproto/orbiton/archive/000899eea22a1c8a5d2a61c83981551171bcc66b.tar.gz
 raylib-6.0.tar.gz 2b3ee1e2120c7a0796b33062c7e9a694dd8a8caa56a96319ac8c8ecf54a90d0b https://github.com/raysan5/raylib/archive/refs/tags/6.0.tar.gz
 recoil-6.4.5.tar.gz 2259153957d52eae9d952b63826654752784bcc0bd4a89a13fa98b30d85755b1 https://downloads.sourceforge.net/project/recoil/recoil/6.4.5/recoil-6.4.5.tar.gz
 rfxgen-5.0.tar.gz 2b47c266c2a995a25da6b64fad44740cee2ec6c348c20c7f1d1e847a51683ef1 https://github.com/raysan5/rfxgen/archive/refs/tags/5.0.tar.gz

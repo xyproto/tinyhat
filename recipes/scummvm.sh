@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 umask 022
-CFLAGS=$(echo "$CFLAGS" | sed 's/-Os/-O3/')
-CXXFLAGS=$(echo "$CXXFLAGS" | sed 's/-Os/-O3/')
+CFLAGS="$CFLAGS -O3"
+CXXFLAGS="$CXXFLAGS -O3"
 LDFLAGS=$(echo "$LDFLAGS" | sed "s/,--gc-sections//")
 export CFLAGS CXXFLAGS LDFLAGS
 rm -rf /work/scummvm && mkdir -p /work/scummvm && cd /work/scummvm

@@ -1,2 +1,10 @@
 #!/bin/sh
-awk '/^MemTotal:/ { print int($2 / 1024) }' /proc/meminfo
+if [ "${1:-}" = total ]; then
+	awk '/^MemTotal:/ { print int($2 / 1024) }' /proc/meminfo
+	exit 0
+fi
+awk '/^MemTotal:/ { t = int($2 / 1024) } /^MemAvailable:/ { a = int($2 / 1024) }
+END {
+	u = t - a
+	printf "%d MiB used of %d MiB (goal: under 100 MiB - %s)\n", u, t, (u < 100 ? "within budget" : "over budget")
+}' /proc/meminfo

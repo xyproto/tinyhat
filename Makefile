@@ -15,7 +15,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck sourcecheck dist
+.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck sourcecheck test dist
 
 all: tinyhat32.img
 
@@ -34,6 +34,10 @@ patchcheck:
 
 sourcecheck:
 	scripts/sourcecheck.sh
+
+test: patchcheck sourcecheck
+	@for f in config/overlay/usr/bin/* scripts/*.sh; do sh -n "$$f" || exit 1; done
+	@echo "shell scripts: ok"
 
 dist: tinyhat32.img
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $<
@@ -94,7 +98,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-7e604093837db40421a1976b9f64c49e548f3fbd.tar.gz
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-000899eea22a1c8a5d2a61c83981551171bcc66b.tar.gz
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
@@ -134,7 +138,7 @@ $(B)/.llvm: $(B)/.buildroot recipes/llvm.sh vendor/src/llvm-project-15.0.7.src.t
 	scripts/recipe.sh $(B)/buildroot llvm >$(B)/llvm.log 2>&1 || { tail -40 $(B)/llvm.log; exit 1; }
 	@touch $@
 
-$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/tinyhat-pick.c
+$(B)/.tinyhat-gui: $(B)/.buildroot $(B)/.fontconfig recipes/tinyhat-gui.sh programs/tinyhat-backup.c programs/tinyhat-restore.c programs/tinyhat-pick.c programs/tinyhat-play.c
 	scripts/recipe.sh $(B)/buildroot tinyhat-gui >$(B)/tinyhat-gui.log 2>&1 || { tail -40 $(B)/tinyhat-gui.log; exit 1; }
 	@touch $@
 
