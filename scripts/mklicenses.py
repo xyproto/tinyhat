@@ -224,13 +224,6 @@ def main():
                 "with samples normalized and the instrument attenuation adjusted to keep the original balance.\n")
     info(path, "GeneralUser GS", "2.0.3", "https://schristiancollins.com/generaluser.php", "LicenseRef-GeneralUser-GS")
 
-    path = os.path.join(OUT, "flight-of-the-amazon-queen")
-    os.makedirs(path)
-    with zipfile.ZipFile(os.path.join(SRC, "FOTAQ_Talkie-1.1.zip")) as z:
-        with open(os.path.join(path, "LICENSE"), "wb") as f:
-            f.write(z.read("readme.txt"))
-    info(path, "Flight of the Amazon Queen (CD talkie, MP3)", "1.1", "https://www.scummvm.org/games/#games-queen", "LicenseRef-FOTAQ-Freeware")
-
     path = os.path.join(OUT, "beneath-a-steel-sky")
     os.makedirs(path)
     with zipfile.ZipFile(os.path.join(SRC, "BASS-Floppy-1.3.zip")) as z:
@@ -240,8 +233,7 @@ def main():
 
     for name, title, version, zipname, member, url in (
             ("lure-of-the-temptress", "Lure of the Temptress", "1.1", "lure-1.1.zip", "lure/LICENSE.txt", "https://www.scummvm.org/games/#games-lure"),
-            ("soltys", "Soltys", "1.0", "soltys-en-v1.0.zip", "license.txt", "https://www.scummvm.org/games/#games-soltys"),
-            ("nippon-safes", "Nippon Safes Inc.", "1.0", "nippon-1.0.zip", "readme.txt", "https://www.scummvm.org/games/#games-nippon")):
+            ("soltys", "Soltys", "1.0", "soltys-en-v1.0.zip", "license.txt", "https://www.scummvm.org/games/#games-soltys")):
         path = os.path.join(OUT, name)
         os.makedirs(path)
         with zipfile.ZipFile(os.path.join(SRC, zipname)) as z:
