@@ -1,0 +1,80 @@
+#!/bin/sh
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+
+if [ $# -eq 0 ]; then
+	f=$(tinyhat-pick "Import a game" "$HOME") || exit 0
+	[ -n "$f" ] || exit 0
+	set -- "$f"
+fi
+
+for f in "$@"; do
+	if [ ! -f "$f" ]; then
+		echo "tinyhat-import: no such file: $f" >&2
+		continue
+	fi
+	base=${f##*/}
+	name=${base%.*}
+	ext=$(printf '%s' "${base##*.}" | tr '[:upper:]' '[:lower:]')
+	case $ext in
+	sfc | smc | fig | swc) sys=snes ;;
+	nes | fds | unf | unif) sys=nes ;;
+	gba | gb | gbc) sys=gba ;;
+	d64 | d71 | d81 | g64 | prg | t64 | tap | crt | p00) sys=c64 ;;
+	md | gen | bin | 68k | sgd) sys=genesis ;;
+	cue)
+		dest=$HOME/DOS/$name
+		mkdir -p "$dest"
+		cp -f "$f" "$dest/"
+		awk '/^[Ff][Ii][Ll][Ee]/ { gsub(/"/, "", $2); print $2 }' "$f" | while IFS= read -r track; do
+			[ -f "${f%/*}/$track" ] && cp -f "${f%/*}/$track" "$dest/"
+		done
+		notice "Imported $name to ~/DOS/$name"
+		continue
+		;;
+	exe)
+		if ! innoextract -l "$f" >/dev/null 2>&1; then
+			echo "tinyhat-import: not a supported installer: $base" >&2
+			continue
+		fi
+		dest=$HOME/Games/$name
+		mkdir -p "$dest"
+		if innoextract -d "$dest" "$f" >/dev/null 2>&1; then
+			scummvm --add --recursive --path="$dest" >/dev/null 2>&1 || true
+			notice "Imported $name to ~/Games/$name"
+		else
+			notice "Importing $name failed"
+		fi
+		continue
+		;;
+	zip | 7z | rar | tgz | tar | gz | bz2 | xz)
+		choice=$(printf 'ScummVM game\nDOS game\n' | fuzzel --dmenu --prompt "Import $base as ❯ ") || continue
+		case $choice in
+		"ScummVM game") dest=$HOME/Games/$name ;;
+		*) dest=$HOME/DOS/$name ;;
+		esac
+		mkdir -p "$dest"
+		ok=1
+		case $ext in
+		zip) unzip -o -q "$f" -d "$dest" || ok= ;;
+		7z) 7z x -y -o"$dest" "$f" >/dev/null || ok= ;;
+		rar) unrar x -o+ -inul "$f" "$dest/" || ok= ;;
+		*) tar -xf "$f" -C "$dest" || ok= ;;
+		esac
+		if [ -z "$ok" ]; then
+			notice "Importing $name failed"
+			continue
+		fi
+		[ "$choice" = "ScummVM game" ] && scummvm --add --recursive --path="$dest" >/dev/null 2>&1
+		notice "Imported $name to ${dest#"$HOME"/}"
+		continue
+		;;
+	*)
+		echo "tinyhat-import: unknown file type: $base" >&2
+		continue
+		;;
+	esac
+	mkdir -p "$HOME/ROMs/$sys"
+	cp -f "$f" "$HOME/ROMs/$sys/"
+	notice "Imported $base to ~/ROMs/$sys"
+done

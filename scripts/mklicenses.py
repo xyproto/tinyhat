@@ -91,8 +91,6 @@ SOURCES = [
      "furnace-fmt-e57ca2e3.tar.gz", ["LICENSE.rst"]),
     ("furnace-adpcm", "bundled with Furnace", "https://github.com/superctr/adpcm", "Unlicense",
      "furnace-adpcm-ef7a2171.tar.gz", ["LICENSE"]),
-    ("pixelc", "master (9b885c48)", "https://github.com/renehorstmann/Pixelc", "GPL-3.0-only AND MIT",
-     "pixelc-9b885c4865bc577131722ee248346abe55a1c410.tar.gz", ["LICENSE"]),
     ("tinyxxd", "1.3.17", "https://github.com/xyproto/tinyxxd", "GPL-2.0-only AND MIT",
      "tinyxxd-1.3.17.tar.gz", ["LICENSE", "AUTHORS.md"]),
     ("sdl2_image", "2.8.12", "https://github.com/libsdl-org/SDL_image", "Zlib",

@@ -8,3 +8,4 @@ for d in /etc/skel/cprojects/*/; do
 	d=${d%/}
 	[ -e "$HOME/cprojects/${d##*/}" ] || cp -r "$d" "$HOME/cprojects/${d##*/}"
 done
+tinyhat-firstboot &

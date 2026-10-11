@@ -26,7 +26,7 @@ def main(root, out, name, version, desc, url, lic, provides=""):
             if os.path.lexists(os.path.join(root, rel)):
                 files.append(rel + ("/" if n in dirs else ""))
     size = sum(os.lstat(os.path.join(root, f)).st_size for f in files if not f.endswith("/"))
-    now = str(int(time.time()))
+    now = str(int(os.environ.get("SOURCE_DATE_EPOCH") or time.time()))
     remove_existing(root, name)
     d = os.path.join(root, "var/lib/pacman/local", f"{name}-{version}")
     os.makedirs(d, exist_ok=True)

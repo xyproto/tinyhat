@@ -1,8 +1,9 @@
 set -g fish_greeting
-set -gx MANPAGER o
+set -q BROWSER; or set -gx BROWSER /usr/bin/netsurf-gtk3
+set -q EDITOR; or set -gx EDITOR /usr/bin/o
+set -q MANPAGER; or set -gx MANPAGER /usr/bin/o
 if test (id -un) = tinyhat
     set -gx O_THEME xoria
-    set -gx BROWSER netsurf-gtk3
 end
 set -gx WATCOM /usr/lib/watcom
 set -gx INCLUDE $WATCOM/h

@@ -10,4 +10,5 @@ bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "busybox" { print $4 }' "$top/initramfs
 mv "$work/usr/bin/busybox" "$work/bin/busybox"
 rm -rf "$work/usr"
 install -m755 "$top/config/initramfs/init" "$work/init"
-(cd "$work" && find . -mindepth 1 | LC_ALL=C sort | cpio --quiet -o -H newc -R 0:0) | zstd -q -19 -T0 -f -o "$out"
+find "$work" -exec touch -h -d "@${SOURCE_DATE_EPOCH:-315532800}" {} +
+(cd "$work" && find . -mindepth 1 | LC_ALL=C sort | cpio --quiet --reproducible -o -H newc -R 0:0) | zstd -q -19 -T0 -f -o "$out"

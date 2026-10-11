@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=mGBA
-Icon=input-gaming
-Comment=Game Boy Advance emulator (open a .gba file from a terminal: mgba game.gba)
-Exec=tinyhat-term mgba
+Name=Game Boy Advance emulator (mGBA)
+Icon=applications-games
+Comment=Play Game Boy Advance and Game Boy games from ~/ROMs/gba or a USB stick
+Exec=tinyhat-emulate gba
 Terminal=false
 Categories=Game;Emulator;

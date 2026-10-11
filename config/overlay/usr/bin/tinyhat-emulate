@@ -1,10 +1,12 @@
 #!/bin/sh
 case $1 in
 nes) core=nestopia name="NES" pattern='\.(nes|fds|unf|unif)$' ;;
-genesis) core=blastem name="Genesis" pattern='\.(md|gen|smd|bin|68k|sgd)$' ;;
+snes) emu=zsnes name="Super Nintendo" pattern='\.(sfc|smc|fig|swc)$' ;;
+genesis) core=blastem name="Genesis" ;;
+gba) emu=mgba name="Game Boy Advance" pattern='\.(gba|gb|gbc)$' ;;
 c64) core= name="C64" pattern='\.(d64|d71|d81|g64|prg|t64|tap|crt|p00)$' ;;
 *)
-	echo "usage: tinyhat-emulate nes|genesis|c64 [game]" >&2
+	echo "usage: tinyhat-emulate nes|snes|genesis|gba|c64 [game]" >&2
 	exit 1
 	;;
 esac
@@ -12,20 +14,28 @@ dir=$HOME/ROMs/$1
 mkdir -p "$dir"
 game=$2
 if [ -z "$game" ]; then
-	list=$(find "$dir" /media -maxdepth 4 -type f 2>/dev/null | grep -i -E "$pattern" | sort)
-	if [ -z "$core" ]; then
-		game=$(printf 'Start BASIC\n%s' "$list" | fuzzel --dmenu --prompt "$name ❯ ") || exit 0
-		[ "$game" = "Start BASIC" ] && game=
-	elif [ -z "$list" ]; then
-		tinyhat-notice "Put $name games in ~/ROMs/$1 or on a USB stick" 6
-		exit 0
+	if [ "$1" = genesis ]; then
+		game=$(tinyhat-pick "$name game" "$dir") || exit 0
+		[ -n "$game" ] || exit 0
 	else
-		game=$(printf '%s\n' "$list" | fuzzel --dmenu --prompt "$name game ❯ ") || exit 0
+		list=$(find "$dir" /media -maxdepth 4 -type f 2>/dev/null | grep -i -E "$pattern" | sort)
+		if [ "$1" = c64 ]; then
+			game=$(printf 'Start BASIC\n%s' "$list" | fuzzel --dmenu --prompt "$name ❯ ") || exit 0
+			[ "$game" = "Start BASIC" ] && game=
+		elif [ -z "$list" ]; then
+			tinyhat-notice "Put $name games in ~/ROMs/$1 or on a USB stick" 6
+			exit 0
+		else
+			game=$(printf '%s\n' "$list" | fuzzel --dmenu --prompt "$name game ❯ ") || exit 0
+		fi
 	fi
 fi
+export SDL_RENDER_DRIVER=opengles2,opengl,software
+if [ -n "$emu" ]; then
+	exec "$emu" "$game"
+fi
 if [ -z "$core" ]; then
-	export SDL_RENDER_DRIVER=opengles2,opengl,software
 	[ -n "$game" ] && exec x64sc -autostart "$game"
 	exec x64sc
 fi
-SDL_RENDER_DRIVER=opengles2,opengl,software exec tinyhat-retro "/usr/lib/libretro/${core}_libretro.so" "$game"
+exec tinyhat-retro "/usr/lib/libretro/${core}_libretro.so" "$game"

@@ -36,7 +36,7 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace pixelc tinyxxd qemacs tinyhat-gui; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace tinyxxd qemacs tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -92,7 +92,6 @@ retro|tinyhat-retro|1-1|MIT|https://github.com/xyproto/tinyhat||Small SDL3 front
 vice|vice|3.9-1|GPL-2.0-or-later|https://vice-emu.sourceforge.io/||Commodore 64 emulator (x64sc) with the SDL2 UI
 tic80|tic-80|1.3.1-1|MIT AND LGPL-2.1-or-later AND Libpng AND Zlib AND Unlicense|https://tic80.com/||TIC-80 fantasy console with Lua and Fennel
 furnace|furnace|0.6.8.3-1|GPL-2.0-or-later|https://tildearrow.org/furnace/||Chiptune tracker for many old sound chips
-pixelc|pixelc|0+9b885c48-1|GPL-3.0-only AND MIT|https://github.com/renehorstmann/Pixelc||Pixel art and tile editor
 tinyxxd|tinyxxd|1.3.17-1|GPL-2.0-only AND MIT|https://github.com/xyproto/tinyxxd|xxd|Drop-in replacement and standalone version of the hex dump utility that comes with Vim
 qemacs|qemacs|0+befd7a81-1|MIT|https://github.com/qemacs/qemacs||Quick Emacs, a small Emacs-like text editor by Fabrice Bellard
 EOF

@@ -2,6 +2,8 @@
 set -eu
 umask 022
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
+: "${SOURCE_DATE_EPOCH:=$(git -C "$top" log -1 --format=%ct 2>/dev/null || echo 315532800)}"
+export SOURCE_DATE_EPOCH
 out=$1
 kernel=$2
 initrd=$3
@@ -26,17 +28,19 @@ mkdir -p "$work/efi/EFI/BOOT"
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
 	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile
 cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
+find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	/bin/sh -c 'mkfs.fat -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI'
+	/bin/sh -c 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI'
 
 content=$(du -sm --apparent-size "$work/root" | cut -f1)
-part_mib=$((content + content / 32 + 12))
+part_mib=$((content + content / 32 + 64))
 truncate -s "${part_mib}M" "$work/part.img"
 TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -L TINYHAT \
-	-m crc=1,finobt=0,rmapbt=0,reflink=0,bigtime=1,inobtcount=0,metadir=0 \
-	-i nrext64=0,exchange=0 -n parent=0 -l size=16m \
+	-m crc=1,finobt=0,rmapbt=0,reflink=0,bigtime=1,inobtcount=0,metadir=0,uuid=7417a700-0000-4000-8000-000000007417 \
+	-i nrext64=0,exchange=0 -n parent=0 -l size=64m \
 	-p "$work/root" "$work/part.img"
+python3 "$top/scripts/xfsnormalize.py" "$work/part.img" "$SOURCE_DATE_EPOCH"
 
 rm -f "$out.tmp"
 truncate -s "$((part_mib + esp_mib + 1))M" "$out.tmp"
