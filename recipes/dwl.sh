@@ -18,5 +18,6 @@ patch -Np1 -i /patches/dwl/barline.patch
 patch -Np1 -i /patches/dwl/cursor.patch
 patch -Np1 -i /patches/dwl/altab.patch
 cp /patches/dwl/config.h config.h
+CFLAGS="$CFLAGS -O3"
 make PREFIX=/usr CFLAGS="$CFLAGS -DWLR_USE_UNSTABLE -std=c11"
 make PREFIX=/usr DESTDIR=/out/dwl install
