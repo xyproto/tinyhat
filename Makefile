@@ -35,7 +35,10 @@ patchcheck:
 sourcecheck:
 	scripts/sourcecheck.sh
 
-test: patchcheck sourcecheck
+fuzzelcheck:
+	scripts/fuzzelcheck.sh
+
+test: patchcheck sourcecheck fuzzelcheck
 	@for f in config/overlay/usr/bin/* scripts/*.sh; do sh -n "$$f" || exit 1; done
 	@echo "shell scripts: ok"
 
@@ -66,7 +69,7 @@ $(B)/.sdl3: $(B)/.buildroot recipes/sdl3.sh vendor/src/SDL3-3.4.18.tar.gz $(wild
 	scripts/recipe.sh $(B)/buildroot sdl3 >$(B)/sdl3.log 2>&1 || { tail -40 $(B)/sdl3.log; exit 1; }
 	@touch $@
 
-$(B)/.zsnes: $(B)/.sdl3 recipes/zsnes.sh vendor/src/zsnes-2.3.6.tar.gz
+$(B)/.zsnes: $(B)/.sdl3 recipes/zsnes.sh vendor/src/zsnes-2.3.8.tar.gz
 	scripts/recipe.sh $(B)/buildroot zsnes >$(B)/zsnes.log 2>&1 || { tail -40 $(B)/zsnes.log; exit 1; }
 	@touch $@
 

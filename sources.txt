@@ -53,7 +53,7 @@ swaybg-1.2.2.tar.gz 94e5c06a765d969e554b0f321f9cdf9c283a3fdaf70ad4e3d28163b21bd4
 swaylock-1.8.6.tar.gz a15154348fef852fdb224112d137c393c826478b777f63479beb15e8d3812eaf https://github.com/swaywm/swaylock/releases/download/v1.8.6/swaylock-1.8.6.tar.gz
 wlroots-0.19.3.tar.gz a6ff89b64ea15e424d1b0db4a22145fccf5ec2ff2e7b8af0fa35e2ac8975986f https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/0.19.3/wlroots-0.19.3.tar.gz
 xpadneo-0.10.4.tar.gz 5271c02a788f9470199e9e18596e0d8537687ff68b2fcc64c03ecf92638f5c84 https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.4.tar.gz
-zsnes-2.3.6.tar.gz eabf0e75d389d52fea096fa44718ab3551e06b732d0dbcafd8b657706fe6cc6f https://github.com/xyproto/zsnes/archive/refs/tags/2.3.6.tar.gz
+zsnes-2.3.8.tar.gz 963b8243ee69d6a92e519991c457298dd1419b1406158607dfc387379c4b505e https://github.com/xyproto/zsnes/archive/refs/tags/v2.3.8.tar.gz
 vtGBte-1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz 9d9c61b9ae3bb0ef50b4c4ec383d55ab5ca7190be6030c37729feb7f66591a1c https://github.com/paul-arutyunov/vtGBte/archive/1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz
 lure-1.1.zip f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108 https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip
 soltys-en-v1.0.zip 87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6 https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip
