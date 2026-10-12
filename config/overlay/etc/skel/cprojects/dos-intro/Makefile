@@ -3,7 +3,7 @@ dos-intro.com: intro.asm
 	@echo "$@ is $$(wc -c < $@) bytes"
 
 run: dos-intro.com
-	dosbox-x -fastlaunch dos-intro.com -exit
+	dosbox-x -conf /etc/tinyhat/dosbox-x.conf -fastlaunch dos-intro.com -exit
 
 clean:
 	rm -f dos-intro.com
