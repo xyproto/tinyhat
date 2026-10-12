@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=Zip my work into ~/Shared
+Name=Zip my work into ~/pub
 Icon=package-x-generic
-Comment=Put your pictures, sprites, music, samples, texts and programming projects in one .zip file in ~/Shared
+Comment=Put your pictures, sprites, music, samples, texts and programming projects in one .zip file in ~/pub
 Exec=tinyhat-collect
 Terminal=false
 Categories=System;Utility;

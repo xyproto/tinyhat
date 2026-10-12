@@ -47,7 +47,7 @@ sed -i "/^Requires.private:/d" "$root/usr/lib/pkgconfig/fluidsynth.pc"
 rm -rf "$root"/usr/include/SDL2 "$root"/usr/bin/sdl2-config "$root"/usr/share/aclocal
 rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
 find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
-sstrip "$root/usr/bin/zsnes" "$root/usr/bin/dosbox-x" "$root/usr/bin/scummvm" "$root/usr/bin/dwl" "$root/usr/bin/fuzzel" "$root/usr/bin/grafx2-sdl3" "$root/usr/bin/algernon" "$root/usr/bin/syncthing"
+sstrip "$root/usr/bin/zsnes-bin" "$root/usr/bin/dosbox-x" "$root/usr/bin/scummvm" "$root/usr/bin/dwl" "$root/usr/bin/fuzzel" "$root/usr/bin/grafx2-sdl3" "$root/usr/bin/algernon" "$root/usr/bin/syncthing"
 sstrip "$root/usr/lib/dri/swrast_dri.so"
 strip --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libSDL2-2.0.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
 
