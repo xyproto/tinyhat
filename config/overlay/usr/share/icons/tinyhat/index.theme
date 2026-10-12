@@ -1,0 +1,16 @@
+[Icon Theme]
+Name=Tiny Hat
+Comment=Chunky pixel art icons for Tiny Hat
+Inherits=hicolor
+Directories=32x32/apps,16x16/apps
+Example=applications-games
+
+[32x32/apps]
+Size=32
+Context=Applications
+Type=Fixed
+
+[16x16/apps]
+Size=16
+Context=Applications
+Type=Fixed

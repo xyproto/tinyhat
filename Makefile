@@ -4,7 +4,6 @@ export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 LOCKS := rootfs.lock buildroot.lock initramfs.lock licenses.lock
-SOUNDFONT := vendor/soundfont/TinyHat-GM-0.790.sf3
 SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell awk '!/^#/ { print $$1 }' sources.txt))
@@ -224,13 +223,6 @@ $(B)/vmlinuz-x32: config/kernel-i686.fragment config/kernel-x32.fragment vendor/
 $(B)/initramfs.img: $(B)/.fetched-initramfs config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
 
-$(SOUNDFONT): | vendor/src/FatBoy-v0.790.7z
-	@mkdir -p $(B)/fatboy $(dir $@)
-	7z x -y -o$(B)/fatboy vendor/src/FatBoy-v0.790.7z >/dev/null
-	python3 scripts/sf2tosf3.py $(B)/fatboy/FatBoy-v0.790.sf2 $@ "TinyHat-GM 0.790" \
-		"TinyHat-GM is an SF3 (Ogg Vorbis) conversion of FatBoy 0.790 by Chris Wadge and contributors, renamed as the FatBoy license asks for modified versions. Samples were normalized and the instrument attenuation adjusted to keep the original balance."
-	rm -rf $(B)/fatboy
-
 $(SOUNDFONT_GU): | vendor/src/GeneralUser-GS-2.0.3.sf2
 	@mkdir -p $(dir $@)
 	python3 scripts/sf2tosf3.py vendor/src/GeneralUser-GS-2.0.3.sf2 $@
@@ -277,7 +269,7 @@ $(B)/.qemacs: $(B)/.buildroot recipes/qemacs.sh vendor/src/qemacs-befd7a816ec824
 	scripts/recipe.sh $(B)/buildroot qemacs >$(B)/qemacs.log 2>&1 || { tail -40 $(B)/qemacs.log; exit 1; }
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT) $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 
