@@ -13,5 +13,5 @@ cmake -S . -B b -G Ninja -DCMAKE_BUILD_TYPE=Release \
 ninja -C b
 install -m755 b/bin/tic80 b/bin/lua.so b/bin/fennel.so /out/tic80/usr/lib/tic80/
 strip --strip-unneeded /out/tic80/usr/lib/tic80/*
-printf '#!/bin/sh\nLD_LIBRARY_PATH=/usr/lib/tic80 exec /usr/lib/tic80/tic80 "$@"\n' >/out/tic80/usr/bin/tic80
+printf '#!/bin/sh\nLD_LIBRARY_PATH=/usr/lib/tic80 exec tinyhat-gpu /usr/lib/tic80/tic80 "$@"\n' >/out/tic80/usr/bin/tic80
 chmod 755 /out/tic80/usr/bin/tic80
