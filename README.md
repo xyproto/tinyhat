@@ -61,5 +61,5 @@ The licenses are in the `licenses` directory.
 
 ### General
 
+* Version: 1.0.0
 * License: BSD-3
-* Version: 0.3.1
