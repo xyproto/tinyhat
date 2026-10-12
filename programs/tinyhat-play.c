@@ -282,9 +282,14 @@ static int fetch_with(CURL *c, const char *url, const char *post, struct curl_sl
 	long code = 0;
 	CURLcode rc;
 	char *eff = NULL;
+	struct curl_slist *all = NULL, *it;
+	for (it = hdr; it; it = it->next)
+		all = curl_slist_append(all, it->data);
+	all = curl_slist_append(all, "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+	all = curl_slist_append(all, "Accept-Language: en-US,en;q=0.5");
 	curl_easy_setopt(c, CURLOPT_URL, url);
 	curl_easy_setopt(c, CURLOPT_WRITEDATA, s);
-	curl_easy_setopt(c, CURLOPT_HTTPHEADER, hdr);
+	curl_easy_setopt(c, CURLOPT_HTTPHEADER, all);
 	if (post)
 		curl_easy_setopt(c, CURLOPT_POSTFIELDS, post);
 	else
@@ -294,7 +299,7 @@ static int fetch_with(CURL *c, const char *url, const char *post, struct curl_sl
 	curl_easy_getinfo(c, CURLINFO_EFFECTIVE_URL, &eff);
 	if (effective)
 		*effective = g_strdup(eff ? eff : url);
-	curl_easy_setopt(c, CURLOPT_HTTPHEADER, NULL);
+	curl_slist_free_all(all);
 	return rc == CURLE_OK && code >= 200 && code < 300;
 }
 
@@ -694,6 +699,29 @@ static char *ddg_target(const char *href)
 	return g_strdup(href);
 }
 
+static void ddg_collect(GString *page, GPtrArray *results, const char *pattern)
+{
+	if (!page)
+		return;
+	GRegex *re = g_regex_new(pattern, 0, 0, NULL);
+	GMatchInfo *mi;
+	g_regex_match(re, page->str, 0, &mi);
+	while (g_match_info_matches(mi) && results->len < MAX_RESULTS) {
+		char *href = g_match_info_fetch(mi, 1);
+		char *un = html_unescape(href);
+		char *t = ddg_target(un);
+		if (t && (!strncmp(t, "http://", 7) || !strncmp(t, "https://", 8)) && !skip_host(t))
+			g_ptr_array_add(results, t);
+		else
+			g_free(t);
+		g_free(un);
+		g_free(href);
+		g_match_info_next(mi, NULL);
+	}
+	g_match_info_free(mi);
+	g_regex_unref(re);
+}
+
 static GPtrArray *ddg_search(const char *query)
 {
 	GPtrArray *results = g_ptr_array_new_with_free_func(g_free);
@@ -701,29 +729,18 @@ static GPtrArray *ddg_search(const char *query)
 	char *esc = g_uri_escape_string(q, NULL, FALSE);
 	char *post = g_strdup_printf("q=%s&kl=wt-wt", esc);
 	GString *page = fetch_page("https://html.duckduckgo.com/html/", post, NULL);
+	ddg_collect(page, results, "class=\"result__a\"[^>]*href=\"([^\"]+)\"");
+	if (page)
+		g_string_free(page, TRUE);
+	if (results->len == 0) {
+		page = fetch_page("https://lite.duckduckgo.com/lite/", post, NULL);
+		ddg_collect(page, results, "rel=\"nofollow\" href=\"([^\"]+)\"");
+		if (page)
+			g_string_free(page, TRUE);
+	}
 	g_free(q);
 	g_free(esc);
 	g_free(post);
-	if (page) {
-		GRegex *re = g_regex_new("class=\"result__a\"[^>]*href=\"([^\"]+)\"", 0, 0, NULL);
-		GMatchInfo *mi;
-		g_regex_match(re, page->str, 0, &mi);
-		while (g_match_info_matches(mi) && results->len < MAX_RESULTS) {
-			char *href = g_match_info_fetch(mi, 1);
-			char *un = html_unescape(href);
-			char *t = ddg_target(un);
-			if (t && (!strncmp(t, "http://", 7) || !strncmp(t, "https://", 8)) && !skip_host(t))
-				g_ptr_array_add(results, t);
-			else
-				g_free(t);
-			g_free(un);
-			g_free(href);
-			g_match_info_next(mi, NULL);
-		}
-		g_match_info_free(mi);
-		g_regex_unref(re);
-		g_string_free(page, TRUE);
-	}
 	return results;
 }
 
