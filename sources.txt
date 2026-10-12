@@ -5,7 +5,6 @@ binutils-2.45.1.tar.xz 5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf86
 cc65-71746c829e77f74c2b601a7d16821170c2610df3.tar.gz 2172a1fc74bf6f3026e0f9427d4159508cd801abcb35ce591394bb911adaabe4 https://github.com/cc65/cc65/archive/71746c829e77f74c2b601a7d16821170c2610df3.tar.gz
 dosbox-x-2026.10.01.tar.gz df023a6c0e4a139dcbd60befff5947e0db2cc68e4e79db463670f581a4044ed4 https://github.com/joncampbell123/dosbox-x/archive/refs/tags/dosbox-x-v2026.10.01.tar.gz
 dwl-0.8.tar.gz 3080087e7f613bf6a350934231fd9ed478d04cd2a2f30da8a96cdf2066f59412 https://codeberg.org/dwl/dwl/archive/v0.8.tar.gz
-FatBoy-v0.790.7z 330aad903459a8363f822ee5ac1c24beb01321196baca2bbee0c5fbfda0c6870 https://archive.org/download/fat-boy-v-0.790.7z/FatBoy-v0.790.7z
 fluidsynth-2.6.1.tar.gz 3d258a3bf97cc20c59eeebfe62c2432fae88adda74d3ad098681c76e0ebf446b https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.6.1.tar.gz
 fontconfig-2.18.3.tar.xz 4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3 https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/2.18.3/fontconfig-2.18.3.tar.xz
 BASS-Floppy-1.3.zip d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818 https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
