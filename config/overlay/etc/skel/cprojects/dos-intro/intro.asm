@@ -1,6 +1,5 @@
 ; A 256 byte demoscene intro: a moving rainbow pattern in 320x200 VGA mode 13h. Esc quits.
 ; Press Ctrl+Space twice in Orbiton to build it with nasm and run it in DOSBox-X.
-; Demosceners make whole intros in 256 bytes or less. How small can you make it?
 org 100h
 
     mov al, 13h             ; 320x200 with 256 colours
