@@ -40,6 +40,7 @@ for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuz
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
+rm -rf "$root/usr/share/icons/Adwaita" "$root/usr/share/icons/AdwaitaLegacy"
 rm -rf "$root"/usr/include/libxml2 "$root"/usr/bin/xml2-config "$root"/usr/include/wlroots-* "$root"/usr/include/libdisplay-info "$root"/usr/share/wayland-sessions
 find "$root/usr/lib/pkgconfig" -type f ! -name sdl3.pc ! -name sdl3-image.pc ! -name sdl3-ttf.pc ! -name raylib.pc ! -name fluidsynth.pc \
 	! -name gl.pc ! -name opengl.pc ! -name glx.pc ! -name egl.pc ! -name glesv2.pc ! -name libglvnd.pc ! -name glu.pc ! -name glew.pc ! -name glfw3.pc -delete
@@ -106,7 +107,6 @@ rm -f "$root/etc/fonts/conf.d/70-no-bitmaps-except-emoji.conf"
 
 cp -a "$modules/." "$root/"
 
-install -Dm644 vendor/soundfont/TinyHat-GM-0.790.sf3 "$root/usr/share/soundfonts/TinyHat-GM-0.790.sf3"
 install -Dm644 vendor/soundfont/GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/GeneralUser-GS-2.0.3.sf3"
 ln -sf GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/default.sf2"
 mkdir -p "$root/usr/share/games/bass"
@@ -208,6 +208,13 @@ mkdir -p "$root/media" "$root/persist" "$root/etc/dropbear" "$root/var/lib/tinyh
 
 python3 scripts/elfcheck.py "$root"
 scripts/inroot.sh "$root" /bin/sh -c "$(cat scripts/symcheck.sh)"
+
+find "$root/usr/share/man" -type l -name "*.gz" | while IFS= read -r l; do
+	t=$(readlink "$l")
+	ln -sfn "${t%.gz}" "${l%.gz}"
+	rm -f "$l"
+done
+find "$root/usr/share/man" -name "*.gz" -type f -exec gunzip -f {} +
 
 rm -f "$sfs"
 mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 256K -noappend -quiet -no-progress -no-xattrs \

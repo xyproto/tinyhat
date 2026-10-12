@@ -133,25 +133,6 @@ SOURCES = [
      "SDL3-3.4.18.tar.gz", ["LICENSE.txt"]),
 ]
 
-FATBOY = """TinyHat-GM 0.790 is derived from the FatBoy 0.790 GM/GS SoundFont
-by Chris Wadge and other contributors (https://fatboy.site/, archived at
-https://archive.org/details/fat-boy-v-0.790).
-
-It was converted to SF3 (Ogg Vorbis compressed samples), with samples
-normalized and instrument attenuation adjusted to keep the original balance.
-It is renamed because the FatBoy terms below ask for modified versions to be
-renamed.
-
-The FatBoy terms, as embedded in FatBoy-v0.790.sf2:
-
-    Use it for whatever you want, please don't sell the soundfont itself. :)
-
-    If you wish to modify and redistribute it, please rename your soundfont
-    to distinguish it from this one. Even better, share your contributions
-    with me so we can make FatBoy better for everyone: https://fatboy.site/
-"""
-
-
 def info(path, name, version, url, lic):
     with open(os.path.join(path, "LICENSE-INFO"), "w") as f:
         f.write(f"name: {name}\nversion: {version}\nurl: {url}\nlicense: {lic}\n")
@@ -200,13 +181,6 @@ def main():
                         f.write(t.extractfile(m).read())
         info(path, name, version, url, lic)
         used.update(spdx_ids(lic))
-
-    path = os.path.join(OUT, "tinyhat-gm")
-    os.makedirs(path)
-    with open(os.path.join(path, "LICENSE"), "w") as f:
-        f.write(FATBOY)
-    info(path, "TinyHat-GM", "0.790", "https://archive.org/details/fat-boy-v-0.790", "LicenseRef-FatBoy")
-
 
     path = os.path.join(OUT, "gcem")
     os.makedirs(path)
