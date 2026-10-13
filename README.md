@@ -1,6 +1,6 @@
-<img alt="Logo" src="img/tinyhat.svg" width=200 align=right>
+# Tiny Hat
 
-## Tiny Hat
+<img alt="Logo" src="img/tinyhat.svg" width=150 align=right>
 
 This is a Linux distro based on Arch Linux and archlinux32, with a few custom packages on top.
 
