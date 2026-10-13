@@ -1,5 +1,7 @@
 # Tiny Hat
 
+<img alt="Logo" src="img/tinyhat.png" width=200>
+
 This is a Linux distro based on Arch Linux and archlinux32, with a few custom packages on top.
 
 This `README.md` file, design choices and package selection is human made. AI tooling has been used for creating the Makefile, adding test scripts, debugging why some program fails to start etc.
