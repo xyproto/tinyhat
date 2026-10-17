@@ -33,6 +33,8 @@ Ctrl+Alt+X	256 byte demoscene intro (2x Ctrl+Space to run)
 Ctrl+Alt+Z	ZSNES 2
 
 Right click desktop	Toggle background
+Alt+Left drag	Move a window
+Alt+Right drag	Resize a window
 PrtSc	Screenshot to ~/Pictures
 Ctrl+Alt+Shift+Q	Power off
 Ctrl+Alt+Del	Reboot

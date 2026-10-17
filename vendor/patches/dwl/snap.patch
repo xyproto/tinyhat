@@ -1,0 +1,168 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -148,6 +148,8 @@ typedef struct {
+ 	uint32_t tags;
+ 	int isfloating, isurgent, isfullscreen, isminimized;
+ 	uint32_t resize; /* configure serial of a pending resize */
++	struct wlr_box presnap;
++	int issnapped;
+ } Client;
+ 
+ typedef struct {
+@@ -366,6 +368,8 @@ static void setlayout(const Arg *arg);
+ static void setmfact(const Arg *arg);
+ static void setmon(Client *c, Monitor *m, uint32_t newtags);
+ static void setpsel(struct wl_listener *listener, void *data);
++static int snapbox(double x, double y, struct wlr_box *box);
++static void snappreview(void);
+ static void setsel(struct wl_listener *listener, void *data);
+ static void setup(void);
+ static void spawn(const Arg *arg);
+@@ -403,6 +407,8 @@ static struct wl_event_loop *event_loop;
+ static struct wlr_backend *backend;
+ static struct wlr_scene *scene;
+ static struct wlr_scene_tree *layers[NUM_LAYERS];
++static struct wlr_scene_tree *snapframe;
++static struct wlr_scene_rect *snaprects[5];
+ static struct wlr_scene_tree *drag_icon;
+ /* Map from ZWLR_LAYER_SHELL_* constants to Lyr* enum */
+ static const int layermap[] = { LyrBg, LyrBottom, LyrTop, LyrOverlay };
+@@ -829,11 +835,19 @@ buttonpress(struct wl_listener *listener, void *data)
+ 		/* If you released any buttons, we exit interactive move/resize mode. */
+ 		/* TODO: should reset to the pointer focus's current setcursor */
+ 		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
++			struct wlr_box snap;
++			int snapped = cursor_mode == CurMove && snapbox(cursor->x, cursor->y, &snap);
++			wlr_scene_node_set_enabled(&snapframe->node, 0);
+ 			wlr_cursor_set_xcursor(cursor, cursor_mgr, "default");
+ 			cursor_mode = CurNormal;
+ 			/* Drop the window off on its new monitor */
+ 			selmon = xytomon(cursor->x, cursor->y);
+ 			setmon(grabc, selmon, 0);
++			if (snapped) {
++				grabc->presnap = grabc->geom;
++				grabc->issnapped = 1;
++				resize(grabc, snap, 0);
++			}
+ 			grabc = NULL;
+ 			return;
+ 		}
+@@ -2372,6 +2386,7 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
+ 		/* Move the grabbed client to the new position. */
+ 		resize(grabc, (struct wlr_box){.x = (int)round(cursor->x) - grabcx, .y = (int)round(cursor->y) - grabcy,
+ 			.width = grabc->geom.width, .height = grabc->geom.height}, 1);
++		snappreview();
+ 		return;
+ 	} else if (cursor_mode == CurResize) {
+ 		resize(grabc, (struct wlr_box){.x = grabc->geom.x, .y = grabc->geom.y,
+@@ -2416,11 +2431,19 @@ moveresize(const Arg *arg)
+ 	setfloating(grabc, 1);
+ 	switch (cursor_mode = arg->ui) {
+ 	case CurMove:
++		if (grabc->issnapped && grabc->geom.width > 0 && grabc->geom.height > 0) {
++			resize(grabc, (struct wlr_box){
++				.x = (int)round(cursor->x - (cursor->x - grabc->geom.x) * grabc->presnap.width / grabc->geom.width),
++				.y = (int)round(cursor->y - (cursor->y - grabc->geom.y) * grabc->presnap.height / grabc->geom.height),
++				.width = grabc->presnap.width, .height = grabc->presnap.height}, 1);
++		}
++		grabc->issnapped = 0;
+ 		grabcx = (int)round(cursor->x) - grabc->geom.x;
+ 		grabcy = (int)round(cursor->y) - grabc->geom.y;
+ 		wlr_cursor_set_xcursor(cursor, cursor_mgr, "all-scroll");
+ 		break;
+ 	case CurResize:
++		grabc->issnapped = 0;
+ 		/* Doesn't work for X11 output - the next absolute motion event
+ 		 * returns the cursor to where it started */
+ 		wlr_cursor_warp_closest(cursor, NULL,
+@@ -2837,6 +2860,67 @@ setmon(Client *c, Monitor *m, uint32_t newtags)
+ 	focusclient(focustop(selmon), 1);
+ }
+ 
++int
++snapbox(double x, double y, struct wlr_box *box)
++{
++	Monitor *m = xytomon(x, y);
++	int l, r, t, b, hw, hh, g = gappx;
++
++	if (!m)
++		return 0;
++	l = x < m->m.x + snapedge;
++	r = x >= m->m.x + m->m.width - snapedge;
++	t = y < m->m.y + snapedge;
++	b = y >= m->m.y + m->m.height - snapedge;
++	if (l || r) {
++		t = t || y < m->m.y + snapcorner;
++		b = b || y >= m->m.y + m->m.height - snapcorner;
++	} else if (t || b) {
++		l = x < m->m.x + snapcorner;
++		r = x >= m->m.x + m->m.width - snapcorner;
++	}
++	if (l == r && !t)
++		return 0;
++
++	*box = m->w;
++	if (l == r)
++		return 1;
++	hw = (m->w.width - 3 * g) / 2;
++	hh = (m->w.height - 3 * g) / 2;
++	box->x = l ? m->w.x + g : m->w.x + 2 * g + hw;
++	box->width = l ? hw : m->w.width - 3 * g - hw;
++	box->y = m->w.y + g;
++	box->height = m->w.height - 2 * g;
++	if (t || b) {
++		box->y = t ? m->w.y + g : m->w.y + 2 * g + hh;
++		box->height = t ? hh : m->w.height - 3 * g - hh;
++	}
++	return 1;
++}
++
++void
++snappreview(void)
++{
++	struct wlr_box b;
++	int bw = (int)borderpx;
++
++	if (cursor_mode != CurMove || !grabc || !snapbox(cursor->x, cursor->y, &b)) {
++		wlr_scene_node_set_enabled(&snapframe->node, 0);
++		return;
++	}
++	wlr_scene_node_set_position(&snapframe->node, b.x, b.y);
++	wlr_scene_rect_set_size(snaprects[0], b.width, b.height);
++	wlr_scene_rect_set_size(snaprects[1], b.width, bw);
++	wlr_scene_rect_set_size(snaprects[2], b.width, bw);
++	wlr_scene_node_set_position(&snaprects[2]->node, 0, b.height - bw);
++	wlr_scene_rect_set_size(snaprects[3], bw, b.height);
++	wlr_scene_rect_set_size(snaprects[4], bw, b.height);
++	wlr_scene_node_set_position(&snaprects[4]->node, b.width - bw, 0);
++	wlr_scene_node_reparent(&snapframe->node, grabc->scene->node.parent);
++	wlr_scene_node_place_above(&snapframe->node, &grabc->scene->node);
++	wlr_scene_node_set_enabled(&snapframe->node, 1);
++}
++
+ void
+ setpsel(struct wl_listener *listener, void *data)
+ {
+@@ -2891,6 +2975,14 @@ setup(void)
+ 		layers[i] = wlr_scene_tree_create(&scene->tree);
+ 	drag_icon = wlr_scene_tree_create(&scene->tree);
+ 	wlr_scene_node_place_below(&drag_icon->node, &layers[LyrBlock]->node);
++	snapframe = wlr_scene_tree_create(layers[LyrFloat]);
++	{
++		const float edge[] = COLOR(colors[SchemeSel][ColBorder]);
++		const float fill[] = {edge[0] * snapalpha, edge[1] * snapalpha, edge[2] * snapalpha, snapalpha};
++		for (i = 0; i < (int)LENGTH(snaprects); i++)
++			snaprects[i] = wlr_scene_rect_create(snapframe, 0, 0, i ? edge : fill);
++	}
++	wlr_scene_node_set_enabled(&snapframe->node, 0);
+ 
+ 	/* Autocreates a renderer, either Pixman, GLES2 or Vulkan for us. The user
+ 	 * can also specify a renderer using the WLR_RENDERER env var.
+@@ -3290,6 +3382,7 @@ unmapnotify(struct wl_listener *listener, void *data)
+ 	if (c == grabc) {
+ 		cursor_mode = CurNormal;
+ 		grabc = NULL;
++		wlr_scene_node_set_enabled(&snapframe->node, 0);
+ 	}
+ 
+ 	if (client_is_unmanaged(c)) {

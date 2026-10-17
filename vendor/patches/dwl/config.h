@@ -8,6 +8,9 @@ static const int sloppyfocus               = 0;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
 static const unsigned int borderpx         = 2;  /* border pixel of windows */
 static const unsigned int gappx            = 6;  /* gap between windows */
+static const int snapedge                  = 8;
+static const int snapcorner                = 96;
+static const float snapalpha               = 0.25f;
 static const int barvpad                   = 4;  /* vertical padding in the bar */
 static const int showbar                   = 1; /* 0 means no bar */
 static const int topbar                    = 1; /* 0 means bottom bar */
@@ -262,6 +265,8 @@ static const Button buttons[] = {
 	{ ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
 	{ ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
 	{ ClkClient,   MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+	{ ClkClient,   WLR_MODIFIER_ALT, BTN_LEFT,  moveresize, {.ui = CurMove} },
+	{ ClkClient,   WLR_MODIFIER_ALT, BTN_RIGHT, moveresize, {.ui = CurResize} },
 	{ ClkTagBar,   0,      BTN_LEFT,   view,           {0} },
 	{ ClkTagBar,   0,      BTN_RIGHT,  toggleview,     {0} },
 	{ ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
