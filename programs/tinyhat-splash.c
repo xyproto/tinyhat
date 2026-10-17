@@ -62,6 +62,7 @@ static char message[128];
 static int progress = -1;
 static long tick;
 static volatile sig_atomic_t stop;
+static int handoff;
 
 static long now_ms(void)
 {
@@ -358,6 +359,9 @@ static void command(char *line)
 			progress = 100;
 	} else if (!strcmp(line, "quit")) {
 		stop = 1;
+	} else if (!strcmp(line, "handoff")) {
+		stop = 1;
+		handoff = 1;
 	}
 	draw_status();
 }
@@ -436,7 +440,8 @@ int main(void)
 	}
 	unlink(FIFO);
 	if (tty >= 0) {
-		ioctl(tty, KDSETMODE, KD_TEXT);
+		if (!handoff)
+			ioctl(tty, KDSETMODE, KD_TEXT);
 		close(tty);
 	}
 	unmap();

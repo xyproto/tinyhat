@@ -3,6 +3,7 @@ vars="WAYLAND_DISPLAY XDG_SESSION_TYPE XDG_CURRENT_DESKTOP SDL_VIDEODRIVER SDL_F
 systemctl --user import-environment $vars
 dbus-update-activation-environment --systemd $vars 2>/dev/null
 tinyhat-wallpaper
+[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo handoff >/run/tinyhat-splash' 2>/dev/null
 mkdir -p "$HOME/cprojects"
 for d in /etc/skel/cprojects/*/; do
 	d=${d%/}
