@@ -9,6 +9,19 @@ esac
 
 msg() { echo "Tiny Hat: $*"; }
 
+say() {
+	[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo "$1" >/run/tinyhat-splash' sh "$1" 2>/dev/null
+}
+
+step() {
+	if [ -p /run/tinyhat-splash ]; then
+		say "msg $2"
+		say "progress $1"
+	else
+		echo "Tiny Hat: $2 ($1%)" >/dev/console
+	fi
+}
+
 create() {
 	boot=$(blkid -L TINYHAT) || return 1
 	disk=/dev/$(lsblk -no PKNAME "$boot" | head -n1)
@@ -16,12 +29,16 @@ create() {
 	free=$(sfdisk -F -q "$disk" 2>/dev/null | awk 'END { print $3 }')
 	[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
 	msg "creating persistent storage on the rest of the USB stick (one time only)"
+	step 5 "Creating persistent storage (one time only)"
 	echo ",,L" | sfdisk --append --no-reread -q "$disk" 2>/dev/null || return 1
+	step 20 "Creating persistent storage (one time only)"
 	partx -a "$disk" 2>/dev/null || partx -u "$disk"
 	udevadm settle -t 10
 	part=$(lsblk -lnpo NAME,TYPE "$disk" | awk '$2 == "part" { p = $1 } END { print p }')
 	[ -b "$part" ] && [ "$part" != "$boot" ] || return 1
+	step 35 "Formatting persistent storage"
 	TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -K -L "$label" "$part" || return 1
+	step 70 "Setting up persistent storage"
 	mount -o noatime "$part" /persist || return 1
 	for d in $dirs; do
 		mkdir -p "/persist/${d%%:*}"
@@ -30,10 +47,17 @@ create() {
 	chmod 700 /persist/iwd /persist/bluetooth
 	umount /persist
 	udevadm settle -t 10
+	step 100 "Persistent storage is ready"
 }
 
 mkdir -p /persist
-part=$(blkid -L "$label") || { create && part=$(blkid -L "$label"); } || exit 0
+if ! part=$(blkid -L "$label"); then
+	created=0
+	create && part=$(blkid -L "$label") && created=1
+	say "progress -1"
+	say "msg"
+	[ "$created" = 1 ] || exit 0
+fi
 mount -o noatime,lazytime "$part" /persist || exit 0
 case " $(cat /proc/cmdline) " in
 *" tinyhat.persistlog "*) dirs="$dirs journal:/var/log/journal" ;;

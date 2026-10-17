@@ -2,13 +2,15 @@
 import os, struct, sys, zlib
 
 W, H = 1920, 1200
-BLACK = (0, 0, 0)
-ORANGE = (255, 153, 0)
-PEACH = (255, 204, 153)
-LAVENDER = (204, 153, 204)
-VIOLET = (153, 153, 255)
-RED = (204, 102, 102)
-GOLD = (255, 170, 68)
+BG = (0x1a, 0x1b, 0x26)
+TEAL = (0x1a, 0x9e, 0x96)
+ARCH = (0x17, 0x93, 0xd1)
+HAT = (0x92, 0x24, 0x24)
+PINK = (0xf7, 0x76, 0x8e)
+GRAY = (0x49, 0x49, 0x49)
+CYAN = (0x7d, 0xcf, 0xff)
+LIGHT = (0xc0, 0xca, 0xf5)
+SLATE = (0xa9, 0xb1, 0xd6)
 
 
 def png(path, w, h, rows):
@@ -68,7 +70,7 @@ def elbow(x0, x1, ybar0, ybar1, yend, xend, outer, inner, top):
     return inside, (x0, yend, max(xend, x1 + inner), ybar1)
 
 
-def render(w, h, shapes, bg=BLACK):
+def render(w, h, shapes, bg=BG):
     rows = [[bg] * w for _ in range(h)]
     sub = [(i + 0.5) / 4 for i in range(4)]
     for (inside, box), color in shapes:
@@ -103,17 +105,17 @@ def bold(size):
     return f"DejaVu Sans Bold {size}"
 
 
-SMALL, MEDIUM, LARGE, MONO = 16, 24, 32, 16
+SMALL, MEDIUM, LARGE, HUGE, MONO = 16, 24, 32, 64, 16
 ITEM, SPACING = 40, 12
 
 SIDE = (2, 14)
 TOP = (3, 8)
 BOTTOM = (92, 97)
 BLOCKS = [
-    (23, 33, LAVENDER, "11-386"),
-    (34, 43, VIOLET, "04-486"),
-    (44, 56, PEACH, "07-586"),
-    (57, 64, RED, "09-686"),
+    (23, 33, HAT, LIGHT, "11-386"),
+    (34, 43, GRAY, LIGHT, "04-486"),
+    (44, 56, CYAN, BG, "07-586"),
+    (57, 64, PINK, BG, "09-686"),
 ]
 
 
@@ -128,14 +130,14 @@ def Y(p):
 def background():
     r = min(W, H) / 100
     shapes = [
-        (elbow(X(SIDE[0]), X(SIDE[1]), Y(TOP[0]), Y(TOP[1]), Y(22), X(58), 8 * r, 3 * r, True), ORANGE),
-        (rect(X(59), Y(TOP[0]), X(64), Y(TOP[1])), VIOLET),
-        (pill(X(92), Y(TOP[0]), X(98), Y(TOP[1])), PEACH),
-        (elbow(X(SIDE[0]), X(SIDE[1]), Y(BOTTOM[0]), Y(BOTTOM[1]), Y(65), X(58), 8 * r, 3 * r, False), GOLD),
-        (rect(X(59), Y(BOTTOM[0]), X(61), Y(BOTTOM[1])), LAVENDER),
-        (pill(X(91), Y(BOTTOM[0]), X(98), Y(BOTTOM[1])), ORANGE),
+        (elbow(X(SIDE[0]), X(SIDE[1]), Y(TOP[0]), Y(TOP[1]), Y(22), X(58), 8 * r, 3 * r, True), TEAL),
+        (rect(X(59), Y(TOP[0]), X(64), Y(TOP[1])), SLATE),
+        (pill(X(92), Y(TOP[0]), X(98), Y(TOP[1])), PINK),
+        (elbow(X(SIDE[0]), X(SIDE[1]), Y(BOTTOM[0]), Y(BOTTOM[1]), Y(65), X(58), 8 * r, 3 * r, False), ARCH),
+        (rect(X(59), Y(BOTTOM[0]), X(61), Y(BOTTOM[1])), CYAN),
+        (pill(X(91), Y(BOTTOM[0]), X(98), Y(BOTTOM[1])), HAT),
     ]
-    shapes += [(rect(X(SIDE[0]), Y(y0), X(SIDE[1]), Y(y1)), color) for y0, y1, color, _ in BLOCKS]
+    shapes += [(rect(X(SIDE[0]), Y(y0), X(SIDE[1]), Y(y1)), color) for y0, y1, color, _, _ in BLOCKS]
     return render(W, H, shapes)
 
 
@@ -144,7 +146,7 @@ def theme():
     side_w = f"{SIDE[1] - SIDE[0] - 1}%"
     t = f"""desktop-image: "background.png"
 desktop-image-scale-method: "stretch"
-desktop-color: "#000000"
+desktop-color: "{hexc(BG)}"
 title-text: ""
 terminal-font: "DejaVu Sans Mono Regular {MONO}"
 terminal-left: "18%"
@@ -160,8 +162,8 @@ terminal-border: "0"
 	height = 68%
 	item_font = "{bold(MEDIUM)}"
 	selected_item_font = "{bold(MEDIUM)}"
-	item_color = "{hexc(PEACH)}"
-	selected_item_color = "#000000"
+	item_color = "{hexc(LIGHT)}"
+	selected_item_color = "{hexc(BG)}"
 	item_height = {ITEM}
 	item_padding = 4
 	item_spacing = {SPACING}
@@ -179,18 +181,19 @@ terminal-border: "0"
 	height = 28
 	font = "{bold(SMALL)}"
 	text = "AUTO BOOT IN %d SECONDS"
-	text_color = "#000000"
-	fg_color = "{hexc(ORANGE)}"
-	bg_color = "{hexc(PEACH)}"
-	border_color = "#000000"
+	text_color = "{hexc(LIGHT)}"
+	fg_color = "{hexc(TEAL)}"
+	bg_color = "{hexc(GRAY)}"
+	border_color = "{hexc(BG)}"
 }}
 """
-    t += label("65%", f"{(TOP[0] + TOP[1]) // 2}%-{LARGE // 2 + 4}", "26%", LARGE + 8, "TINY HAT", bold(LARGE), ORANGE, "right")
-    t += label("62%", f"{(BOTTOM[0] + BOTTOM[1]) // 2}%-{lh // 2}", "28%", lh, "E EDIT   C CONSOLE", bold(SMALL), LAVENDER, "center")
-    t += label(f"{SIDE[0]}%", f"22%-{lh + 2}", side_w, lh, "BOOT-1", bold(SMALL), BLACK, "right")
-    t += label(f"{SIDE[0]}%", "65%+2", side_w, lh, "32-BIT", bold(SMALL), BLACK, "right")
-    for y0, y1, _, text in BLOCKS:
-        t += label(f"{SIDE[0]}%", f"{y1}%-{lh + 2}", side_w, lh, text, bold(SMALL), BLACK, "right")
+    t += label("65%", f"{(TOP[0] + TOP[1]) // 2}%-{LARGE // 2 + 4}", "26%", LARGE + 8, "TINY HAT", bold(LARGE), PINK, "right")
+    t += label("62%", f"{(BOTTOM[0] + BOTTOM[1]) // 2}%-{lh // 2}", "28%", lh, "E EDIT   C CONSOLE", bold(SMALL), CYAN, "center")
+    t += label(f"{SIDE[0]}%", f"22%-{lh + 2}", side_w, lh, "BOOT-1", bold(SMALL), BG, "right")
+    t += label(f"{SIDE[0]}%", "65%+2", side_w, lh, "32-BIT", bold(SMALL), BG, "right")
+    for y0, y1, _, ink, text in BLOCKS:
+        t += label(f"{SIDE[0]}%", f"{y1}%-{lh + 2}", side_w, lh, text, bold(SMALL), ink, "right")
+    t += '+ label {\n\tid = "__timeout__"\n' + label("62%", f"90%-{HUGE + 12}", "34%", HUGE + 8, "%d", bold(HUGE), CYAN, "right")[len("+ label {\n"):]
     return t
 
 
@@ -198,12 +201,12 @@ out = sys.argv[1]
 os.makedirs(out, exist_ok=True)
 png(os.path.join(out, "background.png"), W, H, background())
 r = ITEM // 2
-png(os.path.join(out, "select_w.png"), r, ITEM, render(r, ITEM, [(pill(0, 0, 2 * r, ITEM, left=True, right=False), ORANGE)]))
-png(os.path.join(out, "select_c.png"), 1, ITEM, [[ORANGE]] * ITEM)
-png(os.path.join(out, "select_e.png"), r, ITEM, render(r, ITEM, [(pill(-r, 0, r, ITEM), ORANGE)]))
+png(os.path.join(out, "select_w.png"), r, ITEM, render(r, ITEM, [(pill(0, 0, 2 * r, ITEM, left=True, right=False), TEAL)]))
+png(os.path.join(out, "select_c.png"), 1, ITEM, [[TEAL]] * ITEM)
+png(os.path.join(out, "select_e.png"), r, ITEM, render(r, ITEM, [(pill(-r, 0, r, ITEM), TEAL)]))
 with open(os.path.join(out, "theme.txt"), "w") as f:
     f.write(theme())
-bolds = sorted({SMALL, MEDIUM, LARGE})
+bolds = sorted({SMALL, MEDIUM, LARGE, HUGE})
 fonts = [f"bold-{n}.pf2" for n in bolds] + [f"mono-{MONO}.pf2"]
 with open(os.path.join(out, "fonts.txt"), "w") as f:
     f.write("".join(f"bold {n}\n" for n in bolds) + f"mono {MONO}\n")
