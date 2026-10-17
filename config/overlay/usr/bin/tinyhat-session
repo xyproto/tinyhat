@@ -6,7 +6,7 @@ mkdir -p "$HOME/downloads"
 export BROWSER EDITOR MANPAGER
 export DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
-[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo quit >/run/tinyhat-splash' 2>/dev/null
+printf '\033[?25l'
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
 for try in 1 2 3; do
 	udevadm settle -t 30 2>/dev/null
@@ -24,6 +24,7 @@ for try in 1 2 3; do
 	grep -q 'Could not initialize renderer\|Failed to create renderer' "$log" && export WLR_RENDERER=pixman
 	sleep 3
 done
+[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo quit >/run/tinyhat-splash' 2>/dev/null
 printf '\033[?25h'
 tail -n 15 "$log"
 echo "The graphical session stopped. The log is in $log. Type tinyhat-session to start it again."
