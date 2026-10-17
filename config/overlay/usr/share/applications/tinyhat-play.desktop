@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Run a SNES game from the web (homebrew)
+Name=Download and run a SNES homebrew game
 Icon=applications-games
 Comment=Type a freeware game name and press Play
 Exec=tinyhat-play
