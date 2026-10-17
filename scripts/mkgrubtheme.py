@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import os, struct, sys, zlib
 
-MODES = [(320, 200), (640, 400), (800, 600), (1024, 768), (1680, 1050), (1920, 1080), (1600, 1200)]
+W, H = 1920, 1200
 BLACK = (0, 0, 0)
 ORANGE = (255, 153, 0)
 PEACH = (255, 204, 153)
@@ -103,82 +103,81 @@ def bold(size):
     return f"DejaVu Sans Bold {size}"
 
 
-def build(out, w, h, entries=6):
-    sx, sy = w / 1024, h / 768
-    sr = min(sx, sy)
+SMALL, MEDIUM, LARGE, MONO = 16, 24, 32, 16
+ITEM, SPACING = 40, 12
 
-    def X(v):
-        return round(v * sx)
+SIDE = (2, 14)
+TOP = (3, 8)
+BOTTOM = (92, 97)
+BLOCKS = [
+    (23, 33, LAVENDER, "11-386"),
+    (34, 43, VIOLET, "04-486"),
+    (44, 56, PEACH, "07-586"),
+    (57, 64, RED, "09-686"),
+]
 
-    def Y(v):
-        return round(v * sy)
 
-    small, medium, large, mono = max(8, round(14 * sy)), max(10, round(20 * sy)), max(12, round(32 * sy)), max(8, round(16 * sy))
-    side0, side1 = X(24), X(152)
-    blocks = [
-        (Y(184), Y(260), LAVENDER, "11-386"),
-        (Y(268), Y(340), VIOLET, "04-486"),
-        (Y(348), Y(448), PEACH, "07-586"),
-        (Y(456), Y(516), RED, "09-686"),
-    ]
-    top0, top1, bot0, bot1 = Y(24), Y(64), Y(704), Y(744)
+def X(p):
+    return round(p * W / 100)
+
+
+def Y(p):
+    return round(p * H / 100)
+
+
+def background():
+    r = min(W, H) / 100
     shapes = [
-        (elbow(side0, side1, top0, top1, Y(176), X(600), 64 * sr, 28 * sr, True), ORANGE),
-        (rect(X(608), top0, X(720), top1), VIOLET),
-        (pill(X(932), top0, X(1000), top1), PEACH),
-        (elbow(side0, side1, bot0, bot1, Y(524), X(600), 64 * sr, 28 * sr, False), GOLD),
-        (rect(X(608), bot0, X(640), bot1), LAVENDER),
-        (pill(X(908), bot0, X(1000), bot1), ORANGE),
+        (elbow(X(SIDE[0]), X(SIDE[1]), Y(TOP[0]), Y(TOP[1]), Y(22), X(58), 8 * r, 3 * r, True), ORANGE),
+        (rect(X(59), Y(TOP[0]), X(64), Y(TOP[1])), VIOLET),
+        (pill(X(92), Y(TOP[0]), X(98), Y(TOP[1])), PEACH),
+        (elbow(X(SIDE[0]), X(SIDE[1]), Y(BOTTOM[0]), Y(BOTTOM[1]), Y(65), X(58), 8 * r, 3 * r, False), GOLD),
+        (rect(X(59), Y(BOTTOM[0]), X(61), Y(BOTTOM[1])), LAVENDER),
+        (pill(X(91), Y(BOTTOM[0]), X(98), Y(BOTTOM[1])), ORANGE),
     ]
-    shapes += [(rect(side0, y0, side1, y1), color) for y0, y1, color, _ in blocks]
+    shapes += [(rect(X(SIDE[0]), Y(y0), X(SIDE[1]), Y(y1)), color) for y0, y1, color, _ in BLOCKS]
+    return render(W, H, shapes)
 
-    item = round(medium * 1.8)
-    bar = h >= 400
-    pbar = max(28, small + max(2, Y(8))) if bar else 0
-    ptop = bot0 - Y(18) - pbar
-    mleft, mtop, mwidth = X(192), Y(96), X(800)
-    mheight = ptop - Y(8) - mtop
-    spacing = max(2, min(round(medium * 0.6), (mheight - entries * item) // entries))
-    lh = small + max(2, Y(8))
 
-    theme = f"""desktop-image: "background.png"
+def theme():
+    lh = SMALL + 8
+    side_w = f"{SIDE[1] - SIDE[0] - 1}%"
+    t = f"""desktop-image: "background.png"
 desktop-image-scale-method: "stretch"
 desktop-color: "#000000"
 title-text: ""
-terminal-font: "DejaVu Sans Mono Regular {mono}"
-terminal-left: "{mleft}"
-terminal-top: "{mtop}"
-terminal-width: "{mwidth}"
-terminal-height: "{ptop + pbar - mtop}"
+terminal-font: "DejaVu Sans Mono Regular {MONO}"
+terminal-left: "18%"
+terminal-top: "12%"
+terminal-width: "78%"
+terminal-height: "76%"
 terminal-border: "0"
 
 + boot_menu {{
-	left = {mleft}
-	top = {mtop}
-	width = {mwidth}
-	height = {mheight}
-	item_font = "{bold(medium)}"
-	selected_item_font = "{bold(medium)}"
+	left = 18%
+	top = 12%
+	width = 78%
+	height = 68%
+	item_font = "{bold(MEDIUM)}"
+	selected_item_font = "{bold(MEDIUM)}"
 	item_color = "{hexc(PEACH)}"
 	selected_item_color = "#000000"
-	item_height = {item}
-	item_padding = {max(2, round(medium * 0.2))}
-	item_spacing = {spacing}
+	item_height = {ITEM}
+	item_padding = 4
+	item_spacing = {SPACING}
 	icon_width = 0
 	icon_height = 0
 	item_icon_space = 0
 	selected_item_pixmap_style = "select_*.png"
 	scrollbar = false
 }}
-"""
-    if bar:
-        theme += f"""+ progress_bar {{
++ progress_bar {{
 	id = "__timeout__"
-	left = {mleft}
-	top = {ptop}
-	width = {X(400)}
-	height = {pbar}
-	font = "{bold(small)}"
+	left = 18%
+	top = 84%
+	width = 40%
+	height = 28
+	font = "{bold(SMALL)}"
 	text = "AUTO BOOT IN %d SECONDS"
 	text_color = "#000000"
 	fg_color = "{hexc(ORANGE)}"
@@ -186,52 +185,33 @@ terminal-border: "0"
 	border_color = "#000000"
 }}
 """
-    theme += label(X(728), top0 + (top1 - top0 - large - 6) // 2, X(196), large + 6, "TINY HAT", bold(large), ORANGE, "right")
-    if not bar:
-        theme += '+ label {\n\tid = "__timeout__"\n' + label(X(648), bot0 + (bot1 - bot0 - lh) // 2, X(252), lh, "BOOT IN %d", bold(small), LAVENDER, "center")[len("+ label {\n"):]
-    elif w >= 800:
-        theme += label(X(648), bot0 + (bot1 - bot0 - lh) // 2, X(252), lh, "ENTER BOOT   E EDIT   C CONSOLE", bold(small), LAVENDER, "center")
-    pad = max(2, X(8))
-    theme += label(side0, Y(172) - lh, side1 - side0 - pad, lh, "BOOT-1", bold(small), BLACK, "right")
-    theme += label(side0, Y(528), side1 - side0 - pad, lh, "32-BIT", bold(small), BLACK, "right")
-    for y0, y1, _, text in blocks:
-        theme += label(side0, y1 - lh, side1 - side0 - pad, lh, text, bold(small), BLACK, "right")
-
-    os.makedirs(out, exist_ok=True)
-    png(os.path.join(out, "background.png"), w, h, render(w, h, shapes))
-    r = item // 2
-    png(os.path.join(out, "select_w.png"), r, item, render(r, item, [(pill(0, 0, 2 * r, item, left=True, right=False), ORANGE)]))
-    png(os.path.join(out, "select_c.png"), 1, item, [[ORANGE]] * item)
-    png(os.path.join(out, "select_e.png"), r, item, render(r, item, [(pill(-r, 0, r, item), ORANGE)]))
-    with open(os.path.join(out, "theme.txt"), "w") as f:
-        f.write(theme)
-    return {small, medium, large}, {mono}
+    t += label("65%", f"{(TOP[0] + TOP[1]) // 2}%-{LARGE // 2 + 4}", "26%", LARGE + 8, "TINY HAT", bold(LARGE), ORANGE, "right")
+    t += label("62%", f"{(BOTTOM[0] + BOTTOM[1]) // 2}%-{lh // 2}", "28%", lh, "E EDIT   C CONSOLE", bold(SMALL), LAVENDER, "center")
+    t += label(f"{SIDE[0]}%", f"22%-{lh + 2}", side_w, lh, "BOOT-1", bold(SMALL), BLACK, "right")
+    t += label(f"{SIDE[0]}%", "65%+2", side_w, lh, "32-BIT", bold(SMALL), BLACK, "right")
+    for y0, y1, _, text in BLOCKS:
+        t += label(f"{SIDE[0]}%", f"{y1}%-{lh + 2}", side_w, lh, text, bold(SMALL), BLACK, "right")
+    return t
 
 
 out = sys.argv[1]
-bolds, monos = set(), set()
-for w, h in MODES:
-    b, m = build(os.path.join(out, f"{w}x{h}"), w, h)
-    bolds |= b
-    monos |= m
-fonts = [f"bold-{n}.pf2" for n in sorted(bolds)] + [f"mono-{n}.pf2" for n in sorted(monos)]
+os.makedirs(out, exist_ok=True)
+png(os.path.join(out, "background.png"), W, H, background())
+r = ITEM // 2
+png(os.path.join(out, "select_w.png"), r, ITEM, render(r, ITEM, [(pill(0, 0, 2 * r, ITEM, left=True, right=False), ORANGE)]))
+png(os.path.join(out, "select_c.png"), 1, ITEM, [[ORANGE]] * ITEM)
+png(os.path.join(out, "select_e.png"), r, ITEM, render(r, ITEM, [(pill(-r, 0, r, ITEM), ORANGE)]))
+with open(os.path.join(out, "theme.txt"), "w") as f:
+    f.write(theme())
+bolds = sorted({SMALL, MEDIUM, LARGE})
+fonts = [f"bold-{n}.pf2" for n in bolds] + [f"mono-{MONO}.pf2"]
 with open(os.path.join(out, "fonts.txt"), "w") as f:
-    f.write("".join(f"bold {n}\n" for n in sorted(bolds)) + "".join(f"mono {n}\n" for n in sorted(monos)))
+    f.write("".join(f"bold {n}\n" for n in bolds) + f"mono {MONO}\n")
 with open(os.path.join(out, "theme.cfg"), "w") as f:
     f.write("if loadfont " + " ".join("$theme_dir/" + n for n in fonts) + "; then\n")
-    f.write(f'  set gfxterm_font="DejaVu Sans Mono Regular {min(monos)}"\n')
-    f.write("  for mode in " + " ".join(f"{w}x{h}" for w, h in MODES) + "; do\n")
-    f.write('    if [ -z "$theme" ]; then\n')
-    f.write("      set gfxmode=$mode\n")
-    f.write("      if terminal_output gfxterm; then\n")
-    f.write("        set theme=$theme_dir/$mode/theme.txt\n")
-    f.write("      fi\n")
-    f.write("    fi\n")
-    f.write("  done\n")
-    f.write("fi\n")
-    kernel = ",".join(f"{w}x{h}x{d}" for w, h in MODES for d in (32, 24, 16, 15))
-    f.write('if [ "$grub_platform" = efi ]; then\n')
-    f.write(f"  set kernel_gfxpayload={kernel},keep\n")
-    f.write("else\n")
-    f.write(f"  set kernel_gfxpayload={kernel},text\n")
+    f.write(f'  set gfxterm_font="DejaVu Sans Mono Regular {MONO}"\n')
+    f.write("  set gfxmode=auto\n")
+    f.write("  if terminal_output gfxterm; then\n")
+    f.write("    set theme=$theme_dir/theme.txt\n")
+    f.write("  fi\n")
     f.write("fi\n")
