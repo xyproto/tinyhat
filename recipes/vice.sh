@@ -3,6 +3,7 @@ set -eu
 umask 022
 rm -rf /work/vice /out/vice && mkdir -p /work/vice && cd /work/vice
 tar --no-same-owner -xf /src/vice-3.9.tar.gz --strip-components=1
+sed -i 's/if ((log_to_file) || (!log_colorize)) {/if ((log_to_file) || (!log_colorize) || (log_to_stdout)) {/' src/log.c
 mkdir -p /work/vice/flex && bsdtar -xf /src/flex-2.6.4-5.2-i686.pkg.tar.zst -C /work/vice/flex usr/bin usr/lib usr/include
 bsdtar -xf /src/xa-2.4.1-2.0-i686.pkg.tar.zst -C /work/vice/flex usr/bin
 printf '#!/bin/sh\nfor f; do sed -i "s/\\r$//" "$f"; done\n' >/work/vice/flex/usr/bin/dos2unix
