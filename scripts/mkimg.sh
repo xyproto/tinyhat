@@ -19,15 +19,30 @@ cp "$top/config/grub.cfg" "$work/root/boot/grub/grub.cfg"
 bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "memtest86+" { print $4 }' "$top/initramfs.lock")" -C "$work/root" boot/memtest86+/memtest.bin
 cp "$sfs" "$work/root/tinyhat/root.sfs"
 cp "$top/config/grub-early.cfg" "$work/early.cfg"
+theme=$work/root/boot/grub/themes/tinyhat
+python3 "$top/scripts/mkgrubtheme.py" "$theme"
+mkdir -p "$work/fonts"
+bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "ttf-dejavu" { print $4 }' "$top/rootfs.lock")" -C "$work/fonts" --strip-components 4 \
+	usr/share/fonts/TTF/DejaVuSansCondensed-Bold.ttf usr/share/fonts/TTF/DejaVuSansMono.ttf
+while read -r kind size; do
+	case $kind in
+	bold) ttf=DejaVuSansCondensed-Bold.ttf ;;
+	mono) ttf=DejaVuSansMono.ttf ;;
+	esac
+	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+		grub-mkfont -r 0x20-0x7e -s "$size" -o "/img/root/boot/grub/themes/tinyhat/$kind-$size.pf2" "/img/fonts/$ttf"
+done <"$theme/fonts.txt"
+rm -f "$theme/fonts.txt"
+rm -rf "$work/fonts"
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
-	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile
+	/out/grub/usr/bin/grub-mkimage -d /out/grub/usr/lib/grub/i386-pc -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
+	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe vga echo test sleep reboot halt configfile font gfxterm gfxmenu png
 mkdir -p "$work/efi/EFI/BOOT"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
-	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile
-cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
+	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png
+cp "$br/out/grub/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \

@@ -18,7 +18,7 @@ endif
 
 all: tinyhat32.img
 
-tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mbr.py scripts/xfsnormalize.py
+tinyhat32.img: $(B)/.grub $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
@@ -251,6 +251,10 @@ $(B)/.retro: $(B)/.sdl3 recipes/retro.sh $(wildcard programs/retro/*)
 
 $(B)/.midibench: $(B)/.fluidsynth recipes/midibench.sh programs/tinyhat-midibench.c
 	scripts/recipe.sh $(B)/buildroot midibench >$(B)/midibench.log 2>&1 || { tail -40 $(B)/midibench.log; exit 1; }
+	@touch $@
+
+$(B)/.grub: $(B)/.buildroot recipes/grub.sh vendor/src/grub-2.12.tar.xz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst $(wildcard vendor/patches/grub/*)
+	scripts/recipe.sh $(B)/buildroot grub >$(B)/grub.log 2>&1 || { tail -40 $(B)/grub.log; exit 1; }
 	@touch $@
 
 $(B)/.vice: $(B)/.buildroot $(B)/.sdl2-compat $(B)/.sdl2_image recipes/vice.sh vendor/src/vice-3.9.tar.gz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst vendor/src/xa-2.4.1-2.0-i686.pkg.tar.zst

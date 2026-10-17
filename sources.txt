@@ -18,6 +18,7 @@ GeneralUser-GS-LICENSE.txt 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca1
 glibc-2.44.tar.xz 37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz
 go1.26.8.linux-386.tar.gz 55115677dfcd953fa9d2fe376039125a60ff14fe0e619a2339a364860dda64ef https://go.dev/dl/go1.26.8.linux-386.tar.gz
 grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz c1bbb7d1bb692879c0edc20525e8908e570da7e341de46366f02cf0625dffe3b https://gitlab.com/GrafX2/grafx2/-/archive/f84cb09dc59d706d6e7b28778b01ba911f52298c/grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz
+grub-2.12.tar.xz f3c97391f7c4eaa677a78e090c7e97e6dc47b16f655f04683ebd37bef7fe0faa https://ftp.gnu.org/gnu/grub/grub-2.12.tar.xz
 libdisplay-info-0.3.0.tar.gz 2b467e3336aec63819d6aca28d7310d3dc7415b2b3a3c3a5aec9d3727053c078 https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/0.3.0/libdisplay-info-0.3.0.tar.gz
 libdom-0.4.1-2.1-i686.pkg.tar.zst c8c6b5121284951265863ee0c6b761b9a36c3c89f5d1388cb47bf5e0f90af194 https://archive.archlinux32.org/packages/l/libdom/libdom-0.4.1-2.1-i686.pkg.tar.zst
 libhubbub-0.3.7-2.1-i686.pkg.tar.zst 77c960c7886517aa135d511093662db08097a51c63f131cdb2ee7d3e1f6c4032 https://archive.archlinux32.org/packages/l/libhubbub/libhubbub-0.3.7-2.1-i686.pkg.tar.zst
