@@ -433,6 +433,13 @@ int main(void)
 		draw_blinkers((tick / 6) % 2);
 		if (progress < 0 && message[0])
 			draw_status();
+		if (tty >= 0) {
+			int mode;
+			if (!ioctl(tty, KDGETMODE, &mode) && mode != KD_GRAPHICS) {
+				ioctl(tty, KDSETMODE, KD_GRAPHICS);
+				dirty(0, 0, W, H);
+			}
+		}
 		if (t - last_full >= 2000) {
 			last_full = t;
 			dirty(0, 0, W, H);
