@@ -17,9 +17,25 @@ static GtkWidget *win, *entry, *button, *statuslbl;
 static gboolean busy = FALSE;
 static gboolean headless = FALSE;
 static int play_ok = 0;
+static gboolean ddg_blocked = FALSE;
 
-static const char *rom_exts = " sfc smc fig swc ";
 static const char *archive_exts = " zip 7z rar gz tgz bz2 xz ";
+
+typedef struct {
+	const char *name;
+	const char *dir;
+	const char *search;
+	const char *exts;
+	const char *keywords;
+} Platform;
+
+static const Platform platforms[] = {
+	{ "SNES", "snes", "snes rom", " sfc smc fig swc ", "\\b(snes|super nintendo|super famicom|sfc)\\b" },
+	{ "GBA", "gba", "gba rom", " gba ", "\\b(gba|game ?boy advance)\\b" },
+	{ "Sega Genesis", "genesis", "sega genesis rom", " md gen smd bin ", "\\b(genesis|mega ?drive)\\b" },
+};
+
+static const Platform *plat = &platforms[0];
 
 typedef struct {
 	char *url;
@@ -37,7 +53,7 @@ static const char *home(void)
 
 static char *rom_dir(void)
 {
-	return g_build_filename(home(), "ROMs", "snes", NULL);
+	return g_build_filename(home(), "ROMs", plat->dir, NULL);
 }
 
 static char *cache_dir(void)
@@ -75,6 +91,14 @@ static int ext_in(const char *name, const char *bag)
 	e[j] = '\0';
 	snprintf(hit, sizeof(hit), " %s ", e);
 	return strstr(bag, hit) != NULL;
+}
+
+static const Platform *platform_of(const char *rom)
+{
+	for (size_t i = 0; i < G_N_ELEMENTS(platforms); i++)
+		if (ext_in(rom, platforms[i].exts))
+			return &platforms[i];
+	return &platforms[0];
 }
 
 static int match_score(const char *query, const char *name)
@@ -156,29 +180,30 @@ static void index_add(const char *query, const char *rom)
 
 static char *find_cached(const char *query)
 {
-	char *hit = index_lookup(query), *dir;
-	DIR *d;
-	struct dirent *e;
+	char *hit = index_lookup(query);
 	int best = 0;
 	if (hit)
 		return hit;
-	dir = rom_dir();
-	d = opendir(dir);
-	if (d) {
-		while ((e = readdir(d))) {
-			int s;
-			if (e->d_name[0] == '.' || !ext_in(e->d_name, rom_exts))
-				continue;
-			s = match_score(query, e->d_name);
-			if (s > best) {
-				best = s;
-				g_free(hit);
-				hit = g_build_filename(dir, e->d_name, NULL);
+	for (size_t i = 0; i < G_N_ELEMENTS(platforms); i++) {
+		char *dir = g_build_filename(home(), "ROMs", platforms[i].dir, NULL);
+		DIR *d = opendir(dir);
+		struct dirent *e;
+		if (d) {
+			while ((e = readdir(d))) {
+				int s;
+				if (e->d_name[0] == '.' || !ext_in(e->d_name, platforms[i].exts))
+					continue;
+				s = match_score(query, e->d_name);
+				if (s > best) {
+					best = s;
+					g_free(hit);
+					hit = g_build_filename(dir, e->d_name, NULL);
+				}
 			}
+			closedir(d);
 		}
-		closedir(d);
+		g_free(dir);
 	}
-	g_free(dir);
 	return hit;
 }
 
@@ -205,10 +230,10 @@ static void status(const char *fmt, ...)
 
 static gboolean launch_idle(gpointer data)
 {
-	char *argv[] = { "zsnes", data, NULL };
+	char *argv[] = { "tinyhat-emulate", data ? (char *)platform_of(data)->dir : NULL, data, NULL };
 	GError *err = NULL;
 	if (data && !g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &err)) {
-		char *m = g_strdup_printf("Could not start zsnes: %s", err->message);
+		char *m = g_strdup_printf("Could not start the emulator: %s", err->message);
 		gtk_label_set_text(GTK_LABEL(statuslbl), m);
 		g_free(m);
 		g_error_free(err);
@@ -223,17 +248,17 @@ static gboolean launch_idle(gpointer data)
 static void finish(char *rom)
 {
 	if (headless) {
-		char *argv[] = { "zsnes", rom, NULL };
+		char *argv[] = { "tinyhat-emulate", rom ? (char *)platform_of(rom)->dir : NULL, rom, NULL };
 		GError *err = NULL;
 		play_ok = rom != NULL;
 		if (rom && !g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &err)) {
-			fprintf(stderr, "tinyhat-play: could not start zsnes: %s\n", err->message);
+			fprintf(stderr, "tinyhat-play: could not start the emulator: %s\n", err->message);
 			g_error_free(err);
 			play_ok = 0;
 		}
 		g_free(rom);
 	} else {
-		finish(rom);
+		g_idle_add(launch_idle, rom);
 	}
 }
 
@@ -501,12 +526,19 @@ static char *itch_game_url(const char *url)
 
 static char *itch_csrf(const char *html)
 {
-	GMatchInfo *mi;
+	GMatchInfo *mi, *vi;
 	char *tok = NULL;
-	GRegex *re = g_regex_new("name=\"csrf_token\"\\s+(?:value|content)=\"([^\"]+)\"", 0, 0, NULL);
-	if (g_regex_match(re, html, 0, &mi))
-		tok = g_match_info_fetch(mi, 1);
+	GRegex *re = g_regex_new("<(?:meta|input)\\s[^>]*\\bname=\"csrf_token\"[^>]*>", 0, 0, NULL);
+	GRegex *vre = g_regex_new("\\b(?:value|content)=\"([^\"]+)\"", 0, 0, NULL);
+	if (g_regex_match(re, html, 0, &mi)) {
+		char *tag = g_match_info_fetch(mi, 0);
+		if (g_regex_match(vre, tag, 0, &vi))
+			tok = g_match_info_fetch(vi, 1);
+		g_match_info_free(vi);
+		g_free(tag);
+	}
 	g_match_info_free(mi);
+	g_regex_unref(vre);
 	g_regex_unref(re);
 	return tok;
 }
@@ -541,7 +573,7 @@ static char *upload_ext(const char *title)
 	char **parts = g_regex_split_simple("[\\s\\[\\](),]+", title, 0, 0);
 	char *ext = NULL;
 	for (int i = 0; parts[i] && !ext; i++)
-		if (ext_in(parts[i], rom_exts) || ext_in(parts[i], archive_exts))
+		if (ext_in(parts[i], plat->exts) || ext_in(parts[i], archive_exts))
 			ext = g_ascii_strdown(strrchr(parts[i], '.') + 1, -1);
 	g_strfreev(parts);
 	return ext;
@@ -558,12 +590,14 @@ static void itch_uploads(GPtrArray *cands, const char *html, const char *page, i
 	while (g_match_info_matches(mi)) {
 		char *id = g_match_info_fetch(mi, 1), *raw = g_match_info_fetch(mi, 2);
 		char *title = html_unescape(raw), *ext = upload_ext(title), *lower = g_ascii_strdown(title, -1);
+		if (!ext && g_regex_match_simple(plat->keywords, lower, 0, 0))
+			ext = g_strndup(plat->exts + 1, strcspn(plat->exts + 1, " "));
 		if (ext) {
 			Candidate *c = g_new0(Candidate, 1);
 			c->url = g_strdup_printf("%s/file/%s?source=view_game&as_props=1", page, id);
 			c->page = g_strdup(page);
 			c->name = g_strdup_printf("%s.%s", slug, ext);
-			c->direct = ext_in(c->name, rom_exts);
+			c->direct = ext_in(c->name, plat->exts);
 			c->score = base + (c->direct ? 50 : 0) - i;
 			if (strstr(lower, "source"))
 				c->score -= 300;
@@ -645,7 +679,7 @@ static void consider(GPtrArray *cands, GHashTable *seen, const char *query, cons
 	name = url_filename(url);
 	if (!name)
 		return;
-	direct = ext_in(name, rom_exts);
+	direct = ext_in(name, plat->exts);
 	if (!direct && !ext_in(name, archive_exts)) {
 		g_free(name);
 		return;
@@ -703,6 +737,8 @@ static void ddg_collect(GString *page, GPtrArray *results, const char *pattern)
 {
 	if (!page)
 		return;
+	if (strstr(page->str, "anomaly"))
+		ddg_blocked = TRUE;
 	GRegex *re = g_regex_new(pattern, 0, 0, NULL);
 	GMatchInfo *mi;
 	g_regex_match(re, page->str, 0, &mi);
@@ -725,7 +761,7 @@ static void ddg_collect(GString *page, GPtrArray *results, const char *pattern)
 static GPtrArray *ddg_search(const char *query)
 {
 	GPtrArray *results = g_ptr_array_new_with_free_func(g_free);
-	char *q = g_strdup_printf("%s snes rom", query);
+	char *q = g_strdup_printf("%s %s", query, plat->search);
 	char *esc = g_uri_escape_string(q, NULL, FALSE);
 	char *post = g_strdup_printf("q=%s&kl=wt-wt", esc);
 	GString *page = fetch_page("https://html.duckduckgo.com/html/", post, NULL);
@@ -774,6 +810,44 @@ static int looks_like_html(const char *path)
 	return n == 0 || strstr(buf, "<!doctype html") || strstr(buf, "<html");
 }
 
+static int is_archive(const char *path)
+{
+	unsigned char b[8] = { 0 };
+	FILE *f = fopen(path, "rb");
+	if (!f)
+		return 0;
+	if (fread(b, 1, sizeof(b), f) < 4) {
+		fclose(f);
+		return 0;
+	}
+	fclose(f);
+	return !memcmp(b, "PK\x03\x04", 4) || !memcmp(b, "7z\xbc\xaf", 4) || !memcmp(b, "Rar!", 4) ||
+	       !memcmp(b, "\x1f\x8b", 2) || !memcmp(b, "BZh", 3) || !memcmp(b, "\xfd" "7zXZ", 5);
+}
+
+static int rom_ok(const char *path)
+{
+	unsigned char b[0x110];
+	size_t n;
+	FILE *f;
+	if (looks_like_html(path) || !(f = fopen(path, "rb")))
+		return 0;
+	n = fread(b, 1, sizeof(b), f);
+	fclose(f);
+	if (n < sizeof(b) || !memcmp(b, "\xff\xd8\xff", 3) || !memcmp(b, "\x89PNG", 4) || !memcmp(b, "GIF8", 4) ||
+	    !memcmp(b, "%PDF", 4))
+		return 0;
+	if (!strcmp(plat->dir, "gba"))
+		return b[0xb2] == 0x96;
+	if (!strcmp(plat->dir, "genesis") && !ext_in(path, " smd ")) {
+		for (size_t i = 0x100; i + 4 <= sizeof(b); i++)
+			if (!memcmp(b + i, "SEGA", 4))
+				return 1;
+		return 0;
+	}
+	return 1;
+}
+
 static char *find_rom_in(const char *dir, const char *query)
 {
 	GDir *d = g_dir_open(dir, 0, NULL);
@@ -794,7 +868,7 @@ static char *find_rom_in(const char *dir, const char *query)
 			hit = find_rom_in(p, query);
 			g_free(p);
 			p = hit;
-		} else if (!ext_in(n, rom_exts)) {
+		} else if (!ext_in(n, plat->exts) || !rom_ok(p)) {
 			g_free(p);
 			continue;
 		}
@@ -855,7 +929,8 @@ static char *install(const char *query, Candidate *c, const char *work)
 	int ok;
 	if (!name || !name[0] || !strcmp(name, "/")) {
 		g_free(name);
-		name = g_strdup(c->direct ? "game.sfc" : "game.zip");
+		name = c->direct ? g_strdup_printf("game.%.*s", (int)strcspn(plat->exts + 1, " "), plat->exts + 1)
+		                 : g_strdup("game.zip");
 	}
 	file = g_build_filename(work, name, NULL);
 	s.fp = fopen(file, "wb");
@@ -875,8 +950,8 @@ static char *install(const char *query, Candidate *c, const char *work)
 		g_free(file);
 		return NULL;
 	}
-	if (c->direct) {
-		rom = g_strdup(file);
+	if (c->direct && !is_archive(file)) {
+		rom = rom_ok(file) ? g_strdup(file) : NULL;
 	} else {
 		char *argv[] = { "bsdtar", "-xf", file, "-C", NULL, NULL };
 		int st = 1;
@@ -915,51 +990,44 @@ static char *install(const char *query, Candidate *c, const char *work)
 	return dest;
 }
 
-static gpointer worker(gpointer data)
+static GPtrArray *itch_search(const char *query)
 {
-	char *query = data, *rom = find_cached(query), *cdir, *work;
-	GPtrArray *results, *cands;
-	GHashTable *seen;
-	if (rom) {
-		char *b = g_path_get_basename(rom);
-		status("Playing %s (cached)", b);
-		g_free(b);
-		finish(rom);
-		g_free(query);
-		return NULL;
-	}
-	status("Searching DuckDuckGo for \"%s\"", query);
-	results = ddg_search(query);
-	if (!results->len) {
-		status("No search results for \"%s\"", query);
-		g_ptr_array_free(results, TRUE);
-		finish(NULL);
-		g_free(query);
-		return NULL;
-	}
-	cands = g_ptr_array_new_with_free_func(cand_free);
-	seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-	for (guint i = 0; i < results->len; i++) {
-		const char *url = results->pdata[i];
-		char *eff = NULL;
-		GString *page;
-		consider(cands, seen, query, url);
-		itch_discover(cands, seen, query, url);
-		status("Looking at %s (%u/%u)", url, i + 1, results->len);
-		page = fetch_page(url, NULL, &eff);
-		if (page) {
-			GPtrArray *links = extract_links(page->str, eff);
-			for (guint j = 0; j < links->len; j++) {
-				consider(cands, seen, query, links->pdata[j]);
-				itch_discover(cands, seen, query, links->pdata[j]);
+	GPtrArray *results = g_ptr_array_new_with_free_func(g_free);
+	char *esc = g_uri_escape_string(query, NULL, FALSE);
+	char *url = g_strdup_printf("https://itch.io/search?q=%s", esc);
+	GString *page;
+	status("Searching itch.io for \"%s\"", query);
+	page = fetch_page(url, NULL, NULL);
+	if (page) {
+		GRegex *re = g_regex_new("<a\\s[^>]*\\bclass=\"title game_link\"[^>]*>", 0, 0, NULL);
+		GRegex *hre = g_regex_new("\\bhref=\"([^\"]+)\"", 0, 0, NULL);
+		GMatchInfo *mi, *hi;
+		g_regex_match(re, page->str, 0, &mi);
+		while (g_match_info_matches(mi) && results->len < MAX_RESULTS) {
+			char *tag = g_match_info_fetch(mi, 0);
+			if (g_regex_match(hre, tag, 0, &hi)) {
+				char *href = g_match_info_fetch(hi, 1);
+				g_ptr_array_add(results, html_unescape(href));
+				g_free(href);
 			}
-			g_ptr_array_free(links, TRUE);
-			g_string_free(page, TRUE);
+			g_match_info_free(hi);
+			g_free(tag);
+			g_match_info_next(mi, NULL);
 		}
-		g_free(eff);
+		g_match_info_free(mi);
+		g_regex_unref(hre);
+		g_regex_unref(re);
+		g_string_free(page, TRUE);
 	}
+	g_free(url);
+	g_free(esc);
+	return results;
+}
+
+static char *try_candidates(GPtrArray *cands, const char *query)
+{
+	char *rom = NULL, *cdir = cache_dir(), *work;
 	g_ptr_array_sort(cands, cand_cmp);
-	cdir = cache_dir();
 	g_mkdir_with_parents(cdir, 0755);
 	for (guint i = 0; i < cands->len && !rom; i++) {
 		work = g_build_filename(cdir, "work-XXXXXX", NULL);
@@ -970,19 +1038,83 @@ static gpointer worker(gpointer data)
 		g_free(work);
 	}
 	g_free(cdir);
+	return rom;
+}
+
+static char *search_platform(const char *query, GPtrArray **itch)
+{
+	char *rom = NULL;
+	GPtrArray *cands = g_ptr_array_new_with_free_func(cand_free);
+	GHashTable *seen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+	if (!ddg_blocked) {
+		GPtrArray *results;
+		status("Searching DuckDuckGo for a %s ROM of \"%s\"", plat->name, query);
+		results = ddg_search(query);
+		for (guint i = 0; i < results->len; i++) {
+			const char *url = results->pdata[i];
+			char *eff = NULL;
+			GString *page;
+			consider(cands, seen, query, url);
+			itch_discover(cands, seen, query, url);
+			status("Looking at %s (%u/%u)", url, i + 1, results->len);
+			page = fetch_page(url, NULL, &eff);
+			if (page) {
+				GPtrArray *links = extract_links(page->str, eff);
+				for (guint j = 0; j < links->len; j++) {
+					consider(cands, seen, query, links->pdata[j]);
+					itch_discover(cands, seen, query, links->pdata[j]);
+				}
+				g_ptr_array_free(links, TRUE);
+				g_string_free(page, TRUE);
+			}
+			g_free(eff);
+		}
+		g_ptr_array_free(results, TRUE);
+		rom = try_candidates(cands, query);
+	}
+	if (!rom) {
+		if (!*itch)
+			*itch = itch_search(query);
+		g_ptr_array_set_size(cands, 0);
+		for (guint i = 0; i < (*itch)->len; i++)
+			itch_discover(cands, seen, query, (*itch)->pdata[i]);
+		rom = try_candidates(cands, query);
+	}
+	g_hash_table_destroy(seen);
+	g_ptr_array_free(cands, TRUE);
+	return rom;
+}
+
+static gpointer worker(gpointer data)
+{
+	char *query = data, *rom = find_cached(query);
+	GPtrArray *itch = NULL;
+	if (rom) {
+		char *b = g_path_get_basename(rom);
+		status("Playing %s (cached)", b);
+		g_free(b);
+		finish(rom);
+		g_free(query);
+		return NULL;
+	}
+	ddg_blocked = FALSE;
+	for (size_t i = 0; i < G_N_ELEMENTS(platforms) && !rom; i++) {
+		plat = &platforms[i];
+		rom = search_platform(query, &itch);
+	}
+	if (itch)
+		g_ptr_array_free(itch, TRUE);
 	if (rom) {
 		char *b = g_path_get_basename(rom);
 		index_add(query, rom);
-		status("Playing %s", b);
+		status("Playing %s (%s)", b, plat->name);
 		g_free(b);
+	} else if (ddg_blocked) {
+		status("No ROM found on itch.io for \"%s\", and DuckDuckGo is limiting searches right now", query);
 	} else {
-		status(cands->len ? "Could not download a ROM for \"%s\"" : "No SNES ROM found for \"%s\"",
-		       query);
+		status("No SNES, GBA or Sega Genesis ROM found for \"%s\"", query);
 	}
 	finish(rom);
-	g_hash_table_destroy(seen);
-	g_ptr_array_free(cands, TRUE);
-	g_ptr_array_free(results, TRUE);
 	g_free(query);
 	return NULL;
 }
