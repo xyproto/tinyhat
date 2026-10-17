@@ -20,20 +20,12 @@ bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "memtest86+" { print $4 }' "$top/initra
 cp "$sfs" "$work/root/tinyhat/root.sfs"
 cp "$top/config/grub-early.cfg" "$work/early.cfg"
 theme=$work/root/boot/grub/themes/tinyhat
-python3 "$top/scripts/mkgrubtheme.py" "$theme"
-mkdir -p "$work/fonts"
-bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "ttf-dejavu" { print $4 }' "$top/rootfs.lock")" -C "$work/fonts" --strip-components 4 \
-	usr/share/fonts/TTF/DejaVuSansCondensed-Bold.ttf usr/share/fonts/TTF/DejaVuSansMono.ttf
-while read -r kind size; do
-	case $kind in
-	bold) ttf=DejaVuSansCondensed-Bold.ttf ;;
-	mono) ttf=DejaVuSansMono.ttf ;;
-	esac
+python3 "$top/scripts/mkgrubtheme.py" "$theme" "$br/usr/share/kbd/consolefonts/default8x16.psfu.gz"
+for size in 16 32; do
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-		grub-mkfont -r 0x20-0x7e -s "$size" -o "/img/root/boot/grub/themes/tinyhat/$kind-$size.pf2" "/img/fonts/$ttf"
-done <"$theme/fonts.txt"
-rm -f "$theme/fonts.txt"
-rm -rf "$work/fonts"
+		grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
+	rm -f "$theme/vga-$size.bdf"
+done
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
