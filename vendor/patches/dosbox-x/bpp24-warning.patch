@@ -1,0 +1,11 @@
+--- a/src/gui/sdlmain.cpp
++++ b/src/gui/sdlmain.cpp
+@@ -4324,7 +4324,7 @@
+     sdl.desktop.pixelFormat = SDL_GetWindowPixelFormat(sdl.window);
+     LOG_MSG("SDL: Current window pixel format: %s", SDL_GetPixelFormatName(sdl.desktop.pixelFormat));
+     sdl.desktop.bpp=8*SDL_BYTESPERPIXEL(sdl.desktop.pixelFormat);
+-    if (SDL_BITSPERPIXEL(sdl.desktop.pixelFormat) == 24)
++    if (SDL_BYTESPERPIXEL(sdl.desktop.pixelFormat) == 3)
+         LOG_MSG("SDL: You are running in 24 bpp mode, this will slow down things!");
+ #else
+     if (!initgl) {

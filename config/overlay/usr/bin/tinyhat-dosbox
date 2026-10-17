@@ -1,6 +1,7 @@
 #!/bin/sh
 mkdir -p "$HOME/DOS"
 set -- -conf /etc/tinyhat/dosbox-x.conf -userconf "$@"
+[ ! -f /run/tinyhat-midi/dosbox-x.conf ] || set -- "$@" -conf /run/tinyhat-midi/dosbox-x.conf
 set -- "$@" -set "midi fluid.soundfont=$(tinyhat-soundfont)"
 mt32=$HOME/.local/share/tinyhat/mt32
 if [ -f "$mt32/MT32_CONTROL.ROM" ] || [ -f "$mt32/CM32L_CONTROL.ROM" ]; then
