@@ -1,4 +1,5 @@
 #!/bin/sh
+sudo fdisk -l
 DRIVE=${1:-sdN}
 echo "OVERWRITING /dev/$DRIVE in 5 seconds! Press ctrl-c to cancel."
 for n in 5 4 3 2 1; do
