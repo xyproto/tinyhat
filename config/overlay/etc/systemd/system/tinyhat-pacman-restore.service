@@ -8,7 +8,7 @@ ConditionPathExists=/run/tinyhat/persistroot
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/lib/tinyhat/pacman-restore
-StandardOutput=journal+console
+StandardOutput=journal
 TimeoutStartSec=30min
 
 [Install]
