@@ -14,11 +14,11 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run clean distclean tinyhat64.img patchcheck sourcecheck test dist
+.PHONY: all lock fetch sources licenses run cleantest clean distclean tinyhat64.img patchcheck sourcecheck test dist
 
 all: tinyhat32.img
 
-tinyhat32.img: $(B)/.grub $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
+tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
@@ -253,10 +253,6 @@ $(B)/.midibench: $(B)/.fluidsynth recipes/midibench.sh programs/tinyhat-midibenc
 	scripts/recipe.sh $(B)/buildroot midibench >$(B)/midibench.log 2>&1 || { tail -40 $(B)/midibench.log; exit 1; }
 	@touch $@
 
-$(B)/.grub: $(B)/.buildroot recipes/grub.sh vendor/src/grub-2.12.tar.xz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst $(wildcard vendor/patches/grub/*)
-	scripts/recipe.sh $(B)/buildroot grub >$(B)/grub.log 2>&1 || { tail -40 $(B)/grub.log; exit 1; }
-	@touch $@
-
 $(B)/.vice: $(B)/.buildroot $(B)/.sdl2-compat $(B)/.sdl2_image recipes/vice.sh vendor/src/vice-3.9.tar.gz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst vendor/src/xa-2.4.1-2.0-i686.pkg.tar.zst
 	scripts/recipe.sh $(B)/buildroot vice >$(B)/vice.log 2>&1 || { tail -40 $(B)/vice.log; exit 1; }
 	@touch $@
@@ -292,6 +288,9 @@ run: $(B)/test-usb.img
 		-device usb-tablet -vga std \
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
+
+cleantest:
+	rm -rf $(B)/qt $(B)/test-usb.img
 
 clean:
 	scripts/userns.sh rm -rf $(B)
