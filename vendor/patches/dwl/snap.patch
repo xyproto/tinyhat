@@ -27,7 +27,7 @@
  static struct wlr_scene_tree *drag_icon;
  /* Map from ZWLR_LAYER_SHELL_* constants to Lyr* enum */
  static const int layermap[] = { LyrBg, LyrBottom, LyrTop, LyrOverlay };
-@@ -829,11 +835,19 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -829,11 +835,19 @@ buttonpress(struct wl_listener *listener
  		/* If you released any buttons, we exit interactive move/resize mode. */
  		/* TODO: should reset to the pointer focus's current setcursor */
  		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
@@ -47,7 +47,7 @@
  			grabc = NULL;
  			return;
  		}
-@@ -2372,6 +2386,7 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
+@@ -2372,6 +2386,7 @@ motionnotify(uint32_t time, struct wlr_i
  		/* Move the grabbed client to the new position. */
  		resize(grabc, (struct wlr_box){.x = (int)round(cursor->x) - grabcx, .y = (int)round(cursor->y) - grabcy,
  			.width = grabc->geom.width, .height = grabc->geom.height}, 1);
@@ -75,7 +75,7 @@
  		/* Doesn't work for X11 output - the next absolute motion event
  		 * returns the cursor to where it started */
  		wlr_cursor_warp_closest(cursor, NULL,
-@@ -2837,6 +2860,67 @@ setmon(Client *c, Monitor *m, uint32_t newtags)
+@@ -2837,6 +2860,68 @@ setmon(Client *c, Monitor *m, uint32_t n
  	focusclient(focustop(selmon), 1);
  }
  
@@ -98,19 +98,20 @@
 +		l = x < m->m.x + snapcorner;
 +		r = x >= m->m.x + m->m.width - snapcorner;
 +	}
-+	if (l == r && !t)
++	if (l == r && t == b)
 +		return 0;
 +
-+	*box = m->w;
-+	if (l == r)
-+		return 1;
 +	hw = (m->w.width - 3 * g) / 2;
 +	hh = (m->w.height - 3 * g) / 2;
-+	box->x = l ? m->w.x + g : m->w.x + 2 * g + hw;
-+	box->width = l ? hw : m->w.width - 3 * g - hw;
++	box->x = m->w.x + g;
++	box->width = m->w.width - 2 * g;
 +	box->y = m->w.y + g;
 +	box->height = m->w.height - 2 * g;
-+	if (t || b) {
++	if (l != r) {
++		box->x = l ? m->w.x + g : m->w.x + 2 * g + hw;
++		box->width = l ? hw : m->w.width - 3 * g - hw;
++	}
++	if (t != b) {
 +		box->y = t ? m->w.y + g : m->w.y + 2 * g + hh;
 +		box->height = t ? hh : m->w.height - 3 * g - hh;
 +	}
@@ -143,7 +144,7 @@
  void
  setpsel(struct wl_listener *listener, void *data)
  {
-@@ -2891,6 +2975,14 @@ setup(void)
+@@ -2891,6 +2976,14 @@ setup(void)
  		layers[i] = wlr_scene_tree_create(&scene->tree);
  	drag_icon = wlr_scene_tree_create(&scene->tree);
  	wlr_scene_node_place_below(&drag_icon->node, &layers[LyrBlock]->node);
@@ -158,7 +159,7 @@
  
  	/* Autocreates a renderer, either Pixman, GLES2 or Vulkan for us. The user
  	 * can also specify a renderer using the WLR_RENDERER env var.
-@@ -3290,6 +3382,7 @@ unmapnotify(struct wl_listener *listener, void *data)
+@@ -3290,6 +3383,7 @@ unmapnotify(struct wl_listener *listener
  	if (c == grabc) {
  		cursor_mode = CurNormal;
  		grabc = NULL;
