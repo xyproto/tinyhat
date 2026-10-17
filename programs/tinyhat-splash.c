@@ -384,6 +384,7 @@ int main(void)
 	signal(SIGTERM, on_signal);
 	signal(SIGINT, on_signal);
 	signal(SIGPIPE, SIG_IGN);
+	signal(SIGHUP, SIG_IGN);
 	unlink(FIFO);
 	if (mkfifo(FIFO, 0600) || (ff = open(FIFO, O_RDWR | O_NONBLOCK | O_CLOEXEC)) < 0)
 		return 1;
@@ -391,7 +392,7 @@ int main(void)
 		unlink(FIFO);
 		return 1;
 	}
-	tty = open(TTY, O_RDWR | O_CLOEXEC);
+	tty = open(TTY, O_RDWR | O_NOCTTY | O_CLOEXEC);
 	if (tty >= 0)
 		ioctl(tty, KDSETMODE, KD_GRAPHICS);
 	flush();
