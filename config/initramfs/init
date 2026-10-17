@@ -11,6 +11,7 @@ label=TINYHAT
 toram=auto
 persist=1
 quiet=0
+splash=1
 for arg in $(cat /proc/cmdline); do
 	case $arg in
 	tinyhat.label=*) label=${arg#*=} ;;
@@ -19,11 +20,28 @@ for arg in $(cat /proc/cmdline); do
 	tinyhat.nopersist) persist=0 ;;
 	tinyhat.shell) sh ;;
 	quiet) quiet=1 ;;
+	tinyhat.nosplash) splash=0 ;;
 	esac
 done
 [ "$quiet" = 1 ] && printf '\033[?25l' >/dev/tty1 2>/dev/null
+[ "$quiet" = 1 ] && [ "$splash" = 1 ] && [ -c /dev/fb0 ] && /bin/tinyhat-splash
+
+say() {
+	[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo "$1" >/run/tinyhat-splash' sh "$1" 2>/dev/null
+}
+
+copy() {
+	chunks=$((($(stat -c %s "$1") + 8388607) / 8388608))
+	i=0
+	while [ "$i" -lt "$chunks" ]; do
+		dd if="$1" of="$2" bs=8M skip="$i" seek="$i" count=1 conv=notrunc 2>/dev/null || return 1
+		i=$((i + 1))
+		say "progress $((i * 100 / chunks))"
+	done
+}
 
 rescue() {
+	say quit
 	echo "Tiny Hat: $*"
 	echo "Dropping to a shell. Type 'exit' to try booting again."
 	setsid cttyhack sh
@@ -63,7 +81,14 @@ fi
 if [ "$toram" = 1 ]; then
 	[ "$quiet" = 1 ] || echo "Tiny Hat: copying the system to RAM, this takes a moment..."
 	mount -t tmpfs -o size=90%,mode=0755 ram /run/tinyhat/rw
-	cp "$sfs" /run/tinyhat/rw/root.sfs && sfs=/run/tinyhat/rw/root.sfs
+	say "msg Copying Tiny Hat to RAM"
+	if copy "$sfs" /run/tinyhat/rw/root.sfs; then
+		sfs=/run/tinyhat/rw/root.sfs
+	else
+		rm -f /run/tinyhat/rw/root.sfs
+	fi
+	say "progress -1"
+	say "msg"
 else
 	mount -t tmpfs -o size=75%,mode=0755 rw /run/tinyhat/rw
 fi

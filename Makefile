@@ -220,7 +220,11 @@ $(B)/vmlinuz-x32: config/kernel-i686.fragment config/kernel-x32.fragment vendor/
 	@mkdir -p $(B)
 	scripts/mkkernel.sh $(KVER) x86_64 $(B)/vmlinuz-x32 $(CURDIR)/config/kernel-i686.fragment $(CURDIR)/config/kernel-x32.fragment
 
-$(B)/initramfs.img: $(B)/.fetched-initramfs config/initramfs/init scripts/mkinitramfs.sh
+$(B)/.tinyhat-splash: $(B)/.buildroot recipes/tinyhat-splash.sh programs/tinyhat-splash.c
+	scripts/recipe.sh $(B)/buildroot tinyhat-splash >$(B)/tinyhat-splash.log 2>&1 || { tail -40 $(B)/tinyhat-splash.log; exit 1; }
+	@touch $@
+
+$(B)/initramfs.img: $(B)/.fetched-initramfs $(B)/.tinyhat-splash config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
 
 $(SOUNDFONT_GU): | vendor/src/GeneralUser-GS-2.0.3.sf2
