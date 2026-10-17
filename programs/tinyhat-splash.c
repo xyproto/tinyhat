@@ -1,6 +1,7 @@
 #include <fcntl.h>
 #include <linux/fb.h>
 #include <linux/kd.h>
+#include <math.h>
 #include <poll.h>
 #include <signal.h>
 #include <stdint.h>
@@ -18,8 +19,10 @@
 #define FIFO "/run/tinyhat-splash"
 #define FBDEV "/dev/fb0"
 #define TTY "/dev/tty1"
-#define FRAME_MS 100
+#define FRAME_MS 80
 #define IDLE_TIMEOUT_MS 120000
+#define LOW 64
+#define SEGMENTS 16
 
 typedef struct {
 	unsigned char r, g, b;
@@ -27,24 +30,12 @@ typedef struct {
 
 static const Rgb BG = { 0x1a, 0x1b, 0x26 };
 static const Rgb TEAL = { 0x1a, 0x9e, 0x96 };
-static const Rgb ARCH = { 0x17, 0x93, 0xd1 };
 static const Rgb HAT = { 0x92, 0x24, 0x24 };
 static const Rgb PINK = { 0xf7, 0x76, 0x8e };
 static const Rgb GRAY = { 0x49, 0x49, 0x49 };
-static const Rgb CYAN = { 0x7d, 0xcf, 0xff };
 static const Rgb LIGHT = { 0xc0, 0xca, 0xf5 };
-static const Rgb SLATE = { 0xa9, 0xb1, 0xd6 };
 
-static const struct {
-	int y0, y1;
-	const Rgb *color, *ink;
-	const char *label;
-} blocks[] = {
-	{ 23, 33, &HAT, &LIGHT, "11-386" },
-	{ 34, 43, &GRAY, &LIGHT, "04-486" },
-	{ 44, 56, &CYAN, &BG, "07-586" },
-	{ 57, 64, &PINK, &BG, "09-686" },
-};
+static const Rgb *const ink[] = { &BG, &HAT, &PINK, &GRAY, &LIGHT };
 
 static struct {
 	int fd;
@@ -56,6 +47,7 @@ static struct {
 } fb = { -1, NULL, 0, 0, 0, "", { 0 } };
 
 static unsigned char *back;
+static unsigned char low[LOW * LOW];
 static int W, H, BPP;
 static int dx0, dy0, dx1, dy1;
 static char message[128];
@@ -77,13 +69,6 @@ static uint32_t pack(Rgb c)
 	return ((uint32_t)(c.r >> (8 - v->red.length)) << v->red.offset) |
 	       ((uint32_t)(c.g >> (8 - v->green.length)) << v->green.offset) |
 	       ((uint32_t)(c.b >> (8 - v->blue.length)) << v->blue.offset);
-}
-
-static Rgb lighter(Rgb c)
-{
-	Rgb o = { (unsigned char)(c.r + (255 - c.r) / 2), (unsigned char)(c.g + (255 - c.g) / 2),
-		  (unsigned char)(c.b + (255 - c.b) / 2) };
-	return o;
 }
 
 static void dirty(int x0, int y0, int x1, int y1)
@@ -139,59 +124,25 @@ static void fill(int x0, int y0, int x1, int y1, Rgb c)
 	dirty(x0, y0, x1, y1);
 }
 
-static int X(int p)
-{
-	return p * W / 100;
-}
-
-static int Y(int p)
-{
-	return p * H / 100;
-}
-
 static int sq(int v)
 {
 	return v * v;
 }
 
-static void pill(int x0, int y0, int x1, int y1, int left, Rgb c)
+static void pill(int x0, int y0, int x1, int y1, Rgb c)
 {
 	int r = (y1 - y0) / 2, cy = y0 + r;
 	uint32_t v = pack(c);
 	clip(&x0, &y0, &x1, &y1);
 	for (int y = y0; y < y1; y++)
 		for (int x = x0; x < x1; x++) {
-			if (left && x < x0 + r && sq(x - x0 - r) + sq(y - cy) > r * r)
+			if (x < x0 + r && sq(x - x0 - r) + sq(y - cy) > r * r)
 				continue;
 			if (x >= x1 - r && sq(x - x1 + r) + sq(y - cy) > r * r)
 				continue;
 			put(x, y, v);
 		}
 	dirty(x0, y0, x1, y1);
-}
-
-static void elbow(int top, Rgb c)
-{
-	int x0 = X(2), x1 = X(14), xend = X(58);
-	int b0 = top ? Y(3) : Y(92), b1 = top ? Y(8) : Y(97), yend = top ? Y(22) : Y(65);
-	int r = (W < H ? W : H) * 8 / 100, ri = (W < H ? W : H) * 3 / 100;
-	int ya = top ? b0 : yend, yb = top ? yend : b1;
-	uint32_t v = pack(c);
-	for (int y = ya; y < yb; y++)
-		for (int x = x0; x < xend; x++) {
-			int vert = x < x1;
-			int horiz = y >= b0 && y < b1;
-			int cx = x0 + r, cy = top ? b0 + r : b1 - r;
-			int fx = x1 + ri, fy = top ? b1 + ri : b0 - ri;
-			int in;
-			if (vert || horiz)
-				in = !(x < cx && (top ? y < cy : y >= cy)) || sq(x - cx) + sq(y - cy) <= r * r;
-			else
-				in = x < fx && (top ? y >= b1 && y < fy : y >= fy && y < b0) && sq(x - fx) + sq(y - fy) >= ri * ri;
-			if (in)
-				put(x, y, v);
-		}
-	dirty(x0, ya, xend, yb);
 }
 
 static int text_width(const char *s, int scale)
@@ -218,60 +169,159 @@ static void text(int x, int y, int scale, const char *s, Rgb c)
 	dirty(x0, y, x, y + 16 * scale);
 }
 
-static int small_scale(void)
+static int text_scale(void)
 {
 	return H >= 900 ? 2 : 1;
 }
 
-static void draw_block(int i, int lit)
+static int hat_scale(void)
 {
-	int s = small_scale();
-	const char *l = blocks[i].label;
-	fill(X(2), Y(blocks[i].y0), X(14), Y(blocks[i].y1), lit ? lighter(*blocks[i].color) : *blocks[i].color);
-	text(X(13) - text_width(l, s), Y(blocks[i].y1) - 18 * s, s, l, *blocks[i].ink);
+	int s = (W < H ? W : H) / 240;
+	return s < 2 ? 2 : s;
 }
 
-static void draw_blinkers(int phase)
+static int hat_x(void)
 {
-	fill(X(59), Y(3), X(64), Y(8), phase ? lighter(SLATE) : SLATE);
-	fill(X(59), Y(92), X(61), Y(97), phase ? CYAN : lighter(CYAN));
+	return W / 2 - LOW * hat_scale() / 2;
+}
+
+static int hat_y(void)
+{
+	return H * 2 / 5 - LOW * hat_scale() / 2;
+}
+
+static void line(int x0, int y0, int x1, int y1, unsigned char c)
+{
+	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1, dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1, e = dx + dy;
+	for (;;) {
+		if (x0 >= 0 && y0 >= 0 && x0 < LOW && y0 < LOW)
+			low[y0 * LOW + x0] = c;
+		if (x0 == x1 && y0 == y1)
+			break;
+		int e2 = 2 * e;
+		if (e2 >= dy)
+			e += dy, x0 += sx;
+		if (e2 <= dx)
+			e += dx, y0 += sy;
+	}
+}
+
+typedef struct {
+	int x, y;
+	double z;
+} Point;
+
+static double tilt = 0.38;
+
+static Point project(double angle, double x, double y, double z)
+{
+	double x1 = x * cos(angle) + z * sin(angle), z1 = -x * sin(angle) + z * cos(angle);
+	double y1 = y - 0.45;
+	double y2 = y1 * cos(tilt) - z1 * sin(tilt), z2 = y1 * sin(tilt) + z1 * cos(tilt);
+	double f = 3.4 / (z2 + 3.4);
+	Point p = { (int)lround(LOW / 2 + x1 * f * 25), (int)lround(LOW / 2 - y2 * f * 25), z2 };
+	return p;
+}
+
+static void edge(int pass, Point a, Point b, unsigned char front, unsigned char rear)
+{
+	int is_front = a.z + b.z < 0;
+	if (is_front == pass)
+		line(a.x, a.y, b.x, b.y, is_front ? front : rear);
+}
+
+static void ring(int pass, double angle, double y, double r, unsigned char front, unsigned char rear)
+{
+	for (int i = 0; i < SEGMENTS; i++) {
+		double a0 = 2 * M_PI * i / SEGMENTS, a1 = 2 * M_PI * (i + 1) / SEGMENTS;
+		edge(pass, project(angle, r * cos(a0), y, r * sin(a0)), project(angle, r * cos(a1), y, r * sin(a1)), front,
+		     rear);
+	}
+}
+
+static Point at(double angle, double r, double y, double a, double t)
+{
+	return project(angle, r * cos(a) - t * sin(a), y, r * sin(a) + t * cos(a));
+}
+
+static void hat(double angle)
+{
+	memset(low, 0, sizeof(low));
+	tilt = 0.36 + 0.1 * sin(2 * angle);
+	for (int pass = 0; pass < 2; pass++) {
+		for (int side = -1; side <= 1; side += 2) {
+			Point knot = at(angle, 0.56, 0.19, 0, 0);
+			Point top = at(angle, 0.6, 0.27, 0, side * 0.15), bottom = at(angle, 0.6, 0.11, 0, side * 0.15);
+			edge(pass, knot, top, 4, 3);
+			edge(pass, top, bottom, 4, 3);
+			edge(pass, bottom, knot, 4, 3);
+		}
+		ring(pass, angle, 0, 1.0, 2, 1);
+		ring(pass, angle, 0, 0.55, 2, 1);
+		ring(pass, angle, 0.12, 0.555, 4, 3);
+		ring(pass, angle, 0.26, 0.56, 4, 3);
+		ring(pass, angle, 0.95, 0.6, 2, 1);
+		for (int i = 0; i < SEGMENTS; i += 2) {
+			double a = 2 * M_PI * i / SEGMENTS;
+			edge(pass, project(angle, 0.55 * cos(a), 0, 0.55 * sin(a)),
+			     project(angle, 0.6 * cos(a), 0.95, 0.6 * sin(a)), 2, 1);
+			edge(pass, project(angle, 0.55 * cos(a), 0, 0.55 * sin(a)), project(angle, cos(a), 0, sin(a)), 2, 1);
+		}
+	}
+}
+
+static void draw_hat(void)
+{
+	int s = hat_scale(), x0 = hat_x(), y0 = hat_y();
+	uint32_t c[5];
+	for (int i = 0; i < 5; i++)
+		c[i] = pack(*ink[i]);
+	hat(2 * M_PI * (double)(tick % 75) / 75);
+	for (int y = 0; y < LOW * s; y++)
+		for (int x = 0; x < LOW * s; x++) {
+			int px = x0 + x, py = y0 + y;
+			if (px >= 0 && py >= 0 && px < W && py < H)
+				put(px, py, c[low[(y / s) * LOW + x / s]]);
+		}
+	dirty(x0, y0, x0 + LOW * s, y0 + LOW * s);
+}
+
+static int title_y(void)
+{
+	return hat_y() + LOW * hat_scale() + 4 * text_scale();
+}
+
+static void draw_title(void)
+{
+	int s = 2 * text_scale();
+	text((W - text_width("TINY HAT", s)) / 2, title_y(), s, "TINY HAT", PINK);
 }
 
 static void draw_status(void)
 {
-	int s = small_scale(), x0 = X(18), x1 = X(58), y0 = Y(78), y1 = y0 + 12 * s;
-	fill(x0, Y(70), X(96), y1 + 2, BG);
+	int s = text_scale(), top = title_y() + 32 * s + 24 * s;
+	int x0 = W * 3 / 10, x1 = W * 7 / 10, by = top + 40 * s;
+	fill(0, top, W, by + 12 * s + 2, BG);
 	if (message[0])
-		text(x0, Y(70), s, message, LIGHT);
+		text((W - text_width(message, s)) / 2, top, s, message, LIGHT);
 	if (progress >= 0) {
 		int fx = x0 + (x1 - x0) * progress / 100;
-		pill(x0, y0, x1, y1, 1, GRAY);
-		if (fx > x0 + (y1 - y0))
-			pill(x0, y0, fx, y1, 1, TEAL);
+		pill(x0, by, x1, by + 12 * s, GRAY);
+		if (fx > x0 + 12 * s)
+			pill(x0, by, fx, by + 12 * s, TEAL);
 	} else if (message[0]) {
 		int len = (x1 - x0) / 4, span = x1 - x0 - len;
 		int pos = (int)(tick % 40), off = (pos < 20 ? pos : 40 - pos) * span / 20;
-		pill(x0, y0, x1, y1, 1, GRAY);
-		pill(x0 + off, y0, x0 + off + len, y1, 1, TEAL);
+		pill(x0, by, x1, by + 12 * s, GRAY);
+		pill(x0 + off, by, x0 + off + len, by + 12 * s, TEAL);
 	}
 }
 
 static void draw_all(void)
 {
-	int ts = (Y(8) - Y(3)) / 16;
 	fill(0, 0, W, H, BG);
-	elbow(1, TEAL);
-	elbow(0, ARCH);
-	pill(X(92), Y(3), X(98), Y(8), 0, PINK);
-	pill(X(91), Y(92), X(98), Y(97), 0, HAT);
-	if (ts < 1)
-		ts = 1;
-	text(X(91) - text_width("TINY HAT", ts), Y(3) + (Y(8) - Y(3) - 16 * ts) / 2, ts, "TINY HAT", PINK);
-	text(X(13) - text_width("BOOT-1", small_scale()), Y(22) - 18 * small_scale(), small_scale(), "BOOT-1", BG);
-	text(X(13) - text_width("32-BIT", small_scale()), Y(65) + 2, small_scale(), "32-BIT", BG);
-	for (int i = 0; i < (int)(sizeof(blocks) / sizeof(blocks[0])); i++)
-		draw_block(i, 0);
-	draw_blinkers(0);
+	draw_hat();
+	draw_title();
 	draw_status();
 }
 
@@ -349,7 +399,11 @@ static void command(char *line)
 {
 	if (!strncmp(line, "msg", 3)) {
 		const char *t = line[3] == ' ' ? line + 4 : "";
-		snprintf(message, sizeof(message), "%s", t);
+		size_t n = strlen(t);
+		if (n >= sizeof(message))
+			n = sizeof(message) - 1;
+		memcpy(message, t, n);
+		message[n] = '\0';
 		for (char *p = message; *p; p++)
 			if (*p >= 'a' && *p <= 'z')
 				*p = (char)(*p - 'a' + 'A');
@@ -428,9 +482,7 @@ int main(void)
 			if (fb_changed())
 				map();
 		}
-		for (int i = 0; i < (int)(sizeof(blocks) / sizeof(blocks[0])); i++)
-			draw_block(i, (tick / 3) % 4 == i);
-		draw_blinkers((tick / 6) % 2);
+		draw_hat();
 		if (progress < 0 && message[0])
 			draw_status();
 		if (tty >= 0) {

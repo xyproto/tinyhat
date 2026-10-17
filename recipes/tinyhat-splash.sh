@@ -14,5 +14,5 @@ for i in range(0, len(data), 16):
     print("\t" + ", ".join("0x%02x" % b for b in data[i:i + 16]) + ",")
 print("};")
 PY
-cc $CFLAGS -static -I. -o /out/tinyhat-splash/usr/bin/tinyhat-splash /programs/tinyhat-splash.c $LDFLAGS
+cc $CFLAGS -static -I. -o /out/tinyhat-splash/usr/bin/tinyhat-splash /programs/tinyhat-splash.c $LDFLAGS -lm
 strip --strip-all /out/tinyhat-splash/usr/bin/tinyhat-splash

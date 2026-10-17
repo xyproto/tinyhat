@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-import os, struct, sys, zlib
+import gzip, math, os, struct, sys, zlib
 
-W, H = 1920, 1200
 BG = (0x1a, 0x1b, 0x26)
 TEAL = (0x1a, 0x9e, 0x96)
-ARCH = (0x17, 0x93, 0xd1)
 HAT = (0x92, 0x24, 0x24)
 PINK = (0xf7, 0x76, 0x8e)
 GRAY = (0x49, 0x49, 0x49)
-CYAN = (0x7d, 0xcf, 0xff)
 LIGHT = (0xc0, 0xca, 0xf5)
 SLATE = (0xa9, 0xb1, 0xd6)
+
+INK = [BG, HAT, PINK, GRAY, LIGHT]
+LOW, SEGMENTS, HAT_SCALE = 64, 16, 2
+ITEM, SPACING, BAR = 32, 2, 28
 
 
 def png(path, w, h, rows):
@@ -26,146 +27,168 @@ def png(path, w, h, rows):
         f.write(chunk(b"IEND", b""))
 
 
-def rect(x0, y0, x1, y1):
-    return (lambda x, y: x0 <= x < x1 and y0 <= y < y1), (x0, y0, x1, y1)
-
-
-def pill(x0, y0, x1, y1, left=False, right=True):
-    r = (y1 - y0) / 2
-    cy = y0 + r
+def pill(x0, x1, h, left, right):
+    r = h / 2
 
     def inside(x, y):
-        if not (x0 <= x < x1 and y0 <= y < y1):
+        if not (x0 <= x < x1 and 0 <= y < h):
             return False
         if left and x < x0 + r:
-            return (x - x0 - r) ** 2 + (y - cy) ** 2 <= r * r
+            return (x - x0 - r) ** 2 + (y - r) ** 2 <= r * r
         if right and x >= x1 - r:
-            return (x - x1 + r) ** 2 + (y - cy) ** 2 <= r * r
+            return (x - x1 + r) ** 2 + (y - r) ** 2 <= r * r
         return True
 
-    return inside, (x0, y0, x1, y1)
+    return inside
 
 
-def elbow(x0, x1, ybar0, ybar1, yend, xend, outer, inner, top):
-    def inside(x, y):
-        if top:
-            vert = x0 <= x < x1 and ybar0 <= y < yend
-            cx, cy = x0 + outer, ybar0 + outer
-            corner = x < cx and y < cy
-            fx, fy = x1 + inner, ybar1 + inner
-            fillet = x1 <= x < fx and ybar1 <= y < fy and (x - fx) ** 2 + (y - fy) ** 2 >= inner * inner
-        else:
-            vert = x0 <= x < x1 and yend <= y < ybar1
-            cx, cy = x0 + outer, ybar1 - outer
-            corner = x < cx and y >= cy
-            fx, fy = x1 + inner, ybar0 - inner
-            fillet = x1 <= x < fx and fy <= y < ybar0 and (x - fx) ** 2 + (y - fy) ** 2 >= inner * inner
-        horiz = x0 <= x < xend and ybar0 <= y < ybar1
-        if corner and (vert or horiz):
-            return (x - cx) ** 2 + (y - cy) ** 2 <= outer * outer
-        return vert or horiz or fillet
-
-    if top:
-        return inside, (x0, ybar0, max(xend, x1 + inner), yend)
-    return inside, (x0, yend, max(xend, x1 + inner), ybar1)
-
-
-def render(w, h, shapes, bg=BG):
-    rows = [[bg] * w for _ in range(h)]
+def render(w, h, inside, color):
     sub = [(i + 0.5) / 4 for i in range(4)]
-    for (inside, box), color in shapes:
-        bx0, by0, bx1, by1 = (max(0, int(box[0])), max(0, int(box[1])), min(w, int(box[2]) + 1), min(h, int(box[3]) + 1))
-        for y in range(by0, by1):
-            row = rows[y]
-            for x in range(bx0, bx1):
-                corners = (inside(x, y), inside(x + 0.999, y), inside(x, y + 0.999), inside(x + 0.999, y + 0.999))
-                if all(corners):
-                    row[x] = color
-                    continue
-                n = sum(inside(x + sx, y + sy) for sx in sub for sy in sub)
-                if n:
-                    row[x] = tuple(round(b + (c - b) * n / 16) for b, c in zip(bg, color))
+    rows = []
+    for y in range(h):
+        row = []
+        for x in range(w):
+            n = sum(inside(x + sx, y + sy) for sx in sub for sy in sub)
+            row.append(tuple(round(b + (c - b) * n / 16) for b, c in zip(BG, color)))
+        rows.append(row)
     return rows
+
+
+def slices(out, prefix, h, color):
+    r = h // 2
+    png(os.path.join(out, f"{prefix}_w.png"), r, h, render(r, h, pill(0, 2 * r, h, True, False), color))
+    png(os.path.join(out, f"{prefix}_c.png"), 1, h, [[color]] * h)
+    png(os.path.join(out, f"{prefix}_e.png"), r, h, render(r, h, pill(-r, r, h, False, True), color))
+
+
+def project(angle, tilt, x, y, z):
+    x1, z1 = x * math.cos(angle) + z * math.sin(angle), -x * math.sin(angle) + z * math.cos(angle)
+    y1 = y - 0.45
+    y2, z2 = y1 * math.cos(tilt) - z1 * math.sin(tilt), y1 * math.sin(tilt) + z1 * math.cos(tilt)
+    f = 3.4 / (z2 + 3.4)
+    return round(LOW / 2 + x1 * f * 25), round(LOW / 2 - y2 * f * 25), z2
+
+
+def hat(angle):
+    low = [[0] * LOW for _ in range(LOW)]
+    tilt = 0.36 + 0.1 * math.sin(2 * angle)
+
+    def line(a, b, c):
+        x0, y0, x1, y1 = a[0], a[1], b[0], b[1]
+        dx, sx, dy, sy = abs(x1 - x0), 1 if x0 < x1 else -1, -abs(y1 - y0), 1 if y0 < y1 else -1
+        e = dx + dy
+        while True:
+            if 0 <= x0 < LOW and 0 <= y0 < LOW:
+                low[y0][x0] = c
+            if x0 == x1 and y0 == y1:
+                break
+            e2 = 2 * e
+            if e2 >= dy:
+                e, x0 = e + dy, x0 + sx
+            if e2 <= dx:
+                e, y0 = e + dx, y0 + sy
+
+    def p(x, y, z):
+        return project(angle, tilt, x, y, z)
+
+    def at(r, y, a, t):
+        return p(r * math.cos(a) - t * math.sin(a), y, r * math.sin(a) + t * math.cos(a))
+
+    def edge(front_pass, a, b, front, rear):
+        is_front = a[2] + b[2] < 0
+        if is_front == front_pass:
+            line(a, b, front if is_front else rear)
+
+    def ring(front_pass, y, r, front, rear):
+        for i in range(SEGMENTS):
+            a0, a1 = 2 * math.pi * i / SEGMENTS, 2 * math.pi * (i + 1) / SEGMENTS
+            edge(front_pass, p(r * math.cos(a0), y, r * math.sin(a0)), p(r * math.cos(a1), y, r * math.sin(a1)), front, rear)
+
+    for front_pass in (False, True):
+        for side in (-1, 1):
+            knot, top, bottom = at(0.56, 0.19, 0, 0), at(0.6, 0.27, 0, side * 0.15), at(0.6, 0.11, 0, side * 0.15)
+            edge(front_pass, knot, top, 4, 3)
+            edge(front_pass, top, bottom, 4, 3)
+            edge(front_pass, bottom, knot, 4, 3)
+        ring(front_pass, 0, 1.0, 2, 1)
+        ring(front_pass, 0, 0.55, 2, 1)
+        ring(front_pass, 0.12, 0.555, 4, 3)
+        ring(front_pass, 0.26, 0.56, 4, 3)
+        ring(front_pass, 0.95, 0.6, 2, 1)
+        for i in range(0, SEGMENTS, 2):
+            a = 2 * math.pi * i / SEGMENTS
+            edge(front_pass, p(0.55 * math.cos(a), 0, 0.55 * math.sin(a)), p(0.6 * math.cos(a), 0.95, 0.6 * math.sin(a)), 2, 1)
+            edge(front_pass, p(0.55 * math.cos(a), 0, 0.55 * math.sin(a)), p(math.cos(a), 0, math.sin(a)), 2, 1)
+    return [[INK[low[y // HAT_SCALE][x // HAT_SCALE]] for x in range(LOW * HAT_SCALE)] for y in range(LOW * HAT_SCALE)]
+
+
+def bdf(path, glyphs, scale):
+    w, h, descent = 8 * scale, 16 * scale, 4 * scale
+    with open(path, "w") as f:
+        f.write(f"STARTFONT 2.1\nFONT -tinyhat-vga-medium-r-normal--{h}-{h * 10}-75-75-c-{w * 10}-iso10646-1\n")
+        f.write(f"SIZE {h} 75 75\nFONTBOUNDINGBOX {w} {h} 0 -{descent}\n")
+        f.write(f'STARTPROPERTIES 5\nFAMILY_NAME "VGA"\nWEIGHT_NAME "Medium"\nPIXEL_SIZE {h}\n')
+        f.write(f"FONT_ASCENT {h - descent}\nFONT_DESCENT {descent}\nENDPROPERTIES\n")
+        f.write(f"CHARS {0x7f - 0x20}\n")
+        for code in range(0x20, 0x7f):
+            f.write(f"STARTCHAR U+{code:04X}\nENCODING {code}\nSWIDTH 500 0\nDWIDTH {w} 0\nBBX {w} {h} 0 -{descent}\nBITMAP\n")
+            for row in glyphs[code * 16:code * 16 + 16]:
+                bits = 0
+                for i in range(8):
+                    if row & (0x80 >> i):
+                        bits |= ((1 << scale) - 1) << ((7 - i) * scale)
+                f.write(f"{bits:0{w // 4}X}\n" * scale)
+            f.write("ENDCHAR\n")
+        f.write("ENDFONT\n")
 
 
 def hexc(c):
     return "#%02x%02x%02x" % c
 
 
-def label(x, y, w, h, text, font, color, align="left"):
-    return (
-        "+ label {\n"
+def label(x, y, w, h, text, font, color, align="center", ident=None):
+    t = "+ label {\n"
+    if ident:
+        t += f'\tid = "{ident}"\n'
+    return t + (
         f'\tleft = {x}\n\ttop = {y}\n\twidth = {w}\n\theight = {h}\n'
         f'\ttext = "{text}"\n\tfont = "{font}"\n\tcolor = "{hexc(color)}"\n\talign = "{align}"\n'
         "}\n"
     )
 
 
-def bold(size):
-    return f"DejaVu Sans Bold {size}"
-
-
-SMALL, MEDIUM, LARGE, HUGE, MONO = 16, 24, 32, 64, 16
-ITEM, SPACING = 40, 12
-
-SIDE = (2, 14)
-TOP = (3, 8)
-BOTTOM = (92, 97)
-BLOCKS = [
-    (23, 33, HAT, LIGHT, "11-386"),
-    (34, 43, GRAY, LIGHT, "04-486"),
-    (44, 56, CYAN, BG, "07-586"),
-    (57, 64, PINK, BG, "09-686"),
-]
-
-
-def X(p):
-    return round(p * W / 100)
-
-
-def Y(p):
-    return round(p * H / 100)
-
-
-def background():
-    r = min(W, H) / 100
-    shapes = [
-        (elbow(X(SIDE[0]), X(SIDE[1]), Y(TOP[0]), Y(TOP[1]), Y(22), X(58), 8 * r, 3 * r, True), TEAL),
-        (rect(X(59), Y(TOP[0]), X(64), Y(TOP[1])), SLATE),
-        (pill(X(92), Y(TOP[0]), X(98), Y(TOP[1])), PINK),
-        (elbow(X(SIDE[0]), X(SIDE[1]), Y(BOTTOM[0]), Y(BOTTOM[1]), Y(65), X(58), 8 * r, 3 * r, False), ARCH),
-        (rect(X(59), Y(BOTTOM[0]), X(61), Y(BOTTOM[1])), CYAN),
-        (pill(X(91), Y(BOTTOM[0]), X(98), Y(BOTTOM[1])), HAT),
-    ]
-    shapes += [(rect(X(SIDE[0]), Y(y0), X(SIDE[1]), Y(y1)), color) for y0, y1, color, _, _ in BLOCKS]
-    return render(W, H, shapes)
+SMALL, LARGE = "VGA Regular 16", "VGA Regular 32"
 
 
 def theme():
-    lh = SMALL + 8
-    side_w = f"{SIDE[1] - SIDE[0] - 1}%"
-    t = f"""desktop-image: "background.png"
-desktop-image-scale-method: "stretch"
-desktop-color: "{hexc(BG)}"
+    size = LOW * HAT_SCALE
+    return f"""desktop-color: "{hexc(BG)}"
 title-text: ""
-terminal-font: "DejaVu Sans Mono Regular {MONO}"
-terminal-left: "18%"
-terminal-top: "12%"
-terminal-width: "78%"
-terminal-height: "76%"
+terminal-font: "{SMALL}"
+terminal-left: "10%"
+terminal-top: "10%"
+terminal-width: "80%"
+terminal-height: "80%"
 terminal-border: "0"
 
++ image {{
+	left = 50%-{size // 2}
+	top = 5%
+	width = {size}
+	height = {size}
+	file = "hat.png"
+}}
 + boot_menu {{
-	left = 18%
-	top = 12%
-	width = 78%
-	height = 68%
-	item_font = "{bold(MEDIUM)}"
-	selected_item_font = "{bold(MEDIUM)}"
+	left = 10%
+	top = 40%
+	width = 80%
+	height = 47%
+	item_font = "{LARGE}"
+	selected_item_font = "{LARGE}"
 	item_color = "{hexc(LIGHT)}"
 	selected_item_color = "{hexc(BG)}"
 	item_height = {ITEM}
-	item_padding = 4
+	item_padding = 8
 	item_spacing = {SPACING}
 	icon_width = 0
 	icon_height = 0
@@ -175,44 +198,38 @@ terminal-border: "0"
 }}
 + progress_bar {{
 	id = "__timeout__"
-	left = 18%
-	top = 84%
+	left = 30%
+	top = 90%
 	width = 40%
-	height = 28
-	font = "{bold(SMALL)}"
-	text = "AUTO BOOT IN %d SECONDS"
-	text_color = "{hexc(LIGHT)}"
-	fg_color = "{hexc(TEAL)}"
-	bg_color = "{hexc(GRAY)}"
-	border_color = "{hexc(BG)}"
+	height = {BAR}
+	text = ""
+	bar_style = "bar_*.png"
+	highlight_style = "fill_*.png"
+	highlight_overlay = true
 }}
-"""
-    t += label("65%", f"{(TOP[0] + TOP[1]) // 2}%-{LARGE // 2 + 4}", "26%", LARGE + 8, "TINY HAT", bold(LARGE), PINK, "right")
-    t += label("62%", f"{(BOTTOM[0] + BOTTOM[1]) // 2}%-{lh // 2}", "28%", lh, "E EDIT   C CONSOLE", bold(SMALL), CYAN, "center")
-    t += label(f"{SIDE[0]}%", f"22%-{lh + 2}", side_w, lh, "BOOT-1", bold(SMALL), BG, "right")
-    t += label(f"{SIDE[0]}%", "65%+2", side_w, lh, "32-BIT", bold(SMALL), BG, "right")
-    for y0, y1, _, ink, text in BLOCKS:
-        t += label(f"{SIDE[0]}%", f"{y1}%-{lh + 2}", side_w, lh, text, bold(SMALL), ink, "right")
-    t += '+ label {\n\tid = "__timeout__"\n' + label("62%", f"90%-{HUGE + 12}", "34%", HUGE + 8, "%d", bold(HUGE), CYAN, "right")[len("+ label {\n"):]
-    return t
+""" + label("0", f"5%+{size + 4}", "100%", 36, "TINY HAT", LARGE, PINK) + label(
+        "0", "90%-24", "100%", 20, "BOOTING IN %d", SMALL, LIGHT, ident="__timeout__"
+    ) + label("70%", "2%", "28%", 20, "E EDIT  C CONSOLE", SMALL, SLATE, "right")
 
 
-out = sys.argv[1]
+out, psf = sys.argv[1], sys.argv[2]
+data = gzip.open(psf).read()
+magic, _, header, _, count, glyph, height, width = struct.unpack("<8I", data[:32])
+if magic != 0x864AB572 or count < 256 or glyph != 16 or height != 16 or width != 8:
+    sys.exit(f"{psf}: expected an 8x16 PSF2 font")
+glyphs = data[header:header + 256 * 16]
 os.makedirs(out, exist_ok=True)
-png(os.path.join(out, "background.png"), W, H, background())
-r = ITEM // 2
-png(os.path.join(out, "select_w.png"), r, ITEM, render(r, ITEM, [(pill(0, 0, 2 * r, ITEM, left=True, right=False), TEAL)]))
-png(os.path.join(out, "select_c.png"), 1, ITEM, [[TEAL]] * ITEM)
-png(os.path.join(out, "select_e.png"), r, ITEM, render(r, ITEM, [(pill(-r, 0, r, ITEM), TEAL)]))
+png(os.path.join(out, "hat.png"), LOW * HAT_SCALE, LOW * HAT_SCALE, hat(0.45))
+slices(out, "select", ITEM, TEAL)
+slices(out, "bar", BAR, GRAY)
+slices(out, "fill", BAR, TEAL)
+bdf(os.path.join(out, "vga-16.bdf"), glyphs, 1)
+bdf(os.path.join(out, "vga-32.bdf"), glyphs, 2)
 with open(os.path.join(out, "theme.txt"), "w") as f:
     f.write(theme())
-bolds = sorted({SMALL, MEDIUM, LARGE, HUGE})
-fonts = [f"bold-{n}.pf2" for n in bolds] + [f"mono-{MONO}.pf2"]
-with open(os.path.join(out, "fonts.txt"), "w") as f:
-    f.write("".join(f"bold {n}\n" for n in bolds) + f"mono {MONO}\n")
 with open(os.path.join(out, "theme.cfg"), "w") as f:
-    f.write("if loadfont " + " ".join("$theme_dir/" + n for n in fonts) + "; then\n")
-    f.write(f'  set gfxterm_font="DejaVu Sans Mono Regular {MONO}"\n')
+    f.write("if loadfont $theme_dir/vga-16.pf2 $theme_dir/vga-32.pf2; then\n")
+    f.write(f'  set gfxterm_font="{SMALL}"\n')
     f.write("  set gfxmode=auto\n")
     f.write("  if terminal_output gfxterm; then\n")
     f.write("    set theme=$theme_dir/theme.txt\n")
