@@ -10,6 +10,7 @@ mount -t tmpfs -o mode=0755,nosuid,nodev run /run
 label=TINYHAT
 toram=auto
 persist=1
+quiet=0
 for arg in $(cat /proc/cmdline); do
 	case $arg in
 	tinyhat.label=*) label=${arg#*=} ;;
@@ -17,8 +18,10 @@ for arg in $(cat /proc/cmdline); do
 	tinyhat.toram=0) toram=0 ;;
 	tinyhat.nopersist) persist=0 ;;
 	tinyhat.shell) sh ;;
+	quiet) quiet=1 ;;
 	esac
 done
+[ "$quiet" = 1 ] && printf '\033[?25l' >/dev/tty1 2>/dev/null
 
 rescue() {
 	echo "Tiny Hat: $*"
@@ -58,7 +61,7 @@ if [ "$toram" = auto ]; then
 	[ "$mem_kb" -ge $((sfs_kb + 250 * 1024)) ] && toram=1
 fi
 if [ "$toram" = 1 ]; then
-	echo "Tiny Hat: copying the system to RAM, this takes a moment..."
+	[ "$quiet" = 1 ] || echo "Tiny Hat: copying the system to RAM, this takes a moment..."
 	mount -t tmpfs -o size=90%,mode=0755 ram /run/tinyhat/rw
 	cp "$sfs" /run/tinyhat/rw/root.sfs && sfs=/run/tinyhat/rw/root.sfs
 else

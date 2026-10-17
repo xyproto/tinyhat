@@ -36,13 +36,13 @@ rm -f "$theme/fonts.txt"
 rm -rf "$work/fonts"
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	/out/grub/usr/bin/grub-mkimage -d /out/grub/usr/lib/grub/i386-pc -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
-	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe vga echo test sleep reboot halt configfile font gfxterm gfxmenu png
+	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
+	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile font gfxterm gfxmenu png
 mkdir -p "$work/efi/EFI/BOOT"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
 	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png
-cp "$br/out/grub/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
+cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
