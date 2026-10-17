@@ -9,6 +9,7 @@ mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/new
 bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "busybox" { print $4 }' "$top/initramfs.lock")" -C "$work" usr/bin/busybox
 mv "$work/usr/bin/busybox" "$work/bin/busybox"
 rm -rf "$work/usr"
+install -m755 "$top/build/buildroot/out/tinyhat-splash/usr/bin/tinyhat-splash" "$work/bin/tinyhat-splash"
 install -m755 "$top/config/initramfs/init" "$work/init"
 find "$work" -exec touch -h -d "@${SOURCE_DATE_EPOCH:-315532800}" {} +
 (cd "$work" && find . -mindepth 1 | LC_ALL=C sort | cpio --quiet --reproducible -o -H newc -R 0:0) | zstd -q -19 -T0 -f -o "$out"
