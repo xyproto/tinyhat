@@ -1,0 +1,57 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -448,6 +448,8 @@ static KeyboardGroup *kb_group;
+ static unsigned int cursor_mode;
+ static Client *grabc;
+ static int grabcx, grabcy; /* client-relative */
++static int grableft, grabtop;
++static struct wlr_box grabgeom;
+ 
+ static struct wlr_output_layout *output_layout;
+ static struct wlr_box sgeom;
+@@ -2389,8 +2391,23 @@ motionnotify(uint32_t time, struct wlr_i
+ 		snappreview();
+ 		return;
+ 	} else if (cursor_mode == CurResize) {
+-		resize(grabc, (struct wlr_box){.x = grabc->geom.x, .y = grabc->geom.y,
+-			.width = (int)round(cursor->x) - grabc->geom.x, .height = (int)round(cursor->y) - grabc->geom.y}, 1);
++		struct wlr_box g = grabgeom;
++		int dx = (int)round(cursor->x) - grabcx, dy = (int)round(cursor->y) - grabcy, min = 1 + 2 * (int)grabc->bw;
++		if (grableft) {
++			dx = MIN(dx, g.width - min);
++			g.x += dx;
++			g.width -= dx;
++		} else {
++			g.width += dx;
++		}
++		if (grabtop) {
++			dy = MIN(dy, g.height - min);
++			g.y += dy;
++			g.height -= dy;
++		} else {
++			g.height += dy;
++		}
++		resize(grabc, g, 1);
+ 		return;
+ 	}
+ 
+@@ -2444,12 +2461,13 @@ moveresize(const Arg *arg)
+ 		break;
+ 	case CurResize:
+ 		grabc->issnapped = 0;
+-		/* Doesn't work for X11 output - the next absolute motion event
+-		 * returns the cursor to where it started */
+-		wlr_cursor_warp_closest(cursor, NULL,
+-				grabc->geom.x + grabc->geom.width,
+-				grabc->geom.y + grabc->geom.height);
+-		wlr_cursor_set_xcursor(cursor, cursor_mgr, "se-resize");
++		grabgeom = grabc->geom;
++		grableft = cursor->x < grabgeom.x + grabgeom.width / 2.0;
++		grabtop = cursor->y < grabgeom.y + grabgeom.height / 2.0;
++		grabcx = (int)round(cursor->x);
++		grabcy = (int)round(cursor->y);
++		wlr_cursor_set_xcursor(cursor, cursor_mgr,
++				grabtop ? (grableft ? "nw-resize" : "ne-resize") : (grableft ? "sw-resize" : "se-resize"));
+ 		break;
+ 	}
+ }
