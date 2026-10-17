@@ -16,6 +16,7 @@ Ctrl+Alt+F	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
 Ctrl+Alt+G	Example GBA program in C (2x Ctrl+Space to run)
 Ctrl+Alt+H	Toggle sharing
 Ctrl+Alt+I	LibreSprite
+Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
 Ctrl+Alt+M	Run a SNES game from the web (homebrew)
@@ -25,6 +26,7 @@ Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
 Ctrl+Alt+R	Terminal
 Ctrl+Alt+S	ScummVM
 Ctrl+Alt+T	TIC-80
+Ctrl+Alt+U	Example C64 program in C (2x Ctrl+Space to run)
 Ctrl+Alt+V	C64 (VICE)
 Ctrl+Alt+W	Wi-Fi settings
 Ctrl+Alt+X	256 byte demoscene intro (2x Ctrl+Space to run)

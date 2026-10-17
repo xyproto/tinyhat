@@ -100,7 +100,7 @@ $(B)/.swaylock: $(B)/.buildroot recipes/swaylock.sh vendor/src/swaylock-1.8.6.ta
 	scripts/recipe.sh $(B)/buildroot swaylock >$(B)/swaylock.log 2>&1 || { tail -40 $(B)/swaylock.log; exit 1; }
 	@touch $@
 
-$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-000899eea22a1c8a5d2a61c83981551171bcc66b.tar.gz
+$(B)/.orbiton: $(B)/.buildroot recipes/orbiton.sh vendor/src/go1.26.8.linux-386.tar.gz vendor/src/orbiton-3b652909d6e6374d8b1cd97c753e3e72cb183234.tar.gz
 	scripts/recipe.sh $(B)/buildroot orbiton >$(B)/orbiton.log 2>&1 || { tail -40 $(B)/orbiton.log; exit 1; }
 	@touch $@
 
@@ -249,6 +249,10 @@ $(B)/.retro: $(B)/.sdl3 recipes/retro.sh $(wildcard programs/retro/*)
 	scripts/recipe.sh $(B)/buildroot retro >$(B)/retro.log 2>&1 || { tail -40 $(B)/retro.log; exit 1; }
 	@touch $@
 
+$(B)/.midibench: $(B)/.fluidsynth recipes/midibench.sh programs/tinyhat-midibench.c
+	scripts/recipe.sh $(B)/buildroot midibench >$(B)/midibench.log 2>&1 || { tail -40 $(B)/midibench.log; exit 1; }
+	@touch $@
+
 $(B)/.vice: $(B)/.buildroot $(B)/.sdl2-compat $(B)/.sdl2_image recipes/vice.sh vendor/src/vice-3.9.tar.gz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst vendor/src/xa-2.4.1-2.0-i686.pkg.tar.zst
 	scripts/recipe.sh $(B)/buildroot vice >$(B)/vice.log 2>&1 || { tail -40 $(B)/vice.log; exit 1; }
 	@touch $@
@@ -269,7 +273,7 @@ $(B)/.qemacs: $(B)/.buildroot recipes/qemacs.sh vendor/src/qemacs-befd7a816ec824
 	scripts/recipe.sh $(B)/buildroot qemacs >$(B)/qemacs.log 2>&1 || { tail -40 $(B)/qemacs.log; exit 1; }
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.midibench $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
 	@ls -l $@
 

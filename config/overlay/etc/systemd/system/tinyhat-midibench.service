@@ -1,0 +1,14 @@
+[Unit]
+Description=Pick MIDI sample rate and polyphony for DOSBox-X from a quick FluidSynth benchmark
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+RuntimeDirectory=tinyhat-midi
+RuntimeDirectoryMode=0755
+RuntimeDirectoryPreserve=yes
+CPUSchedulingPolicy=idle
+ExecStart=/usr/lib/tinyhat/midibench /run/tinyhat-midi/dosbox-x.conf
+
+[Install]
+WantedBy=multi-user.target
