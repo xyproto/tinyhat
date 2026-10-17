@@ -1,0 +1,14 @@
+--- a/src/gui/midi_synth.h
++++ b/src/gui/midi_synth.h
+@@ -397,6 +397,11 @@
+ 			ResolvePath(sf);
+ 
+ 		soundfont.assign(sf);
++		fluid_set_log_function(FLUID_PANIC, synth_log, NULL);
++		fluid_set_log_function(FLUID_ERR, synth_log, NULL);
++		fluid_set_log_function(FLUID_WARN, synth_log, NULL);
++		fluid_set_log_function(FLUID_INFO, synth_log, NULL);
++		fluid_set_log_function(FLUID_DBG, synth_log, NULL);
+ 		settings = new_fluid_settings();
+ 
+ 		if (strcmp(section->Get_string("fluid.driver"), "default") != 0) {

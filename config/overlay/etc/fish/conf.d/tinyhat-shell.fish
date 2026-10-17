@@ -8,6 +8,7 @@ end
 set -gx WATCOM /usr/lib/watcom
 set -gx INCLUDE $WATCOM/h
 contains -- $WATCOM/binl $PATH; or set -a PATH $WATCOM/binl
+set -gx DOSBOX_CONF /etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf
 set -gx PVSNESLIB_HOME /usr/share/pvsneslib
 contains -- $PVSNESLIB_HOME/devkitsnes/bin $PATH; or set -a PATH $PVSNESLIB_HOME/devkitsnes/bin
 

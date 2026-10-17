@@ -36,7 +36,7 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro vice tic80 furnace pvsneslib png2xpm tinyxxd qemacs tinyhat-gui; do
+for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro midibench vice tic80 furnace pvsneslib png2xpm tinyxxd qemacs tinyhat-gui; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -74,7 +74,7 @@ zsnes|zsnes|2.3.6-1|GPL-2.0-or-later|https://github.com/xyproto/zsnes||Super Nin
 dosbox-x|dosbox-x|2026.10.01-1|GPL-2.0-or-later|https://dosbox-x.com/||DOS emulator, with the Tiny Hat patches
 scummvm|scummvm|2026.3.0-1|GPL-3.0-or-later|https://www.scummvm.org/||Engine for classic adventure games
 fluidsynth|fluidsynth|2.6.1-1|LGPL-2.1-or-later|https://www.fluidsynth.org/||SoundFont synthesizer with PipeWire output
-orbiton|orbiton|2.74.6+000899ee-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
+orbiton|orbiton|2.74.6+3b652909-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
 grafx2|grafx2|0+f84cb09d-1|GPL-2.0-only|http://grafx2.eu/||Pixel art paint program, ported to SDL3
 fontconfig|fontconfig|2:2.18.3-1|HPND AND MIT|https://www.freedesktop.org/wiki/Software/fontconfig/||Font configuration library
 libxml2|libxml2|2.15.1-5|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library, built without ICU
@@ -90,6 +90,7 @@ clang|clang|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|clang=15.0
 vtgbte|vtgbte|0+1a9f4603-1|MIT|https://github.com/paul-arutyunov/vtGBte||Keyboard-driven Game Boy tile editor for the terminal
 blastem|libretro-blastem|0+1e0de94d-1|GPL-3.0-or-later|https://github.com/libretro/blastem||Sega Genesis and Mega Drive emulator core (BlastEm) for tinyhat-retro
 retro|tinyhat-retro|1-1|MIT|https://github.com/xyproto/tinyhat||Small SDL3 frontend for libretro emulator cores
+midibench|tinyhat-midibench|1-1|BSD-3-Clause|https://github.com/xyproto/tinyhat||Measures FluidSynth speed at boot and picks MIDI settings for DOSBox-X
 vice|vice|3.9-1|GPL-2.0-or-later|https://vice-emu.sourceforge.io/||Commodore 64 emulator (x64sc) with the SDL2 UI
 tic80|tic-80|1.3.1-1|MIT AND LGPL-2.1-or-later AND Libpng AND Zlib AND Unlicense|https://tic80.com/||TIC-80 fantasy console with Lua and Fennel
 furnace|furnace|0.6.8.3-1|GPL-2.0-or-later|https://tildearrow.org/furnace/||Chiptune tracker for many old sound chips
@@ -191,7 +192,7 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-pacman-restore.service
+systemctl enable nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-pacman-restore.service tinyhat-midibench.service
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf

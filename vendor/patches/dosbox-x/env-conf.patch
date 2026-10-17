@@ -1,0 +1,23 @@
+--- a/src/gui/sdlmain.cpp
++++ b/src/gui/sdlmain.cpp
+@@ -8470,6 +8470,20 @@
+     /* -- parse command line arguments */
+     if (!DOSBOX_parse_argv()) return 1;
+ 
++    if (control->config_file_list.empty() && !control->opt_defaultconf) {
++        const char *envconf = getenv("DOSBOX_CONF");
++        if (envconf != NULL) {
++            const std::string list(envconf);
++            size_t start = 0;
++            while (start <= list.size()) {
++                size_t end = list.find(':', start);
++                if (end == std::string::npos) end = list.size();
++                if (end > start) control->config_file_list.push_back(list.substr(start, end - start));
++                start = end + 1;
++            }
++        }
++    }
++
+     if (control->opt_time_limit > 0)
+         time_limit_ms = (Bitu)(control->opt_time_limit * 1000);
+ 
