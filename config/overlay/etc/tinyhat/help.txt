@@ -19,9 +19,9 @@ Ctrl+Alt+I	LibreSprite
 Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
-Ctrl+Alt+M	Run a SNES game from the web (homebrew)
+Ctrl+Alt+M	Download and run a SNES homebrew game
 Ctrl+Alt+N	Netsurf web browser
-Ctrl+Alt+O	DOS programming (Open Watcom)
+Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
 Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
 Ctrl+Alt+R	Terminal
 Ctrl+Alt+S	ScummVM

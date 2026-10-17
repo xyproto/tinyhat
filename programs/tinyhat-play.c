@@ -1007,6 +1007,15 @@ static void on_play(GtkWidget *w, gpointer data)
 	g_thread_unref(g_thread_new("tinyhat-play", worker, trimmed));
 }
 
+static gboolean on_key(GtkWidget *w, GdkEventKey *ev, gpointer data)
+{
+	(void)data;
+	if (ev->keyval != GDK_KEY_Escape)
+		return FALSE;
+	gtk_widget_destroy(w);
+	return TRUE;
+}
+
 int main(int argc, char **argv)
 {
 	curl_global_init(CURL_GLOBAL_DEFAULT);
@@ -1034,10 +1043,11 @@ int main(int argc, char **argv)
 	gtk_window_set_title(GTK_WINDOW(win), "Tiny Hat Play");
 	gtk_window_set_default_size(GTK_WINDOW(win), 480, 150);
 	g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(win, "key-press-event", G_CALLBACK(on_key), NULL);
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 	gtk_container_set_border_width(GTK_CONTAINER(box), 16);
 	gtk_container_add(GTK_CONTAINER(win), box);
-	GtkWidget *label = gtk_label_new("Type the name of a free SNES homebrew game");
+	GtkWidget *label = gtk_label_new("Search for a SNES homebrew game to download and run");
 	gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
 	entry = gtk_entry_new();
 	g_signal_connect(entry, "activate", G_CALLBACK(on_play), NULL);
