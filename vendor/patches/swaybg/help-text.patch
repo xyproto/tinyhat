@@ -22,7 +22,7 @@
 +		return;
 +	}
 +
-+	double size = height / 96.0 < 9 ? 9 : height / 96.0;
++	double size = height / 64.0 < 9 ? 9 : height / 64.0;
 +	cairo_select_font_face(cairo, "DejaVu Sans Mono",
 +		CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
 +	cairo_set_font_size(cairo, size);
