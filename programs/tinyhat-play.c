@@ -232,7 +232,12 @@ static gboolean launch_idle(gpointer data)
 {
 	char *argv[] = { "tinyhat-emulate", data ? (char *)platform_of(data)->dir : NULL, data, NULL };
 	GError *err = NULL;
-	if (data && !g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &err)) {
+	if (data && g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &err)) {
+		g_free(data);
+		gtk_widget_destroy(win);
+		return G_SOURCE_REMOVE;
+	}
+	if (data) {
 		char *m = g_strdup_printf("Could not start the emulator: %s", err->message);
 		gtk_label_set_text(GTK_LABEL(statuslbl), m);
 		g_free(m);
@@ -1179,7 +1184,7 @@ int main(int argc, char **argv)
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 	gtk_container_set_border_width(GTK_CONTAINER(box), 16);
 	gtk_container_add(GTK_CONTAINER(win), box);
-	GtkWidget *label = gtk_label_new("Search for a SNES homebrew game to download and run");
+	GtkWidget *label = gtk_label_new("Search for a SNES, GBA or Genesis homebrew game to download and run");
 	gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
 	entry = gtk_entry_new();
 	g_signal_connect(entry, "activate", G_CALLBACK(on_play), NULL);
