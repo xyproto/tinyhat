@@ -1,10 +1,13 @@
 Tiny Hat
 
 Alt+Space	Application Menu
-Alt+F2	Run a command
+Alt+F2 / Win+R	Run a command
 Alt+Shift+W	Close window (Alt+F4 also works)
 Alt+Tab	Jump between windows (with one window: toggle the desktop)
 Alt+Shift+F	Toggle fullscreen
+Win+1..4	Go to desktop 1-4
+Shift+Win+1..4	Send the window to desktop 1-4
+Win+D / Win+M	Show the desktop / minimize the window
 Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Audio volume
 
@@ -19,7 +22,7 @@ Ctrl+Alt+I	LibreSprite
 Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
-Ctrl+Alt+M	Download and run a SNES homebrew game
+Ctrl+Alt+M	Download and run a SNES, GBA or Genesis homebrew game
 Ctrl+Alt+N	Netsurf web browser
 Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
 Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
@@ -37,7 +40,6 @@ Alt+Left drag	Move a window
 Alt+Right drag	Resize a window
 PrtSc	Screenshot to ~/Pictures
 Ctrl+Alt+Shift+Q	Power off
-Ctrl+Alt+Del	Reboot
 
 USB sticks and CDs show up in /media and as D: in DOSBox-X.
 Put DOS games in ~/DOS, which is C: in DOSBox-X.
