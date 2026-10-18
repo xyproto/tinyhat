@@ -22,6 +22,7 @@
 #define FRAME_MS 80
 #define IDLE_TIMEOUT_MS 120000
 #define LOW 64
+#define MAXSTARS 160
 #define SEGMENTS 16
 
 typedef struct {
@@ -30,14 +31,15 @@ typedef struct {
 
 static const Rgb BG = { 0x1a, 0x1b, 0x26 };
 static const Rgb TEAL = { 0x1a, 0x9e, 0x96 };
-static const Rgb HAT = { 0x92, 0x24, 0x24 };
-static const Rgb PINK = { 0xf7, 0x76, 0x8e };
+static const Rgb HAT = { 0x3d, 0x7a, 0x2a };
+static const Rgb GREEN = { 0x9e, 0xce, 0x6a };
 static const Rgb GRAY = { 0x49, 0x49, 0x49 };
 static const Rgb LIGHT = { 0xc0, 0xca, 0xf5 };
 static const Rgb CYAN = { 0x7d, 0xcf, 0xff };
 static const Rgb WHITE = { 0xff, 0xff, 0xff };
 
-static const Rgb *const ink[] = { &BG, &HAT, &PINK, &GRAY, &LIGHT, &CYAN, &TEAL };
+static const Rgb *const ink[] = { &BG, &HAT, &GREEN, &GRAY, &LIGHT, &CYAN, &TEAL };
+static const Rgb STAR[] = { { 0x2f, 0x34, 0x4b }, { 0x56, 0x5f, 0x89 }, { 0xa9, 0xb1, 0xd6 }, { 0xff, 0xff, 0xff } };
 
 static struct {
 	int fd;
@@ -56,6 +58,10 @@ static char message[128];
 static int progress = -1;
 static long tick;
 static volatile sig_atomic_t stop;
+static struct {
+	int x, y, base, period, phase, shade;
+} stars[MAXSTARS];
+static int nstars, starsize;
 static int handoff;
 
 static long now_ms(void)
@@ -331,9 +337,80 @@ static void draw_status(void)
 	}
 }
 
+static void blit(int x0, int y0, int x1, int y1)
+{
+	if (!fb.mem)
+		return;
+	clip(&x0, &y0, &x1, &y1);
+	for (int y = y0; y < y1; y++)
+		memcpy(fb.mem + fb.offset + (size_t)y * fb.line + (size_t)x0 * BPP, back + ((size_t)y * W + x0) * BPP,
+		       (size_t)(x1 - x0) * BPP);
+}
+
+static int star_ok(int x, int y)
+{
+	int m = 4 * starsize + 8, s = hat_scale(), ts = text_scale();
+	int bottom = title_y() + 32 * ts + 24 * ts + 40 * ts + 12 * ts + 2;
+	if (x >= hat_x() - m && x < hat_x() + LOW * s + m && y >= hat_y() - m && y < hat_y() + LOW * s + m)
+		return 0;
+	return !(x >= W / 8 - m && x < W * 7 / 8 + m && y >= title_y() - m && y < bottom + m);
+}
+
+static void setup_stars(void)
+{
+	uint32_t r = 0x7417a700;
+	int want = W / 30 * (H / 300);
+	starsize = H >= 900 ? 2 : 1;
+	nstars = 0;
+	if (want > MAXSTARS)
+		want = MAXSTARS;
+	for (int tries = 0; nstars < want && tries < want * 20; tries++) {
+		int x, y;
+		r ^= r << 13, r ^= r >> 17, r ^= r << 5;
+		x = (int)(r % (uint32_t)W);
+		r ^= r << 13, r ^= r >> 17, r ^= r << 5;
+		y = (int)(r % (uint32_t)H);
+		if (!star_ok(x, y))
+			continue;
+		r ^= r << 13, r ^= r >> 17, r ^= r << 5;
+		stars[nstars].x = x;
+		stars[nstars].y = y;
+		stars[nstars].base = (int)(r % 2);
+		stars[nstars].period = 20 + (int)((r >> 8) % 41);
+		stars[nstars].phase = (int)((r >> 16) % 60);
+		stars[nstars].shade = -1;
+		nstars++;
+	}
+}
+
+static void draw_stars(int force)
+{
+	for (int i = 0; i < nstars; i++) {
+		int t = (int)((tick + stars[i].phase) % stars[i].period), shade = stars[i].base;
+		int x0 = stars[i].x, y0 = stars[i].y, x1 = x0 + starsize, y1 = y0 + starsize;
+		uint32_t c;
+		if (t < 2)
+			shade = 3;
+		else if (t < 4)
+			shade = stars[i].base + 1;
+		if (!force && shade == stars[i].shade)
+			continue;
+		stars[i].shade = shade;
+		c = pack(STAR[shade]);
+		clip(&x0, &y0, &x1, &y1);
+		for (int y = y0; y < y1; y++)
+			for (int x = x0; x < x1; x++)
+				put(x, y, c);
+		if (!force)
+			blit(x0, y0, x1, y1);
+	}
+}
+
 static void draw_all(void)
 {
 	fill(0, 0, W, H, BG);
+	setup_stars();
+	draw_stars(1);
 	draw_hat();
 	draw_title();
 	draw_status();
@@ -497,6 +574,7 @@ int main(void)
 				map();
 		}
 		draw_hat();
+		draw_stars(0);
 		if (progress < 0 && message[0])
 			draw_status();
 		if (tty >= 0) {
