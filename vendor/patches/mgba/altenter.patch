@@ -1,0 +1,17 @@
+--- a/src/platform/sdl/sdl-events.c
++++ b/src/platform/sdl/sdl-events.c
+@@ -483,6 +483,14 @@ static void _mSDLHandleKeypress(struct m
+ 	if (event->keysym.sym == SDLK_BACKQUOTE) {
+ 		mCoreThreadSetRewinding(context, event->type == SDL_KEYDOWN);
+ 	}
++#if SDL_VERSION_ATLEAST(2, 0, 0)
++	if (event->type == SDL_KEYDOWN && event->keysym.sym == SDLK_RETURN && (event->keysym.mod & KMOD_ALT)) {
++		SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
++		sdlContext->fullscreen = !sdlContext->fullscreen;
++		sdlContext->windowUpdated = 1;
++		return;
++	}
++#endif
+ 	if (event->type == SDL_KEYDOWN) {
+ 		switch (event->keysym.sym) {
+ #ifdef USE_DEBUGGERS
