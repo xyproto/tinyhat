@@ -8,7 +8,8 @@ out=$1
 kernel=$2
 initrd=$3
 sfs=$4
-work=$top/build/img
+efi64=${5-}
+work=$top/build/img/$(basename "$out" .img)
 br=$top/build/buildroot
 esp_mib=16
 rm -rf "$work"
@@ -34,6 +35,11 @@ mkdir -p "$work/efi/EFI/BOOT"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
 	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png
+if [ -n "$efi64" ]; then
+	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+		grub-mkimage -d "$efi64" -O x86_64-efi -o /img/efi/EFI/BOOT/BOOTX64.EFI -c /img/early.cfg -p /boot/grub \
+		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png
+fi
 cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
