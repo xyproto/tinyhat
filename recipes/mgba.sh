@@ -3,6 +3,7 @@ set -eu
 umask 022
 rm -rf /work/mgba /out/mgba && mkdir -p /work/mgba && cd /work/mgba
 tar --no-same-owner -xf /src/mgba-0.10.5.tar.gz --strip-components=1
+patch -Np1 -i /patches/mgba/altenter.patch
 cmake -S . -B b -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
 	-DBUILD_QT=OFF -DBUILD_SDL=ON -DBUILD_GL=OFF -DBUILD_GLES2=OFF -DBUILD_GLES3=OFF -DUSE_EPOXY=OFF \
 	-DBUILD_SHARED=OFF -DBUILD_STATIC=ON -DUSE_FFMPEG=OFF -DUSE_MINIZIP=OFF -DUSE_LIBZIP=OFF \
