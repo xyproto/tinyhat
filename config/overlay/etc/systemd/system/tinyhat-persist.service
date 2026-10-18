@@ -10,6 +10,7 @@ ConditionKernelCommandLine=!tinyhat.nopersist
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/lib/tinyhat/persist
+ExecStop=/usr/lib/tinyhat/persist stop
 StandardOutput=journal
 TimeoutStartSec=15min
 

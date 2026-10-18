@@ -1,0 +1,11 @@
+[Unit]
+Description=Remember that full graphics work on this machine
+ConditionKernelCommandLine=!nomodeset
+
+[Service]
+Type=exec
+Nice=19
+ExecStart=/usr/lib/tinyhat/graphics-ok
+
+[Install]
+WantedBy=multi-user.target
