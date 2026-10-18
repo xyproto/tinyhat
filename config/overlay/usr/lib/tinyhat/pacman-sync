@@ -1,0 +1,10 @@
+#!/bin/sh
+online() {
+	awk '$2 == "00000000" { f = 1 } END { exit !f }' /proc/net/route ||
+		awk '$1 ~ /^0+$/ && $2 == "00" && $10 != "lo" { f = 1 } END { exit !f }' /proc/net/ipv6_route
+}
+until online; do
+	sleep 15
+done
+pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160 >/dev/null 2>&1
+exec pacman -Sy --noconfirm --needed archlinux32-keyring
