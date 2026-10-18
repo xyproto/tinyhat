@@ -31,7 +31,7 @@ case $(cat "$mode" 2>/dev/null) in
 2) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
 	;;
 4) set -- -m center -c 1a1b26 -i /usr/share/backgrounds/tinyhat/tinyhat.png ;;
-*) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
+*) set -- -m left -c 1a1b26 -i /usr/share/backgrounds/tinyhat/tinyhat.png
 	[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
 	;;
 esac

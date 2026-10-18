@@ -131,6 +131,8 @@ SOURCES = [
      "sdl2-compat-2.32.74.tar.gz", ["LICENSE.txt"]),
     ("sdl3", "3.4.18 with the Tiny Hat Wayland framebuffer patch", "https://libsdl.org/", "Zlib",
      "SDL3-3.4.18.tar.gz", ["LICENSE.txt"]),
+    ("pixelitos", "20260721 (icon theme)", "https://github.com/ItzSelenux/pixelitos-icon-theme", "MIT",
+     "pixelitos-icon-theme-20260721.tar.gz", ["LICENSE", "CREDITS.md"]),
     ("grub-efi64", "2.14 (64-bit UEFI boot loader)", "https://www.gnu.org/software/grub/", "GPL-3.0-or-later",
      "grub-2.14.tar.xz", ["COPYING"]),
 ]
