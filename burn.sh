@@ -3,8 +3,14 @@
 DRIVE=${1:-sdN}
 EDITION=${2:-32}
 DRIVE=${DRIVE#/dev/}
-IMG=tinyhat$EDITION.img
-[ -f "$IMG" ] && IMG=tinyhat${EDITION}x32.img
+case $EDITION in
+32) IMG=tinyhat32.img ;;
+64 | x32 | 64x32) IMG=tinyhat64x32.img ;;
+*)
+  echo "REFUSING: unknown edition $EDITION (use 32, 64, x32 or 64x32)"
+  exit 1
+  ;;
+esac
 
 fail() {
   echo "REFUSING: $*"
@@ -23,7 +29,7 @@ fi
 
 lsblk -o NAME,SIZE,TRAN,MODEL "/dev/$DRIVE"
 echo
-echo "OVERWRITING /dev/$DRIVE with the ${EDITION}-bit edition, in 7 seconds! Press ctrl-c to cancel."
+echo "OVERWRITING /dev/$DRIVE with $IMG, in 7 seconds! Press ctrl-c to cancel."
 for n in 7 6 5 4 3 2 1; do
   echo $n
   sleep 1
