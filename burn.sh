@@ -34,4 +34,4 @@ for n in 7 6 5 4 3 2 1; do
   echo $n
   sleep 1
 done
-sudo dd if="$IMG" of="/dev/$DRIVE" bs=4M conv=fsync status=progress && sync && echo DONE
+sudo dd if="$IMG" of="/dev/$DRIVE" bs=4M oflag=direct conv=fsync status=progress && sync && echo DONE
