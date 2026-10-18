@@ -1,0 +1,4 @@
+name: intel-ucode
+version: 20260812 (CPU microcode)
+url: https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files
+license: LicenseRef-intel-ucode
