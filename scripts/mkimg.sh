@@ -9,6 +9,7 @@ kernel=$2
 initrd=$3
 sfs=$4
 efi64=${5-}
+sbkeys=${6-}
 work=$top/build/img/$(basename "$out" .img)
 br=$top/build/buildroot
 esp_mib=16
@@ -46,15 +47,31 @@ mkdir -p "$work/efi/tinyhat"
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
 	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 if [ -n "$efi64" ]; then
+	printf '%s\n' \
+		"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md" \
+		"grub,5,Free Software Foundation,grub,2.14,https://www.gnu.org/software/grub/" \
+		"grub.tinyhat,1,Tiny Hat,grub,2.14,https://github.com/xyproto/tinyhat" >"$work/sbat.csv"
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-		grub-mkimage -d "$efi64" -O x86_64-efi -o /img/efi/EFI/BOOT/BOOTX64.EFI -c /img/early.cfg -p /boot/grub \
+		/out/grub-efi64/usr/bin/grub-mkimage -d "$efi64" -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub \
 		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
+	shim=usr/lib/efi/shim/16.1-10/EFI/fedora
+	mkdir -p "$work/shim" "$work/sbs"
+	bsdtar -xf "$top/vendor/src/shim-x64-16.1-10.x86_64.rpm" -C "$work/shim" "./$shim/shimx64.efi" "./$shim/mmx64.efi"
+	bsdtar -xf "$top/vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst" -C "$work/sbs" usr/bin/sbsign
+	cp "$work/shim/$shim/shimx64.efi" "$work/efi/EFI/BOOT/BOOTX64.EFI"
+	cp "$work/shim/$shim/mmx64.efi" "$work/efi/EFI/BOOT/mmx64.efi"
+	mv "$work/root/boot/vmlinuz" "$work/vmlinuz.unsigned"
+	"$top/scripts/chroot.sh" "$br" --bind "$work" /img --ro-bind "$sbkeys" /keys /bin/sh -c '
+		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/efi/EFI/BOOT/grubx64.efi /img/grubx64.efi &&
+		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/root/boot/vmlinuz /img/vmlinuz.unsigned'
+	cp "$sbkeys/tinyhat.cer" "$work/efi/ENROLL_THIS_KEY_IN_MOKMANAGER.cer"
+	rm -rf "$work/shim" "$work/sbs" "$work/grubx64.efi" "$work/vmlinuz.unsigned"
 fi
 cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	/bin/sh -c 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI && mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat'
+	/bin/sh -c 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI && mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat && for f in /img/efi/*.cer; do [ -f "$f" ] && mcopy -i /img/esp.img "$f" ::/; done; true'
 
 content=$(du -sm --apparent-size "$work/root" | cut -f1)
 part_mib=$((content + content / 32 + 64))
