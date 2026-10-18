@@ -16,20 +16,20 @@
 -		resize(grabc, (struct wlr_box){.x = grabc->geom.x, .y = grabc->geom.y,
 -			.width = (int)round(cursor->x) - grabc->geom.x, .height = (int)round(cursor->y) - grabc->geom.y}, 1);
 +		struct wlr_box g = grabgeom;
-+		int dx = (int)round(cursor->x) - grabcx, dy = (int)round(cursor->y) - grabcy, min = 1 + 2 * (int)grabc->bw;
++		int rx = (int)round(cursor->x) - grabcx, ry = (int)round(cursor->y) - grabcy, min = 1 + 2 * (int)grabc->bw;
 +		if (grableft) {
-+			dx = MIN(dx, g.width - min);
-+			g.x += dx;
-+			g.width -= dx;
++			rx = MIN(rx, g.width - min);
++			g.x += rx;
++			g.width -= rx;
 +		} else {
-+			g.width += dx;
++			g.width += rx;
 +		}
 +		if (grabtop) {
-+			dy = MIN(dy, g.height - min);
-+			g.y += dy;
-+			g.height -= dy;
++			ry = MIN(ry, g.height - min);
++			g.y += ry;
++			g.height -= ry;
 +		} else {
-+			g.height += dy;
++			g.height += ry;
 +		}
 +		resize(grabc, g, 1);
  		return;
