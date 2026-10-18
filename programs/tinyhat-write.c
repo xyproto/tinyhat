@@ -5,10 +5,6 @@
 #include <gtk/gtk.h>
 #include <signal.h>
 
-#ifdef __APPLE__
-#include <CoreFoundation/CoreFoundation.h>
-#include <IOKit/IOKitLib.h>
-#endif
 
 #ifndef TW_VERSION
 #define TW_VERSION "0.0.0"
@@ -78,34 +74,19 @@ static int tw_scan(tw_drive *out, int max)
 #ifdef __APPLE__
 	io_iterator_t it;
 	io_object_t obj;
-	if (IOServiceGetMatchingServices(kIOMasterPortDefault, IOServiceMatching("IOMedia"), &it) != KERN_SUCCESS)
+	if (IOServiceGetMatchingServices(MACH_PORT_NULL, IOServiceMatching("IOMedia"), &it) != KERN_SUCCESS)
 		return 0;
-	while ((obj = IOIteratorNext(it)) && n < max) {
-		CFMutableDictionaryRef props = NULL;
-		CFBooleanRef whole, internal, wr;
-		CFNumberRef size;
-		CFStringRef bsd;
+	while ((obj = IOIteratorNext(it))) {
+		CFTypeRef bsd = IORegistryEntryCreateCFProperty(obj, CFSTR("BSD Name"), kCFAllocatorDefault, 0);
 		char name[64];
-		long long sz = 0;
-		IORegistryEntryCreateCFProperties(obj, &props, kCFAllocatorDefault, 0);
-		if (!props)
-			continue;
-		whole = CFDictionaryGetValue(props, CFSTR("Whole"));
-		internal = CFDictionaryGetValue(props, CFSTR("Internal"));
-		wr = CFDictionaryGetValue(props, CFSTR("Writable"));
-		size = CFDictionaryGetValue(props, CFSTR("Size"));
-		bsd = CFDictionaryGetValue(props, CFSTR("BSD Name"));
-		if (whole && CFBooleanGetValue(whole) && wr && CFBooleanGetValue(wr) &&
-		    !(internal && CFBooleanGetValue(internal)) && bsd) {
-			CFStringGetCString(bsd, name, sizeof(name), kCFStringEncodingASCII);
-			if (size)
-				CFNumberGetValue(size, kCFNumberLongLongType, &sz);
-			snprintf(out[n].dev, sizeof(out[n].dev), "/dev/rdisk%s", name + 4);
-			snprintf(out[n].name, sizeof(out[n].name), "Disk %s", name + 4);
-			out[n].size = (uint64_t)sz;
+		if (bsd && n < max && CFGetTypeID(bsd) == CFStringGetTypeID() &&
+		    CFStringGetCString((CFStringRef)bsd, name, sizeof(name), kCFStringEncodingASCII) &&
+		    tw_mac_external(name, out[n].name, sizeof(out[n].name), &out[n].size)) {
+			snprintf(out[n].dev, sizeof(out[n].dev), "/dev/r%s", name);
 			n++;
 		}
-		CFRelease(props);
+		if (bsd)
+			CFRelease(bsd);
 		IOObjectRelease(obj);
 	}
 	IOObjectRelease(it);

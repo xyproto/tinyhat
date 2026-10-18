@@ -10,6 +10,7 @@ mount -t tmpfs -o mode=0755,nosuid,nodev run /run
 label=TINYHAT
 toram=auto
 persist=1
+mode=stick
 quiet=0
 splash=1
 for arg in $(cat /proc/cmdline); do
@@ -18,6 +19,7 @@ for arg in $(cat /proc/cmdline); do
 	tinyhat.toram | tinyhat.toram=1) toram=1 ;;
 	tinyhat.toram=0) toram=0 ;;
 	tinyhat.nopersist) persist=0 ;;
+	tinyhat.persist=*) mode=${arg#*=} ;;
 	tinyhat.shell) sh ;;
 	quiet) quiet=1 ;;
 	tinyhat.nosplash) splash=0 ;;
@@ -48,13 +50,99 @@ rescue() {
 }
 
 find_label() {
-	for b in /sys/class/block/*; do
+	for b in ${2:-/sys/class/block/*}; do
 		d=/dev/${b##*/}
 		[ -b "$d" ] || continue
 		[ "$(dd if="$d" bs=4 count=1 2>/dev/null)" = XFSB ] || continue
 		[ "$(dd if="$d" bs=1 skip=108 count=12 2>/dev/null | tr -d '\0')" = "$1" ] && echo "$d" && return 0
 	done
 	return 1
+}
+
+removable() {
+	[ "$(cat "/sys/block/$1/removable" 2>/dev/null)" = 1 ] && return 0
+	case $(readlink -f "/sys/block/$1/device") in */usb*) return 0 ;; esac
+	[ "$(cat "/sys/block/$1/device/type" 2>/dev/null)" = SD ]
+}
+
+fstype() {
+	blkid "$1" 2>/dev/null | sed -n 's/.* TYPE="\([^"]*\)".*/\1/p'
+}
+
+hostmount() {
+	case $(fstype "$1") in
+	ext2 | ext3 | ext4) set -- "$1" "$2" ext4 "$3" ;;
+	xfs) set -- "$1" "$2" xfs "$3" ;;
+	vfat) set -- "$1" "$2" vfat "$3,flush" ;;
+	exfat) set -- "$1" "$2" exfat "$3" ;;
+	ntfs) set -- "$1" "$2" ntfs3 "$3" ;;
+	*) return 1 ;;
+	esac
+	mount -t "$3" -o "$4" "$1" "$2" 2>/dev/null
+}
+
+find_savefile() {
+	for b in /sys/block/*; do
+		n=${b##*/}
+		case $n in loop* | ram* | zram* | sr* | fd* | "$1") continue ;; esac
+		removable "$n" && continue
+		for p in "$b/$n"*; do
+			[ -f "$p/partition" ] || continue
+			d=/dev/${p##*/}
+			[ -b "$d" ] || continue
+			case $(fstype "$d") in
+			ext2 | ext3 | ext4) o=ro,noload ;;
+			xfs) o=ro,norecovery ;;
+			vfat | exfat | ntfs) o=ro ;;
+			*) continue ;;
+			esac
+			hostmount "$d" /run/tinyhat/host "$o" || continue
+			f=/run/tinyhat/host/tinyhat/config.img
+			if [ -f "$f" ] && [ "$(dd if="$f" bs=4 count=1 2>/dev/null)" = XFSB ] &&
+				[ "$(dd if="$f" bs=1 skip=108 count=12 2>/dev/null | tr -d '\0')" = THCONFIG ]; then
+				umount /run/tinyhat/host
+				hostmount "$d" /run/tinyhat/host noatime || return 1
+				if grep -q "^$d /run/tinyhat/host [^ ]* rw[, ]" /proc/mounts &&
+					mount -t xfs -o loop,noatime,lazytime "$f" /run/tinyhat/data; then
+					return 0
+				fi
+				umount /run/tinyhat/host
+				return 1
+			fi
+			umount /run/tinyhat/host
+		done
+	done
+	return 1
+}
+
+exitrd() {
+	mkdir -p /run/initramfs/bin
+	cp /bin/busybox /run/initramfs/bin/busybox
+	cat >/run/initramfs/shutdown <<'EOF'
+#!/bin/busybox sh
+/bin/busybox mkdir -p /proc /sys /dev /tmp
+/bin/busybox --install -s /bin
+export PATH=/bin
+[ -e /proc/mounts ] || mount -t proc proc /proc
+[ -e /dev/null ] || mount -t devtmpfs dev /dev
+sync
+for i in 1 2 3 4 5 6; do
+	awk '$2 ~ "^/oldroot" { print $2 }' /proc/mounts | sort -r | while read -r m; do
+		umount "$m" 2>/dev/null || mount -o remount,ro "$m" 2>/dev/null
+	done
+	for l in /sys/block/loop*; do
+		[ -e "$l/loop/backing_file" ] && losetup -d "/dev/${l##*/}" 2>/dev/null
+	done
+	grep -q " /oldroot" /proc/mounts || break
+done
+sync
+case $1 in
+reboot) reboot -f ;;
+halt) halt -f ;;
+*) poweroff -f ;;
+esac
+EOF
+	chmod 755 /run/initramfs/shutdown
 }
 
 uptime() { read -r up _ </proc/uptime; echo "${up%.*}"; }
@@ -93,8 +181,24 @@ else
 	mount -t tmpfs -o size=75%,mode=0755 rw /run/tinyhat/rw
 fi
 mount -t squashfs -o ro,loop "$sfs" /run/tinyhat/lower || rescue "could not mount $sfs"
-mkdir -p /run/tinyhat/data
-if [ "$persist" = 1 ] && data=$(find_label THDATA) && mount -t xfs -o noatime,lazytime "$data" /run/tinyhat/data; then
+mkdir -p /run/tinyhat/data /run/tinyhat/host
+disk=$(readlink -f "/sys/class/block/${dev#/dev/}/..")
+disk=${disk##*/}
+[ -f "/sys/class/block/${dev#/dev/}/partition" ] && [ -d "/sys/block/$disk" ] || persist=0
+case $mode in
+"" | stick) removable "$disk" && where=disk || where= ;;
+machine) removable "$disk" && where=file || where=disk ;;
+*) where= ;;
+esac
+[ "$persist" = 1 ] || where=
+if [ "$where" = disk ] && data=$(find_label THDATA "/sys/block/$disk/$disk*") && [ "$data" != "$dev" ]; then
+	mount -t xfs -o noatime,lazytime "$data" /run/tinyhat/data || where=
+elif [ "$where" = file ] && find_savefile "$disk"; then
+	exitrd
+else
+	where=
+fi
+if [ -n "$where" ]; then
 	root=root-$(od -An -tu4 -j8 -N4 "$sfs" | tr -d ' ')
 	mkdir -p "/run/tinyhat/data/$root/upper" "/run/tinyhat/data/$root/work"
 	mount -t overlay -o lowerdir=/run/tinyhat/lower,upperdir=/run/tinyhat/data/$root/upper,workdir=/run/tinyhat/data/$root/work overlay /newroot &&
@@ -105,7 +209,12 @@ if [ ! -f /run/tinyhat/persistroot ]; then
 	mount -t overlay -o lowerdir=/run/tinyhat/lower,upperdir=/run/tinyhat/rw/upper,workdir=/run/tinyhat/rw/work overlay /newroot || rescue "could not mount the overlay"
 fi
 umount -l /run/tinyhat/lower /run/tinyhat/rw /run/tinyhat/boot
-mountpoint -q /run/tinyhat/data && umount -l /run/tinyhat/data
+[ "$where" = disk ] && umount -l /run/tinyhat/data
+if [ "$where" = file ] && [ ! -f /run/tinyhat/persistroot ]; then
+	umount /run/tinyhat/data
+	umount /run/tinyhat/host
+	rm -rf /run/initramfs
+fi
 
 echo "$dev" >/run/tinyhat/bootdev
 mount --move /run /newroot/run
