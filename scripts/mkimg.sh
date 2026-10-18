@@ -54,12 +54,16 @@ if [ -n "$efi64" ]; then
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 		/out/grub-efi64/usr/bin/grub-mkimage -d "$efi64" -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub \
 		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
-	shim=usr/lib/efi/shim/16.1-10/EFI/fedora
+	shim=usr/lib/efi/shim/16.1-10/EFI
 	mkdir -p "$work/shim" "$work/sbs"
-	bsdtar -xf "$top/vendor/src/shim-x64-16.1-10.x86_64.rpm" -C "$work/shim" "./$shim/shimx64.efi" "./$shim/mmx64.efi"
+	bsdtar -xf "$top/vendor/src/shim-x64-16.1-10.x86_64.rpm" -C "$work/shim" "./$shim"
+	sha256sum -c --quiet <<EOF
+351e131d3c4a636704e9cae7d1296baf8a05beca9922cfebbfa48933c9bf1ad3  $work/shim/$shim/BOOT/BOOTX64.EFI
+eb84ac15b99ebbabf9b7dd187c6a20b05fd3aca512ccf49b08922780d6cd42d8  $work/shim/$shim/fedora/mmx64.efi
+EOF
 	bsdtar -xf "$top/vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst" -C "$work/sbs" usr/bin/sbsign
-	cp "$work/shim/$shim/shimx64.efi" "$work/efi/EFI/BOOT/BOOTX64.EFI"
-	cp "$work/shim/$shim/mmx64.efi" "$work/efi/EFI/BOOT/mmx64.efi"
+	cp "$work/shim/$shim/BOOT/BOOTX64.EFI" "$work/efi/EFI/BOOT/BOOTX64.EFI"
+	cp "$work/shim/$shim/fedora/mmx64.efi" "$work/efi/EFI/BOOT/mmx64.efi"
 	mv "$work/root/boot/vmlinuz" "$work/vmlinuz.unsigned"
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img --ro-bind "$sbkeys" /keys /bin/sh -c '
 		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/efi/EFI/BOOT/grubx64.efi /img/grubx64.efi &&
