@@ -25,6 +25,8 @@ bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a
 	"$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
 ln -sf clang "$root/usr/bin/cc"
 bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
+mkdir -p "$root/usr/share/backgrounds/tinyhat"
+python3 scripts/mkwallpaper.py img/tinyhat.svg "$root/usr/share/backgrounds/tinyhat/tinyhat.png"
 bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
 for p in linux-api-headers libxcrypt libglvnd glu glew glfw; do
 	bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/include/*'
@@ -37,6 +39,9 @@ python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
 chmod -R u=rwX,go=rX "$out" "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
 for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro midibench vice tic80 furnace pvsneslib png2xpm tinyxxd qemacs tinyhat-gui; do
+	cp -a "$out/$o/." "$root/"
+done
+for o in ${4-}; do
 	cp -a "$out/$o/." "$root/"
 done
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
@@ -192,7 +197,7 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-pacman-restore.service tinyhat-midibench.service
+systemctl enable nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf

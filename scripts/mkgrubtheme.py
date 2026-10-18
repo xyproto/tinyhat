@@ -9,7 +9,10 @@ GRAY = (0x49, 0x49, 0x49)
 LIGHT = (0xc0, 0xca, 0xf5)
 SLATE = (0xa9, 0xb1, 0xd6)
 
-INK = [BG, HAT, PINK, GRAY, LIGHT]
+CYAN = (0x7d, 0xcf, 0xff)
+WHITE = (0xff, 0xff, 0xff)
+
+INK = [BG, HAT, PINK, GRAY, LIGHT, CYAN, TEAL]
 LOW, SEGMENTS, HAT_SCALE = 64, 16, 2
 ITEM, SPACING, BAR = 32, 2, 28
 
@@ -104,6 +107,10 @@ def hat(angle):
             a0, a1 = 2 * math.pi * i / SEGMENTS, 2 * math.pi * (i + 1) / SEGMENTS
             edge(front_pass, p(r * math.cos(a0), y, r * math.sin(a0)), p(r * math.cos(a1), y, r * math.sin(a1)), front, rear)
 
+    def quill(t, spread):
+        w = spread * math.sin(math.pi * t)
+        return at(0.58 + 0.45 * t - 0.15 * t * t + (0.04 if w else 0), 0.2 + 0.95 * t - (0.08 if w else 0), -0.45 - 0.35 * t, w)
+
     for front_pass in (False, True):
         for side in (-1, 1):
             knot, top, bottom = at(0.56, 0.19, 0, 0), at(0.6, 0.27, 0, side * 0.15), at(0.6, 0.11, 0, side * 0.15)
@@ -119,6 +126,11 @@ def hat(angle):
             a = 2 * math.pi * i / SEGMENTS
             edge(front_pass, p(0.55 * math.cos(a), 0, 0.55 * math.sin(a)), p(0.6 * math.cos(a), 0.95, 0.6 * math.sin(a)), 2, 1)
             edge(front_pass, p(0.55 * math.cos(a), 0, 0.55 * math.sin(a)), p(math.cos(a), 0, math.sin(a)), 2, 1)
+        for k in range(6):
+            edge(front_pass, quill(k / 6, 0), quill((k + 1) / 6, 0), 5, 6)
+        for k in range(1, 6):
+            for side in (-1, 1):
+                edge(front_pass, quill(k / 6, 0), quill(k / 6, side * 0.17), 5, 6)
     return [[INK[low[y // HAT_SCALE][x // HAT_SCALE]] for x in range(LOW * HAT_SCALE)] for y in range(LOW * HAT_SCALE)]
 
 
@@ -165,10 +177,10 @@ def theme():
     return f"""desktop-color: "{hexc(BG)}"
 title-text: ""
 terminal-font: "{SMALL}"
-terminal-left: "10%"
-terminal-top: "10%"
-terminal-width: "80%"
-terminal-height: "80%"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
 terminal-border: "0"
 
 + image {{
@@ -207,7 +219,7 @@ terminal-border: "0"
 	highlight_style = "fill_*.png"
 	highlight_overlay = true
 }}
-""" + label("0", f"5%+{size + 4}", "100%", 36, "TINY HAT", LARGE, PINK) + label(
+""" + label("0", f"5%+{size + 4}", "100%", 36, "TINY HAT", LARGE, WHITE) + label(
         "0", "90%-24", "100%", 20, "BOOTING IN %d", SMALL, LIGHT, ident="__timeout__"
     ) + label("70%", "2%", "28%", 20, "E EDIT  C CONSOLE", SMALL, SLATE, "right")
 

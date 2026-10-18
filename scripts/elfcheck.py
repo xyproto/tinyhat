@@ -4,7 +4,7 @@ import struct
 import sys
 
 root = sys.argv[1]
-LIBDIRS = ["usr/lib", "usr/lib/systemd"]
+LIBDIRS = {3: ["usr/lib", "usr/lib/systemd"], 62: ["usr/libx32", "libx32"]}
 
 
 def dyninfo(path):
@@ -12,6 +12,7 @@ def dyninfo(path):
         data = f.read()
     if data[:4] != b"\x7fELF" or data[4] != 1:
         return None
+    machine, = struct.unpack_from("<H", data, 18)
     e_phoff, = struct.unpack_from("<I", data, 28)
     e_phentsize, e_phnum = struct.unpack_from("<HH", data, 42)
     loads, dyn = [], None
@@ -22,7 +23,7 @@ def dyninfo(path):
         elif p_type == 2:
             dyn = (p_offset, p_filesz)
     if not dyn:
-        return [], []
+        return machine, [], []
 
     def off(vaddr):
         for va, of, sz in loads:
@@ -42,18 +43,20 @@ def dyninfo(path):
         elif tag == 5:
             strtab = off(val)
     if strtab is None:
-        return [], []
+        return machine, [], []
 
     def s(o):
         return data[strtab + o:data.index(b"\0", strtab + o)].decode()
 
-    return [s(n) for n in needed], [p for r in runpath for p in s(r).split(":")]
+    return machine, [s(n) for n in needed], [p for r in runpath for p in s(r).split(":")]
 
 
-have = set()
-for d in LIBDIRS:
-    for name in os.listdir(os.path.join(root, d)):
-        have.add(name)
+have = {}
+for machine, dirs in LIBDIRS.items():
+    have[machine] = set()
+    for d in dirs:
+        if os.path.isdir(os.path.join(root, d)):
+            have[machine].update(os.listdir(os.path.join(root, d)))
 missing = {}
 for dirpath, _, files in os.walk(root):
     for fn in files:
@@ -66,11 +69,11 @@ for dirpath, _, files in os.walk(root):
             continue
         if not info:
             continue
-        needed, runpath = info
+        machine, needed, runpath = info
         rel = os.path.relpath(path, root)
         here = os.path.dirname(rel)
         for lib in needed:
-            if lib in have:
+            if lib in have.get(machine, ()):
                 continue
             dirs = [p.replace("$ORIGIN", "/" + here).lstrip("/") for p in runpath]
             if any(os.path.exists(os.path.join(root, d, lib)) for d in dirs):
