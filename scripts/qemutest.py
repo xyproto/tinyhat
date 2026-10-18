@@ -18,7 +18,7 @@ def desktop_up(ppm):
         data = open(ppm, "rb").read()
         parts = data.split(b"\n", 3)
         w = int(parts[1].split()[0])
-        o = (12 * w + 40) * 3
+        o = (12 * w + 3) * 3
         r, g, b = parts[3][o], parts[3][o + 1], parts[3][o + 2]
     except (OSError, IndexError, ValueError):
         return False

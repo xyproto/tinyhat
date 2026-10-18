@@ -23,7 +23,7 @@ tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initr
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-tinyhat64.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py vendor/src/shim-x64-16.1-10.x86_64.rpm vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst $(SB_KEYS)/tinyhat.cer
+tinyhat64x32.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py vendor/src/shim-x64-16.1-10.x86_64.rpm vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst $(SB_KEYS)/tinyhat.cer
 	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs /out/grub-efi64/usr/lib/grub/x86_64-efi $(SB_KEYS)
 	@ls -l $@
 
@@ -329,7 +329,7 @@ $(B)/.qemacs: $(B)/.buildroot recipes/qemacs.sh vendor/src/qemacs-befd7a816ec824
 	scripts/recipe.sh $(B)/buildroot qemacs >$(B)/qemacs.log 2>&1 || { tail -40 $(B)/qemacs.log; exit 1; }
 	@touch $@
 
-ROOTFS_DEPS := $(B)/.fetched-rootfs $(B)/.midibench $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/.licenses $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+ROOTFS_DEPS := $(B)/.fetched-rootfs $(B)/.midibench $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/.licenses $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
 
 $(B)/root.sfs: $(ROOTFS_DEPS) $(B)/vmlinuz
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
@@ -354,15 +354,15 @@ run: $(B)/test-usb.img
 qemutest: tinyhat32.img
 	python3 scripts/qemutest.py tinyhat32.img
 
-qemutest64: tinyhat64.img
-	python3 scripts/qemutest.py tinyhat64.img
+qemutest64x32: tinyhat64x32.img
+	python3 scripts/qemutest.py tinyhat64x32.img
 
 cleantest:
 	rm -rf $(B)/qmt $(B)/test-usb.img
 
 clean:
 	scripts/userns.sh rm -rf $(B)
-	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat64.img tinyhat64.img.tmp
+	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat64x32.img tinyhat64x32.img.tmp
 
 distclean: clean
 	rm -rf vendor/pkg

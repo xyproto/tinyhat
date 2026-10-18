@@ -21,6 +21,7 @@ GeneralUser-GS-LICENSE.txt 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca1
 glibc-2.44.tar.xz 37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz
 go1.26.8.linux-386.tar.gz 55115677dfcd953fa9d2fe376039125a60ff14fe0e619a2339a364860dda64ef https://go.dev/dl/go1.26.8.linux-386.tar.gz
 grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz c1bbb7d1bb692879c0edc20525e8908e570da7e341de46366f02cf0625dffe3b https://gitlab.com/GrafX2/grafx2/-/archive/f84cb09dc59d706d6e7b28778b01ba911f52298c/grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz
+pixelitos-icon-theme-20260721.tar.gz 61a4bd9570b791897f3d6f9ddb363887bb6290afa6d4aa3d88c07e76f529d229 https://github.com/ItzSelenux/pixelitos-icon-theme/archive/refs/tags/20260721.tar.gz
 grub-2.14.tar.xz bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43 https://ftp.gnu.org/gnu/grub/grub-2.14.tar.xz
 shim-x64-16.1-10.x86_64.rpm 50ca8ad0f0893a9b69d257b232cc38fe572d7f2c814bc9aec4df5e492800cdc7 https://kojipkgs.fedoraproject.org/packages/shim/16.1/10/x86_64/shim-x64-16.1-10.x86_64.rpm
 sbsigntools-0.9.4-2.0-i686.pkg.tar.zst b8ce1294751f17b347ab1e70d6a0282d497940883c0eea24d1910fbfbb0f2117 https://archive.archlinux32.org/packages/s/sbsigntools/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst

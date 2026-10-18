@@ -4,6 +4,7 @@ DRIVE=${1:-sdN}
 EDITION=${2:-32}
 DRIVE=${DRIVE#/dev/}
 IMG=tinyhat$EDITION.img
+[ -f "$IMG" ] && IMG=tinyhat${EDITION}x32.img
 
 fail() {
   echo "REFUSING: $*"

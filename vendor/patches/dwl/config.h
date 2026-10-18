@@ -14,7 +14,7 @@ static const float snapalpha               = 0.25f;
 static const int barvpad                   = 4;  /* vertical padding in the bar */
 static const int showbar                   = 1; /* 0 means no bar */
 static const int topbar                    = 1; /* 0 means bottom bar */
-static const char *fonts[]                 = {"DejaVu Sans:size=10"};
+static const char *fonts[]                 = {"JetBrains Mono NL:size=10"};
 static const char *cursor_theme            = "Vanilla-DMZ";
 static const float rootcolor[]             = COLOR(0x1a1b26ff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
@@ -24,6 +24,10 @@ static uint32_t colors[][3]                = {
 	[SchemeNorm] = { 0xc0caf5ff, 0x292e42ff, 0x414868ff },
 	[SchemeSel]  = { 0x1a1b26ff, 0x1a9e96ff, 0x1a9e96ff },
 	[SchemeUrg]  = { 0x1a1b26ff, 0xf7768eff, 0xf7768eff },
+	[SchemeTask]      = { 0xc0caf5ff, 0x343b58ff, 0x343b58ff },
+	[SchemeTaskSel]   = { 0xffffffff, 0x414868ff, 0x414868ff },
+	[SchemeTaskHover] = { 0xffffffff, 0x4a5275ff, 0x4a5275ff },
+	[SchemeTaskMin]   = { 0x737aa2ff, 0x2f344bff, 0x2f344bff },
 };
 
 /* tagging */
@@ -45,9 +49,8 @@ static const Rule rules[] = {
 /* layout(s) */
 static const Layout layouts[] = {
 	/* symbol     arrange function */
-	{ "[]=",      tile },
 	{ "><>",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",      monocle },
+	{ "[]=",      tile },
 };
 
 /* monitors */
@@ -221,8 +224,8 @@ static const Key keys[] = {
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_L,           setmfact,         {.f = +0.05f} },
 	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
 	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           killclient,       {0} },
-	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[0]} },
-	{ MODKEY,                    XKB_KEY_f,           setlayout,        {.v = &layouts[1]} },
+	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[1]} },
+	{ MODKEY,                    XKB_KEY_f,           setlayout,        {.v = &layouts[0]} },
 	{ MODKEY,                    XKB_KEY_m,           minimize,         {0} },
 	{ MODKEY,                    XKB_KEY_space,       spawn,            {.v = menucmd} },
 	{ 0,                         XKB_KEY_Menu,        spawn,            {.v = menucmd} },
@@ -255,8 +258,7 @@ static const Key keys[] = {
 };
 
 static const Button buttons[] = {
-	{ ClkLtSymbol, 0,      BTN_LEFT,   setlayout,      {.v = &layouts[0]} },
-	{ ClkLtSymbol, 0,      BTN_RIGHT,  setlayout,      {.v = &layouts[2]} },
+	{ ClkLtSymbol, 0,      BTN_LEFT,   togglelayout,   {0} },
 	{ ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
 	{ ClkTitle,    0,      BTN_MIDDLE, zoom,           {0} },
 	{ ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },

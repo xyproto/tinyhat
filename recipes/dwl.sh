@@ -20,6 +20,7 @@ patch -Np1 -i /patches/dwl/altab.patch
 patch -Np1 -i /patches/dwl/snap.patch
 patch -Np1 -i /patches/dwl/resizecorner.patch
 patch -Np1 -i /patches/dwl/tasks.patch
+patch -Np1 -i /patches/dwl/panel.patch
 cp /patches/dwl/config.h config.h
 CFLAGS="$CFLAGS -O3"
 make PREFIX=/usr CFLAGS="$CFLAGS -DWLR_USE_UNSTABLE -std=c11"
