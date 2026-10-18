@@ -22,9 +22,7 @@ cd "$src"
 make -s ARCH=$arch tinyconfig
 ./scripts/kconfig/merge_config.sh -m -O . .config "$@"
 make -s ARCH=$arch olddefconfig
-for f in "$@"; do
-	python3 "$top/scripts/kcheck.py" "$f" .config
-done
+python3 "$top/scripts/kcheck.py" "$@" .config
 make -s ARCH=$arch -j"$(nproc)" KBUILD_BUILD_USER=tinyhat KBUILD_BUILD_HOST=tinyhat KBUILD_BUILD_TIMESTAMP="@${SOURCE_DATE_EPOCH:-315532800}" bzImage modules
 rm -rf "$modules"
 make -s ARCH=$arch INSTALL_MOD_PATH="$modules/usr" INSTALL_MOD_STRIP=1 modules_install

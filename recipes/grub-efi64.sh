@@ -2,7 +2,7 @@
 set -eu
 umask 022
 rm -rf /work/grub-efi64 /out/grub-efi64 && mkdir -p /work/grub-efi64 && cd /work/grub-efi64
-tar --no-same-owner -xf /src/grub-2.12.tar.xz --strip-components=1
+tar --no-same-owner -xf /src/grub-2.14.tar.xz --strip-components=1
 echo "depends bli part_gpt" >grub-core/extra_deps.lst
 mkdir -p /work/grub-efi64/flex && bsdtar -xf /src/flex-2.6.4-5.2-i686.pkg.tar.zst -C /work/grub-efi64/flex usr/bin usr/lib usr/include
 export PATH="/work/grub-efi64/flex/usr/bin:/opt/x32/bin:$PATH" LIBRARY_PATH=/work/grub-efi64/flex/usr/lib

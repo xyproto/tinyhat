@@ -131,6 +131,8 @@ SOURCES = [
      "sdl2-compat-2.32.74.tar.gz", ["LICENSE.txt"]),
     ("sdl3", "3.4.18 with the Tiny Hat Wayland framebuffer patch", "https://libsdl.org/", "Zlib",
      "SDL3-3.4.18.tar.gz", ["LICENSE.txt"]),
+    ("grub-efi64", "2.14 (64-bit UEFI boot loader)", "https://www.gnu.org/software/grub/", "GPL-3.0-or-later",
+     "grub-2.14.tar.xz", ["COPYING"]),
 ]
 
 def info(path, name, version, url, lic):
@@ -189,6 +191,12 @@ def main():
             f.write(z.read("gcem-012ae73c6d0a2cb09ffe86475f5c6fba3926e200/LICENSE"))
     info(path, "gcem (built into fluidsynth)", "012ae73c", "https://github.com/kthohr/gcem", "Apache-2.0")
     used.add("Apache-2.0")
+
+    path = os.path.join(OUT, "shim")
+    os.makedirs(path)
+    info(path, "shim and MokManager (signed by Microsoft and Fedora)", "16.1-10", "https://github.com/rhboot/shim",
+         "BSD-2-Clause AND BSD-2-Clause-Patent AND OpenSSL")
+    used.update(["BSD-2-Clause", "BSD-2-Clause-Patent", "OpenSSL"])
 
     path = os.path.join(OUT, "generaluser-gs")
     os.makedirs(path)

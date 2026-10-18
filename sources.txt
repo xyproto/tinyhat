@@ -21,7 +21,9 @@ GeneralUser-GS-LICENSE.txt 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca1
 glibc-2.44.tar.xz 37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz
 go1.26.8.linux-386.tar.gz 55115677dfcd953fa9d2fe376039125a60ff14fe0e619a2339a364860dda64ef https://go.dev/dl/go1.26.8.linux-386.tar.gz
 grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz c1bbb7d1bb692879c0edc20525e8908e570da7e341de46366f02cf0625dffe3b https://gitlab.com/GrafX2/grafx2/-/archive/f84cb09dc59d706d6e7b28778b01ba911f52298c/grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz
-grub-2.12.tar.xz f3c97391f7c4eaa677a78e090c7e97e6dc47b16f655f04683ebd37bef7fe0faa https://ftp.gnu.org/gnu/grub/grub-2.12.tar.xz
+grub-2.14.tar.xz bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43 https://ftp.gnu.org/gnu/grub/grub-2.14.tar.xz
+shim-x64-16.1-10.x86_64.rpm 50ca8ad0f0893a9b69d257b232cc38fe572d7f2c814bc9aec4df5e492800cdc7 https://kojipkgs.fedoraproject.org/packages/shim/16.1/10/x86_64/shim-x64-16.1-10.x86_64.rpm
+sbsigntools-0.9.4-2.0-i686.pkg.tar.zst b8ce1294751f17b347ab1e70d6a0282d497940883c0eea24d1910fbfbb0f2117 https://archive.archlinux32.org/packages/s/sbsigntools/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst
 libdisplay-info-0.3.0.tar.gz 2b467e3336aec63819d6aca28d7310d3dc7415b2b3a3c3a5aec9d3727053c078 https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/0.3.0/libdisplay-info-0.3.0.tar.gz
 libdom-0.4.1-2.1-i686.pkg.tar.zst c8c6b5121284951265863ee0c6b761b9a36c3c89f5d1388cb47bf5e0f90af194 https://archive.archlinux32.org/packages/l/libdom/libdom-0.4.1-2.1-i686.pkg.tar.zst
 libffi-3.8.0.tar.gz bf40d752d8f5fd4505bcd1c7d4208ea87fd12c91f087e359651c776748352dc0 https://github.com/libffi/libffi/archive/refs/tags/v3.8.0.tar.gz

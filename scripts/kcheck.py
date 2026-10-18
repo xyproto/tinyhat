@@ -14,8 +14,10 @@ def parse(path, fragment):
     return out
 
 
-want = parse(sys.argv[1], True)
-have = parse(sys.argv[2], False)
+want = {}
+for path in sys.argv[1:-1]:
+    want.update(parse(path, True))
+have = parse(sys.argv[-1], False)
 bad = [f"{k}: wanted {v}, got {have.get(k, 'n')}" for k, v in want.items() if have.get(k, "n") != v]
 for b in bad:
     print("kconfig:", b, file=sys.stderr)
