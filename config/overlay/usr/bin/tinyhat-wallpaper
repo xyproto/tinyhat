@@ -8,7 +8,8 @@ if [ "${1-}" = --cycle ]; then
 	case $(cat "$mode" 2>/dev/null) in
 	0) n=1 ;;
 	1) n=2 ;;
-	2) n=3 ;;
+	2) n=4 ;;
+	4) n=3 ;;
 	*) if [ -e "$hide" ]; then n=3; else n=0; fi ;;
 	esac
 	if [ "$n" = 3 ]; then
@@ -29,6 +30,7 @@ case $(cat "$mode" 2>/dev/null) in
 1) set -- -c 000000 ;;
 2) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
 	;;
+4) set -- -m center -c 1a1b26 -i /usr/share/backgrounds/tinyhat/tinyhat.png ;;
 *) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
 	[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
 	;;
