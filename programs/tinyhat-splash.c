@@ -34,8 +34,10 @@ static const Rgb HAT = { 0x92, 0x24, 0x24 };
 static const Rgb PINK = { 0xf7, 0x76, 0x8e };
 static const Rgb GRAY = { 0x49, 0x49, 0x49 };
 static const Rgb LIGHT = { 0xc0, 0xca, 0xf5 };
+static const Rgb CYAN = { 0x7d, 0xcf, 0xff };
+static const Rgb WHITE = { 0xff, 0xff, 0xff };
 
-static const Rgb *const ink[] = { &BG, &HAT, &PINK, &GRAY, &LIGHT };
+static const Rgb *const ink[] = { &BG, &HAT, &PINK, &GRAY, &LIGHT, &CYAN, &TEAL };
 
 static struct {
 	int fd;
@@ -244,6 +246,13 @@ static Point at(double angle, double r, double y, double a, double t)
 	return project(angle, r * cos(a) - t * sin(a), y, r * sin(a) + t * cos(a));
 }
 
+static Point quill(double angle, double t, double spread)
+{
+	double w = spread * sin(M_PI * t);
+	return at(angle, 0.58 + 0.45 * t - 0.15 * t * t + (w != 0 ? 0.04 : 0), 0.2 + 0.95 * t - (w != 0 ? 0.08 : 0),
+		  -0.45 - 0.35 * t, w);
+}
+
 static void hat(double angle)
 {
 	memset(low, 0, sizeof(low));
@@ -267,14 +276,19 @@ static void hat(double angle)
 			     project(angle, 0.6 * cos(a), 0.95, 0.6 * sin(a)), 2, 1);
 			edge(pass, project(angle, 0.55 * cos(a), 0, 0.55 * sin(a)), project(angle, cos(a), 0, sin(a)), 2, 1);
 		}
+		for (int k = 0; k < 6; k++)
+			edge(pass, quill(angle, k / 6.0, 0), quill(angle, (k + 1) / 6.0, 0), 5, 6);
+		for (int k = 1; k < 6; k++)
+			for (int side = -1; side <= 1; side += 2)
+				edge(pass, quill(angle, k / 6.0, 0), quill(angle, k / 6.0, side * 0.17), 5, 6);
 	}
 }
 
 static void draw_hat(void)
 {
 	int s = hat_scale(), x0 = hat_x(), y0 = hat_y();
-	uint32_t c[5];
-	for (int i = 0; i < 5; i++)
+	uint32_t c[sizeof(ink) / sizeof(ink[0])];
+	for (size_t i = 0; i < sizeof(ink) / sizeof(ink[0]); i++)
 		c[i] = pack(*ink[i]);
 	hat(2 * M_PI * (double)(tick % 75) / 75);
 	for (int y = 0; y < LOW * s; y++)
@@ -294,7 +308,7 @@ static int title_y(void)
 static void draw_title(void)
 {
 	int s = 2 * text_scale();
-	text((W - text_width("TINY HAT", s)) / 2, title_y(), s, "TINY HAT", PINK);
+	text((W - text_width("TINY HAT", s)) / 2, title_y(), s, "TINY HAT", WHITE);
 }
 
 static void draw_status(void)
