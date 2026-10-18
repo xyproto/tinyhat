@@ -15,7 +15,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run cleantest clean distclean patchcheck sourcecheck test dist
+.PHONY: all lock fetch sources licenses run qemutest qemutest64 cleantest clean distclean patchcheck sourcecheck test dist
 
 all: tinyhat32.img
 
@@ -351,8 +351,14 @@ run: $(B)/test-usb.img
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
 
+qemutest: tinyhat32.img
+	python3 scripts/qemutest.py tinyhat32.img
+
+qemutest64: tinyhat64.img
+	python3 scripts/qemutest.py tinyhat64.img
+
 cleantest:
-	rm -rf $(B)/qt $(B)/test-usb.img
+	rm -rf $(B)/qmt $(B)/test-usb.img
 
 clean:
 	scripts/userns.sh rm -rf $(B)
