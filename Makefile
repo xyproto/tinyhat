@@ -8,6 +8,7 @@ SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell awk '!/^#/ { print $$1 }' sources.txt))
 QEMU_MEM ?= 1024
+SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
 
 ifeq (,$(findstring -j,$(MAKEFLAGS)))
 MAKEFLAGS += -j$(shell nproc)
@@ -22,9 +23,12 @@ tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initr
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-tinyhat64.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
-	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs /out/grub-efi64/usr/lib/grub/x86_64-efi
+tinyhat64.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py vendor/src/shim-x64-16.1-10.x86_64.rpm vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst $(SB_KEYS)/tinyhat.cer
+	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs /out/grub-efi64/usr/lib/grub/x86_64-efi $(SB_KEYS)
 	@ls -l $@
+
+$(SB_KEYS)/tinyhat.cer:
+	scripts/mksbkey.sh $(SB_KEYS)
 
 lock:
 	REFRESH=1 python3 scripts/pkg.py lock config/rootfs.txt rootfs.lock
@@ -184,7 +188,7 @@ $(B)/.x32-pixman: $(B)/.x32-gcc recipes/x32-pixman.sh recipes/x32-env.sh vendor/
 	scripts/recipe.sh $(B)/buildroot x32-pixman >$(B)/x32-pixman.log 2>&1 || { tail -40 $(B)/x32-pixman.log; exit 1; }
 	@touch $@
 
-$(B)/.grub-efi64: $(B)/.x32-gcc recipes/grub-efi64.sh vendor/src/grub-2.12.tar.xz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst
+$(B)/.grub-efi64: $(B)/.x32-gcc recipes/grub-efi64.sh vendor/src/grub-2.14.tar.xz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst
 	scripts/recipe.sh $(B)/buildroot grub-efi64 >$(B)/grub-efi64.log 2>&1 || { tail -40 $(B)/grub-efi64.log; exit 1; }
 	@touch $@
 
