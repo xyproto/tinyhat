@@ -1,0 +1,199 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -146,7 +146,7 @@ typedef struct {
+ #endif
+ 	unsigned int bw;
+ 	uint32_t tags;
+-	int isfloating, isurgent, isfullscreen, isminimized;
++	int isfloating, isurgent, isfullscreen, isminimized, desktophidden;
+ 	uint32_t resize; /* configure serial of a pending resize */
+ 	struct wlr_box presnap;
+ 	int issnapped;
+@@ -229,6 +229,8 @@ struct Monitor {
+ 	int gamma_lut_changed;
+ 	int nmaster;
+ 	char ltsymbol[16];
++	Client *tasks[32];
++	int taskx[33], ntasks;
+ 	int asleep;
+ 	Drwl *drw;
+ 	Buffer *pool[2];
+@@ -323,6 +325,10 @@ static void drawbars(void);
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
+ static void altab(const Arg *arg);
++static void drawtasks(Monitor *m, int x, int w);
++static void minimize(const Arg *arg);
++static void showdesktop(const Arg *arg);
++static void taskclick(const Arg *arg);
+ static void focusstack(const Arg *arg);
+ static Client *focustop(Monitor *m);
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+@@ -815,8 +821,12 @@ buttonpress(struct wl_listener *listener
+ 				click = ClkLtSymbol;
+ 			else if (cx > selmon->b.width - (TEXTW(selmon, stext) - selmon->lrpad + 2)) {
+ 				click = ClkStatus;
+-			} else
++			} else {
+ 				click = ClkTitle;
++				for (i = 0; i < (unsigned int)selmon->ntasks; i++)
++					if (cx >= selmon->taskx[i] && cx < selmon->taskx[i + 1])
++						arg.v = selmon->tasks[i];
++			}
+ 		}
+ 
+ 		/* Change focus if the button was _pressed_ over a client */
+@@ -828,7 +838,7 @@ buttonpress(struct wl_listener *listener
+ 		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
+ 		for (b = buttons; b < END(buttons); b++) {
+ 			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
+-				b->func(click == ClkTagBar && b->arg.i == 0 ? &arg : &b->arg);
++				b->func((click == ClkTagBar && b->arg.i == 0) || click == ClkTitle ? &arg : &b->arg);
+ 				return;
+ 			}
+ 		}
+@@ -1676,15 +1686,11 @@ drawbar(Monitor *m)
+ 			int nw = TEXTW(m, notice);
+ 			drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 			drwl_text(m->drw, x, 0, w, m->b.height, nw < w ? (w - nw) / 2 + m->lrpad / 2 : m->lrpad / 2, notice, 0);
+-		} else if (c) {
+-			drwl_setscheme(m->drw, colors[SchemeNorm]);
+-			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
+-			if (c && c->isfloating)
+-				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
+ 		} else {
+-			drwl_setscheme(m->drw, colors[SchemeNorm]);
+-			drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++			drawtasks(m, x, w);
+ 		}
++	} else {
++		m->ntasks = 0;
+ 	}
+ 
+ 	drwl_setscheme(m->drw, colors[SchemeSel]);
+@@ -1699,6 +1705,34 @@ drawbar(Monitor *m)
+ }
+ 
+ void
++drawtasks(Monitor *m, int x, int w)
++{
++	Client *t, *sel = focustop(m);
++	int n = 0, bw, pad = m->b.height / 8 + 1;
++	char label[256];
++
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++	wl_list_for_each_reverse(t, &clients, link)
++		if (t->mon == m && (t->tags & m->tagset[m->seltags]) && n < (int)LENGTH(m->tasks))
++			m->tasks[n++] = t;
++	m->ntasks = n;
++	if (!n)
++		return;
++	bw = MIN(w / n, m->b.height * 10);
++	for (int i = 0; i < n; i++) {
++		t = m->tasks[i];
++		m->taskx[i] = x + i * bw;
++		snprintf(label, sizeof(label), t->isminimized ? "[%s]" : "%s", client_get_title(t));
++		drwl_setscheme(m->drw, colors[t == sel && !t->isminimized ? SchemeSel : SchemeNorm]);
++		drwl_text(m->drw, m->taskx[i] + pad, pad, bw - 2 * pad, m->b.height - 2 * pad, m->lrpad / 2, label, 0);
++		if (t != sel || t->isminimized)
++			drwl_rect(m->drw, m->taskx[i] + pad, pad, bw - 2 * pad, m->b.height - 2 * pad, 0, 0);
++	}
++	m->taskx[n] = x + n * bw;
++}
++
++void
+ drawbars(void)
+ {
+ 	Monitor *m = NULL;
+@@ -1848,7 +1882,7 @@ altab(const Arg *arg)
+ 	if (!next)
+ 		return;
+ 	if (next->isminimized) {
+-		next->isminimized = 0;
++		next->isminimized = next->desktophidden = 0;
+ 		arrange(selmon);
+ 	}
+ 	focusclient(next, 1);
+@@ -1859,6 +1893,66 @@ altab(const Arg *arg)
+ }
+ 
+ void
++minimize(const Arg *arg)
++{
++	Client *c = focustop(selmon);
++	if (!c)
++		return;
++	if (c->isfullscreen)
++		setfullscreen(c, 0);
++	c->isminimized = 1;
++	arrange(selmon);
++	focusclient(focustop(selmon), 1);
++	drawbars();
++}
++
++void
++showdesktop(const Arg *arg)
++{
++	Client *c;
++	int shown = 0;
++	if (!selmon)
++		return;
++	wl_list_for_each(c, &clients, link)
++		if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags]) && !c->isminimized)
++			shown = 1;
++	wl_list_for_each(c, &clients, link) {
++		if (c->mon != selmon || !(c->tags & selmon->tagset[selmon->seltags]))
++			continue;
++		if (shown && !c->isminimized) {
++			if (c->isfullscreen)
++				setfullscreen(c, 0);
++			c->isminimized = c->desktophidden = 1;
++		} else if (!shown && c->desktophidden) {
++			c->isminimized = c->desktophidden = 0;
++		}
++	}
++	arrange(selmon);
++	focusclient(focustop(selmon), 1);
++	drawbars();
++}
++
++void
++taskclick(const Arg *arg)
++{
++	Client *c, *t = NULL;
++	wl_list_for_each(c, &clients, link)
++		if (c == arg->v)
++			t = c;
++	if (!t)
++		return;
++	if (t == focustop(t->mon) && !t->isminimized) {
++		minimize(arg);
++		return;
++	}
++	t->isminimized = t->desktophidden = 0;
++	selmon = t->mon;
++	arrange(t->mon);
++	focusclient(t, 1);
++	drawbars();
++}
++
++void
+ focusstack(const Arg *arg)
+ {
+ 	/* Focus the next or previous client (in tiling order) on selmon */
+@@ -2069,6 +2163,14 @@ keypress(struct wl_listener *listener, v
+ 	if (!locked && event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+ 		for (i = 0; i < nsyms; i++)
+ 			handled = keybinding(mods, syms[i]) || handled;
++		if (!handled) {
++			struct xkb_keymap *keymap = group->wlr_group->keyboard.keymap;
++			xkb_layout_index_t layout = xkb_state_key_get_layout(group->wlr_group->keyboard.xkb_state, keycode);
++			const xkb_keysym_t *base;
++			int nbase = xkb_keymap_key_get_syms_by_level(keymap, keycode, layout, 0, &base);
++			for (i = 0; i < nbase; i++)
++				handled = keybinding(mods, base[i]) || handled;
++		}
+ 	}
+ 
+ 	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0) {
