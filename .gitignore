@@ -1,6 +1,8 @@
 /build/
 /tinyhat32.img
 /tinyhat32.img.tmp
+/tinyhat64.img
+/tinyhat64.img.tmp
 *.part
 /vendor/pkg/
 /vendor/src/
