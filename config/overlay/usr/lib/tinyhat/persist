@@ -3,8 +3,10 @@ label=THDATA
 min_mib=64
 dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/var/lib/bluetooth pacman-gnupg:/etc/pacman.d/gnupg dropbear:/etc/dropbear state:/var/lib/tinyhat"
 
+fixed=0
 case " $(cat /proc/cmdline) " in
 *" tinyhat.nopersist "*) exit 0 ;;
+*" tinyhat.persistfixed "*) fixed=1 ;;
 esac
 
 msg() { echo "Tiny Hat: $*"; }
@@ -22,20 +24,71 @@ step() {
 	fi
 }
 
+partdev() {
+	for p in /sys/block/"$disk"/"$disk"*/partition; do
+		[ "$(cat "$p" 2>/dev/null)" = "$1" ] && p=${p%/partition} && echo "/dev/${p##*/}" && return 0
+	done
+	return 1
+}
+
+removable() {
+	[ "$fixed" = 1 ] && return 0
+	[ "$(cat "/sys/block/$disk/removable" 2>/dev/null)" = 1 ] && return 0
+	case $(readlink -f "/sys/block/$disk/device") in */usb*) return 0 ;; esac
+	[ "$(cat "/sys/block/$disk/device/type" 2>/dev/null)" = SD ]
+}
+
+in_use() {
+	for p in /sys/block/"$disk"/"$disk"*/partition; do
+		p=${p%/partition}
+		p=/dev/${p##*/}
+		[ "$p" = "$boot" ] && continue
+		grep -q "^$p " /proc/mounts /proc/swaps && return 0
+		[ -n "$(ls -A "/sys/class/block/${p#/dev/}/holders" 2>/dev/null)" ] && return 0
+	done
+	return 1
+}
+
+find_data() {
+	for p in /sys/block/"$disk"/"$disk"*/partition; do
+		p=${p%/partition}
+		p=/dev/${p##*/}
+		[ "$p" = "$boot" ] && continue
+		[ "$(blkid -p -s TYPE -o value "$p")" = xfs ] && [ "$(blkid -p -s LABEL -o value "$p")" = "$label" ] && echo "$p" && return 0
+	done
+	return 1
+}
+
 create() {
-	boot=$(blkid -L TINYHAT) || return 1
-	disk=/dev/$(lsblk -no PKNAME "$boot" | head -n1)
-	[ -b "$disk" ] || return 1
-	free=$(sfdisk -F -q "$disk" 2>/dev/null | awk 'END { print $3 }')
-	[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
-	msg "creating persistent storage on the rest of the USB stick (one time only)"
-	step 5 "Creating persistent storage (one time only)"
-	echo ",,L" | sfdisk --append --no-reread -q "$disk" 2>/dev/null || return 1
-	step 20 "Creating persistent storage (one time only)"
-	partx -a "$disk" 2>/dev/null || partx -u "$disk"
-	udevadm settle -t 10
-	part=$(lsblk -lnpo NAME,TYPE "$disk" | awk '$2 == "part" { p = $1 } END { print p }')
+	[ "$(blkid -p -s LABEL -o value "$boot")" = TINYHAT ] || return 1
+	[ "$(cat "/sys/class/block/${boot#/dev/}/partition")" = 2 ] || return 1
+	[ "$(partdev 2)" = "$boot" ] || return 1
+	removable || return 1
+	[ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
+	[ "$(sfdisk --part-type "/dev/$disk" 1 2>/dev/null)" = ef ] || return 1
+	in_use && return 1
+	count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
+	if [ "$count" = 3 ]; then
+		part=$(partdev 3) || return 1
+		[ "$(sfdisk --part-type "/dev/$disk" 3 2>/dev/null)" = 83 ] || return 1
+		[ -z "$(wipefs -n "$part" 2>&1)" ] || return 1
+		msg "creating persistent storage on the rest of the drive (one time only)"
+		step 20 "Creating persistent storage (one time only)"
+	else
+		[ "$count" = 2 ] || return 1
+		free=$(sfdisk -F -q "/dev/$disk" 2>/dev/null | awk 'END { print $3 }')
+		[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
+		msg "creating persistent storage on the rest of the drive (one time only)"
+		step 5 "Creating persistent storage (one time only)"
+		echo ",,L" | sfdisk --append --no-reread -q "/dev/$disk" 2>/dev/null || return 1
+		step 20 "Creating persistent storage (one time only)"
+		partx -a "/dev/$disk" 2>/dev/null || partx -u "/dev/$disk"
+		udevadm settle -t 10
+		part=$(partdev 3) || return 1
+	fi
 	[ -b "$part" ] && [ "$part" != "$boot" ] || return 1
+	[ "$(readlink -f "/sys/class/block/${part#/dev/}/..")" = "$(readlink -f "/sys/block/$disk")" ] || return 1
+	removable && ! in_use || return 1
 	step 35 "Formatting persistent storage"
 	TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -K -L "$label" "$part" || return 1
 	step 70 "Setting up persistent storage"
@@ -50,10 +103,16 @@ create() {
 	step 100 "Persistent storage is ready"
 }
 
+boot=$(cat /run/tinyhat/bootdev 2>/dev/null)
+[ -b "$boot" ] && [ -f "/sys/class/block/${boot#/dev/}/partition" ] || exit 0
+disk=$(readlink -f "/sys/class/block/${boot#/dev/}/..")
+disk=${disk##*/}
+[ -b "/dev/$disk" ] && [ -d "/sys/block/$disk" ] || exit 0
+
 mkdir -p /persist
-if ! part=$(blkid -L "$label"); then
+if ! part=$(find_data); then
 	created=0
-	create && part=$(blkid -L "$label") && created=1
+	create && part=$(find_data) && created=1
 	say "progress -1"
 	say "msg"
 	[ "$created" = 1 ] || exit 0

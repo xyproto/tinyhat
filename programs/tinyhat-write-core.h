@@ -2,6 +2,7 @@
 #define TINYHAT_WRITE_CORE_H
 
 #include <errno.h>
+#include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -16,9 +17,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 #ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#include <DiskArbitration/DiskArbitration.h>
+#include <IOKit/IOKitLib.h>
 #include <mach-o/dyld.h>
-#else
 #include <sys/mount.h>
+#include <sys/param.h>
+#else
+#include <dirent.h>
+#include <sys/mount.h>
+#include <sys/sysmacros.h>
 #endif
 #endif
 
@@ -896,12 +904,23 @@ typedef struct {
 	int last_pct;
 } tw_writer;
 
+static int tw_image_check(const unsigned char *p, size_t n)
+{
+	static const unsigned char id[4] = { 0x00, 0xa7, 0x17, 0x74 };
+	return n >= 512 && !memcmp(p + 440, id, 4) && p[510] == 0x55 && p[511] == 0xaa &&
+	       p[446 + 4] == 0xef && p[462 + 4] == 0x83 ? 0 : -1;
+}
+
 static int tw_write_emit(void *ud, const unsigned char *p, size_t n)
 {
 	tw_writer *w = (tw_writer *)ud;
 	char line[64];
 	if (w->err)
 		return -1;
+	if (!w->off && tw_image_check(p, n) < 0) {
+		w->err = 2;
+		return -1;
+	}
 	if (tw_dev_writeat(w->dev, w->off, p, n) < 0) {
 		w->err = 1;
 		return -1;
@@ -986,23 +1005,367 @@ static void tw_unmount_target(const char *target)
 #endif
 }
 
+#define TW_MAX_SIZE (2000ull * 1000000000ull)
+
+#ifdef _WIN32
+static int tw_volume_on_disk(const char *path, DWORD disk)
+{
+	char vpath[16];
+	unsigned char buf[sizeof(VOLUME_DISK_EXTENTS) + sizeof(DISK_EXTENT) * 8];
+	VOLUME_DISK_EXTENTS *ext = (VOLUME_DISK_EXTENTS *)buf;
+	DWORD got, i;
+	HANDLE hv;
+	int hit = 0;
+	if (!path[0] || path[1] != ':')
+		return 0;
+	snprintf(vpath, sizeof(vpath), "\\\\.\\%c:", path[0]);
+	hv = CreateFileA(vpath, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+	if (hv == INVALID_HANDLE_VALUE)
+		return 1;
+	if (!DeviceIoControl(hv, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL, 0, buf, sizeof(buf),
+			     &got, NULL)) {
+		CloseHandle(hv);
+		return 1;
+	}
+	CloseHandle(hv);
+	for (i = 0; i < ext->NumberOfDiskExtents; i++)
+		if (ext->Extents[i].DiskNumber == disk)
+			hit = 1;
+	return hit;
+}
+#elif defined(__linux__)
+static int tw_sys_disk(dev_t rdev, char *real, size_t cap)
+{
+	char sys[64], tmp[PATH_MAX];
+	snprintf(sys, sizeof(sys), "/sys/dev/block/%u:%u", major(rdev), minor(rdev));
+	if (!realpath(sys, tmp) || strlen(tmp) >= cap)
+		return -1;
+	strcpy(real, tmp);
+	return 0;
+}
+
+static int tw_path_under(const char *path, const char *disk)
+{
+	size_t n = strlen(disk);
+	return !strncmp(path, disk, n) && (path[n] == '/' || !path[n]);
+}
+#elif defined(__APPLE__)
+static int tw_mac_str(CFDictionaryRef d, const void *key, char *out, size_t cap)
+{
+	CFTypeRef v = CFDictionaryGetValue(d, key);
+	out[0] = 0;
+	return v && CFGetTypeID(v) == CFStringGetTypeID() &&
+	       CFStringGetCString((CFStringRef)v, out, (CFIndex)cap, kCFStringEncodingUTF8);
+}
+
+static int tw_mac_flag(CFDictionaryRef d, const void *key)
+{
+	CFTypeRef v = CFDictionaryGetValue(d, key);
+	return v && CFGetTypeID(v) == CFBooleanGetTypeID() && CFBooleanGetValue((CFBooleanRef)v);
+}
+
+static int tw_mac_parents(const char *bsd, const char *want)
+{
+	io_registry_entry_t e = IOServiceGetMatchingService(MACH_PORT_NULL, IOBSDNameMatching(MACH_PORT_NULL, 0, bsd));
+	io_registry_entry_t p;
+	int n = 0;
+	while (e) {
+		CFTypeRef v = IORegistryEntryCreateCFProperty(e, CFSTR("BSD Name"), kCFAllocatorDefault, 0);
+		char name[64];
+		if (v) {
+			if (CFGetTypeID(v) == CFStringGetTypeID() &&
+			    CFStringGetCString((CFStringRef)v, name, sizeof(name), kCFStringEncodingUTF8)) {
+				if (want && !strcmp(name, want)) {
+					CFRelease(v);
+					IOObjectRelease(e);
+					return 1;
+				}
+				n++;
+			}
+			CFRelease(v);
+		}
+		if (IORegistryEntryGetParentEntry(e, kIOServicePlane, &p) != KERN_SUCCESS)
+			p = 0;
+		IOObjectRelease(e);
+		e = p;
+	}
+	return want ? 0 : n;
+}
+
+static int tw_mac_external(const char *bsd, char *name, size_t cap, uint64_t *size)
+{
+	DASessionRef s = DASessionCreate(kCFAllocatorDefault);
+	DADiskRef dk = s ? DADiskCreateFromBSDName(kCFAllocatorDefault, s, bsd) : NULL;
+	CFDictionaryRef d = dk ? DADiskCopyDescription(dk) : NULL;
+	char proto[64], vendor[64], model[96];
+	int ok = 0;
+	if (d) {
+		CFTypeRef sz = CFDictionaryGetValue(d, kDADiskDescriptionMediaSizeKey);
+		long long n = 0;
+		tw_mac_str(d, kDADiskDescriptionDeviceProtocolKey, proto, sizeof(proto));
+		ok = tw_mac_flag(d, kDADiskDescriptionMediaWholeKey) &&
+		     tw_mac_flag(d, kDADiskDescriptionMediaWritableKey) &&
+		     ((!strcmp(proto, "USB") && !tw_mac_flag(d, kDADiskDescriptionDeviceInternalKey)) ||
+		      (!strcmp(proto, "Secure Digital") && tw_mac_flag(d, kDADiskDescriptionMediaRemovableKey))) &&
+		     tw_mac_parents(bsd, NULL) == 1;
+		if (sz && CFGetTypeID(sz) == CFNumberGetTypeID())
+			CFNumberGetValue((CFNumberRef)sz, kCFNumberLongLongType, &n);
+		if (size)
+			*size = (uint64_t)n;
+		if (name) {
+			size_t l;
+			tw_mac_str(d, kDADiskDescriptionDeviceVendorKey, vendor, sizeof(vendor));
+			tw_mac_str(d, kDADiskDescriptionDeviceModelKey, model, sizeof(model));
+			snprintf(name, cap, "%s%s%s", vendor, vendor[0] && model[0] ? " " : "", model);
+			while ((l = strlen(name)) && name[l - 1] == ' ')
+				name[l - 1] = 0;
+			if (!name[0])
+				snprintf(name, cap, "%s drive", proto[0] ? proto : "USB");
+		}
+		CFRelease(d);
+	}
+	if (dk)
+		CFRelease(dk);
+	if (s)
+		CFRelease(s);
+	return ok;
+}
+#endif
+
+static int tw_target_check(tw_dev *d, const char *target, char *why, size_t cap)
+{
+#ifdef _WIN32
+	STORAGE_PROPERTY_QUERY q;
+	STORAGE_DEVICE_NUMBER num;
+	GET_LENGTH_INFORMATION len;
+	unsigned char buf[1024];
+	STORAGE_DEVICE_DESCRIPTOR *sd = (STORAGE_DEVICE_DESCRIPTOR *)buf;
+	char sysdir[MAX_PATH];
+	DWORD got;
+	const char *pd = strstr(target, "PhysicalDrive");
+	if (strncmp(target, "\\\\.\\PhysicalDrive", 17) || !pd[13]) {
+		snprintf(why, cap, "%s is not a whole drive", target);
+		return -1;
+	}
+	if (!DeviceIoControl(d->h, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &num, sizeof(num), &got,
+			     NULL) || num.DeviceNumber != (DWORD)strtoul(pd + 13, NULL, 10)) {
+		snprintf(why, cap, "cannot identify %s", target);
+		return -1;
+	}
+	memset(&q, 0, sizeof(q));
+	q.PropertyId = StorageDeviceProperty;
+	q.QueryType = PropertyStandardQuery;
+	memset(buf, 0, sizeof(buf));
+	if (!DeviceIoControl(d->h, IOCTL_STORAGE_QUERY_PROPERTY, &q, sizeof(q), buf, sizeof(buf), &got,
+			     NULL)) {
+		snprintf(why, cap, "cannot identify %s", target);
+		return -1;
+	}
+	if (!sd->RemovableMedia && sd->BusType != BusTypeUsb && sd->BusType != BusTypeSd &&
+	    sd->BusType != BusTypeMmc) {
+		snprintf(why, cap, "%s is not a USB or removable drive", target);
+		return -1;
+	}
+	if (!GetSystemWindowsDirectoryA(sysdir, sizeof(sysdir)) ||
+	    tw_volume_on_disk(sysdir, num.DeviceNumber)) {
+		snprintf(why, cap, "%s holds Windows", target);
+		return -1;
+	}
+	if (tw_exe_path(sysdir, sizeof(sysdir)) == 0 && tw_volume_on_disk(sysdir, num.DeviceNumber)) {
+		snprintf(why, cap, "%s holds this program", target);
+		return -1;
+	}
+	if (DeviceIoControl(d->h, IOCTL_DISK_GET_LENGTH_INFO, NULL, 0, &len, sizeof(len), &got, NULL) &&
+	    (uint64_t)len.Length.QuadPart > TW_MAX_SIZE) {
+		snprintf(why, cap, "%s is larger than 2 TB, which is not a USB stick", target);
+		return -1;
+	}
+	return 0;
+#elif defined(__linux__)
+	struct stat st, ms;
+	char disk[PATH_MAX], real[PATH_MAX], p[PATH_MAX + 32], src[256], mnt[256];
+	const char *name;
+	FILE *f;
+	int removable = 0;
+	unsigned long long sectors = 0;
+	if (fstat(d->fd, &st) < 0) {
+		snprintf(why, cap, "cannot identify %s", target);
+		return -1;
+	}
+	if (S_ISREG(st.st_mode))
+		return 0;
+	if (!S_ISBLK(st.st_mode) || tw_sys_disk(st.st_rdev, disk, sizeof(disk)) < 0) {
+		snprintf(why, cap, "%s is not a drive", target);
+		return -1;
+	}
+	snprintf(p, sizeof(p), "%s/partition", disk);
+	if (!access(p, F_OK)) {
+		snprintf(why, cap, "%s is a partition, not a whole drive", target);
+		return -1;
+	}
+	name = strrchr(disk, '/') + 1;
+	snprintf(p, sizeof(p), "/sys/block/%s/removable", name);
+	if ((f = fopen(p, "r"))) {
+		removable = fgetc(f) == '1';
+		fclose(f);
+	}
+	snprintf(p, sizeof(p), "/sys/block/%s/device", name);
+	if (!removable && realpath(p, real) && strstr(real, "/usb"))
+		removable = 1;
+	if (!removable) {
+		snprintf(why, cap, "%s is not a USB or removable drive", target);
+		return -1;
+	}
+	snprintf(p, sizeof(p), "/sys/block/%s/size", name);
+	if ((f = fopen(p, "r"))) {
+		if (fscanf(f, "%llu", &sectors) != 1)
+			sectors = 0;
+		fclose(f);
+	}
+	if (sectors * 512 > TW_MAX_SIZE) {
+		snprintf(why, cap, "%s is larger than 2 TB, which is not a USB stick", target);
+		return -1;
+	}
+	if ((f = fopen("/proc/self/mounts", "r"))) {
+		while (fscanf(f, "%255s %255s %*s %*s %*d %*d\n", src, mnt) == 2) {
+			if (stat(src, &ms) < 0 || !S_ISBLK(ms.st_mode) ||
+			    tw_sys_disk(ms.st_rdev, real, sizeof(real)) < 0 || !tw_path_under(real, disk))
+				continue;
+			if (!strcmp(mnt, "/") || !strcmp(mnt, "/usr") || !strcmp(mnt, "/boot") ||
+			    !strcmp(mnt, "/boot/efi") || !strcmp(mnt, "/efi") || !strcmp(mnt, "/home") ||
+			    !strcmp(mnt, "/var")) {
+				fclose(f);
+				snprintf(why, cap, "%s holds the running system (%s)", target, mnt);
+				return -1;
+			}
+		}
+		fclose(f);
+	}
+	if ((f = fopen("/proc/swaps", "r"))) {
+		while (fscanf(f, "%255s %*[^\n]\n", src) == 1) {
+			if (stat(src, &ms) < 0 || !S_ISBLK(ms.st_mode) ||
+			    tw_sys_disk(ms.st_rdev, real, sizeof(real)) < 0 || !tw_path_under(real, disk))
+				continue;
+			fclose(f);
+			snprintf(why, cap, "%s is used for swap", target);
+			return -1;
+		}
+		fclose(f);
+	}
+	{
+		DIR *dd = opendir(disk);
+		struct dirent *e;
+		int held = 0;
+		while (dd && (e = readdir(dd)) && !held) {
+			DIR *hd;
+			struct dirent *h;
+			if (e->d_name[0] == '.')
+				continue;
+			if (strcmp(e->d_name, "holders")) {
+				snprintf(p, sizeof(p), "%s/%s/partition", disk, e->d_name);
+				if (access(p, F_OK))
+					continue;
+				snprintf(p, sizeof(p), "%s/%s/holders", disk, e->d_name);
+			} else {
+				snprintf(p, sizeof(p), "%s/holders", disk);
+			}
+			if (!(hd = opendir(p)))
+				continue;
+			while ((h = readdir(hd)))
+				if (h->d_name[0] != '.')
+					held = 1;
+			closedir(hd);
+		}
+		if (dd)
+			closedir(dd);
+		if (held) {
+			snprintf(why, cap, "%s is in use by LVM, RAID or encryption", target);
+			return -1;
+		}
+	}
+	return 0;
+#else
+	struct stat st;
+	struct statfs *mnts;
+	char bsd[32];
+	const char *t = target + 5;
+	uint64_t size = 0;
+	int n, i;
+	if (fstat(d->fd, &st) < 0) {
+		snprintf(why, cap, "cannot identify %s", target);
+		return -1;
+	}
+	if (S_ISREG(st.st_mode))
+		return 0;
+	if (strncmp(target, "/dev/", 5)) {
+		snprintf(why, cap, "%s is not a drive", target);
+		return -1;
+	}
+	if (*t == 'r')
+		t++;
+	if (strncmp(t, "disk", 4) || !t[4] || strspn(t + 4, "0123456789") != strlen(t + 4) ||
+	    strlen(t) >= sizeof(bsd)) {
+		snprintf(why, cap, "%s is not a whole drive", target);
+		return -1;
+	}
+	strcpy(bsd, t);
+	if (!strcmp(bsd, "disk0") || !tw_mac_external(bsd, NULL, 0, &size)) {
+		snprintf(why, cap, "%s is not a USB or SD card drive", target);
+		return -1;
+	}
+	if (size > TW_MAX_SIZE) {
+		snprintf(why, cap, "%s is larger than 2 TB, which is not a USB stick", target);
+		return -1;
+	}
+	n = getmntinfo(&mnts, MNT_NOWAIT);
+	for (i = 0; i < n; i++) {
+		const char *from = mnts[i].f_mntfromname, *on = mnts[i].f_mntonname;
+		if (strncmp(from, "/dev/", 5))
+			continue;
+		if (strcmp(on, "/") && strncmp(on, "/System/Volumes/", 16) && strncmp(on, "/private/var", 12) &&
+		    !(mnts[i].f_flags & MNT_ROOTFS))
+			continue;
+		if (tw_mac_parents(from + 5, bsd)) {
+			snprintf(why, cap, "%s holds the running system (%s)", target, on);
+			return -1;
+		}
+	}
+	return 0;
+#endif
+}
+
 static int tw_do_write(const tw_image *img, const char *target, const tw_hooks *hk)
 {
 	tw_dev dev;
 	tw_verdict v;
 	tw_writer w;
 	tw_gz gz;
-	char line[512];
+	char line[512], why[256];
 	uint32_t want_crc = tw_gz_crc_of(img->data, img->len);
 	uint32_t want_size = tw_gz_size_of(img->data, img->len);
 	uint64_t tsize;
+	int ro = 0;
 	snprintf(line, sizeof(line), "SIZE %u", want_size);
 	hk->note(hk->ud, line);
 	if (tw_dev_open(&dev, target, 1) < 0) {
-		hk->note(hk->ud, "ERROR cannot open the target");
+		if (tw_dev_open(&dev, target, 0) < 0) {
+			hk->note(hk->ud, "ERROR cannot open the target");
+			return 1;
+		}
+		ro = 1;
+	}
+	if (tw_target_check(&dev, target, why, sizeof(why)) < 0) {
+		snprintf(line, sizeof(line), "ERROR refusing to write: %s", why);
+		hk->note(hk->ud, line);
+		tw_dev_close(&dev);
 		return 1;
 	}
 	tsize = tw_dev_size(&dev);
+	if (tsize && tsize < want_size) {
+		hk->note(hk->ud, "ERROR the drive is too small for Tiny Hat");
+		tw_dev_close(&dev);
+		return 1;
+	}
 	tw_classify(tw_dev_read_cb, &dev, tsize, &v);
 	if (v.kind == TW_KIND_DATA) {
 		char ask[512];
@@ -1015,6 +1378,22 @@ static int tw_do_write(const tw_image *img, const char *target, const tw_hooks *
 		}
 	}
 	tw_unmount_target(target);
+#ifndef _WIN32
+	if (ro) {
+		struct stat a, b;
+		int ok = fstat(dev.fd, &a) == 0;
+		tw_dev_close(&dev);
+		if (!ok || tw_dev_open(&dev, target, 1) < 0) {
+			hk->note(hk->ud, "ERROR cannot open the target for writing");
+			return 1;
+		}
+		if (fstat(dev.fd, &b) < 0 || a.st_rdev != b.st_rdev || a.st_ino != b.st_ino) {
+			hk->note(hk->ud, "ERROR the target changed while writing was being prepared");
+			tw_dev_close(&dev);
+			return 1;
+		}
+	}
+#endif
 	memset(&w, 0, sizeof(w));
 	w.dev = &dev;
 	w.total = want_size;
@@ -1024,7 +1403,7 @@ static int tw_do_write(const tw_image *img, const char *target, const tw_hooks *
 	gz.src = img->data;
 	gz.srclen = img->len;
 	if (tw_gz_inflate(&gz, tw_write_emit, &w) < 0 || w.err) {
-		hk->note(hk->ud, "ERROR write failed");
+		hk->note(hk->ud, w.err == 2 ? "ERROR this is not a Tiny Hat image" : "ERROR write failed");
 		tw_dev_close(&dev);
 		return 1;
 	}

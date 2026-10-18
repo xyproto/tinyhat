@@ -17,6 +17,11 @@ mkdir -p "$work/root/boot/grub" "$work/root/tinyhat"
 cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
 cp "$top/config/grub.cfg" "$work/root/boot/grub/grub.cfg"
+if [ -n "$efi64" ]; then
+	echo "set tinyhat_arch=x86_64" >"$work/root/boot/grub/arch.cfg"
+else
+	echo "set tinyhat_arch=i686" >"$work/root/boot/grub/arch.cfg"
+fi
 bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "memtest86+" { print $4 }' "$top/initramfs.lock")" -C "$work/root" boot/memtest86+/memtest.bin
 cp "$sfs" "$work/root/tinyhat/root.sfs"
 cp "$top/config/grub-early.cfg" "$work/early.cfg"
@@ -30,21 +35,26 @@ done
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
-	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile font gfxterm gfxmenu png
+	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png fat loadenv smbios regexp
 mkdir -p "$work/efi/EFI/BOOT"
+mkdir -p "$work/efi/tinyhat"
+{
+	echo "# GRUB Environment Block"
+	head -c $((1024 - 25)) /dev/zero | tr '\0' '#'
+} >"$work/efi/tinyhat/grubenv"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
-	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png
+	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 if [ -n "$efi64" ]; then
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 		grub-mkimage -d "$efi64" -O x86_64-efi -o /img/efi/EFI/BOOT/BOOTX64.EFI -c /img/early.cfg -p /boot/grub \
-		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png
+		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 fi
 cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	/bin/sh -c 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI'
+	/bin/sh -c 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI && mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat'
 
 content=$(du -sm --apparent-size "$work/root" | cut -f1)
 part_mib=$((content + content / 32 + 64))

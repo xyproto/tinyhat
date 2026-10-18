@@ -29,10 +29,11 @@ cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
 rm -f "$out/img.gz"
 rm -rf "$out/src"
 mkdir -p "$stage"
-cp "$top/programs/tinyhat-write.c" "$top/programs/tinyhat-write-core.h" "$stage/"
+cp "$top/programs/tinyhat-write.c" "$top/programs/tinyhat-write-core.h" "$top/programs/tinyhat-write-mac.m" "$stage/"
 tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
 	-cf - "tinyhat-write-$ver" | gzip -n -9 >"$out/tinyhat-write-$ver.tar.gz"
 sha=$(sha256sum "$out/tinyhat-write-$ver.tar.gz" | awk '{ print $1 }')
+imgsha=$(sha256sum "$gz" | awk '{ print $1 }')
 cat >"$out/tinyhat-writer.rb" <<EOF
 class TinyhatWriter < Formula
   desc "Write Tiny Hat images to USB sticks"
@@ -40,12 +41,44 @@ class TinyhatWriter < Formula
   url "$base/v$ver/tinyhat-write-$ver.tar.gz"
   sha256 "$sha"
 
-  depends_on "pkgconf" => :build
-  depends_on "gtk+3"
+  depends_on :macos
+
+  resource "image" do
+    url "$base/v$ver/tinyhat32-$ver.img.gz", using: :nounzip
+    sha256 "$imgsha"
+  end
 
   def install
-    system ENV.cc, "-O2", "-DTW_VERSION=\\"$ver\\"", "tinyhat-write.c", "-o", "tinyhat-write", *shell_output("pkg-config --cflags --libs gtk+-3.0").split
-    bin.install "tinyhat-write"
+    app = prefix/"Tiny Hat Writer.app/Contents"
+    system ENV.cc, "-O2", "-fobjc-arc", "-DTW_VERSION=\\"$ver\\"", "tinyhat-write-mac.m", "-o", "tinyhat-write",
+           "-framework", "Cocoa", "-framework", "IOKit", "-framework", "DiskArbitration"
+    (app/"MacOS").install "tinyhat-write"
+    resource("image").stage { (app/"Resources").install "tinyhat32-$ver.img.gz" => "tinyhat.img.gz" }
+    (app/"Info.plist").write <<~PLIST
+      <?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+      <plist version="1.0">
+      <dict>
+        <key>CFBundleExecutable</key><string>tinyhat-write</string>
+        <key>CFBundleIdentifier</key><string>io.github.xyproto.tinyhat-writer</string>
+        <key>CFBundleName</key><string>Tiny Hat Writer</string>
+        <key>CFBundlePackageType</key><string>APPL</string>
+        <key>CFBundleShortVersionString</key><string>$ver</string>
+        <key>CFBundleVersion</key><string>$ver</string>
+        <key>LSMinimumSystemVersion</key><string>10.13</string>
+        <key>NSHighResolutionCapable</key><true/>
+      </dict>
+      </plist>
+    PLIST
+    bin.install_symlink app/"MacOS/tinyhat-write"
+  end
+
+  def caveats
+    <<~TEXT
+      Start it with: tinyhat-write
+      To get it in Launchpad and Finder:
+        ln -sf "#{opt_prefix}/Tiny Hat Writer.app" /Applications/
+    TEXT
   end
 
   test do
