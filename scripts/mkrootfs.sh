@@ -27,6 +27,7 @@ ln -sf clang "$root/usr/bin/cc"
 bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
 mkdir -p "$root/usr/share/backgrounds/tinyhat"
 python3 scripts/mkwallpaper.py img/tinyhat.svg "$root/usr/share/backgrounds/tinyhat/tinyhat.png"
+python3 scripts/mkpixelitos.py vendor/src/pixelitos-icon-theme-20260721.tar.gz "$root/usr/share/icons/pixelitos-dark"
 bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
 for p in linux-api-headers libxcrypt libglvnd glu glew glfw; do
 	bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/include/*'
