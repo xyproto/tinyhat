@@ -14,12 +14,16 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses run cleantest clean distclean tinyhat64.img patchcheck sourcecheck test dist
+.PHONY: all lock fetch sources licenses run cleantest clean distclean patchcheck sourcecheck test dist
 
 all: tinyhat32.img
 
 tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
+	@ls -l $@
+
+tinyhat64.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
+	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs /out/grub-efi64/usr/lib/grub/x86_64-efi
 	@ls -l $@
 
 lock:
@@ -140,6 +144,48 @@ $(B)/.x32-gcc: $(B)/.x32-glibc recipes/gcc-x32-final.sh vendor/src/gcc-15.2.0.ta
 	scripts/recipe.sh $(B)/buildroot gcc-x32-final >$(B)/gcc-x32-final.log 2>&1 || { tail -40 $(B)/gcc-x32-final.log; exit 1; }
 	@touch $@
 
+X32_PKGS := runtime zlib zstd xz bzip2 libffi expat freetype pixman
+
+$(B)/.x32-runtime: $(B)/.x32-gcc recipes/x32-runtime.sh recipes/x32-env.sh
+	scripts/recipe.sh $(B)/buildroot x32-runtime >$(B)/x32-runtime.log 2>&1 || { tail -40 $(B)/x32-runtime.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-zlib: $(B)/.x32-gcc recipes/x32-zlib.sh recipes/x32-env.sh vendor/src/zlib-1.3.2.tar.xz vendor/src/zlib-1.3.2-CVE-2026-85091.patch
+	scripts/recipe.sh $(B)/buildroot x32-zlib >$(B)/x32-zlib.log 2>&1 || { tail -40 $(B)/x32-zlib.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-zstd: $(B)/.x32-gcc recipes/x32-zstd.sh recipes/x32-env.sh vendor/src/zstd-1.5.7.tar.zst
+	scripts/recipe.sh $(B)/buildroot x32-zstd >$(B)/x32-zstd.log 2>&1 || { tail -40 $(B)/x32-zstd.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-xz: $(B)/.x32-gcc recipes/x32-xz.sh recipes/x32-env.sh vendor/src/xz-5.8.4.tar.xz
+	scripts/recipe.sh $(B)/buildroot x32-xz >$(B)/x32-xz.log 2>&1 || { tail -40 $(B)/x32-xz.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-bzip2: $(B)/.x32-gcc recipes/x32-bzip2.sh recipes/x32-env.sh vendor/src/bzip2-1.0.8.tar.gz
+	scripts/recipe.sh $(B)/buildroot x32-bzip2 >$(B)/x32-bzip2.log 2>&1 || { tail -40 $(B)/x32-bzip2.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-libffi: $(B)/.x32-gcc recipes/x32-libffi.sh recipes/x32-env.sh vendor/src/libffi-3.8.0.tar.gz
+	scripts/recipe.sh $(B)/buildroot x32-libffi >$(B)/x32-libffi.log 2>&1 || { tail -40 $(B)/x32-libffi.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-expat: $(B)/.x32-gcc recipes/x32-expat.sh recipes/x32-env.sh vendor/src/expat-2.9.0.tar.xz
+	scripts/recipe.sh $(B)/buildroot x32-expat >$(B)/x32-expat.log 2>&1 || { tail -40 $(B)/x32-expat.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-freetype: $(B)/.x32-zlib $(B)/.x32-bzip2 recipes/x32-freetype.sh recipes/x32-env.sh vendor/src/freetype-2.15.0.tar.xz
+	scripts/recipe.sh $(B)/buildroot x32-freetype >$(B)/x32-freetype.log 2>&1 || { tail -40 $(B)/x32-freetype.log; exit 1; }
+	@touch $@
+
+$(B)/.x32-pixman: $(B)/.x32-gcc recipes/x32-pixman.sh recipes/x32-env.sh vendor/src/pixman-0.46.4.tar.xz
+	scripts/recipe.sh $(B)/buildroot x32-pixman >$(B)/x32-pixman.log 2>&1 || { tail -40 $(B)/x32-pixman.log; exit 1; }
+	@touch $@
+
+$(B)/.grub-efi64: $(B)/.x32-gcc recipes/grub-efi64.sh vendor/src/grub-2.12.tar.xz vendor/src/flex-2.6.4-5.2-i686.pkg.tar.zst
+	scripts/recipe.sh $(B)/buildroot grub-efi64 >$(B)/grub-efi64.log 2>&1 || { tail -40 $(B)/grub-efi64.log; exit 1; }
+	@touch $@
+
 $(B)/.make: $(B)/.buildroot recipes/make.sh vendor/src/make-4.4.1.tar.gz
 	scripts/recipe.sh $(B)/buildroot make >$(B)/make.log 2>&1 || { tail -40 $(B)/make.log; exit 1; }
 	@touch $@
@@ -156,7 +202,7 @@ $(B)/.gba: $(B)/.buildroot recipes/gba.sh vendor/src/libtonc-c5af1b2cb019dcde432
 	scripts/recipe.sh $(B)/buildroot gba >$(B)/gba.log 2>&1 || { tail -40 $(B)/gba.log; exit 1; }
 	@touch $@
 
-$(B)/.mgba: $(B)/.sdl2-compat recipes/mgba.sh vendor/src/mgba-0.10.5.tar.gz
+$(B)/.mgba: $(B)/.sdl2-compat recipes/mgba.sh vendor/src/mgba-0.10.5.tar.gz $(wildcard vendor/patches/mgba/*)
 	scripts/recipe.sh $(B)/buildroot mgba >$(B)/mgba.log 2>&1 || { tail -40 $(B)/mgba.log; exit 1; }
 	@touch $@
 
@@ -277,8 +323,14 @@ $(B)/.qemacs: $(B)/.buildroot recipes/qemacs.sh vendor/src/qemacs-befd7a816ec824
 	scripts/recipe.sh $(B)/buildroot qemacs >$(B)/qemacs.log 2>&1 || { tail -40 $(B)/qemacs.log; exit 1; }
 	@touch $@
 
-$(B)/root.sfs: $(B)/.fetched-rootfs $(B)/.midibench $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/vmlinuz $(B)/.licenses $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+ROOTFS_DEPS := $(B)/.fetched-rootfs $(B)/.midibench $(B)/.qemacs $(B)/.tinyxxd $(B)/.furnace $(B)/.tic80 $(B)/.vice $(B)/.retro $(B)/.blastem $(B)/.testcontroller $(B)/.vtgbte $(B)/.rfxgen $(B)/.gba $(B)/.mgba $(B)/.pvsneslib $(B)/.png2xpm $(B)/.make $(B)/.llvm $(B)/.tinyhat-gui $(B)/.grafx2 $(B)/.sdl2_image $(B)/.gdb $(B)/.cc65 $(B)/.zsnes $(B)/.dosbox-x $(B)/.scummvm $(B)/.dwl $(B)/.fuzzel $(B)/.swaylock $(B)/.swaybg $(B)/.orbiton $(B)/.raylib $(B)/.sdl3-man $(B)/.fontconfig $(B)/.libxml2 $(B)/.libxml2-legacy $(B)/.fluidsynth $(B)/.licenses $(SOUNDFONT_GU) vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(filter vendor/src/lib%-i686.pkg.tar.zst,$(SOURCES)) $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py scripts/mklocalpkg.py
+
+$(B)/root.sfs: $(ROOTFS_DEPS) $(B)/vmlinuz
 	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@
+	@ls -l $@
+
+$(B)/root64.sfs: $(ROOTFS_DEPS) $(B)/vmlinuz-x32 $(X32_PKGS:%=$(B)/.x32-%)
+	scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs64 $(B)/modules-x86_64 $@ "$(X32_PKGS:%=x32-%)"
 	@ls -l $@
 
 $(B)/test-usb.img: tinyhat32.img
@@ -298,7 +350,7 @@ cleantest:
 
 clean:
 	scripts/userns.sh rm -rf $(B)
-	rm -f tinyhat32.img tinyhat32.img.tmp
+	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat64.img tinyhat64.img.tmp
 
 distclean: clean
 	rm -rf vendor/pkg
