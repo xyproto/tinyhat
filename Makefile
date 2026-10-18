@@ -44,6 +44,8 @@ fuzzelcheck:
 test: patchcheck sourcecheck fuzzelcheck
 	@for f in config/overlay/usr/bin/* scripts/*.sh; do sh -n "$$f" || exit 1; done
 	@echo "shell scripts: ok"
+	@scripts/chroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
+	@echo "grub.cfg: ok"
 
 dist: tinyhat32.img
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $<
