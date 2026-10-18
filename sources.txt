@@ -2,12 +2,15 @@
 beej-bgclr.zip a317eea64d7f99132fc302249a395b5ba88b20ec65e7d3af171c2bab6e23f659 https://beej.us/guide/bgclr/html/bgclr.zip
 beej-bgc.zip 6064437173f4d1723e5896117f9d4007b214ea71f61e7917ffdaa6a7534386eb https://beej.us/guide/bgc/html/bgc.zip
 binutils-2.45.1.tar.xz 5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5 https://ftp.gnu.org/gnu/binutils/binutils-2.45.1.tar.xz
+bzip2-1.0.8.tar.gz ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269 https://sourceware.org/pub/bzip2/bzip2-1.0.8.tar.gz
 cc65-71746c829e77f74c2b601a7d16821170c2610df3.tar.gz 2172a1fc74bf6f3026e0f9427d4159508cd801abcb35ce591394bb911adaabe4 https://github.com/cc65/cc65/archive/71746c829e77f74c2b601a7d16821170c2610df3.tar.gz
 dosbox-x-2026.10.01.tar.gz df023a6c0e4a139dcbd60befff5947e0db2cc68e4e79db463670f581a4044ed4 https://github.com/joncampbell123/dosbox-x/archive/refs/tags/dosbox-x-v2026.10.01.tar.gz
 dwl-0.8.tar.gz 3080087e7f613bf6a350934231fd9ed478d04cd2a2f30da8a96cdf2066f59412 https://codeberg.org/dwl/dwl/archive/v0.8.tar.gz
+expat-2.9.0.tar.xz 1e6371862cc31999b368c3b89b49994f0677e1bab5f1b2b85ae3741f5d803051 https://github.com/libexpat/libexpat/releases/download/R_2_9_0/expat-2.9.0.tar.xz
 fluidsynth-2.6.1.tar.gz 3d258a3bf97cc20c59eeebfe62c2432fae88adda74d3ad098681c76e0ebf446b https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.6.1.tar.gz
 fontconfig-2.18.3.tar.xz 4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3 https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/2.18.3/fontconfig-2.18.3.tar.xz
 BASS-Floppy-1.3.zip d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818 https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
+freetype-2.15.0.tar.xz 93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5 https://download-mirror.savannah.gnu.org/releases/freetype/freetype-2.15.0.tar.xz
 fuzzel-1.8.1.tar.gz f1dcd487d1cdb9f37be2535184503c265f5df5bd2571e9e0dfc193d00fd08aa2 https://codeberg.org/dnkl/fuzzel/archive/1.8.1.tar.gz
 gba-tools-v1.2.0.tar.gz 1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32 https://github.com/devkitPro/gba-tools/archive/refs/tags/v1.2.0.tar.gz
 gcc-15.2.0.tar.xz 438fd996826b0c82485a29da03a72d71d6e3541a83ec702df4271f6fe025d24e https://ftp.gnu.org/gnu/gcc/gcc-15.2.0/gcc-15.2.0.tar.xz
@@ -18,8 +21,10 @@ GeneralUser-GS-LICENSE.txt 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca1
 glibc-2.44.tar.xz 37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 https://ftp.gnu.org/gnu/glibc/glibc-2.44.tar.xz
 go1.26.8.linux-386.tar.gz 55115677dfcd953fa9d2fe376039125a60ff14fe0e619a2339a364860dda64ef https://go.dev/dl/go1.26.8.linux-386.tar.gz
 grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz c1bbb7d1bb692879c0edc20525e8908e570da7e341de46366f02cf0625dffe3b https://gitlab.com/GrafX2/grafx2/-/archive/f84cb09dc59d706d6e7b28778b01ba911f52298c/grafx2-f84cb09dc59d706d6e7b28778b01ba911f52298c.tar.gz
+grub-2.12.tar.xz f3c97391f7c4eaa677a78e090c7e97e6dc47b16f655f04683ebd37bef7fe0faa https://ftp.gnu.org/gnu/grub/grub-2.12.tar.xz
 libdisplay-info-0.3.0.tar.gz 2b467e3336aec63819d6aca28d7310d3dc7415b2b3a3c3a5aec9d3727053c078 https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/0.3.0/libdisplay-info-0.3.0.tar.gz
 libdom-0.4.1-2.1-i686.pkg.tar.zst c8c6b5121284951265863ee0c6b761b9a36c3c89f5d1388cb47bf5e0f90af194 https://archive.archlinux32.org/packages/l/libdom/libdom-0.4.1-2.1-i686.pkg.tar.zst
+libffi-3.8.0.tar.gz bf40d752d8f5fd4505bcd1c7d4208ea87fd12c91f087e359651c776748352dc0 https://github.com/libffi/libffi/archive/refs/tags/v3.8.0.tar.gz
 libhubbub-0.3.7-2.1-i686.pkg.tar.zst 77c960c7886517aa135d511093662db08097a51c63f131cdb2ee7d3e1f6c4032 https://archive.archlinux32.org/packages/l/libhubbub/libhubbub-0.3.7-2.1-i686.pkg.tar.zst
 libnsbmp-0.1.6-8.1-i686.pkg.tar.zst f706b54badb4ae498845b00529330eedb74e1d46fb0de5742e8d7052249b3cfa https://archive.archlinux32.org/packages/l/libnsbmp/libnsbmp-0.1.6-8.1-i686.pkg.tar.zst
 libnsutils-0.1.0-2.1-i686.pkg.tar.zst e2d7dbae678a0f1f22459953b47958249ddafb5c745ac0109da13e0cf5eee5c1 https://archive.archlinux32.org/packages/l/libnsutils/libnsutils-0.1.0-2.1-i686.pkg.tar.zst
@@ -35,6 +40,7 @@ meson-1.12.1.tar.gz ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07db
 mgba-0.10.5.tar.gz 91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14 https://github.com/mgba-emu/mgba/archive/refs/tags/0.10.5.tar.gz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
 orbiton-3b652909d6e6374d8b1cd97c753e3e72cb183234.tar.gz 1ff965167d985f9fe4618df6e743cec6ce57631623bef17f2e01810bc72a16b1 https://github.com/xyproto/orbiton/archive/3b652909d6e6374d8b1cd97c753e3e72cb183234.tar.gz
+pixman-0.46.4.tar.xz a098c33924754ad43f981b740f6d576c70f9ed1006e12221b1845431ebce1239 https://www.x.org/releases/individual/lib/pixman-0.46.4.tar.xz
 pvsneslib-e090f001ccffdc0fb69f479a8c9703e30d07f6b1.tar.gz 20aa1eed732b942bab17e80afe7970d2ef511ed93bd7b06565328d77eed89452 https://github.com/alekmaul/pvsneslib/archive/e090f001ccffdc0fb69f479a8c9703e30d07f6b1.tar.gz
 xpm-9eb268eca26e61eb7da0b1a9b25882b79195e9ab.tar.gz 7d7a02a683b675875febd5ab67d3d4f067db3111bf8a31da86c36ced8bae16b3 https://github.com/xyproto/xpm/archive/9eb268eca26e61eb7da0b1a9b25882b79195e9ab.tar.gz
 tcc-cc076f049282b7f8ca46b15c437db97d9224e763.tar.gz 1553e8e5581792a2c0b37818be852874a4529203409d1baf88a0d19396a39be0 https://github.com/alekmaul/tcc/archive/cc076f049282b7f8ca46b15c437db97d9224e763.tar.gz
@@ -52,6 +58,9 @@ swaybg-1.2.2.tar.gz 94e5c06a765d969e554b0f321f9cdf9c283a3fdaf70ad4e3d28163b21bd4
 swaylock-1.8.6.tar.gz a15154348fef852fdb224112d137c393c826478b777f63479beb15e8d3812eaf https://github.com/swaywm/swaylock/releases/download/v1.8.6/swaylock-1.8.6.tar.gz
 wlroots-0.19.3.tar.gz a6ff89b64ea15e424d1b0db4a22145fccf5ec2ff2e7b8af0fa35e2ac8975986f https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/0.19.3/wlroots-0.19.3.tar.gz
 xpadneo-0.10.4.tar.gz 5271c02a788f9470199e9e18596e0d8537687ff68b2fcc64c03ecf92638f5c84 https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.4.tar.gz
+xz-5.8.4.tar.xz 4ce24038fd4221e0d13bc1a2de7a4db56e90b92b3bf75321f6c14be73f65de4b https://github.com/tukaani-project/xz/releases/download/v5.8.4/xz-5.8.4.tar.xz
+zlib-1.3.2-CVE-2026-85091.patch db74db83084f8ff5cf8d65ea5fd1bd63331f4c79fc809189d3735f3518ae2527 https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148.patch?full_index=1
+zlib-1.3.2.tar.xz d7a0654783a4da529d1bb793b7ad9c3318020af77667bcae35f95d0e42a792f3 https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz
 zsnes-2.3.8.tar.gz 963b8243ee69d6a92e519991c457298dd1419b1406158607dfc387379c4b505e https://github.com/xyproto/zsnes/archive/refs/tags/v2.3.8.tar.gz
 vtGBte-1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz 9d9c61b9ae3bb0ef50b4c4ec383d55ab5ca7190be6030c37729feb7f66591a1c https://github.com/paul-arutyunov/vtGBte/archive/1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz
 lure-1.1.zip f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108 https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip
@@ -75,3 +84,4 @@ furnace-fmt-e57ca2e3.tar.gz 2d18d7b1c393791a180c8321cedd702093b5527625be955178be
 furnace-adpcm-ef7a2171.tar.gz 46da29342d2968ff222ba00e07c646e038b76af2e6c86de037c653059a056251 https://github.com/superctr/adpcm/archive/ef7a217154badc3b99978ac481b268c8aab67bd8.tar.gz
 tinyxxd-1.3.17.tar.gz d91cc4240c90cce4ada2b3f3d410cd916b6489495451a70a572908458180f955 https://github.com/xyproto/tinyxxd/archive/refs/tags/v1.3.17.tar.gz
 qemacs-befd7a816ec824e36bccf3d91c10559bf6752400.tar.gz 4366bacbf3468baa5d93a077c97d137b83c0648160ab9e2706af5e186d8a8b4a https://github.com/qemacs/qemacs/archive/befd7a816ec824e36bccf3d91c10559bf6752400.tar.gz
+zstd-1.5.7.tar.zst 5b331d961d6989dc21bb03397fc7a2a4d86bc65a14adc5ffbbce050354e30fd2 https://github.com/facebook/zstd/releases/download/v1.5.7/zstd-1.5.7.tar.zst
