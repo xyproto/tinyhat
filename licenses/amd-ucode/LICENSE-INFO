@@ -1,0 +1,4 @@
+name: amd-ucode
+version: 20260916 (CPU microcode)
+url: https://gitlab.com/kernel-firmware/linux-firmware
+license: LicenseRef-amd-ucode

@@ -133,6 +133,10 @@ SOURCES = [
      "SDL3-3.4.18.tar.gz", ["LICENSE.txt"]),
     ("pixelitos", "20260721 (icon theme)", "https://github.com/ItzSelenux/pixelitos-icon-theme", "MIT",
      "pixelitos-icon-theme-20260721.tar.gz", ["LICENSE", "CREDITS.md"]),
+    ("amd-ucode", "20260916 (CPU microcode)", "https://gitlab.com/kernel-firmware/linux-firmware", "LicenseRef-amd-ucode",
+     "amd-ucode-20260916-1.0-any.pkg.tar.zst", ["share/licenses/amd-ucode/LICENSE.amd-ucode"]),
+    ("intel-ucode", "20260812 (CPU microcode)", "https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files",
+     "LicenseRef-intel-ucode", "intel-ucode-20260812-1.0-any.pkg.tar.zst", ["share/licenses/intel-ucode/LICENSE"]),
     ("grub-efi64", "2.14 (64-bit UEFI boot loader)", "https://www.gnu.org/software/grub/", "GPL-3.0-or-later",
      "grub-2.14.tar.xz", ["COPYING"]),
 ]

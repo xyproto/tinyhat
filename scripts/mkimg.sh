@@ -17,6 +17,8 @@ rm -rf "$work"
 mkdir -p "$work/root/boot/grub" "$work/root/tinyhat"
 cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
+bsdtar -xf "$top/vendor/src/amd-ucode-20260916-1.0-any.pkg.tar.zst" -C "$work/root" boot/amd-ucode.img
+bsdtar -xf "$top/vendor/src/intel-ucode-20260812-1.0-any.pkg.tar.zst" -C "$work/root" boot/intel-ucode.img
 cp "$top/config/grub.cfg" "$work/root/boot/grub/grub.cfg"
 if [ -n "$efi64" ]; then
 	echo "set tinyhat_arch=x86_64" >"$work/root/boot/grub/arch.cfg"
@@ -36,7 +38,7 @@ done
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
-	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png fat loadenv regexp
+	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png fat loadenv smbios regexp
 mkdir -p "$work/efi/EFI/BOOT"
 mkdir -p "$work/efi/tinyhat"
 {
@@ -45,7 +47,7 @@ mkdir -p "$work/efi/tinyhat"
 } >"$work/efi/tinyhat/grubenv"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
-	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv regexp
+	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 if [ -n "$efi64" ]; then
 	printf '%s\n' \
 		"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md" \
@@ -53,7 +55,7 @@ if [ -n "$efi64" ]; then
 		"grub.tinyhat,1,Tiny Hat,grub,2.14,https://github.com/xyproto/tinyhat" >"$work/sbat.csv"
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 		/out/grub-efi64/usr/bin/grub-mkimage -d "$efi64" -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub \
-		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv regexp
+		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 	shim=usr/lib/efi/shim/16.1-10/EFI
 	mkdir -p "$work/shim" "$work/sbs"
 	bsdtar -xf "$top/vendor/src/shim-x64-16.1-10.x86_64.rpm" -C "$work/shim" "./$shim"

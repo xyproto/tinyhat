@@ -19,11 +19,11 @@ endif
 
 all: tinyhat32.img
 
-tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py
+tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(B)/.fetched-initramfs config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py vendor/src/amd-ucode-20260916-1.0-any.pkg.tar.zst vendor/src/intel-ucode-20260812-1.0-any.pkg.tar.zst
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-tinyhat64x32.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py vendor/src/shim-x64-16.1-10.x86_64.rpm vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst $(SB_KEYS)/tinyhat.cer
+tinyhat64x32.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(B)/.fetched-initramfs $(B)/.grub-efi64 config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py vendor/src/shim-x64-16.1-10.x86_64.rpm vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst $(SB_KEYS)/tinyhat.cer vendor/src/amd-ucode-20260916-1.0-any.pkg.tar.zst vendor/src/intel-ucode-20260812-1.0-any.pkg.tar.zst
 	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs /out/grub-efi64/usr/lib/grub/x86_64-efi $(SB_KEYS)
 	@ls -l $@
 
