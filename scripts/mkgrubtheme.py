@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import gzip, math, os, struct, sys, zlib
+import gzip, math, os, random, struct, sys, zlib
 
 BG = (0x1a, 0x1b, 0x26)
 TEAL = (0x1a, 0x9e, 0x96)
-HAT = (0x92, 0x24, 0x24)
-PINK = (0xf7, 0x76, 0x8e)
+HAT = (0x3d, 0x7a, 0x2a)
+GREEN = (0x9e, 0xce, 0x6a)
 GRAY = (0x49, 0x49, 0x49)
 LIGHT = (0xc0, 0xca, 0xf5)
 SLATE = (0xa9, 0xb1, 0xd6)
@@ -12,7 +12,7 @@ SLATE = (0xa9, 0xb1, 0xd6)
 CYAN = (0x7d, 0xcf, 0xff)
 WHITE = (0xff, 0xff, 0xff)
 
-INK = [BG, HAT, PINK, GRAY, LIGHT, CYAN, TEAL]
+INK = [BG, HAT, GREEN, GRAY, LIGHT, CYAN, TEAL]
 LOW, SEGMENTS, HAT_SCALE = 64, 16, 2
 ITEM, SPACING, BAR = 32, 2, 28
 
@@ -134,6 +134,30 @@ def hat(angle):
     return [[INK[low[y // HAT_SCALE][x // HAT_SCALE]] for x in range(LOW * HAT_SCALE)] for y in range(LOW * HAT_SCALE)]
 
 
+def starfield(path, w=1280, h=800):
+    rnd = random.Random(0x7417A700)
+    size = LOW * HAT_SCALE
+    keep_out = [
+        (w // 2 - size // 2 - 24, h * 5 // 100 - 24, w // 2 + size // 2 + 24, h * 5 // 100 + size + 48),
+        (w * 8 // 100, h * 38 // 100, w * 92 // 100, h * 88 // 100),
+        (w * 28 // 100, h * 90 // 100 - 32, w * 72 // 100, h * 90 // 100 + BAR + 8),
+        (w * 68 // 100, 0, w, h * 2 // 100 + 28),
+    ]
+    shades = [(0x56, 0x5f, 0x89)] * 5 + [(0xa9, 0xb1, 0xd6)] * 3 + [WHITE]
+    rows = [[BG] * w for _ in range(h)]
+    n = 0
+    while n < 140:
+        x, y = rnd.randrange(w - 1), rnd.randrange(h - 1)
+        if any(a <= x < c and b <= y < d for a, b, c, d in keep_out):
+            continue
+        c = rnd.choice(shades)
+        for py in (y, y + 1):
+            for px in (x, x + 1):
+                rows[py][px] = c
+        n += 1
+    png(path, w, h, rows)
+
+
 def bdf(path, glyphs, scale):
     w, h, descent = 8 * scale, 16 * scale, 4 * scale
     with open(path, "w") as f:
@@ -175,6 +199,8 @@ SMALL, LARGE = "VGA Regular 16", "VGA Regular 32"
 def theme():
     size = LOW * HAT_SCALE
     return f"""desktop-color: "{hexc(BG)}"
+desktop-image: "stars.png"
+desktop-image-scale-method: "crop"
 title-text: ""
 terminal-font: "{SMALL}"
 terminal-left: "0"
@@ -232,6 +258,7 @@ if magic != 0x864AB572 or count < 256 or glyph != 16 or height != 16 or width !=
 glyphs = data[header:header + 256 * 16]
 os.makedirs(out, exist_ok=True)
 png(os.path.join(out, "hat.png"), LOW * HAT_SCALE, LOW * HAT_SCALE, hat(0.45))
+starfield(os.path.join(out, "stars.png"))
 slices(out, "select", ITEM, TEAL)
 slices(out, "bar", BAR, GRAY)
 slices(out, "fill", BAR, TEAL)
