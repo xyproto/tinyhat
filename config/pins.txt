@@ -1,6 +1,2 @@
 # pango: archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have
 pango 1:1.54.0-1.0 pango-1:1.54.0-1.0-i686.pkg.tar.zst 69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef
-# wget: archlinux32 wget 1.21 needs libnettle.so.8, which archlinux32 no longer has
-wget 1.25.0-6.1 wget-1.25.0-6.1-i686.pkg.tar.zst 1a5fb6255fe52ea551652df5f5b09b05634d978f07ca8154875d55e9885524ee
-# texinfo: archlinux32 texinfo 7.3 was built for a newer perl than its perl 5.36
-texinfo 7.2-1.3 texinfo-7.2-1.3-i686.pkg.tar.zst d8b3e9647b15080ded303967067ab4d5a85226e46c16d3eeff355d017f2d208b

@@ -118,6 +118,7 @@ bwrap_run() {
 		--setenv PATH "$path" \
 		${libpath:+--setenv LD_LIBRARY_PATH $libpath} \
 		--setenv LANG C.UTF-8 \
+		--setenv MAKEINFO true \
 		--setenv SOURCE_DATE_EPOCH "$epoch" \
 		--setenv TINYHAT_ARCH "$arch" \
 		--setenv TINYHAT_BOOTSTRAP "$bootstrap" \
@@ -187,7 +188,7 @@ run() {
 
 exec 8>"$top/vendor/src/.lock"
 flock 8
-run --verifysource
+run --verifysource -f
 flock -u 8
 exec 8>&-
 run -f $nobuild

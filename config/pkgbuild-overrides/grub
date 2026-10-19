@@ -1,0 +1,16 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -e git -e wget -e sdl))
+source=("${source[@]:2}")
+b2sums=("${b2sums[@]:2}")
+prepare() {
+  rm -rf "${srcdir}/grub"
+  mv "${srcdir}/${pkgname}-${pkgver}" "${srcdir}/grub"
+  cd "${srcdir}/grub"
+  patch -Np1 -i "${srcdir}/0001-00_header-add-GRUB_COLOR_-variables.patch"
+  patch -Np1 -i "${srcdir}/0002-10_linux-detect-archlinux-initramfs.patch"
+  patch -Np1 -i "${srcdir}/0003-support-dropins-for-default-configuration.patch"
+  sed 's|/usr/share/fonts/dejavu|/usr/share/fonts/dejavu /usr/share/fonts/TTF|g' -i configure
+  sed 's| ro | rw |g' -i util/grub.d/10_linux.in
+  sed 's|GNU/Linux|Linux|' -i util/grub.d/10_linux.in
+  gzip -cd "${srcdir}/unifont-${_unifont_ver}.bdf.gz" > unifont.bdf
+  sed -i '1i /^PO-Revision-Date:/ d' po/*.sed
+}
