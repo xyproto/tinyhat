@@ -7,10 +7,7 @@ pkgbase = grep
 	arch = x32
 	license = GPL3
 	makedepends = gperf
-	makedepends = git
 	makedepends = python
-	makedepends = texinfo
-	makedepends = wget
 	depends = glibc
 	depends = pcre2
 	source = git+https://git.savannah.gnu.org/git/grep.git#tag=v3.12?signed
