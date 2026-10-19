@@ -360,7 +360,7 @@ static void setup_stars(void)
 {
 	uint32_t r = 0x7417a700;
 	int want = W / 30 * (H / 300);
-	starsize = H >= 900 ? 2 : 1;
+	starsize = H >= 960 ? 3 : 2;
 	nstars = 0;
 	if (want > MAXSTARS)
 		want = MAXSTARS;
@@ -375,7 +375,7 @@ static void setup_stars(void)
 		r ^= r << 13, r ^= r >> 17, r ^= r << 5;
 		stars[nstars].x = x;
 		stars[nstars].y = y;
-		stars[nstars].base = (int)(r % 2);
+		stars[nstars].base = 1 + (int)(r % 2);
 		stars[nstars].period = 20 + (int)((r >> 8) % 41);
 		stars[nstars].phase = (int)((r >> 16) % 60);
 		stars[nstars].shade = -1;
@@ -392,7 +392,7 @@ static void draw_stars(int force)
 		if (t < 2)
 			shade = 3;
 		else if (t < 4)
-			shade = stars[i].base + 1;
+			shade = stars[i].base < 2 ? stars[i].base + 1 : 3;
 		if (!force && shade == stars[i].shade)
 			continue;
 		stars[i].shade = shade;
