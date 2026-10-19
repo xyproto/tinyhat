@@ -81,11 +81,12 @@ $(B)/.fetched-buildroot: buildroot.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg
 	@touch $@
 
-$(B)/.buildroot: $(B)/.fetched-buildroot
+$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh
 	chmod -R u+w $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
 	python3 scripts/pkg.py extract buildroot.lock vendor/pkg $(B)/buildroot
 	ldconfig -r $(B)/buildroot
+	scripts/postinstall.sh $(B)/buildroot buildroot.lock vendor/pkg
 	@touch $@
 
 packages: $(I686_STAMPS)

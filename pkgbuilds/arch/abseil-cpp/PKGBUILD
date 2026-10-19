@@ -66,4 +66,6 @@ if [ "$CARCH" = "i486" ]; then
   )"
 fi
 
+eval "$(declare -f build | sed 's/-DABSL_BUILD_TESTING=ON/-DABSL_BUILD_TESTING=OFF/')"
+
 unset -f pkgver

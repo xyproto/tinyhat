@@ -91,6 +91,24 @@ mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
 cp -rL "$dir" "$work/pkg/$base"
 
 sandbox() {
+	tries=0
+	while :; do
+		if bwrap_run "$@" 9>&2 2>"$work/bwrap.err"; then
+			return 0
+		else
+			rc=$?
+		fi
+		if [ $tries -lt 100 ] && grep -q "^bwrap: Can't make overlay mount" "$work/bwrap.err"; then
+			tries=$((tries + 1))
+			sleep 0.1
+			continue
+		fi
+		cat "$work/bwrap.err" >&2
+		return $rc
+	done
+}
+
+bwrap_run() {
 	setarch "$personality" bwrap \
 		--overlay-src "$seed" --overlay "$work/upper" "$work/ovl" / \
 		--dev /dev --proc /proc --tmpfs /tmp \
@@ -107,6 +125,7 @@ sandbox() {
 
 sandbox --uid 0 --gid 0 --ro-bind "$repo" /repo --ro-bind "$boot" /bootstrap \
 	/bin/sh -euc '
+exec 2>&9 9>&-
 arch=$1 tc=$2 i686deps=$3 x32deps=$4 sysdeps=$5
 meta="--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG"
 mkdir -p /var/lib/pacman/local /build /startdir /srcdest /tinyhat /ccache /repo
@@ -159,9 +178,10 @@ run() {
 		--setenv HOME /build \
 		--setenv USER builder \
 		--setenv CCACHE_DIR /ccache \
+		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
 		--chdir /startdir \
-		makepkg --config "$conf" -d --noconfirm --skippgpcheck --holdver "$@"
+		/bin/sh -c 'exec 2>&9 9>&-; exec makepkg "$@"' sh --config "$conf" -d --noconfirm --skippgpcheck --holdver "$@"
 }
 
 exec 8>"$top/vendor/src/.lock"
