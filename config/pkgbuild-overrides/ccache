@@ -1,0 +1,5 @@
+makedepends=(${makedepends[@]//asciidoctor/})
+eval "$(
+  declare -f build | sed '/--target doc/d'
+  declare -f package | sed '/install -C build\/doc/d'
+)"

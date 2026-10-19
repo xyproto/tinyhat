@@ -14,7 +14,6 @@ pkgbase = freetype2
 	makedepends = libstdc++
 	makedepends = libx11
 	makedepends = meson
-	makedepends = qt6-base
 	makedepends = libxml2
 	depends = brotli
 	depends = bzip2

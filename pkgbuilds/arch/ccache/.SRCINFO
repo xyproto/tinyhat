@@ -7,7 +7,6 @@ pkgbase = ccache
 	arch = x32
 	license = GPL-3.0-or-later
 	checkdepends = doctest
-	makedepends = asciidoctor
 	makedepends = cmake
 	makedepends = git
 	makedepends = perl

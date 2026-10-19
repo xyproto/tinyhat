@@ -120,4 +120,7 @@ if [ "$CARCH" = 'i486' ]; then
   )"
 fi
 
+makedepends=(${makedepends[@]//qt6-base/})
+eval "$(declare -f build | sed 's/cmake -S openal-soft /cmake -S openal-soft -DALSOFT_NO_CONFIG_UTIL=ON /')"
+
 unset -f pkgver

@@ -276,21 +276,33 @@ def read_lock(lockfile):
     return out
 
 
+def fetch_pkg(p, pkgdir):
+    dest = os.path.join(pkgdir, p["filename"])
+    if os.path.exists(dest) and sha256(dest) == p["sha256"]:
+        return
+    try:
+        download(f"{MIRROR}/{p['repo']}/{p['filename']}", dest)
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            raise
+        download(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{p['filename']}", dest)
+    if sha256(dest) != p["sha256"]:
+        os.unlink(dest)
+        die(f"checksum mismatch for {p['filename']}")
+
+
 def cmd_fetch(lockfile, pkgdir):
     os.makedirs(pkgdir, exist_ok=True)
     for p in read_lock(lockfile):
-        dest = os.path.join(pkgdir, p["filename"])
-        if os.path.exists(dest) and sha256(dest) == p["sha256"]:
-            continue
-        try:
-            download(f"{MIRROR}/{p['repo']}/{p['filename']}", dest)
-        except urllib.error.HTTPError as e:
-            if e.code != 404:
-                raise
-            download(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{p['filename']}", dest)
-        if sha256(dest) != p["sha256"]:
-            os.unlink(dest)
-            die(f"checksum mismatch for {p['filename']}")
+        fetch_pkg(p, pkgdir)
+
+
+def cmd_prebuilt(repodir, *names):
+    os.makedirs(repodir, exist_ok=True)
+    db = load_db()[0]
+    for name in names:
+        if name in db:
+            fetch_pkg(db[name], repodir)
 
 
 def read_sources(path):
@@ -361,7 +373,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock LIST LOCK [LIST...] | local LIST LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
-            "fetch LOCK DIR | extract LOCK DIR ROOT [EXCLUDEFILE] | source SOURCES DIR [NAME...]")
+            "fetch LOCK DIR | prebuilt REPODIR NAME... | extract LOCK DIR ROOT [EXCLUDEFILE] | source SOURCES DIR [NAME...]")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
@@ -371,6 +383,8 @@ def main():
         cmd_repofiles(*args)
     elif cmd == "fetch":
         cmd_fetch(*args)
+    elif cmd == "prebuilt":
+        cmd_prebuilt(*args)
     elif cmd == "source":
         cmd_source(*args)
     elif cmd == "extract":

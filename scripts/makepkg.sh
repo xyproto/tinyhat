@@ -29,11 +29,11 @@ epoch=${SOURCE_DATE_EPOCH:-$(git -C "$top" log -1 --format=%ct 2>/dev/null || ec
 conf=/tinyhat/config/makepkg.conf
 case $dir in "$top"/pkgbuilds/tinyhat/*) conf=/tinyhat/config/makepkg-tinyhat.conf ;; esac
 tc=x86_64-pc-linux-gnux32
-path=/usr/bin
+path=/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 libpath=
 personality=i686
 if [ "$arch" = x32 ]; then
-	path=/usr/$tc/bin:/usr/bin
+	path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 	libpath=/usr/lib32
 	personality=x86_64
 fi
@@ -87,6 +87,7 @@ cleanup() {
 	rm -rf "$work"
 }
 cleanup
+trap cleanup EXIT
 mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
 cp -rL "$dir" "$work/pkg/$base"
 

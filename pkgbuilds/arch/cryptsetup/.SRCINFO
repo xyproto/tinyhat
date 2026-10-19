@@ -10,7 +10,6 @@ pkgbase = cryptsetup
 	checkdepends = procps-ng
 	checkdepends = xxd
 	makedepends = util-linux
-	makedepends = asciidoctor
 	depends = device-mapper
 	depends = libdevmapper.so
 	depends = glibc
