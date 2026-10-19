@@ -1,0 +1,8 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -e git -e wget -e texinfo))
+source=("https://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.xz")
+unset b2sums
+sha256sums=('bfd19cb06cc71f3352d567e90284d8cdac02ac89774bbeadf0b533b0c11432fd')
+prepare() { :; }
+eval "$(
+  declare -f build check package | sed -E 's/cd "?\$\{?pkgname\}?"?;?$/cd "${pkgname}-${pkgver}"/'
+)"

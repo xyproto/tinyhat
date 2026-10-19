@@ -6,10 +6,8 @@ pkgbase = findutils
 	arch = i686
 	arch = x32
 	license = GPL-3.0-or-later
-	makedepends = git
 	makedepends = gperf
 	makedepends = python
-	makedepends = wget
 	depends = glibc
 	source = git+https://git.savannah.gnu.org/git/findutils.git?signed#tag=v4.11.0
 	source = git+https://git.savannah.gnu.org/git/gnulib.git
