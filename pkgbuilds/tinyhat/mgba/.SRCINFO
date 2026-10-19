@@ -1,0 +1,19 @@
+pkgbase = mgba
+	pkgdesc = Game Boy Advance emulator, SDL frontend
+	pkgver = 0.10.5
+	pkgrel = 1
+	url = https://mgba.io/
+	arch = i686
+	arch = x32
+	license = MPL-2.0
+	makedepends = cmake
+	makedepends = ninja
+	depends = sdl2-compat
+	depends = libpng
+	depends = zlib
+	source = mgba-0.10.5.tar.gz::https://github.com/mgba-emu/mgba/archive/refs/tags/0.10.5.tar.gz
+	source = altenter.patch
+	sha256sums = 91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14
+	sha256sums = SKIP
+
+pkgname = mgba

@@ -1,0 +1,99 @@
+pkgbase = poppler
+	pkgver = 26.10.0
+	pkgrel = 1
+	url = https://poppler.freedesktop.org/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-only
+	license = GPL-3.0-or-later
+	license = LGPL-2.0-or-later
+	license = LGPL-2.1-or-later
+	license = MIT
+	license = HPND-sell-variant
+	checkdepends = noto-fonts-cjk
+	makedepends = libjpeg-turbo
+	makedepends = libgcc
+	makedepends = libstdc++
+	makedepends = cairo
+	makedepends = fontconfig
+	makedepends = openjpeg2
+	makedepends = gtk3
+	makedepends = pkgconfig
+	makedepends = lcms2
+	makedepends = gobject-introspection
+	makedepends = icu
+	makedepends = qt5-base
+	makedepends = git
+	makedepends = nss
+	makedepends = gpgmepp
+	makedepends = gtk-doc
+	makedepends = curl
+	makedepends = poppler-data
+	makedepends = cmake
+	makedepends = python
+	makedepends = boost
+	makedepends = glib2-devel
+	options = !emptydirs
+	source = git+https://gitlab.freedesktop.org/poppler/poppler.git#tag=poppler-26.10.0?signed
+	source = test::git+https://gitlab.freedesktop.org/poppler/test.git#commit=48b6219b84fc0a708040cb279d51095cc4e1c603
+	validpgpkeys = CA262C6C83DE4D2FB28A332A3A6A4DB839EAA6D7
+	sha256sums = 2277d28b51721ac7e08a7f82e39fffc2c638700670ecfc8104d27383d7704f0a
+	sha256sums = b4a9235420ac49bd8e7d7b38dad7747b04127051cf6b318bf6de836d9ac97a6a
+	makedepends_i686 = qt6-base
+
+pkgname = poppler
+	pkgdesc = PDF rendering library based on xpdf 3.0
+	depends = libjpeg-turbo
+	depends = libgcc
+	depends = libstdc++
+	depends = cairo
+	depends = fontconfig
+	depends = openjpeg2
+	depends = lcms2
+	depends = nss
+	depends = curl
+	depends = gpgmepp
+	depends = nspr
+	depends = libpng
+	depends = freetype2
+	depends = zlib
+	depends = libtiff
+	depends = glibc
+	optdepends = poppler-data: highly recommended encoding data to display PDF documents with certain encodings and characters
+	provides = libpoppler.so
+	provides = libpoppler-cpp.so
+	conflicts = poppler-qt3<26.10.0
+	conflicts = poppler-qt4<26.10.0
+
+pkgname = poppler-glib
+	pkgdesc = Poppler glib bindings
+	depends = poppler=26.10.0
+	depends = glib2
+	depends = libgcc
+	depends = libstdc++
+	depends = freetype2
+	depends = cairo
+	depends = glibc
+	provides = libpoppler-glib.so
+
+pkgname = poppler-qt5
+	pkgdesc = Poppler Qt5 bindings
+	depends = poppler=26.10.0
+	depends = qt5-base
+	depends = lcms2
+	depends = freetype2
+	depends = libgcc
+	depends = libstdc++
+	depends = glibc
+	provides = libpoppler-qt5.so
+
+pkgname = poppler-qt6
+	pkgdesc = Poppler Qt6 bindings
+	depends = poppler=26.10.0
+	depends = qt6-base
+	depends = lcms2
+	depends = freetype2
+	depends = libgcc
+	depends = libstdc++
+	depends = glibc
+	provides = libpoppler-qt6.so

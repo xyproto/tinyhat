@@ -1,0 +1,18 @@
+pkgname=tinyhat-retro
+pkgver=1
+pkgrel=1
+pkgdesc="Small SDL3 frontend for libretro emulator cores"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat"
+license=(MIT)
+depends=(sdl3)
+source=(tinyhat-retro.c libretro.h)
+sha256sums=('SKIP' 'SKIP')
+
+build() {
+  cc $CFLAGS -I. -o tinyhat-retro tinyhat-retro.c -lSDL3 $LDFLAGS
+}
+
+package() {
+  install -Dm755 tinyhat-retro "$pkgdir/usr/bin/tinyhat-retro"
+}

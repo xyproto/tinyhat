@@ -1,0 +1,17 @@
+pkgbase = highway
+	pkgdesc = A C++ library that provides portable SIMD/vector intrinsics
+	pkgver = 1.4.0
+	pkgrel = 1
+	url = https://github.com/google/highway/
+	arch = i686
+	arch = x32
+	license = Apache-2.0 OR BSD-3-Clause
+	makedepends = cmake
+	depends = glibc
+	depends = gtest
+	depends = libgcc
+	depends = libstdc++
+	source = https://github.com/google/highway/archive/1.4.0/highway-1.4.0.tar.gz
+	sha256sums = e72241ac9524bb653ae52ced768b508045d4438726a303f10181a38f764a453c
+
+pkgname = highway

@@ -1,0 +1,20 @@
+pkgbase = jomon
+	pkgdesc = Network forensics and sniffer tool
+	pkgver = 0.6.4
+	pkgrel = 1
+	url = https://github.com/jo-lund/jomon
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = git
+	makedepends = python
+	makedepends = re2c
+	depends = geoip
+	depends = glibc
+	depends = libgcc
+	depends = ncurses
+	optdepends = geoip-database-extra: for extra geolocation data
+	source = git+https://github.com/jo-lund/jomon#tag=v0.6.4
+	b2sums = 625b9d568a35e69e41fbd2c486ed70bdef79380c1e1d3aa6f8a32d3d8b5e9dfb1d77e6cf2430e37a21a2639087d4ceb1ab26f372e84b62fd698700a1f9549445
+
+pkgname = jomon

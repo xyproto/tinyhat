@@ -1,0 +1,104 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=libsoup3
+pkgname=(
+  libsoup3
+  libsoup3-docs
+)
+pkgver=3.8.0
+pkgrel="1"
+pkgdesc="HTTP client/server library for GNOME"
+url="https://libsoup.gnome.org/"
+arch=(i686 x32)
+license=(LGPL-2.0-or-later)
+depends=(
+  brotli
+  glib-networking
+  glib2
+  glibc
+  krb5
+  libnghttp2
+  libpsl
+  libsysprof-capture
+  sqlite
+  zlib
+  zstd
+)
+makedepends=(
+  gi-docgen
+  git
+  glib2-devel
+  gobject-introspection
+  meson
+  python-quart
+  samba
+  vala
+)
+checkdepends=(
+  apache
+  php-apache
+)
+source=(
+  "git+https://gitlab.gnome.org/GNOME/libsoup.git#tag=$pkgver"
+  0001-tests-Remove-AuthDigestQop-none.patch
+)
+b2sums=('140707e698a031d9c801d33c1c5439d04b7bb12490a4aa63d013e388a56e8ef68e569b16d1181388ba9e5943932149bf1371ddc21034615664de29a0bb7359ae'
+        '0ae74e19f3764bc4f02fe2de2099182e0aa37d7b0fce36e67f25076b314b363c055c5accb4c54f18f859b27484d038d20ed5d031c38a8c2f252e35d23cb86079')
+
+prepare() {
+  cd libsoup
+
+  # Fix tests
+  git apply -3 ../0001-tests-Remove-AuthDigestQop-none.patch
+}
+
+build() {
+  local meson_options=(
+    -D autobahn=disabled
+  )
+
+  arch-meson libsoup build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  # Python's output buffering messes with the tests reading stdout lines from
+  # http2-server.py through a pipe
+  PYTHONUNBUFFERED=1 meson test -C build --print-errorlogs
+}
+
+package_libsoup3() {
+  depends+=(
+    libbrotlidec.so
+    libgssapi_krb5.so
+    libg{lib,object,io}-2.0.so
+    libpsl.so
+  )
+  optdepends=('samba: Windows Domain SSO')
+  provides+=(libsoup-3.0.so)
+
+  meson install -C build --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_libsoup3-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# most tests fail on 32-bit, don't care, libsoup3 is only used for tracker3 now
+eval "$(
+  declare -f check | \
+    sed '
+      s/\(meson test.*\)/\1 || true/
+    '
+)"
+
+unset -f pkgver

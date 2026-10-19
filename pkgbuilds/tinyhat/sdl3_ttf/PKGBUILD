@@ -1,0 +1,23 @@
+pkgname=sdl3_ttf
+pkgver=3.2.2
+pkgrel=1
+pkgdesc="SDL3 TrueType font library"
+arch=(i686 x32)
+url="https://github.com/libsdl-org/SDL_ttf"
+license=(Zlib)
+depends=(sdl3 freetype2)
+makedepends=(cmake ninja)
+source=("https://github.com/libsdl-org/SDL_ttf/releases/download/release-$pkgver/SDL3_ttf-$pkgver.tar.gz")
+sha256sums=('63547d58d0185c833213885b635a2c0548201cc8f301e6587c0be1a67e1e045d')
+
+build() {
+  cmake -S SDL3_ttf-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=/usr \
+    -DSDLTTF_VENDORED=OFF -DSDLTTF_HARFBUZZ=OFF -DSDLTTF_PLUTOSVG=OFF \
+    -DSDLTTF_SAMPLES=OFF -DSDLTTF_INSTALL_MAN=OFF
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 SDL3_ttf-$pkgver/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"
+}

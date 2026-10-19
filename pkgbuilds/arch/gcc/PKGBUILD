@@ -1,0 +1,1172 @@
+# Maintainer: Giancarlo Razzolini <grazzolini@archlinux.org>
+# Maintainer: Frederik Schwan <freswa at archlinux dot org>
+# Contributor:  Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Daniel Kozak <kozzi11@gmail.com>
+
+# toolchain build order: linux-api-headers->glibc->binutils->gcc->glibc->binutils->gcc
+# NOTE: libtool requires rebuilt with each new gcc version
+
+pkgname=(
+  gcc
+  gcc-ada
+  gcc-d
+  gcc-fortran
+  gcc-gcobol
+  gcc-go
+  gcc-libs
+  gcc-m2
+  gcc-objc
+  gcc-rust
+  lib32-gcc-libs
+  libasan
+  libatomic
+  libgcc
+  libgccjit
+  libgcobol
+  libgfortran
+  libgm2
+  libgo
+  libgomp
+  libgphobos
+  libhwasan
+  libitm
+  liblsan
+  libobjc
+  libquadmath
+  libstdc++
+  libtsan
+  libubsan
+  lto-dump
+)
+pkgver=16.2.1+r23+gd564253eb6c8
+_commit=d564253eb6c859e266d3cae18e82fb4db9a88316
+pkgrel="1"
+pkgdesc='The GNU Compiler Collection'
+arch=(i686)
+license=(
+  'GPL-3.0-or-later WITH GCC-exception-3.1'
+  GFDL-1.3-or-later
+)
+url='https://gcc.gnu.org'
+makedepends=(
+  binutils
+  doxygen
+  gcc-ada
+  gcc-d
+  git
+  gcc-libs
+  glibc
+  libisl
+  libmpc
+  python
+  rust
+  zstd
+)
+checkdepends=(
+  dejagnu
+  expect
+  inetutils
+  python-pytest
+  tcl
+)
+options=(
+  !emptydirs
+  !lto
+)
+_libdir=usr/lib/gcc/$CHOST/${pkgver%%.*}
+source=(
+  git+https://forge.sourceware.org/gcc/gcc#commit=$_commit
+  c89
+  c99
+  gcc-ada-repro.patch
+  tune_branch_prediction_cost.patch
+)
+sha256sums=('c4def1816bc86f2bb981deb958a572ca63eb0ef784418f0414f1071a4efee44d'
+            '7b09ec947f90b98315397af675369a1e3dfc527fa70013062e6e85c4be0275ab'
+            '44ea973558842f3f4bd666bdaf6e810fd7b7c7bd36b5cc4c69f93d2cd0124fc7'
+            '1773f5137f08ac1f48f0f7297e324d5d868d55201c03068670ee4602babdef2f'
+            '838e14d4ef76079107a5373316598025915eaf747a10522ec9f8842125ca9a8e')
+pkgver() {
+  cd gcc
+  echo "$(cat gcc/BASE-VER)+$(git describe --abbrev=12 --tags | sed 's/[^-]*-[^-]*-//;s/[^-]*-/r&/;s/-/+/g;s/_/./')"
+}
+
+prepare() {
+  [[ ! -d gcc ]] && ln -s gcc-${pkgver/+/-} gcc
+  cd gcc
+
+  # Arch Linux installs x86_64 libraries /lib
+  sed -i '/m64=/s/lib64/lib/' gcc/config/i386/t-linux64
+
+  # Reproducible gcc-ada
+  patch -Np0 < "$srcdir"/gcc-ada-repro.patch
+
+  # tune branch prediction cost
+  patch -Np1 < ../tune_branch_prediction_cost.patch
+
+  mkdir -p "$srcdir"/gcc-build
+  mkdir -p "$srcdir"/libgccjit-build
+}
+
+build() {
+  local _confflags=(
+      --prefix=/usr
+      --libdir=/usr/lib
+      --libexecdir=/usr/lib
+      --mandir=/usr/share/man
+      --infodir=/usr/share/info
+      --with-bugurl=https://gitlab.archlinux.org/archlinux/packaging/packages/gcc/-/issues
+      --with-build-config=bootstrap-lto
+      --with-gcc-major-version-only
+      --with-linker-hash-style=gnu
+      --with-system-zlib
+      --enable-cet=auto
+      --enable-checking=release
+      --enable-clocale=gnu
+      --enable-default-pie
+      --enable-default-ssp
+      --enable-gnu-indirect-function
+      --enable-gnu-unique-object
+      --enable-libstdcxx-backtrace
+      --enable-link-serialization=1
+      --enable-linker-build-id
+      --enable-lto
+      --enable-multilib
+      --enable-plugin
+      --enable-shared
+      --enable-threads=posix
+      --disable-fixincludes
+      --disable-libssp
+      --disable-libstdcxx-pch
+      --disable-werror
+  )
+
+  cd gcc-build
+
+  # Credits @allanmcrae
+  # https://github.com/allanmcrae/toolchain/blob/f18604d70c5933c31b51a320978711e4e6791cf1/gcc/PKGBUILD
+  # TODO: properly deal with the build issues resulting from this
+  CFLAGS=${CFLAGS/-Werror=format-security/}
+  CXXFLAGS=${CXXFLAGS/-Werror=format-security/}
+
+  ../gcc/configure \
+    --enable-languages=ada,c,c++,d,fortran,go,lto,m2,objc,obj-c++,rust,cobol \
+    --enable-bootstrap \
+    "${_confflags[@]:?_confflags unset}"
+
+  # see https://bugs.archlinux.org/task/71777 for rationale re *FLAGS handling
+  make -O STAGE1_CFLAGS="-O2" \
+          BOOT_CFLAGS="$CFLAGS" \
+          BOOT_LDFLAGS="$LDFLAGS" \
+          LDFLAGS_FOR_TARGET="$LDFLAGS" \
+          bootstrap
+
+  # make documentation
+  make -O -C $CHOST/libstdc++-v3/doc doc-man-doxygen
+
+  # Build libgccjit separately, to avoid building all compilers with --enable-host-shared
+  # which brings a performance penalty
+  cd "$srcdir"/libgccjit-build
+
+  ../gcc/configure \
+    --enable-languages=jit \
+    --disable-bootstrap \
+    --enable-host-shared \
+    "${_confflags[@]:?_confflags unset}"
+
+  make -O all-gcc
+
+  cp -a gcc/libgccjit.so* ../gcc-build/gcc/
+}
+
+check() {
+  cd gcc-build
+
+  # disable libphobos test to avoid segfaults
+  sed -i '/maybe-check-target-libphobos \\/d' Makefile
+
+  # do not abort on error as some are "expected"
+  make -O -k check || true
+  "$srcdir"/gcc/contrib/test_summary
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -vp "$(dirname "$d")"
+    mv -v "$f" "$d"
+    rmdir -vp --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+_install_runtime_library_exception() {
+  # Install Runtime Library Exception
+  install -Dm644 "$srcdir"/gcc/COPYING.RUNTIME \
+    "$pkgdir"/usr/share/licenses/$pkgname/RUNTIME.LIBRARY.EXCEPTION
+}
+
+package_gcc() {
+  pkgdesc="The GNU Compiler Collection - C and C++ frontends"
+  depends=(
+    "libasan=$pkgver"
+    "libgcc=$pkgver"
+    "libhwasan=$pkgver"
+    "liblsan=$pkgver"
+    "libstdc++=$pkgver"
+    "libtsan=$pkgver"
+    "libubsan=$pkgver"
+    'binutils>=2.28'
+    'glibc>=2.27'
+    gmp
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+  optdepends=(
+    'gcc-libs: for generating code for 32-bit ABI'
+  )
+  provides=(
+    $pkgname-multilib
+  )
+  replaces=(
+    $pkgname-multilib
+  )
+  options=(
+    !emptydirs
+    staticlibs
+  )
+
+  cd gcc-build
+  make DESTDIR="$pkgdir" install
+  make -C gcc DESTDIR="$pkgdir" jit.install-common jit.install-info
+
+  (
+    cd "$pkgdir"
+
+    # prepare internal *.so symlinks to ensure shared linking for those shared libs
+    # where we ALSO ship a matching static lib in the internal _libdir
+    for _so in libatomic.so libstdc++.so libgdruntime.so libgphobos.so; do
+      ln -srv usr/lib/$_so $_libdir/$_so
+      ln -srv usr/lib32/$_so $_libdir/32/$_so
+    done
+
+    _pick gcc-ada usr/bin/gnat{,bind,chop,clean,kr,link,ls,make,name,prep}
+    _pick gcc-ada $_libdir/{,32/}ada_target_properties
+    _pick gcc-ada $_libdir/{,32/}ada{include,lib}/
+    _pick gcc-ada $_libdir/gnat1
+    _pick gcc-ada usr/share/info/gnat{-style,_rm,_ugn}.info
+
+    _pick gcc-d usr/bin/{gdc,$CHOST-gdc}
+    _pick gcc-d $_libdir/d21
+    _pick gcc-d $_libdir/include/d/
+    _pick gcc-d $_libdir/{,32/}libg{druntime,phobos}.so
+    _pick gcc-d usr/lib{,32}/libg{druntime,phobos}.a
+    _pick gcc-d usr/lib{,32}/libgphobos.spec
+    _pick gcc-d usr/share/info/gdc.info
+    _pick gcc-d usr/share/man/man1/gdc.1
+
+    _pick gcc-fortran usr/bin/{gfortran,$CHOST-gfortran}
+    _pick gcc-fortran $_libdir/{,32/}finclude/
+    _pick gcc-fortran $_libdir/{,32/}libcaf_{shmem,single}.a
+    _pick gcc-fortran $_libdir/f951
+    _pick gcc-fortran $_libdir/include/ISO_Fortran_binding.h
+    _pick gcc-fortran usr/lib{,32}/libgfortran.spec
+    _pick gcc-fortran usr/share/info/gfortran.info
+    _pick gcc-fortran usr/share/man/man1/gfortran.1
+
+    _pick gcc-gcobol usr/bin/{gcobc,gcobol,$CHOST-{gcobc,gcobol}}
+    _pick gcc-gcobol $_libdir/cobol/
+    _pick gcc-gcobol $_libdir/cobol1
+    _pick gcc-gcobol usr/lib/libgcobol.spec
+    _pick gcc-gcobol usr/share/man/man1/gcobol.1
+    _pick gcc-gcobol usr/share/man/man3/gcobol-io.3
+
+    _pick gcc-go usr/bin/{gccgo,go,gofmt,$CHOST-gccgo}
+    _pick gcc-go $_libdir/{buildid,cgo,go1,test2json,vet}
+    _pick gcc-go usr/lib{,32}/go/
+    _pick gcc-go usr/lib{,32}/lib{go,gobegin,golibbegin}.a
+    _pick gcc-go usr/share/info/gccgo.info
+    _pick gcc-go usr/share/man/man1/{gccgo,go,gofmt}.1
+
+    _pick gcc-m2 usr/bin/{gm2,$CHOST-gm2}
+    _pick gcc-m2 $_libdir/cc1gm2
+    _pick gcc-m2 usr/share/info/m2.info
+    _pick gcc-m2 usr/share/man/man1/gm2.1
+
+    _pick gcc-objc $_libdir/include/objc/
+    _pick gcc-objc $_libdir/cc1obj*
+
+    _pick gcc-rust usr/bin/{gccrs,$CHOST-gccrs}
+    _pick gcc-rust $_libdir/crab1
+
+    _pick lib32-gcc-libs usr/lib32/libasan.{a,so*}
+    _pick lib32-gcc-libs usr/lib32/libatomic.so*
+    _pick lib32-gcc-libs $_libdir/32/libatomic.so
+    _pick lib32-gcc-libs usr/lib32/libgcc_s.so.*
+    _pick lib32-gcc-libs usr/lib32/libgdruntime.so*
+    _pick lib32-gcc-libs usr/lib32/libgfortran.{a,so*}
+    _pick lib32-gcc-libs usr/lib32/libgo.so*
+    _pick lib32-gcc-libs usr/lib32/libgomp.{a,so*}
+    _pick lib32-gcc-libs usr/lib32/libgphobos.so*
+    _pick lib32-gcc-libs usr/lib32/libitm.{a,so*}
+    _pick lib32-gcc-libs usr/lib32/libobjc.{a,so*}
+    _pick lib32-gcc-libs usr/lib32/libquadmath.{a,so*}
+    _pick lib32-gcc-libs usr/lib32/libstdc++.so*
+    _pick lib32-gcc-libs usr/lib32/libubsan.{a,so*}
+
+    _pick libasan usr/lib/libasan.{a,so*}
+
+    _pick libatomic usr/lib/libatomic.so*
+    _pick libatomic $_libdir/libatomic.so
+
+    _pick libgcc usr/lib/libgcc_s.so.*
+
+    _pick libgccjit usr/include/libgccjit*
+    _pick libgccjit usr/lib/libgccjit.so*
+    _pick libgccjit usr/share/info/libgccjit.info
+
+    _pick libgcobol usr/lib/libgcobol.{a,so*}
+
+    _pick libgfortran usr/lib/libgfortran.{a,so*}
+
+    _pick libgm2 $_libdir/{,32/}m2/
+    _pick libgm2 usr/lib{,32}/libm2{cor,iso,log,min,pim}.{a,so*}
+
+    _pick libgo usr/lib/libgo.so*
+
+    _pick libgomp usr/lib/libgomp.{a,so*}
+    _pick libgomp usr/share/info/libgomp.info
+
+    _pick libgphobos usr/lib/libgdruntime.so*
+    _pick libgphobos usr/lib/libgphobos.so*
+
+    _pick libhwasan usr/lib/libhwasan.{a,so*}
+
+    _pick libitm usr/lib/libitm.{a,so*}
+    _pick libitm usr/share/info/libitm.info
+
+    _pick liblsan usr/lib/liblsan.{a,so*}
+
+    _pick libobjc usr/lib/libobjc.{a,so*}
+
+    _pick libquadmath usr/lib/libquadmath.{a,so*}
+    _pick libquadmath usr/share/info/libquadmath.info
+
+    _pick libstdc++ usr/lib/libstdc++.so*
+    _pick libstdc++ usr/share/locale/{de,fr}/LC_MESSAGES/libstdc++.mo
+
+    _pick libtsan usr/lib/libtsan.{a,so*}
+
+    _pick libubsan usr/lib/libubsan.{a,so*}
+
+    _pick lto-dump usr/bin/lto-dump
+    _pick lto-dump usr/share/man/man1/lto-dump.1
+
+    # move specific files into the internal "_libdir"
+    mv -v usr/lib/libgcc_s{,_asneeded}.so $_libdir/
+    mv -v usr/lib32/libgcc_s{,_asneeded}.so $_libdir/32/
+    mv -v usr/lib/libatomic{,_asneeded}.a usr/lib/libatomic_asneeded.so $_libdir/
+    mv -v usr/lib32/libatomic{,_asneeded}.a usr/lib32/libatomic_asneeded.so $_libdir/32/
+    mv -v usr/lib/*_preinit.o $_libdir/
+    mv -v usr/lib32/*_preinit.o $_libdir/32/
+    mv -v usr/lib/*.spec $_libdir/
+    mv -v usr/lib32/*.spec $_libdir/32/
+    mv -v usr/lib/libstdc++{,exp,fs}.a $_libdir/
+    mv -v usr/lib32/libstdc++{,exp,fs}.a $_libdir/32/
+    mv -v usr/lib/libsupc++.a $_libdir/
+    mv -v usr/lib32/libsupc++.a $_libdir/32/
+  )
+
+  install -d "$pkgdir"/usr/share/gdb/auto-load/usr/lib
+  mv ../libstdc++/usr/lib/libstdc++.so.6.*-gdb.py \
+    "$pkgdir"/usr/share/gdb/auto-load/usr/lib/
+
+  install -dm755 "$pkgdir"/usr/lib/bfd-plugins/
+  ln -s /$_libdir/liblto_plugin.so \
+    "$pkgdir"/usr/lib/bfd-plugins/
+
+  # many packages expect this symlink
+  ln -s gcc "$pkgdir"/usr/bin/cc
+
+  # create cc-rs compatible symlinks
+  # https://github.com/rust-lang/cc-rs/blob/1.0.73/src/lib.rs#L2578-L2581
+  for binary in {c++,g++,gcc,gcc-ar,gcc-nm,gcc-ranlib}; do
+    ln -s /usr/bin/"$binary" "$pkgdir"/usr/bin/$CARCH-linux-gnu-"$binary"
+  done
+
+  # POSIX conformance launcher scripts for c89 and c99
+  install -Dm755 "$srcdir"/c89 "$pkgdir"/usr/bin/c89
+  install -Dm755 "$srcdir"/c99 "$pkgdir"/usr/bin/c99
+
+  # install the libstdc++ man pages
+  make -C $CHOST/libstdc++-v3/doc DESTDIR="$pkgdir" doc-install-man
+
+  # byte-compile python libraries
+  python -m compileall "$pkgdir"/usr/share/gcc-${pkgver%%.*}/
+  python -O -m compileall "$pkgdir"/usr/share/gcc-${pkgver%%.*}/
+
+  _install_runtime_library_exception
+}
+
+package_gcc-ada() {
+  pkgdesc='Ada front-end for GCC (GNAT)'
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libgcc
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+  provides=(
+    $pkgname-multilib
+  )
+  replaces=(
+    $pkgname-multilib
+  )
+  options=(
+    !emptydirs
+    staticlibs
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  ln -s gcc "$pkgdir"/usr/bin/gnatgcc
+
+  # insist on dynamic linking, but keep static libraries because gnatmake complains
+  mv "$pkgdir"/$_libdir/adalib/libgna{rl,t}-${pkgver%%.*}.so "$pkgdir"/usr/lib
+  ln -s libgnarl-${pkgver%%.*}.so "$pkgdir"/usr/lib/libgnarl.so
+  ln -s libgnat-${pkgver%%.*}.so "$pkgdir"/usr/lib/libgnat.so
+  rm -f "$pkgdir"/$_libdir/adalib/libgna{rl,t}.so
+
+  install -d "$pkgdir"/usr/lib32/
+  mv "$pkgdir"/$_libdir/32/adalib/libgna{rl,t}-${pkgver%%.*}.so "$pkgdir"/usr/lib32
+  ln -s libgnarl-${pkgver%%.*}.so "$pkgdir"/usr/lib32/libgnarl.so
+  ln -s libgnat-${pkgver%%.*}.so "$pkgdir"/usr/lib32/libgnat.so
+  rm -f "$pkgdir"/$_libdir/32/adalib/libgna{rl,t}.so
+
+  _install_runtime_library_exception
+}
+
+package_gcc-d() {
+  pkgdesc="D frontend for GCC"
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libgphobos
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+  provides=(
+    gdc
+  )
+  replaces=(
+    gdc
+  )
+  options=(
+    !emptydirs
+    staticlibs
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  mkdir -pv "$pkgdir"/$_libdir/32
+  mv -v "$pkgdir"/usr/lib/libg{druntime,phobos}.a "$pkgdir"/$_libdir/
+  mv -v "$pkgdir"/usr/lib32/libg{druntime,phobos}.a "$pkgdir"/$_libdir/32
+  mv -v "$pkgdir"/usr/lib/libgphobos.spec "$pkgdir"/$_libdir/
+  mv -v "$pkgdir"/usr/lib32/libgphobos.spec "$pkgdir"/$_libdir/32
+  _install_runtime_library_exception
+}
+
+package_gcc-fortran() {
+  pkgdesc='Fortran front-end for GCC'
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libgfortran
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+  provides=(
+    $pkgname-multilib
+  )
+  replaces=(
+    $pkgname-multilib
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  ln -s gfortran "$pkgdir"/usr/bin/f95
+  mv -v "$pkgdir"/usr/lib/libgfortran.spec "$pkgdir"/$_libdir/
+  mv -v "$pkgdir"/usr/lib32/libgfortran.spec "$pkgdir"/$_libdir/32
+  _install_runtime_library_exception
+}
+
+package_gcc-gcobol() {
+  pkgdesc="Cobol frontend for GCC"
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libgcobol
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  mv -v "$pkgdir"/usr/lib/libgcobol.spec "$pkgdir"/$_libdir/
+  _install_runtime_library_exception
+}
+
+package_gcc-go() {
+  pkgdesc='Go front-end for GCC'
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libgo
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+  provides=(
+    "go=1.17"
+    $pkgname-multilib
+  )
+  replaces=(
+    $pkgname-multilib
+  )
+  conflicts=(
+    go
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_gcc-libs() {
+  pkgdesc='Runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libasan
+    libatomic
+    libgcc
+    libgfortran
+    libgomp
+    libhwasan
+    liblsan
+    libobjc
+    libquadmath
+    libstdc++
+    libtsan
+    libubsan
+  )
+  provides=(
+    $pkgname-multilib
+  )
+}
+
+package_gcc-m2() {
+  pkgdesc='Modula-2 frontend for GCC'
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libgm2
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_gcc-objc() {
+  pkgdesc='Objective-C front-end for GCC'
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libisl.so
+    libmpc
+    libobjc
+    mpfr
+    zlib
+    zstd
+  )
+  provides=(
+    $pkgname-multilib
+  )
+  replaces=(
+    $pkgname-multilib
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_gcc-rust() {
+  pkgdesc="Rust frontend for GCC"
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_lib32-gcc-libs() {
+  pkgdesc='32-bit runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+  )
+  provides=(
+    libasan.so
+    libatomic.so
+    libgdruntime.so
+    libgfortran.so
+    libgo.so
+    libgomp.so
+    libgphobos.so
+    libitm.so
+    libobjc.so
+    libquadmath.so
+    libubsan.so
+  )
+  options=(
+    !emptydirs
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  rm -v "$pkgdir"/usr/lib32/libstdc++.so.6.*-gdb.py
+  _install_runtime_library_exception
+}
+
+package_libasan() {
+  pkgdesc='Address Sanitizer runtime library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+    libstdc++
+  )
+  provides=(
+    libasan.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libatomic() {
+  pkgdesc='GNU Atomic library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+  )
+  provides=(
+    libatomic.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgcc() {
+  pkgdesc='Low-level runtime library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+  )
+  provides=(
+    libgcc_s.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgccjit() {
+  pkgdesc="Just-In-Time Compilation with GCC backend"
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+  provides=(
+    libgccjit.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgcobol() {
+  pkgdesc='Cobol runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+    libstdc++
+    libxml2
+  )
+  provides=(
+    libgcobol.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgfortran() {
+  pkgdesc='Runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libgfortran.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgm2() {
+  pkgdesc='Modula-2 runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+  )
+  provides=(
+    libm2cor.so
+    libm2iso.so
+    libm2log.so
+    libm2min.so
+    libm2pim.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgo() {
+  pkgdesc='Go runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libgo.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgomp() {
+  pkgdesc='OpenMP library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+  )
+  provides=(
+    libgomp.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libgphobos() {
+  pkgdesc='D runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libgdruntime.so
+    libgphobos.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libhwasan() {
+  pkgdesc='Hardware-assisted Address Sanitizer runtime library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+    libstdc++
+  )
+  provides=(
+    libhwasan.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libitm() {
+  pkgdesc='GNU Transactional Memory library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libitm.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_liblsan() {
+  pkgdesc='Leak Sanitizer runtime library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+    libstdc++
+  )
+  provides=(
+    liblsan.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libobjc() {
+  pkgdesc='Ojective-C runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libobjc.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libquadmath() {
+  pkgdesc='GCC __float128 library'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libquadmath.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libstdc++ () {
+  pkgdesc='C++ runtime libraries shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+  )
+  provides=(
+    libstdc++.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libtsan() {
+  pkgdesc='Thread Sanitizer runtime library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+    libstdc++
+  )
+  provides=(
+    libtsan.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_libubsan() {
+  pkgdesc='Undefined Behavior Sanitizer runtime library shipped by GCC'
+  depends=(
+    'glibc>=2.27'
+    libgcc
+    libstdc++
+  )
+  provides=(
+    libubsan.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+package_lto-dump() {
+  pkgdesc="Dump link time optimization object files"
+  depends=(
+    "gcc=$pkgver"
+    'glibc>=2.27'
+    gmp
+    libisl.so
+    libmpc
+    mpfr
+    zlib
+    zstd
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+  _install_runtime_library_exception
+}
+
+# remove tsan (thread sanitizer) plugin, not available for i686
+package_libtsan( ) {
+  echo "No TSAN for 32-bit (yet)."
+}
+
+# hwasan also needs 64-bit
+package_libhwasan( ) {
+  echo "No HWASAN for 32-bit (yet)."
+}
+
+# standalone liblsan is not built on 32-bit: only lsan_common goes into
+# libasan, so there is no liblsan.la / liblsan.so to be picked
+package_liblsan( ) {
+  touch "$pkgdir/this-is-a-dummy-package"
+}
+
+pkgname=(
+  $(
+    printf '%s\n' "${pkgname[@]}" | \
+      grep -vFx 'lib32-gcc-libs'
+  )
+)
+unset -f 'package_lib32-gcc-libs'
+
+# guard against our sed expressions becoming no-ops when the Arch Linux
+# PKGBUILD changes: the sed itself must never fail (the buildmaster parses
+# the PKGBUILD, too), so _sedpatch installs a build() stub instead that
+# makes makepkg fail with a clear error right before the build starts -
+# instead of silently passing unpatched sources into an obscure late
+# failure. The stub logs the dead sed script and the pre-patch function.
+_sedguard_failed() {
+  echo "ERROR: the sed expression(s) patching ${_sedguard_fn}() in this PKGBUILD did not change anything anymore." >&2
+  echo "Most likely the Arch Linux PKGBUILD changed; fix the sed expressions in the archlinux32 PKGBUILD." >&2
+  echo "--- the sed script was: ---" >&2
+  printf '%s\n' "${_sedguard_script}" >&2
+  echo "--- ${_sedguard_fn}() before patching was: ---" >&2
+  printf '%s\n' "${_sedguard_before}" >&2
+  exit 1
+}
+
+# _sedpatch <function> <sed script>: apply sed to the function, replace
+# build() with an error stub if nothing was changed
+_sedpatch() {
+  local fn=$1 script=$2 before after
+  [ -n "${_sedguard_tripped}" ] && return 0
+  before=$(declare -f "${fn}")
+  after=$(
+    printf '%s\n' "${before}" | \
+      sed "${script}"
+  )
+  if [ "${before}" = "${after}" ]; then
+    # poison pill: always fail in build(), never late in package_*
+    _sedguard_tripped=1
+    _sedguard_fn=$fn
+    _sedguard_script=$script
+    _sedguard_before=$before
+    eval 'build() { _sedguard_failed; }'
+  else
+    eval "${after}"
+  fi
+}
+
+_sedguard_tripped=''
+
+# one _sedpatch call per expression, so a dead expression is reported
+# exactly, instead of hiding behind still-working ones in the same script
+_sedpatch prepare '
+  \,/s/lib64/lib/, d
+'
+
+_sedpatch build '
+  s/--enable-multilib/--disable-multilib --build=$CHOST/
+'
+
+_sedpatch build '
+  \,with-bugurl, s%--with-bugurl=[^" )]*%--with-bugurl=https://bugs.archlinux32.org/%
+'
+
+eval "$(
+  for name in "${pkgname[@]}"; do
+    declare -f package_${name} | \
+      sed '
+        s/$pkgname-multilib//
+        s/{,32}//
+        s|{,32/}||
+        \,/32/, s/.* );/);/
+        \,/32/, {
+          / );$/!d
+        }
+        \,/lib32/, s/.* );/);/
+        \,/lib32/, {
+          / );$/!d
+        }
+      '
+  done
+)"
+
+# i486-specific
+
+# no ADA
+makedepends=(${makedepends[@]//gcc-ada/})
+makedepends_i686+=('gcc-ada')
+makedepends_pentium4+=('gcc-ada')
+
+if [ "${CARCH}" = "i486" ]; then
+  package_gcc-ada() {
+    touch "$pkgdir/this-is-a-dummy-package"
+  }
+
+  _sedpatch build '
+    /enable-languages/ s/ada,//
+  '
+
+  # ada is not built on i486: remove all _picks of its files from
+  # package_gcc(), including the gnat info pages
+  _sedpatch package_gcc '
+    \,_pick gcc-ada, d
+  '
+
+  # rust is not built on i486 either
+  _sedpatch package_gcc '
+    \,_pick gcc-rust, d
+  '
+
+fi
+
+makedepends=(${makedepends[@]//lib32-glibc/})
+makedepends=(${makedepends[@]//lib32-gcc-libs/})
+
+# i486-specific: disable PGO/LTO build, uses too much resources,
+# also disabling LTO for now
+if [ "${CARCH}" = "i486" ]; then
+  _sedpatch build '
+    s/--enable-lto/--disable-lto/
+  '
+
+  _sedpatch build '
+    s/--with-build-config=bootstrap-lto//
+  '
+
+  _sedpatch package_gcc '
+    /ln.*liblto_plugin\.so/d
+  '
+fi
+
+# testing takes too long and on i486 even runs in virtual memory exhaustion
+unset check
+
+# disable CET on all subarchitectures (Control Flow instructions endbr32/enbr64)
+_sedpatch build '
+  s/--enable-cet=auto/--disable-cet/
+'
+
+# remove rust on i486
+makedepends=(${makedepends[@]//rust/})
+makedepends_i686+=('rust')
+makedepends_pentium4+=('rust')
+if [ "${CARCH}" = "i486" ]; then
+  package_gcc-rust() {
+    echo "No Rust on i486."
+  }
+
+  _sedpatch build '
+    /enable-languages/ s/,rust//
+  '
+fi
+
+# remove gcobol as it doesn't build on 32-bit
+_sedpatch build '
+  /enable-languages/ s/,cobol//
+'
+
+package_gcc-gcobol( ) {
+  echo "No Cobol for 32-bit (yet)."
+}
+
+package_libgcobol( )  {
+  echo "No Cobol for 32-bit (yet)."
+}
+
+# tsan, hwasan and (standalone) lsan are not built on 32-bit, and cobol
+# doesn't build either: upstream package_gcc() must not try to pick their
+# files
+_sedpatch package_gcc '
+  \,_pick libtsan, d
+'
+
+_sedpatch package_gcc '
+  \,_pick libhwasan, d
+'
+
+_sedpatch package_gcc '
+  \,_pick liblsan, d
+'
+
+_sedpatch package_gcc '
+  \,_pick libgcobol, d
+'
+
+_sedpatch package_gcc '
+  \,_pick gcc-gcobol, d
+'
+
+# somehow doxygen doesn't produce libstdc++ man pages, later..
+_sedpatch package_gcc '
+  /make.*doc-install-man/d
+'
+
+# disable doxygen completely for now, we cannot build or recover
+# all dependencies of doxyen without a working compiler
+makedepends=(${makedepends[@]//libstdc++/})
+makedepends=(${makedepends[@]//gcc-libs/})
+makedepends=(${makedepends[@]//doxygen/})
+_sedpatch build '
+  /make.*doc-man-doxygen/d
+'
+
+unset -f pkgver

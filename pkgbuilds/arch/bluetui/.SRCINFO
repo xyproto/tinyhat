@@ -1,0 +1,17 @@
+pkgbase = bluetui
+	pkgdesc = TUI for managing bluetooth devices
+	pkgver = 0.8.2
+	pkgrel = 1
+	url = https://github.com/pythops/bluetui
+	arch = i686
+	license = GPL-3.0-only
+	makedepends = cargo
+	depends = bluez
+	depends = dbus
+	depends = glibc
+	depends = libgcc
+	options = !lto
+	source = bluetui-0.8.2.tar.gz::https://github.com/pythops/bluetui/archive/v0.8.2.tar.gz
+	sha512sums = cfb966878df4ca3b3055eb404c943a4749da040a5f42846603768fa60c70045fa974efd0fad32ff5828212364f8c8c1f43465f9f7effa850d82f1eacff697a75
+
+pkgname = bluetui

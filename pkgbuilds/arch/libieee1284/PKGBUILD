@@ -1,0 +1,55 @@
+# Maintainer: Anatol Pomozov
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Manolis Tzanidakis <manolis@archlinux.org>
+
+pkgname=libieee1284
+pkgver=0.2.11
+_tag=${pkgver//\./_}
+pkgrel="19"
+pkgdesc="A library to query devices connected in parallel port"
+arch=(i686 x32)
+license=('GPL-2.0-or-later')
+url="https://github.com/twaugh/libieee1284"
+depends=('glibc')
+makedepends=(
+  'docbook-xml'
+  'docbook-xsl'
+  'python'
+  'xmlto'
+)
+optdepends=('python: for python module')
+source=(
+  "$pkgname-$pkgver.tar.gz::$url/archive/V$_tag.tar.gz"
+  "upstream_python_fix1.patch::$url/commit/c48855528beee1397d883f9c8a5df7aed5c917a6.patch"
+  "upstream_python_fix2.patch::$url/commit/b4d63327dfef8dbf12aabf4bba0f6818a3519995.patch"
+  "fix-python-3-compatibility.patch::$url/commit/357005f6b19c4e2febd3c0f17e59de541accbe92.patch"
+  "fix-python-3.12-compatibility.patch::$url/commit/cf59766dd848bd8b4318b1c67b5df053903ddefb.patch"
+)
+sha256sums=('eb6a4305f5d44f74b548c8dd41ec1103175cabb57f9661bec4af49e11f8a0238'
+            '53dc16334556f7c2554bcb6d2370c3bae4d07d29af34fb96ffa4d522a9eedc0f'
+            '20190a7841f0fc672ead0caf1cf87a1e94b824515906ea972ae17bdb5ce99f82'
+            '40efc0e6ab7c8ab30a61b89ea515dcdfbd5b110c2c08feccda7abb2dc3381583'
+            '38dad4a5eb686c6cfe45b6bdedb2c68ad8625db10783f313024131752c8ecabe')
+
+prepare() {
+  cd "$pkgname-$_tag"
+  patch -Np1 -F3 -i ../upstream_python_fix1.patch
+  patch -Np1 -F3 -i ../upstream_python_fix2.patch
+  patch -Np1 -i ../fix-python-3-compatibility.patch
+  patch -Np1 -i ../fix-python-3.12-compatibility.patch
+}
+
+build() {
+  cd "$pkgname-$_tag"
+  ./bootstrap
+  ./configure --prefix=/usr --mandir=/usr/share/man --with-python
+  make
+}
+
+package() {
+  cd "$pkgname-$_tag"
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

@@ -1,0 +1,119 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+
+pkgbase=libadwaita
+pkgname=(
+  libadwaita
+  libadwaita-demos
+  libadwaita-docs
+)
+pkgver=1.10.0
+pkgrel="1"
+epoch=1
+pkgdesc="Building blocks for modern adaptive GNOME applications"
+url="https://gnome.pages.gitlab.gnome.org/libadwaita/"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  fribidi
+  glib2
+  glibc
+  graphene
+  gtk4
+  ministream
+  pango
+)
+makedepends=(
+  gi-docgen
+  git
+  glib2-devel
+  gobject-introspection
+  meson
+  sassc
+  vala
+)
+checkdepends=(weston)
+source=(
+  "git+https://gitlab.gnome.org/GNOME/libadwaita.git#tag=${pkgver/[a-z]/.&}"
+)
+b2sums=('1f7e461b2d0246d0945612c5420ec767e2374965f9bbff6ada9604e95dbe1060c707eb1f97d2d5a7fb6ed08c9afe11f1c2f7d70ab3250a60b340ed19adf05390')
+
+prepare() {
+  cd $pkgname
+}
+
+build() {
+  local meson_options=(
+    -D documentation=true
+  )
+
+  arch-meson $pkgname build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() (
+  export XDG_RUNTIME_DIR="$PWD/runtime-dir"
+  mkdir -p -m 700 "$XDG_RUNTIME_DIR"
+
+  export WAYLAND_DISPLAY=wl-$pkgbase-$RANDOM
+  weston --backend=headless --socket=$WAYLAND_DISPLAY --idle-time=0 &
+  _w=$!
+
+  trap "kill $_w; wait" EXIT
+
+  meson test -C build --print-errorlogs
+)
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_libadwaita() {
+  depends+=(libgtk-4.so)
+  provides+=(libadwaita-1.so)
+
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+
+  cd "$pkgdir"
+
+  _pick demo usr/bin/adwaita-1-demo
+  _pick demo usr/share/applications/org.gnome.Adwaita1.Demo.desktop
+  _pick demo usr/share/icons/hicolor/*/apps/org.gnome.Adwaita1.Demo[-.]*
+  _pick demo usr/share/metainfo/org.gnome.Adwaita1.Demo.metainfo.xml
+
+  _pick docs usr/share/doc
+}
+
+package_libadwaita-demos() {
+  pkgdesc+=" (demo applications)"
+  depends=(
+    glib2
+    glibc
+    gtk4
+    hicolor-icon-theme
+    libadwaita
+  )
+  mv demo/* "$pkgdir"
+}
+
+package_libadwaita-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+  mv docs/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# temporarily we depend on old sparql versions, which require older
+# versions of icu
+if [ "${CARCH}" = 'i486' ]; then
+	makedepends+=(icu70 icu69)
+fi
+
+unset -f pkgver

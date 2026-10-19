@@ -1,0 +1,13 @@
+pkgbase = libmpeg2
+	pkgdesc = Library for decoding MPEG-1 and MPEG-2 video streams
+	pkgver = 0.5.1
+	pkgrel = 11
+	url = https://libmpeg2.sourceforge.io/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	depends = glibc
+	source = https://download.videolan.org/contrib/libmpeg2/libmpeg2-0.5.1.tar.gz
+	b2sums = 29b71740fa601c668a8f5b0a43aa763bda2fc66587f5bff847d4bc6d03dd831abe46428616b770aaaabf2d42877daad8c305ab4dd988cc91a4c90decfcc19c9a
+
+pkgname = libmpeg2

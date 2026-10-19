@@ -1,0 +1,27 @@
+pkgbase = gba-dev
+	pkgdesc = libtonc, startup code, gba.specs and gbafix for GBA programming
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/gbadev-org/libtonc
+	arch = i686
+	arch = x32
+	license = MIT
+	license = LGPL-2.0-or-later
+	makedepends = arm-none-eabi-binutils
+	depends = arm-none-eabi-gcc
+	depends = arm-none-eabi-newlib
+	options = !strip
+	source = libtonc-c5af1b2cb019dcde43216596390490bc07800b21.tar.gz::https://github.com/gbadev-org/libtonc/archive/c5af1b2cb019dcde43216596390490bc07800b21.tar.gz
+	source = gba-tools-v1.2.0.tar.gz::https://github.com/devkitPro/gba-tools/archive/refs/tags/v1.2.0.tar.gz
+	source = build-libtonc.sh
+	source = gba_crt0.s
+	source = gba_cart.ld
+	source = gba.specs
+	sha256sums = 5f5703d4c3188ddcdd770c2dc43cae7bea0780b348b1cd9eb473ba777c0aa396
+	sha256sums = 1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = gba-dev

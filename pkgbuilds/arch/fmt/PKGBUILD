@@ -1,0 +1,114 @@
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+# Contributor: Mihai Bişog <mihai.bisog@gmail.com>
+
+pkgbase=fmt
+pkgname=(
+  fmt
+  fmt-docs
+)
+pkgver=12.2.0
+pkgrel="1"
+pkgdesc='Open-source formatting library for C++'
+arch=(i686 x32)
+url=https://fmt.dev
+license=(MIT)
+makedepends=(
+  cmake
+  doxygen
+  git
+  mkdocs
+  mkdocs-material
+  mkdocstrings
+  ninja
+  npm
+  python-pymdown-extensions
+  python-regex
+)
+source=("git+https://github.com/fmtlib/fmt.git#tag=${pkgver}")
+b2sums=('e095e1d8e2d95a08f8d6430360e76e9b24a4e213ee83adeeeabf93de09dde325c8e2c4bbbab0907d79f77a21ef5db55ca25f836173f3cd94aecb0cc214fc596d')
+
+build() {
+  cmake -S fmt -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -Wno-dev \
+    -DBUILD_SHARED_LIBS=ON
+  cmake --build build
+  cmake --build build --target doc
+}
+
+check() {
+  ctest --test-dir build --output-on-failure
+}
+
+package_fmt() {
+  depends=(
+    glibc
+    libgcc
+    libstdc++
+  )
+  provides=(libfmt.so)
+
+  DESTDIR="${pkgdir}" cmake --install build --component fmt_core
+  install -Dm 644 -t "${pkgdir}"/usr/share/licenses/${pkgname} fmt/LICENSE
+}
+
+package_fmt-docs() {
+  pkgdesc+=' (documentation)'
+
+  DESTDIR="${pkgdir}" cmake --install build --component fmt_doc
+  install -Dm 644 -t "${pkgdir}"/usr/share/licenses/${pkgname} fmt/LICENSE
+}
+
+# vim: ts=2 sw=2 et:
+
+# no npm on i486 (used for documnentation only)
+makedepends=(${makedepends[@]//npm/})
+makedepends_i686+=(npm)
+makedepends_pentium4=("${makedepends_i686[@]}")
+
+if [ "${CARCH}" = "i486" ]; then
+  eval "$(
+    declare -f prepare | \
+      sed '
+        /npm/d
+      '
+  )"
+
+  eval "$(
+    declare -f build | \
+      sed '
+        /cmake.*doc/d
+      '
+  )"
+fi
+
+# breaking a cycle with doxygen, spdlog, fmt
+makedepends=(${makedepends[@]/doxygen})
+eval "$(
+  declare -f build | \
+    sed '
+      /cmake.*doc/d
+    '
+)"
+
+# 32-bit has no __int128, and fmt's software uint128 fallback lacks operator~
+# ("no match for 'operator~' (operand type is 'fmt::v12::detail::uint128')");
+# upstream fix 588b3a0f (#4813), fixed in releases after 12.2.0
+source+=('fmt-uint128-operator-not.patch')
+# upstream fmt uses b2sums, so extend that array (a separate sha256sums array
+# would not match the size of the source array)
+b2sums+=('9227a1cdcb530cfa5fe57d60e8c49c31947435536d0e5fe5bfffc5844fb9743bfbd1d2fddc2c54b027c522e161362896c850a5231a38f32c5a150aed12328fd2')
+if declare -f prepare > /dev/null; then
+  eval "$(
+    declare -f prepare | \
+      sed '$ i patch -Np1 -d fmt -i "${srcdir}/fmt-uint128-operator-not.patch"'
+  )"
+else
+  prepare() {
+    patch -Np1 -d fmt -i "${srcdir}/fmt-uint128-operator-not.patch"
+  }
+fi
+
+unset -f pkgver

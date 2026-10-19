@@ -1,0 +1,64 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Gustavo Alvarez <sl1pkn07@gmail.com>
+# Contributor: Panagiotis Papadopoulos pano_90 AT gmx DOT net 
+
+pkgname=libbs2b
+pkgver=3.1.0
+pkgrel="11"
+pkgdesc="Bauer stereophonic-to-binaural DSP effect library"
+url="http://bs2b.sourceforge.net"
+arch=(i686 x32)
+license=(MIT)
+depends=(
+  glibc
+  libsndfile
+  libstdc++
+)
+source=(
+  "https://downloads.sourceforge.net/sourceforge/bs2b/$pkgname-$pkgver.tar.lzma"
+  formatsecurity.diff
+)
+b2sums=('986b0df4faee05cd6659bf5e338752d795450af9543f6c24c93cfeaa537fefb125966e4311d3637856aa6c4959b2aeec68b46baaab9caba5829405ce4b69d9a3'
+        'c111cf2f249261ec286fdb24e1f044ce2b3b9d078f3f139e1519ba4932bc35392b497882c0daf23c53c89199d0f3783b740cdf0e71175c6dedd408a9fb2d7cfd')
+
+# https://sourceforge.net/projects/bs2b/files/libbs2b/
+md5sums=('00d32ffa6461dde6a632c846da3e0a13'
+         'af1c91f47bd7481cd71fc38a3a35f0e7')
+sha1sums=('ec847e38a3a6f7eeed245b44e53f02cfff056df0'
+          'f8206ca996894884a2989401feb1b7d1acd28f2e')
+
+prepare() {
+  cd $pkgname-$pkgver
+
+  # Fix error: format not a string literal and no format arguments [-Werror=format-security]
+  patch -Np1 -i ../formatsecurity.diff
+
+  sed -i 's/dist-lzma/dist-xz/g' configure.ac
+
+  autoreconf -fvi
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+
+package() {
+  depends+=(libsndfile.so)
+  provides+=(libbs2b.so)
+
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 COPYING
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

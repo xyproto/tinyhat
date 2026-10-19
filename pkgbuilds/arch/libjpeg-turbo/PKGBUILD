@@ -1,0 +1,93 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Simone Sclavi 'Ito' <darkhado@gmail.com>
+
+pkgname=libjpeg-turbo
+pkgver=3.2.0
+pkgrel="2"
+pkgdesc="JPEG image codec with accelerated baseline compression and decompression"
+url="https://libjpeg-turbo.org/"
+_url="https://github.com/libjpeg-turbo/libjpeg-turbo/"
+arch=(i686 x32)
+license=(
+  BSD-3-Clause
+  IJG
+)
+depends=(glibc)
+makedepends=(
+  cmake
+  ninja
+  nasm
+)
+provides=(
+  libjpeg.so
+  libturbojpeg.so
+)
+source=(
+  $_url/releases/download/$pkgver/$pkgname-$pkgver.tar.gz{,.sig}
+)
+sha512sums=('13536db56c16e5364690ae2d31343a203e3b653c853c1f5314d36c8eb06700e92342737f1381f0171b3eb0223384c5fbcde91b55a46576952c4e75dc049cd045'
+            'SKIP')
+b2sums=('c50c985f8b870ab6467181f69e10f3ec2705cb349613b9178b293f136063e302087832d87f793b3d24ab721a2f5d76271760bd244d0766ab3b8cbe48ebf50cfa'
+        'SKIP')
+validpgpkeys=('0338C8D8D9FDA62CF9C421BD7EC2DBB6F4DBF434') # The libjpeg-turbo Project (Signing key for official binaries) <information@libjpeg-turbo.org>
+
+build() {
+  local cmake_options=(
+    -B build
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_INSTALL_LIBDIR=/usr/lib
+    -D CMAKE_BUILD_TYPE=None
+    -D ENABLE_STATIC=OFF
+    -D WITH_JPEG8=ON
+    -G Ninja
+    -S $pkgname-$pkgver
+    -W no-dev
+  )
+
+  cmake "${cmake_options[@]}"
+  cmake --build build -v
+}
+
+check() {
+  ctest --test-dir build --output-on-failure --stop-on-failure -j$(nproc)
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build -v
+
+  # header required by some dependents
+  # https://bugs.archlinux.org/task/24787
+  install -vDm 644 $pkgname-$pkgver/src/jpegint.h "$pkgdir/usr/include"
+
+  install -vDm 644 $pkgname-$pkgver/LICENSE.md -t "$pkgdir/usr/share/licenses/$pkgname/"
+  install -vDm 644 $pkgname-$pkgver/README.ijg -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+if [ "${CARCH}" = "i486" ]; then
+  # no SIMD optimizations
+  eval "$(
+    declare -f build | \
+      sed '
+        /local cmake_options/ a \
+          cmake_options+=(-DWITH_SIMD=0)
+      '
+  )"
+
+  # ctest ist broken on libexpat
+  unset check
+
+  # Java broken on i486 temporarily
+  makedepends=(${makedepends[@]//java-environment>11/})
+  eval "$(
+    declare -f build | \
+      sed '
+        /local cmake_options/ a \
+          cmake_options+=(-DWITH_JAVA=0)
+        /strip-nondeterminism/d
+      '
+  )"
+fi
+
+unset -f pkgver

@@ -1,0 +1,24 @@
+pkgbase = vulkan-icd-loader
+	pkgdesc = Vulkan Installable Client Driver (ICD) Loader
+	pkgver = 1.4.363.0
+	pkgrel = 1
+	url = https://www.vulkan.org/
+	arch = i686
+	arch = x32
+	groups = vulkan-devel
+	license = Apache-2.0
+	makedepends = cmake
+	makedepends = git
+	makedepends = libx11
+	makedepends = libxrandr
+	makedepends = ninja
+	makedepends = python-lxml
+	makedepends = vulkan-headers
+	makedepends = wayland
+	depends = glibc
+	optdepends = vulkan-driver: packaged vulkan driver
+	provides = libvulkan.so
+	source = git+https://github.com/KhronosGroup/Vulkan-Loader#tag=vulkan-sdk-1.4.363.0
+	b2sums = 259bb9fae3c7f84a2d3439dd5b4a3ca8a777ab2ac867f91cea4647326d7fdd3425437ff98e9622cc98091e8cd9534fb7b30fb4459d3e7cf2b3488104a1b5e3d1
+
+pkgname = vulkan-icd-loader

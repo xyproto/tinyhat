@@ -1,0 +1,25 @@
+pkgbase = nasm
+	pkgdesc = 80x86 assembler designed for portability and modularity
+	pkgver = 3.02
+	pkgrel = 1
+	url = https://www.nasm.us
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause
+	makedepends = perl-font-ttf
+	makedepends = perl-sort-versions
+	makedepends = fontconfig
+	makedepends = ttf-roboto
+	makedepends = ttf-roboto-mono
+	makedepends = ghostscript
+	makedepends = xmlto
+	makedepends = asciidoc
+	makedepends = diffutils
+	depends = glibc
+	depends = zlib
+	source = https://www.nasm.us/pub/nasm/releasebuilds/3.02/nasm-3.02.tar.xz
+	sha512sums = dc80d8a9a582423e62703da3cc3f37ee57735939b975faa8a72d061a8b596f763d206c7cc3e48c32d2ad726f38e430dc3b85cffd0c3b32e71e20ad9cc24f4804
+	b2sums = 616a807e7ab126a1223618a457266b6f00ee3f212cbb11027125ce3ecf3beebaa935cd96e3f9640cc46d99659ad19c9d6506bf5e5a062718b203cc62f8a217fe
+	makedepends_i686 = ttf-liberation
+
+pkgname = nasm

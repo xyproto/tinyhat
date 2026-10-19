@@ -1,0 +1,84 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Chocobo1 <chocobo1 AT archlinux DOT net>
+# Contributor: Jacek Szafarkiewicz <szafar at linux dot pl>
+
+pkgbase=zlib-ng
+pkgname=(zlib-ng zlib-ng-compat)
+pkgver=2.3.3
+pkgrel="1"
+pkgdesc='zlib replacement with optimizations for next generation systems'
+url='https://github.com/zlib-ng/zlib-ng'
+arch=(i686 x32)
+license=('Zlib')
+depends=(
+  glibc
+)
+makedepends=(
+  git
+  cmake
+  ninja
+)
+source=("git+https://github.com/zlib-ng/zlib-ng#tag=${pkgver}")
+sha256sums=('aa625dc5ecdeb0ea6c12d76518dd10a55e865499c5a0fced68f52cb751542041')
+b2sums=('9380c04753e0eab0b3fb5a72b115a65f5841fccb03f7e711e4bf5ed78888b3bb19085ade58b47c229868774333d20cd29301ae4f0e7db8c2d40414dfe6e71af2')
+
+
+build() {
+  cd "${pkgbase}"
+
+  local _options=(
+    -G Ninja
+    -DCMAKE_BUILD_TYPE=None
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCMAKE_INSTALL_LIBDIR=lib
+    -Wno-dev
+    -DWITH_GTEST=OFF
+    -DBUILD_SHARED_LIBS=ON
+  )
+
+  echo "Building zlib-ng"
+  cmake -B build \
+    "${_options[@]}"
+  cmake --build build
+
+  echo "Building zlib-ng-compat"
+  cmake -B build-compat \
+    "${_options[@]}" \
+    -DZLIB_COMPAT=ON
+  cmake --build build-compat
+}
+
+check() {
+  cd "${pkgbase}"
+
+  echo "Checking zlib-ng"
+  ctest --output-on-failure --test-dir build
+  echo "Checking zlib-ng-compat"
+  ctest --output-on-failure --test-dir build-compat
+}
+
+package_zlib-ng() {
+  provides=(libz-ng.so)
+
+  cd "${pkgbase}"
+
+  DESTDIR="${pkgdir}" cmake --install build
+  install -Dm 644 LICENSE.md -t "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -Dm 644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+}
+
+package_zlib-ng-compat() {
+  pkgdesc+=" (zlib compat)"
+  provides=(zlib libz.so)
+  conflicts=(zlib)
+
+  cd "${pkgbase}"
+
+  DESTDIR="${pkgdir}" cmake --install build-compat
+  install -Dm 644 LICENSE.md -t "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -Dm 644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

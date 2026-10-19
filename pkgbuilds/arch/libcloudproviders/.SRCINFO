@@ -1,0 +1,27 @@
+pkgbase = libcloudproviders
+	pkgdesc = DBus API that allows cloud storage sync clients to expose their services
+	pkgver = 0.4.1
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/libcloudproviders
+	arch = i686
+	arch = x32
+	license = LGPL-3.0-or-later
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = gobject-introspection
+	makedepends = meson
+	makedepends = vala
+	depends = libgcc
+	depends = glib2
+	depends = glibc
+	source = git+https://gitlab.gnome.org/GNOME/libcloudproviders.git?signed#tag=0.4.1
+	validpgpkeys = AD1483F8A95118F7F0C8AF4A965D4777208E7691
+	b2sums = 720a21e38d745b84164859977952369e5986cb96221f791caaadd0399ce17cf012ba20ccbd878586059383970ce00800818310f9e72c935b865bf5e4f1c244d8
+
+pkgname = libcloudproviders
+	provides = libcloudproviders.so
+
+pkgname = libcloudproviders-docs
+	pkgdesc = DBus API that allows cloud storage sync clients to expose their services (documentation)
+	depends = 

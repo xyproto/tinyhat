@@ -1,0 +1,25 @@
+pkgbase = gsettings-desktop-schemas
+	pkgdesc = GSettings schemas for GNOME
+	pkgver = 51.0
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas
+	arch = any
+	license = LGPL-2.1-or-later
+	makedepends = adwaita-fonts
+	makedepends = dconf
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = gobject-introspection
+	makedepends = meson
+	source = git+https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git#tag=51.0
+	b2sums = 1615914f9d1b49d34fefff0cecfa5c58bf4c1f171a94c0afb321b9ee838ab8ad0b18c6a4dc01e4cee7b70b2d522de48ae6293d6c8ee7a6b6e8bbe39fb6cff473
+
+pkgname = gsettings-desktop-schemas
+	pkgdesc = GSettings schemas for GNOME desktop components
+	depends = gsettings-system-schemas=51.0
+	depends = adwaita-fonts
+	depends = dconf
+
+pkgname = gsettings-system-schemas
+	pkgdesc = GSettings schemas for GNOME system components
+	depends = dconf

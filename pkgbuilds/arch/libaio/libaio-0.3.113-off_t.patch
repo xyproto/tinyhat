@@ -1,0 +1,21 @@
+diff -rauN libaio-libaio-0.3.113/harness/cases/23.t libaio-libaio-0.3.113-off_t-patch/harness/cases/23.t
+--- libaio-libaio-0.3.113/harness/cases/23.t	2022-04-12 22:49:33.000000000 +0200
++++ libaio-libaio-0.3.113-off_t-patch/harness/cases/23.t	2022-06-02 13:25:40.945786571 +0200
+@@ -72,7 +72,7 @@
+ static void *thrproc2(void *arg)
+ {
+ 	for (;;) {
+-		off_t offset = 0;
++		off64_t offset = 0;
+ 
+ 		pthread_barrier_wait(&barrier);
+ 		if (exiting)
+@@ -92,7 +92,7 @@
+ {
+ 	for (;;) {
+ 		char c;
+-		off_t offset = 0;
++		off64_t offset = 0;
+ 
+ 		pthread_barrier_wait(&barrier);
+ 		if (exiting)

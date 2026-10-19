@@ -1,0 +1,71 @@
+# Maintainer: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Adam Fontenot <fontenot@ucla.edu>
+
+pkgname=libheif
+pkgver=1.23.6
+pkgrel="1"
+pkgdesc='An HEIF and AVIF file format decoder and encoder'
+arch=(i686 x32)
+url='https://github.com/strukturag/libheif'
+license=(LGPL-3.0-or-later)
+provides=('libheif.so')
+makedepends=(cmake
+             dav1d
+             ffmpeg
+             git
+             libjpeg-turbo
+             libpng
+             libtiff
+             openjpeg2
+             rav1e
+             svt-av1)
+depends=(aom libaom.so
+         glibc libgcc_s.so
+         libde265 #libde265.so
+         libgcc libgcc_s.so
+         libstdc++ libstdc++.so
+         libwebp libsharpyuv.so
+         openh264 libopenh264.so
+         openh264 libopenh264.so
+         x264 libx264.so
+         x265 libx265.so)
+optdepends=('libjpeg-turbo: for heif-dec and heif-enc'
+            'libpng: for heif-dec and heif-enc'
+            'libtiff: for heif-dec and heif-enc'
+            'dav1d: dav1d encoder'
+            'ffmpeg: hardware decode'
+            'openjpeg2: JPEG2000 decoder'
+            'rav1e: rav1e encoder'
+            'svt-av1: svt-av1 encoder')
+source=(git+https://github.com/strukturag/libheif#tag=v$pkgver)
+sha256sums=('3a14caa51845aabc12da553bd0b19320e31e5fe02ad4f9aae2181d2068f6154f')
+
+build() {
+  cmake -B build -S $pkgname \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DWITH_DAV1D=ON \
+    -DWITH_RAV1E=ON \
+    -DWITH_FFMPEG_DECODER=ON \
+    -DWITH_FFMPEG_DECODER_PLUGIN=ON \
+    -DWITH_SvtEnc=ON \
+    -DWITH_OpenJPEG_DECODER=ON \
+    -DWITH_GDK_PIXBUF=OFF \
+    -DWITH_EXAMPLE_HEIF_THUMB=OFF
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
+
+# No rav1e for now (no Rust, later i486 only)
+makedepends=(${makedepends[@]//rav1e/})
+eval "$(
+  declare -f build | \
+    sed '
+      s/-DWITH_RAV1E=ON/-DWITH_RAV1E=OFF/
+    '
+)"
+
+
+unset -f pkgver

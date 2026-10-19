@@ -1,0 +1,22 @@
+pkgbase = tzdata
+	pkgdesc = Sources for time zone and daylight saving time data
+	pkgver = 2026e
+	pkgrel = 1
+	url = https://www.iana.org/time-zones
+	arch = i686
+	arch = x32
+	license = LicenseRef-tz
+	optdepends = bash: for tzselect
+	optdepends = glibc: for zdump, zic
+	options = !emptydirs
+	source = https://www.iana.org/time-zones/repository/releases/tzcode2026e.tar.gz
+	source = https://www.iana.org/time-zones/repository/releases/tzcode2026e.tar.gz.asc
+	source = https://www.iana.org/time-zones/repository/releases/tzdata2026e.tar.gz
+	source = https://www.iana.org/time-zones/repository/releases/tzdata2026e.tar.gz.asc
+	validpgpkeys = 7E3792A9D8ACF7D633BC1588ED97E90E62AA7E34
+	sha512sums = 623af2d5c611ce5d9f6d07ceeb09721db03ed90e8e74e027f96fc402eb948fc8a7e9aecac2611e41fb501bdc2592a78020375ad677d887beaacb2fd5da9b9815
+	sha512sums = SKIP
+	sha512sums = 5be2f875f73b75e5783c474bf7a6c768e433cc90283f8fc6a75e3d05bd92aec97936e8a55ccca5e880b5dacc18ba65932bab0e783e1ed5d2af4a3a4df95512be
+	sha512sums = SKIP
+
+pkgname = tzdata

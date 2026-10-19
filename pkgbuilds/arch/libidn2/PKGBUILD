@@ -1,0 +1,58 @@
+# Maintainer: Evangelos Foutras <foutrelis@archlinux.org>
+# Contributor: Daurnimator <quae@daurnimator.com>
+
+pkgname=libidn2
+pkgver=2.3.8
+pkgrel="1"
+pkgdesc="Free software implementation of IDNA2008, Punycode and TR46"
+arch=(i686 x32)
+url="https://www.gnu.org/software/libidn/#libidn2"
+license=('GPL2' 'LGPL3')
+depends=('libunistring')
+makedepends=('ruby-ronn-ng')
+provides=('libidn2.so')
+source=(https://ftp.gnu.org/gnu/libidn/$pkgname-$pkgver.tar.gz{,.sig})
+sha256sums=('f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a'
+            'SKIP')
+validpgpkeys=('B1D2BD1375BECB784CF4F8C4D73CF638C53C06BE') # Simon Josefsson <simon@josefsson.org>
+
+prepare() {
+  cd $pkgname-$pkgver
+}
+
+build() {
+  cd $pkgname-$pkgver
+
+  ./configure \
+    --prefix=/usr \
+    --disable-static
+  make
+}
+
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+package() {
+  depends+=('libunistring.so')
+
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}
+
+# vim:set ts=2 sw=2 et:
+
+# remove dependency on ruby-ronn on i486
+makedepends=(${makedepends[@]//ruby-ronn-ng/})
+makedepends_i686+=(ruby-ronn-ng)
+makedepends_pentium4=("${makedepends_i686[@]}")
+
+# GNU make is failing us now?
+eval "$(
+  declare -f build | \
+    sed '
+      s/configure/configure --disable-dependency-tracking /
+    '
+)"
+
+unset -f pkgver

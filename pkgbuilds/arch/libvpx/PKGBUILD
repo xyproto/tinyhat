@@ -1,0 +1,55 @@
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+
+pkgname=libvpx
+pkgver=1.17.0
+pkgrel="1"
+pkgdesc='VP8 and VP9 codec'
+arch=(i686 x32)
+url=https://www.webmproject.org/
+license=(custom:BSD)
+depends=(
+  glibc
+)
+makedepends=(
+  git
+  nasm
+)
+provides=(libvpx.so)
+_tag=82615ff0733cd4063838c352bc2e2ab225f37ade
+source=(git+https://chromium.googlesource.com/webm/libvpx#tag=${_tag})
+b2sums=('df306f55209c8761336d9139e9ecfc04a20f68da4fca2a0b8ae2d2318d19af4d46cd5272f2c826f3c492129689ec98f4399942c7e56c61ba02e6696800904ecd')
+
+pkgver() {
+  cd libvpx
+  git describe --tags | sed 's/^v//'
+}
+
+build() {
+  cd libvpx
+  ./configure \
+    --prefix=/usr \
+    --disable-install-docs \
+    --disable-install-srcs \
+    --disable-unit-tests \
+    --enable-pic \
+    --enable-postproc \
+    --enable-runtime-cpu-detect \
+    --enable-shared \
+    --enable-vp8 \
+    --enable-vp9 \
+    --enable-vp9-highbitdepth \
+    --enable-vp9-temporal-denoising
+  make
+}
+
+package() {
+  cd libvpx
+  make DIST_DIR="${pkgdir}"/usr install
+  install -Dm 644 LICENSE -t "${pkgdir}"/usr/share/licenses/libvpx/
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

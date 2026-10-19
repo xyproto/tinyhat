@@ -1,0 +1,29 @@
+pkgbase = libresprite
+	pkgdesc = Animated sprite editor and pixel art tool, based on the last GPL2 commit of Aseprite
+	pkgver = 1.3
+	pkgrel = 1
+	url = https://github.com/LibreSprite/LibreSprite
+	arch = i686
+	arch = x32
+	license = GPL-2.0-only
+	makedepends = cmake
+	makedepends = git
+	makedepends = ninja
+	depends = freetype2
+	depends = giflib
+	depends = libjpeg-turbo
+	depends = libpng
+	depends = libwebp
+	depends = libxi
+	depends = pixman
+	depends = sdl2
+	depends = sdl2_image
+	depends = tinyxml2
+	source = libresprite::git+https://github.com/LibreSprite/LibreSprite#tag=v1.3
+	source = simpleini::git+https://github.com/aseprite/simpleini#commit=c94997d4d64394833e4b9d21f4573c66600c9a9a
+	source = flic::git+https://github.com/aseprite/flic#commit=876ef60df5fec606f8eb0638ee893e4967db4673
+	b2sums = d7bf4f5dc9f27f83d44e86070098e980fa43b2b0ebcf7f321e4d5f8e285b2294ae3f944d305f3344daedffa673e696a5f8fa6315ae7b1e4c5ff7e5400314e641
+	b2sums = 1605b2800bfad15e5b9250d49118aca83d2040c1b389c9dd8659d2e75ed083cd597467a16ddf7905252e6970a47afc5468cbdb374d9147e35e3f62d618ed6ee1
+	b2sums = e62e0dadfe48758108bd81364387c796eb9ccc26ff0da6cf6983c32bdc04c4449dbfcea998bf7092eda1c2320ee517427744ed73634a22ea735f79b9f2000ace
+
+pkgname = libresprite

@@ -1,0 +1,190 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgbase=wireplumber
+pkgname=(
+  wireplumber
+  libwireplumber
+  wireplumber-docs
+  wireplumber-system-services
+)
+pkgver=0.5.18
+pkgrel="1"
+pkgdesc="Session / policy manager implementation for PipeWire"
+url="https://pipewire.pages.freedesktop.org/wireplumber/"
+arch=(i686 x32)
+license=(MIT)
+makedepends=(
+  doxygen
+  git
+  glib2
+  glib2-devel
+  glibc
+  gobject-introspection
+  graphviz
+  libgcc
+  libpipewire
+  lua
+  meson
+  pipewire
+  python-breathe
+  python-lxml
+  python-sphinx
+  python-sphinx_rtd_theme
+  systemd
+  systemd-libs
+)
+checkdepends=(pipewire-audio)
+source=(
+  "git+https://gitlab.freedesktop.org/pipewire/$pkgbase.git#tag=$pkgver"
+)
+b2sums=('eea6a3e022c0b8918a72b56a9cdb1c02bca4411a9394fc2a8732faad2c0c71d1443b2a37b22e60467aaab62c154150d18b185b2690271d1d4830dee6513e2e8c')
+
+prepare() {
+  cd $pkgbase
+}
+
+build() {
+  local meson_options=(
+    -D elogind=disabled
+    -D system-lua=true
+    -D systemd-system-service=true
+  )
+
+  arch-meson $pkgbase build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+_ver=${pkgver:0:3}
+
+package_wireplumber() {
+  depends=(
+    "libwireplumber=$pkgver"
+    glibc
+    libgcc
+    libg{lib,object,io}-2.0.so
+    libpipewire
+    libpipewire-0.3.so
+    libsystemd.so
+    lua
+    pipewire
+    systemd-libs
+  )
+  optdepends=(
+    'wireplumber-docs: Documentation'
+    'wireplumber-system-services: System daemon (not recommended)'
+  )
+  provides=(pipewire-session-manager)
+  conflicts=(pipewire-media-session)
+  install=wireplumber.install
+
+  meson install -C build --destdir "$pkgdir"
+
+  (
+    cd "$pkgdir"
+
+    _pick libw usr/lib/libwireplumber-$_ver.so*
+    _pick libw usr/lib/girepository-1.0
+    _pick libw usr/lib/pkgconfig
+    _pick libw usr/include
+    _pick libw usr/share/gir-1.0
+
+    _pick docs usr/share/doc/wireplumber/html
+
+    _pick system usr/lib/systemd/system
+  )
+
+  install -Dt "$pkgdir/usr/share/doc/$pkgname" -m644 $pkgbase/{NEWS,README}*
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE
+}
+
+package_libwireplumber() {
+  pkgdesc+=" - client library"
+  depends=(
+    glibc
+    libgcc
+    libg{lib,module,object,io}-2.0.so
+    libpipewire-0.3.so
+  )
+  provides=(libwireplumber-$_ver.so)
+
+  mv libw/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE
+}
+
+package_wireplumber-docs() {
+  pkgdesc+=" - documentation"
+
+  mv docs/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE
+}
+
+package_wireplumber-system-services() {
+  pkgdesc+=" - system services"
+  depends=(
+    "wireplumber=$pkgver"
+    pipewire-system-services
+  )
+
+  mv system/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE
+}
+
+# vim:set sw=2 sts=-1 et:
+
+if [[ $CARCH == 'i486' ]]; then
+  # disable documentation (needs sphinx, sphinx-rtd_theme, npm)
+  # python-sphinx_rdt_theme needs npm, which is broken on archlinux32
+  # most likely since years..
+  makedepends=(${makedepends[@]//python-sphinx_rtd_theme/})
+  makedepends=(${makedepends[@]//python-sphinx/})
+  eval "$(
+   declare -f build | \
+      sed '
+        /local meson_options.*/ a \
+          meson_options+=(-D doc=disabled)
+      '
+   declare -f package_wireplumber | \
+      sed '
+        s|_pick docs "$pkgdir"/usr/share/doc||
+      '
+   declare -f package_wireplumber-docs | \
+      sed '
+        /mv.*docs.*/d
+      '
+  )"
+fi
+
+# test-spa-json fails, ignoring for now
+eval "$(
+  declare -f check | \
+    sed '
+      s/\(meson test.*\)/\1 || true/g
+    '
+)"
+
+# for now disable testing on i486, doesn't work at all but we want
+# to satisfy dependencies and hope nobody uses it :)
+if [ "$CARCH" == 'i486' ]; then
+  unset check
+  unset checkdepends
+fi
+
+unset -f pkgver

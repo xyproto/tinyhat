@@ -1,0 +1,40 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.co>
+# Contributor: dale <dale@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=unarj
+pkgver=2.65
+pkgrel="2"
+pkgdesc='Utility to extract, test and view the contents of archives created with the ARJ archiver'
+url='http://www.arjsoftware.com/'
+arch=(i686 x32)
+license=('custom')
+depends=('glibc')
+source=("https://src.fedoraproject.org/repo/pkgs/${pkgname}/${pkgname}-${pkgver}.tar.gz/c6fe45db1741f97155c7def322aa74aa/${pkgname}-${pkgver}.tar.gz"
+        'license-from-upstream')
+sha512sums=('747bdc940fcb8ac28207a90cec8011deb93fe26064a44c94de44d7dfc82cb1cc6db2d1a648af3626283fc4f5d608ec312900455827fd1b7835ccfb89e71a7ac7'
+            '89a2a8ed1bfbbb30ed32a55b30a5d98c1f58233603de1c1c1a6756bdae1258e810f2d0f386961bee606c31e38558dda4868c522c0c60c5ce0061ab31a97f29cb')
+
+prepare() {
+  cd "${pkgname}-${pkgver}"
+  export CFLAGS+=" -Wno-error=format-security"
+  sed 's|CFLAGS =|CFLAGS +=|' -i Makefile
+  sed 's|-o unarj|$(LDFLAGS) -o unarj|' -i Makefile
+}
+
+build() {
+  cd "${pkgname}-${pkgver}"
+  make
+}
+
+package() {
+  cd "${pkgname}-${pkgver}"
+  install -Dm 755 unarj -t "${pkgdir}/usr/bin"
+  install -Dm 644 *.txt -t "${pkgdir}/usr/share/doc/${pkgname}"
+  install -Dm 644 ../license-from-upstream -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

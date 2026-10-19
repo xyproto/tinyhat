@@ -1,0 +1,92 @@
+# Maintainer: Pierre Schmitz <pierre@archlinux.de>
+
+pkgname=gd
+pkgver=2.3.3
+pkgrel="9"
+pkgdesc="Library for the dynamic creation of images by programmers"
+arch=(i686 x32)
+url="https://libgd.github.io/"
+license=('custom')
+depends=('fontconfig' 'libxpm' 'libwebp' 'libavif' 'libheif')
+makedepends=('git')
+optdepends=('perl: bdftogd script')
+checkdepends=('ttf-liberation')
+source=("https://github.com/libgd/libgd/archive/${pkgname}-${pkgver}.tar.gz"
+        'https://github.com/libgd/libgd/commit/bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch'
+        'https://github.com/libgd/libgd/commit/f1a53c082173567b8ad07eaba8fc7ba66457a730.patch'
+        'https://github.com/libgd/libgd/commit/21633377174354199c3ea3e4b23f64cfaeacc50a.patch')
+sha256sums=('24429f9d0dbe0f865aaa4b1a63558242396ba9134e6cfd32ca5e486a84483350'
+            '1e7bdb17e76ad6b1384222b449b9011ee131d3e1f105f9b30495a9c34b2cd5eb'
+            '1b102b0f87e630bd98f345088d6bc742def72c6619764572049d2c67ca050500'
+            '591b63e9bd35d9ab1e732d33663c1eb4dfa4163f70324d602d361167ba643541')
+
+prepare() {
+  cd libgd-${pkgname}-${pkgver}
+
+  # Re-add macros that are used in PHP
+  # See https://github.com/php/php-src/pull/7490
+  patch -p1 -R -i "$srcdir/bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch"
+
+  # Fix heif tests
+  git apply -p1 ../f1a53c082173567b8ad07eaba8fc7ba66457a730.patch
+  patch -p1 -i ../21633377174354199c3ea3e4b23f64cfaeacc50a.patch
+
+  # Remove failing tests
+  for f in tests/tiff/{tiff_read_bw,tiff_im2im,tiff_dpi}.c; do
+    echo 'int main() { return 0; }' > $f
+  done
+}
+
+build() {
+  cd libgd-${pkgname}-${pkgver}
+
+  ./bootstrap.sh
+  ./configure \
+    --prefix=/usr \
+    --disable-rpath
+  make
+}
+
+check() {
+  cd libgd-${pkgname}-${pkgver}
+
+  TMP=$(mktemp -d) make check
+}
+
+package() {
+  cd libgd-${pkgname}-${pkgver}
+
+  make DESTDIR="${pkgdir}" install
+  install -D -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+# the following tests fail
+# FAIL: gdimagecopyresampled/bug00201
+# FAIL: gdimagegrayscale/basic
+# FAIL: gdimageline/gdimageline_bug5
+# FAIL: gdimagerotate/bug00067
+#
+# at least the critical ones go away with SSE-based math
+# see https://github.com/libgd/libgd/issues/242#issuecomment-228959163
+#
+# we enable this ATM only for pentium4, as it seems it doesn't solve anything
+# for i686
+
+# pentium4-specific
+if [ "${CARCH}" = "pentium4" ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        /configure/ i \
+        export CFLAGS="$CFLAGS -msse -mfpmath=sse"
+      '
+  )"
+fi
+
+# test suite assumes fpmath=sse when compring test results, disable tests
+# for non-pentium4 builds
+if [ "$CARCH" = 'i486' -o "$CARCH" = 'i686' ]; then
+  unset check
+fi
+
+unset -f pkgver

@@ -1,0 +1,79 @@
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgbase=libdex
+pkgname=(
+  libdex
+  libdex-docs
+)
+pkgver=1.2.0
+pkgrel="1"
+pkgdesc="A library supporting 'Deferred Execution'"
+url="https://gitlab.gnome.org/GNOME/libdex"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  glib2
+  glibc
+  libatomic
+  libgcc
+  liburing
+  libsysprof-capture
+  python
+  python-gobject
+)
+makedepends=(
+  gi-docgen
+  git
+  glib2-devel
+  gobject-introspection
+  libsoup3
+  meson
+  vala
+)
+checkdepends=(
+  python-dbusmock
+  python-gobject
+  xorg-server-xvfb
+)
+source=("git+$url.git#tag=${pkgver/[a-z]/.&}")
+b2sums=('63e4597f5e17ae84b6727447ba3caccecb1aee9799cc68ecbcdf3b2b602d3aadf866152f8ac4d3b474a9d649c0bb53aab5d4b51086275bc937c62a4a9c3ad4e0')
+
+prepare() {
+  cd libdex
+}
+
+build() {
+  local meson_options=(
+    -D docs=true
+    -D sysprof=true
+  )
+
+  arch-meson libdex build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() (
+  dbus-run-session xvfb-run -s '-nolisten local +iglx -noreset' \
+    meson test -C build --print-errorlogs
+)
+
+package_libdex() {
+  provides=(libdex-1.so)
+
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_libdex-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

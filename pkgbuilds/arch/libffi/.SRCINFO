@@ -1,0 +1,16 @@
+pkgbase = libffi
+	pkgdesc = Portable foreign function interface library
+	pkgver = 3.8.0
+	pkgrel = 1
+	url = https://sourceware.org/libffi/
+	arch = i686
+	arch = x32
+	license = MIT
+	checkdepends = dejagnu
+	depends = glibc
+	provides = libffi.so
+	source = libffi-3.8.0.tar.gz::https://github.com/libffi/libffi/archive/refs/tags/v3.8.0.tar.gz
+	sha256sums = bf40d752d8f5fd4505bcd1c7d4208ea87fd12c91f087e359651c776748352dc0
+	b2sums = 1130b4d585fc56543291df3550daa9085b185c2162817793d0caa107bf68bc421a9f1be9f62a7d3b52fda26b120dd6260821c80e394af7d546688aaad4b162a5
+
+pkgname = libffi

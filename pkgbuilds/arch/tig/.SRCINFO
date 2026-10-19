@@ -1,0 +1,24 @@
+pkgbase = tig
+	pkgdesc = Text-mode interface for Git.
+	pkgver = 2.6.1
+	pkgrel = 1
+	url = https://jonas.github.io/tig/
+	arch = i686
+	arch = x32
+	license = GPL
+	makedepends = asciidoc
+	makedepends = xmlto
+	depends = git
+	depends = ncurses
+	depends = libncursesw.so
+	depends = pcre2
+	depends = libpcre2-posix.so
+	depends = libpcre2-8.so
+	depends = readline
+	depends = libreadline.so
+	backup = etc/tigrc
+	source = https://github.com/jonas/tig/releases/download/tig-2.6.1/tig-2.6.1.tar.gz
+	md5sums = cf4d88c06bc4b0fb7cde462ac98c3486
+	sha256sums = 5adeabdcd93aa0423d618da8b878b53482bef6e0e9e1fe224acc0f18031fe91e
+
+pkgname = tig

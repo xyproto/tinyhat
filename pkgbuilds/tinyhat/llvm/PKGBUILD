@@ -1,0 +1,71 @@
+pkgbase=llvm
+pkgname=(llvm-libs llvm clang)
+pkgver=23.1.3
+pkgrel=1
+arch=(i686 x32)
+url="https://llvm.org/"
+license=('Apache-2.0 WITH LLVM-exception')
+makedepends=(cmake ninja python libffi zlib zstd libxml2 ncurses)
+source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz")
+sha256sums=('c44186a7762ed28954be72e5ff6df9808e0779d4f1bf014ecc4e7e211d31ee34')
+
+build() {
+  cmake -S llvm-project-$pkgver.src/llvm -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=MinSizeRel \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    -DLLVM_BUILD_LLVM_DYLIB=ON \
+    -DLLVM_LINK_LLVM_DYLIB=ON \
+    -DLLVM_ENABLE_RTTI=ON \
+    -DLLVM_ENABLE_EH=ON \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_INCLUDE_DOCS=OFF
+  ninja -C build
+}
+
+package_llvm-libs() {
+  pkgdesc="LLVM runtime libraries, built for X86 and AMDGPU"
+  depends=(gcc-libs zlib zstd libffi libxml2 ncurses)
+  provides=(libLLVM.so)
+  mkdir -p "$pkgdir/usr/lib"
+  cp -a build/lib/libLLVM*.so* build/lib/libLTO*.so* build/lib/libRemarks*.so* "$pkgdir/usr/lib/"
+  cd "$pkgdir/usr/lib"
+  local real
+  real=$(ls -S libLLVM*.so* | head -1)
+  [ -e "libLLVM-${pkgver%%.*}.so" ] || ln -sf "$real" "libLLVM-${pkgver%%.*}.so"
+  [ -e libLLVM.so ] || ln -sf "$real" libLLVM.so
+  install -Dm644 "$srcdir/llvm-project-$pkgver.src/llvm/LICENSE.TXT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.TXT"
+}
+
+package_llvm() {
+  pkgdesc="LLVM development files and tools"
+  depends=("llvm-libs=$pkgver")
+  DESTDIR="$pkgdir" cmake --install build
+  rm -f "$pkgdir"/usr/lib/lib{LLVM,LTO,Remarks,clang-cpp}*.so*
+  rm -rf "$pkgdir/usr/lib/clang"
+  rm -f "$pkgdir"/usr/bin/{clang,"clang-${pkgver%%.*}",clang++,clangd,clang-format}
+  install -Dm644 "$srcdir/llvm-project-$pkgver.src/llvm/LICENSE.TXT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.TXT"
+}
+
+package_clang() {
+  pkgdesc="C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU"
+  depends=("llvm-libs=$pkgver" gcc)
+  mkdir -p "$pkgdir/usr/bin" "$pkgdir/usr/lib"
+  cp -a build/lib/libclang-cpp*.so* "$pkgdir/usr/lib/"
+  cp -a build/lib/clang "$pkgdir/usr/lib/"
+  for b in clang "clang-${pkgver%%.*}" clang++ clangd clang-format; do
+    if [ -e "build/bin/$b" ]; then
+      cp -a "build/bin/$b" "$pkgdir/usr/bin/"
+    fi
+  done
+  cd "$pkgdir/usr/lib/clang"
+  rm -rf analyze-c++ analyze-cc ccc-analyzer intercept-cc
+  rm -rf */include/arm* */include/opencl* */include/riscv* */include/hexagon* */include/hvx*
+  rm -rf */include/msa.h */include/htm* */include/vecintrin.h */include/s390intrin.h */include/velintrin*
+  rm -rf */include/wasm* */include/__clang_cuda* */include/__clang_hip* */include/cuda_wrappers
+  rm -rf */include/openmp_wrappers */include/ppc_wrappers */include/llvm_libc_wrappers */include/altivec.h
+  install -Dm644 "$srcdir/llvm-project-$pkgver.src/clang/LICENSE.TXT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.TXT"
+}

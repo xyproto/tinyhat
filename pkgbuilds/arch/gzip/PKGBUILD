@@ -1,0 +1,52 @@
+# Maintainer: Sébastien "Seblu" Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=gzip
+pkgver=1.15
+pkgrel="1"
+pkgdesc='GNU compression utility'
+arch=(i686 x32)
+url='https://www.gnu.org/software/gzip/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'sh' 'coreutils' 'sed')
+makedepends=('git' 'less' 'python' 'wget')
+optdepends=('diffutils: zdiff/zcmp support'
+            'grep: zegrep/zfgrep/zforce/zgrep support'
+            'less: zless support'
+            'util-linux: zmore support')
+validpgpkeys=('155D3FC500C834486D1EEA677FD9FCCB000BEEEE') # Jim Meyering <jim@meyering.net>
+source=("git+https://git.savannah.gnu.org/git/gzip.git?signed#tag=v${pkgver}"
+        "git+https://git.savannah.gnu.org/git/gnulib.git")
+sha256sums=('1496b08cdd5320634b59860b09c6c5048ebb04b32a723fa39a3652f08102e2ba'
+            'SKIP')
+
+prepare() {
+  cd "${pkgname}"
+
+  git submodule init
+  git config submodule.gnulib.url "${srcdir}/gnulib"
+  git -c protocol.file.allow=always submodule update
+
+  ./bootstrap
+}
+
+build() {
+  cd "${pkgname}"
+  ./configure \
+    --prefix=/usr \
+    --disable-gcc-warnings
+  make
+}
+
+check() {
+  cd "${pkgname}"
+  make check
+}
+
+package() {
+  cd "${pkgname}"
+  make DESTDIR="${pkgdir}" install
+}
+
+unset -f pkgver

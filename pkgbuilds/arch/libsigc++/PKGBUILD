@@ -1,0 +1,77 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgbase=libsigc++
+pkgname=(
+  libsigc++
+  libsigc++-docs
+)
+pkgver=2.12.2
+pkgrel="1"
+pkgdesc="Callback Framework for C++"
+url="https://libsigcplusplus.github.io/libsigcplusplus/"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  glibc
+  libgcc
+  libstdc++
+)
+makedepends=(
+  git
+  meson
+  mm-common
+)
+options=(!emptydirs)
+source=("git+https://github.com/libsigcplusplus/libsigcplusplus#tag=$pkgver")
+b2sums=('7ce877e4f40d63a6712650de83a74efd28ea1e341441ce6380069f5869d6f8cf76d02a32b8b8a15eef1e2b82250fee3e036ff29f953866ed0372250bf36046bc')
+
+prepare() {
+  cd libsigcplusplus
+}
+
+build() {
+  local meson_options=(
+    -D maintainer-mode=true
+  )
+
+  arch-meson libsigcplusplus build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+# Do not remove the space before the () or commitpkg will
+# accidentally to run this function on the system (!!!) 
+package_libsigc++ () {
+  provides=(
+    "libsigc++2.0=$pkgver"
+    libsigc-2.0.so
+  )
+  conflicts=(libsigc++2.0)
+  replaces=(libsigc++2.0)
+
+  meson install -C build --destdir "$pkgdir"
+
+  # Split -docs
+  mkdir -p docs/usr/share
+  mv -t docs/usr/share "$pkgdir"/usr/share/{devhelp,doc}
+}
+
+package_libsigc++-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+  provides=("libsigc++2.0-docs=$pkgver")
+  conflicts=(libsigc++2.0-docs)
+  replaces=(libsigc++2.0-docs)
+  options=(!strip)
+
+  mv -t "$pkgdir" docs/*
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

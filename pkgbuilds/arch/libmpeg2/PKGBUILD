@@ -1,0 +1,35 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Sarah Hay <sarah@archlinux.org>
+
+pkgname=libmpeg2
+pkgver=0.5.1
+pkgrel="11"
+pkgdesc='Library for decoding MPEG-1 and MPEG-2 video streams'
+arch=(i686 x32)
+url='https://libmpeg2.sourceforge.io/'
+license=(GPL-2.0-or-later)
+depends=(glibc)
+source=("https://download.videolan.org/contrib/libmpeg2/$pkgname-$pkgver.tar.gz")
+b2sums=(29b71740fa601c668a8f5b0a43aa763bda2fc66587f5bff847d4bc6d03dd831abe46428616b770aaaabf2d42877daad8c305ab4dd988cc91a4c90decfcc19c9a)
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fi
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

@@ -1,0 +1,21 @@
+pkgbase = opus
+	pkgdesc = Totally open, royalty-free, highly versatile audio codec
+	pkgver = 1.6.1
+	pkgrel = 1
+	url = https://www.opus-codec.org/
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = doxygen
+	makedepends = meson
+	depends = glibc
+	source = https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz
+	sha256sums = 6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1
+	b2sums = dda8fb4e30e5f22d2b37616902892dcc715a2886150ab54f67d61a90c60a03afee05fb7b56a0d88355db007bb4d72c8bd6de3d874a49767318a5bba115b1a613
+
+pkgname = opus
+	provides = libopus.so
+
+pkgname = opus-docs
+	pkgdesc = Totally open, royalty-free, highly versatile audio codec (documentation)
+	depends = 

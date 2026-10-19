@@ -1,0 +1,124 @@
+# Maintainer: Sébastien "Seblu" Luttringer
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=coreutils
+pkgver=9.12
+pkgrel="2"
+pkgdesc='The basic file, shell and text manipulation utilities of the GNU operating system'
+arch=(i686 x32)
+license=(
+  GPL-3.0-or-later
+  GFDL-1.3-or-later
+)
+url='https://www.gnu.org/software/coreutils/'
+depends=( 
+  acl  
+  attr
+  glibc
+  gmp
+  libcap
+  openssl
+)
+makedepends=(
+  git
+  gperf
+  python
+  wget
+)
+source=(
+  git+https://git.savannah.gnu.org/git/coreutils.git?signed#tag=v${pkgver}
+  git+https://git.savannah.gnu.org/git/gnulib.git
+  https://ftp.gnu.org/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig}
+  # https://lists.gnu.org/archive/html/coreutils/2026-09/msg00064.html
+  0001-env-printenv-only-quote-when-outputting-to-terminals.patch
+)
+validpgpkeys=(
+ 6C37DC12121A5006BC1DB804DF6FD971306037D9 # Pádraig Brady
+)
+options=(!lto)
+b2sums=('b893b993f6ee1f71939e1b54c3bde44eb0ad6d777e466125090488b082637539cbb07d1f9298cccfe4e510755945a7610b9a4ad2ea83061c5a53dd09c853ee7a'
+        'SKIP'
+        'c125cc479e4eec0178e49a1dffa975fb5d7753a5f04d3bb695d0e8043c05d76fb07c9595db20e9df5c359fdbbb326acb976d5bec7bd1771da22840156bb66369'
+        'SKIP'
+        '97619b6af8bdb4e18d1a895f52e72af8e2fd2dc0afda8f724a70c9b68cdc31470398101012cc4452ab5142defe55956fd9bc8f87d71ea11ff87cb2147e122d10')
+
+prepare() {
+  cd "${pkgname}"
+  # Skip downloading unstable po files in bootstrap scripts to avoid non-deterministic builds
+  export SKIP_PO="1"
+  # The $SKIP_PO environment variable is only honored by the gnulib submodule if using its "sh" implementation
+  export GNULIB_TOOL_IMPL="sh"
+
+  git submodule init
+  git config submodule.gnulib.url ../gnulib
+  git -c protocol.file.allow=always submodule update
+
+  ./bootstrap
+
+  # apply patch from the source array (should be a pacman feature)
+  local src
+  for src in "${source[@]}"; do
+    src="${src%%::*}"
+    src="${src##*/}"
+    [[ $src = *.patch ]] || continue
+    echo "Applying patch $src..."
+    patch -Np1 < "../$src"
+  done
+}
+
+build() {
+  cd "${pkgname}"
+  ./configure \
+    --prefix=/usr \
+    --libexecdir=/usr/lib \
+    --with-openssl
+  make
+  
+  # Generate coreutils mo files from dist tarball
+  cd "${srcdir}/${pkgname}-${pkgver}/po"
+  for po in *.po; do
+    msgfmt "${po}" -o "${po%.po}.mo"
+  done
+}
+
+check() {
+  cd "${pkgname}"
+  # remove return 0, after glibc has been rebuild against 7.2 headers
+  # https://debbugs.gnu.org/cgi/bugreport.cgi?bug=81875
+  make check || return 0
+}
+
+package() {
+  cd "${pkgname}"
+  make DESTDIR="${pkgdir}" install
+
+  # Install coreutils mo files from dist tarball
+  cd "${srcdir}/${pkgname}-${pkgver}/po"
+  for mo in *.mo; do
+    install -Dm 644 "${mo}" "${pkgdir}/usr/share/locale/${mo%.mo}/LC_MESSAGES/${pkgname}.mo"
+    install -dm 755 ${pkgdir}/usr/share/locale/${mo%.mo}/LC_TIME
+    ln -s "../LC_MESSAGES/${pkgname}.mo" "${pkgdir}/usr/share/locale/${mo%.mo}/LC_TIME/${pkgname}.mo"
+  done
+}
+
+
+# 486-specific
+if [ "${CARCH}" = "i486" ]; then
+  # make uname return i486 instead of i686 when used with setarch
+  source+=('coreutils-9.5-uname-i486.patch')
+  b2sums+=('3765bd6877a05f64445c24e58d86a9adb37a645a29a08a832aa65db5db15e347900a6e0810138cdf57f7fcd862ffc720c7f9e407038554bf6e46225ff3aa9e2d')
+fi
+
+# FS#66506: temporarily ignore test-login failure
+eval "$(
+  declare -f check | \
+    sed '
+      s/make check/make check || true/
+    '
+)"
+
+
+unset -f pkgver

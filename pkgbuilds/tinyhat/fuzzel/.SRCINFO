@@ -1,0 +1,23 @@
+pkgbase = fuzzel
+	pkgdesc = Application launcher for Wayland
+	pkgver = 1.15.0
+	pkgrel = 1
+	url = https://codeberg.org/dnkl/fuzzel
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = meson
+	makedepends = ninja
+	makedepends = scdoc
+	makedepends = tllist
+	makedepends = wayland-protocols
+	depends = cairo
+	depends = fcft
+	depends = libpng
+	depends = libxkbcommon
+	depends = pixman
+	depends = wayland
+	source = fuzzel-1.15.0.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/1.15.0.tar.gz
+	sha256sums = 95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b
+
+pkgname = fuzzel

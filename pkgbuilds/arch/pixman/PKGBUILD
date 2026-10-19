@@ -1,0 +1,41 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Alexander Baldeck <alexander@archlinux.org>
+
+pkgname=pixman
+pkgver=0.46.4
+pkgrel="1"
+pkgdesc="The pixel-manipulation library for X and cairo"
+arch=(i686 x32)
+url="https://gitlab.freedesktop.org/pixman/pixman"
+license=('MIT')
+depends=('glibc')
+makedepends=('meson' 'libpng')
+provides=('libpixman-1.so')
+source=(https://www.x.org/releases/individual/lib/${pkgname}-${pkgver}.tar.xz)
+sha512sums=('83b133e7969ba34f883f4e08dcc5d388c4397f43ce836c191c05945fe77c16ff501d531600780c12678a0d08105828a6bdeff2156b63f9c1a84087bc7f40ae9f')
+#validpgpkeys=('') # Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
+
+build() {
+  arch-meson $pkgname-$pkgver build \
+    -D loongson-mmi=disabled \
+    -D vmx=disabled \
+    -D arm-simd=disabled \
+    -D neon=disabled \
+    -D a64-neon=disabled \
+    -D rvv=disabled \
+    -D mips-dspr2=disabled \
+    -D gtk=disabled
+  ninja -C build
+}
+
+check() {
+  meson test -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" meson install -C build
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgname-$pkgver/COPYING
+}
+
+unset -f pkgver

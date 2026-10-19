@@ -1,0 +1,18 @@
+pkgbase = lhasa
+	pkgdesc = Free LZH/LHA archive tool
+	pkgver = 0.6.0
+	pkgrel = 1
+	url = https://github.com/fragglet/lhasa
+	arch = i686
+	arch = x32
+	license = ISC
+	depends = glibc
+	provides = lha
+	conflicts = lha
+	source = https://github.com/fragglet/lhasa/releases/download/v0.6.0/lhasa-0.6.0.tar.gz
+	source = https://github.com/fragglet/lhasa/releases/download/v0.6.0/lhasa-0.6.0.tar.gz.asc
+	validpgpkeys = 6D2C117E0310664497AA9546F6C2EE9C23354344
+	sha512sums = 250ddd2a2660a1980ceea69ce5dca7006516f8af9b1b5f8077bfd10221ed67be2270218c924bf34c92e624cc5aeb039fab189feb7ec758873e38c26af63fa10e
+	sha512sums = SKIP
+
+pkgname = lhasa

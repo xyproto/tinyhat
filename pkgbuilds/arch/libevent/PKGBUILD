@@ -1,0 +1,91 @@
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Judd <jvinet@zeroflux.org>
+
+pkgbase=libevent
+pkgname=(libevent libevent-docs)
+pkgver=2.1.13
+pkgrel="2"
+pkgdesc="Event notification library"
+url="https://libevent.org/"
+arch=(i686 x32)
+license=(BSD-3-Clause-Modification)
+makedepends=(
+  cmake
+  doxygen
+  ninja
+  openssl
+  python
+)
+source=(
+  https://github.com/libevent/libevent/releases/download/release-$pkgver-stable/libevent-$pkgver-stable.tar.gz{,.asc}
+  0001-EVENT__SIZEOF_TIME_T.patch
+)
+sha256sums=('f7e9383b8c0baa81b687e5b5eecc01beefaf1b19b64151d95ed61647fe7a315c'
+            'SKIP'
+            '945fc885b15692721bc7ae52f5774ef4fab8cc0f6108baa8860ab368de8675cf')
+validpgpkeys=('2133BC600AB133E1D826D173FE43009C4607B1FB'  # Nick Mathewson <nickm@alum.mit.edu>
+              '9E3AC83A27974B84D1B3401DB86086848EF8686D'  # Azat Khuzhin <a3at.mail@gmail.com>
+              'B35BF85BF19489D04E28C33C21194EBB165733EA') # Nick Mathewson <nickm@alum.mit.edu>
+
+prepare() {
+  cd libevent-$pkgver-stable
+
+  # this is needed to build thunderbird with system libs!
+  patch -Np1 -i ../0001-EVENT__SIZEOF_TIME_T.patch
+}
+
+build() {
+  local cmake_options=(
+    -B build
+    -S libevent-$pkgver-stable
+    -D CMAKE_BUILD_TYPE=None
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+    -D CMAKE_SKIP_INSTALL_RPATH=TRUE
+    -D EVENT__DISABLE_REGRESS=OFF
+    -D EVENT__DOXYGEN=ON
+    -D EVENT__LIBRARY_TYPE=SHARED
+    -G Ninja
+  )
+
+  cmake "${cmake_options[@]}"
+  cmake --build build
+}
+
+check() {
+  local ctest_options=(
+    # Disable flaky tests: https://github.com/libevent/libevent/issues/1407
+    # Note: Backporting e.g. https://github.com/libevent/libevent/pull/1555 didn't resolve this!
+    --exclude-regex '(regress__timerfd_EPOLL|regress__timerfd_EPOLL_debug|regress__changelist_EPOLL|regress__changelist_EPOLL_debug|regress__timerfd_changelist_EPOLL|regress__timerfd_changelist_EPOLL_debug|regress__SELECT|regress__SELECT_debug|regress__POLL|regress__POLL_debug)'
+    --output-on-failure
+    --stop-on-failure
+  )
+
+  cd build
+  ctest "${ctest_options[@]}"
+}
+
+package_libevent() {
+  provides=(libevent{,_core,_extra,_openssl,_pthreads}-2.1.so)
+  depends=(
+    glibc
+    openssl
+  )
+  optdepends=('python: event_rpcgen.py')
+
+  DESTDIR="$pkgdir" cmake --install build
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libevent-$pkgver-stable/LICENSE
+}
+
+package_libevent-docs() {
+  pkgdesc+=" (documentation)"
+
+  mv -v doc/* "$pkgdir"
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libevent-$pkgver-stable/LICENSE
+}
+
+unset -f pkgver

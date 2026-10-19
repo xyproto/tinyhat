@@ -1,0 +1,35 @@
+pkgbase = dav1d
+	pkgdesc = AV1 cross-platform decoder focused on speed and correctness
+	pkgver = 1.5.4
+	pkgrel = 1
+	url = https://code.videolan.org/videolan/dav1d
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause
+	makedepends = doxygen
+	makedepends = glibc
+	makedepends = graphviz
+	makedepends = meson
+	makedepends = nasm
+	makedepends = ninja
+	makedepends = xxhash
+	source = https://downloads.videolan.org/pub/videolan/dav1d/1.5.4/dav1d-1.5.4.tar.xz
+	source = https://downloads.videolan.org/pub/videolan/dav1d/1.5.4/dav1d-1.5.4.tar.xz.asc
+	source = https://code.videolan.org/videolan/dav1d-test-data/-/archive/1.5.4/dav1d-test-data-1.5.4.tar.gz
+	validpgpkeys = 65F7C6B4206BD057A7EB73787180713BE58D1ADC
+	sha512sums = 75ab7c922bc9647d73534c9f6c95a514748557adbf7a4debf95eee52ef1db681012cbaad165a46141d904cdd01c1e6319cdea33d254afb5c6b3d968679e55b98
+	sha512sums = SKIP
+	sha512sums = 8e8def3d249e5fe96ec341b60da31ee360c850e312564a084f83f0ebd2051ebef02ba538497de6a9785dcc099f2447e90400c519b434568e2829a741227ddcca
+	b2sums = 52db76db6c498301c0ff0fd1c28aeb9820e303846b5c6243c1dd8c8f9f0e0d1de1194cd618015e3ecf7f717ec1b901bc548d1103dc0c49203f2ef207ee867ed5
+	b2sums = SKIP
+	b2sums = 9efa489893cfbfa372d5221b55722ff587b2c2bd8765e9004511a81e688f9d5b37d3fcc7a8b311efd62277a86bba874f8f20541daac84f0a2138b403f23fe02a
+	source_i686 = dav1d-0.8.2-sse2-asm.patch
+	sha512sums_i686 = 65d133b750888ce854fdad2f068430ae1920db135eaf9b8ec4d372ecb074e3eef6833f50f17e758cc8f69f4845b873fb96d744c03f75a34af0dd0ad8dbd413e3
+
+pkgname = dav1d
+	depends = glibc
+	optdepends = dav1d-doc: HTML documentation
+	provides = libdav1d.so
+
+pkgname = dav1d-doc
+	pkgdesc = AV1 cross-platform decoder focused on speed and correctness (documentation)

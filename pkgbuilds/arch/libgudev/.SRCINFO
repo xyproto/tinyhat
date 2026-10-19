@@ -1,0 +1,37 @@
+pkgbase = libgudev
+	pkgdesc = GObject bindings for libudev
+	pkgver = 238
+	pkgrel = 4
+	url = https://gitlab.gnome.org/GNOME/libgudev
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = glibc-locales
+	makedepends = gobject-introspection
+	makedepends = gtk-doc
+	makedepends = meson
+	makedepends = systemd
+	makedepends = umockdev
+	makedepends = vala
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libsystemd
+	source = git+https://gitlab.gnome.org/GNOME/libgudev.git#tag=238
+	b2sums = 6da9512d87154fbd62aae044a39abd84bee451f5a21203180062c369ebedf2ee1bc7672408cf806918111397bc74be58314e6c3155e638137603d11012a4355f
+
+pkgname = libgudev
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libsystemd
+	depends = libglib-2.0.so
+	depends = libgobject-2.0.so
+	depends = libudev.so
+	provides = libgudev-1.0.so
+
+pkgname = libgudev-docs
+	pkgdesc = GObject bindings for libudev (documentation)
+	depends = 

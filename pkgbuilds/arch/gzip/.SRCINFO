@@ -1,0 +1,27 @@
+pkgbase = gzip
+	pkgdesc = GNU compression utility
+	pkgver = 1.15
+	pkgrel = 1
+	url = https://www.gnu.org/software/gzip/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	makedepends = git
+	makedepends = less
+	makedepends = python
+	makedepends = wget
+	depends = glibc
+	depends = sh
+	depends = coreutils
+	depends = sed
+	optdepends = diffutils: zdiff/zcmp support
+	optdepends = grep: zegrep/zfgrep/zforce/zgrep support
+	optdepends = less: zless support
+	optdepends = util-linux: zmore support
+	source = git+https://git.savannah.gnu.org/git/gzip.git?signed#tag=v1.15
+	source = git+https://git.savannah.gnu.org/git/gnulib.git
+	validpgpkeys = 155D3FC500C834486D1EEA677FD9FCCB000BEEEE
+	sha256sums = 1496b08cdd5320634b59860b09c6c5048ebb04b32a723fa39a3652f08102e2ba
+	sha256sums = SKIP
+
+pkgname = gzip

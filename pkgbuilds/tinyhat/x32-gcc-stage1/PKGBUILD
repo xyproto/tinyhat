@@ -1,0 +1,36 @@
+pkgname=x32-gcc-stage1
+pkgver=16.2.0
+pkgrel=1
+pkgdesc="Stage 1 C compiler for the x86_64-pc-linux-gnux32 toolchain"
+arch=(i686)
+url="https://gcc.gnu.org/"
+license=('GPL-3.0-or-later WITH GCC-exception-3.1')
+depends=(x32-binutils gmp mpfr libmpc libisl zlib zstd)
+conflicts=(x32-gcc)
+options=(!buildflags !strip staticlibs)
+source=("https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz")
+sha256sums=('e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e')
+
+build() {
+  mkdir -p build
+  cd build
+  ../gcc-$pkgver/configure --target=x86_64-pc-linux-gnux32 --prefix=/usr --libexecdir=/usr/lib --with-sysroot=/ \
+    --with-abi=mx32 --enable-multilib --with-multilib-list=mx32 --with-glibc-version=2.44 \
+    --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr --with-system-zlib \
+    --enable-languages=c --disable-nls --disable-bootstrap --disable-werror \
+    --disable-libsanitizer --disable-libvtv --disable-libgomp --disable-libquadmath --disable-libssp \
+    --disable-libatomic --disable-libstdc++-v3 --disable-threads --without-headers --with-newlib --disable-shared \
+    CFLAGS_FOR_TARGET="-O2 -pipe"
+  make all-gcc all-target-libgcc
+}
+
+package() {
+  cd build
+  make DESTDIR="$pkgdir" install-gcc install-target-libgcc
+  rm -rf "$pkgdir/usr/share"
+  local t=x86_64-pc-linux-gnux32
+  install -d "$pkgdir/usr/$t/bin"
+  ln -s ../../bin/$t-gcc "$pkgdir/usr/$t/bin/gcc"
+  ln -s ../../bin/$t-gcc "$pkgdir/usr/$t/bin/cc"
+  ln -s ../../bin/$t-cpp "$pkgdir/usr/$t/bin/cpp"
+}

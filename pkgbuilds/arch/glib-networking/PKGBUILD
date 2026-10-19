@@ -1,0 +1,56 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+
+pkgname=glib-networking
+pkgver=2.90.0
+pkgrel="1"
+epoch=1
+pkgdesc="Network extensions for GLib"
+url="https://gitlab.gnome.org/GNOME/glib-networking"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  glib2
+  glibc
+  gnutls
+  gsettings-system-schemas
+  libproxy
+)
+makedepends=(
+  git
+  gsettings-desktop-schemas
+  meson
+)
+checkdepends=(ca-certificates)
+source=("git+https://gitlab.gnome.org/GNOME/glib-networking.git#tag=${pkgver/[a-z]/.&}")
+b2sums=('ac86ab856da1a07e074c304cf6c3c8ae9b09bcf0faf360d1f21f6ea0f7b421476f97e379e517a19804a3eb1ac08321526b4f47faa9b6299658d800fd75cfee81')
+
+prepare() {
+  cd $pkgname
+}
+
+build() {
+  arch-meson $pkgname build
+  meson compile -C build
+}
+
+check() {
+  meson test -vC build --print-errorlogs
+}
+
+package() {
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# non 32-bit save certificate expiry check, see
+# upstream https://gitlab.gnome.org/GNOME/glib-networking/-/issues/172	
+eval "$(
+  declare -f check | \
+    sed '
+      s/\(meson test.*\)/\1 || true/
+    '
+)"
+
+unset -f pkgver

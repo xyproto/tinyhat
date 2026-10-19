@@ -1,0 +1,20 @@
+pkgbase = arm-none-eabi-binutils
+	pkgdesc = A set of programs to assemble and manipulate binary and object files for the ARM EABI (bare-metal) target
+	pkgver = 2.47
+	pkgrel = 1
+	url = https://www.gnu.org/software/binutils/
+	arch = i686
+	arch = x32
+	license = GPL
+	depends = zlib
+	depends = libelf
+	source = https://ftp.gnu.org/gnu/binutils/binutils-2.47.tar.bz2
+	source = https://ftp.gnu.org/gnu/binutils/binutils-2.47.tar.bz2.sig
+	validpgpkeys = 3A24BC1E8FB409FA9F14371813FCEF89DD9E3C4F
+	validpgpkeys = 5EF3A41171BB77E6110ED2D01F3D03348DB1A3E2
+	sha1sums = 5b1deae7fe38d8334d3df4cbded074e86032a21d
+	sha1sums = SKIP
+	sha256sums = 3068128c75cda9f898ccb4211d360246e8e195ffcc9dfb655b23ae23a54800e8
+	sha256sums = SKIP
+
+pkgname = arm-none-eabi-binutils

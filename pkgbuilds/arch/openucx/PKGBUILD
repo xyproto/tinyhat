@@ -1,0 +1,93 @@
+# Maintainer: Jakub Klinkovský <lahwaacz at archlinux dot org>
+
+_name=ucx
+pkgname=openucx
+pkgver=1.20.1
+pkgrel="3"
+pkgdesc="Communication framework for data-centric and high-performance applications"
+arch=(i686 x32)
+url="https://openucx.org/"
+license=(BSD-3-Clause)
+depends=(
+  binutils
+  glibc
+  libgcc
+  libgomp
+  libstdc++
+  zlib
+  zstd
+)
+makedepends=(
+  rdma-core
+  cuda
+  rocm-language-runtime
+)
+optdepends=(
+  'rdma-core: for InfiniBand and RDMA support'
+  'cuda: for CUDA support'
+  'rocm-language-runtime: for ROCm support'
+)
+provides=(
+  libucm.so
+  libucp.so
+  libucs.so
+  libucs_signal.so
+  libuct.so
+)
+source=(
+  $pkgname-$pkgver.tar.gz::https://github.com/openucx/$_name/archive/refs/tags/v$pkgver.tar.gz
+  ucx-conf.patch
+)
+b2sums=('f6fd229ebd2984cefc7742fc7cc2ddb1022815ed00efb528e94454493cd734642ae7bf6315abfdc37187649836fa8ddc06087a8fdb51fa9f2b5bd136eb97a694'
+        '2b3b4575ce64b947ecc42c9055934bcd7e5feb30031c6504f8cc3057cfc138b28c2826a6cc55be56d186e09e20c6201dacfc308647d9b62a5d33688348d15a68')
+
+prepare() {
+  cd $_name-$pkgver
+
+  # Do not hijack SIGHUP https://gitlab.archlinux.org/archlinux/packaging/packages/openucx/-/issues/3
+  patch -Np1 -i ../ucx-conf.patch
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --with-cuda=/opt/cuda
+    --with-rocm=/opt/rocm
+    --with-verbs
+    --with-rc
+    --with-ud
+    --with-dc
+    --with-mlx5-dv
+    --enable-mt
+  )
+
+  # this uses malloc_usable_size, which is incompatible with fortification level 3
+  export CFLAGS="${CFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+  export CXXFLAGS="${CXXFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+
+  export CFLAGS="${CFLAGS} -Wno-error=discarded-qualifiers -Wno-error=deprecated-openmp"
+
+  cd $_name-$pkgver
+  ./autogen.sh
+  # NOTE: upstream suggests running ./contrib/configure-release instead of
+  # ./configure for maximal performance, but it contains options that would
+  # make debugging much harder
+  ./configure "${configure_options[@]}"
+  # prevent excessive overlinking due to libtool
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make V=1
+}
+
+package() {
+  # this uses malloc_usable_size, which is incompatible with fortification level 3
+  export CFLAGS="${CFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+  export CXXFLAGS="${CXXFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+
+  make DESTDIR="$pkgdir" install -C $_name-$pkgver
+
+  # install the license
+  install -vDm 644 $_name-$pkgver/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+unset -f pkgver

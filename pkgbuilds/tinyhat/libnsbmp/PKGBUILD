@@ -1,0 +1,30 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: Paulo Matias <matiasΘarchlinux-br·org>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+
+pkgname=libnsbmp
+pkgver=0.1.7
+pkgrel="2"
+pkgdesc='Decoding library for BMP and ICO image file formats'
+arch=(i686 x32)
+url='https://www.netsurf-browser.org/projects/libnsbmp/'
+license=(MIT)
+makedepends=(netsurf-buildsystem)
+source=("https://download.netsurf-browser.org/libs/releases/$pkgname-$pkgver-src.tar.gz")
+b2sums=('590e13661d56aec57ae54b2d66f7fe1e14fefacfeabfd2f93264f1ab7dda576ab6477b80689c7e2805b5b183de7cf1d9d406e814ec59477ce541216230862300')
+
+build() {
+  CFLAGS+=' -ffat-lto-objects'
+  make -C $pkgname-$pkgver COMPONENT_TYPE=lib-shared INCLUDEDIR=include LIBDIR=lib \
+    PREFIX=/usr
+}
+
+package() {
+  cd $pkgname-$pkgver
+  CFLAGS+=' -ffat-lto-objects'
+  make COMPONENT_TYPE=lib-shared DESTDIR="$pkgdir" INCLUDEDIR=include LIBDIR=lib \
+    PREFIX=/usr install
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+unset -f pkgver

@@ -1,0 +1,8 @@
+if [ "$CARCH" = 'x32' ]; then
+  makedepends=(${makedepends[@]//rust/})
+  eval "$(
+    declare -f prepare | sed '/cargo fetch/d'
+    declare -f build | sed 's/-D gst-devtools:debug_viewer=enabled/-D gst-devtools:debug_viewer=disabled/'
+    declare -f package_gst-devtools | sed '\,usr/bin/gst-dots-viewer,d'
+  )"
+fi

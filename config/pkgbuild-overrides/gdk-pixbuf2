@@ -1,0 +1,13 @@
+if [ "$CARCH" = 'x32' ]; then
+  depends=(${depends[@]/glycin/})
+  makedepends=(${makedepends[@]/glycin/})
+  eval "$(
+    declare -f build | sed '
+      s/-D glycin=enabled/-D glycin=disabled/
+      s/-D gif=disabled/-D gif=enabled/
+      s/-D jpeg=disabled/-D jpeg=enabled/
+      s/-D png=disabled/-D png=enabled/
+      s/-D tiff=disabled/-D tiff=enabled/
+    '
+  )"
+fi

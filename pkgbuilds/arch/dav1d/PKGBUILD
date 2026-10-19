@@ -1,0 +1,83 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Robin Candau <antiz@archlinux.org>
+
+pkgbase=dav1d
+pkgname=('dav1d' 'dav1d-doc')
+pkgver=1.5.4
+pkgrel="1"
+pkgdesc="AV1 cross-platform decoder focused on speed and correctness"
+url="https://code.videolan.org/videolan/dav1d"
+arch=(i686 x32)
+license=('BSD-2-Clause')
+makedepends=('doxygen' 'glibc' 'graphviz' 'meson' 'nasm' 'ninja' 'xxhash')
+source=("https://downloads.videolan.org/pub/videolan/${pkgname}/${pkgver}/${pkgname}-${pkgver}.tar.xz"{,.asc}
+        "https://code.videolan.org/videolan/dav1d-test-data/-/archive/${pkgver}/dav1d-test-data-${pkgver}.tar.gz")
+sha512sums=('75ab7c922bc9647d73534c9f6c95a514748557adbf7a4debf95eee52ef1db681012cbaad165a46141d904cdd01c1e6319cdea33d254afb5c6b3d968679e55b98'
+            'SKIP'
+            '8e8def3d249e5fe96ec341b60da31ee360c850e312564a084f83f0ebd2051ebef02ba538497de6a9785dcc099f2447e90400c519b434568e2829a741227ddcca')
+b2sums=('52db76db6c498301c0ff0fd1c28aeb9820e303846b5c6243c1dd8c8f9f0e0d1de1194cd618015e3ecf7f717ec1b901bc548d1103dc0c49203f2ef207ee867ed5'
+        'SKIP'
+        '9efa489893cfbfa372d5221b55722ff587b2c2bd8765e9004511a81e688f9d5b37d3fcc7a8b311efd62277a86bba874f8f20541daac84f0a2138b403f23fe02a')
+validpgpkeys=('65F7C6B4206BD057A7EB73787180713BE58D1ADC') # VideoLAN Release Signing Key
+
+prepare() {
+	cd "${pkgbase}-${pkgver}"
+	ln -s "${srcdir}/dav1d-test-data-${pkgver}" tests/dav1d-test-data
+}
+
+build() {
+	cd ${pkgbase}-${pkgver}
+	arch-meson \
+		-Dtestdata_tests='true' \
+		-Denable_docs='true' \
+		build
+	ninja -C build all doc/html
+}
+
+check() {
+	cd "${pkgbase}-${pkgver}/build"
+	meson test
+}
+
+package_dav1d() {
+	depends=('glibc')
+	provides=('libdav1d.so')
+	optdepends=('dav1d-doc: HTML documentation')
+
+	cd "${pkgbase}-${pkgver}"
+	DESTDIR="${pkgdir}" ninja -C build install
+	install -Dm 644 README.md CONTRIBUTING.md NEWS -t "${pkgdir}/usr/share/doc/${pkgname}"
+	install -Dm 644 COPYING -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_dav1d-doc() {
+	pkgdesc+=" (documentation)"
+
+	cd "${pkgbase}-${pkgver}"
+	install -d "${pkgdir}/usr/share/doc/${pkgbase}"
+	cp -r build/doc/html -t "${pkgdir}/usr/share/doc/${pkgbase}"
+	install -Dm 644 COPYING -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+# disable SSE2 on i686 and i486
+source_i486=('dav1d-0.8.2-sse2-asm.patch')
+sha512sums_i486=('65d133b750888ce854fdad2f068430ae1920db135eaf9b8ec4d372ecb074e3eef6833f50f17e758cc8f69f4845b873fb96d744c03f75a34af0dd0ad8dbd413e3')
+source_i686=('dav1d-0.8.2-sse2-asm.patch')
+sha512sums_i686=('65d133b750888ce854fdad2f068430ae1920db135eaf9b8ec4d372ecb074e3eef6833f50f17e758cc8f69f4845b873fb96d744c03f75a34af0dd0ad8dbd413e3')
+if [ "$CARCH" == 'i686' ] || [ "$CARCH" == 'i486' ]; then
+  eval "$(
+    {
+      declare -f prepare || \
+      printf 'prepare() {\n}\n'
+    } \
+    | sed '
+      $i patch -p1 -i "$srcdir/dav1d-0.8.2-sse2-asm.patch"
+    '
+    declare -f build | \
+      sed '
+        s|arch-meson|arch-meson -Denable_asm=false |g
+      '
+  )"
+fi
+
+unset -f pkgver

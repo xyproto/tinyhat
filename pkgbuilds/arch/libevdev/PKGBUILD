@@ -1,0 +1,40 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+pkgname=libevdev
+pkgver=1.14.0
+pkgrel="1"
+pkgdesc="Wrapper library for evdev devices"
+arch=(i686 x32)
+url="https://www.freedesktop.org/wiki/Software/libevdev/"
+license=('MIT')
+depends=('glibc')
+makedepends=('python' 'check' 'valgrind' 'meson')
+provides=('libevdev.so')
+source=(https://freedesktop.org/software/$pkgname/$pkgname-$pkgver.tar.xz{,.sig})
+sha512sums=('527a643ec805618f04967c88105347966fc54726edbd884631255eb8f71cd4fdcb661b2051cd724a979372dbc5a7e47c8ab68098fa8cd3fcdd9a5413db7e062c'
+            'SKIP')
+validpgpkeys=('3C2C43D9447D5938EF4551EBE23B7E70B467F0BF') # Peter Hutterer (Who-T) <office@who-t.net>
+
+build() {
+  arch-meson $pkgname-$pkgver build \
+    -D documentation=disabled
+  meson compile -C build
+}
+check() {
+  meson test -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" meson install -C build
+
+  install -Dm644 $pkgname-$pkgver/COPYING \
+    "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+# valgrind no longer supports i486 (configuire tests for the binary,
+# no explicit configure option available)
+if [ "$CARCH" = 'i486' ]; then
+	makedepends=(${makedepends[@]//valgrind/})
+fi
+
+unset -f pkgver

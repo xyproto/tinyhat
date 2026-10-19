@@ -1,0 +1,21 @@
+pkgname=x32-runtime
+pkgver=16.2.0
+pkgrel=1
+pkgdesc="GCC runtime libraries for x32"
+arch=(x32)
+url="https://gcc.gnu.org/"
+license=('GPL-3.0-or-later WITH GCC-exception-3.1')
+depends=(glibc)
+makedepends=(x32-gcc)
+provides=(gcc-libs libgcc libstdc++ libatomic libgomp libquadmath libitm libgcc_s.so libstdc++.so libatomic.so libgomp.so)
+
+package() {
+  local d
+  d=$(dirname "$(x86_64-pc-linux-gnux32-gcc -print-file-name=libstdc++.so.6)")
+  install -d "$pkgdir/usr/lib"
+  for l in gcc_s stdc++ atomic gomp quadmath itm; do
+    cp -a "$d"/lib$l.so.* "$pkgdir/usr/lib/"
+  done
+  rm -f "$pkgdir"/usr/lib/*-gdb.py
+  install -Dm644 "$(find /usr/share/licenses -name RUNTIME.LIBRARY.EXCEPTION -print -quit)" -t "$pkgdir/usr/share/licenses/$pkgname"
+}

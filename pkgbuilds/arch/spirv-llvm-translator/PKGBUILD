@@ -1,0 +1,71 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Daniel Bermond <dbermond@archlinux.org>
+# Maintainer: Bruno Pagani <archange@archlinux.org>
+
+pkgname=spirv-llvm-translator
+pkgver=23.1.2
+pkgrel="1"
+pkgdesc="LLVM <-> SPIR-V converter for compilers targeting SPIR-V"
+url="https://www.khronos.org/spirv/"
+arch=(i686 x32)
+license=(NCSA)
+depends=(
+  glibc
+  libstdc++
+  llvm-libs
+  spirv-tools
+)
+makedepends=(
+  cmake
+  git
+  llvm
+  ninja
+  spirv-headers
+)
+checkdepends=(
+  clang
+  python
+)
+source=(
+  git+https://github.com/KhronosGroup/SPIRV-LLVM-Translator#tag=v$pkgver
+)
+b2sums=('de830357b3ce992a14703b5c70f3f41173de4c1798ad64b684b547a0f9f7fbedeed4b72afcd0f5f10c80d97ce93cc111df546b8e07050fbe90130f0f08cf0d0c')
+
+build() {
+  local cmake_options=(
+    -D BUILD_SHARED_LIBS=ON
+    -D CMAKE_BUILD_TYPE=Release
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_INSTALL_SYSCONFDIR=/etc
+    -D CMAKE_POSITION_INDEPENDENT_CODE=ON
+    -D CMAKE_SKIP_RPATH=ON
+    -D LLVM_CONFIG=llvm-config
+    -D LLVM_EXTERNAL_LIT=/usr/bin/lit
+    -D LLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=/usr/include/spirv
+    -D LLVM_LIBDIR_SUFFIX=
+    -D LLVM_SPIRV_ENABLE_LIBSPIRV_DIS=ON
+    -D LLVM_SPIRV_INCLUDE_TESTS=ON
+    -W no-author
+  )
+
+  cmake -S SPIRV-LLVM-Translator -B build -G Ninja "${cmake_options[@]}"
+  cmake --build build
+}
+
+check() {
+  # Does not use ctest-compatible targets
+  cmake --build build --target test
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+
+  install -Dm644 SPIRV-LLVM-Translator/LICENSE.TXT \
+    -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+eval "$(declare -f build | sed 's/-D LLVM_SPIRV_INCLUDE_TESTS=ON/-D LLVM_SPIRV_INCLUDE_TESTS=OFF/')"
+
+unset -f pkgver

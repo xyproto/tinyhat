@@ -1,0 +1,20 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -1157,6 +1157,16 @@
+ 		return;
+ 	}
+ 
++	if (c->isfloating && !c->isfullscreen && wl_list_empty(&c->surface.xdg->configure_list)) {
++		struct wlr_box g;
++		client_get_geometry(c, &g);
++		if (g.width > 0 && g.height > 0
++				&& (g.width + 2 * (int)c->bw != c->geom.width
++					|| g.height + 2 * (int)c->bw != c->geom.height)) {
++			c->geom.width = g.width + 2 * c->bw;
++			c->geom.height = g.height + 2 * c->bw;
++		}
++	}
+ 	resize(c, c->geom, (c->isfloating && !c->isfullscreen));
+ }
+ 

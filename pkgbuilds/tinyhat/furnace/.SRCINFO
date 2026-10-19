@@ -1,0 +1,27 @@
+pkgbase = furnace
+	pkgdesc = Chiptune tracker for many old sound chips
+	pkgver = 0.6.8.3
+	pkgrel = 1
+	url = https://tildearrow.org/furnace/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	license = MIT
+	license = Unlicense
+	makedepends = cmake
+	makedepends = ninja
+	makedepends = mesa
+	depends = sdl2-compat
+	depends = freetype2
+	depends = zlib
+	depends = libglvnd
+	noextract = furnace-fmt-e57ca2e3.tar.gz
+	noextract = furnace-adpcm-ef7a2171.tar.gz
+	source = furnace-0.6.8.3.tar.gz::https://github.com/tildearrow/furnace/archive/refs/tags/v0.6.8.3.tar.gz
+	source = furnace-fmt-e57ca2e3.tar.gz::https://github.com/fmtlib/fmt/archive/e57ca2e3685b160617d3d95fcd9e789c4e06ca88.tar.gz
+	source = furnace-adpcm-ef7a2171.tar.gz::https://github.com/superctr/adpcm/archive/ef7a217154badc3b99978ac481b268c8aab67bd8.tar.gz
+	sha256sums = c54b93dc7211a8e86828ea6b436628920df7a7dc87b130b3752f2251f5466e9c
+	sha256sums = 2d18d7b1c393791a180c8321cedd702093b5527625be955178bef8af2b1cf6db
+	sha256sums = 46da29342d2968ff222ba00e07c646e038b76af2e6c86de037c653059a056251
+
+pkgname = furnace

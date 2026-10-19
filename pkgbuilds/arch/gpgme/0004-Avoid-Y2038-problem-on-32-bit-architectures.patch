@@ -1,0 +1,12 @@
+diff --git a/lang/python/tests/t-callbacks.py b/lang/python/tests/t-callbacks.py
+index 25a1c23..c2f9481 100755
+--- a/lang/python/tests/t-callbacks.py
++++ b/lang/python/tests/t-callbacks.py
+@@ -95,7 +95,7 @@ Name-Real: Joe Tester
+ Name-Comment: with stupid passphrase
+ Name-Email: joe+gpg@example.org
+ Passphrase: Crypt0R0cks
+-Expire-Date: 2099-12-31
++Expire-Date: 2037-12-31
+ </GnupgKeyParms>
+ """

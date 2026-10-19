@@ -1,0 +1,443 @@
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+# Contributor: Paul Mattal <paul@archlinux.org>
+
+pkgname=ffmpeg
+pkgver=9.0.2
+pkgrel="2"
+epoch=2
+pkgdesc='Complete solution to record, convert and stream audio and video'
+arch=(i686 x32)
+url=https://ffmpeg.org
+license=(GPL-3.0-only)
+depends=(
+  alsa-lib
+  aom
+  bzip2
+  cairo
+  dav1d
+  fontconfig
+  freetype2
+  fribidi
+  glib2
+  glibc
+  gmp
+  gnutls
+  gsm
+  harfbuzz
+  jack
+  lame
+  lcms2
+  libass
+  libavc1394
+  libbluray
+  libbs2b
+  libdrm
+  libdvdnav
+  libdvdread
+  libgcc
+  libgl
+  libiec61883
+  libjxl
+  libmodplug
+  libopenmpt
+  libplacebo
+  libpulse
+  libraw1394
+  librsvg
+  libsoxr
+  libssh
+  libtheora
+  libva
+  libvdpau
+  libvorbis
+  libvpx
+  libwebp
+  libx11
+  libxcb
+  libxext
+  libxml2
+  libxv
+  ocl-icd
+  onevpl
+  opencore-amr
+  openjpeg2
+  opus
+  rav1e
+  rubberband
+  sdl2
+  snappy
+  sndio
+  speex
+  srt
+  svt-av1
+  v4l-utils
+  vapoursynth
+  vid.stab
+  vmaf
+  vulkan-icd-loader
+  x264
+  x265
+  xvidcore
+  xz
+  zeromq
+  zimg
+  zlib
+)
+makedepends=(
+  amf-headers
+  avisynthplus
+  clang
+  ffnvcodec-headers
+  frei0r-plugins
+  git
+  ladspa
+  mesa
+  nasm
+  opencl-headers
+  spirv-headers
+  vulkan-headers
+)
+optdepends=(
+  'avisynthplus: AviSynthPlus support'
+  'frei0r-plugins: Frei0r video effects support'
+  'intel-media-sdk: Intel QuickSync support (legacy)'
+  'ladspa: LADSPA filters'
+  'nvidia-utils: Nvidia NVDEC/NVENC support'
+  'onevpl-intel-gpu: Intel QuickSync support'
+)
+provides=(
+  libavcodec.so
+  libavdevice.so
+  libavfilter.so
+  libavformat.so
+  libavutil.so
+  libswresample.so
+  libswscale.so
+)
+source=(
+  git+https://git.ffmpeg.org/ffmpeg.git?signed#tag=n${pkgver}
+  0001-Add-av_stream_get_first_dts-for-Chromium.patch
+)
+b2sums=('97bd244a79088e862f349ef91ae75f7a02c1a0c8c1e21601abf6fa5acae1d721d104c2afa4e6e955d7caf18ffd511c175b1a3965b99cc1122754f191b9098bc5'
+        'e5f7b79f7731be9ee5a7280a9221fb531ac5a2d9820fc5870b68b0eabea667dfbe8f39f41c1e1763a4c84982896afaa54c81ff57847d203b70afafd726689e5d')
+validpgpkeys=(DD1EC9E8DE085C629B3E1846B18E8928B3948D64) # Michael Niedermayer <michael@niedermayer.cc>
+
+prepare() {
+  cd ffmpeg
+
+  # https://crbug.com/1251779
+  git apply -3 ../0001-Add-av_stream_get_first_dts-for-Chromium.patch
+}
+
+build() {
+  export PKG_CONFIG_PATH='/usr/lib/mbedtls2/pkgconfig'
+  cd ffmpeg
+  ./configure \
+    --prefix=/usr \
+    --disable-debug \
+    --disable-static \
+    --disable-stripping \
+    --enable-amf \
+    --enable-avisynth \
+    --enable-cuda-llvm \
+    --enable-lto \
+    --enable-fontconfig \
+    --enable-frei0r \
+    --enable-gmp \
+    --enable-gnutls \
+    --enable-gpl \
+    --enable-ladspa \
+    --enable-lcms2 \
+    --enable-libaom \
+    --enable-libass \
+    --enable-libbluray \
+    --enable-libbs2b \
+    --enable-libdav1d \
+    --enable-libdrm \
+    --enable-libdvdnav \
+    --enable-libdvdread \
+    --enable-libfreetype \
+    --enable-libfribidi \
+    --enable-libgsm \
+    --enable-libharfbuzz \
+    --enable-libiec61883 \
+    --enable-libjack \
+    --enable-libjxl \
+    --enable-libmodplug \
+    --enable-libmp3lame \
+    --enable-libopencore_amrnb \
+    --enable-libopencore_amrwb \
+    --enable-libopenjpeg \
+    --enable-libopenmpt \
+    --enable-libopus \
+    --enable-libplacebo \
+    --enable-libpulse \
+    --enable-librav1e \
+    --enable-librsvg \
+    --enable-librubberband \
+    --enable-libsnappy \
+    --enable-libsoxr \
+    --enable-libspeex \
+    --enable-libsrt \
+    --enable-libssh \
+    --enable-libsvtav1 \
+    --enable-libtheora \
+    --enable-libv4l2 \
+    --enable-libvidstab \
+    --enable-libvmaf \
+    --enable-libvorbis \
+    --enable-libvpl \
+    --enable-libvpx \
+    --enable-libwebp \
+    --enable-libx264 \
+    --enable-libx265 \
+    --enable-libxcb \
+    --enable-libxml2 \
+    --enable-libxvid \
+    --enable-libzimg \
+    --enable-libzmq \
+    --enable-nvdec \
+    --enable-nvenc \
+    --enable-opencl \
+    --enable-opengl \
+    --enable-shared \
+    --enable-vapoursynth \
+    --enable-version3 \
+    --enable-vulkan \
+    --disable-decoder=magicyuv # pixelsmash
+  make
+  make tools/qt-faststart
+  make doc/ff{mpeg,play}.1
+}
+
+package() {
+  depends+=(
+    libass.so
+#   libbluray.so
+    libbs2b.so
+    libdav1d.so
+    libfreetype.so
+    libharfbuzz.so
+#   libjxl.so
+    libopenmpt.so
+    libplacebo.so
+    librav1e.so
+    librsvg-2.so
+    librubberband.so
+    libva.so
+    libva-drm.so
+    libva-x11.so
+    libvidstab.so
+    libvorbisenc.so
+    libvorbis.so
+    libvpx.so
+    libx264.so
+#   libx265.so
+    libxvidcore.so
+    libzimg.so
+    libzmq.so
+  )
+
+  make DESTDIR="${pkgdir}" -C ffmpeg install install-man
+  install -Dm 755 ffmpeg/tools/qt-faststart "${pkgdir}"/usr/bin/
+}
+
+# vim: ts=2 sw=2 et:
+
+# Disable mfx - libmfx does not compile
+depends=(${depends[@]//libmfx/})
+eval "$(
+  declare -f build | \
+    sed '
+      s/--enable-libmfx/--disable-libmfx/
+    '
+)"
+
+# also disable onevpl, it does not compile
+depends=(${depends[@]//onevpl/})
+eval "$(
+  declare -f build | \
+    sed '
+      s/--enable-libvpl/--disable-libvpl/
+    '
+)"
+
+# Disable cuda llvm and nvenc. No idea why the latter fails.
+eval "$(
+  declare -f build | \
+    sed '
+      s/--enable-cuda-llvm/--disable-cuda-llvm/;s/--enable-nvenc/--disable-nvenc/
+    '
+)"
+
+# Remove above dependencies
+makedepends=(${makedepends[@]//onevpl/})
+makedepends=(${makedepends[@]//clang/})
+
+# no vamf for non-pentium4
+if [ "$CARCH" == 'i686' ] || [ "$CARCH" == 'i486' ]; then
+  depends=(${depends[@]//vmaf/})
+
+  eval "$(
+    declare -f prepare | \
+      sed '
+        /vmaf/d
+      '
+  )"
+
+  eval "$(
+    declare -f build | \
+      sed '
+        s/--enable-libvmaf//
+      '
+  )"
+
+fi
+
+# force picking of a modern libvpx and not libvpx1.3 needed for steam
+#makedepends+=('libvpx>=1.8.2')
+
+# no AviSynthPlus on i486 (uses Intel intrinsics and cmake support for
+# disabling it is broken)
+makedepends=(${makedepends[@]//avisynthplus/})
+makedepends_i686+=(avisynthplus)
+makedepends_pentium4=("${makedepends_i686[@]}")
+if [ "$CARCH" == 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s/--enable-avisynth/--disable-avisynth/
+      '
+  )"
+fi
+
+# omit things depending on rust (for now everywhere)
+depends=(${depends[@]//rav1e/})
+eval "$(
+  declare -f build | \
+    sed '
+      s@--enable-librav1e@--disable-librav1e@
+    '
+  declare -f package | \
+    sed '
+      /depends/ a \
+        depends=(${depends[@]//librav1e.so/})
+    '
+)"
+
+# svt-av1 is 64-bit only
+depends=(${depends[@]//svt-av1/})
+eval "$(
+  declare -f build | \
+    sed '
+      s@--enable-libsvtav1@--disable-libsvtav1@
+    '
+)"
+
+# -latomic on i486
+if [ "$CARCH" == 'i486' ]; then
+  depends=(${depends[@]//librav1e.so/})
+  eval "$(
+    declare -f build | \
+      sed '
+        s@make[^ ]@make EXTRALIBS-ffmpeg=-latomic EXTRALIBS-ffplay=-latomic EXTRALIBS-ffprobe=-latomic@
+      '
+  )"
+fi
+
+# disable all modern optimizations
+eval "$(
+  declare -f build | \
+    sed '
+      s|./configure|./configure --disable-sse3 --disable-ssse3 --disable-sse4 --disable-sse42 --disable-mmxext --disable-avx --disable-avx2 --disable-avx512|
+    '
+)"
+# disabled specific assembly per subarchitecture
+if [ "$CARCH" == 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s|./configure|./configure --disable-sse --disable-sse2 --disable-mmx|
+      '
+  )"
+fi
+if [ "$CARCH" == 'i686' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s|./configure|./configure --disable-sse --disable-mmx|
+      '
+  )"
+fi
+
+# see FS32#239, basically everything breaks otherwise
+eval "$(
+  declare -f build | \
+    sed '
+      s|./configure|./configure --disable-asm|
+    '
+)"
+
+# see FS32#239, x264 and i486 result in missing symbols, no clue
+if [ "$CARCH" == 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s|--enable-libx264|--disable-libx264|
+      '
+  )"
+fi
+
+# no Rust and librsvg-2 for now
+depends=(${depends[@]//librsvg/})
+eval "$(
+  declare -f build | \
+    sed '
+      s@--enable-librsvg@--disable-librsvg@
+    '
+  declare -f package | \
+    sed '
+      /depends/ a \
+        depends=(${depends[@]//librsvg-2.so/})
+    '
+)"
+
+# no AMF, has compilation issues
+makedepends=(${makedepends[@]//amf-headers/})
+eval "$(
+  declare -f build | \
+    sed '
+      s@--enable-amf@--disable-amf@
+    '
+)"
+
+# Bad workaround
+eval "$(declare -f build | sed '3i export CFLAGS="$CFLAGS -Wno-error=incompatible-pointer-types -Wno-error=int-conversion"')"
+
+# Bootstrap: frei0r-plugins -> opencv -> ffmpeg forms a cycle. The ffmpeg
+# 8.x in staging is uninstallable (built against x265/libbluray sonames that
+# no longer exist), so the frei0r-plugins makedepend cannot be resolved and
+# ffmpeg 9 never builds. Drop frei0r support until opencv and frei0r-plugins
+# have been rebuilt against ffmpeg 9, then remove this block and bump.
+makedepends=(${makedepends[@]//frei0r-plugins/})
+eval "$(
+  declare -f build | \
+    sed '
+      s@--enable-frei0r@--disable-frei0r@
+    '
+)"
+
+if [ "$CARCH" = 'x32' ]; then
+  depends=(${depends[@]//librav1e.so/})
+  eval "$(
+    declare -f build | \
+      sed '
+        s@--enable-librav1e@--disable-librav1e@
+      '
+  )"
+fi
+
+unset -f pkgver

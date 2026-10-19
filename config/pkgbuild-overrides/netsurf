@@ -1,0 +1,2 @@
+depends=(${depends[@]/libjxl/})
+eval "$(declare -f build | sed 's/TARGET=gtk3/TARGET=gtk3 NETSURF_USE_JPEGXL=NO/')"

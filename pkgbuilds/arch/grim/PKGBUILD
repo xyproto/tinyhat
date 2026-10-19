@@ -1,0 +1,26 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: emersion <contact@emersion.fr>
+
+pkgname=grim
+pkgver=1.5.0
+pkgrel="2"
+pkgdesc='Screenshot utility for Wayland'
+arch=(i686 x32)
+url='https://gitlab.freedesktop.org/emersion/grim'
+license=(MIT)
+depends=(cairo libjpeg-turbo wayland)
+makedepends=(bash-completion fish git meson ninja pango scdoc wayland-protocols)
+source=("git+$url#tag=v$pkgver")
+b2sums=('fcb867a416bcc1acad28e35ab1a2e1aeea4d5c04196ee74b7ad372256ef780ab77bb2afd93badb8c203c0a320ea7b229a999dfd9faa575c8c42150e5fcbcbd9a')
+
+build() {
+  arch-meson build -Dbash-completions=true -Dfish-completions=true "$pkgname"
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 $pkgname/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+unset -f pkgver

@@ -1,0 +1,11 @@
+# use muon instead of meson, no python (and meson needs python)
+makedepends=(${makedepends[@]//meson/})
+makedepends+=(muon-meson)
+makedepends+=(ninja)
+
+eval "$(
+  declare -f build | \
+    sed '
+      s/arch-meson .*/muon meson configure ..\/$pkgname -Dprefix=\/usr/g
+    '
+)"

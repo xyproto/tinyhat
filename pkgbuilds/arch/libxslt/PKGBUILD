@@ -1,0 +1,90 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: John Proctor <jproctor@prium.net>
+
+pkgbase=libxslt
+pkgname=(
+  libxslt
+  libxslt-docs
+)
+pkgver=1.1.45
+pkgrel="2"
+pkgdesc="XML stylesheet transformation library"
+url="https://gitlab.gnome.org/GNOME/libxslt/-/wikis/home"
+arch=(i686 x32)
+license=(MIT)
+depends=(
+  bash
+  glibc
+  libgcrypt
+  libxml2
+  xz
+)
+makedepends=(
+  git
+  python
+)
+checkdepends=(
+  docbook-xml
+)
+source=(
+  "git+https://gitlab.gnome.org/GNOME/libxslt.git#tag=v$pkgver"
+  0001-runtest-Print-output-causing-failure.patch
+)
+b2sums=('5370da9c8febd177b3a19e7b2e443674277b5b8e6c88a7563b789fba1c1dbc1ddcfaab5732d42cd8145a57665ee00968e8a3a7e704b4d2f9dcd6eab0791480b3'
+        '23c696c4201d0227c71ec12fc19ed23e5997d235b5d001a52e41a3cc2da0f4ddf62f54652927fde460ccda82eaff23a4f23b2cece491c5b58cfd78ee3d93ce3f')
+
+prepare() {
+  cd libxslt
+
+  # Make test failures easier to fix
+  git apply -3 ../0001-runtest-Print-output-causing-failure.patch
+
+  NOCONFIGURE=1 ./autogen.sh
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --localstatedir=/var
+    --disable-static
+    --with-python=/usr/bin/python
+  )
+
+  cd libxslt
+  ./configure "${configure_options[@]}"
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  cd libxslt
+  make check
+}
+
+package_libxslt() {
+  optdepends=('python: Python bindings')
+  provides=(lib{,e}xslt.so)
+
+  cd libxslt
+  make DESTDIR="$pkgdir" install
+
+  mkdir -p ../doc/usr/share
+  mv "$pkgdir"/usr/share/{doc,gtk-doc} -t ../doc/usr/share
+
+  install -Dm644 Copyright -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+package_libxslt-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+
+  install -Dm644 libxslt/Copyright -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

@@ -1,0 +1,79 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: DrZaius <lou[at]fakeoutdoorsman[dot]com>
+# Contributor: pumbur
+
+pkgbase=opus
+pkgname=(
+  opus
+  opus-docs
+)
+pkgver=1.6.1
+pkgrel="1"
+pkgdesc="Totally open, royalty-free, highly versatile audio codec"
+url="https://www.opus-codec.org/"
+arch=(i686 x32)
+license=(BSD-3-Clause)
+depends=(
+  glibc
+)
+makedepends=(
+  doxygen
+  meson
+)
+source=("https://downloads.xiph.org/releases/opus/opus-$pkgver.tar.gz")
+b2sums=('dda8fb4e30e5f22d2b37616902892dcc715a2886150ab54f67d61a90c60a03afee05fb7b56a0d88355db007bb4d72c8bd6de3d874a49767318a5bba115b1a613')
+
+# https://downloads.xiph.org/releases/opus/SHA256SUMS.txt
+sha256sums=('6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1')
+
+# Git doesn't contain model data
+#source=("git+https://gitlab.xiph.org/xiph/opus.git?signed#tag=v$pkgver")
+#validpgpkeys=(43E96DE704A2D88B339759C35E5DD9A36F9189C8) # Jean-Marc Valin <jmvalin@jmvalin.ca>
+
+prepare() {
+  ln -s opus-$pkgver opus
+  cd opus
+}
+
+build() {
+  local meson_options=(
+    -D asm=disabled
+    -D custom-modes=true
+    -D deep-plc=enabled
+    -D dred=enabled
+    -D osce=enabled
+  )
+
+  arch-meson opus build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_opus() {
+  provides=(libopus.so)
+
+  meson install -C build --destdir "$pkgdir"
+  install -Dm644 opus/opus.m4 -t "$pkgdir/usr/share/aclocal"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+
+  install -Dm644 opus/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+package_opus-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+
+  install -Dm644 opus/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

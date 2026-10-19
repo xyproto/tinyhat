@@ -1,0 +1,55 @@
+This directory /etc/ca-certificates/extracted/ contains CA certificate bundle
+files which are automatically created based on the information found in the
+/usr/share/ca-certificates/trust-source/ and /etc/ca-certificates/trust-source/
+directories.
+
+The files are as follows:
+
+  - ca-bundle.trust.crt:
+
+    Contains CA certificates in the BEGIN/END TRUSTED CERTIFICATE file format.
+
+    This is the only file in a format carrying distrust information.
+    Distrusted certificates are missing from the other files.
+
+  - email-ca-bundle.pem:
+
+    Contains CA certificates trusted for E-Mail protection in the
+    BEGIN/END CERTIFICATE file format.
+
+  - objsign-ca-bundle.pem:
+
+    Contains CA certificates trusted for code signing in the
+    BEGIN/END CERTIFICATE file format.
+
+  - tls-ca-bundle.pem:
+
+    Contains CA certificates trusted for TLS server authentication in the
+    BEGIN/END CERTIFICATE file format.
+
+  - cadir/:
+
+    Directory containing individual certificates trusted for TLS server
+    authentication in the BEGIN/END CERTIFICATE file format.
+
+    Also includes the necessary hash symlinks expected by OpenSSL.
+
+  - edk2-cacerts.bin:
+
+    Contains CA certificates trusted for TLS server authentication in the
+    EDK2 (EFI Development Kit II) file format.
+
+  - java-cacerts.jks:
+
+    Contains CA certificates trusted for TLS server authentication in the
+    Java KeyStore file format.
+
+If your application isn't able to load the PKCS#11 module p11-kit-trust.so,
+then you can use these files in your application to load a list of global
+root CA certificates.
+
+Please never manually edit the files stored in this directory,
+because your changes will be lost and the files automatically overwritten,
+each time the update-ca-trust command gets executed.
+
+Please refer to the update-ca-trust(8) manual page for additional information.

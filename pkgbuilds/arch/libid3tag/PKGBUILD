@@ -1,0 +1,39 @@
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Chistian Heusel <gromit@archlinux.org>
+# Contributor: dorphell <dorphell@archlinux.org>
+
+pkgname=libid3tag
+pkgver=0.16.4
+pkgrel="1"
+pkgdesc="ID3 tag manipulation library"
+arch=(i686 x32)
+url="https://codeberg.org/tenacityteam/libid3tag"
+license=("GPL-2.0-or-later")
+depends=(glibc zlib)
+makedepends=(cmake gperf)
+provides=(libid3tag.so)
+source=(
+  $pkgname-$pkgver.tar.gz::https://codeberg.org/tenacityteam/libid3tag/archive/$pkgver.tar.gz
+)
+sha512sums=('056b7e00c62d14fc09980d4309422c822ad485cca3876cbb76017fef89aaf79ecfb42f2683521ff6d19f172ff1b7435dbd7307449559099ad31e0058415918ec')
+b2sums=('08a3ac62d762ca739ced424d922271dd323f609bebca6ef6d509902a455b02c40f89172fc5c4e918c92fb1a647e4a197a37dad962fc347c2b891dd01f411c3d3')
+
+build() {
+  local cmake_options=(
+    -B build
+    -D CMAKE_BUILD_TYPE=None
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -S $pkgname
+    -W no-dev
+  )
+
+  cmake "${cmake_options[@]}"
+  cmake --build build --verbose
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
+
+unset -f pkgver

@@ -1,0 +1,25 @@
+pkgbase = libbluray
+	pkgdesc = Library to access Blu-Ray disks for video playback
+	pkgver = 1.5.1
+	pkgrel = 1
+	url = https://www.videolan.org/developers/libbluray.html
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-only
+	makedepends = apache-ant
+	makedepends = git
+	makedepends = java-environment=17
+	makedepends = meson
+	makedepends = ninja
+	depends = fontconfig
+	depends = glibc
+	depends = libfreetype.so
+	depends = libxml2
+	optdepends = java-runtime: BD-J library
+	provides = libbluray.so
+	source = git+https://code.videolan.org/videolan/libbluray.git#tag=1.5.1
+	source = git+https://code.videolan.org/videolan/libudfread.git
+	b2sums = c6d5fa659c605e69b2e47d23564995f451ad57182b47a0509e21b589f926992bd3adf4d2355b4beafb1467e84b0319ffd422544861b63583db308b99b79cbfcb
+	b2sums = SKIP
+
+pkgname = libbluray

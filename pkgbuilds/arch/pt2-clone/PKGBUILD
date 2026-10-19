@@ -1,0 +1,65 @@
+# Maintainer: George Rawlinson <grawlinson@archlinux.org>
+
+pkgname=pt2-clone
+pkgver=1.92
+pkgrel="1"
+pkgdesc='A highly accurate clone of the classic ProTracker 2.3D software for Amiga'
+arch=(i686 x32)
+url='https://16-bits.org/pt2.php'
+license=(BSD-3-Clause)
+depends=(glibc alsa-lib sdl2 hicolor-icon-theme)
+makedepends=(git cmake)
+install=pt2-clone.install
+source=("$pkgname::git+https://github.com/8bitbubsy/pt2-clone#tag=v$pkgver")
+sha512sums=('260acd687a1f1928f3bcd7e0a0df9d1c7c1aed78aab4c1cfe72d1d6c00cde196f8d1befde2283b277874ccb1dc2c0151033638b4c37db1b67d6359f8eadc1956')
+b2sums=('899eaa863cf11831eaec4af82c530e5e14fa0a7e97fa2b45fdfdf96adf56b006bde0a75fb95f1f9b2be73ed6148d2f51244e96a44cae93ff064832e7deb3d95d')
+
+prepare() {
+  cd "$pkgname"
+
+  # modify desktop file
+  sed \
+    -e 's/Icon.*/Icon=pt2-clone/' \
+    -e 's/Comment.*/Comment = Music Tracker/' \
+    -i "release/other/Freedesktop.org Resources/ProTracker 2 clone.desktop"
+}
+
+build() {
+  local cmake_options=(
+    -B build
+    -S "$pkgname"
+    -W no-dev
+    -D CMAKE_BUILD_TYPE=None
+    -D CMAKE_INSTALL_PREFIX=/usr
+  )
+
+  cmake "${cmake_options[@]}"
+
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+
+  cd "$pkgname"
+
+  # desktop file
+  install -vDm644 \
+    "release/other/Freedesktop.org Resources/ProTracker 2 clone.desktop" \
+    "$pkgdir/usr/share/applications/$pkgname.desktop"
+
+  # application icon
+  install -vDm644 \
+    "release/other/Freedesktop.org Resources/ProTracker 2 clone.png" \
+    "$pkgdir/usr/share/icons/hicolor/512x512/apps/$pkgname.png"
+
+  # documentation
+  install -vDm644 -t "$pkgdir/usr/share/doc/$pkgname" README.md release/*.txt release/other/protracker.ini
+
+  # license
+  install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" LICENSE*
+  install -vDm644 "release/other/Freedesktop.org Resources/LICENSE" \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE.freedesktop-resources"
+}
+
+unset -f pkgver

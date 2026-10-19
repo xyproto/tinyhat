@@ -1,0 +1,14 @@
+pkgbase = hwdata
+	pkgdesc = hardware identification databases
+	pkgver = 0.412
+	pkgrel = 1
+	url = https://github.com/vcrhonek/hwdata
+	arch = any
+	license = GPL-2.0-or-later
+	makedepends = git
+	replaces = hwids
+	source = git+https://github.com/vcrhonek/hwdata.git#tag=v0.412?signed
+	validpgpkeys = 3C40194FB79138CE0F78FD4919C2F062574F5403
+	b2sums = 8f5edaa72fd229b37acb4f5af3805e6a25606bef496742b05afee0a358871735854ac8cfdf44852dd33d0162afca2b887a24e9d4e0695e28f23e8f04204f32ae
+
+pkgname = hwdata

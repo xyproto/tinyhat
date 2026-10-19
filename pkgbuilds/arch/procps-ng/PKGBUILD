@@ -1,0 +1,80 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Christian Hesse <eworm@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+pkgname=procps-ng
+pkgver=4.0.7
+pkgrel="1"
+pkgdesc='Utilities for monitoring your system and its processes'
+url='https://gitlab.com/procps-ng/procps'
+license=(GPL LGPL)
+arch=(i686 x32)
+depends=(glibc ncurses libncursesw.so systemd-libs)
+makedepends=(gettext git po4a systemd)
+checkdepends=(dejagnu)
+conflicts=(procps sysvinit-tools)
+provides=(procps sysvinit-tools libproc2.so)
+replaces=(procps sysvinit-tools)
+options=('!emptydirs')
+validpgpkeys=('5D2FB320B825D93904D205193938F96BDF50FEA5') # Craig Small <csmall@debian.org>
+source=("git+https://gitlab.com/procps-ng/procps.git?signed#tag=v${pkgver}")
+sha256sums=('eea741f9b1487ea6c1e8d539665fffb93349ff882d2e0daa2cdca5675691961f')
+b2sums=('eee40f9db3ed1facf08b3c79f4529913b1323d6aa703c191ad5e1b76c9e6073a0da1a468b662d43b6b7cb926ee0ced19416aca4cfcced04e5b699dc6008c43e8')
+
+_backports=(
+)
+
+_reverts=(
+)
+
+prepare() {
+  cd procps
+
+  local _c _l
+  for _c in "${_backports[@]}"; do
+    if [[ "${_c}" == *..* ]]; then _l='--reverse'; else _l='--max-count=1'; fi
+    git log --oneline "${_l}" "${_c}"
+    git cherry-pick --mainline 1 --no-commit "${_c}"
+  done
+  for _c in "${_reverts[@]}"; do
+    if [[ "${_c}" == *..* ]]; then _l='--reverse'; else _l='--max-count=1'; fi
+    git log --oneline "${_l}" "${_c}"
+    git revert --mainline 1 --no-commit "${_c}"
+  done
+
+  ./autogen.sh
+}
+
+build() {
+  cd procps
+
+  ./configure \
+    --prefix=/usr \
+    --exec-prefix=/ \
+    --sysconfdir=/etc \
+    --libdir=/usr/lib \
+    --bindir=/usr/bin \
+    --sbindir=/usr/bin \
+    --enable-watch8bit \
+    --with-systemd \
+    --disable-modern-top \
+    --disable-kill
+
+  make
+}
+
+check() {
+  cd procps
+
+  make check
+}
+
+package() {
+  cd procps
+
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

@@ -1,0 +1,52 @@
+# Maintainer: George Rawlinson <george@rawlinson.net.nz>
+# Contributor: Arthur Darcet <arthur.darcet at m4x.org>
+# Contributor: Techlive Zheng <techlivezheng at gmail.com>
+
+pkgname=libiconv
+pkgver=1.19
+pkgrel="1"
+pkgdesc='GNU charset conversion library'
+arch=(i686 x32)
+url='http://www.gnu.org/software/libiconv/'
+license=(LGPL-2.1-only GPL-3.0-only)
+depends=(glibc)
+source=("https://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz"{,.sig})
+options=(!libtool)
+validpgpkeys=('E0FFBD975397F77A32AB76ECB6301D9E1BBEAC08') # Bruno Haible <bruno@clisp.org>
+sha512sums=('1e8150f9bca907579330cd9c44ebbee46a260271fbe8f50d5ee24a39ef29c8d254505e85c3409324f7440596da711a8bd49e89f848a6be0cb3238a58c24aaecd'
+            'SKIP')
+b2sums=('a77d5190bfed76627ac5abf24b90a19f3f1c460f2fe4e5002bb4799d789236c268dff0693aa9836ab12df76b1381084dbe2b78cabe8221eb97f54e14a210a8e2'
+        'SKIP')
+
+build() {
+  cd "$pkgname-$pkgver"
+
+  ./configure \
+    --prefix=/usr \
+    --docdir=/usr/share/doc/libiconv \
+    --enable-extra-encodings
+
+  # workaround for insecure rpath
+  sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool
+  sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool
+
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+
+  make DESTDIR="$pkgdir" install
+
+  # move references from iconv to libiconv
+  mv -v "$pkgdir"/usr/include/{iconv.h,libiconv.h}
+  mv -v "$pkgdir"/usr/bin/{iconv,libiconv}
+  mv -v "$pkgdir"/usr/share/man/man1/{,lib}iconv.1
+  mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv.3
+  mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconvctl.3
+  mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv_open.3
+  mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv_close.3
+  mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv_open_into.3
+}
+
+unset -f pkgver

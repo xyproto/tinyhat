@@ -1,0 +1,21 @@
+pkgbase = tinyhat-gui
+	pkgdesc = Tiny Hat backup, restore, file picker and media player dialogs
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = fontconfig
+	depends = gtk3
+	depends = curl
+	source = tinyhat-backup.c
+	source = tinyhat-restore.c
+	source = tinyhat-pick.c
+	source = tinyhat-play.c
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = tinyhat-gui

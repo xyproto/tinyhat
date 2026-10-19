@@ -1,0 +1,22 @@
+pkgbase = fcft
+	pkgdesc = Simple library for font loading and glyph rasterization
+	pkgver = 3.3.3
+	pkgrel = 1
+	url = https://codeberg.org/dnkl/fcft
+	arch = i686
+	arch = x32
+	license = MIT
+	checkdepends = ttf-dejavu
+	makedepends = meson
+	makedepends = scdoc
+	makedepends = tllist
+	depends = fontconfig
+	depends = freetype2
+	depends = harfbuzz
+	depends = libutf8proc
+	depends = pixman
+	provides = libfcft.so
+	source = fcft-3.3.3.tar.gz::https://codeberg.org/dnkl/fcft/archive/3.3.3.tar.gz
+	sha256sums = c0d8d485b45b1af829f73101d6588f404a32bf3c7543236b1a4707d44be81b60
+
+pkgname = fcft

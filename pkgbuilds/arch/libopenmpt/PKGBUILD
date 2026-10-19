@@ -1,0 +1,56 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+
+pkgname=libopenmpt
+pkgver=0.8.9
+pkgrel="1"
+pkgdesc="A library to render tracker music to a PCM audio stream"
+arch=(i686 x32)
+url="https://lib.openmpt.org/libopenmpt/"
+license=(BSD-3-Clause)
+depends=(
+  flac
+  glibc
+  libgcc
+  libogg  # required by pkgconf
+  libpulse
+  libsndfile
+  libstdc++
+  libvorbis
+  mpg123
+  portaudio
+  zlib
+)
+makedepends=(
+  autoconf-archive
+  doxygen
+  help2man
+)
+provides=(libopenmpt.so)
+source=($pkgname-$pkgver.tar.gz::https://lib.openmpt.org/files/libopenmpt/src/$pkgname-$pkgver+release.autotools.tar.gz)
+sha512sums=('f17eb759f21d22ac51cdc11d1785e5c025d912cd14154cde93a92b8d0752c63ea19890f0a289bc0b75c94a1910537dbbd6ce442f9f5210fadf7f2966e7d329a0')
+b2sums=('d21ee443317f4f0e11abb5bda1b771006387341a7dac6090efbcf5588ccdbf1fb90951f833997b062857801dd1b4815740c91800a2bfd5df9ef1bbbb73b785d9')
+
+prepare() {
+  cd $pkgname-$pkgver+release.autotools
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-$pkgver+release.autotools
+  ./configure --prefix=/usr
+  # prevent excessive overlinking due to libtool
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  make -k check -C $pkgname-$pkgver+release.autotools
+}
+
+package() {
+  cd $pkgname-$pkgver+release.autotools
+  make DESTDIR="$pkgdir" install
+  install -vDm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+unset -f pkgver

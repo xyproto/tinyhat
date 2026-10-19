@@ -24,6 +24,8 @@ def main(lockfile, pkgdir, root, listfile):
         f.write("9\n")
     now = str(int(time.time()))
     for p in pkg.read_lock(lockfile):
+        if p["repo"] == "lib32":
+            continue
         single, multi, backup, files, md5 = {}, {}, [], [], {}
         with tarfile.open(os.path.join(pkgdir, p["filename"])) as t:
             for m in t:

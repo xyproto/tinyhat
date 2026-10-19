@@ -1,0 +1,18 @@
+pkgbase = opendoas
+	pkgdesc = Run commands as super user or another user
+	pkgver = 6.8.2
+	pkgrel = 3
+	url = https://github.com/Duncaen/OpenDoas
+	arch = i686
+	arch = x32
+	license = custom:ISC
+	makedepends = git
+	depends = pam
+	provides = doas
+	replaces = doas
+	backup = etc/pam.d/doas
+	source = opendoas::git+https://github.com/Duncaen/OpenDoas.git?signed#tag=v6.8.2
+	validpgpkeys = C4B6FBA98211F7EFF35DEB73335C1D17EC3D6E35
+	sha256sums = 43b4c2de1aaa31aac1d322b98883334b864c606783c4dfb3ddbfa0d88af9332b
+
+pkgname = opendoas

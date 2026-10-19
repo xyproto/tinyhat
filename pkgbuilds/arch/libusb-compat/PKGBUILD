@@ -1,0 +1,28 @@
+# Maintainer:
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: arjan <arjan@archlinux.org>
+
+pkgname=libusb-compat
+pkgver=0.1.9
+pkgrel="1"
+pkgdesc="Library to enable user space application programs to communicate with USB devices"
+arch=(i686 x32)
+url="http://libusb.sourceforge.net/"
+license=('LGPL-2.0-or-later')
+depends=('libusb' 'sh')
+source=("https://github.com/libusb/libusb-compat-0.1/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
+sha256sums=('b09aa33e943080352041ea3d5ac01fd90ea96e9337212865de0dda776886dbb9')
+
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr --disable-static
+  make
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+}
+
+unset -f pkgver

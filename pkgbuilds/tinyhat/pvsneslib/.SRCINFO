@@ -1,0 +1,23 @@
+pkgbase = pvsneslib
+	pkgdesc = SNES game library with 816-tcc, wla-dx and graphics tools
+	pkgver = 0+e090f001
+	pkgrel = 1
+	url = https://github.com/alekmaul/pvsneslib
+	arch = i686
+	arch = x32
+	license = MIT
+	license = LGPL-2.1-only
+	license = GPL-2.0-or-later
+	makedepends = cmake
+	makedepends = python
+	depends = glibc
+	noextract = tcc-cc076f049282b7f8ca46b15c437db97d9224e763.tar.gz
+	noextract = wla-dx-6fa1f673f010e4fa4571c40929019cd7e67d1bbd.tar.gz
+	source = pvsneslib-e090f001ccffdc0fb69f479a8c9703e30d07f6b1.tar.gz::https://github.com/alekmaul/pvsneslib/archive/e090f001ccffdc0fb69f479a8c9703e30d07f6b1.tar.gz
+	source = tcc-cc076f049282b7f8ca46b15c437db97d9224e763.tar.gz::https://github.com/alekmaul/tcc/archive/cc076f049282b7f8ca46b15c437db97d9224e763.tar.gz
+	source = wla-dx-6fa1f673f010e4fa4571c40929019cd7e67d1bbd.tar.gz::https://github.com/vhelin/wla-dx/archive/6fa1f673f010e4fa4571c40929019cd7e67d1bbd.tar.gz
+	sha256sums = 20aa1eed732b942bab17e80afe7970d2ef511ed93bd7b06565328d77eed89452
+	sha256sums = 1553e8e5581792a2c0b37818be852874a4529203409d1baf88a0d19396a39be0
+	sha256sums = e684790c7d65a1ffdae7e97290723c83221cf802e958aba774a5af6efbfad245
+
+pkgname = pvsneslib

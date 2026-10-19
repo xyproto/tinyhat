@@ -1,0 +1,28 @@
+pkgbase = libcap-ng
+	pkgdesc = A library for Linux that makes using posix capabilities easy
+	pkgver = 0.9.6
+	pkgrel = 1
+	url = https://people.redhat.com/sgrubb/libcap-ng/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	license = LGPL-2.1-or-later
+	makedepends = bash-completion
+	makedepends = python
+	makedepends = swig
+	depends = glibc
+	source = https://github.com/stevegrubb/libcap-ng/archive/v0.9.6/libcap-ng-0.9.6.tar.gz
+	sha512sums = 77bc255688606cbc3a9d40cc1d417ebf748d04b8d837d793708b58431857ebfaa077f00cebfcf03c58ce56985feb63f9f8eb70cce21ba304ca3418a0fe1b61d1
+	b2sums = 64599a9405895e4b2ec3275cbc58c137be025d6dd11ff51219254495d1370e3dc92a97017fa8651c59426ac81a16660d6194ce0a17b02c502cd85bf44adb7e90
+
+pkgname = libcap-ng
+	provides = libcap-ng.so
+	provides = libdrop_ambient.so
+
+pkgname = python-capng
+	pkgdesc = A library for Linux that makes using posix capabilities easy (Python bindings)
+	depends = glibc
+	depends = libcap-ng
+	depends = libcap-ng.so
+	depends = python
+	provides = python-libcap-ng

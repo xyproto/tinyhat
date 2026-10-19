@@ -1,0 +1,29 @@
+pkgname=tinyhat-gui
+pkgver=1
+pkgrel=1
+pkgdesc="Tiny Hat backup, restore, file picker and media player dialogs"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat"
+license=(BSD-3-Clause)
+depends=(gtk3 curl)
+makedepends=(fontconfig)
+_progs=(tinyhat-backup tinyhat-restore tinyhat-pick tinyhat-play)
+source=("${_progs[@]/%/.c}")
+sha256sums=(SKIP SKIP SKIP SKIP)
+
+build() {
+  mkdir -p pc
+  for f in pango pangocairo pangoft2 pangoxft; do
+    [ -f /usr/lib/pkgconfig/$f.pc ] && sed 's/>= *[0-9][0-9.]*//g' /usr/lib/pkgconfig/$f.pc >pc/$f.pc
+  done
+  export PKG_CONFIG_PATH="$srcdir/pc"
+  for p in "${_progs[@]}"; do
+    cc $CFLAGS $(pkg-config --cflags gtk+-3.0 libcurl) -o $p $p.c $LDFLAGS $(pkg-config --libs gtk+-3.0 libcurl)
+  done
+}
+
+package() {
+  for p in "${_progs[@]}"; do
+    install -Dm755 $p "$pkgdir/usr/bin/$p"
+  done
+}

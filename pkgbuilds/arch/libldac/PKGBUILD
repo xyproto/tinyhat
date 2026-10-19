@@ -1,0 +1,53 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=libldac
+pkgver=2.0.2.6
+pkgrel="1"
+pkgdesc="LDAC Bluetooth encoder library"
+url="https://github.com/EHfive/ldacBT"
+arch=(i686 x32)
+license=(Apache-2.0)
+depends=(glibc)
+makedepends=(
+  cmake
+  git
+  ninja
+)
+provides=(libldacBT_{abr,enc}.so)
+source=(
+  "git+$url#tag=v$pkgver"
+  "git+https://android.googlesource.com/platform/external/libldac"
+)
+b2sums=('cefd6836476371999cbca1d45c3b5fce447d88186de24ab85f4d7c2b771bd2bd7427adc73112a6f003004a259f519319586589d46bd07af192e795943400cc46'
+        'SKIP')
+
+prepare() {
+  cd ldacBT
+
+  git submodule init
+  git submodule set-url libldac "$srcdir/libldac"
+  git -c protocol.file.allow=always -c protocol.allow=never submodule update
+}
+
+build() {
+  local cmake_options=(
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_BUILD_TYPE=None
+    -D LDAC_SOFT_FLOAT=OFF
+  )
+
+  cmake -S ldacBT -B build -G Ninja "${cmake_options[@]}"
+  cmake --build build
+}
+
+check() {
+  ctest --test-dir build --output-on-failure --stop-on-failure -j$(nproc)
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

@@ -1,0 +1,68 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=srt
+pkgver=1.5.7
+pkgrel="2"
+pkgdesc="Secure Reliable Transport library"
+url="https://www.srtalliance.org/"
+arch=(i686 x32)
+license=(MPL-2.0)
+depends=(
+  bash
+  glibc
+  libgcc
+  libstdc++
+  openssl
+)
+makedepends=(
+  cmake
+  git
+  ninja
+)
+source=("git+https://github.com/Haivision/srt#tag=v$pkgver")
+b2sums=('6287246e06dcc8d9e9ed7a36df1826f12ea2a15e87a9cca8845744bf127292735861d5c8818b94428d5bd07b28ccf7602f092fe1e4ccfd479bceb8446281296e')
+
+prepare() {
+  cd srt
+}
+
+build() {
+  local cmake_options=(
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCMAKE_BUILD_TYPE=None
+    -DENABLE_STATIC=OFF
+    -DENABLE_TESTING=ON
+  )
+
+  cmake -S srt -B build -G Ninja "${cmake_options[@]}"
+  cmake --build build
+}
+
+check() {
+  cd build
+  ./uriparser-test
+  ./utility-test
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# upstream git revision: 599dbf487896203e7e2d0d027e4cbad380dd5693 (v1.5.7-1)
+
+# Upstream packaged v1.5.7 one day before the v1.5.7 tag moved (2026-08-26:
+# pkg.rel 1.5.7-1; 2026-08-28: tag re-rolled onto commit 899348d8318eb9a3c).
+# makepkg verifies the b2 sum of "git archive" at the tag, which now differs.
+# The new tag tree was verified file-by-file identical to Debian's
+# srt_1.5.7.orig.tar.gz (335 common files, 0 differences). If upstream's hash
+# disappears from the array, the rewrite is a no-op and the next checksum
+# failure tells us to revisit here.
+for ((i=0; i<${#b2sums[@]}; i++)); do
+  if [ "${b2sums[${i}]}" = 'b2016a1f664ee4c338de5537c4215cc5b8e91e93106801b077c6e3f3f79ac4048173e1dad2bf0b82812db1b134d496d84756b489ee81257197c412783f7d5301' ]; then
+    b2sums[${i}]='6287246e06dcc8d9e9ed7a36df1826f12ea2a15e87a9cca8845744bf127292735861d5c8818b94428d5bd07b28ccf7602f092fe1e4ccfd479bceb8446281296e'
+  fi
+done
+
+unset -f pkgver

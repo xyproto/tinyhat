@@ -1,0 +1,212 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Morten Linderud <foxboron@archlinux.org>
+
+pkgname=pacman
+pkgver=7.1.0.r9.g54d9411
+pkgrel="3"
+_git_tag=7.1.0
+_git_patch_level_commit=54d94116164b0b2202c6061c4a59c6f3e70820d8
+pkgdesc="A library-based package manager with dependency support"
+arch=(i686 x32)
+url="https://www.archlinux.org/pacman/"
+license=('GPL-2.0-or-later')
+depends=(
+  bash
+  coreutils
+  curl libcurl.so
+  gawk
+  gettext
+  glibc
+  gnupg
+  gpgme libgpgme.so
+  grep
+  libarchive libarchive.so
+  openssl libcrypto.so
+  pacman-mirrorlist
+  systemd
+  libmakepkg-dropins
+)
+makedepends=(
+  asciidoc
+  doxygen
+  git
+  meson
+)
+checkdepends=(
+  fakechroot
+  python
+)
+optdepends=(
+  'base-devel: required to use makepkg'
+  'perl-locale-gettext: translation support in makepkg-template'
+)
+provides=('libalpm.so')
+backup=(etc/pacman.conf
+        etc/makepkg.conf
+        etc/makepkg.conf.d/fortran.conf
+        etc/makepkg.conf.d/rust.conf)
+validpgpkeys=('6645B0A8C7005E78DB1D7864F99FFE0FEAE999BD'  # Allan McRae <allan@archlinux.org>
+              'B8151B117037781095514CA7BBDFFC92306B1121') # Andrew Gregory (pacman) <andrew@archlinux.org>
+source=("git+https://gitlab.archlinux.org/pacman/pacman.git?signed#tag=v${_git_tag}"
+        "revertme-makepkg-remove-libdepends-and-libprovides.patch::https://gitlab.archlinux.org/pacman/pacman/-/commit/354a300cd26bb1c7e6551473596be5ecced921de.patch"
+        "patch-reproducible-builds.patch::https://gitlab.archlinux.org/pacman/pacman/-/commit/f4bdb77470528019aaba4d8b8f947e918c6db17d.patch"
+        '0001-libalpm-invalidate-curl-data-in-child.patch'
+        '0002-libalpm-use-curl-s-effective-url-without-authenticat.patch'
+        pacman.conf
+        makepkg.conf
+        alpm.sysusers
+        fortran.conf
+        rust.conf)
+sha256sums=('74cfd4b6d2b10c742f5a4a7cdaeffb01405ab897b11b80681a9063245113a308'
+            'b3bce9d662e189e8e49013b818f255d08494a57e13fc264625f852f087d3def2'
+            'de428b496a825772ef49ec5555a386a4b23ffa10b9dfd9907f0671d5c1dc2178'
+            '9a734e5d75be603d58aa92e8d29a15466b3ac2af6b7d6f6728dd5c3e5ed8758d'
+            '021893dd44ec23251cfc0f2b81c12d832927ea60095d4d2956d9760e8bbfaa58'
+            'd6f6ca86104df026462ab634efa1ecc850bccfa748ed5a6a88283e7659ec90c5'
+            '20497c90cbb678a9ca1a71eca66cf2a1d0c991c3e695f7b7d10fb68fc0ac4f12'
+            '9c14afbc7dabee5a563202c833a043bd3b80c4522f8943c33d550641d7d1bbf1'
+            '933b0b878fa611bf24b92f655040a3bcb4a1b67841d929013802abbb09b2ccf4'
+            '6fe03e6ea3f69d99d59a48847a8ae97c2160fca847c7aedf7b89d05e4aa9386d')
+
+pkgver() {
+  cd "$pkgname"
+  git describe --abbrev=7 --match 'v*' | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+  cd "$pkgname"
+
+  # apply patch level commits on top of annotated tag
+  if [[ -n ${_git_patch_level_commit} ]]; then
+    if [[ v${_git_tag} != $(git describe --tags --abbrev=0 "${_git_patch_level_commit}") ]] then
+      error "patch level commit ${_git_patch_level_commit} is not a descendant of v${_git_tag}"
+      exit 1
+    fi
+    git rebase "${_git_patch_level_commit}"
+  fi
+
+  # handle patches
+  local -a patches
+  patches=($(printf '%s\n' "${source[@]}" | grep '.patch'))
+  patches=("${patches[@]%%::*}")
+  patches=("${patches[@]##*/}")
+
+  if (( ${#patches[@]} != 0 )); then
+    for patch in "${patches[@]}"; do
+      if [[ $patch =~ revertme-* ]]; then
+        msg2 "Reverting patch $patch..."
+        patch -RNp1 < "../$patch"
+      else
+        msg2 "Applying patch $patch..."
+        patch -Np1 < "../$patch"
+      fi
+    done
+  fi
+}
+
+build() {
+  cd "$pkgname"
+
+  meson --prefix=/usr \
+        --buildtype=plain \
+        -Ddoc=enabled \
+        -Ddoxygen=enabled \
+        -Dscriptlet-shell=/usr/bin/bash \
+        -Dldconfig=/usr/bin/ldconfig \
+        build
+
+  meson compile -C build
+}
+
+check() {
+  cd "$pkgname"
+
+  meson test -C build
+}
+
+package() {
+  cd "$pkgname"
+
+  DESTDIR="$pkgdir" meson install -C build
+
+  # install Arch specific stuff
+  install -dm755 "$pkgdir/etc"
+  install -m644 "$srcdir/pacman.conf" "$pkgdir/etc"
+  install -m644 "$srcdir/makepkg.conf" "$pkgdir/etc"
+  install -D -m644 "$srcdir/alpm.sysusers" "${pkgdir}"/usr/lib/sysusers.d/alpm.conf
+  install -m644 "$srcdir/fortran.conf" "$pkgdir/etc/makepkg.conf.d"
+  install -m644 "$srcdir/rust.conf" "$pkgdir/etc/makepkg.conf.d"
+
+  local wantsdir="$pkgdir/usr/lib/systemd/system/sockets.target.wants"
+  install -dm755 "$wantsdir"
+
+  local unit
+  for unit in dirmngr gpg-agent gpg-agent-{browser,extra,ssh} keyboxd; do
+    ln -s "../${unit}@.socket" "$wantsdir/${unit}@etc-pacman.d-gnupg.socket"
+  done
+}
+
+# vim: set ts=2 sw=2 et:
+
+# upstream git revision: 1a52f2e1d641587a1514c99b96d839368076288d
+
+depends+=(archlinux32-keyring)
+
+# fail if upstream changes makepkg.conf or pacman.conf
+for ((i=0; i<${#sha256sums[@]}; i++)); do
+  # pacman.conf
+  if [ "${sha256sums[${i}]}" = 'd6f6ca86104df026462ab634efa1ecc850bccfa748ed5a6a88283e7659ec90c5' ]; then
+    sha256sums[${i}]='b6a21497e35a65ff302e8fff46fac03cbdd386f568bbae9febb7d970f561d04f'
+  fi
+  # makepkg.conf
+  if [ "${sha256sums[${i}]}" = '20497c90cbb678a9ca1a71eca66cf2a1d0c991c3e695f7b7d10fb68fc0ac4f12' ]; then
+    sha256sums[${i}]='cada9469c3b3832e8cfa1d2fb0e4ce4d2b5a28a480eb52135ab7aad2b75ee5ec'
+  fi
+  # rust.conf (for now keep the upstream one)
+done
+
+if [ ! "${CARCH}" = "i686" ]; then
+  # patch architecture where needed
+  eval "$(
+    declare -f package | \
+      sed '
+        /install.*makepkg.conf/ a \
+          sed -i "s@i686@'"${CARCH}"'@g; /^CHOST/ s/pentium4-/i686-/" "$pkgdir/etc/makepkg.conf"
+      '
+  )"
+fi
+
+# patch pacman for automatic architecture detection (applied in wildcard patch above)
+source+=('replace-i686-by-pentium4-when-architecture-is-auto.patch')
+sha256sums+=('6a7906bd28a57cbcff58d856ffefbbb9096a163aaff79913b4fac69d75d0028a')
+
+# not supported on i486 -fcf-protection
+# LTO currently no available on i486
+if [ "${CARCH}" = "i486" ]; then
+  eval "$(
+    {
+      declare -f package || \
+      printf 'package() {\n}\n'
+    } \
+    | sed '
+      $i sed -i "s/-fcf-protection//g" "$pkgdir/etc/makepkg.conf"
+      $i sed -i "s/LTOFLAGS.*/LTOFLAGS=\\\"-fno-lto\\\"/" "$pkgdir/etc/makepkg.conf"
+    '
+  )"
+fi
+
+# If this still applies, it only does for i486:
+# (while not having Python, it's not working on any CARCH)
+makedepends=(${makedepends[@]//doxygen/})
+#if [ "${CARCH}" = "i486" ]; then
+# broken Python/asciidoc
+  eval "$(
+    declare -f build | \
+      sed '
+        /meson/s/-Ddoc=enabled/-Ddoc=disabled/
+        /meson/s/-DDdoxygen=enabled/-DDdoxygen=disabled/
+      '
+  )"
+#fi
+
+unset -f pkgver

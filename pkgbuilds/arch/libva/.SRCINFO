@@ -1,0 +1,33 @@
+pkgbase = libva
+	pkgdesc = Video Acceleration (VA) API for Linux
+	pkgver = 2.24.1
+	pkgrel = 1
+	url = https://intel.github.io/libva/
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = git
+	makedepends = libglvnd
+	makedepends = mesa
+	makedepends = meson
+	depends = glibc
+	depends = libdrm
+	depends = libgl
+	depends = libx11
+	depends = libxcb
+	depends = libxext
+	depends = libxfixes
+	depends = wayland
+	optdepends = intel-media-driver: backend for Intel GPUs (>= Broadwell)
+	optdepends = libva-intel-driver: backend for Intel GPUs (<= Haswell)
+	optdepends = libva-mesa-driver: backend for AMD and NVIDIA GPUs
+	provides = libva-drm.so
+	provides = libva-glx.so
+	provides = libva-wayland.so
+	provides = libva-x11.so
+	provides = libva.so
+	backup = etc/libva.conf
+	source = git+https://github.com/intel/libva.git#tag=2.24.1
+	b2sums = 5e7b85e1c16a68432069cbad3e11096311b97e4532061e97f247c0abbe16c2e991771860b9976f459000247bbc280b4825241a5c0b09571cac6be9b432ab3eaa
+
+pkgname = libva

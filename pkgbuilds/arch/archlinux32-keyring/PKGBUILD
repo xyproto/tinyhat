@@ -1,0 +1,23 @@
+# Maintainer: Erich Eckner <deep42thought@archlinux32.org>
+pkgname=archlinux32-keyring
+pkgver='20261017'
+pkgrel="1"
+pkgdesc='Arch Linux 32 PGP keyring'
+arch=(any)
+url='https://archlinux32.org'
+license=('GPL')
+install="${pkgname}.install"
+conflicts=('archlinux32-keyring-transition')
+replaces=('archlinux32-keyring-transition')
+source=("https://sources.archlinux32.org/sources/${pkgname}-v${pkgver}.tar.gz"{,.sig})
+sha512sums=('47186a638df8ba21361ab7f79634cff22925a762ebde438b7cdc70f26d988189d4d5ad2929686841b79901526130899b34aca654eb2e00c8262f6a88ae837941'
+            'SKIP')
+
+validpgpkeys=('33CA3597B0D161AAE4173F65C17F1214114574A4') # obtain from https://archlinux32.org/keys.php
+
+package() {
+    cd "${srcdir}/${pkgname}-v${pkgver}"
+    make PREFIX=/usr DESTDIR=${pkgdir} install
+}
+
+unset -f pkgver

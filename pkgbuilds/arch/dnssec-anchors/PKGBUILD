@@ -1,0 +1,35 @@
+# Maintainer: Jelle van der Waa <jelle@archlinux.org>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Thomas Mudrunka <harvie@email.cz>
+# Contributor: m4xm4n <max@maxfierke.com>
+
+pkgname=dnssec-anchors
+# To bump version:
+# 1. run dnssec-anchors-versioned.sh
+# 2. update pkgver to current date
+# 3. updpkgsums
+# 4. git add trusted-key-$(date +%Y%m%d).notkey
+# 5. release
+pkgver=20250524
+_trusted_key=trusted-key-${pkgver}.notkey
+pkgrel="1"
+pkgdesc='DNSSEC trust anchors for the root zone'
+url='https://data.iana.org/root-anchors/'
+license=('custom:none')
+arch=(any)
+makedepends=(
+  unbound
+)
+source=(
+  LICENSE
+  trusted-key-${pkgver}.notkey
+)
+sha256sums=('dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb'
+            '2e02119f4f808afd4fed5155ab6b1127a0ada1b6064198097fae5d0096b591a4')
+
+package() {
+  install -Dm644 ${_trusted_key} "${pkgdir}"/etc/trusted-key.key
+  install -Dm644 LICENSE "${pkgdir}"/usr/share/licenses/${pkgname}/LICENSE
+}
+
+unset -f pkgver

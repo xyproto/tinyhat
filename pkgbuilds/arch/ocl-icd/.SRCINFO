@@ -1,0 +1,22 @@
+pkgbase = ocl-icd
+	pkgdesc = OpenCL ICD Bindings
+	pkgver = 2.3.5
+	pkgrel = 1
+	url = https://github.com/OCL-dev/ocl-icd
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause
+	makedepends = ruby
+	makedepends = mesa
+	makedepends = xmlto
+	makedepends = asciidoc
+	makedepends = opencl-headers>=2.1
+	depends = glibc
+	optdepends = opencl-driver: packaged opencl driver
+	provides = opencl-icd-loader
+	conflicts = libcl
+	replaces = libcl
+	source = ocl-icd-2.3.5.tar.gz::https://github.com/OCL-dev/ocl-icd/archive/v2.3.5.tar.gz
+	sha256sums = cdd7984425fa92d37273eee4180b5f57b047eda6dd8fd623e58498f844b09b75
+
+pkgname = ocl-icd

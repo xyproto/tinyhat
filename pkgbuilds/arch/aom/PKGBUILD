@@ -1,0 +1,81 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Chocobo1 <chocobo1 AT archlinux DOT net>
+
+pkgbase=aom
+pkgname=(
+  aom
+  aom-docs
+)
+pkgver=3.15.2
+pkgrel="1"
+pkgdesc="Alliance for Open Media video codec"
+url="https://aomedia.org/"
+arch=(i686 x32)
+license=(BSD-3-Clause)
+depends=(
+  glibc
+  libgcc
+  libstdc++
+)
+makedepends=(
+  cmake
+  doxygen
+  ninja
+  yasm
+)
+source=(
+  https://storage.googleapis.com/aom-releases/libaom-$pkgver.tar.gz{,.asc}
+)
+b2sums=('255a195b4847c7b3345753c3bca54dc6028ec17de4b2df8efb2db1b41e66bd52f224e81bd7151117c0c621522b8d422ca47b7e96dbeab9a4aff4ec5c453cbfd9'
+        'SKIP')
+validpgpkeys=(
+  B002F08B74A148DAA01F7123A48E86DB0B830498 # AOMedia release signing key <av1-discuss@aomedia.org>
+)
+
+prepare() {
+  cd libaom-$pkgver
+
+  # Don't require static library
+  sed -i 's/aom aom_static/aom/' cmake/aom_install.cmake
+}
+
+build() {
+  local cmake_options=(
+    # Upstream would like Release, adding -O3 and removing assertions
+    # https://gitlab.archlinux.org/archlinux/packaging/packages/aom/-/issues/1
+    -D CMAKE_BUILD_TYPE=Release
+
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D BUILD_SHARED_LIBS=1
+    -D ENABLE_TESTS=0
+  )
+
+  # upstream wants this off
+  CFLAGS="${CFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=0}"
+  CXXFLAGS="${CXXFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=0}"
+
+  cmake -S libaom-$pkgver -B build -G Ninja "${cmake_options[@]}"
+  cmake --build build
+}
+
+package_aom() {
+  provides=(libaom.so)
+
+  DESTDIR="$pkgdir" cmake --install build
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libaom-$pkgver/{LICENSE,PATENTS}
+}
+
+package_aom-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mkdir -p "$pkgdir/usr/share/doc"
+  cp -r build/docs/html "$pkgdir/usr/share/doc/$pkgbase"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libaom-$pkgver/{LICENSE,PATENTS}
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

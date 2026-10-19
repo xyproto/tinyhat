@@ -1,0 +1,38 @@
+pkgbase = librsvg
+	pkgdesc = SVG rendering library
+	pkgver = 2.63.3
+	pkgrel = 1
+	epoch = 2
+	url = https://gitlab.gnome.org/GNOME/librsvg
+	arch = i686
+	license = LGPL-2.1-or-later
+	checkdepends = ttf-dejavu
+	makedepends = cargo-c
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = gobject-introspection
+	makedepends = llvm
+	makedepends = meson
+	makedepends = python-docutils
+	makedepends = rust
+	makedepends = vala
+	depends = cairo
+	depends = dav1d
+	depends = fontconfig
+	depends = freetype2
+	depends = gdk-pixbuf2
+	depends = glib2
+	depends = glibc
+	depends = harfbuzz
+	depends = libgcc
+	depends = libxml2
+	depends = pango
+	source = git+https://gitlab.gnome.org/GNOME/librsvg.git#tag=2.63.3
+	b2sums = d08fb8e0c79e96a80ec420a33ba891e0c0cea510ed0d46e94085b74e436413db14d5dde03ab8da2306c0014eec5887149d19e80876752d5bec2f8e76446fc72d
+
+pkgname = librsvg
+	provides = librsvg-2.so
+
+pkgname = librsvg-docs
+	pkgdesc = SVG rendering library (documentation)
+	depends = 

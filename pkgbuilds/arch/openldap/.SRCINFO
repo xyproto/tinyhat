@@ -1,0 +1,42 @@
+pkgbase = openldap
+	pkgver = 2.7.1
+	pkgrel = 1
+	url = https://www.openldap.org/
+	arch = i686
+	arch = x32
+	license = custom
+	makedepends = libtool
+	makedepends = libsasl
+	makedepends = util-linux
+	makedepends = chrpath
+	makedepends = unixodbc
+	makedepends = libsodium
+	makedepends = systemd
+	options = !makeflags
+	options = emptydirs
+	options = !lto
+	source = https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.7.1.tgz
+	source = https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.7.1.tgz.asc
+	source = openldap.tmpfiles
+	source = openldap.sysusers
+	validpgpkeys = 3CE269B5398BC8B785645E987F67D5FD1CE1CBCE
+	sha256sums = 253db80f301258ea69cda1184766d57395b836aaabf41157eb0316eb0fac1341
+	sha256sums = SKIP
+	sha256sums = 0be46138e53ff2fa6d4b4c06bfbdd2100426e0bd2ed29bf3419ade6b5974e9a0
+	sha256sums = e4af9009982808d04fd10bd5d9559cec193efc7a05c6807367473da33392edab
+
+pkgname = openldap
+	pkgdesc = Lightweight Directory Access Protocol (LDAP) client and server
+	depends = libldap>=2.7.1
+	depends = libtool
+	depends = unixodbc
+	depends = perl
+	depends = systemd-libs
+	depends = libsodium
+	backup = etc/openldap/slapd.conf
+	backup = etc/openldap/slapd.ldif
+
+pkgname = libldap
+	pkgdesc = Lightweight Directory Access Protocol (LDAP) client libraries
+	depends = libsasl
+	backup = etc/openldap/ldap.conf

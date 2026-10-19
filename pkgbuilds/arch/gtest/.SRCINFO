@@ -1,0 +1,25 @@
+pkgbase = gtest
+	pkgdesc = Google Test - C++ testing utility
+	pkgver = 1.18.0
+	pkgrel = 1
+	url = https://github.com/google/googletest
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = cmake
+	makedepends = python
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	optdepends = python: gmock generator
+	provides = gmock
+	provides = libgmock.so
+	provides = libgmock_main.so
+	provides = libgtest.so
+	provides = libgtest_main.so
+	conflicts = gmock
+	replaces = gmock
+	source = googletest-1.18.0.tar.gz::https://github.com/google/googletest/archive/v1.18.0.tar.gz
+	sha512sums = ba0f5769ccf34acf1bc72d1f7e9ffb8202176d02b64f6f3d9047accfc0cf9026ff5a653d24935e2705fff8709566676452616c93ca0ca6277f1e21d79b58a10a
+
+pkgname = gtest

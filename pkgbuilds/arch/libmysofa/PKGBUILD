@@ -1,0 +1,50 @@
+# Maintainer: Daniel Bermond <dbermond@archlinux.org>
+
+pkgname=libmysofa
+pkgver=1.3.5
+pkgrel="1"
+pkgdesc='C library to read HRTFs if they are stored in the AES69-2015 SOFA format'
+arch=(i686 x32)
+url='https://github.com/hoene/libmysofa/'
+license=('BSD-3-Clause')
+depends=(
+    'glibc'
+    'zlib')
+makedepends=(
+    'cmake'
+    'cunit'
+    'git')
+checkdepends=(
+    'nodejs')
+provides=('libmysofa.so')
+source=("git+https://github.com/hoene/libmysofa.git#tag=v${pkgver}")
+sha256sums=('c7590e8100409efc6fec52fdec7dbcd7add56fa4cde403a39be72219b284d9fa')
+
+build() {
+    cmake \
+        -G 'Unix Makefiles' \
+        -B libmysofa/build \
+        -S libmysofa \
+        -DCMAKE_BUILD_TYPE:STRING='None' \
+        -DCMAKE_INSTALL_PREFIX:PATH='/usr' \
+        -DCODE_COVERAGE:BOOL='OFF' \
+        -Wno-author
+    cmake --build libmysofa/build
+}
+
+check() {
+    ctest --test-dir libmysofa/build --output-on-failure --stop-on-failure
+}
+
+package() {
+    DESTDIR="${pkgdir}" cmake --install libmysofa/build
+    install -D -m644 libmysofa/LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+# no nodejs on i486, used only in tests
+if [ "$CARCH" == 'i486' ]; then
+  checkdepends=(${checkdepends[@]//nodejs/})
+  unset check
+fi
+
+unset -f pkgver

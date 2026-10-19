@@ -1,0 +1,22 @@
+pkgbase = mpfr
+	pkgdesc = Multiple-precision floating-point library
+	pkgver = 4.2.2
+	pkgrel = 1
+	url = https://www.mpfr.org/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	license = LGPL-3.0-or-later
+	depends = glibc
+	depends = gmp
+	provides = libmpfr.so
+	source = https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.xz
+	source = https://ftp.gnu.org/gnu/mpfr/mpfr-4.2.2.tar.xz.sig
+	validpgpkeys = 07F3DBBECC1A39605078094D980C197698C3739D
+	validpgpkeys = A534BE3F83E241D918280AEB5831D11A0D4DB02A
+	sha512sums = eb9e7f51b5385fb349cc4fba3a45ffdf0dd53be6dfc74932dc01258158a10514667960c530c47dd9dfc5aa18be2bd94859d80499844c5713710581e6ac6259a9
+	sha512sums = SKIP
+	b2sums = 6bbf5658e70fbb673a3b65246a6bac708d1571aa6943c6742efd92f468ac71e6f0fe351b757f7133440ea312d9a5fc3549acd89d54f4d975c58bdc204d7b21ec
+	b2sums = SKIP
+
+pkgname = mpfr

@@ -1,0 +1,65 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Nezmer <Nezmer@gmail.com>
+
+pkgname=fribidi
+pkgver=1.0.17
+pkgrel="1"
+pkgdesc="A Free Implementation of the Unicode Bidirectional Algorithm"
+url="https://github.com/fribidi/fribidi"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  glibc
+)
+makedepends=(
+  git
+  help2man
+  meson
+)
+provides=(libfribidi.so)
+source=(
+  "git+$url?signed#tag=v$pkgver"
+  "git+https://github.com/fribidi/c2man#commit=577ed4095383ef5284225d45709e6b5f0598a064"
+)
+b2sums=('ede6d955fca949a95aaccc334da509e2e43726dde599cb19f646f9da1bad405e986c03518c1b799be83b0a1ca9a920e3ac9e7b29ff8d84d11558abe32aaecc48'
+        '4ce1f0e039bbac3d7015eff10b9738ac4b58dc59f736a8f7ba12857d67092444f500928447a08004ae3548ffb2c788a849ac76c89924db2d82653f547cc4cc6a')
+validpgpkeys=(
+  0AD041B27CA166DDA1FE3BAEA7B3409C0CA4ED14 # Dov Grobgeld <dov.grobgeld@gmail.com>
+)
+
+prepare() {
+  mkdir -p path
+
+  # Fix compilation with GCC 15
+  echo "cc='gcc -fpermissive -std=gnu17'" > c2man/config.sh
+
+  cd fribidi
+}
+
+build() {
+  local meson_options=(
+    -D docs=true
+  )
+
+  pushd c2man
+  ./Configure -des
+  make
+  cp c2man -t ../path
+  popd
+
+  PATH="$PWD/path:$PATH" arch-meson fribidi build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

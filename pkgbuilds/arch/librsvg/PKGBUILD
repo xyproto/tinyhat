@@ -1,0 +1,122 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=librsvg
+pkgname=(
+  librsvg
+  librsvg-docs
+)
+pkgver=2.63.3
+pkgrel="1"
+epoch=2
+pkgdesc="SVG rendering library"
+url="https://gitlab.gnome.org/GNOME/librsvg"
+arch=(i686)
+license=(LGPL-2.1-or-later)
+depends=(
+  cairo
+  dav1d
+  fontconfig
+  freetype2
+  gdk-pixbuf2
+  glib2
+  glibc
+  harfbuzz
+  libgcc
+  libxml2
+  pango
+)
+makedepends=(
+  cargo-c
+  gi-docgen
+  git
+  gobject-introspection
+  llvm
+  meson
+  python-docutils
+  rust
+  vala
+)
+checkdepends=(ttf-dejavu)
+source=(
+  # librsvg tags use SSH signatures which makepkg doesn't understand
+  "git+https://gitlab.gnome.org/GNOME/librsvg.git#tag=$pkgver"
+)
+b2sums=('d08fb8e0c79e96a80ec420a33ba891e0c0cea510ed0d46e94085b74e436413db14d5dde03ab8da2306c0014eec5887149d19e80876752d5bec2f8e76446fc72d')
+
+# Use debug
+export CARGO_PROFILE_RELEASE_DEBUG=2 CARGO_PROFILE_RELEASE_STRIP=false
+
+# Use LTO
+export CARGO_PROFILE_RELEASE_LTO=true CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1
+
+prepare() {
+  cd librsvg
+
+  cargo fetch --locked --target host-tuple
+}
+
+build() {
+  local meson_options=(
+    -D avif=enabled
+    -D pixbuf-loader=disabled
+  )
+
+  arch-meson librsvg build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs --no-rebuild
+}
+
+package_librsvg() {
+  provides=(librsvg-${pkgver%%.*}.so)
+
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_librsvg-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# i686: target Pentium 3 without SSE2
+# pentium4: target pentium3 with SSE2 (disabled as it fails hapilly in
+# microoptimizations for now)
+if [ "$CARCH" = 'i686' -o "$CARCH" = 'pentium4' ]; then
+	eval "$(
+	  declare -f prepare | \
+	    sed '
+	      /autogen.sh/ i sed -i \"s/\\\$(CARGO).* build/RUSTFLAGS=\\"-C target-cpu=pentium2 -C target-feature=-sse2\\" \\0/g\" Makefile.am
+	    '
+	)"
+fi
+
+# do not kill slaves with massive parallel rust builds
+eval "$(
+  declare -f build | \
+    sed '
+      s/make/make -j1/
+    '
+)"
+
+# FAIL: rsvg-test 109 /rsvg-test/reftests/svg1.1/pservers-pattern-02-f.svg
+# see https://gitlab.gnome.org/GNOME/librsvg/issues/233
+# => for now run checks, but make failure non-fatal..
+eval "$(
+  declare -f check | \
+    sed '
+      s/make check/make check || true/
+    '
+)"
+
+unset -f pkgver

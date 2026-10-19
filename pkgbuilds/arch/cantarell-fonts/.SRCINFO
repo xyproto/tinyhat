@@ -1,0 +1,16 @@
+pkgbase = cantarell-fonts
+	pkgdesc = Humanist sans serif font
+	pkgver = 0.311
+	pkgrel = 1
+	epoch = 1
+	url = https://gitlab.gnome.org/GNOME/cantarell-fonts
+	arch = any
+	license = OFL-1.1
+	makedepends = git
+	makedepends = meson
+	makedepends = python
+	makedepends = uv
+	source = git+https://gitlab.gnome.org/GNOME/cantarell-fonts.git#tag=0.311
+	b2sums = 49bf549cd6fa44ec8fa852715d3ab6b5076897ab8cf9b50a86d901e60365bc3ef7535155b6e1917d0ad18023f61335e6453dacccb584f35c0ca025baca4323c8
+
+pkgname = cantarell-fonts

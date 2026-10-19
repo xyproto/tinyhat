@@ -1,0 +1,25 @@
+pkgbase = libunwind
+	pkgdesc = Determine and manipulate the call-chain of a program
+	pkgver = 1.8.3
+	pkgrel = 1
+	url = https://www.nongnu.org/libunwind/
+	arch = i686
+	license = MIT
+	depends = glibc
+	depends = xz
+	depends = zlib
+	provides = libunwind-coredump.so
+	provides = libunwind-ptrace.so
+	provides = libunwind-setjmp.so
+	provides = libunwind-x86_64.so
+	provides = libunwind.so
+	source = https://github.com/libunwind/libunwind/releases/download/v1.8.3/libunwind-1.8.3.tar.gz
+	source = https://github.com/libunwind/libunwind/releases/download/v1.8.3/libunwind-1.8.3.tar.gz.asc
+	source = https://github.com/libunwind/libunwind/commit/b67d508a.patch
+	validpgpkeys = 42FA3D4C00D0AA116C3F45DAA4CCF616E0FF69D2
+	b2sums = 13ac888e72c080b9e2588024578740971f721497864c5f2eb930227cbc5bb040551db6280048b0b6f2dde193d5d1719f546088618ebd2e19f96524c2b767fda1
+	b2sums = SKIP
+	b2sums = 756ced55c34a33d55cc11f61c32230de820aede55d562aa94143c2f5adb7f408ed2f2d5c48642b035ec4d3ebc59175e6f4b889f712db2556b80a8002d91aa036
+	makedepends_i686 = texlive-binextra
+
+pkgname = libunwind

@@ -1,0 +1,40 @@
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Loui Chang <louipc dot ist at gmail company>
+# Contributor: Geoffroy Carrier <geoffroy.carrier@koon.fr>
+# Contributor: Nathan Jones <nathanj@insightbb.com>
+
+pkgname=tig
+pkgver=2.6.1
+pkgrel="1"
+pkgdesc='Text-mode interface for Git.'
+depends=('git'
+         'ncurses' 'libncursesw.so'
+         'pcre2' 'libpcre2-posix.so' 'libpcre2-8.so'
+         'readline' 'libreadline.so')
+makedepends=('asciidoc' 'xmlto')
+url='https://jonas.github.io/tig/'
+license=('GPL')
+arch=(i686 x32)
+backup=('etc/tigrc')
+source=("https://github.com/jonas/$pkgname/releases/download/$pkgname-$pkgver/$pkgname-$pkgver.tar.gz")
+md5sums=('cf4d88c06bc4b0fb7cde462ac98c3486')
+sha256sums=('5adeabdcd93aa0423d618da8b878b53482bef6e0e9e1fe224acc0f18031fe91e')
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc
+  make
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  make DESTDIR="$pkgdir" install install-doc-man
+
+  install -Dm0644 contrib/tig-completion.bash "$pkgdir/usr/share/bash-completion/completions/tig"
+}
+
+unset -f pkgver

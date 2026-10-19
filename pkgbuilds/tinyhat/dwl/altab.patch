@@ -1,0 +1,102 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -85,7 +85,7 @@
+ 
+ /* macros */
+ #define CLEANMASK(mask)         (mask & (WLR_MODIFIER_SHIFT|WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT|WLR_MODIFIER_LOGO))
+-#define VISIBLEON(C, M)         ((M) && (C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
++#define VISIBLEON(C, M)         ((M) && (C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]) && !(C)->isminimized)
+ #define TAGMASK                 ((1u << LENGTH(tags)) - 1)
+ #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
+ #define LISTEN_STATIC(E, H)     do { struct wl_listener *_l = ecalloc(1, sizeof(*_l)); _l->notify = (H); wl_signal_add((E), _l); } while (0)
+@@ -167,7 +167,7 @@
+ #endif
+ 	unsigned int bw;
+ 	uint32_t tags;
+-	int isfloating, isurgent, isfullscreen;
++	int isfloating, isurgent, isfullscreen, isminimized;
+ } Client;
+ 
+ typedef struct {
+@@ -341,6 +341,7 @@
+ static void drawbars(void);
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
++static void altab(const Arg *arg);
+ static void focusstack(const Arg *arg);
+ static Client *focustop(Monitor *m);
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+@@ -1890,6 +1891,72 @@
+ }
+ 
+ void
++altab(const Arg *arg)
++{
++	Client *c, *sel = focustop(selmon), *next = NULL, *only = NULL;
++	int n = 0;
++
++	if (!selmon)
++		return;
++	wl_list_for_each(c, &clients, link) {
++		if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++			only = c;
++			n++;
++		}
++	}
++	if (!n)
++		return;
++	if (n == 1) {
++		if (!only->isminimized) {
++			only->isminimized = 1;
++			arrange(selmon);
++			focusclient(NULL, 0);
++			return;
++		}
++		next = only;
++	} else if (sel && sel->isfullscreen && !client_has_children(sel)) {
++		setfullscreen(sel, 0);
++		next = sel;
++	} else if (!sel) {
++		wl_list_for_each(c, &clients, link) {
++			if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++				next = c;
++				break;
++			}
++		}
++	} else if (arg->i > 0) {
++		wl_list_for_each(c, &sel->link, link) {
++			if (&c->link == &clients)
++				continue;
++			if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++				next = c;
++				break;
++			}
++		}
++	} else {
++		wl_list_for_each_reverse(c, &sel->link, link) {
++			if (&c->link == &clients)
++				continue;
++			if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++				next = c;
++				break;
++			}
++		}
++	}
++	if (!next)
++		return;
++	if (next->isminimized) {
++		next->isminimized = 0;
++		arrange(selmon);
++	}
++	focusclient(next, 1);
++	if (!next->isfullscreen && next->scene->node.parent != layers[LyrFS]) {
++		wlr_scene_node_reparent(&next->scene->node, layers[LyrFloat]);
++		wlr_scene_node_raise_to_top(&next->scene->node);
++	}
++}
++
++void
+ focusstack(const Arg *arg)
+ {
+ 	/* Focus the next or previous client (in tiling order) on selmon */

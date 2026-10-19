@@ -1,0 +1,104 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+pkgname=aalib
+pkgver=1.4rc5
+_pkgver=1.4.0
+pkgrel="19"
+pkgdesc='ASCII art graphic library'
+arch=(i686 x32)
+url='https://aa-project.sourceforge.net/aalib/'
+license=(LGPL-2.0-or-later)
+depends=(
+  glibc
+  gpm
+  libx11
+  ncurses
+  slang
+)
+optdepends=(
+  'xorg-fonts-misc: x11 driver'
+  'xorg-mkfontscale: x11 driver'
+)
+source=(
+  "https://downloads.sourceforge.net/aa-project/$pkgname-$pkgver.tar.gz"
+  aclocal-fixes.patch
+  aalib-m4.patch
+  aalib-c99.patch
+  aalib-free-offset-pointer.patch
+  aalib-aalinuxkbd-return.patch
+  aalib-key-down-OOB.patch
+  aalib-opaque-ncurses-fix.patch
+  aalib-fix-aarender.patch
+  aalib-mouse.patch
+)
+b2sums=(
+  fd527716c0484d45fa3b75712a24301bd485fab8191ac1d5c6d35f8af093a00e11f0f8d2797ddcc32f4d87a39649fd50145dcc557e5ba98e67336cff2bb79002
+  8f77f4c0414810f467c39f7b3b0e0e2022afd873fb46feacca5ec6bdaa66678c00137039ba8e85631680bf941384eec91c9ec388ca8b79369d45187ca46c4d48
+  a23713da2dc362b4eb0cd12f00e61b27cbb92e2fb8df98a387f694b613baa16ca1b7f74ddbd9c082fd5fcbf7ee90a8c019771e94da11d99a4210f7e11743fcbf
+  a4699313e7c097a5122bd1adff99a25e9e3072db1cd09abd87854121ab7c10898300e32f9c2c610025287151437eabde3c34b6995c9510fefd0c3e24637b6871
+  dee15643e51c9d6c481215b5d8135a3e0b31ebb061432fc36bd6d45992b36cd767aa44d262d8ebfd7ca8c600b9418843eb384d4c3ed4de5255df39c6b177ce24
+  169e40064cb7f4f640fb104f0a7642d2c29527f769738d33c765f685c1e243e13737870f948664230e406e82f6dca69540a3a7f51ac9409e36633c24dcae8a0a
+  1742e3d22889e7faabaf0fcacecc7db4dff4d126361f02d0311e11a93a2a1445de78f1e5a38cb43860bee1809c8350829715b843b52f7354f2ffe22cd21e7e1a
+  270b3521a6d148337db82bbccefe9f85b1f0425972cdf808adfa553961fd26d750a36a7b3f362b3fb49d5eb125480367340de0ee0323e2df3412e6b0d2f40c37
+  e9456d951d0ac69685dc79243d1f17abbc304acbe247390a832208c5d9ea691ace9383dd0ce34b8edad254d95857ed729db6f26f16dc82765542981a3f73ef00
+  ee2d257e46d6a5368a94c5b0b7e8cf3d6babd247878f9842630280d26c39e20c15bb9e4a1645e5058a8483592bda2affe2d286882cae6f7c9780e5468f54a383
+)
+
+prepare() {
+  cd $pkgname-$_pkgver
+
+  # Fix warning about underquoted definition of AM_PATH_AALIB
+  # https://sourceforge.net/p/aa-project/patches/5/
+  # https://bugs.archlinux.org/task/78787
+  patch -Np0 -i ../aclocal-fixes.patch
+
+  # Fix --with-aalib-prefix argument
+  # https://sourceforge.net/p/aa-project/patches/9/
+  # https://bugs.archlinux.org/task/53482
+  patch -Np0 -i ../aalib-m4.patch
+
+  # Fix builtin-declaration-mismatch compiler warnings
+  # https://sourceforge.net/p/aa-project/bugs/10/
+  patch -Np1 -i ../aalib-c99.patch
+
+  # Fix free-nonheap-object compiler warning
+  patch -Np1 -i ../aalib-free-offset-pointer.patch
+
+  # Fix aggressive-loop-optimizations compiler warning
+  patch -Np1 -i ../aalib-key-down-OOB.patch
+
+  # Fix 'return' with no value compiler warning
+  patch -Np1 -i ../aalib-aalinuxkbd-return.patch
+
+  # Fix build for ncurses built with opaque-curses option
+  patch -Np1 -i ../aalib-opaque-ncurses-fix.patch
+
+  # Fix rendering with custom aspect ratio
+  patch -Np1 -i ../aalib-fix-aarender.patch
+
+  # Fix typo for KEY_MOUSE condition
+  patch -Np1 -i ../aalib-mouse.patch
+
+  # Fix build (too many arguments)
+  sed -i 's/Gpm_Wgetch(stdscr)/Gpm_Wgetch()/' src/aacurkbd.c
+
+  autoreconf -fi
+}
+
+build() {
+  cd $pkgname-$_pkgver
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --with-curses-driver
+  make
+}
+
+package() {
+  cd $pkgname-$_pkgver
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

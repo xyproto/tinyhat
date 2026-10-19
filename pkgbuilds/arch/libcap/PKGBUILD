@@ -1,0 +1,117 @@
+# Maintainer:  David Runge <dvzrv@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Hugo Doria <hugo@archlinux.org>
+
+pkgname=libcap
+pkgver=2.78
+pkgrel="1"
+pkgdesc="POSIX 1003.1e capabilities"
+arch=(i686 x32)
+url="https://sites.google.com/site/fullycapable/"
+_url=https://git.kernel.org/pub/scm/libs/libcap/libcap.git
+license=('BSD-3-Clause OR GPL-2.0-only')
+depends=(
+  glibc
+  pam
+)
+makedepends=(
+  git
+  go
+  linux-api-headers
+)
+provides=(
+  libcap.so
+  libpsx.so
+)
+# we can not use LTO as otherwise we get no reproducible package with full RELRO
+options=(!lto)
+# NOTE: we rely on a specific tagging scheme to verify with the latest signing key: https://bugzilla.kernel.org/show_bug.cgi?id=218860#c3
+source=(
+  git+$_url?signed#tag=sig-$pkgname-$pkgver
+  libcap-2.73-cgo-flags.patch  # provide flags to go build (sent upstream)
+)
+sha512sums=('82313d64eff6f06cba7cf137c88192b58d4c7a96344f8f280a1d2ca6df668019e32e96452b3f353618e8a05f7f90339ff2a600c02368f2fac86fc12c238c1903'
+            '4feb12bad6c0b37168f67f599155157e2537cb8cd35d906a758ba4405ec916f0504b9f52405a53d5c573232883034c740d0d65c756d9d9722029ef5bc9875fa7')
+b2sums=('238e4e5758dc4030624850533c6891c9402b6bb62cadbe389c6ea9016db4b80b624a0b2c55510f5a1423b71fd924c560ce7e609fca0bcacbc04b631b43d8dc23'
+        '2b40bfd3de55a4ad101bb0cdab37c10530b50917995fa67eb6bae8c5df004c3c6b104dc5fa615ea907a7b8d620fa786cd2dfe7f77df7b1df03bdde84d09644f0')
+validpgpkeys=(
+  38A644698C69787344E954CE29EE848AE2CCF3F4  # Andrew G. Morgan <morgan@kernel.org>
+  0D23D34C577B08C4082CFD76430C5CFF993116B1  # Andrew G. Morgan (2024+ libcap signing key) <morgan@kernel.org>
+)
+
+# NOTE: with CGO_ENABLED we need all relevant make options in build(), check() and package() otherwise the package is not reproducible
+_common_make_options=(
+  CGO_CPPFLAGS="$CPPFLAGS"
+  CGO_CFLAGS="$CFLAGS"
+  CGO_CXXFLAGS="$CXXFLAGS"
+  CGO_LDFLAGS="$LDFLAGS"
+  CGO_REQUIRED="1"
+  GOFLAGS="-buildmode=pie -mod=readonly -modcacherw"
+  GO_BUILD_FLAGS="-ldflags '-compressdwarf=false -linkmode=external'"
+)
+
+prepare() {
+  # ensure to use CGO_ENABLED all the way (so that we can have full RELRO)
+  patch -Np1 -d $pkgname -i ../libcap-2.73-cgo-flags.patch
+}
+
+build() {
+  export GOPATH="$srcdir"
+
+  local make_options=(
+    "${_common_make_options[@]}"
+    DYNAMIC=yes
+    KERNEL_HEADERS=/usr/include
+    lib=lib
+    prefix=/usr
+    sbindir=bin
+    -C $pkgname
+  )
+
+  make "${make_options[@]}"
+}
+
+check() {
+  export GOPATH="$srcdir"
+
+  local make_options=(
+    "${_common_make_options[@]}"
+    test
+    -k
+    -C $pkgname
+    -j 1
+  )
+
+  make "${make_options[@]}"
+}
+
+package() {
+  export GOPATH="$srcdir"
+
+  local make_options=(
+    "${_common_make_options[@]}"
+    DESTDIR="$pkgdir"
+    RAISE_SETFCAP=no
+    lib=lib
+    prefix=/usr
+    sbindir=bin
+    install
+    -C $pkgname
+  )
+
+  make "${make_options[@]}"
+  install -vDm 644 $pkgname/{CHANGELOG,README} -t "$pkgdir/usr/share/doc/$pkgname/"
+  install -vDm 644 $pkgname/License -t "$pkgdir/usr/share/licenses/$pkgname/"
+  install -vDm 644 $pkgname/pam_cap/capability.conf -t "$pkgdir/usr/share/doc/$pkgname/examples/"
+}
+
+# Go is not available on i686 and i486
+if [ "$CARCH" = 'i686' -o "$CARCH" = 'i486' ]; then
+  makedepends=(${makedepends[@]//go/})
+fi
+
+makedepends=(${makedepends[@]//go/})
+_common_make_options+=(GOLANG=no)
+
+unset -f pkgver

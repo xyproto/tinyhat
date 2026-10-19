@@ -1,0 +1,55 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Orhun Parmaksız <orhun@archlinux.org>
+# Contributor: Julien Nicoulaud <julien dot nicoulaud at gmail dot com>
+
+pkgname=lsd
+pkgver=1.2.0
+pkgrel="2"
+pkgdesc='Modern ls with a lot of pretty colors and awesome icons'
+url='https://github.com/lsd-rs/lsd'
+arch=(i686)
+license=('Apache-2.0')
+depends=('libgcc' 'libgit2' 'zlib')
+makedepends=('cargo' 'pandoc')
+checkdepends=('git')
+optdepends=(
+  'nerd-fonts'
+  'awesome-terminal-fonts'
+)
+source=(https://github.com/lsd-rs/lsd/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz)
+sha256sums=('dae8d43087686a4a1de0584922608e9cbab00727d0f72e4aa487860a9cbfeefa')
+sha512sums=('e096190f0b1e65d254a97250705c06322b96eed3b5a10cafb013fe9b4004f5b671cca434071498809e258eb4ff7e9619222a48a9c20f83831a3f1d34ec2f93b3')
+
+prepare() {
+  cd ${pkgname}-${pkgver}
+  cargo fetch --target "$(rustc --print host-tuple)" # --locked
+}
+
+build() {
+  cd ${pkgname}-${pkgver}
+  LIBGIT2_NO_VENDOR=1 SHELL_COMPLETIONS_DIR=completions cargo build --release --frozen
+  pandoc "doc/$pkgname.md" --standalone --to=man -o "doc/$pkgname.1"
+}
+
+check() {
+  cd ${pkgname}-${pkgver}
+  LIBGIT2_NO_VENDOR=1 cargo test --frozen
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  install -Dm 755 target/release/${pkgname} -t "${pkgdir}/usr/bin"
+  install -Dm 644 README.md -t "${pkgdir}/usr/share/doc/${pkgname}"
+  install -Dm 644 "completions/${pkgname}.bash" "${pkgdir}/usr/share/bash-completion/completions/${pkgname}"
+  install -Dm 644 "completions/${pkgname}.fish" "${pkgdir}/usr/share/fish/vendor_completions.d/${pkgname}.fish"
+  install -Dm 644 "completions/_${pkgname}" "${pkgdir}/usr/share/zsh/site-functions/_${pkgname}"
+  install -Dm 644 "doc/$pkgname.1" -t "$pkgdir/usr/share/man/man1"
+}
+
+# vim: ts=2 sw=2 et:
+
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -vxF pandoc))
+eval "$(declare -f build | sed '/pandoc/d')"
+eval "$(declare -f package | sed '/man1/d')"
+
+unset -f pkgver

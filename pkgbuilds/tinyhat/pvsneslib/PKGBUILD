@@ -1,0 +1,46 @@
+pkgname=pvsneslib
+_commit=e090f001ccffdc0fb69f479a8c9703e30d07f6b1
+_tcc=cc076f049282b7f8ca46b15c437db97d9224e763
+_wladx=6fa1f673f010e4fa4571c40929019cd7e67d1bbd
+pkgver=0+e090f001
+pkgrel=1
+pkgdesc="SNES game library with 816-tcc, wla-dx and graphics tools"
+arch=(i686 x32)
+url="https://github.com/alekmaul/pvsneslib"
+license=(MIT LGPL-2.1-only GPL-2.0-or-later)
+depends=(glibc)
+makedepends=(cmake python)
+source=("pvsneslib-$_commit.tar.gz::https://github.com/alekmaul/pvsneslib/archive/$_commit.tar.gz"
+        "tcc-$_tcc.tar.gz::https://github.com/alekmaul/tcc/archive/$_tcc.tar.gz"
+        "wla-dx-$_wladx.tar.gz::https://github.com/vhelin/wla-dx/archive/$_wladx.tar.gz")
+noextract=("tcc-$_tcc.tar.gz" "wla-dx-$_wladx.tar.gz")
+sha256sums=('20aa1eed732b942bab17e80afe7970d2ef511ed93bd7b06565328d77eed89452'
+            '1553e8e5581792a2c0b37818be852874a4529203409d1baf88a0d19396a39be0'
+            'e684790c7d65a1ffdae7e97290723c83221cf802e958aba774a5af6efbfad245')
+
+prepare() {
+  cd pvsneslib-$_commit
+  mkdir -p compiler/tcc compiler/wla-dx
+  tar --no-same-owner -xf "$srcdir/tcc-$_tcc.tar.gz" -C compiler/tcc --strip-components=1
+  tar --no-same-owner -xf "$srcdir/wla-dx-$_wladx.tar.gz" -C compiler/wla-dx --strip-components=1
+}
+
+build() {
+  cd pvsneslib-$_commit
+  CFLAGS="$CFLAGS -O3"
+  CXXFLAGS="$CXXFLAGS -O3"
+  export CFLAGS CXXFLAGS
+  export PVSNESLIB_HOME="$PWD"
+  make compiler tools pvsneslib
+}
+
+package() {
+  cd pvsneslib-$_commit
+  mkdir -p "$pkgdir/usr/share/pvsneslib/pvsneslib"
+  cp -r devkitsnes "$pkgdir/usr/share/pvsneslib/"
+  cp -r pvsneslib/include pvsneslib/lib "$pkgdir/usr/share/pvsneslib/pvsneslib/"
+  local l="$pkgdir/usr/share/licenses/$pkgname"
+  install -Dm644 LICENSE "$l/LICENSE"
+  install -Dm644 compiler/tcc/COPYING "$l/COPYING.816-tcc"
+  install -Dm644 compiler/wla-dx/LICENSE "$l/LICENSE.wla-dx"
+}

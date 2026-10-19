@@ -1,0 +1,14 @@
+pkgbase = libretro-blastem
+	pkgdesc = Sega Genesis and Mega Drive emulator core (BlastEm) for tinyhat-retro
+	pkgver = 0+ab743653
+	pkgrel = 1
+	url = https://github.com/libretro/blastem
+	arch = i686
+	license = GPL-3.0-or-later
+	license = BSD-3-Clause
+	license = Zlib
+	depends = glibc
+	source = blastem-ab743653ed110eeb7b1fe64d00cc5f9279c2bfec.tar.gz::https://github.com/libretro/blastem/archive/ab743653ed110eeb7b1fe64d00cc5f9279c2bfec.tar.gz
+	sha256sums = 27ba68065f31314ad29abc6a5514ebf19cdd2a2f24648ffbe360275ccb01de25
+
+pkgname = libretro-blastem

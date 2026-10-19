@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fnmatch
 import hashlib
 import os
 import re
@@ -53,6 +54,14 @@ def strip_ver(dep):
     return re.split(r"[<>=]", dep, maxsplit=1)[0]
 
 
+def add_pkg(pkgs, provides, p, provs):
+    if p["name"] in pkgs:
+        return
+    pkgs[p["name"]] = p
+    for pv in provs:
+        provides.setdefault(strip_ver(pv), []).append(p["name"])
+
+
 def load_db():
     pkgs, provides = {}, {}
     for repo in REPOS:
@@ -70,20 +79,73 @@ def load_db():
                         fields[key] = []
                     elif line and key:
                         fields[key].append(line)
-                name = fields["NAME"][0]
-                if name in pkgs:
-                    continue
-                p = {
-                    "name": name,
+                add_pkg(pkgs, provides, {
+                    "name": fields["NAME"][0],
                     "repo": repo,
                     "version": fields["VERSION"][0],
                     "filename": fields["FILENAME"][0],
                     "sha256": fields["SHA256SUM"][0],
                     "depends": [strip_ver(d) for d in fields.get("DEPENDS", [])],
-                }
-                pkgs[name] = p
-                for pv in fields.get("PROVIDES", []):
-                    provides.setdefault(strip_ver(pv), []).append(name)
+                }, fields.get("PROVIDES", []))
+    return pkgs, provides
+
+
+def pkginfo(path):
+    with tarfile.open(path) as t:
+        for m in t:
+            if m.name == ".PKGINFO":
+                info = {}
+                for line in t.extractfile(m).read().decode().splitlines():
+                    if " = " in line and not line.startswith("#"):
+                        k, v = line.split(" = ", 1)
+                        info.setdefault(k, []).append(v)
+                return info
+    die(f"no .PKGINFO in {path}")
+
+
+def split_filename(fn):
+    m = re.match(r"^(.+)-([^-]+)-([^-]+)-([^-]+)\.pkg\.tar\.[a-z0-9]+$", fn)
+    if not m:
+        return None
+    return m.group(1), f"{m.group(2)}-{m.group(3)}", m.group(4)
+
+
+def repo_files(repodir):
+    newest = {}
+    if not os.path.isdir(repodir):
+        return newest
+    for fn in os.listdir(repodir):
+        parts = split_filename(fn)
+        if parts is None:
+            continue
+        key = (parts[0], parts[2])
+        path = os.path.join(repodir, fn)
+        if key not in newest or os.path.getmtime(path) > os.path.getmtime(newest[key]):
+            newest[key] = path
+    return newest
+
+
+def arch_files(repodir, arch):
+    out = {}
+    for (name, a), path in repo_files(repodir).items():
+        if a == arch or (a == "any" and name not in out):
+            out[name] = path
+    return out
+
+
+def load_repo(repodir, arch="i686"):
+    pkgs, provides = {}, {}
+    for name, path in sorted(arch_files(repodir, arch).items()):
+        info = pkginfo(path)
+        add_pkg(pkgs, provides, {
+            "name": info["pkgname"][0],
+            "arch": info["arch"][0],
+            "repo": "tinyhat",
+            "version": info["pkgver"][0],
+            "filename": os.path.basename(path),
+            "sha256": sha256(path),
+            "depends": [strip_ver(d) for d in info.get("depend", [])],
+        }, info.get("provides", []))
     return pkgs, provides
 
 
@@ -95,49 +157,96 @@ def parse_prefs(path):
     return prefs
 
 
-def resolve(listfile):
-    pkgs, provides = load_db()
+def lookup(index, dep, prefs, chosen):
+    pkgs, provides = index
+    if dep in prefs and prefs[dep] in pkgs:
+        return prefs[dep]
+    if dep in pkgs:
+        return dep
+    if dep in provides:
+        cands = sorted(provides[dep])
+        return next((c for c in cands if c in chosen), cands[0])
+    return None
+
+
+def resolve_targets(targets, indexes, arch, prefs, skip):
+    chosen, names, seen, queue = {}, set(), set(), [(t, arch) for t in targets]
+    while queue:
+        dep, ctx = queue.pop(0)
+        if (dep, ctx) in seen or dep in skip:
+            continue
+        seen.add((dep, ctx))
+        p = None
+        for a in ([ctx, "i686"] if ctx == "x32" else [ctx]):
+            name = lookup(indexes[a], dep, prefs, names)
+            if name is not None:
+                p = indexes[a][0][name]
+                break
+        if p is None:
+            die(f"cannot resolve '{dep}' for {ctx}")
+        if p["name"] in skip:
+            continue
+        key = (p["name"], p.get("arch", ctx))
+        if key in chosen:
+            continue
+        chosen[key] = p
+        names.add(p["name"])
+        nctx = ctx if key[1] == "any" else key[1]
+        queue.extend((d, nctx) for d in p["depends"])
+    return [chosen[k] for k in sorted(chosen)]
+
+
+def list_config(listfile, extra=()):
     cfg = os.path.dirname(listfile)
     prefs = parse_prefs(os.path.join(cfg, "providers.txt"))
     base = os.path.splitext(os.path.basename(listfile))[0]
     skip = set(read_list(os.path.join(cfg, f"{base}.skip")))
     targets = read_list(listfile)
-    chosen, seen, queue = {}, set(), list(targets)
-    while queue:
-        dep = queue.pop(0)
-        if dep in seen or dep in skip:
-            continue
-        seen.add(dep)
-        if dep in prefs:
-            name = prefs[dep]
-        elif dep in pkgs:
-            name = dep
-        elif dep in provides:
-            cands = sorted(provides[dep])
-            name = next((c for c in cands if c in chosen), cands[0])
-            if len(cands) > 1 and name not in chosen:
-                print(f"  note: {dep} -> {name} (of {' '.join(cands)})", file=sys.stderr)
-        else:
-            die(f"cannot resolve '{dep}'")
-        if name in skip or name in chosen:
-            continue
-        chosen[name] = pkgs[name]
-        queue.extend(pkgs[name]["depends"])
-    return [chosen[k] for k in sorted(chosen)]
+    for path in extra:
+        targets += [t for t in read_list(path) if t not in targets]
+    return targets, prefs, skip
 
 
-def cmd_lock(listfile, lockfile):
+def resolve(listfile, extra=(), repodir=None, arch="i686"):
+    targets, prefs, skip = list_config(listfile, extra)
+    if repodir:
+        indexes = {a: load_repo(repodir, a) for a in {"i686", arch}}
+    else:
+        indexes = {"i686": load_db()}
+    return resolve_targets(targets, indexes, arch, prefs, skip)
+
+
+def write_lock(sel, lockfile):
+    native = {p["name"] for p in sel if p.get("arch") == "x32"}
+    with open(lockfile, "w") as f:
+        for p in sel:
+            repo = p["repo"]
+            if native and p.get("arch") == "i686":
+                repo = "lib32" if p["name"] in native else "i686"
+            f.write(f"{repo} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
+    print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
+
+
+def cmd_lock(listfile, lockfile, *extra):
     os.makedirs(DBDIR, exist_ok=True)
     if os.environ.get("REFRESH") or not all(
         os.path.exists(os.path.join(DBDIR, f"{r}.db")) for r in REPOS
     ):
         for repo in REPOS:
             download(f"{MIRROR}/{repo}/{repo}.db", os.path.join(DBDIR, f"{repo}.db"))
-    sel = resolve(listfile)
-    with open(lockfile, "w") as f:
-        for p in sel:
-            f.write(f"{p['repo']} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
-    print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
+    write_lock(resolve(listfile, extra), lockfile)
+
+
+def cmd_local(listfile, lockfile, repodir, arch="i686"):
+    write_lock(resolve(listfile, repodir=repodir, arch=arch), lockfile)
+
+
+def cmd_repofiles(repodir, arch, *names):
+    files = arch_files(repodir, arch)
+    for name in names:
+        if name not in files:
+            die(f"{name} ({arch}) has not been built into {repodir}")
+        print(files[name])
 
 
 def read_lock(lockfile):
@@ -197,19 +306,47 @@ def cmd_extract(lockfile, pkgdir, root, excludes=()):
         args += ["--exclude", pat]
     if os.geteuid() == 0:
         args += ["-p", "--numeric-owner"]
-    for p in read_lock(lockfile):
-        subprocess.run(
-            ["bsdtar", "--no-xattrs", "--no-acls", "--no-fflags", "-xf", os.path.join(pkgdir, p["filename"]), "-C", root] + args,
-            check=True,
-        )
+    order = {"i686": 1, "lib32": 2}
+    for p in sorted(read_lock(lockfile), key=lambda p: order.get(p["repo"], 0)):
+        path = os.path.join(pkgdir, p["filename"])
+        if p["repo"] in order:
+            extract_lib32(path, root, p["repo"] == "lib32", pats)
+            continue
+        subprocess.run(["bsdtar", "--no-xattrs", "--no-acls", "--no-fflags", "-xf", path, "-C", root] + args, check=True)
+
+
+def extract_lib32(path, root, libs_only, excludes):
+    with tarfile.open(path) as t:
+        for m in t:
+            name = m.name
+            if any(fnmatch.fnmatch(name, pat) or fnmatch.fnmatch(name, pat + "/*") for pat in excludes):
+                continue
+            lib = re.fullmatch(r"usr/lib/[^/]+\.so[^/]*", name) and name != "usr/lib/ld-linux.so.2"
+            if libs_only and not lib and name != "usr/lib/ld-linux.so.2":
+                continue
+            if lib:
+                m.name = "usr/lib32/" + name[len("usr/lib/"):]
+            if m.islnk() and re.fullmatch(r"usr/lib/[^/]+\.so[^/]*", m.linkname):
+                m.linkname = "usr/lib32/" + m.linkname[len("usr/lib/"):]
+            dest = os.path.join(root, m.name)
+            if m.isdir() and os.path.isdir(dest):
+                continue
+            if os.path.lexists(dest) and not os.path.isdir(dest):
+                os.unlink(dest)
+            t.extract(m, root, numeric_owner=True, filter="fully_trusted")
 
 
 def main():
     if len(sys.argv) < 2:
-        die("usage: pkg.py lock LIST LOCK | fetch LOCK DIR | extract LOCK DIR ROOT [EXCLUDEFILE] | source SOURCES DIR [NAME...]")
+        die("usage: pkg.py lock LIST LOCK [LIST...] | local LIST LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
+            "fetch LOCK DIR | extract LOCK DIR ROOT [EXCLUDEFILE] | source SOURCES DIR [NAME...]")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
+    elif cmd == "local":
+        cmd_local(*args)
+    elif cmd == "repofiles":
+        cmd_repofiles(*args)
     elif cmd == "fetch":
         cmd_fetch(*args)
     elif cmd == "source":

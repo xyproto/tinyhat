@@ -1,0 +1,68 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: damir <damir@archlinux.org>
+
+pkgname=mpfr
+_pkgver=4.2.2
+_patchver=0
+if (( _patchver == 0 )); then
+  pkgver=$_pkgver
+else
+  pkgver=$_pkgver.p$_patchver
+fi
+pkgrel="1"
+pkgdesc='Multiple-precision floating-point library'
+arch=(i686 x32)
+url='https://www.mpfr.org/'
+license=(
+  GPL-3.0-or-later
+  LGPL-3.0-or-later
+)
+depends=(
+  glibc
+  gmp
+)
+provides=(libmpfr.so)
+# NOTE: download potentially existing patches from upstream:
+# `curl patches.diff -o https://www.mpfr.org/mpfr-${_pkgver}/allpatches`
+source=(https://ftp.gnu.org/gnu/$pkgname/$pkgname-$_pkgver.tar.xz{,.sig})
+sha512sums=('eb9e7f51b5385fb349cc4fba3a45ffdf0dd53be6dfc74932dc01258158a10514667960c530c47dd9dfc5aa18be2bd94859d80499844c5713710581e6ac6259a9'
+            'SKIP')
+b2sums=('6bbf5658e70fbb673a3b65246a6bac708d1571aa6943c6742efd92f468ac71e6f0fe351b757f7133440ea312d9a5fc3549acd89d54f4d975c58bdc204d7b21ec'
+        'SKIP')
+validpgpkeys=('07F3DBBECC1A39605078094D980C197698C3739D'
+              'A534BE3F83E241D918280AEB5831D11A0D4DB02A') # Vincent Lefevre <vincent@vinc17.net>
+
+prepare() {
+  cd $pkgname-${_pkgver}
+
+  for src in "${source[@]}"; do
+    [[ "$src" == *.diff ]] || [[ "$src" == *.patch ]] || continue
+    printf "Applying patch %s...\n" "$src"
+    patch -Np1 -i "../$src"
+  done
+
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-${_pkgver}
+  ./configure --prefix=/usr \
+    --enable-thread-safe \
+    --enable-shared
+  make
+}
+
+check() {
+  cd $pkgname-${_pkgver}
+  make check
+  make check-exported-symbols
+}
+
+package() {
+  cd $pkgname-${_pkgver}
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

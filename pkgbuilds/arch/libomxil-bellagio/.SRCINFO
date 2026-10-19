@@ -1,0 +1,15 @@
+pkgbase = libomxil-bellagio
+	pkgdesc = An opensource implementation of the OpenMAX Integration Layer API
+	pkgver = 0.9.3
+	pkgrel = 5
+	url = http://omxil.sourceforge.net
+	arch = i686
+	arch = x32
+	license = LGPL
+	depends = glibc
+	source = https://downloads.sourceforge.net/project/omxil/omxil/Bellagio%200.9.3/libomxil-bellagio-0.9.3.tar.gz
+	source = fedora-fixes.patch
+	sha256sums = 593c0729c8ef8c1467b3bfefcf355ec19a46dd92e31bfc280e17d96b0934d74c
+	sha256sums = 1683126ba747ae2f711cf352b289a26c17c56e92745a0ddbd5f066d66a9bd007
+
+pkgname = libomxil-bellagio

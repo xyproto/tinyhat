@@ -1,0 +1,18 @@
+pkgbase = gdb
+	pkgdesc = GNU debugger, without Python
+	pkgver = 18.1
+	pkgrel = 1
+	url = https://www.sourceware.org/gdb/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	depends = expat
+	depends = gmp
+	depends = mpfr
+	depends = ncurses
+	depends = readline
+	depends = zlib
+	source = https://ftp.gnu.org/gnu/gdb/gdb-18.1.tar.xz
+	sha256sums = cd9fc3fe2b47743840e42c1592d3d87f8302eb18639c0b8b4ba0898002e2348f
+
+pkgname = gdb

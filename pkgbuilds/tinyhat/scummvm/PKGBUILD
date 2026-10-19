@@ -1,0 +1,47 @@
+pkgname=scummvm
+pkgver=2026.4.0
+pkgrel=1
+pkgdesc="Engine for classic adventure games"
+arch=(i686 x32)
+url="https://www.scummvm.org/"
+license=(GPL-3.0-or-later)
+depends=(sdl3 fluidsynth a52dec faad2 flac freetype2 fribidi giflib libjpeg-turbo libmad libmikmod libmpeg2 libpng libtheora libvorbis zlib)
+source=("https://downloads.scummvm.org/frs/scummvm/$pkgver/scummvm-$pkgver.tar.xz"
+        cursor-colorkey.patch
+        sdl3-palette.patch)
+sha256sums=('cd660b34104da7f85ed0a11b7c6c2320c629bb87ee297935711ebc1e09731f12'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd scummvm-$pkgver
+  for p in ../*.patch; do
+    patch -Np1 -i "$p"
+  done
+}
+
+build() {
+  cd scummvm-$pkgver
+  CFLAGS="$CFLAGS -O3"
+  CXXFLAGS="$CXXFLAGS -O3"
+  LDFLAGS=${LDFLAGS/,--gc-sections/}
+  export CFLAGS CXXFLAGS LDFLAGS
+  mkdir -p pc
+  for f in /usr/lib/pkgconfig/*.pc /usr/share/pkgconfig/*.pc; do
+    case ${f##*/} in sdl.pc | sdl2.pc | SDL2_*.pc | sdl2-compat.pc) continue ;; esac
+    ln -sf "$f" pc/
+  done
+  export PKG_CONFIG_LIBDIR="$PWD/pc"
+  STRINGS=strings ./configure --prefix=/usr --backend=sdl --enable-release-mode --disable-optimizations --disable-debug \
+    --disable-tts --disable-cloud --disable-libcurl --disable-discord --disable-eventrecorder \
+    --disable-gtk --disable-sndio --disable-updates --disable-vpx --disable-taskbar --disable-text-console \
+    --disable-sdlnet --disable-all-engines \
+    --enable-engine=scumm,scumm_7_8,sci,sci32,agi,agos,kyra,lol,eob,queen,sky,sword1,sword2,lure,drascula,gob,saga,ihnm,saga2,cine,cruise,made,tinsel,touche,tucker,parallaction,groovie,tsage,access,mads,sherlock,cge,cge2,hugo,dreamweb,lab,mortevielle,teenagent,draci,chewy,supernova,voyeur,mm,xeen,mm1,zvision,twine,dgds,freescape,m4,trecision,darkseed,hopkins,awe,toltecs,lastexpress,glk,ultima,ultima4,ultima6,ultima8,efh,got
+  make
+}
+
+package() {
+  cd scummvm-$pkgver
+  make install DESTDIR="$pkgdir"
+  install -Dm644 COPYING COPYRIGHT AUTHORS LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"
+}

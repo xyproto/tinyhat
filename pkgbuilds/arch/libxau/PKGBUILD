@@ -1,0 +1,41 @@
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Alexander Baldeck <alexander@archlinux.org>
+
+pkgname=libxau
+pkgver=1.0.12
+pkgrel="1"
+pkgdesc="X11 authorisation library"
+arch=(i686 x32)
+url="https://xorg.freedesktop.org/"
+license=('MIT-open-group')
+depends=('glibc' 'xorgproto')
+makedepends=('meson')
+provides=('libXau.so')
+source=(${url}/releases/individual/lib/libXau-${pkgver}.tar.xz{,.sig})
+validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E') # "Alan Coopersmith <alan.coopersmith@oracle.com>"
+# validpgpkeys=('3BB639E56F861FA2E86505690FDD682D974CA72A') # Matt Turner <mattst88@gmail.com>
+sha512sums=('4bbe8796f4a14340499d5f75046955905531ea2948944dfc3d6069f8b86c1710042bfc7918d459320557883e6631359d48e6173c69c62ff572314e864ff97c5e'
+            'SKIP')
+
+build() {
+  arch-meson libXau-$pkgver build
+
+  # Print config
+  meson configure build
+
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+
+  install -Dvm644 libXau-$pkgver/COPYING \
+    "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+unset -f pkgver

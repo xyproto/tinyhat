@@ -1,0 +1,70 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Fina Wilke <fina@felinira.net>
+
+pkgbase=libcloudproviders
+pkgname=(
+  libcloudproviders
+  libcloudproviders-docs
+)
+pkgver=0.4.1
+pkgrel="1"
+pkgdesc="DBus API that allows cloud storage sync clients to expose their services"
+url="https://gitlab.gnome.org/GNOME/libcloudproviders"
+arch=(i686 x32)
+license=(LGPL-3.0-or-later)
+depends=(
+  libgcc
+  glib2
+  glibc
+)
+makedepends=(
+  gi-docgen
+  git
+  glib2-devel
+  gobject-introspection
+  meson
+  vala
+)
+source=("git+$url.git?signed#tag=$pkgver")
+b2sums=('720a21e38d745b84164859977952369e5986cb96221f791caaadd0399ce17cf012ba20ccbd878586059383970ce00800818310f9e72c935b865bf5e4f1c244d8')
+validpgpkeys=(
+  AD1483F8A95118F7F0C8AF4A965D4777208E7691 # Corentin Noël <corentin.noel@collabora.com>
+)
+
+prepare() {
+  cd $pkgname
+}
+
+build() {
+  local meson_options=(
+    -D documentation=true
+  )
+
+  arch-meson $pkgname build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs --no-suite doc
+}
+
+package_libcloudproviders() {
+  provides=(libcloudproviders.so)
+
+  meson install -C build --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_libcloudproviders-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

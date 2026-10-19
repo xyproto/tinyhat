@@ -1,0 +1,8 @@
+if [ "${CARCH}" = "x32" ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s@local _platform="linux-generic32"@local _platform="linux-x32"@
+      '
+  )"
+fi

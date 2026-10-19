@@ -1,0 +1,13 @@
+pkgbase = qemacs
+	pkgdesc = Quick Emacs, a small Emacs-like text editor by Fabrice Bellard
+	pkgver = 0+2107926a
+	pkgrel = 1
+	url = https://github.com/qemacs/qemacs
+	arch = i686
+	arch = x32
+	license = MIT
+	depends = glibc
+	source = qemacs-2107926a07ff8553e7633bcee306779d62c496a5.tar.gz::https://github.com/qemacs/qemacs/archive/2107926a07ff8553e7633bcee306779d62c496a5.tar.gz
+	sha256sums = c02763ff734f3d8454ac1568e2269b0db33dd71744c37b6661dcecc29c28f6b5
+
+pkgname = qemacs

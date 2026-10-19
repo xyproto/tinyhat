@@ -1,0 +1,75 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Ray Rashif <schiv@archlinux.org>
+# Contributor: speps <speps at aur dot archlinux dot org>
+
+pkgbase=serd
+pkgname=(serd serd-docs)
+pkgver=0.32.10
+pkgrel="1"
+pkgdesc="Lightweight C library for RDF syntax supporting reading/ writing Turtle and NTriples"
+arch=(i686 x32)
+url="https://drobilla.net/software/serd.html"
+license=(
+  '0BSD OR ISC'
+  BSD-3-Clause
+  ISC
+)
+makedepends=(
+  doxygen
+  mandoc
+  meson
+  python-sphinx
+  python-sphinxygen
+)
+source=(https://download.drobilla.net/$pkgname-$pkgver.tar.xz{,.sig})
+sha512sums=('1ceb7caaa97195e829bec0436930c090698a6be8ba1b7ee0ef3f013c817dd7ae472bb9bcc271e55e8b6e12d110b2d1d3d8fe20c36672d6e63c53f151173cd897'
+            'SKIP')
+b2sums=('87a79acc5a3d5dfbc2b96ff41000a85953048d27c8ca44745580c932379bab4916b11531265777a809fb0cc2f25c85399a60bde2d30a96105d9dec6bae637bd7'
+        'SKIP')
+validpgpkeys=('907D226E7E13FA337F014A083672782A9BF368F3') # David Robillard <d@drobilla.net>
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+build() {
+  arch-meson $pkgname-$pkgver build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build
+}
+
+package_serd() {
+  depends=(glibc)
+  optdepends=('serd-docs: for developer documentation')
+  provides=(libserd-0.so)
+
+  meson install -C build --destdir "$pkgdir"
+  install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"
+
+  (
+    cd "$pkgdir"
+    _pick $pkgname-docs usr/share/doc
+  )
+
+  install -vDm 644 $pkgname-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"
+  install -vDm 644 $pkgname-$pkgver/{AUTHORS,NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+package_serd-docs() {
+  pkgdesc+=" - documentation"
+
+  mv -v $pkgname/* "$pkgdir"
+  mv -v "$pkgdir/usr/share/doc/"serd{-0,}
+  install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+unset -f pkgver

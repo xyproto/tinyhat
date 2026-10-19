@@ -1,0 +1,17 @@
+pkgbase = openfec
+	pkgdesc = Open Forward Erasure Codecs
+	pkgver = 1.4.2.12
+	pkgrel = 1
+	url = http://openfec.org/
+	arch = i686
+	arch = x32
+	license = CECILL-2.0
+	license = CECILL-C
+	makedepends = cmake
+	depends = glibc
+	provides = libopenfec.so
+	source = https://github.com/roc-streaming/openfec/archive/v1.4.2.12/openfec-1.4.2.12.tar.gz
+	sha512sums = 8228dffe7be5ef687d1d38775eae077fd0f7011099580b9cdfc0963704ee7b1332f73e911f244d20876578a394773d2eaa51d54f5851905d7c99ba0c117da295
+	b2sums = 3a53ee5330398d22b4f98038a4f9d0285b375f389e0fd80ed7e01f3fcb0e15fc78008dde98f33786e04a2707290a3ae39915f1b06ae686a0c5fe01fa76faa8fd
+
+pkgname = openfec

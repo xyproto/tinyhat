@@ -1,0 +1,46 @@
+pkgname=vice
+pkgver=3.10
+pkgrel=1
+pkgdesc="Commodore 64 emulator (x64sc) with the SDL2 UI"
+arch=(i686 x32)
+url="https://vice-emu.sourceforge.io/"
+license=(GPL-2.0-or-later)
+depends=(sdl2-compat sdl2_image libpng zlib)
+makedepends=(flex xa)
+source=("vice-$pkgver.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-$pkgver.tar.gz/download")
+sha256sums=('8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1')
+
+prepare() {
+  cd vice-$pkgver
+  sed -i 's/if ((log_to_file) || (!log_colorize)) {/if ((log_to_file) || (!log_colorize) || (log_to_stdout)) {/' src/log.c
+  mkdir -p "$srcdir/bin"
+  printf '#!/bin/sh\nfor f; do sed -i "s/\\r$//" "$f"; done\n' >"$srcdir/bin/dos2unix"
+  chmod 755 "$srcdir/bin/dos2unix"
+}
+
+build() {
+  cd vice-$pkgver
+  export PATH="$srcdir/bin:$PATH"
+  CFLAGS="$CFLAGS -O3"
+  CXXFLAGS="$CXXFLAGS -O3"
+  export CFLAGS CXXFLAGS
+  ./configure --prefix=/usr --enable-sdl2ui --with-sdlsound --without-alsa --without-pulse \
+    --disable-html-docs --disable-pdf-docs --without-flac --without-vorbis --without-mpg123 --without-lame \
+    --disable-ffmpeg --disable-ethernet --disable-catweasel --disable-hardsid --disable-parsid --disable-midi \
+    SDL2_IMAGE_CFLAGS="-I/usr/include/SDL2 $(pkg-config --cflags sdl2-compat)" SDL2_IMAGE_LIBS="-lSDL2_image"
+  make
+}
+
+package() {
+  cd vice-$pkgver
+  make DESTDIR="$pkgdir" install
+  cd "$pkgdir/usr"
+  find bin -type f ! -name x64sc ! -name x64 ! -name c1541 -delete
+  find bin -type l -delete
+  rm -rf share/doc share/man share/info share/applications share/icons share/metainfo
+  cd share/vice
+  rm -rf C128 C64DTV CBM-II PET PLUS4 SCPU64 VIC20 GLSL
+  rm -f C64/gtk3_*.vkm common/*.svg common/*.ttf common/icon1024x1024.png common/Icon-128@2x.png
+  find common -name '*.png' ! -name 'C64_*' -delete
+  install -Dm644 "$srcdir/vice-$pkgver/COPYING" "$srcdir/vice-$pkgver/README" -t "$pkgdir/usr/share/licenses/$pkgname/"
+}

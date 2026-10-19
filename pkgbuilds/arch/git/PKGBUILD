@@ -1,0 +1,209 @@
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Maintainer: Christian Heusel <gromit@archlinux.org>
+# Contributor: Dan McGee <dan@archlinux.org>
+
+pkgbase=git
+pkgname=(git git-zsh-completion)
+pkgver=2.56.0
+pkgrel="1"
+pkgdesc='the fast distributed version control system'
+arch=(i686 x32)
+url='https://git-scm.com/'
+license=('GPL-2.0-only')
+depends=('curl' 'expat' 'perl' 'perl-error' 'perl-mailtools'
+         'openssl' 'pcre2' 'grep' 'shadow' 'zlib-ng')
+makedepends=('python' 'xmlto' 'asciidoc' 'git' 'rust')
+checkdepends=('openssh')
+install=git.install
+validpgpkeys=('96E07AF25771955980DAD10020D04E5A713660A7') # Junio C Hamano
+source=("git+https://github.com/git/git?signed#tag=v${pkgver}"
+        'git-daemon@.service'
+        'git-daemon.socket'
+        'git-sysusers.conf')
+sha256sums=('f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8'
+            '14c0b67cfe116b430645c19d8c4759419657e6809dfa28f438c33a005245ad91'
+            'ac4c90d62c44926e6d30d18d97767efc901076d4e0283ed812a349aece72f203'
+            '7630e8245526ad80f703fac9900a1328588c503ce32b37b9f8811674fcda4a45')
+
+_make() {
+  local make_options=(
+    prefix='/usr'
+    gitexecdir='/usr/lib/git-core'
+    perllibdir="$(/usr/bin/perl -MConfig -wle 'print $Config{installvendorlib}')"
+
+    CFLAGS="$CFLAGS"
+    LDFLAGS="$LDFLAGS"
+    INSTALL_SYMLINKS=1
+    MAN_BOLD_LITERAL=1
+    NO_PERL_CPAN_FALLBACKS=1
+    USE_LIBPCRE2=1
+    ZLIB_NG=1
+    WITH_RUST=1
+  )
+
+  make "${make_options[@]}" "$@"
+}
+
+build() {
+  cd "$pkgbase"
+
+  _make all man
+
+  _make -C contrib/credential/libsecret
+  _make -C contrib/subtree all man
+  _make -C contrib/diff-highlight
+}
+
+check() {
+  cd "$pkgbase"
+
+  local jobs
+  jobs=$(expr "$MAKEFLAGS" : '.*\(-j[0-9]*\).*') || true
+  mkdir -p /dev/shm/git-test
+  # explicitly specify SHELL to avoid a test failure in t/t9903-bash-prompt.sh
+  # which is caused by 'git rebase' trying to use builduser's SHELL inside the
+  # build chroot (i.e.: /usr/bin/nologin)
+  SHELL=/bin/sh \
+  _make \
+    NO_SVN_TESTS=y \
+    DEFAULT_TEST_TARGET=prove \
+    GIT_PROVE_OPTS="$jobs -Q" \
+    GIT_TEST_OPTS="--root=/dev/shm/git-test" \
+    test
+}
+
+package_git() {
+  optdepends=(
+    'git-zsh-completion: upstream zsh completion'
+    'tk: gitk and git gui'
+    'openssh: ssh transport and crypto'
+    'man: show help with `git command --help`'
+    'perl-libwww: git svn'
+    'perl-term-readkey: git svn and interactive.singlekey setting'
+    'perl-io-socket-ssl: git send-email TLS support'
+    'perl-authen-sasl: git send-email TLS support'
+    'perl-cgi: gitweb (web interface) support'
+    'python: git svn & git p4'
+    'subversion: git svn'
+    'org.freedesktop.secrets: keyring credential helper'
+    'libsecret: libsecret credential helper'
+    'less: the default pager for git'
+  )
+
+  cd "$pkgbase"
+
+  _make \
+    DESTDIR="$pkgdir" \
+    install install-man
+
+  # bash completion
+  mkdir -p "$pkgdir"/usr/share/bash-completion/completions/
+  install -m 0644 ./contrib/completion/git-completion.bash "$pkgdir"/usr/share/bash-completion/completions/git
+  # fancy git prompt
+  mkdir -p "$pkgdir"/usr/share/git/
+  install -m 0644 ./contrib/completion/git-prompt.sh "$pkgdir"/usr/share/git/git-prompt.sh
+  # libsecret credentials helper
+  install -m 0755 contrib/credential/libsecret/git-credential-libsecret \
+      "$pkgdir"/usr/lib/git-core/git-credential-libsecret
+  _make -C contrib/credential/libsecret clean
+  # subtree installation
+  _make -C contrib/subtree DESTDIR="$pkgdir" install install-man
+  # the rest of the contrib stuff
+  find contrib/ -name '.gitignore' -delete
+  cp -a ./contrib/* "$pkgdir"/usr/share/git/
+
+  # git-daemon via systemd socket activation
+  install -D -m 0644 "$srcdir"/git-daemon@.service "$pkgdir"/usr/lib/systemd/system/git-daemon@.service
+  install -D -m 0644 "$srcdir"/git-daemon.socket "$pkgdir"/usr/lib/systemd/system/git-daemon.socket
+
+  # sysusers file
+  install -D -m 0644 "$srcdir"/git-sysusers.conf "$pkgdir"/usr/lib/sysusers.d/git.conf
+}
+
+package_git-zsh-completion() {
+  description='the fast distributed version control system - upstream zsh completion'
+  depends=('git' 'zsh')
+
+  install -d "$pkgdir"/usr/share/zsh/site-functions/
+  ln -s ../../git/completion/git-completion.zsh "$pkgdir"/usr/share/zsh/site-functions/_git
+}
+
+# no Gnome on i486
+makedepends=(${makedepends[@]//libgnome-keyring/})
+makedepends_i686+=(libgnome-keyring)
+makedepends_pentium4=("${makedepends_i686[@]}")
+
+# no rust on i486 - there is no rust built for i486, and upstream git forces
+# WITH_RUST=1 unless we do something about it
+if [ "${CARCH}" = "i486" ]; then
+  makedepends=(${makedepends[@]//rust/})
+fi
+
+# guard against our sed expressions becoming no-ops when the Arch Linux
+# PKGBUILD changes: the sed itself must never fail (the buildmaster parses
+# the PKGBUILD, too), so _sedpatch installs a build() stub instead that
+# makes makepkg fail with a clear error right before the build starts -
+# instead of silently passing unpatched sources into an obscure late
+# failure. The stub logs the dead sed script and the pre-patch function.
+_sedguard_failed() {
+  echo "ERROR: the sed expression(s) patching ${_sedguard_fn}() in this PKGBUILD did not change anything anymore." >&2
+  echo "Most likely the Arch Linux PKGBUILD changed; fix the sed expressions in the archlinux32 PKGBUILD." >&2
+  echo "--- the sed script was: ---" >&2
+  printf '%s\n' "${_sedguard_script}" >&2
+  echo "--- ${_sedguard_fn}() before patching was: ---" >&2
+  printf '%s\n' "${_sedguard_before}" >&2
+  exit 1
+}
+
+# _sedpatch <function> <sed script>: apply sed to the function, replace
+# build() with an error stub if nothing was changed
+_sedpatch() {
+  local fn=$1 script=$2 before after
+  [ -n "${_sedguard_tripped}" ] && return 0
+  before=$(declare -f "${fn}")
+  after=$(
+    printf '%s\n' "${before}" | \
+      sed "${script}"
+  )
+  if [ "${before}" = "${after}" ]; then
+    # poison pill: always fail in build(), never late in package_*
+    _sedguard_tripped=1
+    _sedguard_fn=$fn
+    _sedguard_script=$script
+    _sedguard_before=$before
+    eval 'build() { _sedguard_failed; }'
+  else
+    eval "${after}"
+  fi
+}
+
+_sedguard_tripped=''
+
+# 486-specific
+if [ "${CARCH}" = "i486" ]; then
+  # upstream git forces the rust build (WITH_RUST=1), but there is no
+  # rust built for i486 - this must always apply, hence it is guarded
+  _sedpatch _make '
+    s/ WITH_RUST=1//
+  '
+
+  # no Gnome - these deletions may legitimately no-op when upstream drops
+  # the gnome-keyring credentials helper, so they are left unguarded
+  eval "$(
+    declare -f build | \
+      sed '
+        s@\(make -C contrib/credential/gnome-keyring\)@#\1@
+      '
+    declare -f package | \
+      sed '
+        /gnome-keyring/d
+      '
+  )"
+fi
+
+if [ "${CARCH}" = "x32" ]; then
+  makedepends=(${makedepends[@]//rust/})
+  eval "$(declare -f _make | sed 's/ WITH_RUST=1//')"
+fi
+
+unset -f pkgver

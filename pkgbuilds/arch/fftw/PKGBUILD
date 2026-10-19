@@ -1,0 +1,204 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: David Runge <dvzrv@archlinux.org>
+# Contributor: damir <damir@archlinux.org>
+
+pkgbase=fftw
+pkgname=(fftw fftw-openmpi)
+pkgver=3.3.11
+pkgrel="1"
+pkgdesc="A library for computing the discrete Fourier transform (DFT)"
+arch=(i686 x32)
+url="http://www.fftw.org/"
+license=(GPL-2.0-or-later)
+makedepends=(
+  bash
+  cmake
+  gcc-fortran
+  glibc
+  libgcc
+  libgomp
+  libquadmath
+  openmpi
+)
+source=(http://www.fftw.org/$pkgname-$pkgver.tar.gz)
+sha512sums=('ca1bf80490dc6955a0ab49b1af05d6658c2ecc0968b3bde5b4af22271e47d30cd38f6f8347e8e6124091b6a17717447942bee95f94ca29574ba71c4d167af351')
+b2sums=('4bd2ae0ada612243f0681b185230969da2bca6cfccb1e16d17f84459cbdd4ae84dc8a9ddb39ce5e4dfc7d0308709d1dc56688826299ee1017fc6115d16b2bd38')
+_build_types=(single double long-double quad)
+_soname=3.7.11
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+prepare() {
+  local _i
+
+  # fix wrong soname in FFTW3LibraryDepends.cmake
+  sed -e "s/3.6.9/$_soname/" -i $pkgname-$pkgver/CMakeLists.txt
+
+  mv -v $pkgname-$pkgver $pkgname-$pkgver-single
+  for _i in {1..3}; do
+    cp -av $pkgname-$pkgver-single $pkgname-$pkgver-"${_build_types[$_i]}"
+  done
+}
+
+build() {
+  local _name
+  local _configure=(
+    ./configure
+    --prefix=/usr
+    --enable-shared
+    --enable-threads
+    --enable-mpi
+    --enable-openmp
+    MPILIBS="$(mpicc --showme:link)"
+  )
+  local _configure_single=(
+    --enable-sse
+    --enable-avx
+    --enable-single
+  )
+  local _configure_double=(
+    --enable-sse2
+    --enable-avx
+  )
+  local _configure_long_double=(
+    --enable-long-double
+  )
+  local _configure_quad=(
+    --disable-mpi
+    --enable-quad-precision
+  )
+  local _cmake_options=(
+    -B build
+    -S $pkgname-$pkgver-$_build_types
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D CMAKE_BUILD_TYPE=None
+    -D CMAKE_POLICY_VERSION_MINIMUM=3.5
+    -D ENABLE_OPENMP=ON
+    -D ENABLE_THREADS=ON
+    -D ENABLE_FLOAT=ON
+    -D ENABLE_LONG_DOUBLE=ON
+    -D ENABLE_QUAD_PRECISION=ON
+    -D ENABLE_SSE=ON
+    -D ENABLE_SSE2=ON
+    -D ENABLE_AVX=ON
+    -D ENABLE_AVX2=ON
+  )
+
+  # create missing FFTW3LibraryDepends.cmake
+  # https://bugs.archlinux.org/task/67604
+  cmake "${_cmake_options[@]}"
+  # fix broken IMPORTED_LOCATION: https://github.com/FFTW/fftw3/issues/130#issuecomment-1030280157
+  sed -e 's|\(IMPORTED_LOCATION_NONE\).*|\1 "/usr/lib/libfftw3.so.3"|' -i build/FFTW3LibraryDepends.cmake
+
+  export F77='gfortran'
+  # use upstream default CFLAGS while keeping our -march/-mtune
+  CFLAGS+=" -O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math"
+
+  for _name in "${_build_types[@]}"; do
+    (
+      cd $pkgname-$pkgver-$_name
+      case $_name in
+        single)
+        "${_configure[@]}" "${_configure_single[@]}"
+        ;;
+        double)
+        "${_configure[@]}" "${_configure_double[@]}"
+        ;;
+        long-double)
+        "${_configure[@]}" "${_configure_long_double[@]}"
+        ;;
+        quad)
+        "${_configure[@]}" "${_configure_quad[@]}"
+        ;;
+      esac
+      # fix overlinking because of libtool
+      sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+    )
+  done
+
+  for _name in "${_build_types[@]}"; do
+    make -C $pkgname-$pkgver-$_name
+  done
+}
+
+check() {
+  local _name
+
+  for _name in "${_build_types[@]}"; do
+    make smallcheck -C $pkgname-$pkgver-$_name/tests
+  done
+}
+
+package_fftw() {
+  depends=(
+    bash
+    glibc
+    libgcc
+    libgomp
+    libquadmath
+  )
+  optdepends=('fftw-openmpi: for OpenMPI integration')
+  provides=(
+    libfftw3q_threads.so
+    libfftw3q_omp.so
+    libfftw3q.so
+    libfftw3l_threads.so
+    libfftw3l_omp.so
+    libfftw3l.so
+    libfftw3f_threads.so
+    libfftw3f_omp.so
+    libfftw3f.so
+    libfftw3_threads.so
+    libfftw3_omp.so
+    libfftw3.so
+  )
+
+  local _name
+
+  for _name in "${_build_types[@]}"; do
+    make DESTDIR="$pkgdir" install -C $pkgname-$pkgver-$_name
+  done
+  (
+    cd "$pkgdir"
+    _pick $pkgbase-openmpi usr/include/fftw3-mpi.h
+    _pick $pkgbase-openmpi usr/include/fftw3{,l}-mpi.f03
+    _pick $pkgbase-openmpi usr/lib/libfftw3{,f,l}_mpi.{a,so}
+    _pick $pkgbase-openmpi usr/lib/libfftw3{,f,l}_mpi.so.${_soname%%.*}
+    _pick $pkgbase-openmpi usr/lib/libfftw3{,f,l}_mpi.so.$_soname
+  )
+  install -vDm 644 $pkgname-$pkgver-$_build_types/{AUTHORS,ChangeLog,NEWS,README,TODO} -t "$pkgdir/usr/share/doc/$pkgname"
+  # install missing FFTW3LibraryDepends.cmake
+  install -vDm 644 build/FFTW3LibraryDepends.cmake -t "$pkgdir/usr/lib/cmake/fftw3/"
+}
+
+package_fftw-openmpi() {
+  pkgdesc+=" - OpenMPI libraries"
+  depends=(
+    fftw
+    glibc
+    openmpi
+  )
+  provides=(
+    libfftw3l_mpi.so
+    libfftw3f_mpi.so
+    libfftw3_mpi.so
+  )
+
+  mv -v $pkgname/* "$pkgdir"
+}
+
+# no SMP for OpenMPI on i486, or at least not on my build slaves :-)
+if [ "$CARCH" == 'i486' ]; then
+  unset check
+fi
+
+unset -f pkgver

@@ -1,0 +1,15 @@
+pkgbase = the_silver_searcher
+	pkgdesc = Code searching tool similar to Ack, but faster
+	pkgver = 2.2.0
+	pkgrel = 4
+	url = https://github.com/aswild/the_silver_searcher
+	arch = i686
+	arch = x32
+	license = Apache-2.0
+	makedepends = git
+	depends = pcre2
+	depends = xz
+	source = git+https://github.com/aswild/the_silver_searcher#commit=7b571a8a94d0e22a06e3313cb0d9672b416fb2c1
+	b2sums = SKIP
+
+pkgname = the_silver_searcher

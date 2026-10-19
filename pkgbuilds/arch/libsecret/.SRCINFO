@@ -1,0 +1,34 @@
+pkgbase = libsecret
+	pkgdesc = Library for storing and retrieving passwords and other secrets
+	pkgver = 0.21.8.2
+	pkgrel = 1
+	url = https://gnome.pages.gitlab.gnome.org/libsecret/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	checkdepends = gjs
+	checkdepends = python-dbus
+	checkdepends = python-gobject
+	checkdepends = swtpm
+	checkdepends = tpm2-abrmd
+	makedepends = bash-completion
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = gobject-introspection
+	makedepends = meson
+	makedepends = vala
+	depends = glib2
+	depends = glibc
+	depends = libgcrypt
+	depends = tpm2-tss
+	source = git+https://gitlab.gnome.org/GNOME/libsecret.git?signed#tag=0.21.8.2
+	validpgpkeys = A7C626E13F9AD776776BD9CA1D8A57CF2E8D36A3
+	b2sums = feb0a32bd0ff4d78731059a1df46c6aec2f43bebe27440ff6b09fbe55715d8b18a4726bddba68e3f648f565ca01125d263a423edb27fd18fbe9e9d5190d3e843
+
+pkgname = libsecret
+	optdepends = org.freedesktop.secrets: secret storage backend
+	provides = libsecret-1.so
+
+pkgname = libsecret-docs
+	pkgdesc = Library for storing and retrieving passwords and other secrets (documentation)
+	depends = 

@@ -1,0 +1,39 @@
+pkgname=x32-gcc
+pkgver=16.2.0
+pkgrel=1
+pkgdesc="C and C++ compiler for the x86_64-pc-linux-gnux32 toolchain"
+arch=(i686)
+url="https://gcc.gnu.org/"
+license=('GPL-3.0-or-later WITH GCC-exception-3.1')
+depends=(x32-binutils gmp mpfr libmpc libisl zlib zstd)
+makedepends=(glibc)
+conflicts=(x32-gcc-stage1)
+options=(!buildflags !strip staticlibs)
+source=("https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz")
+sha256sums=('e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e')
+
+build() {
+  mkdir -p build
+  cd build
+  ../gcc-$pkgver/configure --target=x86_64-pc-linux-gnux32 --prefix=/usr --libexecdir=/usr/lib \
+    --with-sysroot=/ --with-build-sysroot=/usr/x86_64-pc-linux-gnux32/sysroot \
+    --with-abi=mx32 --enable-multilib --with-multilib-list=mx32 \
+    --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr --with-system-zlib \
+    --enable-languages=c,c++ --enable-shared --enable-threads=posix --enable-__cxa_atexit --enable-clocale=gnu \
+    --enable-default-pie --enable-default-ssp --enable-linker-build-id --enable-lto --enable-plugin \
+    --enable-gnu-unique-object --with-linker-hash-style=gnu --enable-checking=release \
+    --disable-nls --disable-bootstrap --disable-werror --disable-libsanitizer --disable-libvtv \
+    CFLAGS_FOR_TARGET="-O2 -pipe" CXXFLAGS_FOR_TARGET="-O2 -pipe"
+  make
+}
+
+package() {
+  cd build
+  make DESTDIR="$pkgdir" install
+  rm -rf "$pkgdir/usr/share" "$pkgdir"/usr/lib/libcc1*
+  local t=x86_64-pc-linux-gnux32
+  install -d "$pkgdir/usr/$t/bin"
+  for p in gcc:gcc gcc:cc cpp:cpp g++:g++ c++:c++ gcc-ar:gcc-ar gcc-nm:gcc-nm gcc-ranlib:gcc-ranlib; do
+    ln -s ../../bin/$t-${p%%:*} "$pkgdir/usr/$t/bin/${p#*:}"
+  done
+}

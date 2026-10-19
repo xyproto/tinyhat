@@ -1,0 +1,42 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=speexdsp
+pkgver=1.2.1
+pkgrel="3"
+pkgdesc="DSP library derived from Speex"
+url="https://www.speex.org/"
+arch=(i686 x32)
+license=(BSD-3-Clause)
+depends=(glibc)
+makedepends=(git)
+provides=(libspeexdsp.so)
+source=("git+https://gitlab.xiph.org/xiph/speexdsp.git#tag=SpeexDSP-$pkgver")
+b2sums=('f44bb6a7df8606aecfe2333e3191486d77b1ea9c1ef2c0d4763133d8f0c05252429f11562df8b3a5f6e9610f150a9b0d677b92764e45d244458a6bed733b66e8')
+
+prepare() {
+  cd speexdsp
+  ./autogen.sh
+}
+
+build() {
+  cd speexdsp
+  ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+    --disable-static
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  cd speexdsp
+  make -k check
+}
+
+package() {
+  cd speexdsp
+  make DESTDIR="$pkgdir" install
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 COPYING
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

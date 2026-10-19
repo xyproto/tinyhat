@@ -1,0 +1,113 @@
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: kfgz <kfgz@interia.pl>
+
+pkgname=x265
+pkgver=4.3
+pkgrel="1"
+pkgdesc='Open Source H265/HEVC video encoder'
+arch=(i686 x32)
+url=https://www.x265.org/
+license=(GPL-2.0-or-later)
+depends=(
+  glibc
+  libgcc
+  libstdc++
+)
+makedepends=(
+  cmake
+  git
+  nasm
+  ninja
+)
+provides=(libx265.so)
+source=(
+  "git+https://github.com/Multicorewareinc/x265.git#tag=${pkgver}"
+  0001-Fix-build-with-GCC-15.patch
+)
+b2sums=('bbbe9e0e595c1de114ddc08c4f13f6ce1e7490837749cb389682a9aaa28fe42707abcdea856aebb5fe805ea5c0500c4350c35afe90b7280fd1ea295fd5d469ab'
+        'af2ee0460c0c2f6f36e4f124a9ac16610e3884001262a6f08043fa1de4a85e2b5fd4fb12c64b8c94cfb59c3031bb7a1324e307fa2049e3378e2add9a58f5bd9e')
+
+prepare() {
+  cd x265
+
+  # Fix build with GCC 15
+  git apply -3 ../0001-Fix-build-with-GCC-15.patch
+}
+
+build() {
+  local common_options=(
+    -S x265/source
+    -G Ninja
+    -D CMAKE_INSTALL_PREFIX=/usr
+    -D ENABLE_HDR10_PLUS=TRUE
+    -W no-dev
+  ) hdr_options=(
+    "${common_options[@]}"
+    -D ENABLE_CLI=FALSE
+    -D ENABLE_SHARED=FALSE
+    -D EXPORT_C_API=FALSE
+    -D HIGH_BIT_DEPTH=TRUE
+  ) final_options=(
+    "${common_options[@]}"
+    -D ENABLE_SHARED=TRUE
+    -D EXTRA_LIB='x265_main10.a;x265_main12.a'
+    -D EXTRA_LINK_FLAGS='-L .'
+    -D LINKED_10BIT=TRUE
+    -D LINKED_12BIT=TRUE
+  )
+
+  cmake -B build-10 "${hdr_options[@]}"
+  cmake --build build-10
+
+  cmake -B build-12 "${hdr_options[@]}" -D MAIN12=TRUE
+  cmake --build build-12
+
+  cmake -B build "${final_options[@]}"
+  ln -sr build-10/libx265.a build/libx265_main10.a
+  ln -sr build-12/libx265.a build/libx265_main12.a
+  cmake --build build
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+}
+
+# vim: ts=2 sw=2 et:
+
+# disabling assembly code as it seems to be non-32-bittish
+## hdr_options and final_options expand common_options at declaration time
+## (they sit in the same `local` statement), so += into common_options
+## (below) never reaches them - they are extended explicitly here. Anchor
+## on the `local` statement, so `${hdr_options[@]}` usages are not hit.
+eval "$(
+  declare -f build | \
+    sed '
+      /local common_options/ a \
+        hdr_options+=(-DENABLE_ASSEMBLY=OFF) \
+        hdr_options+=(-DCMAKE_SYSTEM_PROCESSOR=i686) \
+        final_options+=(-DENABLE_ASSEMBLY=OFF) \
+        final_options+=(-DCMAKE_SYSTEM_PROCESSOR=i686)
+    '
+)"
+
+eval "$(
+  declare -f build | \
+    sed '
+      /common_options/ a \
+        common_options+=(-DENABLE_ASSEMBLY=OFF) \
+        common_options+=(-DCMAKE_SYSTEM_PROCESSOR=i686)
+    '
+)"
+# thanks, debian: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=910963
+# repatched, 28.2.2019
+source+=('0003-detect512-is-needed-on-all-architectures.patch')
+b2sums+=('62a8b7780cb75f8a3a46b7b057bbc630aaa02ae078d6fb31c58f6f1a606b84d068f93701338fdde0f22820e17af179177b55539c6cba66efc7f797e540688ee7')
+eval "$(
+  declare -f prepare | \
+    sed '
+      3 a patch -p1 -i "$srcdir/0003-detect512-is-needed-on-all-architectures.patch"
+    '
+)"
+
+unset -f pkgver

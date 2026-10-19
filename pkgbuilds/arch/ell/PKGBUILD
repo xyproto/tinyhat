@@ -1,0 +1,35 @@
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Jameson Pugh <imntreal@gmail.com>
+
+pkgname=ell
+pkgver=0.83
+pkgrel="1"
+pkgdesc="Embedded Linux library"
+arch=(i686 x32)
+url="https://git.kernel.org/pub/scm/libs/ell/ell.git/"
+license=('LGPL-2.1-or-later')
+depends=('libgcc' 'glibc')
+checkdepends=('dbus' 'procps-ng')
+# https://mirrors.edge.kernel.org/pub/linux/libs/ell/sha256sums.asc
+source=(https://mirrors.edge.kernel.org/pub/linux/libs/$pkgname/$pkgname-$pkgver.tar.{xz,sign})
+sha256sums=('39a562f5ab2768e69da1ffbb1f98a8eb3483baffc7d2ef6adc3705e4fd4e53fb'
+            'SKIP')
+validpgpkeys=('E932D120BC2AEC444E558F0106CA9F5D1DCF2659') # "Marcel Holtmann <marcel@holtmann.org>"
+
+build() {
+  cd "$pkgname-$pkgver"
+ ./configure --prefix=/usr
+  make
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  make check
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  make DESTDIR="$pkgdir/" install
+}
+
+unset -f pkgver

@@ -1,0 +1,27 @@
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+pkgname=wavpack
+pkgver=5.9.0
+pkgrel="1"
+pkgdesc="Audio compression format with lossless, lossy and hybrid compression modes"
+arch=(i686 x32)
+url="https://www.wavpack.com/"
+license=('BSD')
+depends=('glibc')
+source=(https://github.com/dbry/WavPack/releases/download/$pkgver/$pkgname-$pkgver.tar.xz)
+sha512sums=('04c07d98c806926fb91df0267f5c994444503d875222d54990af60e987580bf4c3cc283c3c35381d04aee6e0c175277d87157d87c840bb90fc830dd3f82b9e3e')
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --disable-asm
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm644 COPYING -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+unset -f pkgver

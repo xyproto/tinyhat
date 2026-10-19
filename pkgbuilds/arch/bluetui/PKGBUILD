@@ -1,0 +1,39 @@
+# Maintainer: Orhun Parmaksız <orhun@archlinux.org>
+
+pkgname=bluetui
+pkgver=0.8.2
+pkgrel="1"
+pkgdesc="TUI for managing bluetooth devices"
+arch=(i686)
+url="https://github.com/pythops/bluetui"
+license=('GPL-3.0-only')
+depends=('bluez' 'dbus' 'glibc' 'libgcc')
+makedepends=('cargo')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
+sha512sums=('cfb966878df4ca3b3055eb404c943a4749da040a5f42846603768fa60c70045fa974efd0fad32ff5828212364f8c8c1f43465f9f7effa850d82f1eacff697a75')
+options=('!lto')
+
+prepare() {
+  cd "$pkgname-$pkgver"
+  cargo fetch --locked --target "$(rustc --print host-tuple)"
+}
+
+build() {
+  cd "$pkgname-$pkgver"
+  cargo build --release --frozen
+}
+
+check() {
+  cd "$pkgname-$pkgver"
+  cargo test --frozen
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  install -Dm 755 "target/release/$pkgname" -t "$pkgdir/usr/bin"
+  install -Dm 644 Readme.md -t "$pkgdir/usr/share/doc/$pkgname"
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

@@ -1,0 +1,180 @@
+#!/bin/sh
+set -eu
+umask 022
+top=$(dirname "$(dirname "$(readlink -f "$0")")")
+nobuild=
+arch=i686
+bootstrap=
+while :; do
+	case ${1-} in
+	--nobuild) nobuild=-o; shift ;;
+	--arch) arch=$2; shift 2 ;;
+	--bootstrap) bootstrap=1; shift ;;
+	*) break ;;
+	esac
+done
+dir=$(readlink -f "$1")
+shift
+base=${dir##*/}
+seed=$top/build/buildroot
+repo=$top/build/repo
+boot=$top/build/bootstrap
+dest=$repo
+work=$top/build/chroot/$arch-$base
+if [ -n "$bootstrap" ]; then
+	dest=$boot
+	work=$top/build/chroot/boot-$base
+fi
+epoch=${SOURCE_DATE_EPOCH:-$(git -C "$top" log -1 --format=%ct 2>/dev/null || echo 315532800)}
+conf=/tinyhat/config/makepkg.conf
+case $dir in "$top"/pkgbuilds/tinyhat/*) conf=/tinyhat/config/makepkg-tinyhat.conf ;; esac
+tc=x86_64-pc-linux-gnux32
+path=/usr/bin
+libpath=
+personality=i686
+if [ "$arch" = x32 ]; then
+	path=/usr/$tc/bin:/usr/bin
+	libpath=/usr/lib32
+	personality=x86_64
+fi
+mkdir -p "$repo" "$boot" "$dest/.cache" "$top/vendor/src" "$HOME/.ccache"
+
+lookup() {
+	kind=$1
+	shift
+	[ $# -gt 0 ] || return 0
+	case $kind in
+	i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
+	x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
+	boot) out=$(python3 "$top/scripts/pkg.py" repofiles "$boot" x32 "$@") ;;
+	esac
+	printf '%s\n' "$out" | sed "s|^$repo/|/repo/|; s|^$boot/|/bootstrap/|"
+}
+want_i686= want_x32= want_boot= want_sysroot=
+for d in "$@"; do
+	case $d in
+	i686/*) want_i686="$want_i686 ${d#*/}" ;;
+	x32/*) want_x32="$want_x32 ${d#*/}" ;;
+	boot/*) want_boot="$want_boot ${d#*/}" ;;
+	sysroot/*) want_sysroot="$want_sysroot ${d#*/}" ;;
+	*) echo "makepkg.sh: bad dependency $d" >&2; exit 1 ;;
+	esac
+done
+i686deps=$(lookup i686 $want_i686)
+x32deps="$(lookup x32 $want_x32) $(lookup boot $want_boot)"
+sysdeps=$(lookup sysroot $want_sysroot)
+
+key=$({
+	echo "$arch $bootstrap $nobuild"
+	(cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
+	cat "$top/config/makepkg.conf" "$top/config/makepkg-tinyhat.conf"
+	for f in $i686deps $x32deps $sysdeps; do echo "${f##*/}"; done
+} | sha256sum | cut -d' ' -f1)
+cache=$dest/.cache/$arch-$base
+if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; then
+	hit=1
+	for f in $(tail -n +2 "$cache"); do
+		[ -f "$dest/$f" ] || hit=
+	done
+	if [ -n "$hit" ]; then
+		echo "$base ($arch): up to date"
+		exit 0
+	fi
+fi
+
+cleanup() {
+	chmod -R u+w "$work" 2>/dev/null || true
+	rm -rf "$work"
+}
+cleanup
+mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
+cp -rL "$dir" "$work/pkg/$base"
+
+sandbox() {
+	setarch "$personality" bwrap \
+		--overlay-src "$seed" --overlay "$work/upper" "$work/ovl" / \
+		--dev /dev --proc /proc --tmpfs /tmp \
+		--ro-bind /etc/resolv.conf /etc/resolv.conf \
+		--unshare-all --hostname tinyhat-build --clearenv \
+		--setenv PATH "$path" \
+		${libpath:+--setenv LD_LIBRARY_PATH $libpath} \
+		--setenv LANG C.UTF-8 \
+		--setenv SOURCE_DATE_EPOCH "$epoch" \
+		--setenv TINYHAT_ARCH "$arch" \
+		--setenv TINYHAT_BOOTSTRAP "$bootstrap" \
+		"$@"
+}
+
+sandbox --uid 0 --gid 0 --ro-bind "$repo" /repo --ro-bind "$boot" /bootstrap \
+	/bin/sh -euc '
+arch=$1 tc=$2 i686deps=$3 x32deps=$4 sysdeps=$5
+meta="--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG"
+mkdir -p /var/lib/pacman/local /build /startdir /srcdest /tinyhat /ccache /repo
+[ -f /var/lib/pacman/local/ALPM_DB_VERSION ] || echo 9 >/var/lib/pacman/local/ALPM_DB_VERSION
+grep -q "^builder:" /etc/passwd || echo "builder:x:1000:1000:builder:/build:/bin/sh" >>/etc/passwd
+grep -q "^builder:" /etc/group || echo "builder:x:1000:" >>/etc/group
+if [ -n "$i686deps" ]; then
+	pacman -Udd --arch i686 --noconfirm --noscriptlet --overwrite "*" $i686deps
+fi
+if [ -n "$sysdeps" ]; then
+	s=/usr/$tc/sysroot
+	mkdir -p "$s/usr/include"
+	for f in $sysdeps; do
+		bsdtar --no-xattrs --no-acls --no-fflags -xpf "$f" -C "$s" $meta
+	done
+	for d in linux asm asm-generic drm misc mtd rdma scsi sound video xen; do
+		[ ! -d "/usr/include/$d" ] || cp -a "/usr/include/$d" "$s/usr/include/"
+	done
+	ln -sfn lib "$s/usr/libx32"
+	ln -sfn usr/lib "$s/libx32"
+fi
+if [ "$arch" = x32 ]; then
+	mkdir -p /usr/lib32
+	find /usr/lib -maxdepth 1 ! -type d \( -name "*.so" -o -name "*.so.*" -o -name "*.a" -o -name "*.o" \) \
+		! -name ld-linux.so.2 -exec mv -t /usr/lib32 {} +
+	for d in pkgconfig cmake; do
+		[ ! -d "/usr/lib/$d" ] || mv "/usr/lib/$d" "/usr/lib32/$d"
+	done
+	rm -f /etc/ld.so.cache
+	ln -sfn lib /usr/libx32
+	ln -sfn usr/lib /libx32
+	for f in $x32deps; do
+		n=$(bsdtar -xOf "$f" .PKGINFO | sed -n "s/^pkgname = //p")
+		ex=
+		if ls -d /var/lib/pacman/local/"$n"-[0-9]* >/dev/null 2>&1; then
+			ex="--exclude usr/bin --exclude usr/sbin --exclude usr/lib/gconv"
+		fi
+		bsdtar --no-xattrs --no-acls --no-fflags -xpf "$f" -C / $meta $ex
+	done
+fi
+' sh "$arch" "$tc" "$i686deps" "$x32deps" "$sysdeps"
+
+run() {
+	sandbox --uid 1000 --gid 1000 --share-net \
+		--bind "$work/pkg/$base" /startdir \
+		--bind "$dest" /repo \
+		--bind "$top/vendor/src" /srcdest \
+		--bind "$HOME/.ccache" /ccache \
+		--ro-bind "$top" /tinyhat \
+		--setenv HOME /build \
+		--setenv USER builder \
+		--setenv CCACHE_DIR /ccache \
+		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
+		--chdir /startdir \
+		makepkg --config "$conf" -d --noconfirm --skippgpcheck --holdver "$@"
+}
+
+exec 8>"$top/vendor/src/.lock"
+flock 8
+run --verifysource
+flock -u 8
+exec 8>&-
+run -f $nobuild
+if [ -z "$nobuild" ]; then
+	{
+		echo "$key"
+		run --packagelist | sed 's|.*/||'
+	} >"$cache.tmp"
+	mv "$cache.tmp" "$cache"
+fi
+cleanup

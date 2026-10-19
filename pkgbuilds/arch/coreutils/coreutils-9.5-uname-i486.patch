@@ -1,0 +1,12 @@
+diff -rauN coreutils-9.5/src/uname.c coreutils-9.5-uname-i486-patch/src/uname.c
+--- coreutils-9.5/src/uname.c	2024-01-01 14:27:23.000000000 +0100
++++ coreutils-9.5-uname-i486-patch/src/uname.c	2024-04-26 08:25:24.914671684 +0200
+@@ -298,6 +298,8 @@
+ 
+       if (uname (&name) == -1)
+         error (EXIT_FAILURE, errno, _("cannot get system name"));
++
++      strcpy(name.machine, "i486");
+ 
+       if (toprint & PRINT_KERNEL_NAME)
+         print_element_env (name.sysname, "UNAME_SYSNAME");

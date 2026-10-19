@@ -1,0 +1,4 @@
+if [ "${CARCH}" = "x32" ]; then
+  makedepends=(${makedepends[@]//rust/})
+  eval "$(declare -f _make | sed 's/ WITH_RUST=1//')"
+fi

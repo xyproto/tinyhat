@@ -1,0 +1,14 @@
+pkgbase = libaec
+	pkgdesc = Adaptive Entropy Coding library
+	pkgver = 1.1.7
+	pkgrel = 1
+	url = https://gitlab.dkrz.de/k202009/libaec
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause
+	makedepends = cmake
+	depends = glibc
+	source = https://gitlab.dkrz.de/k202009/libaec/-/archive/v1.1.7/libaec-v1.1.7.tar.bz2
+	b2sums = 4d7b0ab66d99865eab50f3ffd06c10548e8c26d666b9200061b75390a80f9d86569f4165b3abc7984171318e7c29b75ddbd7dcd770583181d8f5a86581b9e040
+
+pkgname = libaec

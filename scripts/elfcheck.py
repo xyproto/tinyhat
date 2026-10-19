@@ -4,7 +4,23 @@ import struct
 import sys
 
 root = sys.argv[1]
-LIBDIRS = {3: ["usr/lib", "usr/lib/systemd"], 62: ["usr/libx32", "libx32"]}
+LIBDIRS = ["usr/lib", "usr/lib32", "usr/lib/systemd"]
+
+
+def machine_of(path):
+    for _ in range(40):
+        if not os.path.islink(path):
+            break
+        target = os.readlink(path)
+        path = os.path.join(root, target.lstrip("/")) if target.startswith("/") else os.path.join(os.path.dirname(path), target)
+    try:
+        with open(path, "rb") as f:
+            head = f.read(20)
+    except OSError:
+        return None
+    if head[:4] != b"\x7fELF":
+        return None
+    return struct.unpack_from("<H", head, 18)[0]
 
 
 def dyninfo(path):
@@ -52,11 +68,12 @@ def dyninfo(path):
 
 
 have = {}
-for machine, dirs in LIBDIRS.items():
-    have[machine] = set()
-    for d in dirs:
-        if os.path.isdir(os.path.join(root, d)):
-            have[machine].update(os.listdir(os.path.join(root, d)))
+for d in LIBDIRS:
+    if os.path.isdir(os.path.join(root, d)):
+        for fn in os.listdir(os.path.join(root, d)):
+            machine = machine_of(os.path.join(root, d, fn))
+            if machine is not None:
+                have.setdefault(machine, set()).add(fn)
 missing = {}
 for dirpath, _, files in os.walk(root):
     for fn in files:

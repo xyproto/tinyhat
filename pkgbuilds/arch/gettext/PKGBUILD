@@ -1,0 +1,87 @@
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+
+pkgname=gettext
+pkgver=1.0
+pkgrel="2"
+pkgdesc="GNU internationalization library"
+url="https://www.gnu.org/software/gettext/"
+arch=(i686 x32)
+license=(
+  GFDL-1.2-only
+  GPL-2.0-only
+  GPL-2.0-or-later
+  LGPL-2.0-only
+)
+depends=(
+  acl
+  attr
+  curl
+  glibc
+  json-c
+  libgcc
+  libgomp
+  libstdc++
+  gnulib-l10n
+  libunistring
+  libxml2
+  ncurses
+  sh
+)
+makedepends=(
+  emacs
+)
+optdepends=('git: for autopoint infrastructure updates'
+            'appstream: for appstream support')
+options=(!docs)
+source=(
+  https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz{,.sig}
+)
+b2sums=('1e4b78979f780878472142f1c0baba468d60f4b5605eeb5db5c092901183e3128c79df94c2041de870920f079b4bf38e6dae056b731e4b2b4c5cc343940962d8'
+        'SKIP')
+validpgpkeys=('462225C3B46F34879FC8496CD605848ED7E69871'  # Daiki Ueno
+              '68D94D8AAEEAD48AE7DC5B904F494A942E4616C2'
+              '9001B85AF9E1B83DF1BDA942F5BE8B267C6A406D'  # Bruno Haible
+              'E0FFBD975397F77A32AB76ECB6301D9E1BBEAC08') # Bruno Haible (Open Source Development)
+
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure \
+    --prefix=/usr \
+    --libexecdir=/usr/lib \
+    --enable-csharp \
+    --enable-nls \
+    --with-xz \
+    --without-included-gettext \
+    --without-included-libunistring
+  sed -e 's/ -shared / -Wl,-O1,--as-needed\0/g' \
+      -i gettext-{tools,runtime,runtime/libasprintf}/libtool
+  make
+}
+
+check() {
+  cd ${pkgname}-${pkgver}
+  make check
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="$pkgdir" install
+}
+
+# ignore failing time test in gnulib for now
+eval "$(
+  declare -f check | \
+    sed '
+      s/make check/make check || true/
+    '
+)"	
+
+# rebuilding gettext needs emacs which needs icu73
+if [ "${CARCH}" = "i486" ]; then
+  makedepends+=(icu73)
+fi
+
+# currrenly broken around libsitter
+makedepends=(${makedepends[@]//emacs/})
+
+unset -f pkgver

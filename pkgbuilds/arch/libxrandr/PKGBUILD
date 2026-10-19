@@ -1,0 +1,35 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Alexander Baldeck <alexander@archlinux.org>
+
+pkgname=libxrandr
+pkgver=1.5.5
+pkgrel="1"
+pkgdesc="X11 RandR extension library"
+arch=(i686 x32)
+license=('HPND-sell-variant')
+url="https://xorg.freedesktop.org/"
+depends=('libxext' 'libxrender' 'libx11' 'glibc')
+makedepends=('xorg-util-macros' 'xorgproto')
+source=(${url}/releases/individual/lib/libXrandr-${pkgver}.tar.xz{,.sig})
+sha512sums=('3cae1d2eb425dd3d3bd89f514a8e4bd9c696170ab6f3882f6db1936c30674b48277f2e485a8e3e47b3093fb1d9a32d2b054b064bd781db039e833b397aeeda9b'
+            'SKIP')
+#validpgpkeys=('10A6D91DA1B05BD29F6DEBAC0C74F35979C486BE') # Dave Airlie <airlied@redhat.com> 
+#validpgpkeys+=('C41C985FDCF1E5364576638B687393EE37D128F8') # Matthieu Herrb <matthieu.herrb@laas.fr>
+validpgpkeys+=('3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2') # Alan Coopersmith <alan.coopersmith@oracle.com>
+
+build() {
+  cd libXrandr-${pkgver}
+  ./configure --prefix=/usr --sysconfdir=/etc
+  make
+}
+
+package() {
+  cd libXrandr-${pkgver}
+  make DESTDIR="${pkgdir}" install
+
+  install -d -m755 "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+unset -f pkgver

@@ -1,0 +1,41 @@
+# Maintainer: Anatol Pomozov
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+# Ctonributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=strace
+pkgver=7.2
+pkgrel="1"
+pkgdesc='A diagnostic, debugging and instructional userspace tracer'
+arch=(i686 x32)
+url='https://strace.io/'
+license=(LGPL-2.1-or-later)
+depends=(
+  glibc
+  libunwind
+)
+source=("https://github.com/strace/strace/releases/download/v$pkgver/strace-$pkgver.tar.xz"{,.asc})
+sha256sums=('4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5'
+            'SKIP')
+validpgpkeys=(
+  '296D6F29A020808E8717A8842DB5BD89A340AEB7' # Dmitry V. Levin <ldv@altlinux.org>
+  '7BECFE3AF7B280BB52FF77F104BA4521C996DDE1' # Dmitry V. Levin <ldv@strace.io>
+)
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr --with-libunwind --enable-mpers=check
+  make
+}
+
+check() {
+  make -C $pkgname-$pkgver check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYING
+}
+
+unset -f pkgver

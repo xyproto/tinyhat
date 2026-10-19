@@ -1,0 +1,49 @@
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+
+pkgname=qt5-wayland
+_basever=5.15.19
+pkgver=5.15.19+kde+r55
+pkgrel="1"
+_commit=605b8bc942ab263b9d1892af33a81b408f522ccc
+arch=(i686 x32)
+url='https://www.qt.io'
+license=('GPL3' 'LGPL3' 'FDL' 'custom')
+pkgdesc='Provides APIs for Wayland'
+depends=('qt5-declarative' 'libxcomposite')
+makedepends=('vulkan-headers' 'git')
+groups=('qt5')
+_pkgfqn=${pkgname/5-/}
+source=(kde-$_pkgfqn::git+https://invent.kde.org/qt/qt/$_pkgfqn#commit=$_commit)
+sha256sums=('a1178432a7e0f154183b00fe358f1ee809b5771c42fee67726e02fb97f1a4f96')
+
+pkgver() {
+  cd kde-$_pkgfqn
+  echo "$_basever+kde+r"`git rev-list --count v$_basever-lts-lgpl..$_commit` | sed -e 's|+kde+r0||'
+}
+
+prepare() {
+  mkdir -p build
+}
+
+build() {
+  cd build
+
+  qmake ../kde-$_pkgfqn
+  make
+}
+
+package() {
+  cd build
+
+  make INSTALL_ROOT="$pkgdir" install
+
+  # Drop QMAKE_PRL_BUILD_DIR because reference the build dir
+  find "$pkgdir/usr/lib" -type f -name '*.prl' \
+    -exec sed -i -e '/^QMAKE_PRL_BUILD_DIR/d' {} \;
+
+  install -d "$pkgdir"/usr/share/licenses
+  ln -s /usr/share/licenses/qt5-base "$pkgdir"/usr/share/licenses/${pkgname}
+}
+
+unset -f pkgver

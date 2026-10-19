@@ -1,0 +1,20 @@
+pkgbase = qt5-wayland
+	pkgdesc = Provides APIs for Wayland
+	pkgver = 5.15.19+kde+r55
+	pkgrel = 1
+	url = https://www.qt.io
+	arch = i686
+	arch = x32
+	groups = qt5
+	license = GPL3
+	license = LGPL3
+	license = FDL
+	license = custom
+	makedepends = vulkan-headers
+	makedepends = git
+	depends = qt5-declarative
+	depends = libxcomposite
+	source = kde-qtwayland::git+https://invent.kde.org/qt/qt/qtwayland#commit=605b8bc942ab263b9d1892af33a81b408f522ccc
+	sha256sums = a1178432a7e0f154183b00fe358f1ee809b5771c42fee67726e02fb97f1a4f96
+
+pkgname = qt5-wayland

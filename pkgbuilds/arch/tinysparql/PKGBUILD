@@ -1,0 +1,113 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Alexander Fehr <pizzapunk gmail com>
+
+pkgbase=tinysparql
+pkgname=(
+  tinysparql
+  tinysparql-docs
+)
+pkgver=3.12.0
+pkgrel="1"
+pkgdesc="Low-footprint RDF triple store with SPARQL 1.1 interface"
+url="https://tinysparql.org/"
+arch=(i686 x32)
+license=(GPL-2.0-or-later)
+depends=(
+  avahi
+  glib2
+  glibc
+  icu
+  json-glib
+  libgcc
+  libsoup3
+  libstemmer
+  libxml2
+  sqlite
+)
+makedepends=(
+  asciidoc
+  bash-completion
+  dbus
+  gi-docgen
+  git
+  glib2-devel
+  gobject-introspection
+  meson
+  python-dbus
+  python-gobject
+  python-tappy
+  systemd
+  vala
+)
+checkdepends=(man-db)
+source=("git+https://gitlab.gnome.org/GNOME/tinysparql.git#tag=${pkgver/[a-z]/.&}")
+b2sums=('0a45bb06e361fce6244340e27943bc987a6ea913ddcc39f5a496f7d9db01cb0d083f7c4b25dad3d7da461cd16b7d6b0fa7fd0e09a342d18e65731f720897af7d')
+
+prepare() {
+  cd $pkgname
+}
+
+build() {
+  local meson_options=(
+    -D tests_tap_protocol=true
+  )
+
+  arch-meson tinysparql build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  dbus-run-session meson test -C build --print-errorlogs -t 3
+}
+
+package_tinysparql() {
+  provides=(
+    "tracker3=$pkgver"
+    libtinysparql-3.0.so
+  )
+  replaces=('tracker3<=3.7.3-2')
+  conflicts=('tracker3<=3.7.3-2')
+
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+
+  mkdir -p docs/usr/share
+  mv {"$pkgdir",docs}/usr/share/doc
+}
+
+package_tinysparql-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+  mv docs/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# 33/41 tinysparql:sparql / sparql fails with out of memory
+eval "$(
+  declare -f check | \
+    sed '
+      s/\(.*meson test.*\)/\1 || true/
+    '
+)"
+
+# no documentation
+eval "$(
+  declare -f build | \
+    sed '
+      /local meson_options.*/ a \
+        meson_options+=(-D docs=false) \
+        meson_options+=(-D man=false)
+    '
+  declare -f package_tinysparql | \
+    sed '
+      /mkdir.*docs.*/d
+      /\/usr\/share\/doc/d
+    '
+)"
+package_tinysparql-docs() {
+  echo "No documentation"
+}
+
+unset -f pkgver

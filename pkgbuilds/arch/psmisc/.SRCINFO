@@ -1,0 +1,16 @@
+pkgbase = psmisc
+	pkgdesc = Miscellaneous procfs tools
+	pkgver = 23.7
+	pkgrel = 2
+	url = https://gitlab.com/psmisc/psmisc
+	arch = i686
+	arch = x32
+	license = GPL
+	makedepends = git
+	makedepends = po4a
+	depends = ncurses
+	source = git+https://gitlab.com/psmisc/psmisc.git#tag=v23.7?signed
+	validpgpkeys = 5D2FB320B825D93904D205193938F96BDF50FEA5
+	sha256sums = 80ae6e626ba83232b7af1c02f3f528834ebdd96325367b701f69125d3e196f2f
+
+pkgname = psmisc

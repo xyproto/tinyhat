@@ -1,0 +1,23 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=default-cursors
+pkgver=3
+pkgrel="1"
+pkgdesc="Default cursor set"
+url="https://archlinux.org"
+arch=(any)
+license=(CC0-1.0)
+optdepends=('adwaita-cursors: default cursor theme')
+backup=(usr/share/icons/default/index.theme)
+
+package() {
+  cd "$pkgdir"
+  install -Dm644 /dev/stdin usr/share/icons/default/index.theme <<END
+[Icon Theme]
+Inherits=Adwaita
+END
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

@@ -1,0 +1,58 @@
+# Contributor: Ronald van Haren <ronald.archlinux.org>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Mark Rosenstand <mark@archlinux.org>
+
+pkgbase=fuse3
+pkgname=(fuse-common fuse3)
+_name=libfuse
+pkgver=3.18.3
+pkgrel="1"
+pkgdesc='Interface for userspace programs to export a filesystem to the Linux kernel'
+url='https://github.com/libfuse/libfuse'
+arch=(i686 x32)
+makedepends=(
+  glibc
+  libiconv
+  liburing
+  meson
+  numactl
+  systemd
+)
+options=(!emptydirs)
+source=($url/archive/refs/tags/fuse-$pkgver.tar.gz)
+sha512sums=('48b4d1c68d9e82377d2e854cfc3be1b437fe72acd09a4970b5692ac1d5808162db77524f495924d2e369243446aa496bdc9d2a87246fa677c15bf115434e6540')
+b2sums=('9247827434834a9f7f7d70f65989fad22ba2b6cd1c75e00f43727f12a2146411885c2c8643e26a36311da02fa3af8534fd8a46dcabcb0b9960142d56ce013be5')
+
+build() {
+  arch-meson build $_name-fuse-$pkgver
+  meson compile -C build
+}
+
+package_fuse-common() {
+  pkgdesc="Common files for fuse2/3 packages"
+  license=(GPL-2.0-only)
+  backup=(etc/fuse.conf)
+
+  install -vDm 644 $_name-fuse-${pkgver}/util/fuse.conf -t "${pkgdir}"/etc/
+}
+
+package_fuse3() {
+  depends=(
+    fuse-common
+    glibc
+    liburing liburing.so
+    numactl libnuma.so
+  )
+  license=(
+    GPL-2.0-only
+    LGPL-2.1-only
+  )
+
+  meson install -C build --destdir "$pkgdir"
+  rm -r "${pkgdir}"/etc/init.d
+  rm -r "${pkgdir}"/etc/fuse.conf
+  # static device nodes are handled by udev
+  rm -r "${pkgdir}"/dev
+}
+
+unset -f pkgver

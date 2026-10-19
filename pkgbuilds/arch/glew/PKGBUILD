@@ -1,0 +1,41 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: SleepyDog
+
+pkgname=glew
+pkgver=2.3.1
+pkgrel="1"
+pkgdesc="The OpenGL Extension Wrangler Library"
+arch=(i686 x32)
+url="https://github.com/nigels-com/glew"
+license=("LicenseRef-$pkgname")
+# libx11 for .pc
+depends=('glibc' 'libegl' 'libgl' 'glu' 'libx11')
+provides=('libGLEW.so')
+# https://sourceforge.net/projects/glew/files/glew/
+source=(https://downloads.sourceforge.net/${pkgname}/${pkgname}-${pkgver}.tgz
+        glew-2.3.0-install.patch
+        glew-ldflags.patch)
+sha256sums=('b64790f94b926acd7e8f84c5d6000a86cb43967bd1e688b03089079799c9e889'
+            '2c09632913e21db18576f9677131e63cd78986f08364220d69e8b4a59812d1a9'
+            '92d57a082d0a6cdd2e82ed7e3b9aa86e9d15f5f376d8c60ae7a2f4d1f2570459')
+
+prepare() {
+  cd ${pkgname}-${pkgver}
+  patch -Np1 -i ../glew-2.3.0-install.patch
+  patch -Np1 -i ../glew-ldflags.patch
+}
+
+build() {
+  cd ${pkgname}-${pkgver}
+  make STRIP=
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make install.all DESTDIR="$pkgdir"
+
+  install -D -m644 LICENSE.txt "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+unset -f pkgver

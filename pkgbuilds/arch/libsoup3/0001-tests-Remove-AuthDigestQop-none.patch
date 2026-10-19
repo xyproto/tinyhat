@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Jan Alexander Steffens (heftig)" <heftig@archlinux.org>
+Date: Fri, 2 Oct 2026 21:05:59 +0200
+Subject: [PATCH] tests: Remove 'AuthDigestQop none'
+
+Apache no longer supports this.
+---
+ tests/httpd.conf.in | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/tests/httpd.conf.in b/tests/httpd.conf.in
+index cc0a116ec95e..a6031209f642 100644
+--- a/tests/httpd.conf.in
++++ b/tests/httpd.conf.in
+@@ -282,8 +282,6 @@ Alias /Digest .
+   AuthUserFile ./htdigest
+   AuthDigestDomain /Digest/realm3
+   Require valid-user
+-  # test RFC2069-style Digest
+-  AuthDigestQop none
+ </Location>
+ 
+ <Location /client-cert>

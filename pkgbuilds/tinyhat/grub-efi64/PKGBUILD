@@ -1,0 +1,33 @@
+pkgname=grub-efi64
+pkgver=2.14
+pkgrel=2
+pkgdesc="GRUB for 64-bit UEFI, used to build the x32 image"
+arch=(i686)
+url="https://www.gnu.org/software/grub/"
+license=(GPL-3.0-or-later)
+makedepends=(x32-gcc-stage1 flex bison python)
+options=(!buildflags !strip)
+source=("https://ftp.gnu.org/gnu/grub/grub-$pkgver.tar.xz")
+sha256sums=('bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43')
+
+prepare() {
+  cd grub-$pkgver
+  echo "depends bli part_gpt" >grub-core/extra_deps.lst
+}
+
+build() {
+  cd grub-$pkgver
+  unset CFLAGS CXXFLAGS LDFLAGS
+  ./configure --prefix=/usr --with-platform=efi --target=x86_64 \
+    TARGET_CC=x86_64-pc-linux-gnux32-gcc TARGET_OBJCOPY=x86_64-pc-linux-gnux32-objcopy TARGET_STRIP=x86_64-pc-linux-gnux32-strip \
+    TARGET_NM=x86_64-pc-linux-gnux32-nm TARGET_RANLIB=x86_64-pc-linux-gnux32-ranlib \
+    --disable-werror --disable-nls --disable-efiemu --disable-grub-mkfont --disable-grub-themes \
+    --disable-grub-mount --disable-device-mapper --disable-libzfs --disable-liblzma
+  make
+}
+
+package() {
+  cd grub-$pkgver
+  make DESTDIR="$pkgdir/opt/grub-efi64" install
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

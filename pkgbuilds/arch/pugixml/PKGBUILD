@@ -1,0 +1,40 @@
+# Maintainer: Bruno Pagani <archange@archlinux.org>
+# Maintainer: Jakub Klinkovský <lahwaacz at archlinux dot org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Gustavo Alvarez <sl1pkn07@gmail.com>
+
+pkgname=pugixml
+pkgver=1.16
+pkgrel="1"
+pkgdesc="Light-weight, simple and fast XML parser for C++ with XPath support"
+arch=(i686 x32)
+url="https://pugixml.org"
+license=(MIT)
+depends=(
+  glibc
+  libgcc
+  libstdc++
+)
+makedepends=(cmake)
+source=(https://github.com/zeux/pugixml/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz)
+b2sums=('9333a6f739684251271a990c0d563de8dedd96b4577afa85febb1fa42d690e39ad580193bb53511efa3ffe89a8f19d8c820192a1c52e78f722000b2055ca1358')
+
+build() {
+  local cmake_options=(
+    -B build
+    -S $pkgname-$pkgver
+    -W no-dev
+    -DCMAKE_BUILD_TYPE=None
+    -DBUILD_SHARED_LIBS=ON
+    -DCMAKE_INSTALL_PREFIX=/usr
+  )
+  cmake "${cmake_options[@]}"
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -vDm 644 $pkgname-$pkgver/LICENSE.md -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+unset -f pkgver

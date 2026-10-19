@@ -1,0 +1,37 @@
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: eric <eric@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=tdb
+pkgver=1.4.15
+pkgrel="2"
+pkgdesc='Trivial Database similar to GDBM but allows simultaneous commits'
+arch=(i686 x32)
+license=('GPL-3.0-or-later')
+url="https://tdb.samba.org/"
+depends=('glibc')
+makedepends=('python' 'libxslt' 'docbook-xsl')
+optdepends=('python: for python bindings')
+provides=(libtdb.so)
+source=(https://samba.org/ftp/${pkgname}/${pkgname}-${pkgver}.tar{.gz,.asc})
+validpgpkeys=('9147A339719518EE9011BCB54793916113084025') # Samba Library Distribution Key <samba-bugs@samba.org>
+b2sums=('e867c8f4e9712c1a0ed10dd2d35e9cd51819ff722e4e710efde8b1ed8e20575e752d020fb0b6bc8658a720ea17491c07e30fa0b88c515bfb830f83bf128e6ee4'
+        'SKIP')
+
+build() {
+   cd ${pkgname}-${pkgver}
+   ./configure --prefix=/usr \
+               --localstatedir=/var \
+               --disable-rpath-install \
+               --sysconfdir=/etc/samba
+   make
+}
+
+package() {
+   cd ${pkgname}-${pkgver}
+   make DESTDIR="$pkgdir" install
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

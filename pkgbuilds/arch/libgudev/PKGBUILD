@@ -1,0 +1,74 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Evangelos Foutras <foutrelis@archlinux.org>
+
+pkgbase=libgudev
+pkgname=(
+  libgudev
+  libgudev-docs
+)
+pkgver=238
+pkgrel="4"
+pkgdesc="GObject bindings for libudev"
+url="https://gitlab.gnome.org/GNOME/libgudev"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  glib2
+  glibc
+  libgcc
+  libsystemd
+)
+makedepends=(
+  git
+  glib2-devel
+  glibc-locales
+  gobject-introspection
+  gtk-doc
+  meson
+  systemd
+  umockdev
+  vala
+)
+source=("git+$url.git#tag=$pkgver")
+b2sums=('6da9512d87154fbd62aae044a39abd84bee451f5a21203180062c369ebedf2ee1bc7672408cf806918111397bc74be58314e6c3155e638137603d11012a4355f')
+
+prepare() {
+  cd libgudev
+}
+
+build() {
+  local meson_options=(
+    -D gtk_doc=true
+  )
+
+  arch-meson libgudev build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_libgudev() {
+  depends+=(
+    libg{lib,object}-2.0.so
+    libudev.so
+  )
+  provides+=(libgudev-1.0.so)
+
+  meson install -C build --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/gtk-doc
+}
+
+package_libgudev-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

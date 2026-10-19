@@ -1,0 +1,24 @@
+pkgname=libretro-blastem
+_commit=ab743653ed110eeb7b1fe64d00cc5f9279c2bfec
+pkgver=0+ab743653
+pkgrel=1
+pkgdesc="Sega Genesis and Mega Drive emulator core (BlastEm) for tinyhat-retro"
+arch=(i686)
+url="https://github.com/libretro/blastem"
+license=(GPL-3.0-or-later BSD-3-Clause Zlib)
+depends=(glibc)
+source=("blastem-$_commit.tar.gz::https://github.com/libretro/blastem/archive/$_commit.tar.gz")
+sha256sums=('27ba68065f31314ad29abc6a5514ebf19cdd2a2f24648ffbe360275ccb01de25')
+
+build() {
+  cd blastem-$_commit
+  make -f Makefile.libretro CC="cc -fno-asynchronous-unwind-tables"
+}
+
+package() {
+  cd blastem-$_commit
+  install -Dm755 blastem_libretro.so "$pkgdir/usr/lib/libretro/blastem_libretro.so"
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+  install -Dm644 libchdr/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.libchdr"
+  install -Dm644 zlib/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.zlib"
+}

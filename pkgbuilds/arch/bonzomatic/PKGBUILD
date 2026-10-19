@@ -1,0 +1,49 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: Robin Broda <robin at broda dot me>
+
+pkgname=bonzomatic
+pkgver=2023.06.15
+pkgrel="6"
+pkgdesc='Live shader coding tool'
+arch=(i686 x32)
+url='https://github.com/Gargaj/bonzomatic'
+license=(Unlicense)
+depends=(alsa-lib fontconfig glew glfw hicolor-icon-theme libglvnd)
+makedepends=(chrpath cmake git glu imagemagick libxcursor libxi libxinerama libxrandr)
+source=("git+$url#tag=${pkgver//./-}")
+b2sums=('723f5efd67dde0f5d36c0187a462bad758071e1cc1a03d0acba2f42cd67e19da10c8d8ab84607b82cc6dcfdd47cb9488c7d66846256be3caa567b983c086893a')
+
+prepare() {
+  convert "$pkgname/data/unix/icon.png" -resize 128x128 "$srcdir/$pkgname.png"
+}
+
+build() {
+  cmake \
+    -B build \
+    -D BONZOMATIC_USE_SYSTEM_GLFW=off \
+    -D BONZOMATIC_USE_SYSTEM_GLEW=on \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D CMAKE_C_FLAGS="$CFLAGS -fPIC -w" \
+    -D CMAKE_CXX_FLAGS="$CXXFLAGS -fPIC -w" \
+    -D CMAKE_INSTALL_LIBDIR=lib \
+    -D CMAKE_INSTALL_PREFIX=/usr \
+    -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
+    -S $pkgname
+  make -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" make -C build install
+
+  # Fix insecure rpath
+  chrpath -d "$pkgdir/usr/bin/bonzomatic"
+
+  # Package license
+  install -Dm644 $pkgname/LICENSE \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  # Package desktop icon
+  install -Dm644 $pkgname.png "$pkgdir/usr/share/pixmaps/$pkgname.png"
+}
+
+unset -f pkgver

@@ -1,0 +1,33 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: Jeff Horelick <jdhore1@gmail.com>
+# Contributor: skydrome <skydrome@i2pmail.org>
+
+pkgname=the_silver_searcher
+pkgver=2.2.0
+pkgrel="4"
+pkgdesc='Code searching tool similar to Ack, but faster'
+arch=(i686 x32)
+# Using a fork of the_silver_searcher to get pcre2 support.
+# The last commit in ggreer/the_silver_searcher was in 2020.
+url='https://github.com/aswild/the_silver_searcher'
+license=(Apache-2.0)
+depends=(pcre2 xz)
+makedepends=(git)
+source=("git+$url#commit=7b571a8a94d0e22a06e3313cb0d9672b416fb2c1")
+b2sums=('SKIP')
+
+prepare() {
+  cd $pkgname
+  sed -i 's,S -,S -fcommon -,' pgo.sh
+  sed -i 's,ure ",ure --prefix=/usr ",' build.sh
+}
+
+build() {
+  $pkgname/build.sh
+}
+
+package() {
+  make -C $pkgname DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

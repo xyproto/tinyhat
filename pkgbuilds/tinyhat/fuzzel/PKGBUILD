@@ -1,0 +1,22 @@
+pkgname=fuzzel
+pkgver=1.15.0
+pkgrel=1
+pkgdesc="Application launcher for Wayland"
+arch=(i686 x32)
+url="https://codeberg.org/dnkl/fuzzel"
+license=(MIT)
+depends=(cairo fcft libpng libxkbcommon pixman wayland)
+makedepends=(meson ninja scdoc tllist wayland-protocols)
+source=("fuzzel-$pkgver.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/$pkgver.tar.gz")
+sha256sums=('95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b')
+
+build() {
+  meson setup build fuzzel --prefix=/usr --buildtype=minsize -Dwerror=false \
+    -Denable-cairo=enabled -Dpng-backend=libpng -Dsvg-backend=nanosvg
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 fuzzel/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

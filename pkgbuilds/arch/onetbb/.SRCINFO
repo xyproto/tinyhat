@@ -1,0 +1,30 @@
+pkgbase = onetbb
+	pkgdesc = oneAPI Threading Building Blocks - a high level abstract threading library
+	pkgver = 2023.1.0
+	pkgrel = 1
+	url = https://uxlfoundation.github.io/oneTBB/
+	arch = i686
+	arch = x32
+	license = Apache-2.0
+	makedepends = cmake
+	makedepends = python
+	makedepends = python-pip
+	makedepends = python-setuptools
+	makedepends = swig
+	depends = glibc
+	depends = hwloc
+	depends = libgcc
+	depends = libstdc++
+	optdepends = python: for Python module
+	provides = intel-tbb=2023.1.0
+	provides = tbb=2023.1.0
+	conflicts = intel-tbb
+	conflicts = tbb
+	replaces = intel-tbb
+	replaces = tbb
+	source = https://github.com/uxlfoundation/oneTBB/archive/v2023.1.0/onetbb-2023.1.0.tar.gz
+	source = 010-onetbb-fix-linkage-of-test-malloc-pure-c.patch
+	sha512sums = c8e9b9100873d6f8514da18ca700165466a9c042d24a6ce9e8901c8996c348f2e58f0251b1eca47d33cc5f382783bfc7693bc6c451716540d4caa57339b3b535
+	sha512sums = ea5480e7995f4c20ac66ca589ce1f98edb85e70eb1af498df04df09461c9a6175bcd2bf0dea7038f992528d8fd3e47932e16dedee0831436cb046c9fb23b4fb3
+
+pkgname = onetbb

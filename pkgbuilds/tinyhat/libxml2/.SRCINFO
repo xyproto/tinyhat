@@ -1,0 +1,17 @@
+pkgbase = libxml2
+	pkgdesc = XML library, built without ICU
+	pkgver = 2.15.4
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/libxml2
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = meson
+	makedepends = ninja
+	depends = glibc
+	depends = zlib
+	provides = libxml2.so
+	source = https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz
+	sha256sums = 98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821
+
+pkgname = libxml2

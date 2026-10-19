@@ -1,0 +1,29 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -2300,6 +2300,25 @@
+ 	} else {
+ 		applyrules(c);
+ 	}
++	if (c->mon && !c->isfullscreen && (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)) {
++		Client *o;
++		int moved = 1, step = 32;
++		c->geom.x = c->mon->w.x + MAX(0, (c->mon->w.width - c->geom.width) / 2);
++		c->geom.y = c->mon->w.y + MAX(0, (c->mon->w.height - c->geom.height) / 2);
++		while (moved) {
++			moved = 0;
++			wl_list_for_each(o, &clients, link) {
++				if (o == c || !VISIBLEON(o, c->mon) || o->geom.x != c->geom.x || o->geom.y != c->geom.y
++						|| c->geom.x + c->geom.width + step > c->mon->w.x + c->mon->w.width
++						|| c->geom.y + c->geom.height + step > c->mon->w.y + c->mon->w.height)
++					continue;
++				c->geom.x += step;
++				c->geom.y += step;
++				moved = 1;
++			}
++		}
++		resize(c, c->geom, 0);
++	}
+ 	notice[0] = '\0';
+ 	drawbars();
+ 

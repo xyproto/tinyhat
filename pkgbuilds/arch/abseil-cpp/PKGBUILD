@@ -1,0 +1,69 @@
+# Maintainer: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+# Maintainer: Christian Heusel <gromit@archlinux.org>
+# Contributor: Aleksandar Trifunović <akstrfn at gmail dot com>
+
+pkgname=abseil-cpp
+pkgver=20260817.0
+pkgrel="2"
+pkgdesc="Collection of C++ library code designed to augment the C++ standard library"
+arch=(i686 x32)
+url='https://abseil.io'
+license=('Apache-2.0')
+depends=('glibc' 'gtest' 'libgcc' 'libstdc++')
+makedepends=('cmake')
+source=("https://github.com/abseil/abseil-cpp/archive/$pkgver/$pkgname-$pkgver.tar.gz"
+        scoped-mock-log.patch)
+sha256sums=('f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d'
+            'a6cbc612a2b96fcbd52d081e03e8581107ceb4827edb19d96510a31c568e1396')
+
+prepare() {
+  cd "$srcdir/$pkgname-$pkgver"
+  patch -p1 -i ../scoped-mock-log.patch # Install target needed by protobuf
+}
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+  cmake -Bbuild \
+    -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+    -DCMAKE_CXX_FLAGS="${CXXFLAGS} -DNDEBUG" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_CXX_STANDARD=17 \
+    -DBUILD_SHARED_LIBS=ON \
+    -DABSL_BUILD_TEST_HELPERS=ON \
+    -DABSL_USE_EXTERNAL_GOOGLETEST=ON \
+    -DABSL_FIND_GOOGLETEST=ON \
+    -DABSL_BUILD_TESTING=ON
+  cd build
+  cmake --build . --target all
+}
+
+check() {
+  cd "$srcdir/$pkgname-$pkgver/build"
+  ctest
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver/build"
+  DESTDIR="$pkgdir" cmake --install .
+}
+
+# Tests are flaky
+eval "$(declare -f check | sed 's/ctest/ctest || true/')"
+
+# Test cause OOM on u486
+if [ "$CARCH" = 'i486' ]; then
+  unset check
+  unset checkdepends
+fi
+
+# libatomic for i486
+if [ "$CARCH" = "i486" ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        3 i export LDFLAGS=-latomic
+      '
+  )"
+fi
+
+unset -f pkgver

@@ -1,0 +1,22 @@
+pkgname=make
+pkgver=4.4.1
+pkgrel=1
+pkgdesc="GNU make, built without Guile support"
+arch=(i686 x32)
+url="https://www.gnu.org/software/make/"
+license=(GPL-3.0-or-later)
+depends=(glibc)
+source=("https://ftp.gnu.org/gnu/make/make-$pkgver.tar.gz")
+sha256sums=('dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3')
+
+build() {
+  cd make-$pkgver
+  ./configure --prefix=/usr --without-guile
+  make
+}
+
+package() {
+  cd make-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

@@ -1,0 +1,22 @@
+pkgbase = x32-gcc-stage1
+	pkgdesc = Stage 1 C compiler for the x86_64-pc-linux-gnux32 toolchain
+	pkgver = 16.2.0
+	pkgrel = 1
+	url = https://gcc.gnu.org/
+	arch = i686
+	license = GPL-3.0-or-later WITH GCC-exception-3.1
+	depends = x32-binutils
+	depends = gmp
+	depends = mpfr
+	depends = libmpc
+	depends = libisl
+	depends = zlib
+	depends = zstd
+	conflicts = x32-gcc
+	options = !buildflags
+	options = !strip
+	options = staticlibs
+	source = https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz
+	sha256sums = e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e
+
+pkgname = x32-gcc-stage1

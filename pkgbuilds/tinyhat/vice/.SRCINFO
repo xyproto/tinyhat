@@ -1,0 +1,18 @@
+pkgbase = vice
+	pkgdesc = Commodore 64 emulator (x64sc) with the SDL2 UI
+	pkgver = 3.10
+	pkgrel = 1
+	url = https://vice-emu.sourceforge.io/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	makedepends = flex
+	makedepends = xa
+	depends = sdl2-compat
+	depends = sdl2_image
+	depends = libpng
+	depends = zlib
+	source = vice-3.10.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-3.10.tar.gz/download
+	sha256sums = 8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1
+
+pkgname = vice

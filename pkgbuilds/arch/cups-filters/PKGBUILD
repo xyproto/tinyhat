@@ -1,0 +1,62 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+pkgname=cups-filters
+pkgver=2.0.1
+pkgrel="3"
+pkgdesc="OpenPrinting CUPS Filters"
+arch=(i686 x32)
+url="https://wiki.linuxfoundation.org/openprinting/cups-filters"
+license=('Apache-2.0 WITH LLVM-exception')
+depends=('libcups' 'libppd' 'libcupsfilters' 'glibc' 'sh')
+makedepends=('ghostscript' 'mupdf-tools')
+optdepends=(
+    'ghostscript: for non-PDF printers (preferred)'
+    'poppler: for non-PDF printers'
+    'mupdf-tools: for non-PDF printers'
+)
+source=(https://github.com/OpenPrinting/$pkgname/releases/download/$pkgver/$pkgname-$pkgver.tar.xz
+        # cups-filters-gcc15.patch::https://github.com/OpenPrinting/cups-filters/pull/618/changes/44f59a1aa74c48515d8feba5a61b7ea3aaa592c4.patch
+        0001-Fix-build-failure-with-GCC-15-and-std-c23.patch
+)
+sha256sums=('39e71de3ce06762b342749f1dc7cba6817738f7bf4d322c1bb9ab10b8569ab80'
+            '2f47e871e44c51c1d6ac5a4c09117eb99c52e787263a91b80af38900daf7c1a6')
+
+prepare() {
+  cd "$pkgname"-$pkgver
+  patch -Np1 -i ../0001-Fix-build-failure-with-GCC-15-and-std-c23.patch
+}
+
+build() {
+  cd "$pkgname"-$pkgver
+  ./configure --prefix=/usr  \
+    --sysconfdir=/etc \
+    --sbindir=/usr/bin \
+    --localstatedir=/var \
+    --enable-individual-cups-filters \
+    --disable-universal-cups-filter \
+    --enable-avahi
+  make
+}
+
+check() {
+  cd "$pkgname"-$pkgver
+  make check
+}
+
+package() {
+  cd "$pkgname"-$pkgver
+  make DESTDIR="$pkgdir/" install
+
+  # license
+  mkdir -p "${pkgdir}"/usr/share/licenses/${pkgname}
+  install -m644 "${srcdir}"/${pkgname}-${pkgver}/{COPYING,NOTICE} "${pkgdir}"/usr/share/licenses/${pkgname}/
+}
+
+# on i486 we add avahi manually for now (TODO: which package is adding
+# it indirectly?)
+if [ "$CARCH" = 'i486' ]; then
+  makedepends+=(avahi)
+fi
+
+
+unset -f pkgver

@@ -1,0 +1,30 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libxdamage
+pkgver=1.1.7
+pkgrel="1"
+pkgdesc="X11 damaged region extension library"
+arch=(i686 x32)
+url="https://xorg.freedesktop.org/"
+license=('HPND-sell-variant')
+depends=('libxfixes' 'xorgproto' 'libx11' 'glibc')
+source=(${url}/releases/individual/lib/libXdamage-${pkgver}.tar.xz{,.sig})
+sha512sums=('9406e39cbc426d7fa3c66bf1eec202fdb5af5db99a0ff49c2be995b1ff7326a6c1fb395c46391e1c32f5a6569a5d6e02bdd5b79fc79dd468fc3ebd698496bbc2'
+            'SKIP')
+validpgpkeys=('3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2') # "Alan Coopersmith <alan.coopersmith@oracle.com>"
+
+build() {
+  cd libXdamage-${pkgver}
+  ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+package() {
+  cd libXdamage-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  install -Dm644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+}
+
+unset -f pkgver

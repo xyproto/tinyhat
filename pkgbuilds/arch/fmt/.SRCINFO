@@ -1,0 +1,30 @@
+pkgbase = fmt
+	pkgdesc = Open-source formatting library for C++
+	pkgver = 12.2.0
+	pkgrel = 1
+	url = https://fmt.dev
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = cmake
+	makedepends = git
+	makedepends = mkdocs
+	makedepends = mkdocs-material
+	makedepends = mkdocstrings
+	makedepends = ninja
+	makedepends = python-pymdown-extensions
+	makedepends = python-regex
+	source = git+https://github.com/fmtlib/fmt.git#tag=12.2.0
+	source = fmt-uint128-operator-not.patch
+	b2sums = e095e1d8e2d95a08f8d6430360e76e9b24a4e213ee83adeeeabf93de09dde325c8e2c4bbbab0907d79f77a21ef5db55ca25f836173f3cd94aecb0cc214fc596d
+	b2sums = 9227a1cdcb530cfa5fe57d60e8c49c31947435536d0e5fe5bfffc5844fb9743bfbd1d2fddc2c54b027c522e161362896c850a5231a38f32c5a150aed12328fd2
+	makedepends_i686 = npm
+
+pkgname = fmt
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	provides = libfmt.so
+
+pkgname = fmt-docs
+	pkgdesc = Open-source formatting library for C++ (documentation)

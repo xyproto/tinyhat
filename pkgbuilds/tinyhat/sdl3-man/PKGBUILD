@@ -1,0 +1,27 @@
+pkgname=sdl3-man
+pkgver=3.4.18
+pkgrel=1
+_image=3.4.8
+_ttf=3.2.2
+pkgdesc="Man pages for SDL3, SDL3_image and SDL3_ttf"
+arch=(any)
+url="https://libsdl.org/"
+license=(Zlib)
+makedepends=(perl)
+source=("https://github.com/libsdl-org/SDL/releases/download/release-$pkgver/SDL3-$pkgver.tar.gz"
+        "https://github.com/libsdl-org/SDL_image/releases/download/release-$_image/SDL3_image-$_image.tar.gz"
+        "https://github.com/libsdl-org/SDL_ttf/releases/download/release-$_ttf/SDL3_ttf-$_ttf.tar.gz")
+sha256sums=('9c75cf16330322c217dedd2e0609f1124f1b54b8633e763467b4684d0f4334a3'
+            'e8223b424bc7541cf84ffff5cf7e4f24ec3711c60462cb1bd6dc1d7bd7f25477'
+            '63547d58d0185c833213885b635a2c0548201cc8f301e6587c0be1a67e1e045d')
+
+package() {
+  mkdir -p "$pkgdir/usr/share/man"
+  for t in SDL3-$pkgver SDL3_image-$_image SDL3_ttf-$_ttf; do
+    mkdir -p "$srcdir/wiki-$t"
+    cd "$srcdir/$t"
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki-$t" --options=.wikiheaders-options --copy-to-wiki >/dev/null
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki-$t" --options=.wikiheaders-options --manpath="$pkgdir/usr/share/man" --copy-to-manpages >/dev/null
+  done
+  install -Dm644 "$srcdir/SDL3-$pkgver/LICENSE.txt" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"
+}

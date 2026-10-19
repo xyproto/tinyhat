@@ -1,0 +1,33 @@
+pkgbase = libgphoto2
+	pkgdesc = Digital camera access library
+	pkgver = 2.5.34
+	pkgrel = 1
+	url = http://www.gphoto.org/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = doxygen
+	makedepends = git
+	makedepends = graphviz
+	makedepends = meson
+	depends = bash
+	depends = curl
+	depends = gd
+	depends = glibc
+	depends = libexif
+	depends = libjpeg-turbo
+	depends = libltdl
+	depends = libtiff
+	depends = libusb
+	depends = libxml2
+	source = git+https://github.com/gphoto/libgphoto2#tag=v2.5.34
+	validpgpkeys = 7C4AFD61D8AAE7570796A5172209D6902F969C95
+	b2sums = a8d8159e3cda9046c1dbd4a79b88db7a716769d872e5b15241f78727bce5bcab91bd57a09407a0d6653af72ff44d407b08ec505195a7a76f5fe10d17d3bcfd2a
+
+pkgname = libgphoto2
+	provides = libgphoto2.so
+	provides = libgphoto2_port.so
+
+pkgname = libgphoto2-docs
+	pkgdesc = Digital camera access library (documentation)
+	depends = 

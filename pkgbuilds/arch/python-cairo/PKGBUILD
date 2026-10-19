@@ -1,0 +1,64 @@
+# Maintainer: Caleb Maclennan <caleb@alerque.com>
+# Contributor: Angel Velasquez <angvp@archlinux.org>  
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=python-cairo
+pkgname=(python-cairo python-cairo-docs)
+pkgver=1.29.2
+pkgrel="1"
+pkgdesc="Python bindings for the cairo graphics library"
+url="https://pycairo.readthedocs.io/en/latest/"
+arch=(i686 x32)
+license=(LGPL2.1 MPL)
+depends=(cairo python)
+makedepends=(meson python-sphinx python-sphinx_rtd_theme)
+checkdepends=(python-pytest)
+source=(https://github.com/pygobject/pycairo/releases/download/v$pkgver/pycairo-$pkgver.tar.gz{,.sig})
+sha256sums=('3e69fff74fe64f5ba2dfa31f67c6bdf26413342574047437d2ac520d35e9a489'
+            'SKIP')
+validpgpkeys=(0EBF782C5D53F7E5FB02A66746BD761F7A49B0EC) # Christoph Reiter <reiter.christoph@gmail.com>
+
+build() {
+  arch-meson pycairo-$pkgver build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_python-cairo() {
+  meson install -C build --destdir="$pkgdir"
+
+  # compile Python bytecode
+  python -m compileall -d /usr/lib "$pkgdir/usr/lib"
+  python -O -m compileall -d /usr/lib "$pkgdir/usr/lib"
+}
+
+package_python-cairo-docs() {
+  pkgdesc="Developer documentation for Pycairo"
+  depends=()
+
+  python -m sphinx -b html pycairo-$pkgver/docs "$pkgdir/usr/share/doc/pycairo/html"
+  rm -r "$pkgdir/usr/share/doc/pycairo/html/.doctrees"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# upstream git revision: ffd14d9096bfeb3097fbd5e6baa1414d596593cf (v1.29.1)
+
+# python-sphinxcontrib-jquery 4.1-4.0 (built 2025-05, python 3.11 era) has not
+# been rebuilt for python 3.14 yet, so sphinx's extension can not be imported
+# from any 32-bit chroot ("Could not import extension sphinxcontrib.jquery")
+# and package_python-cairo-docs fails every build. Stub the docs sub-package
+# until the python 3.14 wave rebuilds it; nothing else references the docs
+# staging tree, so nothing references them afterwards.
+package_python-cairo-docs() {
+  pkgdesc="Developer documentation for Pycairo (stubbed on arch32)"
+  depends=()
+
+  mkdir -p "$pkgdir"
+  touch "$pkgdir/this-is-a-dummy-package"
+}
+
+unset -f pkgver

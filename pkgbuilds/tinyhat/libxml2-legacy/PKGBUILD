@@ -1,0 +1,24 @@
+pkgname=libxml2-legacy
+pkgver=2.13.9
+pkgrel=1
+pkgdesc="XML library with the older libxml2.so.2 ABI"
+arch=(i686 x32)
+url="https://gitlab.gnome.org/GNOME/libxml2"
+license=(MIT)
+depends=(glibc zlib xz)
+source=("https://download.gnome.org/sources/libxml2/${pkgver%.*}/libxml2-$pkgver.tar.xz")
+sha256sums=('a2c9ae7b770da34860050c309f903221c67830c86e4a7e760692b803df95143a')
+
+build() {
+  cd libxml2-$pkgver
+  ./configure --prefix=/usr --without-icu --without-python --without-readline --without-history --without-http --disable-static
+  make
+}
+
+package() {
+  cd libxml2-$pkgver
+  make install DESTDIR="$srcdir/inst"
+  mkdir -p "$pkgdir/usr/lib"
+  cp -a "$srcdir"/inst/usr/lib/libxml2.so.2* "$pkgdir/usr/lib/"
+  install -Dm644 Copyright "$pkgdir/usr/share/licenses/$pkgname/Copyright"
+}

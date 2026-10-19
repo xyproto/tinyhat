@@ -1,0 +1,34 @@
+makedepends=(${makedepends[@]//meson/})
+makedepends+=(muon-meson)
+makedepends+=(ninja)
+
+eval "$(
+  declare -f build | \
+    sed '
+      s/arch-meson .*/muon meson configure ..\/$pkgname -Dprefix=\/usr/g
+    '
+)"
+
+# there is a lurking y2018 problem here, but meson just plain out
+# refuses to build it, we have to add some compiler flags here
+#/build/util-linux/src/util-linux/meson.build:761:7: error Could not make time_t 64bits wide 
+export CFLAGS="-D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64"
+export CXXFLAGS="-D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64"
+
+#/build/util-linux/src/util-linux/libmount/python/meson.build:31:37: error unimplemented
+# 31 |   dependencies : [mount_dep, python.dependency(embed: true)],
+#                                          ^______________________
+#/build/util-linux/src/util-linux/libmount/python/meson.build:31:37: error in function 'dependency'
+# 31 |   dependencies : [mount_dep, python.dependency(embed: true)],
+#                                          ^______________________
+#/build/util-linux/src/util-linux/libmount/meson.build:155:1: error in function 'subdir'
+# => ok, heavily python-infected, muon will fail here
+
+# enable floppy stuff (we are a legacy distro and we like legacy stuff :-) )
+# we cannot enable it with meson options..?
+eval "$(
+  declare -f build | \
+    sed '
+      s/configure/configure --enable-fdformat/
+    '
+)"

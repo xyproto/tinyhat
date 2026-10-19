@@ -1,0 +1,20 @@
+pkgbase = swaylock
+	pkgdesc = Screen locker for Wayland
+	pkgver = 1.8.6
+	pkgrel = 1
+	url = https://github.com/swaywm/swaylock
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = meson
+	makedepends = ninja
+	makedepends = wayland-protocols
+	depends = cairo
+	depends = libxkbcommon
+	depends = pam
+	depends = wayland
+	backup = etc/pam.d/swaylock
+	source = https://github.com/swaywm/swaylock/releases/download/v1.8.6/swaylock-1.8.6.tar.gz
+	sha256sums = a15154348fef852fdb224112d137c393c826478b777f63479beb15e8d3812eaf
+
+pkgname = swaylock

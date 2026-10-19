@@ -1,0 +1,19 @@
+pkgbase = libpciaccess
+	pkgdesc = X11 PCI access library
+	pkgver = 0.19
+	pkgrel = 1
+	url = https://gitlab.freedesktop.org/xorg/lib/libpciaccess
+	arch = i686
+	arch = x32
+	license = LicenseRef-libpciaccess
+	makedepends = xorg-util-macros
+	makedepends = meson
+	depends = glibc
+	depends = zlib
+	source = https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-0.19.tar.xz
+	source = https://xorg.freedesktop.org/releases/individual/lib/libpciaccess-0.19.tar.xz.sig
+	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
+	sha512sums = a20ea0ef3d650e2cdc18423ea4770780ce273c35115eece85dbbb59e5f2e24bdbaf88e53b1648f2c5d4fa34b015a3fe8318721bf5655a86a835db323e6ecd4f7
+	sha512sums = SKIP
+
+pkgname = libpciaccess

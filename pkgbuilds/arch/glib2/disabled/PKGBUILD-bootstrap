@@ -1,0 +1,25 @@
+# The timer test is still flaky, so ignore the tests for now
+# https://gitlab.gnome.org/GNOME/glib/-/issues/820#note_2076472
+eval "$(
+declare -f check | \
+  sed '
+    s/\(meson test.*\)/\1 || true/
+  '
+)"
+
+# Crappy hack to work around glib2-devel not being installed
+eval "$(
+  declare -f package_glib2 | \
+    sed '3i depends+=(glib2-devel)'
+)"
+
+# bootstrap without gobject-introspection
+makedepends=(${makedepends[@]//gobject-introspection/})
+eval "$(
+declare -f build | \
+  sed '
+    s/-D introspection=enabled/-D introspection=disabled/
+  '
+)"
+unset check
+unset checkdepends

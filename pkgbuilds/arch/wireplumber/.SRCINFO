@@ -1,0 +1,67 @@
+pkgbase = wireplumber
+	pkgdesc = Session / policy manager implementation for PipeWire
+	pkgver = 0.5.18
+	pkgrel = 1
+	url = https://pipewire.pages.freedesktop.org/wireplumber/
+	arch = i686
+	arch = x32
+	license = MIT
+	checkdepends = pipewire-audio
+	makedepends = doxygen
+	makedepends = git
+	makedepends = glib2
+	makedepends = glib2-devel
+	makedepends = glibc
+	makedepends = gobject-introspection
+	makedepends = graphviz
+	makedepends = libgcc
+	makedepends = libpipewire
+	makedepends = lua
+	makedepends = meson
+	makedepends = pipewire
+	makedepends = python-breathe
+	makedepends = python-lxml
+	makedepends = python-sphinx
+	makedepends = python-sphinx_rtd_theme
+	makedepends = systemd
+	makedepends = systemd-libs
+	source = git+https://gitlab.freedesktop.org/pipewire/wireplumber.git#tag=0.5.18
+	b2sums = eea6a3e022c0b8918a72b56a9cdb1c02bca4411a9394fc2a8732faad2c0c71d1443b2a37b22e60467aaab62c154150d18b185b2690271d1d4830dee6513e2e8c
+
+pkgname = wireplumber
+	install = wireplumber.install
+	depends = libwireplumber=0.5.18
+	depends = glibc
+	depends = libgcc
+	depends = libglib-2.0.so
+	depends = libgobject-2.0.so
+	depends = libgio-2.0.so
+	depends = libpipewire
+	depends = libpipewire-0.3.so
+	depends = libsystemd.so
+	depends = lua
+	depends = pipewire
+	depends = systemd-libs
+	optdepends = wireplumber-docs: Documentation
+	optdepends = wireplumber-system-services: System daemon (not recommended)
+	provides = pipewire-session-manager
+	conflicts = pipewire-media-session
+
+pkgname = libwireplumber
+	pkgdesc = Session / policy manager implementation for PipeWire - client library
+	depends = glibc
+	depends = libgcc
+	depends = libglib-2.0.so
+	depends = libgmodule-2.0.so
+	depends = libgobject-2.0.so
+	depends = libgio-2.0.so
+	depends = libpipewire-0.3.so
+	provides = libwireplumber-0.5.so
+
+pkgname = wireplumber-docs
+	pkgdesc = Session / policy manager implementation for PipeWire - documentation
+
+pkgname = wireplumber-system-services
+	pkgdesc = Session / policy manager implementation for PipeWire - system services
+	depends = wireplumber=0.5.18
+	depends = pipewire-system-services

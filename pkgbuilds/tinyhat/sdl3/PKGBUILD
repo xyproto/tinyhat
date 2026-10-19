@@ -1,0 +1,40 @@
+pkgname=sdl3
+pkgver=3.4.18
+pkgrel=1
+pkgdesc="Simple DirectMedia Layer 3 with the Tiny Hat Wayland framebuffer patch"
+arch=(i686 x32)
+url="https://libsdl.org/"
+license=(Zlib)
+depends=(glibc)
+makedepends=(cmake ninja wayland wayland-protocols libxkbcommon libdrm mesa libglvnd alsa-lib pipewire dbus libusb systemd-libs vulkan-headers)
+source=("https://github.com/libsdl-org/SDL/releases/download/release-$pkgver/SDL3-$pkgver.tar.gz"
+        wayland-framebuffer.patch
+        dos-modes.patch)
+sha256sums=('9c75cf16330322c217dedd2e0609f1124f1b54b8633e763467b4684d0f4334a3'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd SDL3-$pkgver
+  patch -Np1 -i ../wayland-framebuffer.patch
+  patch -Np1 -i ../dos-modes.patch
+}
+
+build() {
+  CFLAGS=${CFLAGS/-Os/-O3}
+  CXXFLAGS=${CXXFLAGS/-Os/-O3}
+  cmake -S SDL3-$pkgver -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+    -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_TEST_LIBRARY=ON \
+    -DSDL_WAYLAND=ON -DSDL_WAYLAND_LIBDECOR=OFF -DSDL_VULKAN=ON -DSDL_RENDER_VULKAN=ON -DSDL_GPU=ON -DSDL_RENDER_GPU=ON \
+    -DSDL_KMSDRM=ON -DSDL_JACK=OFF -DSDL_SNDIO=OFF -DSDL_LIBURING=OFF -DSDL_DBUS=ON -DSDL_IBUS=OFF \
+    -DSDL_X11=OFF -DSDL_OPENGL=ON -DSDL_OPENGLES=ON -DSDL_ALSA=ON -DSDL_PIPEWIRE=ON -DSDL_PULSEAUDIO=OFF \
+    -DSDL_HIDAPI=ON -DSDL_HIDAPI_LIBUSB=OFF -DSDL_CAMERA=ON -DSDL_RPATH=OFF \
+    -DLIBC_HAS_WORKING_LIBUNWIND=OFF -DLIBUNWIND_HAS_WORKINGLIBUNWIND=OFF -DPC_LIBUNWIND_HAS_WORKING_LIBUNWIND=OFF
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 SDL3-$pkgver/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"
+}

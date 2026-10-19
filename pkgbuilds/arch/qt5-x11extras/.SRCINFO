@@ -1,0 +1,18 @@
+pkgbase = qt5-x11extras
+	pkgdesc = Provides platform-specific APIs for X11
+	pkgver = 5.15.19
+	pkgrel = 1
+	url = https://www.qt.io
+	arch = i686
+	arch = x32
+	groups = qt5
+	license = GPL3
+	license = LGPL3
+	license = FDL
+	license = custom
+	makedepends = git
+	depends = qt5-base
+	source = kde-qtx11extras::git+https://invent.kde.org/qt/qt/qtx11extras#commit=6695a3df4460577b3fcb5546b45a0c5cb3addac4
+	sha256sums = 5261d8f76c011997ced1df0f50108fb561b398eeb58fd80aa4096d68c36dc6c3
+
+pkgname = qt5-x11extras

@@ -1,0 +1,32 @@
+pkgname=zsnes
+pkgver=2.3.8
+pkgrel=1
+pkgdesc="Super Nintendo emulator"
+arch=(i686)
+url="https://github.com/xyproto/zsnes"
+license=(GPL-2.0-or-later)
+depends=(sdl3 libglvnd libpng pipewire zlib)
+makedepends=(nasm mesa)
+source=("zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('963b8243ee69d6a92e519991c457298dd1419b1406158607dfc387379c4b505e')
+
+build() {
+  cd zsnes-$pkgver
+  CFLAGS="$CFLAGS -O3 -fno-pic"
+  CXXFLAGS="$CXXFLAGS -O3 -fno-pic"
+  export CFLAGS CXXFLAGS
+  make all OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr
+}
+
+package() {
+  cd zsnes-$pkgver
+  CFLAGS="$CFLAGS -O3 -fno-pic"
+  CXXFLAGS="$CXXFLAGS -O3 -fno-pic"
+  export CFLAGS CXXFLAGS
+  make install DESTDIR="$pkgdir" OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr
+  readelf -h "$pkgdir/usr/bin/zsnes" | grep -q "Type:.*EXEC"
+  mv "$pkgdir/usr/bin/zsnes" "$pkgdir/usr/bin/zsnes-bin"
+  printf '#!/bin/sh\nexec tinyhat-gpu /usr/bin/zsnes-bin "$@"\n' >"$pkgdir/usr/bin/zsnes"
+  chmod 755 "$pkgdir/usr/bin/zsnes"
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

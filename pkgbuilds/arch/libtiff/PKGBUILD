@@ -1,0 +1,77 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+# Contributor: HurricanePootis <hurricanepootis@protonmail.com>
+
+pkgname=libtiff
+pkgver=4.7.2
+pkgrel="2"
+pkgdesc='Library for manipulation of TIFF images'
+url='http://www.simplesystems.org/libtiff/'
+arch=(i686 x32)
+license=(libtiff)
+depends=(
+  libstdc++
+  glibc
+  jbigkit
+  libdeflate
+  libjpeg-turbo
+  libjpeg.so
+  libwebp
+  xz
+  zlib
+  zstd
+)
+makedepends=(
+  cmake
+  freeglut
+  git
+  glu
+  mesa
+)
+optdepends=(
+  'freeglut: for using tiffgt'
+)
+provides=(libtiff.so libtiffxx.so)
+source=("git+https://gitlab.com/libtiff/libtiff.git?signed#tag=v${pkgver}")
+sha256sums=('633aa6529859b02b08df2dc29e0119fe614991f4490441c2eb80052de68a3754')
+b2sums=('1d5b034b62714984eabbc4fc503e06747884126bfd79cace67f29e0017c2b5067cd88f50e53a716f23f0e6d1244939b37a94e86d20118abe1af798a0692c57fa')
+validpgpkeys=(
+  'EBDFDB21B020EE8FD151A88DE301047DE1198975' # Bob Friesenhahn <bfriesen@simple.dallas.tx.us>
+  'B1FA7D81EEB8E66399178B9733EBBFC47B3DD87D' # Even Rouault <even.rouault@spatialys.com>
+)
+
+prepare() {
+  cd ${pkgname}
+}
+
+build() {
+  cmake -B build -S $pkgname \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DCMAKE_BUILD_TYPE=None \
+  -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+
+  cmake --build build
+}
+
+check() {
+  ctest --test-dir build
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+  install -Dm 644 libtiff/LICENSE.md -t "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+# vim: ts=2 sw=2 et:
+
+# no mesa, jbigkit yet on i486
+
+makedepends=(${makedepends[@]//freeglut/})
+makedepends=(${makedepends[@]//glu/})
+makedepends=(${makedepends[@]//mesa/})
+makedepends=(${makedepends[@]//jbigkit/})
+
+makedepends_i686+=(freeglut glu mesa jbigkit)
+makedepends_pentium4=("${makedepends_i686[@]}")
+
+unset -f pkgver

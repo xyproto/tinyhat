@@ -1,0 +1,19 @@
+pkgbase = libcdio
+	pkgdesc = GNU Compact Disc Input and Control Library
+	pkgver = 2.4.0
+	pkgrel = 1
+	url = https://www.gnu.org/software/libcdio/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	makedepends = git
+	makedepends = help2man
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	depends = ncurses
+	source = git+https://github.com/libcdio/libcdio#tag=2.4.0
+	validpgpkeys = DAA63BC2582034A02B923D521A8DE5008275EC21
+	b2sums = dc718b1bc62a7f4cb4171b19a4baa6983df97f7eade0d0e9310d175d762837388dc75f666c159d0ad140bfadeece8d3220fdb50df440007f4595f999c7b320ce
+
+pkgname = libcdio

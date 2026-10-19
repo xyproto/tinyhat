@@ -1,0 +1,12 @@
+diff -rauN a/build32/Makefile b/build32/Makefile
+--- a/build32/Makefile	2023-03-31 09:39:01.701959825 +0200
++++ b/build32/Makefile	2023-03-31 09:39:16.785357009 +0200
+@@ -9,7 +9,7 @@
+   GIT_AVAILABLE = true
+ endif
+ 
+-CFLAGS = -std=c11 -Wall -Wextra -Wshadow -m32 -march=i586 -fpic -fno-builtin \
++CFLAGS = -std=c11 -Wall -Wextra -Wshadow -m32 -march=i486 -fpic -fno-builtin \
+          -ffreestanding -fomit-frame-pointer -fno-stack-protector
+ 
+ INC_DIRS = -I../boot -I../system -I../lib -I../tests -I../app -Iapp

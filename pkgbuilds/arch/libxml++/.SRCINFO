@@ -1,0 +1,28 @@
+pkgbase = libxml++
+	pkgdesc = C++ bindings to libxml2
+	pkgver = 3.2.6
+	pkgrel = 1
+	url = https://libxmlplusplus.github.io/libxmlplusplus/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = git
+	makedepends = glibmm-docs
+	makedepends = meson
+	makedepends = mm-common
+	depends = glibc
+	depends = glibmm
+	depends = libgcc
+	depends = libstdc++
+	depends = libxml2
+	options = !emptydirs
+	source = git+https://github.com/libxmlplusplus/libxmlplusplus#tag=3.2.6
+	b2sums = 9a65793b4976d34ab6cec526d4bbcc4ed4e829abb03bb2c4379e19b858533cd821e3390d608f283d50fe4238b5ba010ef7c909fb9d511c624c848b1f5253e5ab
+
+pkgname = libxml++
+	provides = libxml++-3.0.so
+
+pkgname = libxml++-docs
+	pkgdesc = C++ bindings to libxml2 (documentation)
+	depends = 
+	options = !strip

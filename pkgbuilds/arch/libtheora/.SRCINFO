@@ -1,0 +1,20 @@
+pkgbase = libtheora
+	pkgdesc = Standard encoder and decoder library for the Theora video compression format
+	pkgver = 1.2.0
+	pkgrel = 1
+	url = https://www.theora.org/
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = doxygen
+	makedepends = git
+	makedepends = libpng
+	makedepends = libvorbis
+	makedepends = sdl
+	depends = glibc
+	depends = libogg
+	source = git+https://github.com/xiph/theora.git#tag=v1.2.0
+	validpgpkeys = 17E78AB6BD65A91EE811D60947000F7BB1441DEF
+	b2sums = 50ed821f0a8ee98c95ea638c66740dda5d2346b70742f1834b96f0089d219c9f3b0d0fad539138b7c514f47d968a550fa842bfff22935db748caf6a4c489428c
+
+pkgname = libtheora

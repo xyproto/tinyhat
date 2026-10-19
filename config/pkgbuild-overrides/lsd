@@ -1,0 +1,3 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -vxF pandoc))
+eval "$(declare -f build | sed '/pandoc/d')"
+eval "$(declare -f package | sed '/man1/d')"

@@ -1,0 +1,36 @@
+# Maintainer: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+# Maintainer: Maxim Baz <$pkgname at maximbaz dot com>
+
+pkgname=earlyoom
+pkgver=1.9.0
+pkgrel="1"
+pkgdesc="Early OOM Daemon for Linux"
+arch=(i686 x32)
+url="https://github.com/rfjakob/earlyoom"
+license=('MIT')
+depends=('glibc')
+makedepends=('pandoc')
+optdepends=('systembus-notify: desktop notifications')
+backup=("etc/default/earlyoom")
+source=("https://github.com/rfjakob/$pkgname/archive/v$pkgver/$pkgname-$pkgver.tar.gz")
+sha256sums=('b2fe5e1e071a5a000b22fb9602c068fd69d09c057f0ba972dfc5d85daf464b2a')
+
+prepare() {
+    cd "$pkgname-$pkgver"
+    sed "/systemctl|chcon/d" -ri Makefile
+    sed '/^DynamicUser=/a SupplementaryGroups=proc' -i earlyoom.service.in
+    sed 's;^EARLYOOM_ARGS="(.*)";EARLYOOM_ARGS="\1 -n --avoid '\''(^|/)(init|systemd|Xorg|sshd)$'\''";' -ri earlyoom.default
+}
+
+build() {
+    cd "$pkgname-$pkgver"
+    make PREFIX=/usr SYSTEMDUNITDIR=/usr/lib/systemd/system VERSION=$pkgver earlyoom
+}
+
+package() {
+    cd "$pkgname-$pkgver"
+    make install DESTDIR="$pkgdir" PREFIX=/usr SYSTEMDUNITDIR=/usr/lib/systemd/system
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+unset -f pkgver

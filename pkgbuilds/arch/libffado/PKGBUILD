@@ -1,0 +1,101 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Ray Rashif <schiv@archlinux.org>
+# Contributor: galiyosha@gmail.com
+# Contributor: Jon Kristian Nilsen <jokr.nilsen@gmail.com>
+
+pkgname=libffado
+pkgver=2.5.0
+pkgrel="1"
+pkgdesc="Driver for FireWire audio devices"
+arch=(i686 x32)
+url="https://www.ffado.org/"
+license=('GPL-2.0-only or GPL-3.0-only')
+depends=(
+  gcc-libs
+  glibc
+  glibmm
+  hicolor-icon-theme
+  libiec61883
+  libraw1394
+  libxml++
+  python-dbus
+)
+makedepends=(
+  alsa-lib
+  dbus-c++
+  jack
+  libconfig
+  python-pyqt5
+  python-setuptools
+  scons
+)
+optdepends=('python-pyqt5: ffado-mixer')
+provides=(libffado.so)
+source=(
+  https://www.ffado.org/files/$pkgname-$pkgver.tgz
+)
+sha512sums=('0c2e21e1ac13111c8090e97cf56ba82e977463e3e0465b603899922aebcefb5144e3779d23f874be1dc269104bb631ad4edd198a13a65bb1e3d2ed3e52bee4c1')
+b2sums=('4828b308628d5ccea13993a0c80bd9ead5762943f01ad004169bd0e6018cd68ce4868ae18c286433e08d9d4ce770d6ea82e4da252d52fff6baae9ff3fd3c37b9')
+
+build() {
+  local site_packages=$(python -c "import site; print(site.getsitepackages()[0])")
+  local scons_options=(
+    CUSTOM_ENV=True
+    DEBUG=no
+    MANDIR=/usr/share/man
+    PREFIX=/usr
+    PYPKGDIR=$site_packages
+    PYTHON_INTERPRETER=/usr/bin/python
+    UDEVDIR=/usr/lib/udev/rules.d
+  )
+
+  cd $pkgname-$pkgver
+  scons "${scons_options[@]}"
+}
+
+package() {
+  depends+=(
+    alsa-lib libasound.so
+    dbus-c++ libdbus-c++-1.so
+    libconfig libconfig++.so
+  )
+
+  cd $pkgname-$pkgver
+  scons DESTDIR="$pkgdir" install
+  install -vDm 644 {AUTHORS,README} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+# not available on i486 (yet) - configure seems to automatically handle absence
+makedepends_i686=(
+  $(
+    printf '%s\n' "${makedepends[@]}" \
+    | grep -xF 'python-pyqt5'
+  )
+)
+makedepends_pentium4=("${makedepends_i686[@]}")
+makedepends=(
+  $(
+    printf '%s\n' "${makedepends[@]}" \
+    | grep -vxF 'python-pyqt5'
+  )
+)
+_IFS="${IFS}"
+IFS=''
+optdepends_i686=(
+  $(
+    printf '%s\n' "${optdepends[@]}" \
+    | grep '^python-pyqt5: '
+  )
+)
+optdepends_pentium4=(
+  "${optdepends_i686[@]}"
+)
+optdepends=(
+  $(
+    printf '%s\n' "${optdepends[@]}" \
+    | grep -v '^python-pyqt5: '
+  )
+)
+IFS="${_IFS}"
+
+unset -f pkgver

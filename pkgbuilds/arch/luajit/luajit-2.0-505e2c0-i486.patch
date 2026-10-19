@@ -1,0 +1,2366 @@
+diff -rauN luajit-2.0-505e2c0/src/lib_jit.c luajit-2.0-505e2c0-i486-patch/src/lib_jit.c
+--- luajit-2.0-505e2c0/src/lib_jit.c	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/lib_jit.c	2023-03-26 18:16:32.558477950 +0200
+@@ -649,7 +649,7 @@
+ #endif
+ 
+ /* Arch-dependent CPU feature detection. */
+-static uint32_t jit_cpudetect(void)
++static uint32_t jit_cpudetect(lua_State *L)
+ {
+   uint32_t flags = 0;
+ #if LJ_TARGET_X86ORX64
+@@ -657,16 +657,45 @@
+   uint32_t vendor[4];
+   uint32_t features[4];
+   if (lj_vm_cpuid(0, vendor) && lj_vm_cpuid(1, features)) {
++#if !LJ_HASJIT
++#define JIT_F_CMOV	1
++#define JIT_F_SSE2	2
++#endif
++    flags |= ((features[3] >> 15)&1) * JIT_F_CMOV;
++    flags |= ((features[3] >> 26)&1) * JIT_F_SSE2;
++#if LJ_HASJIT
+     flags |= ((features[2] >> 0)&1) * JIT_F_SSE3;
+     flags |= ((features[2] >> 19)&1) * JIT_F_SSE4_1;
++    if (vendor[2] == 0x6c65746e) {  /* Intel. */
++      if ((features[0] & 0x0ff00f00) == 0x00000f00)  /* P4. */
++	flags |= JIT_F_P4;  /* Currently unused. */
++      else if ((features[0] & 0x0fff0ff0) == 0x000106c0)  /* Atom. */
++	flags |= JIT_F_LEA_AGU;
++    } else if (vendor[2] == 0x444d4163) {  /* AMD. */
++      uint32_t fam = (features[0] & 0x0ff00f00);
++      if (fam == 0x00000f00)  /* K8. */
++	flags |= JIT_F_SPLIT_XMM;
++      if (fam >= 0x00000f00)  /* K8, K10. */
++	flags |= JIT_F_PREFER_IMUL;
++    }
+     if (vendor[0] >= 7) {
+       uint32_t xfeatures[4];
+       lj_vm_cpuid(7, xfeatures);
+       flags |= ((xfeatures[1] >> 8)&1) * JIT_F_BMI2;
+     }
++#endif
+   }
+-  /* Don't bother checking for SSE2 -- the VM will crash before getting here. */
+-
++  /* Check for required instruction set support on x86 (unnecessary on x64). */
++#if LJ_TARGET_X86
++#if !defined(LUAJIT_CPU_NOCMOV)
++  if (!(flags & JIT_F_CMOV))
++    luaL_error(L, "CPU not supported");
++#endif
++#if defined(LUAJIT_CPU_SSE2)
++  if (!(flags & JIT_F_SSE2))
++    luaL_error(L, "CPU does not support SSE2 (recompile without -DLUAJIT_CPU_SSE2)");
++#endif
++#endif
+ #elif LJ_TARGET_ARM
+ 
+   int ver = LJ_ARCH_VERSION;  /* Compile-time ARM CPU detection. */
+@@ -729,7 +758,12 @@
+ static void jit_init(lua_State *L)
+ {
+   jit_State *J = L2J(L);
+-  J->flags = jit_cpudetect() | JIT_F_ON | JIT_F_OPT_DEFAULT;
++  uint32_t flags = jit_cpudetect(L);
++#if LJ_TARGET_X86
++  /* Silently turn off the JIT compiler on CPUs without SSE2. */
++  if ((flags & JIT_F_SSE2))
++#endif
++    J->flags = flags | JIT_F_ON | JIT_F_OPT_DEFAULT;
+   memcpy(J->param, jit_param_default, sizeof(J->param));
+   lj_dispatch_update(G(L));
+ }
+@@ -738,7 +772,7 @@
+ LUALIB_API int luaopen_jit(lua_State *L)
+ {
+ #if LJ_HASJIT
+-  jit_init(L);
++  jit_init(L); // FIXME should this be moved back to the bottom?
+ #endif
+   lua_pushliteral(L, LJ_OS_NAME);
+   lua_pushliteral(L, LJ_ARCH_NAME);
+diff -rauN luajit-2.0-505e2c0/src/lj_asm.c luajit-2.0-505e2c0-i486-patch/src/lj_asm.c
+--- luajit-2.0-505e2c0/src/lj_asm.c	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/lj_asm.c	2023-03-26 18:16:32.558477950 +0200
+@@ -2340,6 +2340,22 @@
+       }
+       break;
+ #endif
++/*
++    case IR_FPMATH:
++#if LJ_TARGET_X86ORX64
++      if (ir->op2 == IRFPM_EXP2) {  // May be joined to lj_vm_pow_sse.
++	ir->prev = REGSP_HINT(RID_XMM0);
++#if !LJ_64
++	if (as->evenspill < 4)  // Leave room for 16 byte scratch area.
++	  as->evenspill = 4;
++#endif
++	if (inloop)
++	  as->modset |= RSET_RANGE(RID_XMM0, RID_XMM2+1)|RID2RSET(RID_EAX);
++	continue;
++      } else if (ir->op2 <= IRFPM_TRUNC && !(as->flags & JIT_F_SSE4_1)) {
++	ir->prev = REGSP_HINT(RID_XMM0);
++>>>>>>> parent of 57768cd5... x86: Remove x87 support from interpreter.
++      */
+     case IR_FPMATH:
+ #if LJ_TARGET_X86ORX64
+       if (ir->op2 <= IRFPM_TRUNC) {
+diff -rauN luajit-2.0-505e2c0/src/lj_jit.h luajit-2.0-505e2c0-i486-patch/src/lj_jit.h
+--- luajit-2.0-505e2c0/src/lj_jit.h	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/lj_jit.h	2023-03-26 18:16:32.558477950 +0200
+@@ -20,12 +20,18 @@
+ 
+ #if LJ_TARGET_X86ORX64
+ 
+-#define JIT_F_SSE3		(JIT_F_CPU << 0)
+-#define JIT_F_SSE4_1		(JIT_F_CPU << 1)
+-#define JIT_F_BMI2		(JIT_F_CPU << 2)
++#define JIT_F_CMOV		(JIT_F_CPU << 0)
++#define JIT_F_SSE2		(JIT_F_CPU << 1)
++#define JIT_F_SSE3		(JIT_F_CPU << 2)
++#define JIT_F_SSE4_1		(JIT_F_CPU << 3)
++#define JIT_F_P4		(JIT_F_CPU << 4)
++#define JIT_F_PREFER_IMUL		(JIT_F_CPU << 5)
++#define JIT_F_SPLIT_XMM		(JIT_F_CPU << 6)
++#define JIT_F_LEA_AGU		(JIT_F_CPU << 7)
++#define JIT_F_BMI2		(JIT_F_CPU << 8)
+ 
+ 
+-#define JIT_F_CPUSTRING		"\4SSE3\6SSE4.1\4BMI2"
++#define JIT_F_CPUSTRING		"\4CMOV\4SSE2\4SSE3\6SSE4.1\2P4\3AMD\2K8\4ATOM\4BMI2"
+ 
+ #elif LJ_TARGET_ARM
+ 
+diff -rauN luajit-2.0-505e2c0/src/lj_vm.h luajit-2.0-505e2c0-i486-patch/src/lj_vm.h
+--- luajit-2.0-505e2c0/src/lj_vm.h	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/lj_vm.h	2023-03-26 18:16:32.558477950 +0200
+@@ -58,7 +58,8 @@
+ LJ_ASMF void lj_vm_exit_interp(void);
+ 
+ /* Internal math helper functions. */
+-#if LJ_TARGET_PPC || LJ_TARGET_ARM64 || (LJ_TARGET_MIPS && LJ_ABI_SOFTFP)
++// FIXME: is this correct?
++#if LJ_TARGET_X86ORX64 || LJ_TARGET_PPC || LJ_TARGET_ARM64 || (LJ_TARGET_MIPS && LJ_ABI_SOFTFP)
+ #define lj_vm_floor	floor
+ #define lj_vm_ceil	ceil
+ #else
+diff -rauN luajit-2.0-505e2c0/src/Makefile luajit-2.0-505e2c0-i486-patch/src/Makefile
+--- luajit-2.0-505e2c0/src/Makefile	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/Makefile	2023-03-26 18:16:32.558477950 +0200
+@@ -47,7 +47,7 @@
+ # x86/x64 only: For GCC 4.2 or higher and if you don't intend to distribute
+ # the binaries to a different machine you could also use: -march=native
+ #
+-CCOPT_x86= -march=i686 -msse -msse2 -mfpmath=sse
++CCOPT_x86= -march=i486 -mfpmath=387
+ CCOPT_x64=
+ CCOPT_arm=
+ CCOPT_arm64=
+@@ -102,7 +102,7 @@
+ #XCFLAGS+= -DLUAJIT_ENABLE_LUA52COMPAT
+ #
+ # Disable the JIT compiler, i.e. turn LuaJIT into a pure interpreter.
+-#XCFLAGS+= -DLUAJIT_DISABLE_JIT
++XCFLAGS+= -DLUAJIT_DISABLE_JIT
+ #
+ # Some architectures (e.g. PPC) can use either single-number (1) or
+ # dual-number (2) mode. Uncomment one of these lines to override the
+@@ -437,6 +437,11 @@
+ ifeq (Windows,$(TARGET_SYS))
+   DASM_AFLAGS+= -D WIN
+ endif
++ifeq (x86,$(TARGET_LJARCH))
++  ifneq (,$(findstring __SSE2__ 1,$(TARGET_TESTARCH)))
++    DASM_AFLAGS+= -D SSE
++  endif
++else
+ ifeq (x64,$(TARGET_LJARCH))
+   ifeq (,$(findstring LJ_FR2 1,$(TARGET_TESTARCH)))
+     DASM_ARCH= x86
+@@ -466,6 +471,7 @@
+ endif
+ endif
+ endif
++endif
+ 
+ DASM_FLAGS= $(DASM_XFLAGS) $(DASM_AFLAGS)
+ DASM_DASC= vm_$(DASM_ARCH).dasc
+diff -rauN luajit-2.0-505e2c0/src/Makefile.orig luajit-2.0-505e2c0-i486-patch/src/Makefile.orig
+--- luajit-2.0-505e2c0/src/Makefile.orig	1970-01-01 01:00:00.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/Makefile.orig	2023-03-26 18:05:15.245707757 +0200
+@@ -0,0 +1,726 @@
++##############################################################################
++# LuaJIT Makefile. Requires GNU Make.
++#
++# Please read doc/install.html before changing any variables!
++#
++# Suitable for POSIX platforms (Linux, *BSD, OSX etc.).
++# Also works with MinGW and Cygwin on Windows.
++# Please check msvcbuild.bat for building with MSVC on Windows.
++#
++# Copyright (C) 2005-2022 Mike Pall. See Copyright Notice in luajit.h
++##############################################################################
++
++MAJVER=  2
++MINVER=  1
++RELVER=  0
++ABIVER=  5.1
++NODOTABIVER= 51
++
++##############################################################################
++#############################  COMPILER OPTIONS  #############################
++##############################################################################
++# These options mainly affect the speed of the JIT compiler itself, not the
++# speed of the JIT-compiled code. Turn any of the optional settings on by
++# removing the '#' in front of them. Make sure you force a full recompile
++# with "make clean", followed by "make" if you change any options.
++#
++DEFAULT_CC = gcc
++#
++# LuaJIT builds as a native 32 or 64 bit binary by default.
++CC= $(DEFAULT_CC)
++#
++# Use this if you want to force a 32 bit build on a 64 bit multilib OS.
++#CC= $(DEFAULT_CC) -m32
++#
++# Since the assembler part does NOT maintain a frame pointer, it's pointless
++# to slow down the C part by not omitting it. Debugging, tracebacks and
++# unwinding are not affected -- the assembler part has frame unwind
++# information and GCC emits it where needed (x64) or with -g (see CCDEBUG).
++CCOPT= -O2 -fomit-frame-pointer
++# Use this if you want to generate a smaller binary (but it's slower):
++#CCOPT= -Os -fomit-frame-pointer
++# Note: it's no longer recommended to use -O3 with GCC 4.x.
++# The I-Cache bloat usually outweighs the benefits from aggressive inlining.
++#
++# Target-specific compiler options:
++#
++# x86/x64 only: For GCC 4.2 or higher and if you don't intend to distribute
++# the binaries to a different machine you could also use: -march=native
++#
++CCOPT_x86= -march=i486 -mfpmath=387
++CCOPT_x64=
++CCOPT_arm=
++CCOPT_arm64=
++CCOPT_ppc=
++CCOPT_mips=
++#
++CCDEBUG=
++# Uncomment the next line to generate debug information:
++#CCDEBUG= -g
++#
++CCWARN= -Wall
++# Uncomment the next line to enable more warnings:
++#CCWARN+= -Wextra -Wdeclaration-after-statement -Wredundant-decls -Wshadow -Wpointer-arith
++#
++##############################################################################
++
++##############################################################################
++################################  BUILD MODE  ################################
++##############################################################################
++# The default build mode is mixed mode on POSIX. On Windows this is the same
++# as dynamic mode.
++#
++# Mixed mode creates a static + dynamic library and a statically linked luajit.
++BUILDMODE= mixed
++#
++# Static mode creates a static library and a statically linked luajit.
++#BUILDMODE= static
++#
++# Dynamic mode creates a dynamic library and a dynamically linked luajit.
++# Note: this executable will only run when the library is installed!
++#BUILDMODE= dynamic
++#
++##############################################################################
++
++##############################################################################
++#################################  FEATURES  #################################
++##############################################################################
++# Enable/disable these features as needed, but make sure you force a full
++# recompile with "make clean", followed by "make".
++XCFLAGS=
++#
++# Permanently disable the FFI extension to reduce the size of the LuaJIT
++# executable. But please consider that the FFI library is compiled-in,
++# but NOT loaded by default. It only allocates any memory, if you actually
++# make use of it.
++#XCFLAGS+= -DLUAJIT_DISABLE_FFI
++#
++# Features from Lua 5.2 that are unlikely to break existing code are
++# enabled by default. Some other features that *might* break some existing
++# code (e.g. __pairs or os.execute() return values) can be enabled here.
++# Note: this does not provide full compatibility with Lua 5.2 at this time.
++#XCFLAGS+= -DLUAJIT_ENABLE_LUA52COMPAT
++#
++# Disable the JIT compiler, i.e. turn LuaJIT into a pure interpreter.
++#XCFLAGS+= -DLUAJIT_DISABLE_JIT
++#
++# Some architectures (e.g. PPC) can use either single-number (1) or
++# dual-number (2) mode. Uncomment one of these lines to override the
++# default mode. Please see LJ_ARCH_NUMMODE in lj_arch.h for details.
++#XCFLAGS+= -DLUAJIT_NUMMODE=1
++#XCFLAGS+= -DLUAJIT_NUMMODE=2
++#
++# Disable LJ_GC64 mode for x64.
++#XCFLAGS+= -DLUAJIT_DISABLE_GC64
++#
++##############################################################################
++
++##############################################################################
++############################  DEBUGGING SUPPORT  #############################
++##############################################################################
++# Enable these options as needed, but make sure you force a full recompile
++# with "make clean", followed by "make".
++# Note that most of these are NOT suitable for benchmarking or release mode!
++#
++# Use the system provided memory allocator (realloc) instead of the
++# bundled memory allocator. This is slower, but sometimes helpful for
++# debugging. This option cannot be enabled on x64 without GC64, since
++# realloc usually doesn't return addresses in the right address range.
++# OTOH this option is mandatory for Valgrind's memcheck tool on x64 and
++# the only way to get useful results from it for all other architectures.
++#XCFLAGS+= -DLUAJIT_USE_SYSMALLOC
++#
++# This define is required to run LuaJIT under Valgrind. The Valgrind
++# header files must be installed. You should enable debug information, too.
++#XCFLAGS+= -DLUAJIT_USE_VALGRIND
++#
++# This is the client for the GDB JIT API. GDB 7.0 or higher is required
++# to make use of it. See lj_gdbjit.c for details. Enabling this causes
++# a non-negligible overhead, even when not running under GDB.
++#XCFLAGS+= -DLUAJIT_USE_GDBJIT
++#
++# Turn on assertions for the Lua/C API to debug problems with lua_* calls.
++# This is rather slow -- use only while developing C libraries/embeddings.
++#XCFLAGS+= -DLUA_USE_APICHECK
++#
++# Turn on assertions for the whole LuaJIT VM. This significantly slows down
++# everything. Use only if you suspect a problem with LuaJIT itself.
++#XCFLAGS+= -DLUA_USE_ASSERT
++#
++##############################################################################
++# You probably don't need to change anything below this line!
++##############################################################################
++
++##############################################################################
++# Host system detection.
++##############################################################################
++
++ifeq (Windows,$(findstring Windows,$(OS))$(MSYSTEM)$(TERM))
++  HOST_SYS= Windows
++else
++  HOST_SYS:= $(shell uname -s)
++  ifneq (,$(findstring MINGW,$(HOST_SYS)))
++    HOST_SYS= Windows
++    HOST_MSYS= mingw
++  endif
++  ifneq (,$(findstring MSYS,$(HOST_SYS)))
++    HOST_SYS= Windows
++    HOST_MSYS= mingw
++  endif
++  ifneq (,$(findstring CYGWIN,$(HOST_SYS)))
++    HOST_SYS= Windows
++    HOST_MSYS= cygwin
++  endif
++endif
++
++##############################################################################
++# Flags and options for host and target.
++##############################################################################
++
++# You can override the following variables at the make command line:
++#   CC       HOST_CC       STATIC_CC       DYNAMIC_CC
++#   CFLAGS   HOST_CFLAGS   TARGET_CFLAGS
++#   LDFLAGS  HOST_LDFLAGS  TARGET_LDFLAGS  TARGET_SHLDFLAGS
++#   LIBS     HOST_LIBS     TARGET_LIBS
++#   CROSS    HOST_SYS      TARGET_SYS      TARGET_FLAGS
++#
++# Cross-compilation examples:
++#   make HOST_CC="gcc -m32" CROSS=i586-mingw32msvc- TARGET_SYS=Windows
++#   make HOST_CC="gcc -m32" CROSS=powerpc-linux-gnu-
++
++ASOPTIONS= $(CCOPT) $(CCWARN) $(XCFLAGS) $(CFLAGS)
++CCOPTIONS= $(CCDEBUG) $(ASOPTIONS)
++LDOPTIONS= $(CCDEBUG) $(LDFLAGS)
++
++HOST_CC= $(CC)
++HOST_RM?= rm -f
++# If left blank, minilua is built and used. You can supply an installed
++# copy of (plain) Lua 5.1 or 5.2, plus Lua BitOp. E.g. with: HOST_LUA=lua
++HOST_LUA=
++
++HOST_XCFLAGS= -I.
++HOST_XLDFLAGS=
++HOST_XLIBS=
++HOST_ACFLAGS= $(CCOPTIONS) $(HOST_XCFLAGS) $(TARGET_ARCH) $(HOST_CFLAGS)
++HOST_ALDFLAGS= $(LDOPTIONS) $(HOST_XLDFLAGS) $(HOST_LDFLAGS)
++HOST_ALIBS= $(HOST_XLIBS) $(LIBS) $(HOST_LIBS)
++
++STATIC_CC = $(CROSS)$(CC)
++DYNAMIC_CC = $(CROSS)$(CC) -fPIC
++TARGET_CC= $(STATIC_CC)
++TARGET_STCC= $(STATIC_CC)
++TARGET_DYNCC= $(DYNAMIC_CC)
++TARGET_LD= $(CROSS)$(CC)
++TARGET_AR= $(CROSS)ar rcus
++TARGET_STRIP= $(CROSS)strip
++
++TARGET_LIBPATH= $(or $(PREFIX),/usr/local)/$(or $(MULTILIB),lib)
++TARGET_SONAME= libluajit-$(ABIVER).so.$(MAJVER)
++TARGET_DYLIBNAME= libluajit-$(ABIVER).$(MAJVER).dylib
++TARGET_DYLIBPATH= $(TARGET_LIBPATH)/$(TARGET_DYLIBNAME)
++TARGET_DLLNAME= lua$(NODOTABIVER).dll
++TARGET_DLLDOTANAME= libluajit-$(ABIVER).dll.a
++TARGET_XSHLDFLAGS= -shared -fPIC -Wl,-soname,$(TARGET_SONAME)
++TARGET_DYNXLDOPTS=
++
++TARGET_LFSFLAGS= -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
++TARGET_XCFLAGS= $(TARGET_LFSFLAGS) -U_FORTIFY_SOURCE
++TARGET_XLDFLAGS=
++TARGET_XLIBS= -lm
++TARGET_TCFLAGS= $(CCOPTIONS) $(TARGET_XCFLAGS) $(TARGET_FLAGS) $(TARGET_CFLAGS)
++TARGET_ACFLAGS= $(CCOPTIONS) $(TARGET_XCFLAGS) $(TARGET_FLAGS) $(TARGET_CFLAGS)
++TARGET_ASFLAGS= $(ASOPTIONS) $(TARGET_XCFLAGS) $(TARGET_FLAGS) $(TARGET_CFLAGS)
++TARGET_ALDFLAGS= $(LDOPTIONS) $(TARGET_XLDFLAGS) $(TARGET_FLAGS) $(TARGET_LDFLAGS)
++TARGET_ASHLDFLAGS= $(LDOPTIONS) $(TARGET_XSHLDFLAGS) $(TARGET_FLAGS) $(TARGET_SHLDFLAGS)
++TARGET_ALIBS= $(TARGET_XLIBS) $(LIBS) $(TARGET_LIBS)
++
++TARGET_TESTARCH=$(shell $(TARGET_CC) $(TARGET_TCFLAGS) -E lj_arch.h -dM)
++ifneq (,$(findstring LJ_TARGET_X64 ,$(TARGET_TESTARCH)))
++  TARGET_LJARCH= x64
++else
++ifneq (,$(findstring LJ_TARGET_X86 ,$(TARGET_TESTARCH)))
++  TARGET_LJARCH= x86
++else
++ifneq (,$(findstring LJ_TARGET_ARM ,$(TARGET_TESTARCH)))
++  TARGET_LJARCH= arm
++else
++ifneq (,$(findstring LJ_TARGET_ARM64 ,$(TARGET_TESTARCH)))
++  ifneq (,$(findstring __AARCH64EB__ ,$(TARGET_TESTARCH)))
++    TARGET_ARCH= -D__AARCH64EB__=1
++  endif
++  TARGET_LJARCH= arm64
++else
++ifneq (,$(findstring LJ_TARGET_PPC ,$(TARGET_TESTARCH)))
++  ifneq (,$(findstring LJ_LE 1,$(TARGET_TESTARCH)))
++    TARGET_ARCH= -DLJ_ARCH_ENDIAN=LUAJIT_LE
++  else
++    TARGET_ARCH= -DLJ_ARCH_ENDIAN=LUAJIT_BE
++  endif
++  TARGET_LJARCH= ppc
++else
++ifneq (,$(findstring LJ_TARGET_MIPS ,$(TARGET_TESTARCH)))
++  ifneq (,$(findstring MIPSEL ,$(TARGET_TESTARCH)))
++    TARGET_ARCH= -D__MIPSEL__=1
++  endif
++  ifneq (,$(findstring LJ_TARGET_MIPS64 ,$(TARGET_TESTARCH)))
++    TARGET_LJARCH= mips64
++  else
++    TARGET_LJARCH= mips
++  endif
++else
++  $(error Unsupported target architecture)
++endif
++endif
++endif
++endif
++endif
++endif
++
++ifneq (,$(findstring LJ_TARGET_PS3 1,$(TARGET_TESTARCH)))
++  TARGET_SYS= PS3
++  TARGET_ARCH+= -D__CELLOS_LV2__
++  TARGET_XCFLAGS+= -DLUAJIT_USE_SYSMALLOC
++  TARGET_XLIBS+= -lpthread
++endif
++
++TARGET_XCFLAGS+= $(CCOPT_$(TARGET_LJARCH))
++TARGET_ARCH+= $(patsubst %,-DLUAJIT_TARGET=LUAJIT_ARCH_%,$(TARGET_LJARCH))
++
++ifneq (,$(PREFIX))
++ifneq (/usr/local,$(PREFIX))
++  TARGET_XCFLAGS+= -DLUA_ROOT=\"$(PREFIX)\"
++  ifneq (/usr,$(PREFIX))
++    TARGET_DYNXLDOPTS= -Wl,-rpath,$(TARGET_LIBPATH)
++  endif
++endif
++endif
++ifneq (,$(MULTILIB))
++  TARGET_XCFLAGS+= -DLUA_MULTILIB=\"$(MULTILIB)\"
++endif
++ifneq (,$(LMULTILIB))
++  TARGET_XCFLAGS+= -DLUA_LMULTILIB=\"$(LMULTILIB)\"
++endif
++
++##############################################################################
++# Target system detection.
++##############################################################################
++
++TARGET_SYS?= $(HOST_SYS)
++ifeq (Windows,$(TARGET_SYS))
++  TARGET_STRIP+= --strip-unneeded
++  TARGET_XSHLDFLAGS= -shared -Wl,--out-implib,$(TARGET_DLLDOTANAME)
++  TARGET_DYNXLDOPTS=
++else
++  TARGET_AR+= 2>/dev/null
++ifeq (,$(shell $(TARGET_CC) -o /dev/null -c -x c /dev/null -fno-stack-protector 2>/dev/null || echo 1))
++  TARGET_XCFLAGS+= -fno-stack-protector
++endif
++ifeq (Darwin,$(TARGET_SYS))
++  ifeq (,$(MACOSX_DEPLOYMENT_TARGET))
++    $(error missing: export MACOSX_DEPLOYMENT_TARGET=XX.YY)
++  endif
++  TARGET_STRIP+= -x
++  TARGET_XCFLAGS+= -DLUAJIT_UNWIND_EXTERNAL
++  TARGET_XSHLDFLAGS= -dynamiclib -single_module -undefined dynamic_lookup -fPIC
++  TARGET_DYNXLDOPTS=
++  TARGET_XSHLDFLAGS+= -install_name $(TARGET_DYLIBPATH) -compatibility_version $(MAJVER).$(MINVER) -current_version $(MAJVER).$(MINVER).$(RELVER)
++else
++ifeq (iOS,$(TARGET_SYS))
++  TARGET_STRIP+= -x
++  TARGET_XSHLDFLAGS= -dynamiclib -single_module -undefined dynamic_lookup -fPIC
++  TARGET_DYNXLDOPTS=
++  TARGET_XSHLDFLAGS+= -install_name $(TARGET_DYLIBPATH) -compatibility_version $(MAJVER).$(MINVER) -current_version $(MAJVER).$(MINVER).$(RELVER)
++  ifeq (arm64,$(TARGET_LJARCH))
++    TARGET_XCFLAGS+= -fno-omit-frame-pointer
++  endif
++else
++  ifeq (,$(findstring LJ_NO_UNWIND 1,$(TARGET_TESTARCH)))
++    # Find out whether the target toolchain always generates unwind tables.
++    TARGET_TESTUNWIND=$(shell exec 2>/dev/null; echo 'extern void b(void);int a(void){b();return 0;}' | $(TARGET_CC) -c -x c - -o tmpunwind.o && { grep -qa -e eh_frame -e __unwind_info tmpunwind.o || grep -qU -e eh_frame -e __unwind_info tmpunwind.o; } && echo E; rm -f tmpunwind.o)
++    ifneq (,$(findstring E,$(TARGET_TESTUNWIND)))
++      TARGET_XCFLAGS+= -DLUAJIT_UNWIND_EXTERNAL
++    endif
++  endif
++  ifneq (SunOS,$(TARGET_SYS))
++    ifneq (PS3,$(TARGET_SYS))
++      TARGET_XLDFLAGS+= -Wl,-E
++    endif
++  endif
++  ifeq (Linux,$(TARGET_SYS))
++    TARGET_XLIBS+= -ldl
++  endif
++  ifeq (GNU/kFreeBSD,$(TARGET_SYS))
++    TARGET_XLIBS+= -ldl
++  endif
++endif
++endif
++endif
++
++ifneq ($(HOST_SYS),$(TARGET_SYS))
++  ifeq (Windows,$(TARGET_SYS))
++    HOST_XCFLAGS+= -malign-double -DLUAJIT_OS=LUAJIT_OS_WINDOWS
++  else
++  ifeq (Linux,$(TARGET_SYS))
++    HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_LINUX
++  else
++  ifeq (Darwin,$(TARGET_SYS))
++    HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_OSX
++  else
++  ifeq (iOS,$(TARGET_SYS))
++    HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_OSX -DTARGET_OS_IPHONE=1
++  else
++    HOST_XCFLAGS+= -DLUAJIT_OS=LUAJIT_OS_OTHER
++  endif
++  endif
++  endif
++  endif
++endif
++
++ifneq (,$(CCDEBUG))
++  TARGET_STRIP= @:
++endif
++
++##############################################################################
++# Files and pathnames.
++##############################################################################
++
++MINILUA_O= host/minilua.o
++MINILUA_LIBS= -lm
++MINILUA_T= host/minilua
++MINILUA_X= $(MINILUA_T)
++
++ifeq (,$(HOST_LUA))
++  HOST_LUA= $(MINILUA_X)
++  DASM_DEP= $(MINILUA_T)
++endif
++
++DASM_DIR= ../dynasm
++DASM= $(HOST_LUA) $(DASM_DIR)/dynasm.lua
++DASM_XFLAGS=
++DASM_AFLAGS=
++DASM_ARCH= $(TARGET_LJARCH)
++
++ifneq (,$(findstring LJ_LE 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D ENDIAN_LE
++else
++  DASM_AFLAGS+= -D ENDIAN_BE
++endif
++ifneq (,$(findstring LJ_ARCH_BITS 64,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D P64
++endif
++ifneq (,$(findstring LJ_HASJIT 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D JIT
++endif
++ifneq (,$(findstring LJ_HASFFI 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D FFI
++endif
++ifneq (,$(findstring LJ_DUALNUM 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D DUALNUM
++endif
++ifneq (,$(findstring LJ_ARCH_HASFPU 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D FPU
++  TARGET_ARCH+= -DLJ_ARCH_HASFPU=1
++else
++  TARGET_ARCH+= -DLJ_ARCH_HASFPU=0
++endif
++ifeq (,$(findstring LJ_ABI_SOFTFP 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D HFABI
++  TARGET_ARCH+= -DLJ_ABI_SOFTFP=0
++else
++  TARGET_ARCH+= -DLJ_ABI_SOFTFP=1
++endif
++ifneq (,$(findstring LJ_NO_UNWIND 1,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D NO_UNWIND
++  TARGET_ARCH+= -DLUAJIT_NO_UNWIND
++endif
++DASM_AFLAGS+= -D VER=$(subst LJ_ARCH_VERSION_,,$(filter LJ_ARCH_VERSION_%,$(subst LJ_ARCH_VERSION ,LJ_ARCH_VERSION_,$(TARGET_TESTARCH))))
++ifeq (Windows,$(TARGET_SYS))
++  DASM_AFLAGS+= -D WIN
++endif
++ifeq (x64,$(TARGET_LJARCH))
++  ifeq (,$(findstring LJ_FR2 1,$(TARGET_TESTARCH)))
++    DASM_ARCH= x86
++  endif
++else
++ifeq (arm,$(TARGET_LJARCH))
++  ifeq (iOS,$(TARGET_SYS))
++    DASM_AFLAGS+= -D IOS
++  endif
++else
++ifneq (,$(findstring LJ_TARGET_MIPSR6 ,$(TARGET_TESTARCH)))
++  DASM_AFLAGS+= -D MIPSR6
++endif
++ifeq (ppc,$(TARGET_LJARCH))
++  ifneq (,$(findstring LJ_ARCH_SQRT 1,$(TARGET_TESTARCH)))
++    DASM_AFLAGS+= -D SQRT
++  endif
++  ifneq (,$(findstring LJ_ARCH_ROUND 1,$(TARGET_TESTARCH)))
++    DASM_AFLAGS+= -D ROUND
++  endif
++  ifneq (,$(findstring LJ_ARCH_PPC32ON64 1,$(TARGET_TESTARCH)))
++    DASM_AFLAGS+= -D GPR64
++  endif
++  ifeq (PS3,$(TARGET_SYS))
++    DASM_AFLAGS+= -D PPE -D TOC
++  endif
++endif
++endif
++endif
++
++DASM_FLAGS= $(DASM_XFLAGS) $(DASM_AFLAGS)
++DASM_DASC= vm_$(DASM_ARCH).dasc
++
++BUILDVM_O= host/buildvm.o host/buildvm_asm.o host/buildvm_peobj.o \
++	   host/buildvm_lib.o host/buildvm_fold.o
++BUILDVM_T= host/buildvm
++BUILDVM_X= $(BUILDVM_T)
++
++HOST_O= $(MINILUA_O) $(BUILDVM_O)
++HOST_T= $(MINILUA_T) $(BUILDVM_T)
++
++LJVM_S= lj_vm.S
++LJVM_O= lj_vm.o
++LJVM_BOUT= $(LJVM_S)
++LJVM_MODE= elfasm
++
++LJLIB_O= lib_base.o lib_math.o lib_bit.o lib_string.o lib_table.o \
++	 lib_io.o lib_os.o lib_package.o lib_debug.o lib_jit.o lib_ffi.o \
++	 lib_buffer.o
++LJLIB_C= $(LJLIB_O:.o=.c)
++
++LJCORE_O= lj_assert.o lj_gc.o lj_err.o lj_char.o lj_bc.o lj_obj.o lj_buf.o \
++	  lj_str.o lj_tab.o lj_func.o lj_udata.o lj_meta.o lj_debug.o \
++	  lj_prng.o lj_state.o lj_dispatch.o lj_vmevent.o lj_vmmath.o \
++	  lj_strscan.o lj_strfmt.o lj_strfmt_num.o lj_serialize.o \
++	  lj_api.o lj_profile.o \
++	  lj_lex.o lj_parse.o lj_bcread.o lj_bcwrite.o lj_load.o \
++	  lj_ir.o lj_opt_mem.o lj_opt_fold.o lj_opt_narrow.o \
++	  lj_opt_dce.o lj_opt_loop.o lj_opt_split.o lj_opt_sink.o \
++	  lj_mcode.o lj_snap.o lj_record.o lj_crecord.o lj_ffrecord.o \
++	  lj_asm.o lj_trace.o lj_gdbjit.o \
++	  lj_ctype.o lj_cdata.o lj_cconv.o lj_ccall.o lj_ccallback.o \
++	  lj_carith.o lj_clib.o lj_cparse.o \
++	  lj_lib.o lj_alloc.o lib_aux.o \
++	  $(LJLIB_O) lib_init.o
++
++LJVMCORE_O= $(LJVM_O) $(LJCORE_O)
++LJVMCORE_DYNO= $(LJVMCORE_O:.o=_dyn.o)
++
++LIB_VMDEF= jit/vmdef.lua
++LIB_VMDEFP= $(LIB_VMDEF)
++
++LUAJIT_O= luajit.o
++LUAJIT_A= libluajit.a
++LUAJIT_SO= libluajit.so
++LUAJIT_T= luajit
++
++ALL_T= $(LUAJIT_T) $(LUAJIT_A) $(LUAJIT_SO) $(HOST_T)
++ALL_HDRGEN= lj_bcdef.h lj_ffdef.h lj_libdef.h lj_recdef.h lj_folddef.h \
++	    host/buildvm_arch.h
++ALL_GEN= $(LJVM_S) $(ALL_HDRGEN) $(LIB_VMDEFP)
++WIN_RM= *.obj *.lib *.exp *.dll *.exe *.manifest *.pdb *.ilk
++ALL_RM= $(ALL_T) $(ALL_GEN) *.o host/*.o $(WIN_RM)
++
++##############################################################################
++# Build mode handling.
++##############################################################################
++
++# Mixed mode defaults.
++TARGET_O= $(LUAJIT_A)
++TARGET_T= $(LUAJIT_T) $(LUAJIT_SO)
++TARGET_DEP= $(LIB_VMDEF) $(LUAJIT_SO)
++
++ifeq (Windows,$(TARGET_SYS))
++  TARGET_DYNCC= $(STATIC_CC)
++  LJVM_MODE= peobj
++  LJVM_BOUT= $(LJVM_O)
++  LUAJIT_T= luajit.exe
++  ifeq (cygwin,$(HOST_MSYS))
++    LUAJIT_SO= cyg$(TARGET_DLLNAME)
++  else
++    LUAJIT_SO= $(TARGET_DLLNAME)
++  endif
++  # Mixed mode is not supported on Windows. And static mode doesn't work well.
++  # C modules cannot be loaded, because they bind to lua51.dll.
++  ifneq (static,$(BUILDMODE))
++    BUILDMODE= dynamic
++    TARGET_XCFLAGS+= -DLUA_BUILD_AS_DLL
++  endif
++endif
++ifeq (Darwin,$(TARGET_SYS))
++  LJVM_MODE= machasm
++endif
++ifeq (iOS,$(TARGET_SYS))
++  LJVM_MODE= machasm
++endif
++ifeq (SunOS,$(TARGET_SYS))
++  BUILDMODE= static
++endif
++ifeq (PS3,$(TARGET_SYS))
++  BUILDMODE= static
++endif
++
++ifeq (Windows,$(HOST_SYS))
++  MINILUA_T= host/minilua.exe
++  BUILDVM_T= host/buildvm.exe
++  ifeq (,$(HOST_MSYS))
++    MINILUA_X= host\minilua
++    BUILDVM_X= host\buildvm
++    ALL_RM:= $(subst /,\,$(ALL_RM))
++    HOST_RM= del
++  endif
++endif
++
++ifeq (static,$(BUILDMODE))
++  TARGET_DYNCC= @:
++  TARGET_T= $(LUAJIT_T)
++  TARGET_DEP= $(LIB_VMDEF)
++else
++ifeq (dynamic,$(BUILDMODE))
++  ifneq (Windows,$(TARGET_SYS))
++    TARGET_CC= $(DYNAMIC_CC)
++  endif
++  TARGET_DYNCC= @:
++  LJVMCORE_DYNO= $(LJVMCORE_O)
++  TARGET_O= $(LUAJIT_SO)
++  TARGET_XLDFLAGS+= $(TARGET_DYNXLDOPTS)
++else
++ifeq (Darwin,$(TARGET_SYS))
++  TARGET_DYNCC= @:
++  LJVMCORE_DYNO= $(LJVMCORE_O)
++endif
++ifeq (iOS,$(TARGET_SYS))
++  TARGET_DYNCC= @:
++  LJVMCORE_DYNO= $(LJVMCORE_O)
++endif
++endif
++endif
++
++Q= @
++E= @echo
++#Q=
++#E= @:
++
++##############################################################################
++# Make targets.
++##############################################################################
++
++default all:	$(TARGET_T)
++
++amalg:
++	$(MAKE) all "LJCORE_O=ljamalg.o"
++
++clean:
++	$(HOST_RM) $(ALL_RM)
++
++libbc:
++	./$(LUAJIT_T) host/genlibbc.lua -o host/buildvm_libbc.h $(LJLIB_C)
++	$(MAKE) all
++
++depend:
++	@for file in $(ALL_HDRGEN); do \
++	  test -f $$file || touch $$file; \
++	  done
++	@$(HOST_CC) $(HOST_ACFLAGS) -MM *.c host/*.c | \
++	  sed -e "s| [^ ]*/dasm_\S*\.h||g" \
++	      -e "s|^\([^l ]\)|host/\1|" \
++	      -e "s| lj_target_\S*\.h| lj_target_*.h|g" \
++	      -e "s| lj_emit_\S*\.h| lj_emit_*.h|g" \
++	      -e "s| lj_asm_\S*\.h| lj_asm_*.h|g" >Makefile.dep
++	@for file in $(ALL_HDRGEN); do \
++	  test -s $$file || $(HOST_RM) $$file; \
++	  done
++
++.PHONY: default all amalg clean libbc depend
++
++##############################################################################
++# Rules for generated files.
++##############################################################################
++
++$(MINILUA_T): $(MINILUA_O)
++	$(E) "HOSTLINK  $@"
++	$(Q)$(HOST_CC) $(HOST_ALDFLAGS) -o $@ $(MINILUA_O) $(MINILUA_LIBS) $(HOST_ALIBS)
++
++host/buildvm_arch.h: $(DASM_DASC) $(DASM_DEP) $(DASM_DIR)/*.lua lj_arch.h lua.h luaconf.h
++	$(E) "DYNASM    $@"
++	$(Q)$(DASM) $(DASM_FLAGS) -o $@ $(DASM_DASC)
++
++host/buildvm.o: $(DASM_DIR)/dasm_*.h
++
++$(BUILDVM_T): $(BUILDVM_O)
++	$(E) "HOSTLINK  $@"
++	$(Q)$(HOST_CC) $(HOST_ALDFLAGS) -o $@ $(BUILDVM_O) $(HOST_ALIBS)
++
++$(LJVM_BOUT): $(BUILDVM_T)
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m $(LJVM_MODE) -o $@
++
++lj_bcdef.h: $(BUILDVM_T) $(LJLIB_C)
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m bcdef -o $@ $(LJLIB_C)
++
++lj_ffdef.h: $(BUILDVM_T) $(LJLIB_C)
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m ffdef -o $@ $(LJLIB_C)
++
++lj_libdef.h: $(BUILDVM_T) $(LJLIB_C)
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m libdef -o $@ $(LJLIB_C)
++
++lj_recdef.h: $(BUILDVM_T) $(LJLIB_C)
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m recdef -o $@ $(LJLIB_C)
++
++$(LIB_VMDEF): $(BUILDVM_T) $(LJLIB_C)
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m vmdef -o $(LIB_VMDEFP) $(LJLIB_C)
++
++lj_folddef.h: $(BUILDVM_T) lj_opt_fold.c
++	$(E) "BUILDVM   $@"
++	$(Q)$(BUILDVM_X) -m folddef -o $@ lj_opt_fold.c
++
++##############################################################################
++# Object file rules.
++##############################################################################
++
++%.o: %.c
++	$(E) "CC        $@"
++	$(Q)$(TARGET_DYNCC) $(TARGET_ACFLAGS) -c -o $(@:.o=_dyn.o) $<
++	$(Q)$(TARGET_CC) $(TARGET_ACFLAGS) -c -o $@ $<
++
++%.o: %.S
++	$(E) "ASM       $@"
++	$(Q)$(TARGET_DYNCC) $(TARGET_ASFLAGS) -c -o $(@:.o=_dyn.o) $<
++	$(Q)$(TARGET_CC) $(TARGET_ASFLAGS) -c -o $@ $<
++
++$(LUAJIT_O):
++	$(E) "CC        $@"
++	$(Q)$(TARGET_STCC) $(TARGET_ACFLAGS) -c -o $@ $<
++
++$(HOST_O): %.o: %.c
++	$(E) "HOSTCC    $@"
++	$(Q)$(HOST_CC) $(HOST_ACFLAGS) -c -o $@ $<
++
++include Makefile.dep
++
++##############################################################################
++# Target file rules.
++##############################################################################
++
++$(LUAJIT_A): $(LJVMCORE_O)
++	$(E) "AR        $@"
++	$(Q)$(TARGET_AR) $@ $(LJVMCORE_O)
++
++# The dependency on _O, but linking with _DYNO is intentional.
++$(LUAJIT_SO): $(LJVMCORE_O)
++	$(E) "DYNLINK   $@"
++	$(Q)$(TARGET_LD) $(TARGET_ASHLDFLAGS) -o $@ $(LJVMCORE_DYNO) $(TARGET_ALIBS)
++	$(Q)$(TARGET_STRIP) $@
++
++$(LUAJIT_T): $(TARGET_O) $(LUAJIT_O) $(TARGET_DEP)
++	$(E) "LINK      $@"
++	$(Q)$(TARGET_LD) $(TARGET_ALDFLAGS) -o $@ $(LUAJIT_O) $(TARGET_O) $(TARGET_ALIBS)
++	$(Q)$(TARGET_STRIP) $@
++	$(E) "OK        Successfully built LuaJIT"
++
++##############################################################################
+diff -rauN luajit-2.0-505e2c0/src/msvcbuild.bat luajit-2.0-505e2c0-i486-patch/src/msvcbuild.bat
+--- luajit-2.0-505e2c0/src/msvcbuild.bat	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/msvcbuild.bat	2023-03-26 18:16:32.558477950 +0200
+@@ -41,7 +41,6 @@
+ @set DASC=vm_x86.dasc
+ @set DASMFLAGS=-D WIN -D JIT -D FFI
+ @set LJARCH=x86
+-@set LJCOMPILE=%LJCOMPILE% /arch:SSE2
+ :X64
+ @if "%1" neq "nogc64" goto :GC64
+ @shift
+diff -rauN luajit-2.0-505e2c0/src/vm_x86.dasc luajit-2.0-505e2c0-i486-patch/src/vm_x86.dasc
+--- luajit-2.0-505e2c0/src/vm_x86.dasc	2023-02-21 17:07:37.000000000 +0100
++++ luajit-2.0-505e2c0-i486-patch/src/vm_x86.dasc	2023-03-26 18:16:32.561811273 +0200
+@@ -18,6 +18,7 @@
+ |
+ |.if P64
+ |.define X64, 1
++|.define SSE, 1
+ |.if WIN
+ |.define X64WIN, 1
+ |.endif
+@@ -439,6 +440,7 @@
+ |  fpop
+ |.endmacro
+ |
++|.macro fdup; fld st0; .endmacro
+ |.macro fpop1; fstp st1; .endmacro
+ |
+ |// Synthesize SSE FP constants.
+@@ -464,6 +466,9 @@
+ |.macro sseconst_1, reg, tmp		// Synthesize 1.0.
+ |  sseconst_hi reg, tmp, 3ff00000
+ |.endmacro
++|.macro sseconst_m1, reg, tmp		// Synthesize -1.0.
++|  sseconst_hi reg, tmp, bff00000
++|.endmacro
+ |.macro sseconst_2p52, reg, tmp		// Synthesize 2^52.
+ |  sseconst_hi reg, tmp, 43300000
+ |.endmacro
+@@ -943,9 +948,13 @@
+   |.if DUALNUM
+   |  mov TMP2, LJ_TISNUM
+   |  mov TMP1, RC
+-  |.else
++  |.elif SSE
+   |  cvtsi2sd xmm0, RC
+   |  movsd TMPQ, xmm0
++  |.else
++  |  mov ARG4, RC
++  |  fild ARG4
++  |  fstp TMPQ
+   |.endif
+   |  lea RCa, TMPQ			// Store temp. TValue in TMPQ.
+   |  jmp >1
+@@ -1031,9 +1040,13 @@
+   |.if DUALNUM
+   |  mov TMP2, LJ_TISNUM
+   |  mov TMP1, RC
+-  |.else
++  |.elif SSE
+   |  cvtsi2sd xmm0, RC
+   |  movsd TMPQ, xmm0
++  |.else
++  |  mov ARG4, RC
++  |  fild ARG4
++  |  fstp TMPQ
+   |.endif
+   |  lea RCa, TMPQ			// Store temp. TValue in TMPQ.
+   |  jmp >1
+@@ -1416,6 +1429,19 @@
+   |  cmp NARGS:RD, 2+1;  jb ->fff_fallback
+   |.endmacro
+   |
++  |.macro .ffunc_n, name
++  |  .ffunc_1 name
++  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
++  |  fld qword [BASE]
++  |.endmacro
++  |
++  |.macro .ffunc_n, name, op
++  |  .ffunc_1 name
++  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
++  |  op
++  |  fld qword [BASE]
++  |.endmacro
++  |
+   |.macro .ffunc_nsse, name, op
+   |  .ffunc_1 name
+   |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
+@@ -1426,6 +1452,14 @@
+   |  .ffunc_nsse name, movsd
+   |.endmacro
+   |
++  |.macro .ffunc_nn, name
++  |  .ffunc_2 name
++  |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
++  |  cmp dword [BASE+12], LJ_TISNUM;  jae ->fff_fallback
++  |  fld qword [BASE]
++  |  fld qword [BASE+8]
++  |.endmacro
++  |
+   |.macro .ffunc_nnsse, name
+   |  .ffunc_2 name
+   |  cmp dword [BASE+4], LJ_TISNUM;  jae ->fff_fallback
+@@ -1631,7 +1665,11 @@
+   |.else
+   |  jae ->fff_fallback
+   |.endif
++  |.if SSE
+   |  movsd xmm0, qword [BASE]; jmp ->fff_resxmm0
++  |.else
++  |  fld qword [BASE]; jmp ->fff_resn
++  |.endif
+   |
+   |.ffunc_1 tostring
+   |  // Only handles the string or number case inline.
+@@ -1729,12 +1767,19 @@
+   |  add RD, 1
+   |  mov dword [BASE-4], LJ_TISNUM
+   |  mov dword [BASE-8], RD
+-  |.else
++  |.elif SSE
+   |  movsd xmm0, qword [BASE+8]
+   |  sseconst_1 xmm1, RBa
+   |  addsd xmm0, xmm1
+   |  cvttsd2si RD, xmm0
+   |  movsd qword [BASE-8], xmm0
++  |.else
++  |  fld qword [BASE+8]
++  |  fld1
++  |  faddp st1
++  |  fist ARG1
++  |  fstp qword [BASE-8]
++  |  mov RD, ARG1
+   |.endif
+   |  mov TAB:RB, [BASE]
+   |  cmp RD, TAB:RB->asize;  jae >2	// Not in array part?
+@@ -1783,9 +1828,12 @@
+   |.if DUALNUM
+   |  mov dword [BASE+12], LJ_TISNUM
+   |  mov dword [BASE+8], 0
+-  |.else
++  |.elif SSE
+   |  xorps xmm0, xmm0
+   |  movsd qword [BASE+8], xmm0
++  |.else
++  |  fldz
++  |  fstp qword [BASE+8]
+   |.endif
+   |  mov RD, 1+3
+   |  jmp ->fff_res
+@@ -2017,11 +2065,6 @@
+   |->fff_resi:  // Dummy.
+   |.endif
+   |
+-  |->fff_resn:
+-  |  mov PC, [BASE-4]
+-  |  fstp qword [BASE-8]
+-  |  jmp ->fff_res1
+-  |
+   |  .ffunc_1 math_abs
+   |.if DUALNUM
+   |  cmp dword [BASE+4], LJ_TISNUM; jne >2
+@@ -2044,6 +2087,8 @@
+   |.else
+   |  cmp dword [BASE+4], LJ_TISNUM; jae ->fff_fallback
+   |.endif
++  |
++  |.if SSE
+   |  movsd xmm0, qword [BASE]
+   |  sseconst_abs xmm1, RDa
+   |  andps xmm0, xmm1
+@@ -2051,6 +2096,15 @@
+   |  mov PC, [BASE-4]
+   |  movsd qword [BASE-8], xmm0
+   |  // fallthrough
++  |.else
++  |  fld qword [BASE]
++  |  fabs
++  |  // fallthrough
++  |->fff_resxmm0:  // Dummy.
++  |->fff_resn:
++  |  mov PC, [BASE-4]
++  |  fstp qword [BASE-8]
++  |.endif
+   |
+   |->fff_res1:
+   |  mov RD, 1+1
+@@ -2093,8 +2147,9 @@
+   |.else
+   |  cmp dword [BASE+4], LJ_TISNUM; jae ->fff_fallback
+   |.endif
++  |.if SSE
+   |  movsd xmm0, qword [BASE]
+-  |  call ->vm_ .. func .. _sse
++  |  call ->vm_ .. func
+   |.if DUALNUM
+   |  cvttsd2si RB, xmm0
+   |  cmp RB, 0x80000000
+@@ -2105,29 +2160,61 @@
+   |  je ->fff_resi
+   |.endif
+   |  jmp ->fff_resxmm0
++  |.else
++  |  fld qword [BASE]
++  |  call ->vm_ .. func
++  |  .if DUALNUM
++  |    fist ARG1
++  |    mov RB, ARG1
++  |    cmp RB, 0x80000000; jne >2
++  |    fdup
++  |    fild ARG1
++  |    fcomparepp
++  |    jp ->fff_resn
++  |    jne ->fff_resn
++  |2:
++  |    fpop
++  |    jmp ->fff_resi
++  | .else
++  |    jmp ->fff_resn
++  | .endif
++  |.endif
+   |.endmacro
+   |
+   |  math_round floor
+   |  math_round ceil
+   |
++  |.if SSE
+   |.ffunc_nsse math_sqrt, sqrtsd; jmp ->fff_resxmm0
++  |.else
++  |.ffunc_n math_sqrt; fsqrt; jmp ->fff_resn
++  |.endif
+   |
+   |.ffunc math_log
+   |  cmp NARGS:RD, 1+1; jne ->fff_fallback	// Exactly one argument.
+   |  cmp dword [BASE+4], LJ_TISNUM; jae ->fff_fallback
++  |.if SSE
+   |  movsd xmm0, qword [BASE]
+-  |.if not X64
+-  |  movsd FPARG1, xmm0
+-  |.endif
++  |  .if not X64
++  |    movsd FPARG1, xmm0
++  |  .endif
+   |  mov RB, BASE
+   |  call extern log
+   |  mov BASE, RB
+   |  jmp ->fff_resfp
++  |.else
++  |  fldln2; fld qword [BASE]; fyl2x; jmp ->fff_resn
++  |.endif
+   |
+   |.macro math_extern, func
++  |.if SSE
+   |  .ffunc_nsse math_ .. func
+-  |.if not X64
+-  |  movsd FPARG1, xmm0
++  |  .if not X64
++  |    movsd FPARG1, xmm0
++  |  .endif
++  |.else
++  |  .ffunc_n math_ .. func
++  |  fstp FPARG1
+   |.endif
+   |  mov RB, BASE
+   |  call extern func
+@@ -2136,10 +2223,16 @@
+   |.endmacro
+   |
+   |.macro math_extern2, func
+-  |  .ffunc_nnsse math_ .. func
+   |.if not X64
+-  |  movsd FPARG1, xmm0
+-  |  movsd FPARG3, xmm1
++  |  .if SSE
++  |    .ffunc_nnsse math_ .. func
++  |    movsd FPARG1, xmm0
++  |    movsd FPARG3, xmm1
++  |  .else
++  |    .ffunc_nn math_ .. func
++  |    fstp FPARG3
++  |    fstp FPARG1
++  |  .endif
+   |.endif
+   |  mov RB, BASE
+   |  call extern func
+@@ -2176,34 +2269,65 @@
+   |  cmp RB, 0x00200000; jb >4
+   |1:
+   |  shr RB, 21; sub RB, RC		// Extract and unbias exponent.
++  |.if SSE
+   |  cvtsi2sd xmm0, RB
++  |.else
++  |  mov TMP1, RB; fild TMP1
++  |.endif
+   |  mov RB, [BASE-4]
+   |  and RB, 0x800fffff			// Mask off exponent.
+   |  or RB, 0x3fe00000			// Put mantissa in range [0.5,1) or 0.
+   |  mov [BASE-4], RB
+   |2:
++  |.if SSE
+   |  movsd qword [BASE], xmm0
++  |.else
++  |  fstp qword [BASE]
++  |.endif
+   |  mov RD, 1+2
+   |  jmp ->fff_res
+   |3:  // Return +-0, +-Inf, NaN unmodified and an exponent of 0.
++  |.if SSE
+   |  xorps xmm0, xmm0; jmp <2
++  |.else
++  |  fldz; jmp <2
++  |.endif
+   |4:  // Handle denormals by multiplying with 2^54 and adjusting the bias.
++  |.if SSE
+   |  movsd xmm0, qword [BASE]
+   |  sseconst_hi xmm1, RBa, 43500000  // 2^54.
+   |  mulsd xmm0, xmm1
+   |  movsd qword [BASE-8], xmm0
++  |.else
++  |  fld qword [BASE]
++  |  mov TMP1, 0x5a800000; fmul TMP1	// x = x*2^54
++  |  fstp qword [BASE-8]
++  |.endif
+   |  mov RB, [BASE-4]; mov RC, 1076; shl RB, 1; jmp <1
+   |
++  |.if SSE
+   |.ffunc_nsse math_modf
++  |.else
++  |.ffunc_n math_modf
++  |.endif
+   |  mov RB, [BASE+4]
+   |  mov PC, [BASE-4]
+   |  shl RB, 1; cmp RB, 0xffe00000; je >4	// +-Inf?
++  |.if SSE
+   |  movaps xmm4, xmm0
+-  |  call ->vm_trunc_sse
++  |  call ->vm_trunc
+   |  subsd xmm4, xmm0
+   |1:
+   |  movsd qword [BASE-8], xmm0
+   |  movsd qword [BASE], xmm4
++  |.else
++  |  fdup
++  |  call ->vm_trunc
++  |  fsub st1, st0
++  |1:
++  |  fstp qword [BASE-8]
++  |  fstp qword [BASE]
++  |.endif
+   |  mov RC, [BASE-4]; mov RB, [BASE+4]
+   |  xor RC, RB; js >3				// Need to adjust sign?
+   |2:
+@@ -2213,9 +2337,24 @@
+   |  xor RB, 0x80000000; mov [BASE+4], RB	// Flip sign of fraction.
+   |  jmp <2
+   |4:
++  |.if SSE
+   |  xorps xmm4, xmm4; jmp <1			// Return +-Inf and +-0.
++  |.else
++  |  fldz; fxch; jmp <1				// Return +-Inf and +-0.
++  |.endif
++  |
++  |.ffunc_nnr math_fmod
++  |1: ; fprem; fnstsw ax; sahf; jp <1
++  |  fpop1
++  |  jmp ->fff_resn
++  |
++  |.if SSE
++  |.ffunc_nnsse math_pow;	call ->vm_pow;	jmp ->fff_resxmm0
++  |.else
++  |.ffunc_nn math_pow;		call ->vm_pow;	jmp ->fff_resn
++  |.endif
+   |
+-  |.macro math_minmax, name, cmovop, sseop
++  |.macro math_minmax, name, cmovop, fcmovop, sseop
+   |  .ffunc_1 name
+   |  mov RA, 2
+   |  cmp dword [BASE+4], LJ_TISNUM
+@@ -2232,7 +2371,12 @@
+   |3:
+   |  ja ->fff_fallback
+   |  // Convert intermediate result to number and continue below.
++  |.if SSE
+   |  cvtsi2sd xmm0, RB
++  |.else
++  |  mov TMP1, RB
++  |  fild TMP1
++  |.endif
+   |  jmp >6
+   |4:
+   |  ja ->fff_fallback
+@@ -2240,6 +2384,7 @@
+   |  jae ->fff_fallback
+   |.endif
+   |
++  |.if SSE
+   |  movsd xmm0, qword [BASE]
+   |5:  // Handle numbers or integers.
+   |  cmp RA, RD; jae ->fff_resxmm0
+@@ -2258,10 +2403,34 @@
+   |  sseop xmm0, xmm1
+   |  add RA, 1
+   |  jmp <5
++  |.else
++  |  fld qword [BASE]
++  |5:  // Handle numbers or integers.
++  |  cmp RA, RD; jae ->fff_resn
++  |  cmp dword [BASE+RA*8-4], LJ_TISNUM
++  |.if DUALNUM
++  |  jb >6
++  |  ja >9
++  |  fild dword [BASE+RA*8-8]
++  |  jmp >7
++  |.else
++  |  jae >9
++  |.endif
++  |6:
++  |  fld qword [BASE+RA*8-8]
++  |7:
++  |  fucomi st1; fcmovop st1; fpop1
++  |  add RA, 1
++  |  jmp <5
++  |.endif
+   |.endmacro
+   |
+-  |  math_minmax math_min, cmovg, minsd
+-  |  math_minmax math_max, cmovl, maxsd
++  |  math_minmax math_min, cmovg, fcmovnbe, minsd
++  |  math_minmax math_max, cmovl, fcmovbe, maxsd
++  |.if not SSE
++  |9:
++  |  fpop; jmp ->fff_fallback
++  |.endif
+   |
+   |//-- String library -----------------------------------------------------
+   |
+@@ -2275,8 +2444,10 @@
+   |  movzx RB, byte STR:RB[1]
+   |.if DUALNUM
+   |  jmp ->fff_resi
+-  |.else
++  |.elif SSE
+   |  cvtsi2sd xmm0, RB; jmp ->fff_resxmm0
++  |.else
++  |  mov TMP1, RB; fild TMP1; jmp ->fff_resn
+   |.endif
+   |
+   |.ffunc string_char			// Only handle the 1-arg case here.
+@@ -2288,11 +2459,16 @@
+   |  mov RB, dword [BASE]
+   |  cmp RB, 255;  ja ->fff_fallback
+   |  mov TMP2, RB
+-  |.else
++  |.elif SSE
+   |  jae ->fff_fallback
+   |  cvttsd2si RB, qword [BASE]
+   |  cmp RB, 255;  ja ->fff_fallback
+   |  mov TMP2, RB
++  |.else
++  |  jae ->fff_fallback
++  |  fld qword [BASE]
++  |  fistp TMP2
++  |  cmp TMP2, 255;  ja ->fff_fallback
+   |.endif
+   |.if X64
+   |  mov TMP3, 1
+@@ -2331,10 +2507,14 @@
+   |  jne ->fff_fallback
+   |  mov RB, dword [BASE+16]
+   |  mov TMP2, RB
+-  |.else
++  |.elif SSE
+   |  jae ->fff_fallback
+   |  cvttsd2si RB, qword [BASE+16]
+   |  mov TMP2, RB
++  |.else
++  |  jae ->fff_fallback
++  |  fld qword [BASE+16]
++  |  fistp TMP2
+   |.endif
+   |1:
+   |  cmp dword [BASE+4], LJ_TSTR;  jne ->fff_fallback
+@@ -2349,8 +2529,12 @@
+   |  mov RB, STR:RB->len
+   |.if DUALNUM
+   |  mov RA, dword [BASE+8]
+-  |.else
++  |.elif SSE
+   |  cvttsd2si RA, qword [BASE+8]
++  |.else
++  |  fld qword [BASE+8]
++  |  fistp ARG3
++  |  mov RA, ARG3
+   |.endif
+   |  mov RC, TMP2
+   |  cmp RB, RC				// len < end? (unsigned compare)
+@@ -2418,10 +2602,16 @@
+   |
+   |//-- Bit library --------------------------------------------------------
+   |
++  |.define TOBIT_BIAS, 0x59c00000	// 2^52 + 2^51 (float, not double!).
++  |
+   |.macro .ffunc_bit, name, kind, fdef
+   |  fdef name
+   |.if kind == 2
++  |.if SSE
+   |  sseconst_tobit xmm1, RBa
++  |.else
++  |  mov TMP1, TOBIT_BIAS
++  |.endif
+   |.endif
+   |  cmp dword [BASE+4], LJ_TISNUM
+   |.if DUALNUM
+@@ -2437,12 +2627,24 @@
+   |.else
+   |  jae ->fff_fallback
+   |.endif
++  |.if SSE
+   |  movsd xmm0, qword [BASE]
+   |.if kind < 2
+   |  sseconst_tobit xmm1, RBa
+   |.endif
+   |  addsd xmm0, xmm1
+   |  movd RB, xmm0
++  |.else
++  |  fld qword [BASE]
++  |.if kind < 2
++  |  mov TMP1, TOBIT_BIAS
++  |.endif
++  |  fadd TMP1
++  |  fstp FPARG1
++  |.if kind > 0
++  |  mov RB, ARG1
++  |.endif
++  |.endif
+   |2:
+   |.endmacro
+   |
+@@ -2451,7 +2653,15 @@
+   |.endmacro
+   |
+   |.ffunc_bit bit_tobit, 0
++  |.if DUALNUM or SSE
++  |.if not SSE
++  |  mov RB, ARG1
++  |.endif
+   |  jmp ->fff_resbit
++  |.else
++  |  fild ARG1
++  |  jmp ->fff_resn
++  |.endif
+   |
+   |.macro .ffunc_bit_op, name, ins
+   |  .ffunc_bit name, 2
+@@ -2471,10 +2681,17 @@
+   |.else
+   |  jae ->fff_fallback_bit_op
+   |.endif
++  |.if SSE
+   |  movsd xmm0, qword [RD]
+   |  addsd xmm0, xmm1
+   |  movd RA, xmm0
+   |  ins RB, RA
++  |.else
++  |  fld qword [RD]
++  |  fadd TMP1
++  |  fstp FPARG1
++  |  ins RB, ARG1
++  |.endif
+   |  sub RD, 8
+   |  jmp <1
+   |.endmacro
+@@ -2491,10 +2708,15 @@
+   |  not RB
+   |.if DUALNUM
+   |  jmp ->fff_resbit
+-  |.else
++  |.elif SSE
+   |->fff_resbit:
+   |  cvtsi2sd xmm0, RB
+   |  jmp ->fff_resxmm0
++  |.else
++  |->fff_resbit:
++  |  mov ARG1, RB
++  |  fild ARG1
++  |  jmp ->fff_resn
+   |.endif
+   |
+   |->fff_fallback_bit_op:
+@@ -2507,13 +2729,22 @@
+   |  // Note: no inline conversion from number for 2nd argument!
+   |  cmp dword [BASE+12], LJ_TISNUM; jne ->fff_fallback
+   |  mov RA, dword [BASE+8]
+-  |.else
++  |.elif SSE
+   |  .ffunc_nnsse name
+   |  sseconst_tobit xmm2, RBa
+   |  addsd xmm0, xmm2
+   |  addsd xmm1, xmm2
+   |  movd RB, xmm0
+   |  movd RA, xmm1
++  |.else
++  |  .ffunc_nn name
++  |  mov TMP1, TOBIT_BIAS
++  |  fadd TMP1
++  |  fstp FPARG3
++  |  fadd TMP1
++  |  fstp FPARG1
++  |  mov RA, ARG3
++  |  mov RB, ARG1
+   |.endif
+   |  ins RB, cl				// Assumes RA is ecx.
+   |  jmp ->fff_resbit
+@@ -2954,18 +3185,27 @@
+   |//-----------------------------------------------------------------------
+   |
+   |// FP value rounding. Called by math.floor/math.ceil fast functions
+-  |// and from JIT code. arg/ret is xmm0. xmm0-xmm3 and RD (eax) modified.
+-  |.macro vm_round, name, mode, cond
+-  |->name:
+-  |.if not X64 and cond
+-  |  movsd xmm0, qword [esp+4]
+-  |  call ->name .. _sse
+-  |  movsd qword [esp+4], xmm0  // Overwrite callee-owned arg.
+-  |  fld qword [esp+4]
++  |// and from JIT code.
++  |
++  |// x87 variant: Arg/ret on x87 stack. No int/xmm registers modified.
++  |.macro vm_round_x87, mode1, mode2
++  |  fnstcw word [esp+4]		// Caveat: overwrites ARG1 and ARG2.
++  |  mov [esp+8], eax
++  |  mov ax, mode1
++  |  or ax, [esp+4]
++  |.if mode2 ~= 0xffff
++  |  and ax, mode2
++  |.endif
++  |  mov [esp+6], ax
++  |  fldcw word [esp+6]
++  |  frndint
++  |  fldcw word [esp+4]
++  |  mov eax, [esp+8]
+   |  ret
+-  |.endif
++  |.endmacro
+   |
+-  |->name .. _sse:
++  |// SSE variant: arg/ret is xmm0. xmm0-xmm3 and RD (eax) modified.
++  |.macro vm_round_sse, mode
+   |  sseconst_abs xmm2, RDa
+   |  sseconst_2p52 xmm3, RDa
+   |  movaps xmm1, xmm0
+@@ -2986,29 +3226,37 @@
+   |  addsd xmm1, xmm3			// (|x| + 2^52) - 2^52
+   |  subsd xmm1, xmm3
+   |  orpd xmm1, xmm2			// Merge sign bit back in.
+-  |  sseconst_1 xmm3, RDa
+   |  .if mode == 1		// ceil(x)?
++  |    sseconst_m1 xmm2, RDa		// Must subtract -1 to preserve -0.
+   |    cmpsd xmm0, xmm1, 6		// x > result?
+-  |    andpd xmm0, xmm3
+-  |    addsd xmm1, xmm0			// If yes, add 1.
+-  |    orpd xmm1, xmm2			// Merge sign bit back in (again).
+   |  .else			// floor(x)?
++  |    sseconst_1 xmm2, RDa
+   |    cmpsd xmm0, xmm1, 1		// x < result?
+-  |    andpd xmm0, xmm3
+-  |    subsd xmm1, xmm0			// If yes, subtract 1.
+   |  .endif
++  |  andpd xmm0, xmm2
++  |  subsd xmm1, xmm0			// If yes, subtract +-1.
+   |.endif
+   |  movaps xmm0, xmm1
+   |1:
+   |  ret
+   |.endmacro
+   |
+-  |  vm_round vm_floor, 0, 1
+-  |  vm_round vm_ceil,  1, JIT
+-  |  vm_round vm_trunc, 2, JIT
++  |.macro vm_round, name, ssemode, mode1, mode2, extra // FIXME: EXTRA NOT USED
++  |->name:
++  |.if not SSE
++  |  vm_round_x87 mode1, mode2
++  |.endif
++  |->name .. _sse:
++  |  vm_round_sse ssemode
++  |.endmacro
++  |
++  |  vm_round vm_floor, 0, 0x0400, 0xf7ff, 1
++  |  vm_round vm_ceil, 1, 0x0800, 0xfbff, JIT
++  |  vm_round vm_trunc, 2, 0x0c00, 0xffff, JIT
+   |
+   |// FP modulo x%y. Called by BC_MOD* and vm_arith.
+   |->vm_mod:
++  |.if SSE
+   |// Args in xmm0/xmm1, return value in xmm0.
+   |// Caveat: xmm0-xmm5 and RC (eax) modified!
+   |  movaps xmm5, xmm0
+@@ -3036,6 +3284,243 @@
+   |  movaps xmm0, xmm5
+   |  subsd xmm0, xmm1
+   |  ret
++  |.else
++  |// Args/ret on x87 stack (y on top). No xmm registers modified.
++  |// Caveat: needs 3 slots on x87 stack! RC (eax) modified!
++  |  fld st1
++  |  fdiv st1
++  |  fnstcw word [esp+4]
++  |  mov ax, 0x0400
++  |  or ax, [esp+4]
++  |  and ax, 0xf7ff
++  |  mov [esp+6], ax
++  |  fldcw word [esp+6]
++  |  frndint
++  |  fldcw word [esp+4]
++  |  fmulp st1
++  |  fsubp st1
++  |  ret
++  |.endif
++  |
++  |->vm_exp2raw:  // Entry point for vm_pow. Without +-Inf check.
++  |  fdup; frndint; fsub st1, st0; fxch		// Split into frac/int part.
++  |  f2xm1; fld1; faddp st1; fscale; fpop1	// ==> (2^frac-1 +1) << int
++  |1:
++  |  ret
++  |2:
++  |  fpop; fldz; ret
++  |
++  |// Generic power function x^y. Called by BC_POW, math.pow fast function,
++  |// and vm_arith.
++  |// Args/ret on x87 stack (y on top). RC (eax) modified.
++  |// Caveat: needs 3 slots on x87 stack!
++  |->vm_pow:
++  |.if not SSE
++  |  fist dword [esp+4]			// Store/reload int before comparison.
++  |  fild dword [esp+4]			// Integral exponent used in vm_powi.
++  |  fucomip st1
++  |  jnz >8				// Branch for FP exponents.
++  |  jp >9				// Branch for NaN exponent.
++  |  fpop				// Pop y and fallthrough to vm_powi.
++  |
++  |// FP/int power function x^i. Arg1/ret on x87 stack.
++  |// Arg2 (int) on C stack. RC (eax) modified.
++  |// Caveat: needs 2 slots on x87 stack!
++  |  mov eax, [esp+4]
++  |  cmp eax, 1; jle >6			// i<=1?
++  |  // Now 1 < (unsigned)i <= 0x80000000.
++  |1:  // Handle leading zeros.
++  |  test eax, 1; jnz >2
++  |  fmul st0
++  |  shr eax, 1
++  |  jmp <1
++  |2:
++  |  shr eax, 1; jz >5
++  |  fdup
++  |3:  // Handle trailing bits.
++  |  fmul st0
++  |  shr eax, 1; jz >4
++  |  jnc <3
++  |  fmul st1, st0
++  |  jmp <3
++  |4:
++  |  fmulp st1
++  |5:
++  |  ret
++  |6:
++  |  je <5				// x^1 ==> x
++  |  jb >7
++  |  fld1; fdivrp st1
++  |  neg eax
++  |  cmp eax, 1; je <5			// x^-1 ==> 1/x
++  |  jmp <1				// x^-i ==> (1/x)^i
++  |7:
++  |  fpop; fld1				// x^0 ==> 1
++  |  ret
++  |
++  |8:  // FP/FP power function x^y.
++  |  fst dword [esp+4]
++  |  fxch
++  |  fst dword [esp+8]
++  |  mov eax, [esp+4]; shl eax, 1
++  |  cmp eax, 0xff000000; je >2			// x^+-Inf?
++  |  mov eax, [esp+8]; shl eax, 1; je >4	// +-0^y?
++  |  cmp eax, 0xff000000; je >4			// +-Inf^y?
++  |  fyl2x
++  |  jmp ->vm_exp2raw
++  |
++  |9:  // Handle x^NaN.
++  |  fld1
++  |  fucomip st2
++  |  je >1				// 1^NaN ==> 1
++  |  fxch				// x^NaN ==> NaN
++  |1:
++  |  fpop
++  |  ret
++  |
++  |2:  // Handle x^+-Inf.
++  |  fabs
++  |  fld1
++  |  fucomip st1
++  |  je >3					// +-1^+-Inf ==> 1
++  |  fpop; fabs; fldz; mov eax, 0; setc al
++  |  ror eax, 1; xor eax, [esp+4]; jns >3	// |x|<>1, x^+-Inf ==> +Inf/0
++  |  fxch
++  |3:
++  |  fpop1; fabs
++  |  ret
++  |
++  |4:  // Handle +-0^y or +-Inf^y.
++  |  cmp dword [esp+4], 0; jge <3		// y >= 0, x^y ==> |x|
++  |  fpop; fpop
++  |  test eax, eax; jz >5			// y < 0, +-0^y ==> +Inf
++  |  fldz					// y < 0, +-Inf^y ==> 0
++  |  ret
++  |5:
++  |  mov dword [esp+4], 0x7f800000		// Return +Inf.
++  |  fld dword [esp+4]
++  |  ret
++  |.endif
++  |
++  |// Args in xmm0/xmm1. Ret in xmm0. xmm0-xmm2 and RC (eax) modified.
++  |// Needs 16 byte scratch area for x86. Also called from JIT code.
++  |->vm_pow_sse:
++  |  cvtsd2si eax, xmm1
++  |  cvtsi2sd xmm2, eax
++  |  ucomisd xmm1, xmm2
++  |  jnz >8				// Branch for FP exponents.
++  |  jp >9				// Branch for NaN exponent.
++  |  // Fallthrough to vm_powi_sse.
++  |
++  |// Args in xmm0/eax. Ret in xmm0. xmm0-xmm1 and eax modified.
++  |->vm_powi_sse:
++  |  cmp eax, 1; jle >6			// i<=1?
++  |  // Now 1 < (unsigned)i <= 0x80000000.
++  |1:  // Handle leading zeros.
++  |  test eax, 1; jnz >2
++  |  mulsd xmm0, xmm0
++  |  shr eax, 1
++  |  jmp <1
++  |2:
++  |  shr eax, 1; jz >5
++  |  movaps xmm1, xmm0
++  |3:  // Handle trailing bits.
++  |  mulsd xmm0, xmm0
++  |  shr eax, 1; jz >4
++  |  jnc <3
++  |  mulsd xmm1, xmm0
++  |  jmp <3
++  |4:
++  |  mulsd xmm0, xmm1
++  |5:
++  |  ret
++  |6:
++  |  je <5				// x^1 ==> x
++  |  jb >7				// x^0 ==> 1
++  |  neg eax
++  |  call <1
++  |  sseconst_1 xmm1, RDa
++  |  divsd xmm1, xmm0
++  |  movaps xmm0, xmm1
++  |  ret
++  |7:
++  |  sseconst_1 xmm0, RDa
++  |  ret
++  |
++  |8:  // FP/FP power function x^y.
++  |.if X64
++  |  movd rax, xmm1; shl rax, 1
++  |  rol rax, 12; cmp rax, 0xffe; je >2		// x^+-Inf?
++  |  movd rax, xmm0; shl rax, 1; je >4		// +-0^y?
++  |  rol rax, 12; cmp rax, 0xffe; je >5		// +-Inf^y?
++  |  .if X64WIN
++  |    movsd qword [rsp+16], xmm1		// Use scratch area.
++  |    movsd qword [rsp+8], xmm0
++  |    fld qword [rsp+16]
++  |    fld qword [rsp+8]
++  |  .else
++  |    movsd qword [rsp-16], xmm1		// Use red zone.
++  |    movsd qword [rsp-8], xmm0
++  |    fld qword [rsp-16]
++  |    fld qword [rsp-8]
++  |  .endif
++  |.else
++  |  movsd qword [esp+12], xmm1			// Needs 16 byte scratch area.
++  |  movsd qword [esp+4], xmm0
++  |  cmp dword [esp+12], 0; jne >1
++  |  mov eax, [esp+16]; shl eax, 1
++  |  cmp eax, 0xffe00000; je >2			// x^+-Inf?
++  |1:
++  |  cmp dword [esp+4], 0; jne >1
++  |  mov eax, [esp+8]; shl eax, 1; je >4	// +-0^y?
++  |  cmp eax, 0xffe00000; je >5			// +-Inf^y?
++  |1:
++  |  fld qword [esp+12]
++  |  fld qword [esp+4]
++  |.endif
++  |  fyl2x					// y*log2(x)
++  |  fdup; frndint; fsub st1, st0; fxch		// Split into frac/int part.
++  |  f2xm1; fld1; faddp st1; fscale; fpop1	// ==> (2^frac-1 +1) << int
++  |.if X64WIN
++  |  fstp qword [rsp+8]				// Use scratch area.
++  |  movsd xmm0, qword [rsp+8]
++  |.elif X64
++  |  fstp qword [rsp-8]				// Use red zone.
++  |  movsd xmm0, qword [rsp-8]
++  |.else
++  |  fstp qword [esp+4]				// Needs 8 byte scratch area.
++  |  movsd xmm0, qword [esp+4]
++  |.endif
++  |  ret
++  |
++  |9:  // Handle x^NaN.
++  |  sseconst_1 xmm2, RDa
++  |  ucomisd xmm0, xmm2; je >1			// 1^NaN ==> 1
++  |  movaps xmm0, xmm1				// x^NaN ==> NaN
++  |1:
++  |  ret
++  |
++  |2:  // Handle x^+-Inf.
++  |  sseconst_abs xmm2, RDa
++  |  andpd xmm0, xmm2				// |x|
++  |  sseconst_1 xmm2, RDa
++  |  ucomisd xmm0, xmm2; je <1			// +-1^+-Inf ==> 1
++  |  movmskpd eax, xmm1
++  |  xorps xmm0, xmm0
++  |  mov ah, al; setc al; xor al, ah; jne <1	// |x|<>1, x^+-Inf ==> +Inf/0
++  |3:
++  |  sseconst_hi xmm0, RDa, 7ff00000  // +Inf
++  |  ret
++  |
++  |4:  // Handle +-0^y.
++  |  movmskpd eax, xmm1; test eax, eax; jnz <3	// y < 0, +-0^y ==> +Inf
++  |  xorps xmm0, xmm0				// y >= 0, +-0^y ==> 0
++  |  ret
++  |
++  |5:  // Handle +-Inf^y.
++  |  movmskpd eax, xmm1; test eax, eax; jz <3	// y >= 0, +-Inf^y ==> +Inf
++  |  xorps xmm0, xmm0				// y < 0, +-Inf^y ==> 0
++  |  ret
+   |
+   |//-----------------------------------------------------------------------
+   |//-- Miscellaneous functions --------------------------------------------
+@@ -3429,12 +3914,19 @@
+     |  // RA is a number.
+     |  cmp dword [BASE+RD*8+4], LJ_TISNUM; jb >1; jne ->vmeta_comp
+     |  // RA is a number, RD is an integer.
++    |.if SSE
+     |  cvtsi2sd xmm0, dword [BASE+RD*8]
+     |  jmp >2
++    |.else
++    |  fld qword [BASE+RA*8]
++    |  fild dword [BASE+RD*8]
++    |  jmp >3
++    |.endif
+     |
+     |8:  // RA is an integer, RD is not an integer.
+     |  ja ->vmeta_comp
+     |  // RA is an integer, RD is a number.
++    |.if SSE
+     |  cvtsi2sd xmm1, dword [BASE+RA*8]
+     |  movsd xmm0, qword [BASE+RD*8]
+     |  add PC, 4
+@@ -3442,15 +3934,29 @@
+     |  jmp_comp jbe, ja, jb, jae, <9
+     |  jmp <6
+     |.else
++    |  fild dword [BASE+RA*8]
++    |  jmp >2
++    |.endif
++    |.else
+     |  checknum RA, ->vmeta_comp
+     |  checknum RD, ->vmeta_comp
+     |.endif
++    |.if SSE
+     |1:
+     |  movsd xmm0, qword [BASE+RD*8]
+     |2:
+     |  add PC, 4
+     |  ucomisd xmm0, qword [BASE+RA*8]
+     |3:
++    |.else
++    |1:
++    |  fld qword [BASE+RA*8]		// Reverse order, i.e like cmp D, A.
++    |2:
++    |  fld qword [BASE+RD*8]
++    |3:
++    |  add PC, 4
++    |  fcomparepp
++    |.endif
+     |  // Unordered: all of ZF CF PF set, ordered: PF clear.
+     |  // To preserve NaN semantics GE/GT branch on unordered, but LT/LE don't.
+     |.if DUALNUM
+@@ -3490,25 +3996,43 @@
+     |  // RD is a number.
+     |  cmp dword [BASE+RA*8+4], LJ_TISNUM; jb >1; jne >5
+     |  // RD is a number, RA is an integer.
++    |.if SSE
+     |  cvtsi2sd xmm0, dword [BASE+RA*8]
++    |.else
++    |  fild dword [BASE+RA*8]
++    |.endif
+     |  jmp >2
+     |
+     |8:  // RD is an integer, RA is not an integer.
+     |  ja >5
+     |  // RD is an integer, RA is a number.
++    |.if SSE
+     |  cvtsi2sd xmm0, dword [BASE+RD*8]
+     |  ucomisd xmm0, qword [BASE+RA*8]
++    |.else
++    |  fild dword [BASE+RD*8]
++    |  fld qword [BASE+RA*8]
++    |.endif
+     |  jmp >4
+     |
+     |.else
+     |  cmp RB, LJ_TISNUM; jae >5
+     |  checknum RA, >5
+     |.endif
++    |.if SSE
+     |1:
+     |  movsd xmm0, qword [BASE+RA*8]
+     |2:
+     |  ucomisd xmm0, qword [BASE+RD*8]
+     |4:
++    |.else
++    |1:
++    |  fld qword [BASE+RA*8]
++    |2:
++    |  fld qword [BASE+RD*8]
++    |4:
++    |  fcomparepp
++    |.endif
+   iseqne_fp:
+     if (vk) {
+       |  jp >2				// Unordered means not equal.
+@@ -3631,21 +4155,39 @@
+     |  // RA is a number.
+     |  cmp dword [KBASE+RD*8+4], LJ_TISNUM; jb >1
+     |  // RA is a number, RD is an integer.
++    |.if SSE
+     |  cvtsi2sd xmm0, dword [KBASE+RD*8]
++    |.else
++    |  fild dword [KBASE+RD*8]
++    |.endif
+     |  jmp >2
+     |
+     |8:  // RA is an integer, RD is a number.
++    |.if SSE
+     |  cvtsi2sd xmm0, dword [BASE+RA*8]
+     |  ucomisd xmm0, qword [KBASE+RD*8]
++    |.else
++    |  fild dword [BASE+RA*8]
++    |  fld qword [KBASE+RD*8]
++    |.endif
+     |  jmp >4
+     |.else
+     |  cmp RB, LJ_TISNUM; jae >3
+     |.endif
++    |.if SSE
+     |1:
+     |  movsd xmm0, qword [KBASE+RD*8]
+     |2:
+     |  ucomisd xmm0, qword [BASE+RA*8]
+     |4:
++    |.else
++    |1:
++    |  fld qword [KBASE+RD*8]
++    |2:
++    |  fld qword [BASE+RA*8]
++    |4:
++    |  fcomparepp
++    |.endif
+     goto iseqne_fp;
+   case BC_ISEQP: case BC_ISNEP:
+     vk = op == BC_ISEQP;
+@@ -3751,10 +4293,16 @@
+     |.else
+     |  checknum RD, ->vmeta_unm
+     |.endif
++    |.if SSE
+     |  movsd xmm0, qword [BASE+RD*8]
+     |  sseconst_sign xmm1, RDa
+     |  xorps xmm0, xmm1
+     |  movsd qword [BASE+RA*8], xmm0
++    |.else
++    |  fld qword [BASE+RD*8]
++    |  fchs
++    |  fstp qword [BASE+RA*8]
++    |.endif
+     |.if DUALNUM
+     |  jmp <9
+     |.else
+@@ -3770,11 +4318,15 @@
+     |1:
+     |  mov dword [BASE+RA*8+4], LJ_TISNUM
+     |  mov dword [BASE+RA*8], RD
+-    |.else
++    |.elif SSE
+     |  xorps xmm0, xmm0
+     |  cvtsi2sd xmm0, dword STR:RD->len
+     |1:
+     |  movsd qword [BASE+RA*8], xmm0
++    |.else
++    |  fild dword STR:RD->len
++    |1:
++    |  fstp qword [BASE+RA*8]
+     |.endif
+     |  ins_next
+     |2:
+@@ -3792,8 +4344,11 @@
+     |  // Length of table returned in eax (RD).
+     |.if DUALNUM
+     |  // Nothing to do.
+-    |.else
++    |.elif SSE
+     |  cvtsi2sd xmm0, RD
++    |.else
++    |  mov ARG1, RD
++    |  fild ARG1
+     |.endif
+     |  mov BASE, RB			// Restore BASE.
+     |  movzx RA, PC_RA
+@@ -3808,7 +4363,7 @@
+ 
+   /* -- Binary ops -------------------------------------------------------- */
+ 
+-    |.macro ins_arithpre, sseins, ssereg
++    |.macro ins_arithpre, x87ins, sseins, ssereg
+     |  ins_ABC
+     ||vk = ((int)op - BC_ADDVN) / (BC_ADDNV-BC_ADDVN);
+     ||switch (vk) {
+@@ -3817,22 +4372,37 @@
+     |   .if DUALNUM
+     |     cmp dword [KBASE+RC*8+4], LJ_TISNUM; jae ->vmeta_arith_vn
+     |   .endif
+-    |   movsd xmm0, qword [BASE+RB*8]
+-    |   sseins ssereg, qword [KBASE+RC*8]
++    |   .if SSE
++    |     movsd xmm0, qword [BASE+RB*8]
++    |     sseins ssereg, qword [KBASE+RC*8]
++    |   .else
++    |     fld qword [BASE+RB*8]
++    |     x87ins qword [KBASE+RC*8]
++    |   .endif
+     ||  break;
+     ||case 1:
+     |   checknum RB, ->vmeta_arith_nv
+     |   .if DUALNUM
+     |     cmp dword [KBASE+RC*8+4], LJ_TISNUM; jae ->vmeta_arith_nv
+     |   .endif
+-    |   movsd xmm0, qword [KBASE+RC*8]
+-    |   sseins ssereg, qword [BASE+RB*8]
++    |   .if SSE
++    |     movsd xmm0, qword [KBASE+RC*8]
++    |     sseins ssereg, qword [BASE+RB*8]
++    |   .else
++    |     fld qword [KBASE+RC*8]
++    |     x87ins qword [BASE+RB*8]
++    |   .endif
+     ||  break;
+     ||default:
+     |   checknum RB, ->vmeta_arith_vv
+     |   checknum RC, ->vmeta_arith_vv
+-    |   movsd xmm0, qword [BASE+RB*8]
+-    |   sseins ssereg, qword [BASE+RC*8]
++    |   .if SSE
++    |     movsd xmm0, qword [BASE+RB*8]
++    |     sseins ssereg, qword [BASE+RC*8]
++    |   .else
++    |     fld qword [BASE+RB*8]
++    |     x87ins qword [BASE+RC*8]
++    |   .endif
+     ||  break;
+     ||}
+     |.endmacro
+@@ -3870,62 +4440,55 @@
+     |.endmacro
+     |
+     |.macro ins_arithpost
++    |.if SSE
+     |  movsd qword [BASE+RA*8], xmm0
++    |.else
++    |  fstp qword [BASE+RA*8]
++    |.endif
+     |.endmacro
+     |
+-    |.macro ins_arith, sseins
+-    |  ins_arithpre sseins, xmm0
++    |.macro ins_arith, x87ins, sseins
++    |  ins_arithpre x87ins, sseins, xmm0
+     |  ins_arithpost
+     |  ins_next
+     |.endmacro
+     |
+-    |.macro ins_arith, intins, sseins
++    |.macro ins_arith, intins, x87ins, sseins
+     |.if DUALNUM
+     |  ins_arithdn intins
+     |.else
+-    |  ins_arith, sseins
++    |  ins_arith, x87ins, sseins
+     |.endif
+     |.endmacro
+ 
+     |  // RA = dst, RB = src1 or num const, RC = src2 or num const
+   case BC_ADDVN: case BC_ADDNV: case BC_ADDVV:
+-    |  ins_arith add, addsd
++    |  ins_arith add, fadd, addsd
+     break;
+   case BC_SUBVN: case BC_SUBNV: case BC_SUBVV:
+-    |  ins_arith sub, subsd
++    |  ins_arith sub, fsub, subsd
+     break;
+   case BC_MULVN: case BC_MULNV: case BC_MULVV:
+-    |  ins_arith imul, mulsd
++    |  ins_arith imul, fmul, mulsd
+     break;
+   case BC_DIVVN: case BC_DIVNV: case BC_DIVVV:
+-    |  ins_arith divsd
++    |  ins_arith fdiv, divsd
+     break;
+   case BC_MODVN:
+-    |  ins_arithpre movsd, xmm1
++    |  ins_arithpre fld, movsd, xmm1
+     |->BC_MODVN_Z:
+     |  call ->vm_mod
+     |  ins_arithpost
+     |  ins_next
+     break;
+   case BC_MODNV: case BC_MODVV:
+-    |  ins_arithpre movsd, xmm1
++    |  ins_arithpre fld, movsd, xmm1
+     |  jmp ->BC_MODVN_Z			// Avoid 3 copies. It's slow anyway.
+     break;
+   case BC_POW:
+-    |  ins_arithpre movsd, xmm1
+-    |  mov RB, BASE
+-    |.if not X64
+-    |  movsd FPARG1, xmm0
+-    |  movsd FPARG3, xmm1
+-    |.endif
+-    |  call extern pow
+-    |  movzx RA, PC_RA
+-    |  mov BASE, RB
+-    |.if X64
++    |  ins_arithpre fld, movsd, xmm1 // FIXME: THIS SHOULD NOT BE FLD. Whole thing is broken
++    |  call ->vm_pow
+     |  ins_arithpost
+-    |.else
+-    |  fstp qword [BASE+RA*8]
+-    |.endif
+     |  ins_next
+     break;
+ 
+@@ -3993,17 +4556,25 @@
+     |  movsx RD, RDW
+     |  mov dword [BASE+RA*8+4], LJ_TISNUM
+     |  mov dword [BASE+RA*8], RD
+-    |.else
++    |.elif SSE
+     |  movsx RD, RDW			// Sign-extend literal.
+     |  cvtsi2sd xmm0, RD
+     |  movsd qword [BASE+RA*8], xmm0
++    |.else
++    |  fild PC_RD			// Refetch signed RD from instruction.
++    |  fstp qword [BASE+RA*8]
+     |.endif
+     |  ins_next
+     break;
+   case BC_KNUM:
+     |  ins_AD	// RA = dst, RD = num const
++    |.if SSE
+     |  movsd xmm0, qword [KBASE+RD*8]
+     |  movsd qword [BASE+RA*8], xmm0
++    |.else
++    |  fld qword [KBASE+RD*8]
++    |  fstp qword [BASE+RA*8]
++    |.endif
+     |  ins_next
+     break;
+   case BC_KPRI:
+@@ -4110,10 +4681,18 @@
+   case BC_USETN:
+     |  ins_AD	// RA = upvalue #, RD = num const
+     |  mov LFUNC:RB, [BASE-8]
++    |.if SSE
+     |  movsd xmm0, qword [KBASE+RD*8]
++    |.else
++    |  fld qword [KBASE+RD*8]
++    |.endif
+     |  mov UPVAL:RB, [LFUNC:RB+RA*4+offsetof(GCfuncL, uvptr)]
+     |  mov RA, UPVAL:RB->v
++    |.if SSE
+     |  movsd qword [RA], xmm0
++    |.else
++    |  fstp qword [RA]
++    |.endif
+     |  ins_next
+     break;
+   case BC_USETP:
+@@ -4267,10 +4846,18 @@
+     |.else
+     |  // Convert number to int and back and compare.
+     |  checknum RC, >5
++    |.if SSE
+     |  movsd xmm0, qword [BASE+RC*8]
+     |  cvttsd2si RC, xmm0
+     |  cvtsi2sd xmm1, RC
+     |  ucomisd xmm0, xmm1
++    |.else
++    |  fld qword [BASE+RC*8]
++    |  fist ARG1
++    |  fild ARG1
++    |  fcomparepp
++    |  mov RC, ARG1
++    |.endif
+     |  jne ->vmeta_tgetv		// Generic numeric key? Use fallback.
+     |.endif
+     |  cmp RC, TAB:RB->asize	// Takes care of unordered, too.
+@@ -4399,8 +4986,12 @@
+     |  mov TAB:RB, [BASE+RB*8]
+     |.if DUALNUM
+     |  mov RC, dword [BASE+RC*8]
+-    |.else
++    |.elif SSE
+     |  cvttsd2si RC, qword [BASE+RC*8]
++    |.else
++    |  fld qword [BASE+RC*8]
++    |  fistp TMP1
++    |  mov RC, TMP1
+     |.endif
+     |  cmp RC, TAB:RB->asize
+     |  jae ->vmeta_tgetr		// Not in array part? Use fallback.
+@@ -4433,10 +5024,18 @@
+     |.else
+     |  // Convert number to int and back and compare.
+     |  checknum RC, >5
++    |.if SSE
+     |  movsd xmm0, qword [BASE+RC*8]
+     |  cvttsd2si RC, xmm0
+     |  cvtsi2sd xmm1, RC
+     |  ucomisd xmm0, xmm1
++    |.else
++    |  fld qword [BASE+RC*8]
++    |  fist ARG1
++    |  fild ARG1
++    |  fcomparepp
++    |  mov RC, ARG1
++    |.endif
+     |  jne ->vmeta_tsetv		// Generic numeric key? Use fallback.
+     |.endif
+     |  cmp RC, TAB:RB->asize		// Takes care of unordered, too.
+@@ -4611,8 +5210,12 @@
+     |  mov TAB:RB, [BASE+RB*8]
+     |.if DUALNUM
+     |  mov RC, dword [BASE+RC*8]
+-    |.else
++    |.elif SSE
+     |  cvttsd2si RC, qword [BASE+RC*8]
++    |.else
++    |  fld qword [BASE+RC*8]
++    |  fistp TMP1
++    |  mov RC, TMP1
+     |.endif
+     |  test byte TAB:RB->marked, LJ_GC_BLACK	// isblack(table)
+     |  jnz >7
+@@ -4833,8 +5436,10 @@
+     |.if DUALNUM
+     |  mov dword [BASE+RA*8+4], LJ_TISNUM
+     |  mov dword [BASE+RA*8], RC
+-    |.else
++    |.elif SSE
+     |  cvtsi2sd xmm0, RC
++    |.else
++    |  fild dword [BASE+RA*8-8]
+     |.endif
+     |  // Copy array slot to returned value.
+     |.if X64
+@@ -4850,8 +5455,10 @@
+     |  // Return array index as a numeric key.
+     |.if DUALNUM
+     |  // See above.
+-    |.else
++    |.elif SSE
+     |  movsd qword [BASE+RA*8], xmm0
++    |.else
++    |  fstp qword [BASE+RA*8]
+     |.endif
+     |  mov [BASE+RA*8-8], RC		// Update control var.
+     |2:
+@@ -4864,6 +5471,9 @@
+     |
+     |4:  // Skip holes in array part.
+     |  add RC, 1
++    |.if not (DUALNUM or SSE)
++    |  mov [BASE+RA*8-8], RC
++    |.endif
+     |  jmp <1
+     |
+     |5:  // Traverse hash part.
+@@ -5211,6 +5821,7 @@
+     if (!vk) {
+       |  cmp RB, LJ_TISNUM; jae ->vmeta_for
+     }
++    |.if SSE
+     |  movsd xmm0, qword FOR_IDX
+     |  movsd xmm1, qword FOR_STOP
+     if (vk) {
+@@ -5223,6 +5834,22 @@
+     |  ucomisd xmm1, xmm0
+     |1:
+     |  movsd qword FOR_EXT, xmm0
++    |.else
++    |  fld qword FOR_STOP
++    |  fld qword FOR_IDX
++    if (vk) {
++      |  fadd qword FOR_STEP		// nidx = idx + step
++      |  fst qword FOR_IDX
++      |  fst qword FOR_EXT
++      |  test RB, RB; js >1
++    } else {
++      |  fst qword FOR_EXT
++      |  jl >1
++    }
++    |  fxch				// Swap lim/(n)idx if step non-negative.
++    |1:
++    |  fcomparepp
++    |.endif
+     if (op == BC_FORI) {
+       |.if DUALNUM
+       |  jnb <7
+@@ -5250,10 +5877,11 @@
+     |2:
+     |  ins_next
+     |.endif
+-    |
++    |.if SSE
+     |3:  // Invert comparison if step is negative.
+     |  ucomisd xmm0, xmm1
+     |  jmp <1
++    |.endif
+     break;
+ 
+   case BC_ITERL:
