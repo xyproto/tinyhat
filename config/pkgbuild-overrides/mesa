@@ -1,0 +1,29 @@
+for _p in opencl-mesa vulkan-nouveau mesa-docs; do
+  pkgname=(${pkgname[@]/$_p/})
+done
+for _p in rust-bindgen rust cbindgen python-sphinx-hawkmoth python-sphinx; do
+  makedepends=(${makedepends[@]/$_p/})
+done
+eval "$(
+  declare -f build | \
+    sed '
+      s/-D gallium-rusticl=true/-D gallium-rusticl=false/
+      s/-D gallium-rusticl-enable-drivers=[^ ]* //
+      s/-D html-docs=enabled/-D html-docs=disabled/
+      s/microsoft-experimental,nouveau,/microsoft-experimental,/
+    '
+  declare -f package_mesa | \
+    sed '
+      /_pick opencl /d
+      /_pick vknvidia /d
+      /_pick docs /d
+    '
+)"
+if [ "$CARCH" = 'i686' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s/arch-meson /arch-meson -Dsse2=false /
+      '
+  )"
+fi

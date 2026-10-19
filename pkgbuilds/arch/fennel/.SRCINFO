@@ -1,0 +1,13 @@
+pkgbase = fennel
+	pkgdesc = A Lua Lisp language
+	pkgver = 1.6.1
+	pkgrel = 3
+	url = https://fennel-lang.org
+	arch = any
+	license = MIT
+	makedepends = git
+	depends = lua54
+	source = fennel::git+https://git.sr.ht/~technomancy/fennel#tag=1.6.1
+	sha256sums = 98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd
+
+pkgname = fennel

@@ -1,0 +1,42 @@
+diff -rauN qtbase-everywhere-src-6.1.0/src/corelib/CMakeLists.txt qtbase-everywhere-src-6.1.0-atomic-patch/src/corelib/CMakeLists.txt
+--- qtbase-everywhere-src-6.1.0/src/corelib/CMakeLists.txt	2021-04-30 11:31:33.000000000 +0200
++++ qtbase-everywhere-src-6.1.0-atomic-patch/src/corelib/CMakeLists.txt	2021-06-05 09:19:33.105924646 +0200
+@@ -1037,6 +1037,11 @@
+         ${FWUIKit}
+ )
+ 
++qt_internal_extend_target(Core CONDITION UNIX
++    LIBRARIES
++        atomic
++)
++
+ qt_internal_extend_target(Core CONDITION WATCHOS
+     LIBRARIES
+         ${FWWatchKit}
+diff -rauN qtbase-everywhere-src-6.1.0/src/gui/CMakeLists.txt qtbase-everywhere-src-6.1.0-atomic-patch/src/gui/CMakeLists.txt
+--- qtbase-everywhere-src-6.1.0/src/gui/CMakeLists.txt	2021-04-30 11:31:33.000000000 +0200
++++ qtbase-everywhere-src-6.1.0-atomic-patch/src/gui/CMakeLists.txt	2021-06-05 09:27:09.143983098 +0200
+@@ -849,6 +849,11 @@
+         ${CMAKE_DL_LIBS}
+ )
+ 
++qt_internal_extend_target(Gui CONDITION UNIX
++    LIBRARIES
++        atomic
++)
++
+ qt_internal_extend_target(Gui CONDITION QT_FEATURE_standarditemmodel
+     SOURCES
+         itemmodels/qstandarditemmodel.cpp itemmodels/qstandarditemmodel.h itemmodels/qstandarditemmodel_p.h
+diff -rauN qtbase-everywhere-src-6.1.0/src/plugins/imageformats/jpeg/CMakeLists.txt qtbase-everywhere-src-6.1.0-atomic-patch/src/plugins/imageformats/jpeg/CMakeLists.txt
+--- qtbase-everywhere-src-6.1.0/src/plugins/imageformats/jpeg/CMakeLists.txt	2021-04-30 11:31:33.000000000 +0200
++++ qtbase-everywhere-src-6.1.0-atomic-patch/src/plugins/imageformats/jpeg/CMakeLists.txt	2021-06-05 10:21:32.457384623 +0200
+@@ -102,3 +102,8 @@
+     DEFINES
+         _CRT_SECURE_NO_WARNINGS
+ )
++
++qt_internal_extend_target(QJpegPlugin CONDITION UNIX
++    LIBRARIES
++        atomic
++)

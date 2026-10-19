@@ -1,0 +1,71 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: damir <damir@archlinux.org>
+
+pkgbase=libxml++
+pkgname=(
+  libxml++
+  libxml++-docs
+)
+pkgver=3.2.6
+pkgrel="1"
+pkgdesc="C++ bindings to libxml2"
+url="https://libxmlplusplus.github.io/libxmlplusplus/"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  glibc
+  glibmm
+  libgcc
+  libstdc++
+  libxml2
+)
+makedepends=(
+  git
+  glibmm-docs
+  meson
+  mm-common
+)
+options=(!emptydirs)
+source=("git+https://github.com/libxmlplusplus/libxmlplusplus#tag=$pkgver")
+b2sums=('9a65793b4976d34ab6cec526d4bbcc4ed4e829abb03bb2c4379e19b858533cd821e3390d608f283d50fe4238b5ba010ef7c909fb9d511c624c848b1f5253e5ab')
+
+prepare() {
+  cd libxmlplusplus
+}
+
+build() {
+  local meson_options=(
+    -D maintainer-mode=true
+  )
+
+  arch-meson libxmlplusplus build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+# Do not remove the space before the () or commitpkg will
+# accidentally to run this function on the system (!!!) 
+package_libxml++ () {
+  provides=(libxml++-3.0.so)
+
+  meson install -C build --destdir "$pkgdir"
+
+  # Split -docs
+  mkdir -p docs/usr/share
+  mv -t docs/usr/share "$pkgdir"/usr/share/{devhelp,doc}
+}
+
+package_libxml++-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+  options=(!strip)
+
+  mv -t "$pkgdir" docs/*
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

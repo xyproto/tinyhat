@@ -1,0 +1,14 @@
+pkgbase = which
+	pkgdesc = A utility to show the full path of commands
+	pkgver = 2.25
+	pkgrel = 1
+	url = https://savannah.gnu.org/projects/which/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	depends = bash
+	depends = glibc
+	source = https://ftp.gnu.org/gnu/which/which-2.25.tar.gz
+	b2sums = 9c9b0e197e0f35845fee8a050aeccb3407ea27f82955be028ee3f148d74bf5d2c844814657ccf16adf03176f94b40bb4ae8817f27ffc7b2196b8d2e1e77f82c8
+
+pkgname = which

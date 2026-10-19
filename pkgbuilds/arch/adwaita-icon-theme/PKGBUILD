@@ -1,0 +1,67 @@
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=adwaita-icon-theme
+pkgname=(
+  adwaita-icon-theme
+  adwaita-cursors
+)
+pkgver=51.0
+pkgrel="1"
+pkgdesc="GNOME standard icons"
+url="https://gitlab.gnome.org/GNOME/adwaita-icon-theme"
+arch=(any)
+license=("CC-BY-SA-3.0 OR LGPL-3.0-only")
+depends=(
+  adwaita-icon-theme-legacy
+  hicolor-icon-theme
+)
+makedepends=(
+  git
+  gtk-update-icon-cache
+  meson
+)
+source=("git+https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git#tag=${pkgver/[a-z]/.&}")
+b2sums=('1e0257129aa3f6ecddae7d5bf789924363e4f5b29c016e0a95dac4a707b6f68bad41c766f0ca1f84f50a5e867a447c7345a991354708634ad76990cd42d2e2b5')
+
+prepare() {
+  cd $pkgbase
+}
+
+build() {
+  arch-meson $pkgbase build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_adwaita-icon-theme() {
+  depends+=(adwaita-cursors)
+
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+
+  # Split cursors
+  mkdir -p cursors/usr/share/icons/Adwaita
+  mv {"$pkgdir",cursors}/usr/share/icons/Adwaita/cursors
+
+  # Covered by common licenses
+  rm -r "$pkgdir/usr/share/licenses"
+}
+
+package_adwaita-cursors() {
+  pkgdesc="GNOME standard cursors"
+  depends=()
+
+  mv cursors/* "$pkgdir"
+
+  # deduplicate cursors
+  hardlink -c "$pkgdir/usr"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

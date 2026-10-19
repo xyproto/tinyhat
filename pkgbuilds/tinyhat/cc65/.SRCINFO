@@ -1,0 +1,13 @@
+pkgbase = cc65
+	pkgdesc = 6502 and 65816 C compiler and assembler
+	pkgver = 2.19+8d86ca7
+	pkgrel = 1
+	url = https://cc65.github.io/
+	arch = i686
+	arch = x32
+	license = Zlib
+	depends = glibc
+	source = cc65-8d86ca7e7ed15300cc4bfaba61a40a3d00f3114d.tar.gz::https://github.com/cc65/cc65/archive/8d86ca7e7ed15300cc4bfaba61a40a3d00f3114d.tar.gz
+	sha256sums = 8dfa14d7832a7171ab00c70b84cbede7a775ed22e325413e280e9256238e94e0
+
+pkgname = cc65

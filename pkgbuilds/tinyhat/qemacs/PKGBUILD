@@ -1,0 +1,30 @@
+pkgname=qemacs
+_commit=2107926a07ff8553e7633bcee306779d62c496a5
+pkgver=0+2107926a
+pkgrel=1
+pkgdesc="Quick Emacs, a small Emacs-like text editor by Fabrice Bellard"
+arch=(i686 x32)
+url="https://github.com/qemacs/qemacs"
+license=(MIT)
+depends=(glibc)
+source=("qemacs-$_commit.tar.gz::https://github.com/qemacs/qemacs/archive/$_commit.tar.gz")
+sha256sums=('c02763ff734f3d8454ac1568e2269b0db33dd71744c37b6661dcecc29c28f6b5')
+
+build() {
+  cd qemacs-$_commit
+  ./configure --prefix=/usr --cc=gcc --disable-x11 --disable-xv --disable-xshm --disable-xrender --disable-html --disable-png --disable-ffmpeg --disable-plugins
+  make HOST_CC=gcc
+}
+
+package() {
+  cd qemacs-$_commit
+  make DESTDIR="$pkgdir" HOST_CC=gcc install
+  rm -rf "$pkgdir/usr/share/doc"
+  if [ -d "$pkgdir/usr/man/man1" ]; then
+    mkdir -p "$pkgdir/usr/share/man"
+    mv "$pkgdir/usr/man/man1" "$pkgdir/usr/share/man/"
+    rmdir "$pkgdir/usr/man"
+  fi
+  [ -e "$pkgdir/usr/bin/qe" ] || ln -s qemacs "$pkgdir/usr/bin/qe"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

@@ -1,0 +1,99 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+pkgbase=memtest86+
+pkgname=('memtest86+' 'memtest86+-efi' 'memtest86+-iso')
+pkgver=9.00
+pkgrel="1"
+pkgdesc='Advanced memory diagnostic tool'
+url='https://www.memtest.org'
+arch=(any)
+license=('GPL-2.0-only')
+makedepends=('git')
+makedepends+=('lib32-glibc' 'xorriso' 'dosfstools' 'mtools') # to build the iso image
+source=(#https://www.memtest.org/download/${pkgver}/${pkgname}-${pkgver}.bin.gz
+        "git+https://github.com/memtest86plus/memtest86plus.git#tag=v$pkgver"
+        60_memtest86+ 
+        60_memtest86+-efi)
+sha512sums=('aaee88ce56be1651b58339c670eb7168718596b85dcb76deb1a912eff9a5a823573dbfe40a09ceccd25938a3f18cae4db50f942dca1179f33397f5e8f0c59be9'
+            '8abdd5ce13396de68905917060700a4e2da1813d08d3ea8012ad3d939635eadcebdb43e2a7ca40bbbb43260877d06726850b12dfcb355d8f8e1da6c0a54ded7c'
+            '7ac3717b53a06c4c192275bba6f2b58ac38fada26433f752234e426d75a29707ab179c1f5619e8ff5722f70f68cbb7f5e0850f978ff8a96947d92eddfeb9e50e')
+
+build() {
+  cd "memtest86plus"/build/x86_64
+  make
+  make iso
+
+  cd "${srcdir}/memtest86plus"/build/i586
+  make
+}
+
+# Do not remove the space before the () or commitpkg will
+# accidentally to run this function on the system (!!!) 
+# see devtools gitlab issue #87
+package_memtest86+ () {
+  pkgdesc+=" legacy BIOS version"
+
+  cd "memtest86plus"/build/x86_64
+  install -Dm644 mt86plus "$pkgdir"/boot/memtest86+/memtest.bin
+  install -Dm 755 "${srcdir}/60_memtest86+" "${pkgdir}/etc/grub.d/60_memtest86+"
+}
+package_memtest86+-efi() {
+  pkgdesc+=" EFI version"
+  install="${pkgname}.install"
+
+  install -Dm644 "memtest86plus/build/x86_64/mt86plus" "$pkgdir"/boot/memtest86+/memtest86x64.efi
+  install -Dm644 "memtest86plus/build/i586/mt86plus" "$pkgdir"/boot/memtest86+/memtest86ia32.efi
+  install -Dm 755 "${srcdir}/60_memtest86+-efi" "${pkgdir}/etc/grub.d/60_memtest86+-efi"
+}
+package_memtest86+-iso() {
+  pkgdesc+=" ISO image"
+
+  cd "memtest86plus"/build/x86_64
+  install -Dm644 memtest.iso "$pkgdir"/usr/share/memtest86+/memtest.iso
+}
+
+# vim: ts=2 sw=2 et:
+
+# build the 32-bit version
+eval "$(
+  declare -f build | \
+    sed '
+      s/build64/build32/g
+    '
+)"
+eval "$(
+  declare -f package_memtest86+ | \
+    sed '
+      s/build64/build32/g
+    '
+)"
+eval "$(
+  declare -f package_memtest86+-efi | \
+    sed '
+      s/build64/build32/g
+    '
+)"
+eval "$(
+  declare -f package_memtest86+-iso | \
+    sed '
+      s/build64/build32/g
+    '
+)"
+
+# force i486 architecture (minimal is now hard-coded -march=586
+if [ "${CARCH}" = "i486" ]; then
+  source+=('i486.patch')
+  sha512sums+=('0383e8092b7e6da23735eb8b34365017e61f3557393f8ec9d2e3c8f06bf6688ae02e47c22d3d0c954351c20943305df8d987dcce688fb58a03b803ae45e6890b')
+  eval "$(
+    {
+      declare -f prepare || \
+      printf 'prepare() { cd "memtest86plus" \n}\n'
+    } \
+    | sed '
+      $i patch -Np1 -i ../i486.patch
+    '
+  )"
+fi
+
+unset -f pkgver

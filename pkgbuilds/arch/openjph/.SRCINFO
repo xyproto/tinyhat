@@ -1,0 +1,24 @@
+pkgbase = openjph
+	pkgdesc = Open-source implementation of JPEG2000 Part-15
+	pkgver = 0.32.0
+	pkgrel = 1
+	url = https://github.com/aous72/OpenJPH/
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause
+	checkdepends = expat
+	makedepends = cmake
+	makedepends = doxygen
+	makedepends = git
+	makedepends = libtiff
+	source = git+https://github.com/aous72/OpenJPH#tag=0.32.0
+	sha256sums = 08bdab8ec90f7fd930c310aaafad2ae5a1c59288a91420edb218738a86b26aa7
+
+pkgname = openjph
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	depends = libtiff
+
+pkgname = openjph-doc
+	pkgdesc = Open-source implementation of JPEG2000 Part-15 (documentation)

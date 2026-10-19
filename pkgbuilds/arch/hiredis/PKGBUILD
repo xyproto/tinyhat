@@ -1,0 +1,33 @@
+# Maintainer: Remi Gacogne <rgacogne@archlinux.org>
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+# Contributor: Vladimir Tsanev <tsachev@gmail.com>
+
+pkgname=hiredis
+pkgver=1.4.1
+pkgrel="1"
+pkgdesc='Minimalistic C client library for Redis'
+arch=(i686 x32)
+url="https://github.com/redis/hiredis/"
+license=('BSD-3-Clause')
+depends=('glibc')
+checkdepends=('valkey')
+source=("$url/archive/v$pkgver/$pkgname-$pkgver.tar.gz")
+b2sums=('78e142a9c9bad04f8c921ac0be7bcd35aac5508a97f6eee133a0ed78aa76901f65d737145a7d0c56d5b91c8faef263bae4ff79d846e4690ff93fea1efc171762')
+
+build() {
+  cd $pkgname-$pkgver
+  make PREFIX=/usr
+}
+
+check() {
+  cd $pkgname-$pkgver
+  make check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" PREFIX=/usr install
+  install -vDm 644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+unset -f pkgver

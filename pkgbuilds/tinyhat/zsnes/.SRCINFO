@@ -1,0 +1,18 @@
+pkgbase = zsnes
+	pkgdesc = Super Nintendo emulator
+	pkgver = 2.3.8
+	pkgrel = 1
+	url = https://github.com/xyproto/zsnes
+	arch = i686
+	license = GPL-2.0-or-later
+	makedepends = nasm
+	makedepends = mesa
+	depends = sdl3
+	depends = libglvnd
+	depends = libpng
+	depends = pipewire
+	depends = zlib
+	source = zsnes-2.3.8.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/v2.3.8.tar.gz
+	sha256sums = 963b8243ee69d6a92e519991c457298dd1419b1406158607dfc387379c4b505e
+
+pkgname = zsnes

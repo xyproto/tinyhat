@@ -1,0 +1,22 @@
+pkgbase = pkgconf
+	pkgdesc = Package compiler and linker metadata toolkit
+	pkgver = 3.0.10
+	pkgrel = 1
+	url = https://github.com/pkgconf/pkgconf
+	arch = i686
+	arch = x32
+	license = ISC
+	makedepends = git
+	makedepends = meson
+	depends = glibc
+	provides = libpkgconf.so
+	provides = pkg-config
+	provides = pkgconfig
+	conflicts = pkg-config
+	replaces = pkg-config
+	source = git+https://github.com/pkgconf/pkgconf#tag=pkgconf-3.0.10
+	source = i686-pc-linux-gnu.personality
+	b2sums = 724d41c5735dcf0763d376c6a1a813ca018bc4a9afeeaf391f41c364aca4f7ff42da22255eac0c947ed31da6798c1e3e3ff739c4f991010e489432397e969fd7
+	b2sums = b44d82b4c4fd32eeed11a3e5a5ab7331f27467d0f83c118eb381d872cc41a1d69e00605a598a35e9288edf5e8fdadaebfff4bd83131506665c7ab94ef7a678a3
+
+pkgname = pkgconf

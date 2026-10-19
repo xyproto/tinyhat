@@ -13,31 +13,34 @@ sbkeys=${6-}
 work=$top/build/img/$(basename "$out" .img)
 br=$top/build/buildroot
 esp_mib=16
+pkg() { python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 "$1"; }
 rm -rf "$work"
-mkdir -p "$work/root/boot/grub" "$work/root/tinyhat"
+mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/grub" "$work/kbd"
 cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
-bsdtar -xf "$top/vendor/src/amd-ucode-20260916-1.0-any.pkg.tar.zst" -C "$work/root" boot/amd-ucode.img
-bsdtar -xf "$top/vendor/src/intel-ucode-20260812-1.0-any.pkg.tar.zst" -C "$work/root" boot/intel-ucode.img
+bsdtar -xf "$(pkg amd-ucode)" -C "$work/root" boot/amd-ucode.img
+bsdtar -xf "$(pkg intel-ucode)" -C "$work/root" boot/intel-ucode.img
+bsdtar -xf "$(pkg grub)" -C "$work/grub" usr/bin/grub-mkimage usr/bin/grub-mkfont usr/lib/grub/i386-pc usr/lib/grub/i386-efi
+bsdtar -xf "$(pkg kbd)" -C "$work/kbd" usr/share/kbd/consolefonts/default8x16.psfu.gz
 cp "$top/config/grub.cfg" "$work/root/boot/grub/grub.cfg"
 if [ -n "$efi64" ]; then
 	echo "set tinyhat_arch=x86_64" >"$work/root/boot/grub/arch.cfg"
 else
 	echo "set tinyhat_arch=i686" >"$work/root/boot/grub/arch.cfg"
 fi
-bsdtar -xf "$top/vendor/pkg/$(awk '$2 == "memtest86+" { print $4 }' "$top/initramfs.lock")" -C "$work/root" boot/memtest86+/memtest.bin
+bsdtar -xf "$(pkg memtest86+)" -C "$work/root" boot/memtest86+/memtest.bin
 cp "$sfs" "$work/root/tinyhat/root.sfs"
 cp "$top/config/grub-early.cfg" "$work/early.cfg"
 theme=$work/root/boot/grub/themes/tinyhat
-python3 "$top/scripts/mkgrubtheme.py" "$theme" "$br/usr/share/kbd/consolefonts/default8x16.psfu.gz"
+python3 "$top/scripts/mkgrubtheme.py" "$theme" "$work/kbd/usr/share/kbd/consolefonts/default8x16.psfu.gz"
 for size in 16 32; do
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-		grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
+		/img/grub/usr/bin/grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
 	rm -f "$theme/vga-$size.bdf"
 done
 
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	grub-mkimage -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
+	/img/grub/usr/bin/grub-mkimage -d /img/grub/usr/lib/grub/i386-pc -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
 	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png fat loadenv smbios regexp
 mkdir -p "$work/efi/EFI/BOOT"
 mkdir -p "$work/efi/tinyhat"
@@ -46,15 +49,17 @@ mkdir -p "$work/efi/tinyhat"
 	head -c $((1024 - 25)) /dev/zero | tr '\0' '#'
 } >"$work/efi/tinyhat/grubenv"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	grub-mkimage -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
+	/img/grub/usr/bin/grub-mkimage -d /img/grub/usr/lib/grub/i386-efi -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
 	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 if [ -n "$efi64" ]; then
 	printf '%s\n' \
 		"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md" \
 		"grub,5,Free Software Foundation,grub,2.14,https://www.gnu.org/software/grub/" \
 		"grub.tinyhat,1,Tiny Hat,grub,2.14,https://github.com/xyproto/tinyhat" >"$work/sbat.csv"
+	mkdir -p "$work/grub64"
+	bsdtar -xf "$(pkg grub-efi64)" -C "$work/grub64" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-		/out/grub-efi64/usr/bin/grub-mkimage -d "$efi64" -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub \
+		/img/grub64/opt/grub-efi64/usr/bin/grub-mkimage -d /img/grub64/opt/grub-efi64/usr/lib/grub/x86_64-efi -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub \
 		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
 	shim=usr/lib/efi/shim/16.1-10/EFI
 	mkdir -p "$work/shim" "$work/sbs"
@@ -63,7 +68,7 @@ if [ -n "$efi64" ]; then
 351e131d3c4a636704e9cae7d1296baf8a05beca9922cfebbfa48933c9bf1ad3  $work/shim/$shim/BOOT/BOOTX64.EFI
 eb84ac15b99ebbabf9b7dd187c6a20b05fd3aca512ccf49b08922780d6cd42d8  $work/shim/$shim/fedora/mmx64.efi
 EOF
-	bsdtar -xf "$top/vendor/src/sbsigntools-0.9.4-2.0-i686.pkg.tar.zst" -C "$work/sbs" usr/bin/sbsign
+	bsdtar -xf "$(pkg sbsigntools)" -C "$work/sbs" usr/bin/sbsign
 	cp "$work/shim/$shim/BOOT/BOOTX64.EFI" "$work/efi/EFI/BOOT/BOOTX64.EFI"
 	cp "$work/shim/$shim/fedora/mmx64.efi" "$work/efi/EFI/BOOT/mmx64.efi"
 	mv "$work/root/boot/vmlinuz" "$work/vmlinuz.unsigned"
@@ -71,9 +76,10 @@ EOF
 		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/efi/EFI/BOOT/grubx64.efi /img/grubx64.efi &&
 		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/root/boot/vmlinuz /img/vmlinuz.unsigned'
 	cp "$sbkeys/tinyhat.cer" "$work/efi/ENROLL_THIS_KEY_IN_MOKMANAGER.cer"
-	rm -rf "$work/shim" "$work/sbs" "$work/grubx64.efi" "$work/vmlinuz.unsigned"
+	rm -rf "$work/shim" "$work/sbs" "$work/grub64" "$work/grubx64.efi" "$work/vmlinuz.unsigned"
 fi
-cp "$br/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
+cp "$work/grub/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
+rm -rf "$work/grub" "$work/kbd"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \

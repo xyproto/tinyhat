@@ -1,0 +1,24 @@
+pkgbase = shaderc
+	pkgdesc = Collection of tools, libraries and tests for shader compilation
+	pkgver = 2026.4
+	pkgrel = 1
+	url = https://github.com/google/shaderc
+	arch = i686
+	arch = x32
+	license = Apache-2.0
+	makedepends = asciidoctor
+	makedepends = cmake
+	makedepends = ninja
+	makedepends = python
+	makedepends = spirv-headers
+	depends = glibc
+	depends = glslang
+	depends = libgcc
+	depends = libstdc++
+	depends = spirv-tools
+	provides = libshaderc_shared.so
+	source = https://github.com/google/shaderc/archive/v2026.4/shaderc-2026.4.tar.gz
+	sha512sums = a8dbf46cd10b2fabd0f533fcc79975202a235d04019295f14d3b51bf9699978ebf332c63f14b60fb518fc4deb07c37f84f19f2450958ae2035cbfacc68d78dae
+	b2sums = b4f36d811365adf6446fa1651996af4fea19b60b307469c99ffe7a61c432d849432498a66665e93bfe6d696f6b7ec91afc963a231d59890d9840df64f5802b44
+
+pkgname = shaderc

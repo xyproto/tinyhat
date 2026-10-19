@@ -1,0 +1,15 @@
+pkgbase = libfabric
+	pkgdesc = User-space API for OpenFabrics Interfaces (OFI)
+	pkgver = 2.7.0
+	pkgrel = 1
+	url = https://ofiwg.github.io/libfabric/
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause OR GPL-2.0-or-later
+	depends = glibc
+	depends = numactl
+	options = !lto
+	source = https://github.com/ofiwg/libfabric/releases/download/v2.7.0/libfabric-2.7.0.tar.bz2
+	sha512sums = 1f1614aeb8fac2166ccc0e6dffb9c32704dbff7cbc4988126e5603280fc33f6b65d22cd29ae4fe16516999b5fb44be46b6f6ecd823e2bc2cc586d26242389c9e
+
+pkgname = libfabric

@@ -1,0 +1,44 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Vesa Kaihlavirta <vesa@archlinux.org>
+# Contributor: Roman Cheplyaka <roma@ro-che.info>
+
+pkgname=libedit
+pkgver=20260512_3.1
+_pkgver=${pkgver/_/-}
+pkgrel="1"
+pkgdesc='Command line editor library providing generic line editing, history, and tokenization functions'
+url='https://thrysoee.dk/editline/'
+arch=(i686 x32)
+license=(BSD-3-Clause)
+depends=(
+  glibc
+  libncursesw.so
+  ncurses
+)
+source=(
+  ${url}/${pkgname}-${_pkgver}.tar.gz
+)
+sha256sums=('432d5e7ea8b0116dd39f2eca7bc11d0eed77faa6b77ea526ace89907c23ea4a0')
+b2sums=('5368e7e004424bd03c5900bb535705dd8b3a03e4ad056ed28ab58e62e4bf70f81a696dc041d299563ee8dae91b0361f7fd5d0942be692d78fea33dfc18c08eef')
+
+build() {
+  cd ${pkgname}-${_pkgver}
+  ./configure \
+    --prefix=/usr
+  make V=1
+}
+
+package() {
+  provides=(libedit.so)
+
+  cd ${pkgname}-${_pkgver}
+  make DESTDIR="${pkgdir}" install
+
+  install -Dm 644 ChangeLog -t "${pkgdir}/usr/share/doc/${pkgname}"
+  install -Dm 644 COPYING -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

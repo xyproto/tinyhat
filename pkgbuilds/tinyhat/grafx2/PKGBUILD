@@ -1,0 +1,50 @@
+pkgname=grafx2
+_commit=678a0f54ea7f3eeebc3fa4135213ea63f45a28bd
+pkgver=0+678a0f54
+pkgrel=1
+_lua=5.4.9
+pkgdesc="Pixel art paint program, ported to SDL3"
+arch=(i686 x32)
+url="http://grafx2.eu/"
+license=(GPL-2.0-only MIT GPL-2.0-or-later GPL-3.0-or-later)
+depends=(sdl3 sdl3_image sdl3_ttf fontconfig libpng)
+source=("https://gitlab.com/GrafX2/grafx2/-/archive/$_commit/grafx2-$_commit.tar.gz"
+        "https://www.lua.org/ftp/lua-$_lua.tar.gz"
+        "https://downloads.sourceforge.net/project/recoil/recoil/6.4.5/recoil-6.4.5.tar.gz"
+        "https://github.com/redcode/6502/releases/download/v0.1/6502-v0.1.tar.xz"
+        grafx2-sdl3.patch)
+noextract=(recoil-6.4.5.tar.gz 6502-v0.1.tar.xz)
+sha256sums=('2970c992ab20ec476f94c98ddb2131a82b6f0f58b13f34ced8c07f99909729b4'
+            '2335b6c582a52654f94612bf10d2f4672805d05329aa6568b1d8cd9e5c6fb8e6'
+            '2259153957d52eae9d952b63826654752784bcc0bd4a89a13fa98b30d85755b1'
+            'bba50f327163d40b1014f5affc8042137f37b200dae50a4f0fe56b5769b3940f'
+            'SKIP')
+
+prepare() {
+  cd grafX2-$_commit
+  mkdir -p 3rdparty/archives
+  cp "$srcdir/recoil-6.4.5.tar.gz" "$srcdir/6502-v0.1.tar.xz" 3rdparty/archives/
+  patch -Np1 -i ../grafx2-sdl3.patch
+}
+
+build() {
+  export CFLAGS="$CFLAGS -O3 -flto"
+  export LDFLAGS="$LDFLAGS -flto"
+  make -C lua-$_lua/src liblua.a MYCFLAGS="$CFLAGS -DLUA_USE_LINUX"
+  cd grafX2-$_commit/src
+  make API=sdl3 NO_X11=1 OPTIM=3 LUACOPT="-I$srcdir/lua-$_lua/src" LUALOPT="$srcdir/lua-$_lua/src/liblua.a" \
+    TTFCOPT="$(pkg-config --cflags sdl3-ttf)" TTFLOPT="$(pkg-config --libs sdl3-ttf fontconfig)"
+}
+
+package() {
+  cd grafX2-$_commit/src
+  make API=sdl3 NO_X11=1 OPTIM=3 LUACOPT="-I$srcdir/lua-$_lua/src" LUALOPT="$srcdir/lua-$_lua/src/liblua.a" \
+    TTFCOPT="$(pkg-config --cflags sdl3-ttf)" TTFLOPT="$(pkg-config --libs sdl3-ttf fontconfig)" \
+    PREFIX=/usr DESTDIR="$pkgdir" install
+  ln -sf grafx2-sdl3 "$pkgdir/usr/bin/grafx2"
+  local l="$pkgdir/usr/share/licenses/$pkgname"
+  install -Dm644 ../LICENSE ../doc/gpl-2.0.txt -t "$l/"
+  install -Dm644 "$srcdir/lua-$_lua/doc/readme.html" "$l/lua-readme.html"
+  tar -xOf "$srcdir/recoil-6.4.5.tar.gz" --wildcards '*/COPYING' >"$l/COPYING.recoil"
+  tar -xOf "$srcdir/6502-v0.1.tar.xz" --wildcards '*/COPYING' >"$l/COPYING.6502"
+}

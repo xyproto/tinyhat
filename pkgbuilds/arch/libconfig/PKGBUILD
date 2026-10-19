@@ -1,0 +1,49 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Robin Candau <antiz@archlinux.org>
+# Contributor: Ray Rashif <schiv@archlinux.org>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Roman Kyrylych <roman@archlinux.org>
+# Contributor: scippio <scippio@seznam.cz>
+
+pkgname=libconfig
+pkgver=1.8.2
+pkgrel="2"
+pkgdesc="C/C++ Configuration File Library"
+arch=(i686 x32)
+url="https://github.com/hyperrealm/libconfig"
+license=(LGPL-2.1-only)
+depends=(
+  libgcc
+  libstdc++
+  glibc
+)
+makedepends=(texinfo)
+provides=(
+  libconfig++.so
+  libconfig.so
+)
+source=($url/archive/v$pkgver/$pkgname-v$pkgver.tar.gz)
+sha512sums=('c3ed6c8f500b449c4d94976745a3acba1c7176f87497d5cb0deb05e62f2ff009ca0636c7c9848601f6d92dd113d82983cbd1132735f0f2d4e40b32d257f4aaa7')
+b2sums=('c19561fcc0ae376567ba024e4da874fb6cfe27d509aa6ed84000867c8e849bceb9ac0a883446b445de29d852b4d1b6d1a9ad526c129645903105bc7d82bd35c9')
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr
+  # prevent excessive overlinking due to libtool
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+package() {
+  make DESTDIR="$pkgdir" install -C $pkgname-$pkgver
+  rm "$pkgdir/usr/share/info/dir"
+  install -vDm 644 $pkgname-$pkgver/{AUTHORS,ChangeLog,NEWS,README,TODO} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+# vim:set ts=2 sw=2 et:
+
+unset -f pkgver

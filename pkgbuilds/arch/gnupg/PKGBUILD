@@ -1,0 +1,289 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+
+pkgname=gnupg
+pkgver=2.4.9
+pkgrel="3"
+pkgdesc='Complete and free implementation of the OpenPGP standard'
+arch=(i686 x32)
+url='https://www.gnupg.org/'
+license=(
+  BSD-2-Clause
+  BSD-3-Clause
+  BSD-4-Clause
+  CC0-1.0
+  GPL-2.0-or-later
+  GPL-3.0-or-later
+  LGPL-2.1-or-later
+  'LGPL-3.0-or-later OR GPL-2.0-or-later'
+  MIT
+  Unicode-TOU
+)
+depends=(
+  glibc
+  gnutls
+  libgcrypt
+  libgpg-error
+  libksba
+  libldap
+  libusb
+  pinentry
+  sh
+  sqlite
+  tpm2-tss
+  zlib
+)
+makedepends=(
+  bzip2
+  fig2dev
+  git
+  imagemagick
+  libassuan
+  librsvg
+  npth
+  pcsclite
+  readline
+)
+checkdepends=(openssh)
+optdepends=(
+  'pcsclite: for using scdaemon not with the gnupg internal card driver'
+)
+install=$pkgname.install
+source=(
+  git+https://github.com/gpg/gnupg.git?signed#tag=${pkgname}-${pkgver}
+  dirmngr{,@}.{service,socket}
+  gpg-agent{,@}.{service,socket}
+  gpg-agent-{browser,extra,ssh}{,@}.socket
+  keyboxd{,@}.{service,socket}
+  keyboxd.8
+  $pkgname-2.4-avoid_beta_warning.patch  # do not emit beta warnings (due to misbehaving build system)
+  # patches maintained by freepg project: https://gitlab.com/freepg/gnupg/-/commits/gnupg-2.4.9-freepg-1
+  0001-gpg-accept-subkeys-with-a-good-revocation-but-no-sel.patch
+  0002-gpg-allow-import-of-previously-known-keys-even-witho.patch
+  0003-tests-add-test-cases-for-import-without-uid.patch
+  0004-gpg-drop-import-clean-from-default-keyserver-import-.patch
+  0005-avoid-systemd-deprecation-warning.patch
+  0006-Add-systemd-support-for-keyboxd.patch
+  0007-Ship-sample-systemd-unit-files.patch
+  0008-gpg-default-El-Gamal-to-3072-bit-keys.patch
+  0009-gpg-Always-support-and-default-to-using-SHA-512.patch
+  0010-gpg-Prefer-SHA-512-and-SHA-384-in-personal-digest-pr.patch
+  0011-Avoid-simple-memory-dumps-via-ptrace.patch
+  0012-Disallow-compressed-signatures-and-certificates.patch
+  0013-ssh-agent-emulation-under-systemd-inject-SSH_AUTH_SO.patch
+  0014-gpg-Sync-compliance-mode-cleanup-with-master.patch
+  0015-gpg-emit-RSA-pubkey-algorithm-when-in-compatibility-.patch
+  0016-gpg-Reintroduce-openpgp-as-distinct-from-rfc4880.patch
+  0017-gpg-Emit-LibrePGP-material-only-in-compliance-gnupg.patch
+  0018-gpg-gpgconf-list-report-actual-compliance-mode.patch
+  0019-gpg-Default-to-compliance-openpgp.patch
+  0020-gpg-Fix-newlines-in-Cleartext-Signature-Framework-CS.patch
+  0021-Add-keyboxd-systemd-support.patch
+  0022-Support-large-RSA-keygen-in-non-batch-mode.patch
+  0023-gpg-Verify-Text-mode-Signatures-over-binary-Literal-.patch
+  0024-gpg-Do-not-use-a-default-when-asking-for-another-out.patch
+  0025-Add-missing-test-files-to-EXTRA_DIST.patch
+  0026-gpg-Fix-edge-case-in-refresh-keys.patch
+  0027-gpgsm-Require-a-minimum-tag-length-for-GCM-decryptio.patch
+  0028-gpg-Fix-handling-with-no-CRC-armor.patch
+  0029-gpg-Fix-armored-input-parsing.patch
+  0030-gpg-Fix-armor-parsing-when-no-CRC-is-found.patch
+  0031-tpm-Fix-possible-buffer-overflow-in-PKDECRYPT.patch
+  0032-agent-Fix-the-regression-in-pkdecrypt-with-TPM-RSA.patch
+  0033-dirmngr-Fix-a-call-of-calloc.patch
+)
+sha256sums=('383fd9720a966825b9d5e45a2b49b3b340ebed356252c73cca242b26dffec0ba'
+            '80a3a80f9f1f337da555a6838483e1baca44cde8a8a3d8c4ba7743626304b981'
+            '8374255ce93a3c343019ab425963bcbc41982ea89e669d1ad1df0aa7be810de1'
+            'ca55048f992824a24ab7f61cbc44a713a153f70a1a60d1cbba7ab4440302a204'
+            'd0d79d76bbf6c0d744ee262882fcdfbe52601c6d74cdc5dd99a15da1cdbb6ae1'
+            '8ea489a57edb0db9394bf2d6c0ec62205f881bb54efb919e4870209c7db01aa7'
+            '81e9dd05cbf3b8406367258eae6ef67ff97f270301bf50b52742647c515c8304'
+            'f735119afa3c452728e899809aa1d87b6091a327934befde3aef70ea9259197f'
+            '2af0824fdbb95c1c6b54a9ab0a22aeb92ac997e44112f93919d263efa81909ae'
+            '1cf9821b3bf4efaf4da2fd52ceb70d254dc4f6c545603f9045de716ef6aabf2d'
+            '402eb8f875daaa419f9fdef59ffa84a1e063cc79e04d885ab0768788a4620ac0'
+            'f0094f67586cbcda17fd0d780e3e73d6dbaa479ac84715ba941531f83f6ecfe9'
+            '6644d769f7919ad58d3caf955195047c521328d180ee2077b78b7f1459f3184b'
+            'ffa0191fad52712732f8b24d7d570c1d19a7803e59d30088797b76e252f65858'
+            'ddfeafd4b86ef4dd7bcc841115483bcda58c660547ebaeae47ee343741e571eb'
+            'cba1aa10c072d982135d2367a7e957d6787037ab232fd148144eca39a92ec2e6'
+            '2e3e6ce050737c3bc0e608f283bdfef5471def2ff12dee7ef007854033178694'
+            '34144a8e43fbeac88f1ddaf1621e6a3b192efba4580d18a42254ad386819afea'
+            '50a00213e44ff07b385e12bca455cd5eec35b271ca2fe500bfe7704ebd8ec73d'
+            '38c66efbd3bffdfa9cb0f226a6db03ae4b226f705dc2d0266a555d8ace823b79'
+            '243c3a79295519b3931f9d846cf2af5caa064a78de812ee336dc786c1567b4d0'
+            '8791f21d563721bedbc3a8f1c5c0e1882f6df439a400f50a13b37c94d1cd520f'
+            '373bf382b46756b450a42b8f300503044c9fdd8bd597b02823c947574e21e3ac'
+            '9d57feeb7a28f636d361d696d91b22597b8e7c9b34ef76916ce4c8c634ab9e5f'
+            'f91433a5ecb5e5ab3c39328e705cc551a8d1f36584afa805554bebc473055853'
+            'a3b55340337ba8f6e8cdb8d678c272852fa7f74fc09230dedda4b2090fac56ce'
+            '1709939e8f99e1031ac9f8cc1aea81b8ef36df350065c10f1286c90ce668e99a'
+            'e9fb54f5a543e4c80de3e637c8a0c354e679562e157833589dc0fd1971405d96'
+            'abbb6f341452ad74c11cfa90b6fec06e2a18a63ffdf1bbc0c5d2fb11a5410fd8'
+            '5177f421b7545fc8912d5965253d5febcfd1cfa10876a0997ac331868daaceec'
+            'e57c2decf9024ab44c3fce70b6a3c8d6786cf9bda91f8571a97356693fbf55ce'
+            '6051cd5e5ec385a7764bef1b7c5291f2719f951cf1d6ff7092ac20a8d9201466'
+            'd63c7ba16de382c19a697e6c506ae821660524ee951e49613b9d5d232d72ae32'
+            'a8e0b790d29bfd38352a6c9f29c0b24e683e13ea99ec038b9b0f8e683353c25a'
+            '7f740b7d91d381c0668f236a7cd23b8f92929c4722690c63682b8f894597662b'
+            'fe3ece54d9c16d87db88d1d9f259673631086332f54d913ccb319b0da731868c'
+            '413f6faf64ab91a2153b8b62b82d7d88c4ea5c76b3a9c85744b935711cc9bd7b'
+            '39a60a18fa8e49d454096232c7f9f3888a5798b66ff1130679a6c27ba41d2d85'
+            '16c220602d0c6e913dc3459372b20b9c945b1546ad3433828253c17e12a28ca6'
+            'a2dafeca4ac3a908f77fa7931657fa44ace8f04cd8a4efb82230bdf7b4542a0c'
+            '0ecf581f86e1b2390510384494b239a5c5e7f0a90cb8e69b9afa5028f07ab324'
+            '96e5f2cb79b33b2f589535bd88e14e44d4de8321965831d5ce7d08423f456613'
+            '2989848be6d4cbce727e8fe70802c371ca645aeea6a4540aa6b306347f1f93dd'
+            'e4a0712265c03c671a08f42aa1a92d46fd029f8a551541d52c164cf0e0f7f011'
+            '27eea5c0d6266abb6ce455fd56c5c3f5e4ade90b5335db17e14b9ed659848fe4'
+            '3013e5987ebe680185819620128f16906491c3f1f72ac327aa0e6e5fc95ac624'
+            '9c95845ab9e89d17f018e2fe5ef4df7785f20f0062f405fe5791737c4bcf4b60'
+            '3673f04be430f6423f74509fce403d9b79ebb2529bdfb2769990be050277ad73'
+            '1f1115cf8a1cf08dc472c31fb2a5644b15fb9234f58fe169c00a06c3a87fab26'
+            'b1553c61aef3fc21ceaa72eeb917d920ed58e6a39b8af15d0af991559376f8fb'
+            'b046762dd3230fcb9b503c1857450c34de52f791b993e054a725e8235568a6e7'
+            '76e1e92915fd06719f670be51bda4ccd264fde59c85ffe8447b2813aa1d7ae11'
+            '401fb135156586d829e2d195860c185f0a4bf7f41d549a602331196da0219aa4'
+            '227ec57201c7ae6835b64b794442be9898438fb006e24e68b8b9318b7343b0a0')
+b2sums=('c6b16d797b13e91c4f3eb41d28a69a5854e1744eaac662058cc5332b69b90349a79b891895b7460027bd6234394a4caf36f800d20a74c696a049764112f00658'
+        '7a3af856305eb4b00929aaf029dd4e5c84376df4f30add76976b9b058addf6fc4d8c39335fc83d11493ea9d8a40f0510dbac8572b99a8c8b9b3a4eca8e585774'
+        'ee51a4702715f5ec2629ff42eeba8630010da8a67545d1e53961e710de5faf197708e55d2d55796917a134ca2a76b1d6c88a8f7756d0706e0cbc33b605f52d86'
+        '3f40de2bf73e84f099b542349257ef6c098b4e347fb218d21a2a785830aa335832229b24c74aadae73deff5460f8645e2d7e7c3c2faaeb91cc812eeb06ddca84'
+        '10c6074d67addd5c244a2e83485ed0fd34847e16619e2ff4a5ab09011ed9daf199b7d7b5f109a1ea88a6ba3218e442c6c28575879b305686a13c8a93612937a3'
+        'ad71d7fab2a92a8da454c34884b5724e94adc0925a7f97f062fb7b78ed3ec87e5babb6383e755c943afd16bf61789ba83455dc2baf82ce248c1c4622ff87e364'
+        '129ecd9df3f00ed28f494f914483645e9aeaa1d6812c762ded60582c0a3f66b215731d4415ea5c017aa5ce97448faa5b93dbcb3793a82643d6ed160cc62f4ea4'
+        '36f8709733fbd509f096675a10a240ec6862e6cbd59d32cf8b1fdc1ac04fb7137093690cd97db705e324f6d030344d1d72384504f3465cffccb855c2e29be678'
+        '1da101e67ac09eebbb0682d465075a3657c614426c70907d36fd56fee27df082df6536ac47273f41cd7e145e9ab536a3887a9b118cd8b05887a384070294ceca'
+        'bf5daa4a33daae716a1d7743470dae618151e14ab7bb5d99138f880a908fac57dbb517b78d92c81ecf4532c25366cd32f7acc0e33a711ccde830fbc208726e69'
+        '8a4d1f57c3223c817f840ee989532a57760ad4f836950d18149f4827746f3e7cfb2a1ebdbb115be7c049b5971802eaed9e99125b39cac26b5186b18f9693da99'
+        'ffc8ea3c7875b195720ad238742a726b4b7be0bb8f2f8927358d259202f22b5e32f9ad23a4c66da85e25f36544770c29725be6d99256b685427b94d814e29196'
+        'c2d29d2adbff690099e537d294d08f9ade73f7a744038382f011b4c9f93c29e27629b740dae02361a4e663730459db6fa81bc2903595fe52e71407dab6590ca2'
+        '9dd03f808af45752a01ccbcfec3f3cb39f1a720088e21aa8a19c2ceec3876b3a8b950c1c154203d0adc208fed8ae07a26c8cd59d783e32eb1294a3a340bedad4'
+        '91b2a13fdd2c20c5950ec42c742e8be8ee2b6137a9e73e20cf269415fcc960e90049ab3ca6ec8ddc045a8fa03b16396849494b86ebb742adabb53e2703f2d290'
+        'cd8578ae69d58d4818b0aecca95fa5080586dfaa9bc5050a7203b0f48e50ad64c5b7c1f71e71711ed120223eb2662e96f577855f729bdf10d2cd648a9e305bfe'
+        '4f206967e3d8d1066f5bcb64c35a72bc5f6d69d484b2ab52fd239f4b92b398cdd08c9a016c5dc07fc5cbfdb05983969830983531fae70f67a6a5f61624336577'
+        '61e262c714f0e2f9e2a595f16f203c41df93fbfd3aaf20c3ccdbc2bc6c0285a6591b21346f5f15b23f624e1f72470d5d6e1e805979858ea391c815bc1d2e7c67'
+        'af13f78ff240c00d9e61bd470ace03bc6926e1cf946016c8c4fa27706ed278babc0ec8a04c79b930d9047f62bd7cfcfeba3e7fd493da7476a318fc49ff0e54fe'
+        '5e4fed3c54785fc0140a1cfe970c6ed6a61c0041961999a9777dfcb0050d45e2b9231b3e5e97e025cefe1461614b599bc7129eea931d1996f4849cd83f546abc'
+        '168855b598714abb27e01e52e0ed1e1a01ab14ffb2ee09d759308375359cd28c0a9f96c6b9dee0a2cc5713aec8ea831858d59f56a0a126bca3e1401b078fc7ab'
+        '3d5eaacac232132aa6ec8b70dc9a71b1010851c38a7138affdb483c7b49dbfe395ba4119c8be552e5b4e9b0f5ad628ef8be1cddd5c8eb237bcd29b0b990bb30e'
+        'e0d952008d15b13232bba00aac78ff5d85318ab0689f562c105a5fd0fb717c83d35b8aa3e2708b647d7e345eec35ca126a831e3732ea5a39a3f8bcb42411196b'
+        '051595335a9c263c32f55c8c316d24f71c845458fb7347f92afc1754e0b60a43b441823900abff3b489af6b2177474d57ce54a58ced9e9eeec6cf0a18a8f44ef'
+        '25ef454ce2a8d7089235f1a444117c80e603ebe305edab53e9817ae4e47828917c1ca6c2d5725b1a84415cecba1f4ee958edf12f3f22af0c924d7baa22330a6b'
+        '5630603d6fb59605e959974c9cd0c10d1a36e002eaa8b810d4a5cc0886610dc59fce7a6ae81f951e6937ee8261c3556a0d41f6b96de4539515fc5d4d67d13863'
+        '9a1655cadf692446516dfc99a21749ff27f801dde689ec2d379be9906567018b87b88a08e3eee5a38b45c6108d7369a0997862666b1696f042e1d4a5e7e7431d'
+        'f5a719f931bfcc54409229223a75c953a39a8fa83cbb3194ad50e2de81f92bff4ad2733d613275f95e9a7108142fc624584761ca1efd2adbce05883f245aea31'
+        '141a57cf5b077516f1c9963a26f2cd95ffdd9ef2a55d61c66200930850d29b7dae71fb08275f3ae0bbeb706bbf3d13a7382654c4129cf319af490784a5b28683'
+        '32154702a16f3f3b8eccb0edcdb99734ad017fef772093d04145a8f08b125c423f8c325affce79153510786d3a71e8d1a9f2f9b8e5fcd953853bbd6c98cf6d6f'
+        '777e2edc9976f278565feff753af6366aa744ab0178f3b6c59aa69ac1d061c96c1ae539d32c8366937a74c4e26f2f90456fb516bb370059939efe1d2d90715ea'
+        '83f4875a5904c45bd268a9afdddd9c1aeecef65b0de53acf3658455fc90aadcea9e7898e3cbad7ab1c820da3f697b8bb20442c35922460222d35177b0705b481'
+        '8408045d1df0128269229b14382b85854143738f0b05d0228cd38d539128069e8c7b6284eb07cd2e8bbc1b4ae8591fd539dec5929f0733685ee0c7ee5871bb4c'
+        '2d1911cf508b1c4098356fed0d9ec46c2e73c0acd3e0ab81fef1590b6b75d1a8de8d4095acb19e22a398a57cee39c60e8a619b99bac92537dd86e54c6c122ca2'
+        '8de855a159bc59a8a4cc269130f075e1a86e9f09dd1820d80c4afe34700e7e4ddc1d018d1e6d0ca03dfe1eaf368dc820ad20ebadb2f15c5be71c5e0a5fbd69cc'
+        '157b6d6a2039aabe5d1229edc5184c24b21c32f62f18a0cc71ef0fa3c7250e549fa0909426406307565b6ec61cb40d2a8ce98eef31128ef7889996d20b34ccdd'
+        'd185cf90e53faca5a14ecbf62bd315e1520cac3dc97a36b4bd94e90a5fbd9c0038894713019dd0bb1c0b03e548b2ff49a8da06c11ac8444e1f3d080931326f37'
+        '98d6d81c0216906e107c7874c76d67ebbc0c5fb525419f122184587aff9e4872312a829eb8e028fc5a4d531416ffb1ca466781307542679a3d2d0dfe76b640f8'
+        'c66cd9acdd1405f05184d6bef13da2bab11589eed17892df8e4afbddaa798f7b95855b499599863f37cc591f6cce8fbf81e70276b6946ebcb6480610727f0f42'
+        'f974e7891b1a6947927d5818a30ad7e2d566c9f05961687af5e3603f27b5cdc337c05b15876263ffd07fd6a4b47578ca27f336378eb42377711ae9edf89c2b00'
+        '0cda47e637c3653d704fccb398b0669b82252ff4105bad054ed2b4e301015e59942978dca844d024c17afdcaf3f7a2ce2514ebbd91321590fc57c970f83d81f8'
+        'a67bd9d28c203c1c48804ef579e5f3294e6819878a14c9661a5201b43e56b91156ee7ca73e39c68e20f1bb32988274a594f9643e0f4a94dc58bd6f58aecede57'
+        '7c7117b56ed37461d5be276f2ee561cc1bea7ce42e1984f42e02de915584ff015f1df2f0a97c3a824cbe1d3b053436508819242e15c38a6de7b9f4ee26a80a4e'
+        'dec0814d2dabee8286385d39c3ebb73f4f392477af437da9d5ca30249f566fefddb2f94ec198223842f4fcbcec53a523d51d4bb51c1a765994005cac3257ba1e'
+        '566f21332ee314913d453e6c8702f80a17be655d539cea86fe585bc675382ab39b9ef5e72197ed4403c0992ec9d9038b7b96cdf645da3d3715d8e13840468f11'
+        '3f487c57843fc3645eb13fbdaac0ce8732b55440a429777be46e334b5d187321226e70e0bcc19fd62c6a2c116dbb626b7184317e6a56822bf9de836e7f67823c'
+        'd5b9c94fe680e5742b4ff0c7b69b73d0408a29cdd7bac27597781a086c5ac5a3aa982174af823a44a1346b0a8f58df300ca12c1e3e5a30418f752d23e1681dc5'
+        'b1306acfbebdd83a6a47a0dfd551310ba47d396a5799d2bea4a2a7bea52b8d7a6bdfef9de1c15e535cee4cc10507eb8db798b96eb4cdd2231c313014843befed'
+        '900532c9205dd9730bdb59ad80a25b5fb47c84405667864783ca84fe6fb0c6b1c0d4bb243ba61af31543a8b779063194ed8f358109dc5b618937ca0c54602514'
+        'd4b776750f9c6db4d636379437af408993441982bf163506bd7bc74f45fbee4b54f373d9f26bffc4a73114af5a58f4b035f18f5d7ba69dfa2928303bcc078aa6'
+        '13a424659c23c601fac55fff9511493d0d430ac45b8590d883c4069f234cc31da98466b79c85d52f5814f5aba2505ed98f44abbdb4082c5987385ac69930a36c'
+        '82ccd0abb816c7fbd9bcd7f9ca28231bf7be8613838abf4f66fbcb2cba4b108193d19559058e31df6f26a1bec14edae56ad48cc1744a030c2177244dc645576c'
+        '0fec936cf38f7ddb3a9ee13fb871906277025b542ca98e090b6cfa487f24dee5b516593569d954d8eafab01d52f15572001095a16c3a92b4e0cf98f29fd028b2'
+        '23e657157427919055cd2d95d5c93df98c6f9c933aca6290cf3715a9191606fa4e5014e3a95251fde13e9b775cb929a2c06d299727d64f0cd87e1b0b99ba9102')
+validpgpkeys=(
+  '5B80C5754298F0CB55D8ED6ABCEF7E294B092E28' # Andre Heinecke (Release Signing Key)
+  '6DAA6E64A76D2840571B4902528897B826403ADA' # Werner Koch (dist signing 2020)
+  'AC8E115BF73E2D8D47FA9908E98E9B2D19C6C8BD' # Niibe Yutaka (GnuPG Release Key)
+  '02F38DFF731FF97CB039A1DA549E695E905BA208' # GnuPG.com (Release Signing Key 2021)
+)
+
+prepare() {
+  cd $pkgname
+
+  local src
+  for src in "${source[@]}"; do
+    src="${src%%::*}"
+    src="${src##*/}"
+    [[ $src = *.patch ]] || continue
+    printf "Applying patch %s...\n" "$src"
+    patch -Np1 < "../$src"
+  done
+
+  sed -n '5, 28 p' COPYING.other > MIT.txt
+  sed -n '30, 60 p' COPYING.other > BSD-4-Clause.txt
+  sed -n '62, 92 p' COPYING.other > BSD-3-Clause.txt
+  sed -n '95, 125 p' COPYING.other > BSD-2-Clause.txt
+  sed -n '128, 160 p' COPYING.other > Unicode-TOU.txt
+
+  ./autogen.sh
+}
+
+build() {
+  local configure_options=(
+    --enable-g13
+    --enable-large-secmem  # prerequisite for large RSA keys
+    --enable-maintainer-mode
+    --libexecdir=/usr/lib/gnupg
+    --prefix=/usr
+    --sbindir=/usr/bin
+    --sysconfdir=/etc
+  )
+
+  cd $pkgname
+  ./configure "${configure_options[@]}"
+  make
+}
+
+check() {
+  cd $pkgname
+  make check
+}
+
+package() {
+  depends+=(
+    bzip2 libbz2.so
+    libassuan libassuan.so
+    npth libnpth.so
+    readline libreadline.so
+  )
+
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+  ln -s gpg "$pkgdir"/usr/bin/gpg2
+  ln -s gpgv "$pkgdir"/usr/bin/gpgv2
+
+  install -vDm 644 ../keyboxd.8 -t "$pkgdir/usr/share/man/man8/"
+  install -vDm 644 {BSD-{2,3,4}-Clause,MIT,Unicode-TOU}.txt -t "$pkgdir/usr/share/licenses/$pkgname/"
+
+  local systemdir="$pkgdir/usr/lib/systemd/"
+  local wantsdir="${systemdir}user/sockets.target.wants/"
+  install -vdm 755 "$wantsdir"
+
+  local unit
+  for unit in ../*.{service,socket}; do
+    case $unit in
+      *@.*) install -vDm 644 "$unit" -t "${systemdir}system/" ;;
+      *.socket) ln -sv "../${unit##*/}" -t "$wantsdir" ;&
+      *) install -vDm 644 "$unit" -t "${systemdir}user/" ;;
+    esac
+  done
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

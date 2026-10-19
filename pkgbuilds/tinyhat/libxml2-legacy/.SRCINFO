@@ -1,0 +1,15 @@
+pkgbase = libxml2-legacy
+	pkgdesc = XML library with the older libxml2.so.2 ABI
+	pkgver = 2.13.9
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/libxml2
+	arch = i686
+	arch = x32
+	license = MIT
+	depends = glibc
+	depends = zlib
+	depends = xz
+	source = https://download.gnome.org/sources/libxml2/2.13/libxml2-2.13.9.tar.xz
+	sha256sums = a2c9ae7b770da34860050c309f903221c67830c86e4a7e760692b803df95143a
+
+pkgname = libxml2-legacy

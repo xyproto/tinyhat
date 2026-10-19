@@ -1,0 +1,23 @@
+pkgbase = grim
+	pkgdesc = Screenshot utility for Wayland
+	pkgver = 1.5.0
+	pkgrel = 2
+	url = https://gitlab.freedesktop.org/emersion/grim
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = bash-completion
+	makedepends = fish
+	makedepends = git
+	makedepends = meson
+	makedepends = ninja
+	makedepends = pango
+	makedepends = scdoc
+	makedepends = wayland-protocols
+	depends = cairo
+	depends = libjpeg-turbo
+	depends = wayland
+	source = git+https://gitlab.freedesktop.org/emersion/grim#tag=v1.5.0
+	b2sums = fcb867a416bcc1acad28e35ab1a2e1aeea4d5c04196ee74b7ad372256ef780ab77bb2afd93badb8c203c0a320ea7b229a999dfd9faa575c8c42150e5fcbcbd9a
+
+pkgname = grim

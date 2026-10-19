@@ -1,0 +1,20 @@
+pkgbase = libiconv
+	pkgdesc = GNU charset conversion library
+	pkgver = 1.19
+	pkgrel = 1
+	url = http://www.gnu.org/software/libiconv/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-only
+	license = GPL-3.0-only
+	depends = glibc
+	options = !libtool
+	source = https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.19.tar.gz
+	source = https://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.19.tar.gz.sig
+	validpgpkeys = E0FFBD975397F77A32AB76ECB6301D9E1BBEAC08
+	sha512sums = 1e8150f9bca907579330cd9c44ebbee46a260271fbe8f50d5ee24a39ef29c8d254505e85c3409324f7440596da711a8bd49e89f848a6be0cb3238a58c24aaecd
+	sha512sums = SKIP
+	b2sums = a77d5190bfed76627ac5abf24b90a19f3f1c460f2fe4e5002bb4799d789236c268dff0693aa9836ab12df76b1381084dbe2b78cabe8221eb97f54e14a210a8e2
+	b2sums = SKIP
+
+pkgname = libiconv

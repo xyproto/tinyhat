@@ -1,0 +1,18 @@
+pkgbase = libpng
+	pkgdesc = A collection of routines used to create PNG format graphics files
+	pkgver = 1.6.59
+	pkgrel = 1
+	url = http://www.libpng.org/pub/png/libpng.html
+	arch = i686
+	arch = x32
+	license = libpng-2.0
+	makedepends = git
+	depends = zlib
+	depends = sh
+	provides = libpng16.so
+	source = git+https://github.com/pnggroup/libpng.git?signed#tag=v1.6.59
+	validpgpkeys = F57A55036A4D45837074FD92C9E384533403C2F8
+	validpgpkeys = 1FED507E3236B4A6E53E922BB292C64843FF5BCF
+	sha256sums = 885040a9e7a2c16eec433c32ab760cbb6bc6283734f4014368a386a2b4eae340
+
+pkgname = libpng

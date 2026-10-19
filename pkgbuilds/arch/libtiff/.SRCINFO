@@ -1,0 +1,34 @@
+pkgbase = libtiff
+	pkgdesc = Library for manipulation of TIFF images
+	pkgver = 4.7.2
+	pkgrel = 2
+	url = http://www.simplesystems.org/libtiff/
+	arch = i686
+	arch = x32
+	license = libtiff
+	makedepends = cmake
+	makedepends = git
+	depends = libstdc++
+	depends = glibc
+	depends = jbigkit
+	depends = libdeflate
+	depends = libjpeg-turbo
+	depends = libjpeg.so
+	depends = libwebp
+	depends = xz
+	depends = zlib
+	depends = zstd
+	optdepends = freeglut: for using tiffgt
+	provides = libtiff.so
+	provides = libtiffxx.so
+	source = git+https://gitlab.com/libtiff/libtiff.git?signed#tag=v4.7.2
+	validpgpkeys = EBDFDB21B020EE8FD151A88DE301047DE1198975
+	validpgpkeys = B1FA7D81EEB8E66399178B9733EBBFC47B3DD87D
+	sha256sums = 633aa6529859b02b08df2dc29e0119fe614991f4490441c2eb80052de68a3754
+	b2sums = 1d5b034b62714984eabbc4fc503e06747884126bfd79cace67f29e0017c2b5067cd88f50e53a716f23f0e6d1244939b37a94e86d20118abe1af798a0692c57fa
+	makedepends_i686 = freeglut
+	makedepends_i686 = glu
+	makedepends_i686 = mesa
+	makedepends_i686 = jbigkit
+
+pkgname = libtiff

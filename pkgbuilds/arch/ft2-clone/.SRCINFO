@@ -1,0 +1,29 @@
+pkgbase = ft2-clone
+	pkgdesc = Portable Fasttracker II clone
+	pkgver = 2.25
+	pkgrel = 1
+	url = https://16-bits.org/ft2.php
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	license = MIT
+	license = CC-BY-NC-SA-4.0
+	makedepends = git
+	makedepends = libicns
+	makedepends = cmake
+	makedepends = ninja
+	makedepends = gendesk
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	depends = alsa-lib
+	depends = sdl2
+	depends = hicolor-icon-theme
+	source = ft2-clone::git+https://github.com/8bitbubsy/ft2-clone#tag=v2.25
+	source = templatify-build-date.patch
+	sha512sums = 39ba120d5dc2c6514f610ddc341e56e189604fabffb04e5fabb303311414e9a12a2713d9adc507a3b885c006ca31d8e401f95cfa1f2208ebf87261f7f74ce0d3
+	sha512sums = 0c0c31c396107079839698569b0b5ccaf19728794bec321e52e56fc30a9243a881468897385ef04eb051998460fd88ae75253ea49d531403254a0c2426941440
+	b2sums = e8f15e733f3a39effd8665a7bcfe0eddfa1d59eb5fc26b9f62d7af482b6e59d9df03981f47dc1e664213d014008d62dabf95ed9b84222e129ff990772b1b9df2
+	b2sums = bf66c1fa1a4357292f0fb8970d576835146a59a54843707e1745210b22c676b059090099a60f85cdb88b8153995c74d24bdd132007cb4b91887169c0a3883312
+
+pkgname = ft2-clone

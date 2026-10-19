@@ -1,0 +1,14 @@
+pkgbase = libusb-compat
+	pkgdesc = Library to enable user space application programs to communicate with USB devices
+	pkgver = 0.1.9
+	pkgrel = 1
+	url = http://libusb.sourceforge.net/
+	arch = i686
+	arch = x32
+	license = LGPL-2.0-or-later
+	depends = libusb
+	depends = sh
+	source = https://github.com/libusb/libusb-compat-0.1/releases/download/v0.1.9/libusb-compat-0.1.9.tar.gz
+	sha256sums = b09aa33e943080352041ea3d5ac01fd90ea96e9337212865de0dda776886dbb9
+
+pkgname = libusb-compat

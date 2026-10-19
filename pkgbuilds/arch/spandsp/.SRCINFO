@@ -1,0 +1,21 @@
+pkgbase = spandsp
+	pkgdesc = Low-level signal processing library that modulates and demodulates signals commonly used in telephony
+	pkgver = 0.0.6
+	pkgrel = 7
+	url = https://www.soft-switch.org/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-only
+	makedepends = docbook-xsl
+	makedepends = doxygen
+	depends = glibc
+	depends = libtiff
+	source = https://web.archive.org/web/20260102090731/https://www.soft-switch.org/downloads/spandsp/spandsp-0.0.6.tar.gz
+	b2sums = 6ee95501473d5758c9ff96580bb51222f49a230dc6a5f52f5a852781cbb70079bb07f9d7224f5c7ea91c0dd617fa543a37518f68875c76a44b3be1415aece696
+
+pkgname = spandsp
+	provides = libspandsp.so
+
+pkgname = spandsp-docs
+	pkgdesc = Developer documentation for spandsp
+	depends = 

@@ -1,0 +1,35 @@
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=gawk
+pkgver=5.4.1
+pkgrel="1"
+pkgdesc="GNU version of awk"
+arch=(i686 x32)
+url="https://www.gnu.org/software/gawk/"
+license=('GPL-3.0-or-later')
+depends=('sh' 'glibc' 'mpfr')
+provides=('awk')
+source=(https://ftp.gnu.org/pub/gnu/${pkgname}/${pkgname}-${pkgver}.tar.gz{,.sig}
+)
+validpgpkeys=('D1967C63788713177D861ED7DF597815937EC0D2') # Arnold Robbins
+b2sums=('657cc8fcf0e51e2637b456a209c676a05d37f2740522e3fde8b7ff04fbb98019baed2b353269f822ee638e45a2770b9fa8fd3f66f95dd2e63c4e41e90c9dd682'
+        'SKIP')
+
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr --libexecdir=/usr/lib --sysconfdir=/etc --without-libsigsegv
+  make
+}
+
+check() {
+  cd ${pkgname}-${pkgver}
+  make check
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+}
+
+unset -f pkgver

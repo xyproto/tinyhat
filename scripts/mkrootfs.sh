@@ -5,20 +5,22 @@ top=$(dirname "$(dirname "$(readlink -f "$0")")")
 root=$1
 modules=$2
 sfs=$3
-out=$top/build/buildroot/out
+lock=$(readlink -f "$4")
+licdir=$(readlink -f "$5")
+repo=$top/build/repo
+arch=i686
+if grep -q -- '-x32\.pkg\.tar' "$lock"; then
+	arch=x32
+fi
 cd "$top"
 
 rm -rf "$root"
 mkdir -p "$root"
-python3 scripts/pkg.py extract rootfs.lock vendor/pkg "$root" config/rootfs.exclude
-pkgfile() { echo "vendor/pkg/$(awk -v p="$1" '$2 == p { print $4 }' rootfs.lock)"; }
+python3 scripts/pkg.py extract "$lock" "$repo" "$root" config/rootfs.exclude
+pkgfile() { echo "$repo/$(awk -v p="$1" '$2 == p && $1 != "lib32" { print $4 }' "$lock")"; }
+inlock() { awk -v p="$1" '$2 == p && $1 == "tinyhat" { found = 1 } END { exit !found }' "$lock"; }
 bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/include/*' 'usr/lib/*.o' usr/lib/libc_nonshared.a
 bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
-for p in libdom-0.4.1-2.1 libhubbub-0.3.7-2.1 libparserutils-0.2.4-5.1 libnsutils-0.1.0-2.1 libnsbmp-0.1.6-8.1; do
-	bsdtar -xpf "vendor/src/$p-i686.pkg.tar.zst" -C "$root" 'usr/lib/*.so*'
-done
-rm -f "$root/usr/lib/libdom.so.0.4.2" "$root/usr/lib/libhubbub.so.0.3.8" "$root/usr/lib/libparserutils.so.0.2.5" \
-	"$root/usr/lib/libnsutils.so.0.1.1" "$root/usr/lib/libnsbmp.so.0.1.7"
 bsdtar -xpf "$(pkgfile gcc)" -C "$root" 'usr/lib/gcc/i686-pc-linux-gnu/*/crt*.o' 'usr/lib/gcc/i686-pc-linux-gnu/*/libgcc*.a'
 a=usr/lib/gcc/arm-none-eabi/16.2.0
 bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
@@ -35,16 +37,22 @@ done
 for p in libglvnd glu glew glfw; do
 	bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/lib/pkgconfig/*'
 done
-python3 scripts/mklocaldb.py rootfs.lock vendor/pkg "$root" config/rootfs.txt
+python3 scripts/mklocaldb.py "$lock" "$repo" "$root" config/rootfs.txt
+for p in ${TINYHAT_PKGS-}; do
+	if inlock "$p"; then
+		bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
+			--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG
+	fi
+done
 
-chmod -R u=rwX,go=rX "$out" "$modules"
+chmod -R u=rwX,go=rX "$modules"
 find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
-for o in sdl3 sdl2-compat zsnes dosbox-x scummvm libdisplay-info wlroots dwl fuzzel swaylock swaybg orbiton sdl2_image sdl3_image sdl3_ttf grafx2 raylib sdl3-man fontconfig libxml2 libxml2-legacy fluidsynth gdb cc65 gba mgba rfxgen make llvm clang vtgbte testcontroller blastem retro midibench vice tic80 furnace pvsneslib png2xpm tinyxxd qemacs tinyhat-gui; do
-	cp -a "$out/$o/." "$root/"
-done
-for o in ${4-}; do
-	cp -a "$out/$o/." "$root/"
-done
+if [ "$arch" = x32 ]; then
+	ln -sfn usr/lib "$root/libx32"
+	ln -sfn lib "$root/usr/libx32"
+	mkdir -p "$root/etc/ld.so.conf.d"
+	echo /usr/lib32 >"$root/etc/ld.so.conf.d/lib32.conf"
+fi
 rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
 rm -rf "$root/usr/share/icons/Adwaita" "$root/usr/share/icons/AdwaitaLegacy"
 rm -rf "$root"/usr/include/libxml2 "$root"/usr/bin/xml2-config "$root"/usr/include/wlroots-* "$root"/usr/include/libdisplay-info "$root"/usr/share/wayland-sessions
@@ -59,52 +67,11 @@ sstrip "$root/usr/lib/dri/swrast_dri.so"
 strip --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libSDL2-2.0.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
 
 localpkgs=
-while IFS='|' read -r o name ver lic url provides desc; do
-	python3 scripts/mklocalpkg.py "$root" "$out/$o" "$name" "$ver" "$desc" "$url" "$lic" "$provides"
-	localpkgs="$localpkgs $name"
-done <<'EOF'
-sdl3|sdl3|3.4.18-1|Zlib|https://libsdl.org/||Simple DirectMedia Layer 3 with the Tiny Hat Wayland framebuffer patch
-sdl2-compat|sdl2-compat|2.32.74-1|Zlib|https://github.com/libsdl-org/sdl2-compat|sdl2=2.32.74|SDL2 API on top of SDL3
-sdl2_image|sdl2_image|2.8.12-1|Zlib|https://github.com/libsdl-org/SDL_image||SDL2 image loading library, built small for LibreSprite
-sdl3_image|sdl3_image|3.4.8-1|Zlib|https://github.com/libsdl-org/SDL_image||SDL3 image loading library (PNG, JPEG, GIF, BMP and more)
-sdl3_ttf|sdl3_ttf|3.2.2-1|Zlib|https://github.com/libsdl-org/SDL_ttf||SDL3 TrueType font library
-sdl3-man|sdl3-man|3.4.18-1|Zlib|https://libsdl.org/||Man pages for SDL3, SDL3_image and SDL3_ttf
-raylib|raylib|6.0-1|Zlib|https://www.raylib.com/||raylib 6.0 on SDL3 and OpenGL 2.1
-libdisplay-info|libdisplay-info|0.3.0-1|MIT|https://gitlab.freedesktop.org/emersion/libdisplay-info||EDID and DisplayID library
-wlroots|wlroots0.19|0.19.3-1|MIT|https://gitlab.freedesktop.org/wlroots/wlroots||Modular Wayland compositor library
-dwl|dwl|0.8-2|GPL-3.0-only|https://codeberg.org/dwl/dwl||dwm for Wayland, with the Tiny Hat patches
-fuzzel|fuzzel|1.8.1-1|MIT|https://codeberg.org/dnkl/fuzzel||Application launcher for Wayland
-swaylock|swaylock|1.8.6-1|MIT|https://github.com/swaywm/swaylock||Screen locker for Wayland
-swaybg|swaybg|1.2.2-1|MIT|https://github.com/swaywm/swaybg||Wallpaper tool for Wayland, with the Tiny Hat help text patch
-zsnes|zsnes|2.3.6-1|GPL-2.0-or-later|https://github.com/xyproto/zsnes||Super Nintendo emulator
-dosbox-x|dosbox-x|2026.10.01-1|GPL-2.0-or-later|https://dosbox-x.com/||DOS emulator, with the Tiny Hat patches
-scummvm|scummvm|2026.3.0-1|GPL-3.0-or-later|https://www.scummvm.org/||Engine for classic adventure games
-fluidsynth|fluidsynth|2.6.1-1|LGPL-2.1-or-later|https://www.fluidsynth.org/||SoundFont synthesizer with PipeWire output
-orbiton|orbiton|2.74.6+3b652909-1|BSD-3-Clause|https://orbiton.zip/||Editor and IDE
-grafx2|grafx2|0+f84cb09d-1|GPL-2.0-only|http://grafx2.eu/||Pixel art paint program, ported to SDL3
-fontconfig|fontconfig|2:2.18.3-1|HPND AND MIT|https://www.freedesktop.org/wiki/Software/fontconfig/||Font configuration library
-libxml2|libxml2|2.15.1-5|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library, built without ICU
-libxml2-legacy|libxml2-legacy|2.13.9-1|MIT|https://gitlab.gnome.org/GNOME/libxml2||XML library with the older libxml2.so.2 ABI
-gdb|gdb|17.1-1|GPL-3.0-or-later|https://www.sourceware.org/gdb/||GNU debugger, without Python
-cc65|cc65|2.19+71746c8-1|Zlib|https://cc65.github.io/||6502 and 65816 C compiler and assembler
-gba|gba-dev|1-1|MIT AND LGPL-2.0-or-later|https://github.com/gbadev-org/libtonc||libtonc, startup code, gba.specs and gbafix for GBA programming
-mgba|mgba|0.10.5-1|MPL-2.0|https://mgba.io/||Game Boy Advance emulator, SDL frontend
-rfxgen|rfxgen|5.0-1|Zlib|https://github.com/raysan5/rfxgen||Sound effect and chip sound generator
-make|make|4.4.1-1|GPL-3.0-or-later|https://www.gnu.org/software/make/||GNU make, built without Guile support
-llvm|llvm-libs|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|llvm-libs=15.0.7|LLVM runtime libraries, built for X86 and AMDGPU
-clang|clang|15.0.7-1|Apache-2.0 WITH LLVM-exception|https://llvm.org/|clang=15.0.7|C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU
-vtgbte|vtgbte|0+1a9f4603-1|MIT|https://github.com/paul-arutyunov/vtGBte||Keyboard-driven Game Boy tile editor for the terminal
-blastem|libretro-blastem|0+1e0de94d-1|GPL-3.0-or-later|https://github.com/libretro/blastem||Sega Genesis and Mega Drive emulator core (BlastEm) for tinyhat-retro
-retro|tinyhat-retro|1-1|MIT|https://github.com/xyproto/tinyhat||Small SDL3 frontend for libretro emulator cores
-midibench|tinyhat-midibench|1-1|BSD-3-Clause|https://github.com/xyproto/tinyhat||Measures FluidSynth speed at boot and picks MIDI settings for DOSBox-X
-vice|vice|3.9-1|GPL-2.0-or-later|https://vice-emu.sourceforge.io/||Commodore 64 emulator (x64sc) with the SDL2 UI
-tic80|tic-80|1.3.1-1|MIT AND LGPL-2.1-or-later AND Libpng AND Zlib AND Unlicense|https://tic80.com/||TIC-80 fantasy console with Lua and Fennel
-furnace|furnace|0.6.8.3-1|GPL-2.0-or-later|https://tildearrow.org/furnace/||Chiptune tracker for many old sound chips
-tinyxxd|tinyxxd|1.3.17-1|GPL-2.0-only AND MIT|https://github.com/xyproto/tinyxxd|xxd|Drop-in replacement and standalone version of the hex dump utility that comes with Vim
-qemacs|qemacs|0+befd7a81-1|MIT|https://github.com/qemacs/qemacs||Quick Emacs, a small Emacs-like text editor by Fabrice Bellard
-pvsneslib|pvsneslib|0+e090f001-1|MIT|https://github.com/alekmaul/pvsneslib||SNES game library with 816-tcc, wla-dx and graphics tools
-png2xpm|png2xpm|0+9eb268ec-1|BSD-3-Clause|https://github.com/xyproto/xpm||Convert PNG images to XPM format
-EOF
+for p in ${TINYHAT_PKGS-}; do
+	if inlock "$p"; then
+		localpkgs="$localpkgs $p"
+	fi
+done
 
 for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do
 	case ${f##*/} in 10-sub-pixel-rgb.conf) continue ;; esac
@@ -156,7 +123,7 @@ cp -a config/overlay/. "$root/"
 	fi
 done
 mkdir -p "$root/usr/share/licenses/tinyhat"
-cp -a licenses/. "$root/usr/share/licenses/tinyhat/"
+cp -a "$licdir/." "$root/usr/share/licenses/tinyhat/"
 
 
 sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu)/)@\1@' "$root/etc/pacman.d/mirrorlist"
@@ -164,9 +131,9 @@ grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 grep -q '^NoExtract' "$root/etc/pacman.conf"
 sed -i "s|^#IgnorePkg *=.*|IgnorePkg =$localpkgs|" "$root/etc/pacman.conf"
-grep -q '^IgnorePkg = sdl3 ' "$root/etc/pacman.conf"
-sed -i "s|^Architecture = auto$|Architecture = i686|" "$root/etc/pacman.conf"
-grep -q "^Architecture = i686$" "$root/etc/pacman.conf"
+grep -q '^IgnorePkg = .* sdl3' "$root/etc/pacman.conf"
+sed -i "s|^Architecture = auto$|Architecture = $arch|" "$root/etc/pacman.conf"
+grep -q "^Architecture = $arch$" "$root/etc/pacman.conf"
 
 touch -d 2026-10-05T00:00:00Z "$root/usr/lib/clock-epoch"
 ln -sf doas "$root/usr/bin/sudo"

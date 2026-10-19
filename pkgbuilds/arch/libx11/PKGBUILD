@@ -1,0 +1,50 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+pkgname=libx11
+pkgver=1.8.14
+pkgrel="1"
+pkgdesc="X11 client-side library"
+arch=(i686 x32)
+url="https://gitlab.freedesktop.org/xorg/lib/libx11"
+# keep xorgproto runtime dependency
+# https://lists.archlinux.org/pipermail/arch-dev-public/2019-December/029767.html
+depends=('libxcb' 'glibc' 'xorgproto')
+makedepends=('git' 'xorg-util-macros' 'xtrans')
+license=('MIT AND X11')
+source=(git+https://gitlab.freedesktop.org/xorg/lib/libx11.git?signed#tag=libX11-${pkgver})
+sha512sums=('89b5eb8c53e463b1dd0eab5390cc8e4a45cf16123f9b3c495284ec5a8822fb5e65860fe8f4ccf88ddb8b118ee583b82ff774a7e53fe7d60ed8e697d4f0858774')
+validpgpkeys=('3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2') # Alan Coopersmith <alan.coopersmith@oracle.com>
+# validpgpkeys=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E') # Alan Coopersmith <alanc@freedesktop.org>
+#validpgpkeys=('C41C985FDCF1E5364576638B687393EE37D128F8') # Matthieu Herrb <matthieu.herrb@laas.fr>
+#validpgpkeys=('3BB639E56F861FA2E86505690FDD682D974CA72A') # Matt Turner <mattst88@gmail.com>
+#validpgpkeys=('995ED5C8A6138EB0961F18474C09DD83CAAA50B2') # Adam Jackson <ajax@nwnk.net>
+#validpgpkeys=('C383B778255613DFDB409D91DB221A6900000011') # "Keith Packard <keithp@keithp.com>"
+
+prepare() {
+  cd libx11
+  autoreconf -fiv
+}
+
+build() {
+  cd libx11
+  ./configure --prefix=/usr \
+    --disable-static \
+    --disable-xf86bigfont
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  cd libx11
+  make check
+}
+
+package() {
+  cd libx11
+  make DESTDIR="${pkgdir}" install
+
+  install -d -m755 "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+unset -f pkgver

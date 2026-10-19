@@ -1,0 +1,89 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=gdbm
+pkgver=1.26
+# latest, versioned translation from https://translationproject.org/domain/gdbm.html
+_translation_version=1.26
+pkgrel="2"
+pkgdesc="GNU database library"
+arch=(i686 x32)
+url="https://www.gnu.org/software/gdbm/gdbm.html"
+license=(GPL-3.0-or-later)
+depends=(
+  glibc
+  sh
+)
+makedepends=(
+  git
+  readline
+)
+provides=(
+  libgdbm_compat.so
+  libgdbm.so
+)
+source=(
+  git+https://git.gnu.org.ua/gdbm.git?signed#tag=v$pkgver
+  https://ftp.gnu.org/gnu/gdbm/gdbm-$pkgver.tar.gz{,.sig}
+)
+sha512sums=('7a964fae6f8383196e6b40bccad952723ba8c601c7d50153b4011db5bbb908202a6caf61055a3cceaab8dd71c4232420373a9d864a85fd8708097f4e1ce88c8a'
+            '44aafe254f0950a8f5215d8f1337674f07b19f2a375f6eb19a7e39690028c80c3774b705c2b76b470ae74042b21f2ca77d02f6f57aa2ee50296db801220a3352'
+            'SKIP')
+b2sums=('fe795dd537d5904ab6762c85e6dd750278dd039e1fc189563c1111e2ccbaa3a43f326f8ac01392480a332ad06f420e19b3a7fe991354380e34e34807a2d3c176'
+        '9423ea16ee3e8f1ce57ea32371f49919e2a3819a206a61ce927676a08a71a6a495d3949714bff7be789dfce75bf0ab0ac76f07ec673b71a84ae32bd8cd483781'
+        'SKIP')
+validpgpkeys=(
+  4BE4E62655488EB92ABB468F79FFD94BFCE230B1  # Sergey Poznyakoff <gray@gnu.org>
+)
+
+prepare() {
+  cd $pkgname
+  autoreconf -fiv
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --enable-libgdbm-compat
+  )
+
+  cd $pkgname
+  ./configure "${configure_options[@]}"
+  make
+
+  # Generate gdbm mo files from dist tarball
+  cd "$srcdir/$pkgname-$pkgver/po"
+  for po in *.po; do
+    msgfmt $po -o "${po%.po}.mo"
+  done
+}
+
+check() {
+  make check -C $pkgname
+}
+
+package() {
+  depends+=(
+    readline libreadline.so
+  )
+
+  make DESTDIR="$pkgdir" install -C $pkgname
+  install -vDm 644 $pkgname/{NOTE-WARNING,AUTHORS,NEWS,README} -t "$pkgdir/usr/share/doc/$pkgname"
+
+  # Install gdbm mo files from dist tarball
+  cd "$srcdir/$pkgname-$pkgver/po"
+  for mo in *.mo; do
+    install -Dm 644 $mo "$pkgdir/usr/share/locale/${mo%.mo}/LC_MESSAGES/$pkgname.mo"
+  done
+}
+
+# intentionally (almost) empty: the former override that appended package sums
+# was removed on 2026-08-14, but the build master kept building the stale
+# revision which still had it ("Integrity checks (sha512) differ in size from
+# the source array"). This file exists to get gdbm rescheduled with the current
+# modification revision; upstream's source and checksum arrays are fine as-is.
+
+unset -f pkgver

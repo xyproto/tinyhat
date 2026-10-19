@@ -1,0 +1,23 @@
+pkgbase = libvpl
+	pkgdesc = Intel Video Processing Library
+	pkgver = 2.17.0
+	pkgrel = 1
+	url = https://intel.github.io/libvpl/
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = cmake
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	optdepends = intel-media-sdk: runtime implementation for legacy Intel GPUs
+	optdepends = vpl-gpu-rt: runtime implementation for Tiger Lake and newer GPUs
+	provides = onevpl
+	provides = libvpl.so
+	conflicts = onevpl
+	replaces = onevpl
+	options = !emptydirs
+	source = https://github.com/intel/libvpl/archive/v2.17.0/libvpl-2.17.0.tar.gz
+	sha256sums = 4de3e2faf1e8307fb282e4a43f443191810f6a6b0a484fffa7995ba1c814c6ec
+
+pkgname = libvpl

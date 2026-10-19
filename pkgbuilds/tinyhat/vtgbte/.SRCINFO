@@ -1,0 +1,13 @@
+pkgbase = vtgbte
+	pkgdesc = Keyboard-driven Game Boy tile editor for the terminal
+	pkgver = 0+1a9f4603
+	pkgrel = 1
+	url = https://github.com/paul-arutyunov/vtGBte
+	arch = i686
+	arch = x32
+	license = MIT
+	depends = ncurses
+	source = vtGBte-1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz::https://github.com/paul-arutyunov/vtGBte/archive/1a9f460390f0e8c7ab32dd7df0f125ad23d405a9.tar.gz
+	sha256sums = 9d9c61b9ae3bb0ef50b4c4ec383d55ab5ca7190be6030c37729feb7f66591a1c
+
+pkgname = vtgbte

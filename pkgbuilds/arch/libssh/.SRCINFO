@@ -1,0 +1,30 @@
+pkgbase = libssh
+	pkgdesc = Library for accessing ssh client services through C libraries
+	pkgver = 0.12.2
+	pkgrel = 1
+	url = https://www.libssh.org/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = cmake
+	makedepends = cmocka
+	makedepends = doxygen
+	makedepends = openssh
+	makedepends = python
+	depends = glibc
+	depends = openssl
+	depends = zlib
+	provides = libssh.so
+	source = https://www.libssh.org/files/0.12/libssh-0.12.2.tar.xz
+	source = https://www.libssh.org/files/0.12/libssh-0.12.2.tar.xz.asc
+	validpgpkeys = 8DFF53E18F2ABC8D8F3C92237EE0FC4DCC014E3D
+	validpgpkeys = 88A228D89B07C2C77D0C780903D5DF8CFDD3E8E7
+	sha256sums = 49560f677d96e3706a904ac2de1116e25f3680937d51e5c92198fcba4a1c1e9f
+	sha256sums = SKIP
+
+pkgname = libssh
+
+pkgname = libssh-docs
+	pkgdesc = Documentation for libssh
+	depends = 
+	provides = 

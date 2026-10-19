@@ -1,0 +1,36 @@
+pkgbase = qpdf
+	pkgdesc = QPDF: A Content-Preserving PDF Transformation System
+	pkgver = 12.4.2
+	pkgrel = 1
+	url = https://github.com/qpdf/qpdf
+	arch = i686
+	arch = x32
+	license = Apache-2.0
+	license = Artistic-2.0
+	makedepends = libjpeg-turbo
+	makedepends = zlib
+	makedepends = gnutls
+	makedepends = cmake
+	makedepends = texlive-bin
+	makedepends = texlive-binextra
+	makedepends = texlive-fontsrecommended
+	makedepends = python-sphinx
+	makedepends = python-sphinx_rtd_theme
+	makedepends = texlive-latexextra
+	source = https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2.tar.gz
+	source = https://github.com/qpdf/qpdf/releases/download/v12.4.2/qpdf-12.4.2.tar.gz.asc
+	validpgpkeys = C2C96B10011FE009E6D1DF828A75D10998012C7E
+	sha256sums = 8a58af5b6141319287c1883bec8bd1bd545b7567b7fc5e6ce5d25a1c85f36397
+	sha256sums = SKIP
+
+pkgname = qpdf
+	depends = libjpeg-turbo
+	depends = zlib
+	depends = gnutls
+	depends = openssl
+	depends = glibc
+	depends = libstdc++
+	depends = libgcc
+
+pkgname = qpdf-docs
+	pkgdesc = QPDF: A Content-Preserving PDF Transformation System (documentation)

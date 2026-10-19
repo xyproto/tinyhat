@@ -1,0 +1,20 @@
+pkgbase = libldac
+	pkgdesc = LDAC Bluetooth encoder library
+	pkgver = 2.0.2.6
+	pkgrel = 1
+	url = https://github.com/EHfive/ldacBT
+	arch = i686
+	arch = x32
+	license = Apache-2.0
+	makedepends = cmake
+	makedepends = git
+	makedepends = ninja
+	depends = glibc
+	provides = libldacBT_abr.so
+	provides = libldacBT_enc.so
+	source = git+https://github.com/EHfive/ldacBT#tag=v2.0.2.6
+	source = git+https://android.googlesource.com/platform/external/libldac
+	b2sums = cefd6836476371999cbca1d45c3b5fce447d88186de24ab85f4d7c2b771bd2bd7427adc73112a6f003004a259f519319586589d46bd07af192e795943400cc46
+	b2sums = SKIP
+
+pkgname = libldac

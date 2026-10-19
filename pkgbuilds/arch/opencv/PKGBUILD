@@ -1,0 +1,306 @@
+# Maintainer: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Ray Rashif <schiv@archlinux.org>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+
+pkgbase=opencv
+pkgname=(opencv
+         opencv-samples
+         python-opencv
+         opencv-cuda
+         python-opencv-cuda)
+pkgver=5.0.0
+pkgrel="13"
+pkgdesc='Open Source Computer Vision Library'
+arch=(i686 x32)
+license=(Apache-2.0)
+url='https://opencv.org/'
+depends=(abseil-cpp
+         cblas
+         ffmpeg
+         freetype2
+         glib2
+         glibc
+         gst-plugins-base
+         gst-plugins-base-libs
+         gstreamer
+         harfbuzz
+         lapack
+         libdc1394
+         libgcc
+         libglvnd
+         libjpeg-turbo
+         libjxl
+         libpng
+         libstdc++
+         libtiff
+         libwebp
+         openexr
+         openjpeg2
+         verdict
+         protobuf
+         tbb
+         zlib)
+makedepends=(ant
+             cmake
+             cuda
+             cudnn
+             eigen
+             fast_float
+             fmt
+             git
+             glew
+             hdf5
+             java-environment
+             lapacke
+             mesa
+             nlohmann-json
+             openmpi
+             pugixml
+             python-numpy
+             python-setuptools
+             qt6-5compat
+             vtk)
+optdepends=('opencv-samples: samples'
+            'vtk: for the viz module'
+            'glew: for the viz module'
+            'qt6-base: for the HighGUI module'
+            'hdf5: for the HDF5 module'
+            'opencl-icd-loader: For coding with OpenCL'
+            'java-runtime: Java interface')
+source=(git+https://github.com/opencv/opencv#tag=$pkgver
+        git+https://github.com/opencv/opencv_contrib#tag=$pkgver
+        vtk9.patch
+        fix-cuda-flags.patch
+        fix-std.patch
+        fix-dnn-umat-dimensions.patch
+        ffmpeg-9.patch)
+sha256sums=('e123822b57aa5b1cec7802cb53b302ab181a32f91a61060079a65a2fc4de1efe'
+            'b5ee0c286208a092199afe457093c601c73f9efc41c88e8fa0ee821985300c33'
+            'f35a2d4ea0d6212c7798659e59eda2cb0b5bc858360f7ce9c696c77d3029668e'
+            '95472ecfc2693c606f0dd50be2f012b4d683b7b0a313f51484da4537ab8b2bfe'
+            'c05fe7572ee5193cf3de7f02a500f446f3457ec20c315590a326bf1bfb5552cc'
+            'cffe99e96f3b1e7fe15601d6eb02d2ea50b461134a0bfcce2e763327ea45157b'
+            '6246d08c2e272bc30bfcd8bc576e04504f238404823927f98f4def7d212eed74')
+
+prepare() {
+  pushd opencv
+  patch -p1 < ../vtk9.patch # Don't require all vtk optdepends
+  # https://github.com/opencv/opencv/issues/27223
+  # https://bugreports.qt.io/browse/QTBUG-134774
+  sed -i 's/add_definitions(${Qt${QT_VERSION_MAJOR}${dt_dep}_DEFINITIONS})/link_libraries(${Qt${QT_VERSION_MAJOR}${dt_dep}})/' modules/highgui/CMakeLists.txt
+  # OpenCV passes all CXXFLAGS to nvcc through -Xcompiler, which does not work for '-Wp,something' flags
+  # We remove the -Xcompiler and pass our CXXFLAGS through cmake's CUDAFLAGS
+  patch -p1 < ../fix-cuda-flags.patch
+  git cherry-pick -n a18356853d99a67e432e818cf0328b4690d68833 # https://github.com/opencv/opencv/issues/29292
+#  git cherry-pick -n 142801f769ed4946a161f62738bac5a5fe56a60f # https://github.com/opencv/opencv/issues/29291
+#  git cherry-pick -n 883f8d83ae1463a5f486ace784762e8c42e7ea7d # https://github.com/opencv/opencv/issues/29471
+  patch -p1 < ../fix-dnn-umat-dimensions.patch # Fix face recognition in digikam
+  patch -p1 < ../ffmpeg-9.patch # Fix build with FFmpeg 9
+  popd
+
+  pushd opencv_contrib
+  patch -p1 < ../fix-std.patch
+}
+
+build() {
+  export JAVA_HOME="/usr/lib/jvm/default"
+  local cmake_options=(
+    -DWITH_OPENCL=ON
+    -DWITH_OPENGL=ON
+    -DOpenGL_GL_PREFERENCE=LEGACY
+    -DWITH_TBB=ON
+    -DWITH_VULKAN=ON
+    -DWITH_QT=ON
+    -DWITH_JPEGXL=ON
+    -DBUILD_TESTS=OFF
+    -DBUILD_PERF_TESTS=OFF
+    -DBUILD_EXAMPLES=ON
+#    -DBUILD_PROTOBUF=OFF
+#    -DPROTOBUF_UPDATE_FILES=ON
+    -DINSTALL_C_EXAMPLES=ON
+    -DINSTALL_PYTHON_EXAMPLES=ON
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DOPENCV_EXTRA_MODULES_PATH="$srcdir"/opencv_contrib/modules
+    -DOPENCV_SKIP_PYTHON_LOADER=ON
+    # cmake's FindLAPACK doesn't add cblas to LAPACK_LIBRARIES, so we need to specify them manually
+    -DLAPACK_LIBRARIES="/usr/lib/liblapack.so;/usr/lib/libblas.so;/usr/lib/libcblas.so"
+    -DLAPACK_CBLAS_H=/usr/include/cblas.h
+    -DLAPACK_LAPACKE_H=/usr/include/lapacke.h
+    -DOPENCV_GENERATE_PKGCONFIG=ON
+    -DOPENCV_ENABLE_NONFREE=ON
+    -DOPENCV_JNI_INSTALL_PATH=lib
+    -DOPENCV_GENERATE_SETUPVARS=OFF
+    -DEIGEN_INCLUDE_PATH=/usr/include/eigen3
+    -Dprotobuf_MODULE_COMPATIBLE=ON
+    -DHDF5_NO_FIND_PACKAGE_CONFIG_FILE=ON
+  )
+
+  if [[ ${CARCH} == x86_64* ]]; then
+    cmake_options+=(
+      -DCPU_BASELINE_DISABLE=SSE3
+      -DCPU_BASELINE_REQUIRE=SSE2
+    )
+  fi
+
+  cmake -B build -S $pkgname "${cmake_options[@]}" \
+    -DBUILD_WITH_DEBUG_INFO=ON
+  cmake --build build
+
+  # In general, we want to list all real archs (sm_XX) and the latest virtual arch (compute_XX) for future PTX compatibility.
+  # Valid values can be discovered from nvcc --help
+  local cuda_archs="75;80;86;87;88;89;90;100;103;110;120;121;121-virtual"
+
+  # Avoid nvcc intercepting -Werror=format-security: Value 'format-security' is not defined for option 'Werror'
+  CUDAFLAGS="${CXXFLAGS/-Werror=format-security/-Xcompiler -Werror=format-security} -fno-lto --threads 0" \
+  CFLAGS="${CFLAGS} -fno-lto" CXXFLAGS="${CXXFLAGS} -fno-lto" LDFLAGS="${LDFLAGS} -fno-lto" \
+  cmake -B build-cuda -S $pkgname "${cmake_options[@]}" \
+    -DBUILD_WITH_DEBUG_INFO=OFF \
+    -DWITH_CUDA=ON \
+    -DWITH_CUDNN=ON \
+    -DENABLE_CUDA_FIRST_CLASS_LANGUAGE=ON \
+    -DCMAKE_CUDA_ARCHITECTURES="$cuda_archs"
+  cmake --build build-cuda --verbose
+}
+
+package_opencv() {
+  DESTDIR="$pkgdir" cmake --install build
+
+  # separate samples package
+  mv "$pkgdir"/usr/share/opencv5/samples "$srcdir"
+
+  # Add java symlinks expected by some binary blobs
+  ln -sr "$pkgdir"/usr/share/java/{opencv5/opencv-${pkgver//./},opencv}.jar
+  ln -sr "$pkgdir"/usr/lib/{libopencv_java${pkgver//./},libopencv_java}.so
+
+  # Split Python bindings
+  rm -r "$pkgdir"/usr/lib/python3*
+}
+
+package_opencv-samples() {
+  pkgdesc+=' (samples)'
+  depends=(opencv)
+  unset optdepends
+
+  mkdir -p "$pkgdir"/usr/share/opencv5
+  mv samples "$pkgdir"/usr/share/opencv5
+}
+
+package_python-opencv() {
+  pkgdesc='Python bindings for OpenCV'
+  depends=(fmt
+           glew
+           glibc
+           hdf5
+           jsoncpp
+           libgcc
+           libstdc++
+           opencv
+           openmpi
+           pugixml
+           python-numpy
+           qt6-base
+           vtk)
+  unset optdepends
+
+  DESTDIR="$pkgdir" cmake --install build/modules/python3
+}
+
+package_opencv-cuda() {
+  pkgdesc+=' (with CUDA support)'
+  depends+=(cudnn)
+  conflicts=(opencv)
+  provides=(opencv=$pkgver)
+  options=(!debug)
+
+  DESTDIR="$pkgdir" cmake --install build-cuda
+
+  # Split samples
+  rm -r "$pkgdir"/usr/share/opencv5/samples
+
+  # Add java symlinks expected by some binary blobs
+  ln -sr "$pkgdir"/usr/share/java/{opencv5/opencv-${pkgver//./},opencv}.jar
+  ln -sr "$pkgdir"/usr/lib/{libopencv_java${pkgver//./},libopencv_java}.so
+
+  # Split Python bindings
+  rm -r "$pkgdir"/usr/lib/python3*
+}
+
+package_python-opencv-cuda() {
+  pkgdesc='Python bindings for OpenCV (with CUDA support)'
+  depends=(fmt
+           glew
+           hdf5
+           jsoncpp
+           opencv-cuda
+           openmpi
+           pugixml
+           python-numpy
+           qt6-base
+           vtk)
+  conflicts=(python-opencv)
+  provides=(python-opencv=$pkgver)
+  unset optdepends
+
+  DESTDIR="$pkgdir" cmake --install build-cuda/modules/python3
+}
+
+# Qt6 (lrelease) is linked against icu68, icu 69 is current version
+makedepends+=(icu68)
+
+# no vtk yet on i486
+if [ "$CARCH" = 'i486' ]; then
+  makedepends=(${makedepends[@]//vtk/})
+fi
+
+# no cuda
+makedepends=(${makedepends[@]//cudnn/})
+
+eval "$(
+ declare -f build | \
+  declare -f package_opencv-cuda | \
+    sed '
+      s/cudnn//g
+    '
+)"
+
+# disable SSE2 on i686 and i486
+if [ "$CARCH" = 'i486' -o "$CARCH" = 'i686' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s/-DCPU_BASELINE_REQUIRE=SSE2/-DCPU_BASELINE_DISABLE=SSE2/g
+      '
+  )"
+fi
+
+# disable SSE on i486
+if [ "$CARCH" = 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        /_opts=/ a \
+          _opts+=" -DCPU_BASELINE_DISABLE=SSE"
+      '
+  )"
+fi
+
+# -latomic on i486
+if [ "$CARCH" == 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        /_opts=/ a \
+          _opts+=" -DCMAKE_CXX_STANDARD_LIBRARIES=-latomic"
+      '
+  )"
+fi
+
+# breaking the cycle with gstreamer on i486
+depends=(${depends[@]//gst-plugins-base-libs/})
+depends_i686+=(gst-plugins-base-libs)
+depends_pentium4=("${depends_i686[@]}")
+depends=(${depends[@]//gst-plugins-base/})
+depends_i686+=(gst-plugins-base)
+depends_pentium4=("${depends_i686[@]}")
+
+unset -f pkgver

@@ -1,0 +1,177 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=nss
+pkgname=(
+  nss
+  ca-certificates-mozilla
+)
+pkgver=3.131
+pkgrel="1"
+pkgdesc="Network Security Services"
+url="https://firefox-source-docs.mozilla.org/security/nss/index.html"
+arch=(i686 x32)
+license=(MPL-2.0)
+depends=(
+  glibc
+  nspr
+  p11-kit
+  sh
+  sqlite
+  zlib
+)
+makedepends=(
+  gyp
+  mercurial
+  perl
+  python
+)
+source=(
+  "hg+https://hg.mozilla.org/projects/nss#tag=NSS_${pkgver//./_}_RTM"
+  bundle.sh
+  certdata2pem.py
+)
+b2sums=('43415cf6bfbf8c7bda54bfad9fc55f23d609e5e1139f1bb6d84633a127ad6d1db2dd13b7494330c8a191aa7f901e227a0b986a1f29281fb8f35dc6031ac14c57'
+        '4be5dd836c844fdd7b63302a6994d62149082c3bc81eef70f373f416fed80a61a923960e4390d1c391b81ab01b409370d788818a30ffdd3a4ed467b670f990f6'
+        '6bb59dcc9289916dcbf8fb6d73db0c0cd7582dc12a3aa4e8be19ec62c9ede65fdd9470a2d92ec5a114506b78d2d21b8ae0a1b45a17dc1f90f7d75434a93da510')
+
+prepare() {
+  mkdir -p certs
+  ln -srft certs nss/lib/ckfw/builtins/{certdata.txt,nssckbi.h}
+
+  cd nss
+}
+
+build() {
+  local buildsh_options=(
+    --disable-tests
+    --enable-libpkix
+    --opt
+    --system-nspr
+    --system-sqlite
+  )
+
+  cd certs
+  ../certdata2pem.py
+
+  cd ..
+  ./bundle.sh
+
+  cd nss
+  ./build.sh "${buildsh_options[@]}"
+}
+
+package_nss() {
+  local nsprver="$(pkg-config --modversion nspr)"
+  local libdir=/usr/lib includedir=/usr/include/nss
+
+  sed nss/pkg/pkg-config/nss.pc.in \
+    -e "s,%prefix%,/usr,g" \
+    -e "s,%exec_prefix%,\${prefix},g" \
+    -e "s,%libdir%,$libdir,g" \
+    -e "s,%includedir%,$includedir,g" \
+    -e "s,%NSPR_VERSION%,$nsprver,g" \
+    -e "s,%NSS_VERSION%,$pkgver,g" |
+    install -Dm644 /dev/stdin "$pkgdir$libdir/pkgconfig/nss.pc"
+
+  ln -s nss.pc "$pkgdir$libdir/pkgconfig/mozilla-nss.pc"
+
+  install -Dt "$pkgdir$libdir" dist/Release/lib/*.so
+
+  local vmajor vminor vpatch
+  { read vmajor; read vminor; read vpatch; } \
+    < <(awk '/#define.*NSS_V(MAJOR|MINOR|PATCH)/ {print $3}' nss/lib/nss/nss.h)
+
+  sed nss/pkg/pkg-config/nss-config.in \
+    -e "s,@prefix@,/usr,g" \
+    -e "s,@exec_prefix@,/usr,g" \
+    -e "s,@libdir@,$libdir,g" \
+    -e "s,@includedir@,$includedir,g" \
+    -e "s,@MOD_MAJOR_VERSION@,$vmajor,g" \
+    -e "s,@MOD_MINOR_VERSION@,$vminor,g" \
+    -e "s,@MOD_PATCH_VERSION@,$vpatch,g" |
+    install -D /dev/stdin "$pkgdir/usr/bin/nss-config"
+
+  install -Dt "$pkgdir/usr/bin" \
+    dist/Release/bin/{*util,shlibsign,signtool,signver,ssltap}
+
+  install -Dt "$pkgdir$includedir" -m644 dist/public/nss/*.h
+
+  install -Dt "$pkgdir/usr/share/man/man1" -m644 \
+    nss/doc/nroff/{*util,signtool,signver,ssltap}.1
+
+  # Replace built-in trust with p11-kit connection
+  ln -sf pkcs11/p11-kit-trust.so "$pkgdir$libdir/libnssckbi.so"
+}
+
+package_ca-certificates-mozilla() {
+  pkgdesc="Mozilla's set of trusted CA certificates"
+  depends=('ca-certificates-utils>=20181109')
+
+  install -Dm644 ca-bundle.trust.p11-kit \
+    "$pkgdir/usr/share/ca-certificates/trust-source/mozilla.trust.p11-kit"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# bring back changes of 617b84f70caf
+
+source+=(nss-3.58-no-plt.patch)
+b2sums+=('0477664df27febc3e2bc88a1f25ed55251e4e3baa869e47fc33c18f94899c92e92db545c7bf42017c5c985ab243aa8648064ab7d6244d9bfd68892072788675c')
+
+eval "$(
+  declare -f prepare | \
+    sed '
+      /patch -Np1/a patch -Np2 -i "$srcdir/nss-3.58-no-plt.patch"
+    '
+)"
+
+# hg.mozilla.org works upstream, but mercurial in the archlinux32 chroots is
+# stale-built against python 3.11 (cf. error log 2026-09-10 i486: "abort:
+# couldn't find mercurial libraries in [... python3.11/site-packages]")
+# while we live through a python 3.14 wave. Mozilla's official git mirror
+# (https://github.com/mozilla/nss, migrated from hg) carries the same tags,
+# so avoid hg entirely; b2 parsed against "git archive" at NSS_3_129_RTM.
+# If upstream drifts away from the pinned hg state, the rewrite is a no-op
+# and the next build failure tells us to revisit here.
+if [ "${pkgver}" = '3.129' ] && \
+   [ "${source[0]%%\#*}" = 'hg+https://hg.mozilla.org/projects/nss' ]; then
+  source[0]='git+https://github.com/mozilla/nss#tag=NSS_3_129_RTM'
+  if [ "${b2sums[0]}" = '4ed0082d1484c16a527550447e9aa2b70fe4657bef7ec08087c2e8fdb14cfdc255ef5d1d419796b6fa5d4c69e51612390a60455798a414aa0e99ed917fed43fd' ]; then
+    b2sums[0]='d93f0b5be82b231e6f90efb060a80022246a657449803c3b1d0af0a4c128e462f96a03666d13be2b2f62d9a6e21624542f4a54079392e2c9f1f00763029449c4'
+  fi
+fi
+
+# set IA32 as target for build.sh
+eval "$(
+  declare -f build | \
+    sed '
+      s/--target x64/--target ia32/g
+    '
+)"
+
+# signing of libs leads to a segfault on IA32, disabling it
+eval "$(
+  declare -f build | \
+    sed '
+      s/build.sh/build.sh -Dsign_libs=0 /g
+    '
+)"
+
+# workaround FS32#218 (segfaults in library signer), use clang
+#(also enable verbose builds, so we see potential issues)
+makedepends+=(clang)
+eval "$(
+  declare -f build | \
+    sed '
+      s/build.sh/build.sh -v/g
+      s/build.sh/build.sh --clang/g
+    '
+)"
+
+# for clang on i486
+if [ "${CARCH}" = "i486" ]; then
+  makedepends+=(llvm14-libs)
+fi
+
+unset -f pkgver

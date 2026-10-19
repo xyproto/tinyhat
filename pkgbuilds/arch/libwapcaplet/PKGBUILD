@@ -1,0 +1,30 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: Brad Fanella <bradfanella@archlinux.us>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+
+pkgname=libwapcaplet
+pkgver=0.4.3
+pkgrel="4"
+pkgdesc='String internment library with rapid string comparison'
+arch=(i686 x32)
+url='https://www.netsurf-browser.org/projects/libwapcaplet/'
+license=(MIT)
+makedepends=(netsurf-buildsystem)
+source=("https://download.netsurf-browser.org/libs/releases/$pkgname-$pkgver-src.tar.gz")
+b2sums=('7a51b27911192b0697d6eebe9e98abf720a76daa0e0ce0eb6148186e21e36d3b1853d3b24c8fa325ecaa4ed69d8262a9282ef77ba028d316dd16a225a6766d64')
+
+prepare() {
+  sed -i 's:_BSD_SOURCE:_DEFAULT_SOURCE:;s:rns:rns -w:' $pkgname-$pkgver/Makefile
+}
+
+build() {
+  make -C $pkgname-$pkgver PREFIX=/usr COMPONENT_TYPE=lib-shared
+}
+
+package() {
+  make -C $pkgname-$pkgver COMPONENT_TYPE=lib-shared DESTDIR="$pkgdir" \
+    INCLUDEDIR=include LIBDIR=lib PREFIX=/usr install
+  install -Dm644 $pkgname-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+unset -f pkgver

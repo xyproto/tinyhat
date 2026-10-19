@@ -1,0 +1,15 @@
+pkgbase = sdl3_image
+	pkgdesc = SDL3 image loading library (PNG, JPEG, GIF, BMP and more)
+	pkgver = 3.4.8
+	pkgrel = 1
+	url = https://github.com/libsdl-org/SDL_image
+	arch = i686
+	arch = x32
+	license = Zlib
+	makedepends = cmake
+	makedepends = ninja
+	depends = sdl3
+	source = https://github.com/libsdl-org/SDL_image/releases/download/release-3.4.8/SDL3_image-3.4.8.tar.gz
+	sha256sums = e8223b424bc7541cf84ffff5cf7e4f24ec3711c60462cb1bd6dc1d7bd7f25477
+
+pkgname = sdl3_image

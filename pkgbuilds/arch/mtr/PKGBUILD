@@ -1,0 +1,83 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Douglas Soares de Andrade <douglas@archlinux.org>
+
+pkgbase=mtr
+pkgname=('mtr' 'mtr-gtk')
+pkgver=0.96
+pkgrel="1"
+pkgdesc='Combines the functionality of traceroute and ping into one tool'
+url='https://www.bitwizard.nl/mtr/'
+arch=(i686 x32)
+license=('GPL-2.0-only')
+makedepends=(
+  'gdk-pixbuf2'
+  'glibc'
+  'gtk3'
+  'jansson'
+  'libcap'
+  'ncurses'
+)
+install=mtr.install
+source=(https://github.com/traviscross/mtr/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz)
+sha512sums=('893c5f4623ba437bca309633ce1911c900e33a51252fce5f68ea8e74885302f744198e5616ba0155b4e09fb34eedba7e41ac4507403dc9d657e295ccf66c7d31')
+b2sums=('c7dff18b6f6e48a648783d719a6cedd14b141fe2013b75031f3ee830e8c4fb9c93639259c860047c8108c21519df30740f7515256ed08552f7697a42e938257b')
+
+prepare() {
+  (cd ${pkgbase}-${pkgver}
+    echo "${pkgver}" > .tarball-version
+    autoreconf -fiv
+  )
+  cp -ra ${pkgbase}-${pkgver}{,-cli}
+}
+
+build() {
+  (cd ${pkgbase}-${pkgver}-cli
+    ./configure \
+      --prefix=/usr \
+      --without-gtk \
+      --sbindir=/usr/bin
+    make
+  )
+  (cd ${pkgbase}-${pkgver}
+    ./configure \
+      --prefix=/usr \
+      --sbindir=/usr/bin
+    make
+  )
+}
+
+package_mtr() {
+  pkgdesc='Combines the functionality of traceroute and ping into one tool (CLI version)'
+  depends=(
+    'glibc'
+    'jansson'
+    'libcap'
+    'ncurses' libncursesw.so
+  )
+  optdepends=('bash-completion: bash completion support')
+  cd ${pkgbase}-${pkgver}-cli
+  make DESTDIR="${pkgdir}" install
+}
+
+package_mtr-gtk() {
+  pkgdesc='Combines the functionality of traceroute and ping into one tool (GTK version)'
+  depends=(
+    'gdk-pixbuf2' libgdk_pixbuf-2.0.so
+    'glib2' libglib-2.0.so libgobject-2.0.so
+    'glibc'
+    'gtk3' libgtk-3.so
+    'jansson'
+    'libcap'
+    'ncurses' libncursesw.so
+  )
+  optdepends=('bash-completion: bash completion support')
+  conflicts=('mtr')
+  provides=("mtr=${pkgver}")
+  cd ${pkgbase}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

@@ -1,0 +1,71 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libcaca
+pkgver=0.99.beta20
+pkgrel="7"
+pkgdesc='Color ASCII art library'
+arch=(i686 x32)
+url='http://caca.zoy.org/wiki/libcaca'
+license=(WTFPL)
+depends=(
+  freeglut
+  glibc
+  glu
+  imlib2
+  libglvnd
+  libstdc++
+  libx11
+  ncurses
+  slang
+  zlib
+)
+makedepends=(
+  doxygen
+  git
+  pango
+  python
+)
+optdepends=('python: Python bindings')
+source=(
+  "git+https://github.com/cacalabs/libcaca.git#tag=v$pkgver"
+  libcaca-0.99.beta20-CVE-2022-0856.patch
+)
+b2sums=(
+  2965c38a6ecb8f9384741ac707f60ba7c6b7e290303f0f2c5f5b9dd28ce89580012c7db647dff15f9dc012fe3e47caa713162d40ffb29f428739db3a66a94e6b
+  82bc7243844238089c5f513738bd9e95ac6cb88b16202db0655592e4037732a8353b72e5bd26ad73cdb32ad2da5d864bbb9ee5196bc0c3d2805c397e7686f728
+)
+
+prepare() {
+  cd $pkgname
+
+  # Prevent a divide-by-zero by checking for a zero width or height
+  # https://github.com/cacalabs/libcaca/pull/66
+  git apply -3 ../libcaca-0.99.beta20-CVE-2022-0856.patch
+
+  autoreconf -fi
+}
+
+build() {
+  cd $pkgname
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  cd $pkgname
+  make check
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" COPYING
+}
+
+unset -f pkgver

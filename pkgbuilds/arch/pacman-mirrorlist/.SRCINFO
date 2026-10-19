@@ -1,0 +1,14 @@
+pkgbase = pacman-mirrorlist
+	pkgdesc = Arch Linux mirror list for use by pacman
+	pkgver = 20260322
+	pkgrel = 1
+	url = https://www.archlinux.org/mirrorlist/
+	arch = any
+	license = GPL-2.0-or-later
+	backup = etc/pacman.d/mirrorlist
+	source = mirrorlist
+	md5sums = 5e3b5914765e40fdef5079d3db83e3ff
+	sha256sums = 868eb0a40b0dd0808a04e58c48f51c35990131f1e8092de5a4c6654be08be643
+	b2sums = d135896c6b0717c748aefafb1607da88111ab45d034196d33a5efe71690aabc2c34271cd63bae856c3aa52f1a6ac2cbe0491a57137226702b181029408be4489
+
+pkgname = pacman-mirrorlist

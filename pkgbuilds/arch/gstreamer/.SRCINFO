@@ -1,0 +1,535 @@
+pkgbase = gstreamer
+	pkgdesc = Multimedia graph framework
+	pkgver = 1.28.8
+	pkgrel = 1
+	url = https://gstreamer.freedesktop.org/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	checkdepends = xorg-server-xvfb
+	makedepends = a52dec
+	makedepends = aalib
+	makedepends = alsa-lib
+	makedepends = aom
+	makedepends = bash-completion
+	makedepends = bluez-libs
+	makedepends = bzip2
+	makedepends = cairo
+	makedepends = cdparanoia
+	makedepends = chromaprint
+	makedepends = curl
+	makedepends = faac
+	makedepends = faad2
+	makedepends = ffmpeg
+	makedepends = flac
+	makedepends = fluidsynth
+	makedepends = gdk-pixbuf2
+	makedepends = git
+	makedepends = glib2
+	makedepends = glib2-devel
+	makedepends = glibc
+	makedepends = gobject-introspection
+	makedepends = graphene
+	makedepends = gsm
+	makedepends = gtk3
+	makedepends = hicolor-icon-theme
+	makedepends = imath
+	makedepends = iso-codes
+	makedepends = jack2
+	makedepends = json-glib
+	makedepends = ladspa
+	makedepends = lame
+	makedepends = lcms2
+	makedepends = libass
+	makedepends = libavc1394
+	makedepends = libavtp
+	makedepends = libbs2b
+	makedepends = libcaca
+	makedepends = libcap
+	makedepends = libcdio
+	makedepends = libdc1394
+	makedepends = libdca
+	makedepends = libde265
+	makedepends = libdrm
+	makedepends = libdv
+	makedepends = libdvdnav
+	makedepends = libdvdread
+	makedepends = libelf
+	makedepends = libfdk-aac
+	makedepends = libfreeaptx
+	makedepends = libgcc
+	makedepends = libglvnd
+	makedepends = libgme
+	makedepends = libgudev
+	makedepends = libiec61883
+	makedepends = libjpeg-turbo
+	makedepends = liblc3
+	makedepends = libldac
+	makedepends = liblrdf
+	makedepends = libltc
+	makedepends = libmicrodns
+	makedepends = libmodplug
+	makedepends = libmpcdec
+	makedepends = libmpeg2
+	makedepends = libnice
+	makedepends = libogg
+	makedepends = libopenmpt
+	makedepends = libpng
+	makedepends = libpulse
+	makedepends = libraw1394
+	makedepends = librsvg
+	makedepends = libshout
+	makedepends = libsndfile
+	makedepends = libsoup3
+	makedepends = libsrtp
+	makedepends = libstdc++
+	makedepends = libtheora
+	makedepends = libunwind
+	makedepends = libusb
+	makedepends = libva
+	makedepends = libvorbis
+	makedepends = libvpl
+	makedepends = libvpx
+	makedepends = libwebp
+	makedepends = libx11
+	makedepends = libxcb
+	makedepends = libxdamage
+	makedepends = libxext
+	makedepends = libxfixes
+	makedepends = libxi
+	makedepends = libxkbcommon
+	makedepends = libxkbcommon-x11
+	makedepends = libxml2
+	makedepends = libxrandr
+	makedepends = libxtst
+	makedepends = libxv
+	makedepends = lilv
+	makedepends = lv2
+	makedepends = mesa
+	makedepends = meson
+	makedepends = mjpegtools
+	makedepends = mpg123
+	makedepends = nasm
+	makedepends = neon
+	makedepends = nettle
+	makedepends = openal
+	makedepends = opencore-amr
+	makedepends = opencv
+	makedepends = openexr
+	makedepends = openh264
+	makedepends = openjpeg2
+	makedepends = openssl
+	makedepends = opentimelineio
+	makedepends = opus
+	makedepends = orc
+	makedepends = pango
+	makedepends = python
+	makedepends = python-cairo
+	makedepends = python-commonmark
+	makedepends = python-gobject
+	makedepends = python-lxml
+	makedepends = python-setuptools
+	makedepends = python-typing_extensions
+	makedepends = qrencode
+	makedepends = qt5-base
+	makedepends = qt5-declarative
+	makedepends = qt5-tools
+	makedepends = qt5-wayland
+	makedepends = qt5-x11extras
+	makedepends = qt6-base
+	makedepends = qt6-declarative
+	makedepends = qt6-shadertools
+	makedepends = qt6-tools
+	makedepends = rtmpdump
+	makedepends = rust
+	makedepends = sbc
+	makedepends = sdl2
+	makedepends = shaderc
+	makedepends = soundtouch
+	makedepends = spandsp
+	makedepends = speex
+	makedepends = srt
+	makedepends = svt-av1
+	makedepends = systemd-libs
+	makedepends = taglib
+	makedepends = twolame
+	makedepends = v4l-utils
+	makedepends = valgrind
+	makedepends = vmaf
+	makedepends = vulkan-headers
+	makedepends = vulkan-icd-loader
+	makedepends = vulkan-validation-layers
+	makedepends = wavpack
+	makedepends = wayland
+	makedepends = wayland-protocols
+	makedepends = webrtc-audio-processing-1
+	makedepends = wildmidi
+	makedepends = wpewebkit
+	makedepends = x264
+	makedepends = x265
+	makedepends = zbar
+	makedepends = zlib
+	makedepends = zvbi
+	makedepends = zxing-cpp
+	source = git+https://gitlab.freedesktop.org/gstreamer/gstreamer.git?signed#tag=1.28.8
+	source = https://gstreamer.freedesktop.org/src/gstreamer-docs/gstreamer-docs-1.28.8.tar.xz
+	source = https://gstreamer.freedesktop.org/src/gstreamer-docs/gstreamer-docs-1.28.8.tar.xz.asc
+	source = 0001-HACK-meson-Disable-broken-tests.patch
+	source = 0002-faac-support-faac-2.0-faac_-API.patch
+	validpgpkeys = D637032E45B8C6585B9456565D2EEE6F6F349D7C
+	b2sums = 5d87b91fa47558c9107314113e63e4ffaec1b708e7e1e17bd5b9eee85006a187578441be7cf7634d724fbebbaf9c26f99b9e93efad05e681f864a3974a140556
+	b2sums = 0e9b8dde82c36141ad8640540de53c6f5f9b62563e7dcc117a6cfe9b1754923cb6504f93e136550dafd5a49db6c903ce70d6021f2990c2d1d6af86fdd2b06902
+	b2sums = SKIP
+	b2sums = 30f18e98863644c66ed39e54caaedb17a96e3294e5e260b01cd93c6373d120079af9bd92512b25b09f9228e880a2b032da4374a4a85062642dcaf070112408cd
+	b2sums = 4e425222d8fd1fc3c49750ad4920433e3b298698e96e714fb9d6f887ac62509f2b187a131fa31da53dcedd2a150ca59d3bd7d7519b7df91a0cff90c65094edbc
+
+pkgname = gstreamer
+	pkgdesc = Multimedia graph framework - core
+	install = gstreamer.install
+	depends = glib2
+	depends = glibc
+	depends = libcap
+	depends = libelf
+	depends = libgcc
+	depends = libunwind
+	optdepends = python: gst-plugins-doc-cache-generator
+	conflicts = gstreamer-vaapi<=1.26.10-5
+
+pkgname = gst-plugins-bad-libs
+	pkgdesc = Multimedia graph framework - bad
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libdrm
+	depends = libgcc
+	depends = libglvnd
+	depends = libgudev
+	depends = libnice
+	depends = libstdc++
+	depends = libusb
+	depends = libva
+	depends = libx11
+	depends = libxcb
+	depends = libxkbcommon
+	depends = libxkbcommon-x11
+	depends = mesa
+	depends = orc
+	depends = vulkan-icd-loader
+	depends = wayland
+	depends = vmaf
+	depends = zlib
+
+pkgname = gst-plugins-base-libs
+	pkgdesc = Multimedia graph framework - base
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = graphene
+	depends = iso-codes
+	depends = libdrm
+	depends = libglvnd
+	depends = libgudev
+	depends = libjpeg-turbo
+	depends = libpng
+	depends = libx11
+	depends = libxcb
+	depends = libxext
+	depends = libxi
+	depends = libxv
+	depends = mesa
+	depends = orc
+	depends = wayland
+	depends = zlib
+
+pkgname = gst-plugins-base
+	pkgdesc = Multimedia graph framework - base plugins
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = alsa-lib
+	depends = cairo
+	depends = cdparanoia
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libogg
+	depends = libtheora
+	depends = libvorbis
+	depends = opus
+	depends = pango
+
+pkgname = gst-plugins-good
+	pkgdesc = Multimedia graph framework - good plugins
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = aalib
+	depends = bzip2
+	depends = cairo
+	depends = flac
+	depends = gdk-pixbuf2
+	depends = glib2
+	depends = glibc
+	depends = lame
+	depends = libavc1394
+	depends = libcaca
+	depends = libdv
+	depends = libgcc
+	depends = libgudev
+	depends = libiec61883
+	depends = libjpeg-turbo
+	depends = libpng
+	depends = libpulse
+	depends = libraw1394
+	depends = libshout
+	depends = libsoup3
+	depends = libstdc++
+	depends = libvpx
+	depends = libx11
+	depends = libxdamage
+	depends = libxext
+	depends = libxfixes
+	depends = libxml2
+	depends = libxtst
+	depends = mpg123
+	depends = nettle
+	depends = opencore-amr
+	depends = orc
+	depends = speex
+	depends = taglib
+	depends = twolame
+	depends = v4l-utils
+	depends = wavpack
+	depends = zlib
+	optdepends = jack: JACK backend
+
+pkgname = gst-plugins-bad
+	pkgdesc = Multimedia graph framework - bad plugins
+	depends = 
+	optdepends = gst-plugin-gtk: gtk plugin
+	optdepends = gst-plugin-hip: hip plugin and library
+	optdepends = gst-plugin-msdk: msdk plugin
+	optdepends = gst-plugin-onnx: onnx plugin
+	optdepends = gst-plugin-opencv: opencv plugin and library
+	optdepends = gst-plugin-qml6: qml6 plugin
+	optdepends = gst-plugin-qmlgl: qmlgl plugin
+	optdepends = gst-plugin-qsv: qsv plugin
+	optdepends = gst-plugin-va: va plugin
+	optdepends = gst-plugin-wpe2: wpe2 plugin
+
+pkgname = gst-plugins-ugly
+	pkgdesc = Multimedia graph framework - ugly plugins
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = a52dec
+	depends = glib2
+	depends = glibc
+	depends = libcdio
+	depends = libdvdread
+	depends = libmpeg2
+	depends = x264
+
+pkgname = gst-libav
+	pkgdesc = Multimedia graph framework - libav plugin
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = ffmpeg
+	depends = glib2
+	depends = glibc
+	provides = gst-ffmpeg=1.28.8-1
+
+pkgname = gst-plugin-gtk
+	pkgdesc = Multimedia graph framework - gtk plugin
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = cairo
+	depends = glib2
+	depends = glibc
+	depends = gtk3
+	depends = wayland
+
+pkgname = gst-plugin-hip
+	pkgdesc = Multimedia graph framework - hip plugin and library
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libdrm
+	depends = libgcc
+	depends = libgudev
+	depends = libstdc++
+	depends = libx11
+	depends = mesa
+	depends = orc
+	depends = wayland
+
+pkgname = gst-plugin-msdk
+	pkgdesc = Multimedia graph framework - msdk plugin
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libdrm
+	depends = libgudev
+	depends = libva
+	depends = libvpl
+
+pkgname = gst-plugin-opencv
+	pkgdesc = Multimedia graph framework - opencv plugin and library
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	depends = opencv
+
+pkgname = gst-plugin-qml6
+	pkgdesc = Multimedia graph framework - qml6 plugin
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libglvnd
+	depends = libstdc++
+	depends = qt6-base
+	depends = qt6-declarative
+
+pkgname = gst-plugin-qmlgl
+	pkgdesc = Multimedia graph framework - qmlgl plugin
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libglvnd
+	depends = libstdc++
+	depends = qt5-base
+	depends = qt5-declarative
+	depends = qt5-wayland
+	depends = qt5-x11extras
+
+pkgname = gst-plugin-qsv
+	pkgdesc = Multimedia graph framework - qsv plugin
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	optdepends = intel-media-sdk: runtime for legacy Intel GPUs
+	optdepends = onevpl-intel-gpu: runtime for Tiger Lake and newer GPUs
+
+pkgname = gst-plugin-svthevcenc
+	pkgdesc = Multimedia graph framework - svthevcenc plugin
+	arch = i686
+	arch = x32
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = svt-hevc
+
+pkgname = gst-plugin-va
+	pkgdesc = Multimedia graph framework - va plugin
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libgudev
+	depends = libva
+	replaces = gstreamer-vaapi<=1.26.10-5
+
+pkgname = gst-plugin-wpe2
+	pkgdesc = Multimedia graph framework - wpe2 plugin
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libglvnd
+	depends = libstdc++
+	depends = libxkbcommon
+	depends = wpewebkit
+
+pkgname = gst-devtools-libs
+	pkgdesc = Multimedia graph framework - development and debugging libraries
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = json-glib
+	depends = orc
+	depends = zlib
+
+pkgname = gst-devtools
+	pkgdesc = Multimedia graph framework - development and debugging tools
+	depends = gst-devtools-libs=1.28.8
+	depends = gst-plugins-bad-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gst-rtsp-server=1.28.8
+	depends = gstreamer=1.28.8
+	depends = cairo
+	depends = glib2
+	depends = glibc
+	depends = gtk3
+	depends = hicolor-icon-theme
+	depends = json-glib
+	depends = libgcc
+	depends = python
+	depends = python-cairo
+	depends = python-commonmark
+	depends = python-gobject
+	depends = python-lxml
+
+pkgname = gst-rtsp-server
+	pkgdesc = Multimedia graph framework - rtsp server
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = orc
+	depends = zlib
+
+pkgname = gst-editing-services
+	pkgdesc = Multimedia graph framework - editing services
+	depends = gst-devtools-libs=1.28.8
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gst-python=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = json-glib
+	depends = libxml2
+	depends = orc
+	depends = python
+	depends = python-gobject
+	depends = zlib
+	optdepends = opentimelineio: Support for the OpenTimelineIO format
+
+pkgname = gst-python
+	pkgdesc = Multimedia graph framework - python plugin
+	depends = gst-plugins-base-libs=1.28.8
+	depends = gstreamer=1.28.8
+	depends = glib2
+	depends = glibc
+	depends = python
+	depends = python-gobject
+	depends = python-typing_extensions
+	optdepends = gst-plugins-bad-libs: GstAnalytics support
+
+pkgname = gstreamer-docs
+	pkgdesc = Multimedia graph framework - documentation
+	license = BSD-2-Clause OR MIT OR LGPL-2.1-or-later
+	license = CC-BY-SA-4.0
+	license = LGPL-2.1-or-later
+	license = MIT
+	license = OPUBL-1.0
+	options = !debug
+	options = !strip

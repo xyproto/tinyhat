@@ -1,0 +1,37 @@
+pkgbase = wayland
+	pkgdesc = A computer display server protocol
+	pkgver = 1.26.0
+	pkgrel = 1
+	url = https://wayland.freedesktop.org/
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = meson
+	makedepends = libxslt
+	makedepends = doxygen
+	makedepends = xmlto
+	makedepends = graphviz
+	makedepends = docbook-xsl
+	makedepends = mdbook
+	depends = glibc
+	depends = libffi
+	depends = expat
+	depends = libxml2
+	depends = default-cursors
+	source = https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.26.0/downloads/wayland-1.26.0.tar.xz
+	source = https://gitlab.freedesktop.org/wayland/wayland/-/releases/1.26.0/downloads/wayland-1.26.0.tar.xz.sig
+	validpgpkeys = C7223EBE4EF66513B892598911A30156E0E67611
+	validpgpkeys = C0066D7DB8E9AC6844D728715E54498E697F11D7
+	validpgpkeys = 34FF9526CFEF0E97A340E2E40FDE7BE0E88F5E48
+	sha256sums = 64176eaa46e4969903e286f8e5ef8331affc17fdf03ac9b58381d2b23162b7a3
+	sha256sums = SKIP
+
+pkgname = wayland
+	provides = libwayland-client.so
+	provides = libwayland-cursor.so
+	provides = libwayland-egl.so
+	provides = libwayland-server.so
+
+pkgname = wayland-docs
+	pkgdesc = A computer display server protocol (documentation)
+	depends = 

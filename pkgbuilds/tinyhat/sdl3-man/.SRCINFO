@@ -1,0 +1,16 @@
+pkgbase = sdl3-man
+	pkgdesc = Man pages for SDL3, SDL3_image and SDL3_ttf
+	pkgver = 3.4.18
+	pkgrel = 1
+	url = https://libsdl.org/
+	arch = any
+	license = Zlib
+	makedepends = perl
+	source = https://github.com/libsdl-org/SDL/releases/download/release-3.4.18/SDL3-3.4.18.tar.gz
+	source = https://github.com/libsdl-org/SDL_image/releases/download/release-3.4.8/SDL3_image-3.4.8.tar.gz
+	source = https://github.com/libsdl-org/SDL_ttf/releases/download/release-3.2.2/SDL3_ttf-3.2.2.tar.gz
+	sha256sums = 9c75cf16330322c217dedd2e0609f1124f1b54b8633e763467b4684d0f4334a3
+	sha256sums = e8223b424bc7541cf84ffff5cf7e4f24ec3711c60462cb1bd6dc1d7bd7f25477
+	sha256sums = 63547d58d0185c833213885b635a2c0548201cc8f301e6587c0be1a67e1e045d
+
+pkgname = sdl3-man

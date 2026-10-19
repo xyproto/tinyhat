@@ -1,0 +1,88 @@
+pkgbase = bluez
+	pkgver = 5.87
+	pkgrel = 2
+	url = http://www.bluez.org/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-only
+	makedepends = dbus
+	makedepends = libical
+	makedepends = systemd
+	makedepends = alsa-lib
+	makedepends = json-c
+	makedepends = ell
+	makedepends = python-docutils
+	makedepends = python-pygments
+	makedepends = cups
+	makedepends = git
+	source = git+https://github.com/bluez/bluez.git#tag=5.87
+	source = bluetooth.modprobe
+	b2sums = 9abcc5de17102c1307396627c87cffb5585e1c9b099cfd33d2a682d93f10e48a178fe8651c16ab9bb788d80f603f91db75e9fcadf7b627017202402d4ec396e5
+	b2sums = 0ce33d13b796d4ae2fd688b17742b3a3055663b68a352b02720dac82bcfdaa47bf2ee2a034dfb8ef4ddf3f827bc58fe80548730939c2915f64864cea39c10170
+
+pkgname = bluez
+	pkgdesc = Daemons for the bluetooth protocol stack
+	depends = systemd-libs
+	depends = dbus
+	depends = glib2
+	depends = alsa-lib
+	depends = glibc
+	backup = etc/bluetooth/main.conf
+	backup = etc/bluetooth/input.conf
+	backup = etc/bluetooth/network.conf
+
+pkgname = bluez-utils
+	pkgdesc = Development and debugging utilities for the bluetooth protocol stack
+	depends = dbus
+	depends = systemd-libs
+	depends = glib2
+	depends = glibc
+	depends = readline
+	optdepends = ell: for btpclient
+	optdepends = perl: for parse_companies.pl
+	provides = bluez-plugins
+	replaces = bluez-plugins
+
+pkgname = bluez-libs
+	pkgdesc = Deprecated libraries for the bluetooth protocol stack
+	license = LGPL-2.1-only
+	depends = glibc
+	provides = libbluetooth.so
+
+pkgname = bluez-cups
+	pkgdesc = CUPS printer backend for Bluetooth printers
+	depends = cups
+	depends = glib2
+	depends = glibc
+	depends = dbus
+
+pkgname = bluez-deprecated-tools
+	pkgdesc = Deprecated tools that are no longer maintained
+	depends = json-c
+	depends = systemd-libs
+	depends = glib2
+	depends = dbus
+	depends = readline
+	depends = glibc
+
+pkgname = bluez-hid2hci
+	pkgdesc = Put HID proxying bluetooth HCI's into HCI mode
+	depends = systemd-libs
+	depends = glibc
+
+pkgname = bluez-mesh
+	pkgdesc = Services for bluetooth mesh
+	depends = ell
+	depends = json-c
+	depends = readline
+	depends = glibc
+	backup = etc/bluetooth/mesh-main.conf
+
+pkgname = bluez-obex
+	pkgdesc = Object Exchange daemon for sharing content
+	depends = glib2
+	depends = libical
+	depends = dbus
+	depends = readline
+	depends = systemd-libs
+	depends = glibc

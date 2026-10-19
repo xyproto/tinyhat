@@ -1,0 +1,58 @@
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+
+pkgname=libva
+pkgver=2.24.1
+pkgrel="1"
+pkgdesc='Video Acceleration (VA) API for Linux'
+arch=(i686 x32)
+url=https://intel.github.io/libva/
+license=(MIT)
+depends=(
+  glibc
+  libdrm
+  libgl
+  libx11
+  libxcb
+  libxext
+  libxfixes
+  wayland
+)
+makedepends=(
+  git
+  libglvnd
+  mesa
+  meson
+)
+optdepends=(
+  'intel-media-driver: backend for Intel GPUs (>= Broadwell)'
+  'libva-intel-driver: backend for Intel GPUs (<= Haswell)'
+  'libva-mesa-driver: backend for AMD and NVIDIA GPUs'
+)
+provides=(
+  libva-drm.so
+  libva-glx.so
+  libva-wayland.so
+  libva-x11.so
+  libva.so
+)
+backup=(etc/libva.conf)
+source=(git+https://github.com/intel/libva.git#tag=${pkgver})
+b2sums=('5e7b85e1c16a68432069cbad3e11096311b97e4532061e97f247c0abbe16c2e991771860b9976f459000247bbc280b4825241a5c0b09571cac6be9b432ab3eaa')
+
+build() {
+  CFLAGS+=" -DENABLE_VA_MESSAGING" # Option missing
+  arch-meson libva build
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "${pkgdir}"
+  install -Dm 644 libva/COPYING -t "${pkgdir}"/usr/share/licenses/${pkgname}
+  install -Dm 644 /dev/stdin "${pkgdir}"/etc/libva.conf <<END
+LIBVA_MESSAGING_LEVEL=1
+END
+}
+
+unset -f pkgver

@@ -1,0 +1,61 @@
+# Maintainer: Anatol Pomozov
+# Contributor: Zhuoyun Wei <wzyboy@wzyboy.org>
+
+pkgname=libnghttp2
+pkgver=1.70.0
+pkgrel="1"
+pkgdesc='Framing layer of HTTP/2 is implemented as a reusable C library'
+arch=(i686 x32)
+url='https://nghttp2.org/'
+license=('MIT')
+depends=('glibc')
+provides=('libnghttp2.so')
+makedepends=('git')
+conflicts=('nghttp2<1.20.0-2')
+validpgpkeys=('F4F3B91474D1EB29889BD0EF7E8403D5D673C366') # Tatsuhiro Tsujikawa <tatsuhiro.t@gmail.com>
+source=("git+https://github.com/nghttp2/nghttp2.git?signed#tag=v${pkgver}"
+        'git+https://github.com/ngtcp2/munit.git'
+        'git+https://github.com/mruby/mruby.git'
+        'git+https://github.com/tatsuhiro-t/neverbleed.git')
+sha512sums=('48f3bf6748abf46e9b1a2cfcfc4053ef8a7d532898da854d508c520c7adcca3a8690f81d2683d14398cf937a3f7c9276000c569ccc1183bbf20d449e64f5c315'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd nghttp2
+
+  git config --file=.gitmodules submodule.tests/munit.url ../munit/
+  git config --file=.gitmodules submodule.third-party/mruby.url ../mruby/
+  git config --file=.gitmodules submodule.tests/neverbleed.url ../neverbleed/
+
+  git submodule init
+  git -c protocol.file.allow=always submodule update
+
+  autoreconf -i
+}
+
+build() {
+  cd nghttp2
+
+  ./configure \
+    --prefix=/usr \
+    --disable-examples \
+    --disable-python-bindings \
+    --enable-lib-only
+  make
+}
+
+check() {
+  cd nghttp2
+  make check
+}
+
+package() {
+  cd nghttp2/lib
+
+  make DESTDIR="$pkgdir" install
+  install -Dm644 ../COPYING "$pkgdir/usr/share/licenses/libnghttp2/COPYING"
+}
+
+unset -f pkgver

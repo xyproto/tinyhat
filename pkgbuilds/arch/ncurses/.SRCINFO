@@ -1,0 +1,34 @@
+pkgbase = ncurses
+	pkgdesc = System V Release 4.0 curses emulation library
+	pkgver = 6.6
+	pkgrel = 2
+	url = https://invisible-island.net/ncurses/ncurses.html
+	arch = i686
+	arch = x32
+	license = MIT-open-group
+	makedepends = autoconf-archive
+	makedepends = git
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	optdepends = bash: for ncursesw6-config
+	provides = libncurses++w.so
+	provides = libformw.so
+	provides = libmenuw.so
+	provides = libpanelw.so
+	provides = libncursesw.so
+	replaces = alacritty-terminfo
+	replaces = rio-terminfo
+	replaces = wezterm-terminfo
+	source = ncurses::git+https://github.com/ThomasDickey/ncurses-snapshots.git?signed#tag=v6_6
+	source = ncurses-6.6-libs.patch
+	source = ncurses-6.6-pkgconfig.patch
+	validpgpkeys = 19882D92DDA4C400C22C0D56CC2AF4472167BE03
+	sha512sums = cad17bf83ef3ccd71fb7c33933ddbbbef2e8bd050d5e4e4ebb344b5df8292b1cd3c9e1787e88087d73cc96f625ba0c7cd6714d7720af7f8bd50b314e9838d2a7
+	sha512sums = aa1d2cdc5bce7a99b277f2ecd4a109a337ba39f3ec522c3daf52dba0c1be05c9f0bf695d8bdfdbda1c1f6f3f7214ef0eb4b5b9e1b7e9f05db14419b3bc6ab271
+	sha512sums = c74c9393659e1d744995285f270531108320975da8ca39b0e4cdcaa07a51cdd977bcfbf8eb131c6a81ba2e63e92bb185947ce6a1231c8bb8a2e5e6035c385cfa
+	b2sums = af7f3dd1fd2d471d6b1b144acfbf4f44bdbf040ff8746a48aa9fdcc86f74a004939a31204d22966ef857096ccd7da6ee74769996e082a5a2735b1e6e934319a3
+	b2sums = 29f2c29e229687b8539be5147ce35f08b8a8eeead880a8a34189b3a02400fd752ee96314eed3e175503281dc05bf3668f26edeca4540668592d46d4cddc9aef4
+	b2sums = d8c079262332253c758f1c42ff642db0b14a86695dcaa735a73615ab594f65e0d1de3e31732ff7c413078b43f8e71e86b6ce41236e54e049ecf65d8cf7587e0a
+
+pkgname = ncurses

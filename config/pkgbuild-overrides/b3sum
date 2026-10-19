@@ -1,0 +1,8 @@
+if [ "$CARCH" = 'x32' ]; then
+  pkgname=(libblake3)
+  makedepends=(${makedepends[@]//rust/})
+  eval "$(
+    declare -f build | sed '/cd \$_name/,$ { /cargo build/d; /cd \$_name/d }'
+  )"
+  prepare() { :; }
+fi

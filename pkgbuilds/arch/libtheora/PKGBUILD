@@ -1,0 +1,52 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Tom Killian <tom@archlinux.org>
+# Committer: dorphell <dorphell@archlinux.org>
+
+pkgname=libtheora
+pkgver=1.2.0
+pkgrel="1"
+pkgdesc='Standard encoder and decoder library for the Theora video compression format'
+arch=(i686 x32)
+url='https://www.theora.org/'
+license=(BSD-3-Clause)
+depends=(
+  glibc
+  libogg
+)
+makedepends=(
+  doxygen
+  git
+  libpng
+  libvorbis
+  sdl
+)
+source=("git+https://github.com/xiph/theora.git#tag=v$pkgver")
+b2sums=(50ed821f0a8ee98c95ea638c66740dda5d2346b70742f1834b96f0089d219c9f3b0d0fad539138b7c514f47d968a550fa842bfff22935db748caf6a4c489428c)
+validpgpkeys=(17E78AB6BD65A91EE811D60947000F7BB1441DEF) # Ralph Giles <giles@mozilla.com>
+
+prepare() {
+  cd theora
+  autoreconf -fi
+}
+
+build() {
+  cd theora
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var
+  make
+}
+
+check() {
+  cd theora
+  make check
+}
+
+package() {
+  cd theora
+  make DESTDIR="$pkgdir" install
+  install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE COPYING
+}
+
+unset -f pkgver

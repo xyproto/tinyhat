@@ -1,0 +1,103 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Tom Gundersen <teg@jklm.no>
+# Contributor: Eduardo Romero <eduardo@archlinux.org>
+# Contributor: Damir Perisa <damir.perisa@bluewin.ch>
+
+pkgbase=libgphoto2
+pkgname=(
+  libgphoto2
+  libgphoto2-docs
+)
+pkgver=2.5.34
+pkgrel="1"
+pkgdesc="Digital camera access library"
+url="http://www.gphoto.org/"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  bash
+  curl
+  gd
+  glibc
+  libexif
+  libjpeg-turbo
+  libltdl
+  libtiff
+  libusb
+  libxml2
+)
+makedepends=(
+  doxygen
+  git
+  graphviz
+  meson
+)
+source=(
+  "git+https://github.com/gphoto/libgphoto2#tag=v$pkgver"
+)
+b2sums=('a8d8159e3cda9046c1dbd4a79b88db7a716769d872e5b15241f78727bce5bcab91bd57a09407a0d6653af72ff44d407b08ec505195a7a76f5fe10d17d3bcfd2a')
+validpgpkeys=(
+  7C4AFD61D8AAE7570796A5172209D6902F969C95 # Marcus Meissner <marcus@jet.franken.de>
+)
+
+prepare() {
+  cd $pkgbase
+}
+
+build() {
+  local meson_options=(
+    -D docs=true
+  )
+
+  arch-meson $pkgbase build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs --no-suite no-ci
+}
+
+package_libgphoto2() {
+  provides=(libgphoto2{,_port}.so)
+
+  meson install -C build --destdir "$pkgdir"
+
+  local camlibdir="$pkgdir/usr/lib/libgphoto2/$pkgver"
+  test -d "$camlibdir"
+
+  # Remove unused udev helper
+  rm -v "$pkgdir/usr/lib/udev/check-ptp-camera"
+
+  (
+    export LD_LIBRARY_PATH="$pkgdir/usr/lib"
+    export CAMLIBS="$camlibdir"
+
+    build/packaging/generic/print-camera-list hwdb \
+      | install -Dm644 /dev/stdin "$pkgdir/usr/lib/udev/hwdb.d/20-gphoto.hwdb"
+    build/packaging/generic/print-camera-list udev-rules version 201 \
+      | install -Dm644 /dev/stdin "$pkgdir/usr/lib/udev/rules.d/40-gphoto.rules"
+  )
+
+  # Split docs
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_libgphoto2-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# Next version will have this patch
+if [[ $pkgver == "2.5.31" ]]; then
+    source+=(721f7f8c3ec8058d504607873e4c317aac0c99c5.patch)
+    b2sums+=(SKIP)
+    eval "$(declare -f prepare | sed 's@autoreconf@patch -p1 -i ../721f7f8c3ec8058d504607873e4c317aac0c99c5.patch; autoreconf@')"
+fi
+
+unset -f pkgver

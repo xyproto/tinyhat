@@ -1,0 +1,14 @@
+pkgbase = a52dec
+	pkgdesc = Library for decoding ATSC A/52 (AC-3) audio streams
+	pkgver = 0.8.0
+	pkgrel = 3
+	url = https://git.adelielinux.org/community/a52dec/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	makedepends = git
+	depends = glibc
+	source = git+https://git.adelielinux.org/community/a52dec.git#tag=v0.8.0
+	b2sums = 3d40824f3aaf949facd428105a6f2213e8f1663a10bd4251a15791e0bbca2b10cbccae1baeff24fd6bc03d5b2b2a6798da5311da796becda4f8d88c4dc7b00b9
+
+pkgname = a52dec

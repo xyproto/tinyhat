@@ -1,0 +1,37 @@
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=libtasn1
+pkgver=4.21.0
+pkgrel="1"
+pkgdesc="The ASN.1 library used in GNUTLS"
+arch=(i686 x32)
+license=('GPL-3.0-or-later' 'LGPL-2.1-or-later' 'GFDL-1.3-or-later')
+url="https://www.gnu.org/software/libtasn1/"
+depends=('glibc')
+source=(https://ftp.gnu.org/gnu/libtasn1/${pkgname}-${pkgver}.tar.gz{,.sig})
+sha256sums=('1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87'
+            'SKIP')
+validpgpkeys=('B1D2BD1375BECB784CF4F8C4D73CF638C53C06BE') # "Simon Josefsson <simon@josefsson.org>"
+
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr
+  CODE_COVERAGE_LDFLAGS=${LDFLAGS} make
+}
+
+check() {
+  cd ${pkgname}-${pkgver}
+  make check
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  make -C doc/reference DESTDIR="${pkgdir}" install-data-local
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+unset -f pkgver

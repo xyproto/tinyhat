@@ -1,0 +1,56 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libffi
+pkgver=3.8.0
+pkgrel="1"
+pkgdesc='Portable foreign function interface library'
+arch=(i686 x32)
+url='https://sourceware.org/libffi/'
+_url="https://github.com/libffi/libffi"
+license=(MIT)
+depends=(glibc)
+checkdepends=(dejagnu)
+provides=(libffi.so)
+source=($pkgname-$pkgver.tar.gz::$_url/archive/refs/tags/v$pkgver.tar.gz)
+sha256sums=('bf40d752d8f5fd4505bcd1c7d4208ea87fd12c91f087e359651c776748352dc0')
+b2sums=('1130b4d585fc56543291df3550daa9085b185c2162817793d0caa107bf68bc421a9f1be9f62a7d3b52fda26b120dd6260821c80e394af7d546688aaad4b162a5')
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fiv
+}
+
+build() {
+  local configure_options=(
+    # remove --disable-exec-static-tramp once ghc and gobject-introspection
+    # work fine with it enabled (https://github.com/libffi/libffi/pull/647)
+    --disable-exec-static-tramp
+    --disable-multi-os-directory
+    --disable-static
+    --enable-pax_emutramp
+    --prefix=/usr
+  )
+
+  cd $pkgname-$pkgver
+  ./configure "${configure_options[@]}"
+  make
+}
+
+check() {
+  make -C $pkgname-$pkgver check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm 644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
+  install -Dm 644 README.md -t "$pkgdir"/usr/share/doc/$pkgname
+}
+
+# vim:set ts=2 sw=2 et:
+
+unset -f pkgver

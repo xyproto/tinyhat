@@ -1,0 +1,35 @@
+# Maintainer: Bruno Pagani <archange@archlinux.org>
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+
+pkgname=libaec
+pkgver=1.1.7
+pkgrel="1"
+pkgdesc="Adaptive Entropy Coding library"
+arch=(i686 x32)
+url="https://gitlab.dkrz.de/k202009/libaec"
+license=(BSD-2-Clause)
+depends=(glibc)
+makedepends=(cmake)
+source=("$url/-/archive/v$pkgver/$pkgname-v$pkgver.tar.bz2")
+b2sums=('4d7b0ab66d99865eab50f3ffd06c10548e8c26d666b9200061b75390a80f9d86569f4165b3abc7984171318e7c29b75ddbd7dcd770583181d8f5a86581b9e040')
+
+build() {
+  cmake -B build -S $pkgname-v$pkgver \
+    -DCMAKE_BUILD_TYPE=None \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -Wno-dev \
+    -DBUILD_STATIC_LIBS=OFF
+  cmake --build build
+}
+
+check() {
+  ctest --test-dir build --output-on-failure
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" \
+    $pkgname-v$pkgver/LICENSE.txt
+}
+
+unset -f pkgver

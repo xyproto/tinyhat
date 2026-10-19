@@ -1,0 +1,71 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Christian Heusel <gromit@archlinux.org>
+
+pkgbase=zix
+pkgname=(zix{,-docs})
+pkgver=0.8.2
+pkgrel="1"
+pkgdesc="A lightweight C99 portability and data structure library"
+arch=(i686 x32)
+url="https://gitlab.com/drobilla/zix"
+license=('0BSD OR ISC')
+makedepends=(
+  doxygen
+  glibc
+  meson
+  python-sphinx
+  python-sphinx-lv2-theme
+  python-sphinxygen
+)
+source=(https://download.drobilla.net/$pkgname-$pkgver.tar.xz{,.sig})
+sha512sums=('0a6f4044b58013e00da97b6767d33bcb75e530a1337e70112a2e4c8e51433bf65518a7c01cb401575aec71e5b767758e1c04e895eec95cb71fcb767d3a1fdb82'
+            'SKIP')
+b2sums=('d821ce3dcf8748770b92da1060a34c462222d0b190127d2f18e25de2d1bac63cf171a73531ae58efbbeacebcb6451f267620947384f9822384050e4731f10642'
+        'SKIP')
+validpgpkeys=('907D226E7E13FA337F014A083672782A9BF368F3') # David Robillard <d@drobilla.net>
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+build() {
+  arch-meson $pkgname-$pkgver build
+  meson compile -C build
+}
+
+check() {
+  # ignore entire test suite, because of failing tests:
+  # https://gitlab.com/drobilla/zix/-/issues/2
+  meson test -C build --no-suite 'zix:unit'
+}
+
+package_zix() {
+  depends=(glibc)
+  optdepends=('zix-docs: for developer documentation')
+  provides=(libzix-0.so)
+
+  meson install -C build --destdir "$pkgdir"
+  (
+    cd "$pkgdir"
+    _pick $pkgname-docs usr/share/doc
+  )
+
+  install -vDm 644 $pkgname-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"
+  install -vDm 644 $pkgname-$pkgver/{NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+package_zix-docs() {
+  pkgdesc+=" - documentation"
+
+  mv -v $pkgname/* "$pkgdir"
+  mv -v "$pkgdir/usr/share/doc/$pkgbase"{-0,}
+  install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+unset -f pkgver

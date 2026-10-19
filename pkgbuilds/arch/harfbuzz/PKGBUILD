@@ -1,0 +1,186 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Caleb Maclennan <caleb@alerque.com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=harfbuzz
+pkgname=(
+  harfbuzz
+  harfbuzz-cairo
+  harfbuzz-icu
+  harfbuzz-utils
+  harfbuzz-docs
+)
+pkgver=14.6.0
+pkgrel="1"
+pkgdesc="OpenType text shaping engine"
+url="https://harfbuzz.github.io/"
+arch=(i686 x32)
+license=(MIT)
+makedepends=(
+  cairo
+  chafa
+  freetype2
+  git
+  glew
+  glfw
+  glib2
+  glib2-devel
+  glibc
+  gobject-introspection
+  graphite
+  gtk-doc
+  help2man
+  icu
+  libgl
+  libpng
+  libstdc++
+  meson
+  python
+  ragel
+  zlib
+)
+checkdepends=(
+  python-fonttools
+  python-setuptools
+)
+source=(
+  "git+https://github.com/harfbuzz/harfbuzz?signed#tag=$pkgver"
+)
+b2sums=('98e12387c783aac73fb7d95c7f2592e78b5f8577b0fa552220e3d7f7c59f9e9ff50335b62d228afc933b62d45de33658ef8c3d3c0414eb25d14477ccd7657e9d')
+validpgpkeys=(
+  053D20F17CCCA9651B2C6FCB9AB24930C0B997A2 # Khaled Hosny <khaled@aliftype.com> (@khaledhosny)
+  9F377DDB6D3153A48EB3EB1E63CC496475267693 # Caleb Maclennan <caleb@alerque.com> (@alerque)
+  2277650A4E8BDFE4B7F6BE419FEE04E5D3531115 # Ebrahim Byagowi <ebrahim@gnu.org> (@ebraminio)
+  EACF64F53455E2771BA661A4803B21859F015E4E # Behdad Esfahbod <behdad@behdad.org> (@behdad)
+)
+
+prepare() {
+  cd harfbuzz
+}
+
+build() {
+  local meson_options=(
+    -D cpp_std=c++17
+    -D graphite2=enabled
+  )
+
+  # Harfbuzz wants no exceptions
+  CFLAGS="${CFLAGS/-fexceptions/}"
+  CXXFLAGS="${CXXFLAGS/-fexceptions/}"
+
+  arch-meson harfbuzz build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  mkdir -p tmp
+  TMPDIR="$PWD/tmp" meson test -C build --print-errorlogs --no-rebuild
+  rm -r tmp
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_harfbuzz() {
+  depends=(
+    freetype2 libfreetype.so
+    glib2 libg{lib,object}-2.0.so
+    glibc
+    graphite libgraphite2.so
+    libpng libpng16.so
+    zlib libz.so
+  )
+  optdepends=('harfbuzz-utils: utilities')
+  provides=(libharfbuzz{,-{subset,gobject,raster,vector}}.so)
+
+  meson install -C build --destdir "$pkgdir" --no-rebuild
+
+  ( cd "$pkgdir"
+
+    _pick hb-cairo usr/lib/libharfbuzz-cairo*
+    _pick hb-cairo usr/lib/pkgconfig/harfbuzz-cairo.pc
+    _pick hb-cairo usr/include/harfbuzz/hb-cairo.h
+
+    _pick hb-icu usr/lib/libharfbuzz-icu*
+    _pick hb-icu usr/lib/pkgconfig/harfbuzz-icu.pc
+    _pick hb-icu usr/include/harfbuzz/hb-icu.h
+
+    _pick hb-utils usr/bin
+    _pick hb-utils usr/share/man/man1
+
+    _pick hb-docs usr/share/gtk-doc
+  )
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING
+}
+
+package_harfbuzz-cairo() {
+  pkgdesc+=" - Cairo integration"
+  depends=(
+    cairo libcairo.so
+    freetype2
+    glib2
+    glibc
+    graphite
+    harfbuzz libharfbuzz.so
+  )
+  provides=(libharfbuzz-cairo.so)
+
+  mv hb-cairo/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING
+}
+
+package_harfbuzz-icu() {
+  pkgdesc+=" - ICU integration"
+  depends=(
+    glibc
+    harfbuzz libharfbuzz.so
+    icu libicuuc.so
+  )
+  provides=(libharfbuzz-icu.so)
+
+  mv hb-icu/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING
+}
+
+package_harfbuzz-utils() {
+  pkgdesc+=" - Utilities"
+  depends=(
+    cairo libcairo.so
+    chafa libchafa.so
+    freetype2 libfreetype.so
+    glew libGLEW.so
+    glfw
+    glib2 libg{lib,object}-2.0.so
+    glibc
+    harfbuzz libharfbuzz{,-gobject,-subset}.so
+    harfbuzz-cairo libharfbuzz-cairo.so
+    libgl libGL.so
+    libstdc++ libstdc++.so
+  )
+
+  mv hb-utils/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING
+}
+
+package_harfbuzz-docs() {
+  pkgdesc+=" - Documentation"
+
+  mv hb-docs/* "$pkgdir"
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

@@ -1,0 +1,34 @@
+pkgbase = gdk-pixbuf2
+	pkgdesc = An image loading library
+	pkgver = 2.44.8
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/gdk-pixbuf
+	arch = i686
+	arch = x32
+	license = LGPL-2.0-or-later
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = gobject-introspection
+	makedepends = meson
+	makedepends = python-docutils
+	depends = glib2
+	depends = glibc
+	depends = glycin
+	depends = shared-mime-info
+	source = git+https://gitlab.gnome.org/GNOME/gdk-pixbuf.git#tag=2.44.8
+	source = gdk-pixbuf-query-loaders.hook
+	source = gdk-pixbuf-remove-loaders-cache.hook
+	b2sums = d553cb0654965cb153cd38385d39d6edafc5b9890661a7fce14713d40f53129057c4ba81970774bd449029a52aa3b06033a22dc9cfe5c263eb87f35095251340
+	b2sums = 4f355d2059b4ca21ea1c26d0ff8696206ee28cc06564bc5a3bbbff44b5146df2eb52bee91f02a1129b582db8e78bb5b6824ee4080d8df6a0aaf7b6db018caf31
+	b2sums = f928d4ea32ce09edc37bee1d7e0e1981968f0871f4602bc88e114fbb4d75ef00a9130a26a4850e1309d1532ba0b0361c035a7e049836cf701756aeef87854546
+
+pkgname = gdk-pixbuf2
+	optdepends = libheif: Load .avif, .heic and .heif
+	optdepends = libopenraw: Load .arw, .cr2, .crw, .dng, .erf, .mrw, .nef, .orf, .pef and .raf
+	optdepends = libwmf: Load .apm and .wmf
+	provides = libgdk_pixbuf-2.0.so
+
+pkgname = gdk-pixbuf2-docs
+	pkgdesc = An image loading library (documentation)
+	depends = 

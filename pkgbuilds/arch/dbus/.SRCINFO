@@ -1,0 +1,56 @@
+pkgbase = dbus
+	pkgdesc = Freedesktop.org message bus system
+	pkgver = 1.16.2
+	pkgrel = 2
+	url = https://www.freedesktop.org/wiki/Software/dbus/
+	arch = i686
+	arch = x32
+	license = AFL-2.1 OR GPL-2.0-or-later
+	makedepends = docbook-xsl
+	makedepends = doxygen
+	makedepends = git
+	makedepends = glib2
+	makedepends = mallard-ducktype
+	makedepends = meson
+	makedepends = python
+	makedepends = qt5-tools
+	makedepends = systemd
+	makedepends = xmlto
+	makedepends = yelp-tools
+	depends = audit
+	depends = expat
+	depends = glibc
+	depends = libcap-ng
+	depends = systemd-libs
+	source = git+https://gitlab.freedesktop.org/dbus/dbus.git?signed#tag=dbus-1.16.2
+	source = 0001-Arch-Linux-tweaks.patch
+	source = dbus-reload.hook
+	validpgpkeys = DA98F25C0871C49A59EAFF2C4DE8FF2A63C7CC90
+	b2sums = 669cd4203fbac908db3a20c5b51355d9e84b68c9cc94f8de52e35544a636c6d5d1df8ee2bbdfd6dead53a6bd9865db547aa4af0e913bac697b138c698840d3ce
+	b2sums = fbbc5f312864d2c0e61cead42f578cf650ee8a103e9f6e21658d7406e00a9dfb2c70bc4db647f51eb959df1dad7e94ba52af078325c6a18dcd9d0d500fe15fac
+	b2sums = 9ac03e4dca00b2c31dc505db4c5da5b8498da21377b01abf186800c6da00492abc6a9a2058c3e3b0f282e3b28e0e4f3318114230db0418fe9754ad2420adb4bf
+
+pkgname = dbus
+	depends = audit
+	depends = expat
+	depends = glibc
+	depends = libcap-ng
+	depends = systemd-libs
+	depends = libaudit.so
+	depends = libcap-ng.so
+	depends = libexpat.so
+	depends = libsystemd.so
+	provides = libdbus
+	provides = libdbus-1.so
+	conflicts = libdbus
+	replaces = libdbus
+
+pkgname = dbus-daemon-units
+	pkgdesc = Freedesktop.org message bus system - Service units
+	depends = dbus
+	provides = dbus-units
+	conflicts = dbus-broker-units
+
+pkgname = dbus-docs
+	pkgdesc = Freedesktop.org message bus system - Documentation
+	depends = 

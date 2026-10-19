@@ -1,0 +1,33 @@
+# Maintainer: Antonio Rojas <arojas@archlinux.org>
+# Contributor: Anatol Pomozov <anatol.pomozov@gmail.com>
+# Contributor: Joel Teichroeb <joel@teichroeb.net>
+# Contributor: Jonas Heinrich <onny@project-insanity.org>
+
+pkgname=double-conversion
+pkgver=3.4.0
+pkgrel="1"
+pkgdesc='Binary-decimal and decimal-binary routines for IEEE doubles'
+arch=(i686 x32)
+url='https://github.com/google/double-conversion'
+license=(BSD-3-Clause)
+depends=(gcc-libs
+         glibc)
+makedepends=(cmake
+             git)
+source=(git+https://github.com/google/double-conversion#tag=v$pkgver)
+sha256sums=('9963201818e6ef262b99e68b2ec2500b2b49270d0205dc7487d16ec5e8f467f3')
+
+build() {
+  cmake -B build -S $pkgname \
+      -DCMAKE_INSTALL_PREFIX=/usr \
+      -DBUILD_SHARED_LIBS=ON
+  cmake --build build
+}
+
+package () {
+  DESTDIR="$pkgdir" cmake --install build
+
+  install -Dm644 $pkgname/LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname
+}
+
+unset -f pkgver

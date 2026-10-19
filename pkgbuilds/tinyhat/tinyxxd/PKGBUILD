@@ -1,0 +1,25 @@
+pkgname=tinyxxd
+pkgver=1.3.17
+pkgrel=1
+pkgdesc="Drop-in replacement and standalone version of the hex dump utility that comes with Vim"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyxxd"
+license=(GPL-2.0-only MIT)
+depends=(glibc)
+provides=(xxd)
+conflicts=(xxd)
+source=("tinyxxd-$pkgver.tar.gz::https://github.com/xyproto/tinyxxd/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('d91cc4240c90cce4ada2b3f3d410cd916b6489495451a70a572908458180f955')
+
+build() {
+  cd tinyxxd-$pkgver
+  cc -std=c99 -O2 -finline-functions -D_GNU_SOURCE -o tinyxxd main.c $LDFLAGS
+}
+
+package() {
+  cd tinyxxd-$pkgver
+  install -Dm755 tinyxxd "$pkgdir/usr/bin/tinyxxd"
+  ln -s tinyxxd "$pkgdir/usr/bin/xxd"
+  install -Dm644 tinyxxd.1 "$pkgdir/usr/share/man/man1/tinyxxd.1"
+  install -Dm644 LICENSE AUTHORS.md -t "$pkgdir/usr/share/licenses/$pkgname/"
+}

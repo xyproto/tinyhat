@@ -1,0 +1,37 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: bender02 at gmx dot com
+
+pkgname=nettle
+pkgver=4.0
+pkgrel="1"
+pkgdesc="A low-level cryptographic library"
+arch=(i686 x32)
+url="https://www.lysator.liu.se/~nisse/nettle"
+license=('LGPL-3.0-or-later OR GPL-2.0-or-later')
+depends=('glibc' 'gmp')
+provides=('libnettle.so' 'libhogweed.so')
+checkdepends=('valgrind')
+source=(https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.gz{,.sig})
+sha256sums=('3addbc00da01846b232fb3bc453538ea5468da43033f21bb345cb1e9073f5094'
+            'SKIP')
+validpgpkeys=('343C2FF0FBEE5EC2EDBEF399F3599FF828C67298') # Niels Möller <nisse@lysator.liu.se>
+
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure --prefix=/usr \
+    --disable-static
+  make
+}
+
+check() {
+  cd $pkgname-$pkgver
+  make -k check
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir/" install
+}
+
+unset -f pkgver

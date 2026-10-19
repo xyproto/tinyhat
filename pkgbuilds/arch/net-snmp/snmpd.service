@@ -1,0 +1,12 @@
+[Unit]
+Description=Simple Network Management Protocol (SNMP) Daemon
+After=network.target
+
+[Service]
+Type=forking
+PIDFile=/run/snmpd.pid
+ExecStart=/usr/bin/snmpd -p /run/snmpd.pid udp: udp6:
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

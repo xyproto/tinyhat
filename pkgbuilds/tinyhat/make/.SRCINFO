@@ -1,0 +1,13 @@
+pkgbase = make
+	pkgdesc = GNU make, built without Guile support
+	pkgver = 4.4.1
+	pkgrel = 1
+	url = https://www.gnu.org/software/make/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	depends = glibc
+	source = https://ftp.gnu.org/gnu/make/make-4.4.1.tar.gz
+	sha256sums = dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3
+
+pkgname = make

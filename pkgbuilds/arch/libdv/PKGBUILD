@@ -1,0 +1,40 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=libdv
+pkgver=1.0.0
+pkgrel="12"
+pkgdesc='Decoder library for DV video'
+arch=(i686 x32)
+url='https://libdv.sourceforge.net/'
+license=(LGPL-2.1-or-later)
+depends=(
+  glibc
+  popt
+)
+makedepends=(sdl)
+source=("https://downloads.sourceforge.net/$pkgname/$pkgname-$pkgver.tar.gz")
+b2sums=(42d17b07501fa508630afd1cdbaee9378f657a4ee4b77666f1a147ddfcf5a9d67d90e0a6da53bfe4f2b5418984579322565c9e8c76516e8193e75bd4751a731c)
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname-$pkgver
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --disable-gtk
+  make
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

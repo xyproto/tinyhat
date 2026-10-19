@@ -1,0 +1,66 @@
+# Maintainer: Fabian Bornschein <fabiscafe@archlinux.org>
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgbase=libpanel
+pkgname=(
+  libpanel
+  libpanel-docs
+)
+pkgver=1.10.4
+pkgrel="1"
+pkgdesc="Dock/panel library for GTK 4"
+url="https://gitlab.gnome.org/GNOME/libpanel"
+arch=(i686 x32)
+license=(LGPL-3.0-or-later)
+depends=(
+  cairo
+  glib2
+  glibc
+  graphene
+  gtk4
+  hicolor-icon-theme
+  libadwaita
+)
+makedepends=(
+  gi-docgen
+  git
+  glib2-devel
+  gobject-introspection
+  meson
+  vala
+)
+source=("git+$url.git#tag=$pkgver")
+b2sums=('464d5bfc77f5aecff4c7c655e094b96872b3e7542a5fbf064522e33499d447d6ff3b493fafd259be04e096794bd167149daa873dc5d282cef6a0b629011204e3')
+
+build() {
+  local meson_options=(
+    -D install-examples=true
+  )
+
+  arch-meson $pkgbase build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_libpanel() {
+  provides=(libpanel-1.so)
+
+  meson install -C build --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_libpanel-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

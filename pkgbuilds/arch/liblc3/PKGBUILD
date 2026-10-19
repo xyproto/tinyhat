@@ -1,0 +1,48 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: OSAMC <https://github.com/osam-cologne/archlinux-proaudio>
+# Contributor: Florian Hülsmann <fh@cbix.de>
+
+pkgname=liblc3
+pkgver=1.1.3
+pkgrel="2"
+pkgdesc="Low Complexity Communication Codec library and tools"
+url="https://github.com/google/liblc3"
+arch=(i686 x32)
+license=(Apache-2.0)
+depends=(glibc)
+makedepends=(
+  git
+  meson
+  python
+)
+optdepends=('python: Python bindings')
+provides=(liblc3.so)
+source=("git+$url#tag=v$pkgver")
+b2sums=('5cd325138c59baa56317e6d0ccf04003743202b915e5efe7f9284153150f7bc5158e1a432eb0366c6640e2964b723b1ff28e8735da7cdb9c102870debc413cd3')
+
+prepare() {
+  cd liblc3
+}
+
+build() {
+  local meson_options=(
+    -D python=true
+    -D tools=true
+  )
+
+  arch-meson liblc3 build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+  install -Dt "$pkgdir/usr/share/doc/$pkgname" -m644 liblc3/README.md
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

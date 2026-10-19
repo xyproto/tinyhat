@@ -1,0 +1,5 @@
+post_upgrade() {
+    if (( $(vercmp "$2" 7.20-2) <= 0 )); then
+        printf 'The memtest86+ EFI binary has been moved to /boot/memtest86+/memtest86x64.efi. Make sure to update your boot loader configuration.\n'
+    fi
+}

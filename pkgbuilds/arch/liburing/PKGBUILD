@@ -1,0 +1,42 @@
+# Maintainer: Christian Heusel <gromit@archlinux.org>
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Filipe Laíns (FFY00) <lains@archlinux.org>
+
+pkgname=liburing
+pkgver=2.15
+pkgrel="1"
+pkgdesc="Linux-native io_uring I/O access library"
+arch=(i686 x32)
+url="https://github.com/axboe/liburing"
+license=(
+  'GPL-2.0-only WITH Linux-syscall-note OR MIT'
+  LGPL-2.0-or-later
+  MIT
+)
+makedepends=(git)
+provides=(
+  liburing.so
+  liburing-ffi.so
+)
+source=("git+https://github.com/axboe/liburing.git?signed#tag=$pkgname-$pkgver")
+sha512sums=('abeb8bc69de224ac8d130689d1e36bc2f9652ee3a1239278401f59be2b99f39d056ec50ae03264a751e18bb865834e6ebd04a00a6783e9ca0ff4c9168305d7de')
+b2sums=('dab7a1e2dc1ad09ccc24901a19d866ad3be29ba9c2b2402765056857ba51653b93b940423620cc6d6768256f78a0ff806de1996098305dba3aef21f433dde70d')
+validpgpkeys=(C0FC392DCADE26D975FA5E4AF7D358FB2971E0A6)  # Jens Axboe <axboe@kernel.dk>
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --mandir=/usr/share/man
+  )
+
+  cd $pkgname
+  ./configure "${configure_options[@]}"
+  make
+}
+
+package() {
+  make DESTDIR="$pkgdir" install -C $pkgname
+  install -vDm 644 $pkgname/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"
+}
+
+unset -f pkgver

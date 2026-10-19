@@ -1,0 +1,44 @@
+# Maintainer: Tobias Powalowski <tpowa@archlinux.org>
+pkgname=pciutils
+pkgver=3.15.0
+pkgrel="1"
+pkgdesc="PCI bus configuration space access library and tools"
+arch=(i686 x32)
+license=('GPL-2.0-only')
+url="https://mj.ucw.cz/sw/pciutils/"
+depends=(
+  glibc
+  hwdata
+  kmod
+  systemd-libs
+)
+makedepends=('git')
+optdepends=(
+  'which: for update-pciids'
+  'grep: for update-pciids'
+  'curl: for update-pciids'
+)	
+source=(
+  git+https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git#tag=v$pkgver?signed
+)
+validpgpkeys=(
+  C466A56CADA981F4297D20C31F3D0761D9B65F0B # Martin Mares <mj@ucw.cz>
+)
+b2sums=('634c114f928f37e11054c424d0745f8aaa236a342a62e3fae59519619f5d7a1e9f60bb026e5e8949b0b3f636772f62bb9c1743fd73eb97b2a2e3c09d872a2075')
+
+build() {
+  cd "${pkgname}"
+  make OPT="${CFLAGS}" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man SBINDIR=/usr/bin lib/libpci.a 
+  cp lib/libpci.a "${srcdir}/"
+  make clean
+  make OPT="${CFLAGS}" ZLIB=no SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all
+}
+
+package() {
+  cd "${pkgname}"
+  make SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="${pkgdir}" install install-lib
+  rm -rf "${pkgdir}"/usr/share/hwdata
+}
+
+
+unset -f pkgver

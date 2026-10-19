@@ -1,0 +1,29 @@
+pkgname=cc65
+_commit=8d86ca7e7ed15300cc4bfaba61a40a3d00f3114d
+pkgver=2.19+8d86ca7
+pkgrel=1
+pkgdesc="6502 and 65816 C compiler and assembler"
+arch=(i686 x32)
+url="https://cc65.github.io/"
+license=(Zlib)
+depends=(glibc)
+source=("cc65-$_commit.tar.gz::https://github.com/cc65/cc65/archive/$_commit.tar.gz")
+sha256sums=('8dfa14d7832a7171ab00c70b84cbede7a775ed22e325413e280e9256238e94e0')
+
+build() {
+  cd cc65-$_commit
+  make PREFIX=/usr bin
+  make PREFIX=/usr lib
+}
+
+package() {
+  cd cc65-$_commit
+  make install PREFIX=/usr DESTDIR="$pkgdir"
+  rm -rf "$pkgdir/usr/share/doc" "$pkgdir/usr/share/cc65/samples"
+  local keep='c64 c128 vic20 plus4 cx16 nes pce atari apple2 apple2enh none sim6502 sim65c02'
+  for f in "$pkgdir"/usr/share/cc65/lib/*.lib "$pkgdir"/usr/share/cc65/target/*; do
+    t=${f##*/}
+    case " $keep " in *" ${t%.lib} "*) ;; *) rm -rf "$f" ;; esac
+  done
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

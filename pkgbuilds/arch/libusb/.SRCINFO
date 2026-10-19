@@ -1,0 +1,20 @@
+pkgbase = libusb
+	pkgdesc = Library that provides generic access to USB devices
+	pkgver = 1.0.30
+	pkgrel = 1
+	url = https://libusb.info/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = git
+	makedepends = systemd
+	depends = glibc
+	provides = libusb-1.0.so
+	source = git+https://github.com/libusb/libusb.git#tag=v1.0.30
+	sha512sums = d21fae358ebef28a733d69af9c361b853a437295230d57fe662b1a57a46480e459d49de4147d8d3297066dcf54f9e28fde28311a50eeec53a7453b71ae8077c6
+	b2sums = 5e5f8ae594acf3808fba8b0fc01e94317d16fb3d3f25b9b8484d30ca922a75b2c00441a94f49cd2b03aff53f73f46ba88f1f31f065cf7041cf8f968d48ad8869
+
+pkgname = libusb
+	depends = glibc
+	depends = systemd-libs
+	depends = libudev.so

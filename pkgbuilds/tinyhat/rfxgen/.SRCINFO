@@ -1,0 +1,13 @@
+pkgbase = rfxgen
+	pkgdesc = Sound effect and chip sound generator
+	pkgver = 5.0
+	pkgrel = 1
+	url = https://github.com/raysan5/rfxgen
+	arch = i686
+	arch = x32
+	license = Zlib
+	depends = raylib
+	source = rfxgen-5.0.tar.gz::https://github.com/raysan5/rfxgen/archive/refs/tags/5.0.tar.gz
+	sha256sums = 2b47c266c2a995a25da6b64fad44740cee2ec6c348c20c7f1d1e847a51683ef1
+
+pkgname = rfxgen

@@ -1,0 +1,41 @@
+pkgname=go-tinyhat
+pkgver=1.27.2
+pkgrel=1
+_chain=(1.22.12 1.24.13 $pkgver)
+pkgdesc="Go toolchain for building Tiny Hat packages, bootstrapped from source"
+arch=(i686)
+url="https://go.dev/"
+license=(BSD-3-Clause)
+makedepends=(go)
+options=(!strip !buildflags)
+source=("https://go.dev/dl/go${_chain[0]}.src.tar.gz"
+        "https://go.dev/dl/go${_chain[1]}.src.tar.gz"
+        "https://go.dev/dl/go${_chain[2]}.src.tar.gz")
+noextract=("${source[@]##*/}")
+sha256sums=('012a7e1f37f362c0918c1dfa3334458ac2da1628c4b9cf4d9ca02db986e17d71'
+            '639a6204c2486b137df1eb6e78ee3ed038f9877d0e4b5a465e796a2153f858d7'
+            '03495da2ba64894d40f5c4992e49454fa78b50690604ff92b6afff5081b76e62')
+
+prepare() {
+  for v in "${_chain[@]}"; do
+    rm -rf "go$v"
+    mkdir "go$v"
+    tar --no-same-owner -xf "go$v.src.tar.gz" -C "go$v" --strip-components=1
+  done
+}
+
+build() {
+  export GOCACHE="$srcdir/gocache" GOPATH="$srcdir/gopath" GOTOOLCHAIN=local GOARCH=386 GO386=softfloat CGO_ENABLED=0
+  local boot=/usr/lib/go
+  for v in "${_chain[@]}"; do
+    (cd "go$v/src" && GOROOT_BOOTSTRAP="$boot" ./make.bash)
+    boot="$srcdir/go$v"
+  done
+}
+
+package() {
+  mkdir -p "$pkgdir/usr/lib"
+  cp -a "go$pkgver" "$pkgdir/usr/lib/go-tinyhat"
+  rm -rf "$pkgdir/usr/lib/go-tinyhat"/{test,pkg/obj,.git*}
+  install -Dm644 "go$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

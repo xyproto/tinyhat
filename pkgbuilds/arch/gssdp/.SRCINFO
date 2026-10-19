@@ -1,0 +1,39 @@
+pkgbase = gssdp
+	pkgdesc = GObject-based API for handling resource discovery and announcement over SSDP
+	pkgver = 1.6.6
+	pkgrel = 1
+	url = https://wiki.gnome.org/Projects/GUPnP
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = gobject-introspection
+	makedepends = gtk4
+	makedepends = meson
+	makedepends = pandoc
+	makedepends = vala
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libsoup3
+	source = git+https://gitlab.gnome.org/GNOME/gssdp.git?signed#tag=gssdp-1.6.6
+	validpgpkeys = AC9CD4E32D7C7F6357BA8ADD10F6E970175D29E1
+	b2sums = 1190a504be9483c7fae07706e3c6cbeb8fd510f25a283b36cf990d392576ce0110c731cd70575d2b7003791a64c15282e17dba503ba913b6fb5bfd508eefd1d9
+
+pkgname = gssdp
+	depends = glib2
+	depends = glibc
+	depends = libgcc
+	depends = libsoup3
+	depends = libglib-2.0.so
+	depends = libgobject-2.0.so
+	depends = libgio-2.0.so
+	depends = libsoup-3.0.so
+	optdepends = gtk4: gssdp-device-sniffer
+	provides = libgssdp-1.6.so
+
+pkgname = gssdp-docs
+	pkgdesc = GObject-based API for handling resource discovery and announcement over SSDP (documentation)
+	depends = 

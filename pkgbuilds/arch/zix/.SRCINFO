@@ -1,0 +1,29 @@
+pkgbase = zix
+	pkgdesc = A lightweight C99 portability and data structure library
+	pkgver = 0.8.2
+	pkgrel = 1
+	url = https://gitlab.com/drobilla/zix
+	arch = i686
+	arch = x32
+	license = 0BSD OR ISC
+	makedepends = doxygen
+	makedepends = glibc
+	makedepends = meson
+	makedepends = python-sphinx
+	makedepends = python-sphinx-lv2-theme
+	makedepends = python-sphinxygen
+	source = https://download.drobilla.net/zix-0.8.2.tar.xz
+	source = https://download.drobilla.net/zix-0.8.2.tar.xz.sig
+	validpgpkeys = 907D226E7E13FA337F014A083672782A9BF368F3
+	sha512sums = 0a6f4044b58013e00da97b6767d33bcb75e530a1337e70112a2e4c8e51433bf65518a7c01cb401575aec71e5b767758e1c04e895eec95cb71fcb767d3a1fdb82
+	sha512sums = SKIP
+	b2sums = d821ce3dcf8748770b92da1060a34c462222d0b190127d2f18e25de2d1bac63cf171a73531ae58efbbeacebcb6451f267620947384f9822384050e4731f10642
+	b2sums = SKIP
+
+pkgname = zix
+	depends = glibc
+	optdepends = zix-docs: for developer documentation
+	provides = libzix-0.so
+
+pkgname = zix-docs
+	pkgdesc = A lightweight C99 portability and data structure library - documentation

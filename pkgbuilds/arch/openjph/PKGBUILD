@@ -1,0 +1,72 @@
+# Maintainer: Daniel Bermond <dbermond@archlinux.org>
+
+pkgbase=openjph
+pkgname=(
+    'openjph'
+    'openjph-doc')
+pkgver=0.32.0
+pkgrel="1"
+pkgdesc='Open-source implementation of JPEG2000 Part-15'
+arch=(i686 x32)
+url='https://github.com/aous72/OpenJPH/'
+license=('BSD-2-Clause')
+makedepends=(
+    'cmake'
+    'doxygen'
+    'git'
+    'libtiff')
+checkdepends=(
+    'expat')
+source=("git+https://github.com/aous72/OpenJPH#tag=$pkgver")
+sha256sums=('08bdab8ec90f7fd930c310aaafad2ae5a1c59288a91420edb218738a86b26aa7')
+
+build() {
+    cmake -B build -S OpenJPH \
+        -G 'Unix Makefiles' \
+        -DCMAKE_BUILD_TYPE:STRING='None' \
+        -DCMAKE_INSTALL_PREFIX:PATH='/usr' \
+        -DOJPH_BUILD_TESTS:BOOL='ON' \
+        -Wno-dev
+    cmake --build build
+    
+    cd OpenJPH/docs
+    doxygen
+}
+
+check() {
+    ctest --test-dir build --output-on-failure
+}
+
+package_openjph() {
+    depends=(
+        'glibc'
+        'libgcc'
+        'libstdc++'
+        'libtiff')
+    
+    DESTDIR="$pkgdir" cmake --install build
+    install -D -m644 OpenJPH/LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}
+
+package_openjph-doc() {
+    pkgdesc+=' (documentation)'
+    
+    install -d -m755 "${pkgdir}/usr/share/doc"
+    install -D -m644 OpenJPH/LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
+    cp -dr --no-preserve='ownership' OpenJPH/docs/html "${pkgdir}/usr/share/doc/openjph"
+}
+
+# i486/i686 baseline has no SSE2: the SSE/SSE2 code paths fail to compile
+# ("inlining failed in call to 'always_inline' ... target specific option
+# mismatch"), so build the generic, SIMD-free code on these architectures.
+# pentium4 keeps the upstream SIMD dispatching.
+if [ "${CARCH}" = 'i486' ] || [ "${CARCH}" = 'i686' ]; then
+  eval "$(
+    declare -f build | \
+      sed "
+        s/-DCMAKE_BUILD_TYPE/-DOJPH_DISABLE_SIMD:BOOL='ON' -DCMAKE_BUILD_TYPE/
+      "
+  )"
+fi
+
+unset -f pkgver

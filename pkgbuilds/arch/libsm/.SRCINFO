@@ -1,0 +1,22 @@
+pkgbase = libsm
+	pkgdesc = X11 Session Management library
+	pkgver = 1.2.6
+	pkgrel = 1
+	url = https://xorg.freedesktop.org/
+	arch = i686
+	arch = x32
+	license = MIT
+	license = MIT-open-group
+	makedepends = xorg-util-macros
+	makedepends = xtrans
+	depends = libice
+	depends = util-linux-libs
+	depends = xorgproto
+	depends = glibc
+	source = https://xorg.freedesktop.org//releases/individual/lib/libSM-1.2.6.tar.xz
+	source = https://xorg.freedesktop.org//releases/individual/lib/libSM-1.2.6.tar.xz.sig
+	validpgpkeys = 4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E
+	sha512sums = e544a1dc49a03390f76af35837bfd01f749b806d88d3ee806f20311c47ff53d0aeea4744feb875958031b17d50b57a89dcc41d81241c09333c88b268c44653a7
+	sha512sums = SKIP
+
+pkgname = libsm

@@ -1,0 +1,250 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -92,7 +92,7 @@
+ #define TEXTW(mon, text)        (drwl_font_getwidth(mon->drw, text) + mon->lrpad)
+ 
+ /* enums */
+-enum { SchemeNorm, SchemeSel, SchemeUrg }; /* color schemes */
++enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeTask, SchemeTaskSel, SchemeTaskHover, SchemeTaskMin }; /* color schemes */
+ enum { CurNormal, CurPressed, CurMove, CurResize }; /* cursor */
+ enum { XDGShell, LayerShell, X11 }; /* client types */
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
+@@ -135,6 +135,7 @@
+ 	struct wl_list flink;
+ 	struct wlr_box geom; /* layout-relative, includes border */
+ 	struct wlr_box prev; /* layout-relative, includes border */
++	struct wlr_box floatgeom;
+ 	struct wlr_box bounds; /* only width and height are used */
+ 	union {
+ 		struct wlr_xdg_surface *xdg;
+@@ -250,7 +251,7 @@
+ 	int nmaster;
+ 	char ltsymbol[16];
+ 	Client *tasks[32];
+-	int taskx[33], ntasks;
++	int taskx[33], ntasks, taskhover;
+ 	int asleep;
+ 	Drwl *drw;
+ 	Buffer *pool[2];
+@@ -342,6 +343,7 @@
+ static void destroykeyboardgroup(struct wl_listener *listener, void *data);
+ static Monitor *dirtomon(enum wlr_direction dir);
+ static void drawbar(Monitor *m);
++static void drawlayout(Monitor *m, int x, int w);
+ static void drawbars(void);
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
+@@ -350,6 +352,8 @@
+ static void minimize(const Arg *arg);
+ static void showdesktop(const Arg *arg);
+ static void taskclick(const Arg *arg);
++static void taskhover(void);
++static void togglelayout(const Arg *arg);
+ static void focusstack(const Arg *arg);
+ static Client *focustop(Monitor *m);
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+@@ -368,7 +372,6 @@
+ static void locksession(struct wl_listener *listener, void *data);
+ static void mapnotify(struct wl_listener *listener, void *data);
+ static void maximizenotify(struct wl_listener *listener, void *data);
+-static void monocle(Monitor *m);
+ static void motionabsolute(struct wl_listener *listener, void *data);
+ static void motionnotify(uint32_t time, struct wlr_input_device *device, double sx,
+ 		double sy, double sx_unaccel, double sy_unaccel);
+@@ -882,7 +885,7 @@
+ 			} else if (i < LENGTH(tags)) {
+ 				click = ClkTagBar;
+ 				arg.ui = 1 << i;
+-			} else if (cx < x + TEXTW(selmon, selmon->ltsymbol))
++			} else if (cx < x + selmon->b.height * 3 / 2)
+ 				click = ClkLtSymbol;
+ 			else if (cx > selmon->b.width - (TEXTW(selmon, stext) - selmon->lrpad + 2)) {
+ 				click = ClkStatus;
+@@ -1782,9 +1785,9 @@
+ 				urg & 1 << i);
+ 		x += w;
+ 	}
+-	w = TEXTW(m, m->ltsymbol);
+-	drwl_setscheme(m->drw, colors[SchemeNorm]);
+-	x = drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, m->ltsymbol, 0);
++	w = m->b.height * 3 / 2;
++	drawlayout(m, x, w);
++	x += w;
+ 
+ 	if ((w = m->b.width - tw - x) > m->b.height) {
+ 		if (notice[0]) {
+@@ -1810,11 +1813,33 @@
+ }
+ 
+ void
++drawlayout(Monitor *m, int x, int w)
++{
++	int s = m->b.height * 9 / 16, ix = x + (w - s) / 2, iy = (m->b.height - s) / 2;
++	int t = MAX(2, s / 5), ws = s * 2 / 3, hw = (s - 2) / 2;
++	int win[2][4] = {{ix, iy, ws, ws}, {ix + s - ws, iy + s - ws, ws, ws}};
++
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++	if (m->lt[m->sellt]->arrange) {
++		win[0][2] = win[1][2] = hw;
++		win[0][3] = win[1][3] = s;
++		win[1][0] = ix + s - hw;
++		win[1][1] = iy;
++	}
++	for (int i = 0; i < 2; i++) {
++		drwl_rect(m->drw, win[i][0], win[i][1], win[i][2], win[i][3], 1, 1);
++		drwl_rect(m->drw, win[i][0], win[i][1], win[i][2], win[i][3], 0, 0);
++		drwl_rect(m->drw, win[i][0], win[i][1], win[i][2], t, 1, 0);
++	}
++}
++
++void
+ drawtasks(Monitor *m, int x, int w)
+ {
+ 	Client *t, *sel = focustop(m);
+-	int n = 0, bw, pad = m->b.height / 8 + 1;
+-	char label[256];
++	int n = 0, bw, gap = 3, pad = m->b.height / 8 + 1, bh = m->b.height - 2 * pad - 1;
++	int line = MAX(2, m->b.height / 12);
+ 
+ 	drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
+@@ -1824,17 +1849,27 @@
+ 	m->ntasks = n;
+ 	if (!n)
+ 		return;
+-	bw = MIN(w / n, m->b.height * 10);
++	bw = MIN((w - gap) / n, m->b.height * 9);
+ 	for (int i = 0; i < n; i++) {
++		int bx, active;
+ 		t = m->tasks[i];
+-		m->taskx[i] = x + i * bw;
+-		snprintf(label, sizeof(label), t->isminimized ? "[%s]" : "%s", client_get_title(t));
+-		drwl_setscheme(m->drw, colors[t == sel && !t->isminimized ? SchemeSel : SchemeNorm]);
+-		drwl_text(m->drw, m->taskx[i] + pad, pad, bw - 2 * pad, m->b.height - 2 * pad, m->lrpad / 2, label, 0);
+-		if (t != sel || t->isminimized)
+-			drwl_rect(m->drw, m->taskx[i] + pad, pad, bw - 2 * pad, m->b.height - 2 * pad, 0, 0);
++		active = t == sel && !t->isminimized;
++		bx = m->taskx[i] = x + gap + i * bw;
++		drwl_setscheme(m->drw, colors[active ? SchemeTaskSel
++			: m->taskhover == i + 1 ? SchemeTaskHover
++			: t->isminimized ? SchemeTaskMin : SchemeTask]);
++		drwl_text(m->drw, bx, pad, bw - gap, bh, m->lrpad / 2, client_get_title(t), 0);
++		if (active) {
++			drwl_setscheme(m->drw, colors[SchemeSel]);
++			drwl_rect(m->drw, bx, pad + bh - line, bw - gap, line, 1, 1);
++		}
++		drwl_setscheme(m->drw, colors[SchemeNorm]);
++		drwl_rect(m->drw, bx, pad, 1, 1, 1, 1);
++		drwl_rect(m->drw, bx + bw - gap - 1, pad, 1, 1, 1, 1);
++		drwl_rect(m->drw, bx, pad + bh - 1, 1, 1, 1, 1);
++		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
+ 	}
+-	m->taskx[n] = x + n * bw;
++	m->taskx[n] = x + gap + n * bw;
+ }
+ 
+ void
+@@ -2067,6 +2102,39 @@
+ }
+ 
+ void
++taskhover(void)
++{
++	Monitor *m;
++	int hover, cx;
++
++	wl_list_for_each(m, &mons, link) {
++		hover = 0;
++		if (m->scene_buffer->node.enabled && cursor->x >= m->m.x && cursor->x < m->m.x + m->m.width
++				&& cursor->y >= m->m.y + (topbar ? 0 : m->m.height - m->b.real_height)
++				&& cursor->y < m->m.y + (topbar ? m->b.real_height : m->m.height)) {
++			cx = (int)((cursor->x - m->m.x) * m->wlr_output->scale);
++			for (int i = 0; i < m->ntasks; i++)
++				if (cx >= m->taskx[i] && cx < m->taskx[i + 1])
++					hover = i + 1;
++		}
++		if (hover != m->taskhover) {
++			m->taskhover = hover;
++			drawbar(m);
++		}
++	}
++}
++
++void
++togglelayout(const Arg *arg)
++{
++	const Layout *l = selmon->lt[selmon->sellt];
++	size_t i;
++	for (i = 0; i < LENGTH(layouts) && !layouts[i].arrange == !l->arrange; i++);
++	if (i < LENGTH(layouts))
++		setlayout(&(Arg){.v = &layouts[i]});
++}
++
++void
+ focusstack(const Arg *arg)
+ {
+ 	/* Focus the next or previous client (in tiling order) on selmon */
+@@ -2536,25 +2604,6 @@
+ }
+ 
+ void
+-monocle(Monitor *m)
+-{
+-	Client *c;
+-	int n = 0;
+-
+-	wl_list_for_each(c, &clients, link) {
+-		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+-			continue;
+-		c->bw = 0;
+-		resize(c, m->w, 0);
+-		n++;
+-	}
+-	if (n)
+-		snprintf(m->ltsymbol, LENGTH(m->ltsymbol), "[%d]", n);
+-	if ((c = focustop(m)))
+-		wlr_scene_node_raise_to_top(&c->scene->node);
+-}
+-
+-void
+ motionabsolute(struct wl_listener *listener, void *data)
+ {
+ 	/* This event is forwarded by the cursor when a pointer emits an _absolute_
+@@ -2588,6 +2637,8 @@
+ 	/* Find the client under the pointer and send the event along. */
+ 	xytonode(cursor->x, cursor->y, &surface, &c, &l, &sx, &sy);
+ 
++	taskhover();
++
+ 	if (cursor_mode == CurPressed && !seat->drag
+ 			&& surface != seat->pointer_state.focused_surface
+ 			&& toplevel_from_wlr_surface(seat->pointer_state.focused_surface, &w, &focusedl) >= 0) {
+@@ -3095,14 +3146,26 @@
+ void
+ setlayout(const Arg *arg)
+ {
++	Client *c;
++	int wasfloat;
++
+ 	if (!selmon)
+ 		return;
++	wasfloat = !selmon->lt[selmon->sellt]->arrange;
++	if (wasfloat)
++		wl_list_for_each(c, &clients, link)
++			if (c->mon == selmon && !c->isfloating && !c->isfullscreen)
++				c->floatgeom = c->geom;
+ 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+ 		selmon->sellt ^= 1;
+ 	if (arg && arg->v)
+ 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
+ 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof(selmon->ltsymbol));
+ 	arrange(selmon);
++	if (!wasfloat && !selmon->lt[selmon->sellt]->arrange)
++		wl_list_for_each(c, &clients, link)
++			if (c->mon == selmon && !c->isfloating && !c->isfullscreen && c->floatgeom.width)
++				resize(c, c->floatgeom, 0);
+ 	drawbar(selmon);
+ }
+ 
