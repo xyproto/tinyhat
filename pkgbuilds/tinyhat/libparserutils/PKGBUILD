@@ -1,0 +1,30 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: Brad Fanella <bradfanella@archlinux.us>
+# Contributor: Paulo Matias <matiasΘarchlinux-br·org>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+
+pkgname=libparserutils
+pkgver=0.2.5
+pkgrel="2"
+pkgdesc='Library for building efficient parsers'
+arch=(i686 x32)
+url='https://www.netsurf-browser.org/projects/libparserutils/'
+license=(MIT)
+makedepends=(netsurf-buildsystem)
+source=("https://download.netsurf-browser.org/libs/releases/$pkgname-$pkgver-src.tar.gz")
+b2sums=('792e9fd14119537e4ec6e54d0e147114473e6935ea4b557c0de1341c29352e5773be90b282ca49573fd11cfb5a17e6f0f41cce1f2abbb95e5203794b3775ce4b')
+
+build() {
+  cd $pkgname-$pkgver
+  sed 's:_BSD_SOURCE:_DEFAULT_SOURCE:' -i Makefile
+  make INCLUDEDIR=include LIBDIR=lib PREFIX=/usr COMPONENT_TYPE=lib-shared
+}
+
+package() {
+  cd $pkgname-$pkgver
+  make install COMPONENT_TYPE=lib-shared DESTDIR="$pkgdir" INCLUDEDIR=include \
+    LIBDIR=lib PREFIX=/usr
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
+
+unset -f pkgver

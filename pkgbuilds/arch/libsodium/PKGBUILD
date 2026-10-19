@@ -1,0 +1,42 @@
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: namelessjon <jonathan.stott@gmail.com>
+# Contributor: Alessio Sergi <asergi at archlinux dot us>
+
+pkgname=libsodium
+pkgver=1.0.22
+pkgrel="1"
+pkgdesc="A modern, portable, easy to use crypto library"
+arch=(i686 x32)
+url="https://github.com/jedisct1/libsodium"
+license=('custom:ISC')
+depends=('glibc')
+makedepends=('git')
+provides=('libsodium.so')
+source=("git+${url}.git?signed#tag=${pkgver}-RELEASE")
+sha512sums=('d7329ac93a33a5d231432c3a7d05f66089a0eb4e5c7c1924e41f8da7f611e93930559eb42f59d3541d7b4a4039c2a5fb625ac1c9297c5530736fde1a40712b72')
+validpgpkeys=('54A2B8892CC3D6A597B92B6C210627AABA709FE1') # Frank Denis
+
+build() {
+  cd $pkgname
+
+  ./configure --prefix=/usr
+  make
+}
+
+check() {
+  cd $pkgname
+  make check
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+
+  # install license
+  install -d -m 755 "$pkgdir/usr/share/licenses/$pkgname"
+  install -m 644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+# vim:set ts=2 sw=2 et:
+
+unset -f pkgver

@@ -1,0 +1,37 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=libfreeaptx
+pkgver=0.2.2
+pkgrel="1"
+pkgdesc="Open Source aptX codec library"
+url="https://github.com/regularhunter/libfreeaptx"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(glibc)
+makedepends=(git)
+provides=(libfreeaptx.so)
+source=("git+$url#tag=$pkgver")
+b2sums=('4ed9db239b23b76cca22b0d390e859678dae5c959989cccd7a669951d7ffc18437d165c80f47b3fff587f19f52136dec6360b6735f0068b461eb0132716a6bb6')
+
+prepare() {
+  cd $pkgname
+}
+
+_make() {
+  make CPPFLAGS="$CPPFLAGS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
+    PREFIX=/usr "$@"
+}
+
+build() {
+  cd $pkgname
+  _make
+}
+
+package() {
+  cd $pkgname
+  _make DESTDIR="$pkgdir" install
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

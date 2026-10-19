@@ -1,0 +1,22 @@
+pkgbase = speex
+	pkgdesc = A free codec for free speech
+	pkgver = 1.2.1
+	pkgrel = 3
+	url = https://www.speex.org/
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = git
+	depends = glibc
+	depends = libogg
+	depends = speexdsp
+	source = git+https://gitlab.xiph.org/xiph/speex.git#tag=Speex-1.2.1
+	b2sums = 62dbca5623ba37a92366d2ed19c3ae2dbce4620ac38d6d011def049541271319b9ca119ecbce315fe8f6289d5b79a3c6da4d4434cac4ed6b82b40393f6807a0e
+
+pkgname = speex
+	depends = glibc
+	depends = libogg
+	depends = speexdsp
+	depends = libogg.so
+	depends = libspeexdsp.so
+	provides = libspeex.so

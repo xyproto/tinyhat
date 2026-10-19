@@ -1,0 +1,34 @@
+pkgname=fluidsynth
+pkgver=2.6.1
+pkgrel=1
+_gcem=012ae73c6d0a2cb09ffe86475f5c6fba3926e200
+pkgdesc="SoundFont synthesizer with PipeWire output"
+arch=(i686 x32)
+url="https://www.fluidsynth.org/"
+license=(LGPL-2.1-or-later Apache-2.0)
+depends=(alsa-lib glib2 libsndfile pipewire)
+makedepends=(cmake ninja)
+provides=(libfluidsynth.so)
+source=("fluidsynth-$pkgver.tar.gz::https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v$pkgver.tar.gz"
+        "gcem-$_gcem.zip::https://github.com/kthohr/gcem/archive/$_gcem.zip")
+sha256sums=('3d258a3bf97cc20c59eeebfe62c2432fae88adda74d3ad098681c76e0ebf446b'
+            '28159274c54e9640354852e172d10d88eb159f4e7f2fea42edbcd20105ed3526')
+
+prepare() {
+  rm -rf fluidsynth-$pkgver/gcem
+  cp -a gcem-$_gcem fluidsynth-$pkgver/gcem
+}
+
+build() {
+  cmake -S fluidsynth-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DLIB_SUFFIX= \
+    -Denable-sdl3=OFF -Denable-pulseaudio=OFF -Denable-pipewire=ON -Denable-jack=OFF -Denable-portaudio=OFF \
+    -Denable-dbus=OFF -Denable-ladspa=OFF -Denable-network=OFF -Denable-readline=OFF -Denable-oss=OFF \
+    -Denable-systemd=OFF -Denable-openmp=OFF -Denable-alsa=ON -Denable-libsndfile=ON -Denable-threads=ON
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 fluidsynth-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 gcem-$_gcem/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.gcem"
+}

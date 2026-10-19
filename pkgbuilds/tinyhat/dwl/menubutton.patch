@@ -1,0 +1,41 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -98,7 +98,7 @@
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
+ 	LyrIMPopup, LyrBlock, NUM_LAYERS }; /* scene layers */
+ enum { AxisUp, AxisRight, AxisDown, AxisLeft };
+-enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot }; /* clicks */
++enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot, ClkMenu }; /* clicks */
+ 
+ typedef union {
+ 	int i;
+@@ -858,10 +858,13 @@
+ 			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
+ 			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
+ 			cx = (cursor->x - selmon->m.x) * selmon->wlr_output->scale;
++			x = TEXTW(selmon, menulabel) + selmon->lrpad / 2;
+ 			do
+ 				x += TEXTW(selmon, tags[i]);
+ 			while (cx >= x && ++i < LENGTH(tags));
+-			if (i < LENGTH(tags)) {
++			if (cx < TEXTW(selmon, menulabel) + selmon->lrpad / 2) {
++				click = ClkMenu;
++			} else if (i < LENGTH(tags)) {
+ 				click = ClkTagBar;
+ 				arg.ui = 1 << i;
+ 			} else if (cx < x + TEXTW(selmon, selmon->ltsymbol))
+@@ -1736,8 +1739,12 @@
+ 		if (c->isurgent)
+ 			urg |= c->tags;
+ 	}
+-	x = 0;
+ 	c = focustop(m);
++	drwl_setscheme(m->drw, colors[SchemeSel]);
++	x = drwl_text(m->drw, 0, 0, TEXTW(m, menulabel), m->b.height, m->lrpad / 2, menulabel, 0);
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, x, 0, m->lrpad / 2, m->b.height, 1, 1);
++	x += m->lrpad / 2;
+ 	for (i = 0; i < LENGTH(tags); i++) {
+ 		w = TEXTW(m, tags[i]);
+ 		drwl_setscheme(m->drw, colors[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);

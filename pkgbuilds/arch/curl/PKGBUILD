@@ -1,0 +1,237 @@
+# Maintainer: Dave Reisner <dreisner@archlinux.org>
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: Lucien Immink <l.immink@student.fnt.hvu.nl>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+
+pkgbase=curl
+pkgname=(curl libcurl-compat libcurl-gnutls)
+pkgver=8.23.0
+pkgrel="1"
+pkgdesc='command line tool and library for transferring data with URLs'
+arch=(i686 x32)
+url='https://curl.se/'
+license=('curl')
+makedepends=(
+  # for building
+  'git'
+  'patchelf'
+  # actual package dependencies
+  'ca-certificates'
+  'brotli'
+  'gnutls'
+  'krb5'
+  'libidn2'
+  'libnghttp2'
+  'libnghttp3'
+  'libngtcp2'
+  'libpsl'
+  'libssh2'
+  'nettle'
+  'zlib'
+  'zstd')
+checkdepends=('valgrind')
+validpgpkeys=('27EDEAF22F3ABCEB50DB9A125CC908FDB71E12C2') # Daniel Stenberg
+source=("git+https://github.com/curl/curl.git?signed#tag=curl-${pkgver//./_}")
+sha512sums=('4be9e14dc61c465d1f4e56bed597350ffa66cc49f6b60c29ff196897e8b72cdfb7fc0ad503f3e7f8902b13f085a8138a5e06ca402e50014bda372909eb04798d')
+
+_backports=(
+)
+
+_reverts=(
+)
+
+prepare() {
+  cd "$pkgbase"
+
+  local _c
+  for _c in "${_backports[@]}"; do
+    if [[ $_c == *..* ]]; then
+      git log --oneline --reverse "${_c}"
+    else
+      git log --oneline -1 "${_c}"
+    fi
+    git cherry-pick -n -m1 "${_c}"
+  done
+  for _c in "${_reverts[@]}"; do
+    git log --oneline -1 "${_c}"
+    git revert -n "${_c}"
+  done
+
+  # no '-DEV' in version, release date from tagged commit...
+  sed -i \
+    -e "/\WLIBCURL_VERSION\W/c #define LIBCURL_VERSION \"${pkgver}\"" \
+    -e "/\WLIBCURL_TIMESTAMP\W/c #define LIBCURL_TIMESTAMP \"$(git log -1 --format=%cs "curl-${pkgver//./_}")\"" \
+    include/curl/curlver.h
+
+  autoreconf -fi
+}
+
+build() {
+  local _configure_options=(
+    --prefix='/usr'
+    --mandir='/usr/share/man'
+    --disable-ldap
+    --disable-ldaps
+    --disable-manual
+    --enable-ipv6
+    --enable-threaded-resolver
+    --enable-websockets
+    --with-gssapi
+    --with-libssh2
+    --with-nghttp3
+    --with-ngtcp2
+    --with-ca-bundle='/etc/ssl/certs/ca-certificates.crt'
+  )
+
+  mkdir build-curl{,-compat,-gnutls}
+
+  # build curl
+  cd "${srcdir}"/build-curl
+
+  "${srcdir}/${pkgbase}"/configure \
+    "${_configure_options[@]}" \
+    --enable-versioned-symbols \
+    --without-gnutls \
+    --with-openssl \
+    --with-fish-functions-dir=/usr/share/fish/vendor_completions.d/ \
+    --with-zsh-functions-dir=/usr/share/zsh/site-functions/
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+
+  # build libcurl-compat
+  cd "${srcdir}"/build-curl-compat
+
+  "${srcdir}/${pkgbase}"/configure \
+    "${_configure_options[@]}" \
+    --disable-versioned-symbols \
+    --without-gnutls \
+    --with-openssl
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make -C lib
+  patchelf --set-soname 'libcurl-compat.so.4' ./lib/.libs/libcurl.so
+
+  # build libcurl-gnutls
+  cd "${srcdir}"/build-curl-gnutls
+
+  "${srcdir}/${pkgbase}"/configure \
+    "${_configure_options[@]}" \
+    --disable-versioned-symbols \
+    --with-gnutls \
+    --without-openssl
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make -C lib
+  patchelf --set-soname 'libcurl-gnutls.so.4' ./lib/.libs/libcurl.so
+}
+
+check() {
+  cd build-curl
+  # -v: verbose
+  # -a: keep going on failure (so we see everything which breaks, not just the first failing test)
+  # -am: automake style TAP output
+  # -p: print logs if test fails
+  # -j: parallelization
+  # disable test 433, since it requires the glibc debug info
+  make TFLAGS="-v -a -p -j$(nproc) !433" test-nonflaky
+}
+
+package_curl() {
+  depends=(
+    'ca-certificates'
+    'brotli' 'libbrotlidec.so'
+    'krb5' 'libgssapi_krb5.so'
+    'libidn2' 'libidn2.so'
+    'libnghttp2' 'libnghttp2.so'
+    'libnghttp3' 'libnghttp3.so'
+    'libngtcp2' 'libngtcp2.so'
+    'libpsl' 'libpsl.so'
+    'libssh2' 'libssh2.so'
+    'openssl' 'libcrypto.so' 'libssl.so'
+    'zlib' 'libz.so'
+    'zstd' 'libzstd.so')
+  provides=('libcurl.so')
+  replaces=('wcurl')
+  conflicts=('wcurl')
+
+  cd build-curl
+
+  make DESTDIR="${pkgdir}" install
+  make DESTDIR="${pkgdir}" install -C scripts
+
+  cd "${srcdir}/${pkgname}"
+
+  # license
+  install -Dt "${pkgdir}/usr/share/licenses/${pkgname}" -m0644 COPYING
+}
+
+package_libcurl-compat() {
+  pkgdesc='command line tool and library for transferring data with URLs (no versioned symbols)'
+  depends=(
+    'ca-certificates'
+    'brotli' 'libbrotlidec.so'
+    'krb5' 'libgssapi_krb5.so'
+    'libidn2' 'libidn2.so'
+    'libnghttp2' 'libnghttp2.so'
+    'libnghttp3' 'libnghttp3.so'
+    'libngtcp2' 'libngtcp2.so'
+    'libpsl' 'libpsl.so'
+    'libssh2' 'libssh2.so'
+    'openssl' 'libcrypto.so' 'libssl.so'
+    'zlib' 'libz.so'
+    'zstd' 'libzstd.so')
+  provides=('libcurl-compat.so')
+
+  cd "${srcdir}"/build-curl-compat
+
+  make -C lib DESTDIR="${pkgdir}" install
+
+  mv "${pkgdir}"/usr/lib/libcurl{,-compat}.so.4.8.0
+  rm "${pkgdir}"/usr/lib/libcurl.{a,so}*
+  for version in 3 4.0.0 4.1.0 4.2.0 4.3.0 4.4.0 4.5.0 4.6.0 4.7.0; do
+    ln -s libcurl-compat.so.4.8.0 "${pkgdir}"/usr/lib/libcurl.so.${version}
+    ln -s libcurl-compat.so.4.8.0 "${pkgdir}"/usr/lib/libcurl-compat.so.${version}
+  done
+
+  install -dm 0755 "${pkgdir}"/usr/share/licenses
+  ln -s curl "${pkgdir}"/usr/share/licenses/libcurl-compat
+}
+
+package_libcurl-gnutls() {
+  pkgdesc='command line tool and library for transferring data with URLs (no versioned symbols, linked against gnutls)'
+  depends=(
+    'ca-certificates'
+    'brotli' 'libbrotlidec.so'
+    'gnutls' # 'libgnutls.so'
+    'krb5' 'libgssapi_krb5.so'
+    'libidn2' 'libidn2.so'
+    'libnghttp2' 'libnghttp2.so'
+    'libnghttp3' 'libnghttp3.so'
+    'libngtcp2' 'libngtcp2.so' 'libngtcp2_crypto_gnutls.so'
+    'libpsl' 'libpsl.so'
+    'libssh2' 'libssh2.so'
+    'nettle' 'libnettle.so'
+    'zlib' 'libz.so'
+    'zstd' 'libzstd.so')
+  provides=('libcurl-gnutls.so')
+
+  cd "${srcdir}"/build-curl-gnutls
+
+  make -C lib DESTDIR="${pkgdir}" install
+
+  mv "${pkgdir}"/usr/lib/libcurl{,-gnutls}.so.4.8.0
+  rm "${pkgdir}"/usr/lib/libcurl.{a,so}*
+  ln -s libcurl-gnutls.so.4 "${pkgdir}"/usr/lib/libcurl-gnutls.so
+  for version in 3 4 4.0.0 4.1.0 4.2.0 4.3.0 4.4.0 4.5.0 4.6.0 4.7.0; do
+    ln -s libcurl-gnutls.so.4.8.0 "${pkgdir}"/usr/lib/libcurl-gnutls.so.${version}
+  done
+
+  install -dm 0755 "${pkgdir}"/usr/share/licenses
+  ln -s curl "${pkgdir}"/usr/share/licenses/libcurl-gnutls
+}
+
+# Valgrind seems broken for 32-bit currently
+unset check
+unset checkdepends
+
+
+unset -f pkgver

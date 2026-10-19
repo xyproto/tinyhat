@@ -1,0 +1,22 @@
+pkgbase = fluidsynth
+	pkgdesc = SoundFont synthesizer with PipeWire output
+	pkgver = 2.6.1
+	pkgrel = 1
+	url = https://www.fluidsynth.org/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	license = Apache-2.0
+	makedepends = cmake
+	makedepends = ninja
+	depends = alsa-lib
+	depends = glib2
+	depends = libsndfile
+	depends = pipewire
+	provides = libfluidsynth.so
+	source = fluidsynth-2.6.1.tar.gz::https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v2.6.1.tar.gz
+	source = gcem-012ae73c6d0a2cb09ffe86475f5c6fba3926e200.zip::https://github.com/kthohr/gcem/archive/012ae73c6d0a2cb09ffe86475f5c6fba3926e200.zip
+	sha256sums = 3d258a3bf97cc20c59eeebfe62c2432fae88adda74d3ad098681c76e0ebf446b
+	sha256sums = 28159274c54e9640354852e172d10d88eb159f4e7f2fea42edbcd20105ed3526
+
+pkgname = fluidsynth

@@ -1,0 +1,22 @@
+pkgname=rfxgen
+pkgver=5.0
+pkgrel=1
+pkgdesc="Sound effect and chip sound generator"
+arch=(i686 x32)
+url="https://github.com/raysan5/rfxgen"
+license=(Zlib)
+depends=(raylib)
+source=("rfxgen-$pkgver.tar.gz::https://github.com/raysan5/rfxgen/archive/refs/tags/$pkgver.tar.gz")
+sha256sums=('2b47c266c2a995a25da6b64fad44740cee2ec6c348c20c7f1d1e847a51683ef1')
+
+build() {
+  cd rfxgen-$pkgver
+  cc $CFLAGS -std=gnu99 -DCUSTOM_MODAL_DIALOGS -D_DEFAULT_SOURCE -Isrc/external \
+    -o rfxgen src/rfxgen.c -lraylib -lm $LDFLAGS
+}
+
+package() {
+  cd rfxgen-$pkgver
+  install -Dm755 rfxgen "$pkgdir/usr/bin/rfxgen"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

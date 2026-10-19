@@ -1,0 +1,30 @@
+pkgbase = libpanel
+	pkgdesc = Dock/panel library for GTK 4
+	pkgver = 1.10.4
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/libpanel
+	arch = i686
+	arch = x32
+	license = LGPL-3.0-or-later
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = glib2-devel
+	makedepends = gobject-introspection
+	makedepends = meson
+	makedepends = vala
+	depends = cairo
+	depends = glib2
+	depends = glibc
+	depends = graphene
+	depends = gtk4
+	depends = hicolor-icon-theme
+	depends = libadwaita
+	source = git+https://gitlab.gnome.org/GNOME/libpanel.git#tag=1.10.4
+	b2sums = 464d5bfc77f5aecff4c7c655e094b96872b3e7542a5fbf064522e33499d447d6ff3b493fafd259be04e096794bd167149daa873dc5d282cef6a0b629011204e3
+
+pkgname = libpanel
+	provides = libpanel-1.so
+
+pkgname = libpanel-docs
+	pkgdesc = Dock/panel library for GTK 4 (documentation)
+	depends = 

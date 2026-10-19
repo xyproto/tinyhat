@@ -1,0 +1,20 @@
+pkgbase = less
+	pkgdesc = A terminal based program for viewing text files
+	pkgver = 710
+	pkgrel = 1
+	epoch = 1
+	url = https://www.greenwoodsoftware.com/less/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later OR LicenseRef-Less
+	makedepends = git
+	depends = glibc
+	depends = ncurses
+	depends = pcre2
+	source = https://www.greenwoodsoftware.com/less/less-710.tar.gz
+	source = less-710.tar.gz.sig::https://www.greenwoodsoftware.com/less/less-710.sig
+	validpgpkeys = AE27252BD6846E7D6EAE1DD6F153A7C833235259
+	b2sums = defbc6a019b5d6a598bfbd965cd34ec87777e7ee1dd47025ea84d2a7d474285f2add24b2e5d5aabf7cf9e00f5b2be44c42b1406cb6066d2ac0c5a63b5626917c
+	b2sums = SKIP
+
+pkgname = less

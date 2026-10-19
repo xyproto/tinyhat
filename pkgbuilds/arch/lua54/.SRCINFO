@@ -1,0 +1,22 @@
+pkgbase = lua54
+	pkgdesc = Powerful lightweight programming language designed for extending applications
+	pkgver = 5.4.9
+	pkgrel = 1
+	url = https://www.lua.org/
+	arch = i686
+	arch = x32
+	license = MIT
+	depends = readline
+	options = !emptydirs
+	source = https://www.lua.org/ftp/lua-5.4.9.tar.gz
+	source = liblua.so.patch
+	source = paths.patch
+	source = lua.pc
+	source = license-from-upstream
+	sha256sums = 2335b6c582a52654f94612bf10d2f4672805d05329aa6568b1d8cd9e5c6fb8e6
+	sha256sums = 644fba6f3e03c4d0c394d241149fc558da79d0114e7816c2a597097304249cb7
+	sha256sums = 6bb84383498a96514d4c7deb79fd45bf484fa5e3253a1574a3311ee0bb7c24fa
+	sha256sums = ca9252633e782b8f85d6a94ea4f6babd4fe30bd759085b373160b1878e36ff78
+	sha256sums = 142fb08b41a807b192b4b2c166696a1830a1c97967e5099ad0e579bf500e1da4
+
+pkgname = lua54

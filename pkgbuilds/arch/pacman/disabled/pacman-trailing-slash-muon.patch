@@ -1,0 +1,22 @@
+diff -rauN pacman-orig/meson.build pacman-trailing-slash-muon-patch/meson.build
+--- pacman-orig/meson.build	2025-03-20 17:46:34.979754357 +0100
++++ pacman-trailing-slash-muon-patch/meson.build	2025-03-20 17:47:38.620712716 +0100
+@@ -68,13 +68,13 @@
+ conf.set_quoted('SCRIPTLET_SHELL', get_option('scriptlet-shell'))
+ conf.set_quoted('LDCONFIG', LDCONFIG)
+ conf.set_quoted('LIB_VERSION', libalpm_version)
+-conf.set_quoted('SYSHOOKDIR', join_paths(DATAROOTDIR, 'libalpm/hooks/'))
++conf.set_quoted('SYSHOOKDIR', join_paths(DATAROOTDIR, 'libalpm/hooks/') + '/')
+ conf.set_quoted('CONFFILE', join_paths(SYSCONFDIR, 'pacman.conf'))
+-conf.set_quoted('DBPATH', join_paths(LOCALSTATEDIR, 'lib/pacman/'))
+-conf.set_quoted('GPGDIR', join_paths(SYSCONFDIR, 'pacman.d/gnupg/'))
++conf.set_quoted('DBPATH', join_paths(LOCALSTATEDIR, 'lib/pacman/') + '/')
++conf.set_quoted('GPGDIR', join_paths(SYSCONFDIR, 'pacman.d/gnupg/') + '/')
+ conf.set_quoted('LOGFILE', join_paths(LOCALSTATEDIR, 'log/pacman.log'))
+-conf.set_quoted('CACHEDIR', join_paths(LOCALSTATEDIR, 'cache/pacman/pkg/'))
+-conf.set_quoted('HOOKDIR', join_paths(SYSCONFDIR, 'pacman.d/hooks/'))
++conf.set_quoted('CACHEDIR', join_paths(LOCALSTATEDIR, 'cache/pacman/pkg/') +'/')
++conf.set_quoted('HOOKDIR', join_paths(SYSCONFDIR, 'pacman.d/hooks/') + '/')
+ conf.set_quoted('ROOTDIR', ROOTDIR)
+ 
+ libintl = dependency('', required: false)

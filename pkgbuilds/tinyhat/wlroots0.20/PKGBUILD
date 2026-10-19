@@ -1,0 +1,24 @@
+pkgname=wlroots0.20
+pkgver=0.20.2
+pkgrel=1
+pkgdesc="Modular Wayland compositor library"
+arch=(i686 x32)
+url="https://gitlab.freedesktop.org/wlroots/wlroots"
+license=(MIT)
+depends=(libdisplay-info libdrm libinput libxkbcommon mesa pixman seatd systemd-libs wayland)
+makedepends=(meson ninja wayland-protocols hwdata)
+source=("https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/$pkgver/wlroots-$pkgver.tar.gz")
+sha256sums=('972c7ac44b17828f4702bfae7cd8347346a3fb5b2c1076cfa2c3fcedac5ec343')
+
+build() {
+  meson setup build wlroots-$pkgver --prefix=/usr --buildtype=minsize \
+    -Dbackends=drm,libinput -Drenderers=gles2 -Dallocators=gbm -Dsession=enabled \
+    -Dxwayland=disabled -Dxcb-errors=disabled -Dexamples=false \
+    -Dcolor-management=disabled -Dlibliftoff=disabled
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 wlroots-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

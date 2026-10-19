@@ -1,0 +1,81 @@
+# Maintainer: Felix Yan <felixonmars@gmail.com>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+# Contributor: dorphell <dorphell@archlinux.org>
+
+pkgname=enchant
+pkgver=2.8.21
+pkgrel="1"
+pkgdesc="A wrapper library for generic spell checking"
+url="https://rrthomas.github.io/enchant/"
+arch=(i686 x32)
+license=('LGPL-2.1-or-later')
+depends=(
+  'glib2'
+  'glibc'
+  'libgcc'
+  'libstdc++'
+)
+makedepends=(
+  'aspell'
+  'git'
+  'hspell'
+  'hunspell'
+  'libvoikko'
+  'nuspell'
+  'vala'
+)
+checkdepends=('unittestpp')
+optdepends=(
+  'aspell: for aspell based spell checking support'
+  'hspell: for hspell based spell checking support'
+  'hunspell: for hunspell based spell checking support'
+  'libvoikko: for libvoikko based spell checking support'
+  'nuspell: for nuspell based spell checking support'
+)
+provides=('libenchant-2.so')
+source=(
+  "git+https://github.com/rrthomas/enchant#tag=v$pkgver"
+  "git+https://git.savannah.gnu.org/git/gnulib.git"
+  "git+https://github.com/gnulib-modules/bootstrap.git"
+)
+b2sums=('fcf34a1949631d43fa122b164eb39d9a042815fe41e9fe0e60e150751b1bc0efc1596d5220c2abe76658d4ce2c6263d265f39606c7e7ede518b2963657586659'
+        'SKIP'
+        'SKIP')
+
+prepare() {
+  cd enchant
+
+  git submodule init
+  git submodule set-url gnulib "$srcdir/gnulib"
+  git submodule set-url gl-mod/bootstrap "$srcdir/bootstrap"
+  git -c protocol.file.allow=always -c protocol.allow=never submodule update
+
+  ./bootstrap
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --localstatedir=/var
+    --disable-static
+    --enable-relocatable
+  )
+
+  cd enchant
+  ./configure "${configure_options[@]}"
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  cd enchant
+  make check
+}
+
+package() {
+  cd enchant
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

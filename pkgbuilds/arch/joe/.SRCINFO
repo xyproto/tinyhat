@@ -1,0 +1,23 @@
+pkgbase = joe
+	pkgdesc = Classic text editor
+	pkgver = 4.8
+	pkgrel = 1
+	url = https://joe-editor.sourceforge.io/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	makedepends = git
+	depends = glibc
+	depends = ncurses
+	optdepends = gpm: console mouse support
+	backup = etc/joe/ftyperc
+	backup = etc/joe/jicerc.ru
+	backup = etc/joe/jmacsrc
+	backup = etc/joe/joerc
+	backup = etc/joe/jpicorc
+	backup = etc/joe/jstarrc
+	backup = etc/joe/rjoerc
+	source = git+https://github.com/joe-editor/joe#tag=releases/joe-4.8
+	b2sums = fb6e6ce5867dad323464b72f555b45a65c374bb64f178fe9d4de8963ff1b783811b81383151da482e3b6a942bbd1a66485c03774bd0a6edffa463d6c39b1d702
+
+pkgname = joe

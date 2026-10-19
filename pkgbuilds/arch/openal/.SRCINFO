@@ -1,0 +1,45 @@
+pkgbase = openal
+	pkgdesc = Cross-platform 3D audio library, software implementation
+	pkgver = 1.25.2
+	pkgrel = 2
+	url = https://github.com/kcat/openal-soft
+	arch = i686
+	arch = x32
+	license = LGPL-2.0-or-later
+	makedepends = alsa-lib
+	makedepends = cmake
+	makedepends = ffmpeg
+	makedepends = fluidsynth
+	makedepends = git
+	makedepends = jack
+	makedepends = libmysofa
+	makedepends = libpulse
+	makedepends = libsndfile
+	makedepends = ninja
+	makedepends = pipewire
+	makedepends = portaudio
+	makedepends = qt6-base
+	makedepends = sdl3
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	source = git+https://github.com/kcat/openal-soft#tag=1.25.2
+	source = openal-i686.patch
+	b2sums = 59ac97507c3fc01ebfeadd2d5fe53310e3a7eeaebcef3eb7de505530e9f3042e3921eabfec996f4ae91b76e4abd8c36a4aaf1730eec12227e21124c3df44f999
+	b2sums = 2a3900e993916b928fae3515e76120f3ec9e7f6c893b0b29706cf2cbd0d2688ddacd90f4f1d1111fa56fd7c7a64987c745248181c250c63ebea907ebf1003b03
+
+pkgname = openal
+	optdepends = qt6-base: alsoft-config GUI Configurator
+	optdepends = fluidsynth: MIDI rendering
+	optdepends = libmysofa: makemhr tool
+	provides = libopenal.so
+
+pkgname = openal-examples
+	pkgdesc = Cross-platform 3D audio library, software implementation (example programs)
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	depends = openal=1.25.2-2
+	depends = ffmpeg
+	depends = libsndfile
+	depends = sdl3

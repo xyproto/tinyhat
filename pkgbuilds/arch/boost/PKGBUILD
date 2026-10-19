@@ -1,0 +1,195 @@
+# Maintainer: Christian Heusel <gromit@archlinux.org>
+# Contributor: Evangelos Foutras <foutrelis@archlinux.org>
+# Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Bartłomiej Piotrowski <bpiotrowski@archlinux.org>
+# Contributor: Marius Knaust <marius.knaust@gmail.com>
+# Contributor: Ionut Biru <ibiru@archlinux.org>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: kevin <kevin@archlinux.org>
+# Contributor: Giovanni Scafora <giovanni@archlinux.org>
+# Contributor: Kritoke <kritoke@gamebox.net>
+# Contributor: Luca Roccia <little_rock@users.sourceforge.net>
+
+pkgname=('boost' 'boost-libs')
+pkgver=1.92.0
+pkgrel="1"
+_srcname=boost_${pkgver//./_}
+pkgdesc="Free peer-reviewed portable C++ source libraries"
+arch=(i686 x32)
+url="https://www.boost.org/"
+license=('BSL-1.0')
+makedepends=('icu' 'python' 'python-numpy' 'bzip2' 'zlib' 'openmpi' 'zstd')
+source=(
+  https://archives.boost.io/release/$pkgver/source/$_srcname.tar.bz2
+  boost_1_92_0_python_mpi_gcc_16.patch
+)
+sha256sums=('5c1d40cb8e19adbf740a4ec2da35b3e58f3f5804b1dce44deb53df72193cbc6c'
+            'cbea9ce8f511b765bbf139499dce20059f7577b33dcc452014be89299910e69f')
+
+prepare() {
+  # https://github.com/boostorg/mpi/issues/179
+  patch -Np1 -d $_srcname/libs/mpi -i "${srcdir}/boost_1_92_0_python_mpi_gcc_16.patch"
+}
+
+build() {
+  local JOBS="$(sed 's/.*\(-j *[0-9]\+\).*/\1/' <<< $MAKEFLAGS)"
+  local python_version=$(
+    python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+
+  pushd $_srcname/tools/build
+  ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS"
+  ./b2 install --prefix="$srcdir"/fakeinstall
+  ln -s b2 "$srcdir"/fakeinstall/bin/bjam
+  popd
+
+  cd $_srcname
+  ./bootstrap.sh --with-toolset=gcc --with-icu --with-python=python3
+
+  # support for OpenMPI
+  echo "using mpi ;" >> project-config.jam
+
+  # boostbook is needed by quickbook
+  install -dm755 "$srcdir"/fakeinstall/share/boostbook
+  cp -a tools/boostbook/{xsl,dtd} "$srcdir"/fakeinstall/share/boostbook/
+
+  # install to $srcdir/fakeinstall in preparation for split packaging
+  ./b2 install \
+    variant=release \
+    debug-symbols=on \
+    threading=multi \
+    runtime-link=shared \
+    link=shared,static \
+    toolset=gcc \
+    cxxstd=23 \
+    python=$python_version \
+    cflags="$CPPFLAGS $CFLAGS -fPIC -O3 -ffat-lto-objects" \
+    cxxflags="$CPPFLAGS $CXXFLAGS -fPIC -O3 -ffat-lto-objects" \
+    linkflags="$LDFLAGS" \
+    --layout=system \
+    $JOBS \
+    \
+    --prefix="$srcdir"/fakeinstall
+}
+
+package_boost() {
+  local python_version=$(
+    python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+
+  pkgdesc+=' (development headers)'
+  optdepends=('python: for python bindings')
+
+  install -d "$pkgdir"/usr/lib
+  cp -a fakeinstall/lib/cmake "$pkgdir"/usr/lib
+  cp -a fakeinstall/{bin,include,share} "$pkgdir"/usr/
+
+}
+
+package_boost-libs() {
+  local python_version=$(
+    python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+
+  pkgdesc+=' (runtime libraries)'
+  depends=(
+    'bzip2'
+    'glibc'
+    'icu'
+    'libgcc'
+    'libstdc++'
+    'xz'
+    'zlib'
+    'zstd'
+  )
+  optdepends=('openmpi: for mpi support')
+  options=('staticlibs')
+  provides=(
+    libboost_atomic.so
+    libboost_charconv.so
+    libboost_chrono.so
+    libboost_cobalt.so
+    libboost_container.so
+    libboost_context.so
+    libboost_contract.so
+    libboost_coroutine.so
+    libboost_date_time.so
+    libboost_fiber.so
+    libboost_filesystem.so
+    libboost_graph.so
+    libboost_graph_parallel.so
+    libboost_iostreams.so
+    libboost_json.so
+    libboost_locale.so
+    libboost_log.so
+    libboost_log_setup.so
+    libboost_math_c99.so
+    libboost_math_c99f.so
+    libboost_math_c99l.so
+    libboost_math_tr1.so
+    libboost_math_tr1f.so
+    libboost_math_tr1l.so
+    libboost_mpi{,_python${python_version/.}}.so
+    libboost_nowide.so
+    libboost_numpy${python_version/.}.so
+    libboost_prg_exec_monitor.so
+    libboost_process.so
+    libboost_program_options.so
+    libboost_python${python_version/.}.so
+    libboost_random.so
+    libboost_regex.so
+    libboost_serialization.so
+    libboost_stacktrace_addr2line.so
+    libboost_stacktrace_basic.so
+    libboost_stacktrace_from_exception.so
+    libboost_stacktrace_noop.so
+    libboost_thread.so
+    libboost_timer.so
+    libboost_type_erasure.so
+    libboost_unit_test_framework.so
+    libboost_url.so
+    libboost_wave.so
+    libboost_wserialization.so
+  )
+
+  install -dm755 "$pkgdir"/usr/lib
+  cp -a fakeinstall/lib/*.so* "$pkgdir"/usr/lib/
+  cp -a fakeinstall/lib/*.a "$pkgdir"/usr/lib/
+
+  # https://github.com/boostorg/python/issues/203#issuecomment-391477685
+  for _lib in python numpy; do
+    ln -srL "$pkgdir"/usr/lib/libboost_${_lib}{${python_version/.},${python_version%.*}}.so
+  done
+
+  # https://github.com/boostorg/mpi/issues/112
+  local site_packages=$(python -c 'import site; print(site.getsitepackages()[0])')
+  install -d "$pkgdir"$site_packages/boost
+  touch "$pkgdir"$site_packages/boost/__init__.py
+  python -m compileall -o 0 -o 1 -o 2 "$pkgdir"$site_packages/boost
+  cp fakeinstall/lib/boost-python*/mpi.so "$pkgdir"$site_packages/boost/mpi.so
+}
+
+# vim:set ts=2 sw=2 et:
+
+# no LTO on i486
+if [ "$CARCH" = 'i486' ]; then
+  sed -i '
+    1i options=(!lto)
+  ' PKGBUILD
+fi
+if [ "$CARCH" == 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s/-ffat-lto-objects//g
+      '
+  )"
+fi
+
+# disable complaining about stack trace feature which leaks memory
+eval "$(
+  declare -f build | \
+    sed '
+      s/cflags="\([^"]*\)"/cflags="\1 -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK"/g
+      s/cxxflags="\([^"]*\)"/cxxflags="\1 -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK"/g
+    '
+)"
+
+unset -f pkgver

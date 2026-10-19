@@ -1,0 +1,17 @@
+pkgbase = linux-api-headers
+	pkgdesc = Kernel headers sanitized for use in userspace
+	pkgver = 7.3
+	pkgrel = 1
+	url = https://www.gnu.org/software/libc
+	arch = i686
+	arch = x32
+	license = GPL-2.0-only
+	makedepends = rsync
+	source = https://www.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.xz
+	source = https://www.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.sign
+	validpgpkeys = ABAF11C65A2970B130ABE3C479BE3E4300411886
+	validpgpkeys = 647F28654894E3BD457199BE38DBBDC86092693E
+	sha256sums = 87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953
+	sha256sums = SKIP
+
+pkgname = linux-api-headers

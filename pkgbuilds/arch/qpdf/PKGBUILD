@@ -1,0 +1,71 @@
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Miguel Revilla <yo at miguelrevilla.com>
+# Contributor: David Sotelo <dvsotelo at gmail.com>
+# Contributor: Nuno Araujo <nuno.araujo@russo79.com>
+
+pkgbase=qpdf
+pkgname=('qpdf' 'qpdf-docs')
+pkgver=12.4.2
+pkgrel="1"
+pkgdesc="QPDF: A Content-Preserving PDF Transformation System"
+arch=(i686 x32)
+url="https://github.com/qpdf/qpdf"
+license=('Apache-2.0' 'Artistic-2.0')
+makedepends=('libjpeg-turbo' 'zlib' 'gnutls' 'cmake'
+             'texlive-bin' 'texlive-binextra' 'texlive-fontsrecommended'
+             'python-sphinx' 'python-sphinx_rtd_theme' 'texlive-latexextra')
+# https://github.com/qpdf/qpdf/releases/download/v11.10.1/qpdf-11.10.1.sha256
+source=(https://github.com/qpdf/qpdf/releases/download/v$pkgver/${pkgname}-${pkgver}.tar.gz{,.asc})
+sha256sums=('8a58af5b6141319287c1883bec8bd1bd545b7567b7fc5e6ce5d25a1c85f36397'
+            'SKIP')
+validpgpkeys=('C2C96B10011FE009E6D1DF828A75D10998012C7E') # "Jay Berkenbilt <ejb@ql.org>"
+
+# howto build the docs:
+# https://github.com/qpdf/qpdf/blob/main/build-scripts/build-doc
+
+build() {
+  cd ${pkgbase}-${pkgver}
+  cmake -B build \
+    -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+    -D BUILD_STATIC_LIBS:BOOL=OFF \
+    -D REQUIRE_CRYPTO_GNUTLS:BOOL=ON \
+    -D REQUIRE_CRYPTO_OPENSSL:BOOL=OFF \
+    -D ENABLE_QTC:BOOL=ON \
+    -D BUILD_DOC:BOOL=ON
+  make -C build
+}
+
+check() {
+  cd ${pkgbase}-${pkgver}
+  make -C build test
+}
+
+package_qpdf() {
+  depends=('libjpeg-turbo' 'zlib' 'gnutls'
+           'openssl' 'glibc' 'libstdc++' 'libgcc')
+
+  cd ${pkgbase}-${pkgver}
+  make -C build DESTDIR="${pkgdir}" install 
+
+  install -Dm644 completions/bash/qpdf "${pkgdir}/usr/share/bash-completion/completions/qpdf"
+  install -Dm644 completions/zsh/_qpdf "${pkgdir}/usr/share/zsh/site-functions/_qpdf"
+
+  rm -rf "${pkgdir}"/usr/share/doc
+
+  mkdir -m755 -p "${pkgdir}"/usr/share/licenses/${pkgbase}
+  install -m644 {Artistic-2.0,LICENSE.txt} "${pkgdir}"/usr/share/licenses/${pkgbase}/
+}
+
+package_qpdf-docs() {
+  pkgdesc+=" (documentation)"
+
+  cd ${pkgbase}-${pkgver}
+  mkdir -m755 -p "${pkgdir}"/usr/share/doc/qpdf/singlehtml
+  pushd build/manual/doc-dist
+    cp -a manual-single-page-html/* "${pkgdir}"/usr/share/doc/qpdf/singlehtml/
+    install -Dm644 qpdf-manual.pdf "${pkgdir}"/usr/share/doc/qpdf/qpdf-manual.pdf
+  popd
+  make -C build/examples DESTDIR="${pkgdir}" install
+}
+
+unset -f pkgver

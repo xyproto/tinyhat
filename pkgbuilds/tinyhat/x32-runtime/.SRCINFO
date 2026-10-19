@@ -1,0 +1,22 @@
+pkgbase = x32-runtime
+	pkgdesc = GCC runtime libraries for x32
+	pkgver = 16.2.0
+	pkgrel = 1
+	url = https://gcc.gnu.org/
+	arch = x32
+	license = GPL-3.0-or-later WITH GCC-exception-3.1
+	makedepends = x32-gcc
+	depends = glibc
+	provides = gcc-libs
+	provides = libgcc
+	provides = libstdc++
+	provides = libatomic
+	provides = libgomp
+	provides = libquadmath
+	provides = libitm
+	provides = libgcc_s.so
+	provides = libstdc++.so
+	provides = libatomic.so
+	provides = libgomp.so
+
+pkgname = x32-runtime

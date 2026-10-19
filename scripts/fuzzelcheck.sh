@@ -1,20 +1,21 @@
 #!/bin/sh
 set -eu
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
-bin=$top/build/buildroot/out/fuzzel/usr/bin/fuzzel
-if [ ! -x "$bin" ]; then
+pkgfile=$(python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 fuzzel 2>/dev/null) || pkgfile=
+if [ -z "$pkgfile" ] || [ ! -d "$top/build/buildroot/usr" ]; then
 	echo "fuzzel: skipped (build fuzzel first to check the config)"
 	exit 0
 fi
 stage=$top/build/buildroot/.fuzzelcheck
 rm -rf "$stage"
-mkdir -p "$stage/fuzzel"
+mkdir -p "$stage/fuzzel" "$stage/pkg"
+bsdtar -xf "$pkgfile" -C "$stage/pkg" usr/bin/fuzzel
 cp "$top/config/overlay/etc/xdg/fuzzel/fuzzel.ini" "$stage/fuzzel/fuzzel.ini"
 out=$(setarch i686 bwrap --bind "$top/build/buildroot" / --dev /dev --proc /proc --tmpfs /tmp \
 	--unshare-all --uid 0 --gid 0 --clearenv \
 	--setenv PATH /usr/bin --setenv HOME /root --setenv LANG C.UTF-8 \
 	--setenv XDG_CONFIG_HOME /.fuzzelcheck \
-	/out/fuzzel/usr/bin/fuzzel --dmenu </dev/null 2>&1) || true
+	/.fuzzelcheck/pkg/usr/bin/fuzzel --dmenu </dev/null 2>&1) || true
 rm -rf "$stage"
 case $out in
 *"failed to connect to wayland"*) ;;

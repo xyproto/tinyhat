@@ -1,0 +1,27 @@
+pkgbase = bonzomatic
+	pkgdesc = Live shader coding tool
+	pkgver = 2023.06.15
+	pkgrel = 6
+	url = https://github.com/Gargaj/bonzomatic
+	arch = i686
+	arch = x32
+	license = Unlicense
+	makedepends = chrpath
+	makedepends = cmake
+	makedepends = git
+	makedepends = glu
+	makedepends = imagemagick
+	makedepends = libxcursor
+	makedepends = libxi
+	makedepends = libxinerama
+	makedepends = libxrandr
+	depends = alsa-lib
+	depends = fontconfig
+	depends = glew
+	depends = glfw
+	depends = hicolor-icon-theme
+	depends = libglvnd
+	source = git+https://github.com/Gargaj/bonzomatic#tag=2023-06-15
+	b2sums = 723f5efd67dde0f5d36c0187a462bad758071e1cc1a03d0acba2f42cd67e19da10c8d8ab84607b82cc6dcfdd47cb9488c7d66846256be3caa567b983c086893a
+
+pkgname = bonzomatic

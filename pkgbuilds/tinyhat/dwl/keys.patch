@@ -1,0 +1,93 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -83,7 +83,7 @@
+ #include "drwl.h"
+ 
+ /* macros */
+-#define CLEANMASK(mask)         (mask & ~WLR_MODIFIER_CAPS)
++#define CLEANMASK(mask)         (mask & (WLR_MODIFIER_SHIFT|WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT|WLR_MODIFIER_LOGO))
+ #define VISIBLEON(C, M)         ((M) && (C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
+ #define TAGMASK                 ((1u << LENGTH(tags)) - 1)
+ #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
+@@ -344,6 +344,8 @@
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
++static int reloadkeymap(int signo, void *data);
++static void unblocksignals(void);
+ static void incnmaster(const Arg *arg);
+ static void inputdevice(struct wl_listener *listener, void *data);
+ static const Key *keybinding(uint32_t mods, xkb_keysym_t sym);
+@@ -1929,6 +1931,46 @@
+ 	wlr_renderer_destroy(old_drw);
+ }
+ 
++int
++reloadkeymap(int signo, void *data)
++{
++	char path[4096], line[256] = "", *variant;
++	const char *home = getenv("HOME");
++	struct xkb_rule_names names = xkb_rules;
++	struct xkb_context *context;
++	struct xkb_keymap *keymap;
++	FILE *f;
++
++	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
++	if ((f = fopen(path, "r"))) {
++		if (!fgets(line, sizeof(line), f))
++			line[0] = '\0';
++		fclose(f);
++	}
++	line[strcspn(line, "\r\n")] = '\0';
++	if ((variant = strchr(line, ' '))) {
++		*variant++ = '\0';
++		names.variant = variant;
++	}
++	if (line[0])
++		names.layout = line;
++	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
++	if ((keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))) {
++		wlr_keyboard_set_keymap(&kb_group->wlr_group->keyboard, keymap);
++		xkb_keymap_unref(keymap);
++	}
++	xkb_context_unref(context);
++	return 0;
++}
++
++void
++unblocksignals(void)
++{
++	sigset_t set;
++	sigemptyset(&set);
++	sigprocmask(SIG_SETMASK, &set, NULL);
++}
++
+ void
+ handlesig(int signo)
+ {
+@@ -2644,6 +2686,7 @@
+ 		if (child_pid == 0) {
+ 			close(STDIN_FILENO);
+ 			setsid();
++			unblocksignals();
+ 			execl("/bin/sh", "/bin/sh", "-c", startup_cmd, NULL);
+ 			die("startup: execl:");
+ 		}
+@@ -3031,6 +3074,8 @@
+ 
+ 	kb_group = createkeyboardgroup();
+ 	wl_list_init(&kb_group->destroy.link);
++	reloadkeymap(SIGUSR1, NULL);
++	wl_event_loop_add_signal(event_loop, SIGUSR1, reloadkeymap, NULL);
+ 
+ 	output_mgr = wlr_output_manager_v1_create(dpy);
+ 	wl_signal_add(&output_mgr->events.apply, &output_mgr_apply);
+@@ -3073,6 +3118,7 @@
+ 		open("/dev/null", O_RDWR);
+ 		dup2(STDERR_FILENO, STDOUT_FILENO);
+ 		setsid();
++		unblocksignals();
+ 		execvp(((char **)arg->v)[0], (char **)arg->v);
+ 		die("dwl: execvp %s failed:", ((char **)arg->v)[0]);
+ 	}

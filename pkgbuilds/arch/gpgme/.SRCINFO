@@ -1,0 +1,27 @@
+pkgbase = gpgme
+	pkgdesc = C wrapper library for GnuPG
+	pkgver = 2.2.0
+	pkgrel = 1
+	url = https://www.gnupg.org/related_software/gpgme/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	license = LGPL-2.0-or-later
+	license = LGPL-2.1-or-later
+	license = MIT
+	makedepends = git
+	depends = glibc
+	depends = libassuan
+	depends = libassuan.so
+	depends = libgpg-error
+	depends = gnupg>=2
+	provides = libgpgme.so
+	options = !emptydirs
+	source = git+https://github.com/gpg/gpgme.git?signed#tag=gpgme-2.2.0
+	source = 0004-Avoid-Y2038-problem-on-32-bit-architectures.patch
+	validpgpkeys = 6DAA6E64A76D2840571B4902528897B826403ADA
+	validpgpkeys = AC8E115BF73E2D8D47FA9908E98E9B2D19C6C8BD
+	sha256sums = bbad98ccc6af9d2140d61cd20edf77f2ffb014cf47ac089bb7291f051464c7d7
+	sha256sums = 0c788590e0bb7cc9da04457f94360ceef9cb9fc0525e6bfbf9fbb8d72801ae8f
+
+pkgname = gpgme

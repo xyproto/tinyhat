@@ -1,0 +1,170 @@
+# Maintainer: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Gaetan Bisson <bisson@archlinux.org>
+# Contributor: Douglas Soares de Andrade <douglas@archlinux.org>
+
+pkgbase=avahi
+pkgname=(
+  avahi
+  avahi-bookmarks
+  avahi-gtk
+)
+pkgver=0.9rc5
+pkgrel="2"
+epoch=1
+pkgdesc="Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour)"
+url="https://github.com/avahi/avahi"
+license=(LGPL-2.1-or-later)
+arch=(i686 x32)
+depends=(
+  bash
+  dbus
+  expat
+  gdbm
+  glib2
+  glibc
+  libcap
+  libdaemon
+  systemd-libs
+)
+makedepends=(
+  doxygen
+  git
+  glib2-devel
+  gobject-introspection
+  graphviz
+  gtk3
+  python-dbus
+  python-gobject
+  python-twisted
+  systemd
+  xmltoman
+)
+source=(
+  "git+$url#tag=v${pkgver/[a-z]/-&}"
+  0001-HACK-Install-fixes.patch
+)
+b2sums=('4878a236ded4ef93573df43dc0c04d538d1c77028c9427d826158bd39f27cc65ad08f4290883848a471d7890533c36f9f3ad7072baf45ec129acd0993d6d48d2'
+        'a15b00c05cce3b6a1479d88b1393cd955a80c669fed03be5f624a8e8701f22fe327bbd42f7563a532ae8ebc39408f3aedfc982c42a2b6141ccc22af96f16293c')
+
+prepare() {
+  cd avahi
+
+  # https://bugs.archlinux.org/task/47822
+  git apply -3 ../0001-HACK-Install-fixes.patch
+
+  NOCONFIGURE=1 ./autogen.sh
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --localstatedir=/var
+    --sbindir=/usr/bin
+    --runstatedir=/run
+    --disable-libevent
+    --disable-mono
+    --disable-qt5
+    --enable-compat-libdns_sd
+    --with-autoipd-group=avahi
+    --with-autoipd-user=avahi
+    --with-avahi-priv-access-group=network
+    --with-distro=archlinux
+    --with-systemdsystemunitdir=/usr/lib/systemd/system
+    with_dbus_sys=/usr/share/dbus-1/system.d
+  )
+
+  cd avahi
+
+  ./configure "${configure_options[@]}"
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/$f"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_avahi() {
+  depends+=(libdbus-1.so)
+  optdepends=(
+    'avahi-bookmarks: avahi-bookmarks'
+    'avahi-gtk: avahi-discover, avahi-discover-standalone, bshell, bssh, bvnc'
+    'nss-mdns: NSS support for mDNS'
+    'python-dbus: Python bindings'
+  )
+  provides=(
+    libavahi-{client,common,core,glib,gobject}.so
+    libdns_sd.so
+  )
+  backup=(
+    etc/avahi/{hosts,avahi-daemon.conf,avahi-{autoip,dnsconf}d.action}
+    usr/lib/avahi/service-types.db
+  )
+
+  cd avahi
+  make DESTDIR="$pkgdir" install
+
+  echo 'u! avahi - "Avahi mDNS/DNS-SD daemon"' |
+    install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"
+
+  (
+    cd "$pkgdir"
+
+    _pick a-bm usr/bin/avahi-bookmarks
+    _pick a-bm usr/share/man/man1/avahi-bookmarks.1*
+
+    _pick a-gtk usr/bin/{avahi-discover{,-standalone},bshell,bssh,bvnc}
+    _pick a-gtk usr/include/avahi-ui
+    _pick a-gtk usr/lib/libavahi-ui-gtk3.*
+    _pick a-gtk usr/lib/pkgconfig/avahi-ui-gtk3.pc
+    _pick a-gtk usr/lib/python*/site-packages/avahi/ServiceTypeDatabase.py
+    _pick a-gtk usr/share/applications
+    _pick a-gtk usr/share/avahi/interfaces
+    _pick a-gtk usr/share/man/man1/{avahi-discover,bshell,bssh,bvnc}.1*
+  )
+}
+
+package_avahi-bookmarks() {
+  pkgdesc+=" - web page of Zeroconf-announced HTTP/FTP services"
+  depends=(
+    "avahi=$epoch:$pkgver"
+    glib2
+    python
+    python-dbus
+    python-gobject
+  )
+  optdepends=('python-twisted: built-in web server (default mode, not -c)')
+
+  mv a-bm/* "$pkgdir"
+}
+
+package_avahi-gtk() {
+  pkgdesc+=" - GTK tools and UI library"
+  depends=(
+    "avahi=$epoch:$pkgver"
+    gdbm
+    glib2
+    glibc
+    gtk3
+    python
+    python-dbus
+    python-gobject
+  )
+  provides=(libavahi-ui-gtk3.so)
+
+  mv a-gtk/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# python-dbus doesn't get update to dbus-python when building in a chroot? Forcing it..
+makedepends+=(dbus-python)
+
+unset -f pkgver

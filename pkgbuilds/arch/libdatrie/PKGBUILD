@@ -1,0 +1,44 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Chaiwat Suttipongsakul <cwt114@gmail.com>
+
+pkgname=libdatrie
+pkgver=0.2.14
+pkgrel="1"
+pkgdesc='Double-array trie library'
+arch=(i686 x32)
+url='https://linux.thai.net/projects/datrie'
+license=(LGPL-2.1-or-later)
+depends=(glibc)
+makedepends=(
+  doxygen
+  git
+)
+source=("git+https://github.com/tlwg/libdatrie.git#tag=v$pkgver")
+b2sums=(5f3490116639086eeeccc05151e4cc75d55764c22ee2465f14ba53fba59a4d8727ee8ad4bf19bba19ee6dbfca82d72a8e60395a6e42ceea7547cfef985d9ac70)
+
+prepare() {
+  cd $pkgname
+  autoreconf -fi
+}
+
+build() {
+  cd $pkgname
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var
+  make
+}
+
+check() {
+  cd $pkgname
+  make check
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

@@ -1,0 +1,23 @@
+pkgbase = adwaita-icon-theme
+	pkgdesc = GNOME standard icons
+	pkgver = 51.0
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/adwaita-icon-theme
+	arch = any
+	license = CC-BY-SA-3.0 OR LGPL-3.0-only
+	makedepends = git
+	makedepends = gtk-update-icon-cache
+	makedepends = meson
+	depends = adwaita-icon-theme-legacy
+	depends = hicolor-icon-theme
+	source = git+https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git#tag=51.0
+	b2sums = 1e0257129aa3f6ecddae7d5bf789924363e4f5b29c016e0a95dac4a707b6f68bad41c766f0ca1f84f50a5e867a447c7345a991354708634ad76990cd42d2e2b5
+
+pkgname = adwaita-icon-theme
+	depends = adwaita-icon-theme-legacy
+	depends = hicolor-icon-theme
+	depends = adwaita-cursors
+
+pkgname = adwaita-cursors
+	pkgdesc = GNOME standard cursors
+	depends = 

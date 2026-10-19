@@ -1,0 +1,21 @@
+pkgbase = tdb
+	pkgdesc = Trivial Database similar to GDBM but allows simultaneous commits
+	pkgver = 1.4.15
+	pkgrel = 2
+	url = https://tdb.samba.org/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	makedepends = python
+	makedepends = libxslt
+	makedepends = docbook-xsl
+	depends = glibc
+	optdepends = python: for python bindings
+	provides = libtdb.so
+	source = https://samba.org/ftp/tdb/tdb-1.4.15.tar.gz
+	source = https://samba.org/ftp/tdb/tdb-1.4.15.tar.asc
+	validpgpkeys = 9147A339719518EE9011BCB54793916113084025
+	b2sums = e867c8f4e9712c1a0ed10dd2d35e9cd51819ff722e4e710efde8b1ed8e20575e752d020fb0b6bc8658a720ea17491c07e30fa0b88c515bfb830f83bf128e6ee4
+	b2sums = SKIP
+
+pkgname = tdb

@@ -1,0 +1,8 @@
+pkgname=(${pkgname[@]/pipewire-onnx/})
+pkgname=(${pkgname[@]/pipewire-roc/})
+makedepends=(${makedepends[@]/onnxruntime/})
+makedepends=(${makedepends[@]/roc-toolkit/})
+eval "$(
+  declare -f build | sed 's/-D bluez5-codec-lc3plus=disabled/-D bluez5-codec-lc3plus=disabled -D onnxruntime=disabled -D roc=disabled/'
+  declare -f package_pipewire | sed '/_pick onnx /d; /_pick roc /d'
+)"

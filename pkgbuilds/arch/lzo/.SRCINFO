@@ -1,0 +1,16 @@
+pkgbase = lzo
+	pkgdesc = Portable lossless data compression library
+	pkgver = 2.10
+	pkgrel = 5
+	url = https://www.oberhumer.com/opensource/lzo
+	arch = i686
+	arch = x32
+	license = GPL
+	depends = glibc
+	provides = liblzo2.so
+	provides = libminilzo.so
+	options = debug
+	source = https://www.oberhumer.com/opensource/lzo/download/lzo-2.10.tar.gz
+	sha256sums = c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072
+
+pkgname = lzo

@@ -1,0 +1,24 @@
+pkgname=png2xpm
+_commit=9eb268eca26e61eb7da0b1a9b25882b79195e9ab
+pkgver=0+9eb268ec
+pkgrel=1
+pkgdesc="Convert PNG images to XPM format"
+arch=(i686)
+url="https://github.com/xyproto/xpm"
+license=(BSD-3-Clause)
+depends=(glibc)
+makedepends=(go-tinyhat)
+options=(!buildflags)
+source=("xpm-$_commit.tar.gz::https://github.com/xyproto/xpm/archive/$_commit.tar.gz")
+sha256sums=('7d7a02a683b675875febd5ab67d3d4f067db3111bf8a31da86c36ced8bae16b3')
+
+build() {
+  cd xpm-$_commit
+  export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
+  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/png2xpm" ./cmd/png2xpm
+}
+
+package() {
+  install -Dm755 png2xpm "$pkgdir/usr/bin/png2xpm"
+  install -Dm644 xpm-$_commit/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

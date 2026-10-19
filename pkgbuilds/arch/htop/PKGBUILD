@@ -1,0 +1,76 @@
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Maintainer: T.J. Townsend <blakkheim@archlinux.org>
+# Contributor: Angel Velasquez <angvp@archlinux.org>
+# Contributor: Eric Belanger <eric@archlinux.org>
+# Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
+
+pkgname=htop
+pkgver=3.5.3
+pkgrel="1"
+pkgdesc='Interactive process viewer'
+arch=(i686 x32)
+url='https://htop.dev/'
+license=('GPL')
+depends=('libcap' 'libcap.so' 'libnl' 'ncurses' 'libncursesw.so')
+makedepends=('git' 'lm_sensors')
+optdepends=('lm_sensors: show cpu temperatures'
+            'lsof: show files opened by a process'
+            'strace: attach to a running process')
+options=('!emptydirs')
+validpgpkeys=('F7ABE8761E6FE68638E6283AFE0842EE36DD8C0C'  # Nathan Scott <nathans@debian.org>
+              '0D316B6ABE022C7798D0324BF1D35CB9E8E12EAD') # Benny Baumann <BenBE@geshi.org>
+source=("git+https://github.com/htop-dev/htop.git#tag=${pkgver}")
+sha256sums=('a4619a140f8374c526d27cf5f892b2dceaee27b33a0446d902c35962a5159850')
+
+_backports=(
+)
+
+_reverts=(
+)
+
+prepare() {
+  cd "${pkgname}"
+
+  local _c _l
+  for _c in "${_backports[@]}"; do
+    if [[ "${_c}" == *..* ]]; then _l='--reverse'; else _l='--max-count=1'; fi
+    git log --oneline "${_l}" "${_c}"
+    git cherry-pick --mainline 1 --no-commit "${_c}"
+  done
+  for _c in "${_reverts[@]}"; do
+    if [[ "${_c}" == *..* ]]; then _l='--reverse'; else _l='--max-count=1'; fi
+    git log --oneline "${_l}" "${_c}"
+    git revert --mainline 1 --no-commit "${_c}"
+  done
+
+  sed -i \
+    -e "/^m4_define(\[htop_release_version\],/ c m4_define([htop_release_version], [${pkgver}-${pkgrel}-arch])" \
+    -e '/^AC_INIT/s|m4_defn(\[htop_git_version\])||' configure.ac
+
+  autoreconf -fi
+}
+
+build() {
+  cd "${pkgname}"
+
+  ./configure \
+      --prefix=/usr \
+      --sysconfdir=/etc \
+      --enable-affinity \
+      --enable-capabilities \
+      --enable-delayacct \
+      --enable-openvz \
+      --enable-sensors \
+      --enable-unicode \
+      --enable-vserver
+
+  make
+}
+
+package() {
+  cd "${pkgname}"
+
+  make DESTDIR="${pkgdir}" install
+}
+
+unset -f pkgver

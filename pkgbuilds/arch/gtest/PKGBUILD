@@ -1,0 +1,74 @@
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Jan Alexander Steffens (heftig) <jan.steffens@gmail.com>
+# Contributor: Alexandre Bique <bique.alexandre@gmail.com>
+# Contributor: Louis R. Marascio <lrm@fitnr.com>
+# Contributor: Cody Maloney <cmaloney@theoreticalchaos.com>
+# Contributor: acxz <akashpatel2008 at yahoo dot com>
+
+pkgname=gtest
+pkgver=1.18.0
+pkgrel="1"
+pkgdesc='Google Test - C++ testing utility'
+arch=(i686 x32)
+url='https://github.com/google/googletest'
+license=('BSD-3-Clause')
+depends=(
+  'glibc'
+  'libgcc'
+  'libstdc++'
+)
+makedepends=(
+  'cmake'
+  'python'
+)
+optdepends=('python: gmock generator')
+conflicts=('gmock')
+replaces=('gmock')
+provides=(
+  'gmock'
+  'libgmock.so'
+  'libgmock_main.so'
+  'libgtest.so'
+  'libgtest_main.so'
+)
+_srcname=googletest-${pkgver}
+source=("${_srcname}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha512sums=('ba0f5769ccf34acf1bc72d1f7e9ffb8202176d02b64f6f3d9047accfc0cf9026ff5a653d24935e2705fff8709566676452616c93ca0ca6277f1e21d79b58a10a')
+
+build() {
+ cmake -H${_srcname} -Bbuild \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_BUILD_TYPE=None \
+    -Wno-dev \
+    -DBUILD_SHARED_LIBS=ON \
+    -Dgtest_build_tests=ON \
+    -DGOOGLETEST_VERSION=$pkgver
+  cmake --build build
+}
+
+check() {
+  cmake --build build --target test
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install build
+
+  cd ${_srcname}
+  install -vDm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -vDm 644 README.md CONTRIBUTORS -t "${pkgdir}/usr/share/doc/${pkgname}"
+}
+
+# vim: ts=2 sw=2 et:
+
+# Rounding error in Print, see https://github.com/google/googletest/issues/4210
+# Also some issues with threads in chroots (in tests)
+eval "$(
+  declare -f check | \
+    sed '
+      s/\(cmake.*\)/\1 || true/g
+    '
+)"
+
+unset -f pkgver

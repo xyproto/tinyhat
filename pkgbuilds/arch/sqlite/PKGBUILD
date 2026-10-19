@@ -1,0 +1,162 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgbase="sqlite"
+pkgname=('sqlite' 'sqlite-tcl' 'sqlite-analyzer' 'lemon' 'sqlite-doc')
+pkgver=3.54.0
+_srcver=$(echo "$pkgver" | awk -F. '{ printf "%d%02d%02d00", $1, $2, $3 }')
+_docver=${_srcver}
+#_docver=3440000
+pkgrel="1"
+pkgdesc="A C library that implements an SQL database engine"
+arch=(i686 x32)
+license=('LicenseRef-Sqlite')
+url="https://www.sqlite.org/"
+makedepends=('tcl' 'readline' 'zlib')
+options=('!emptydirs')
+source=(https://www.sqlite.org/2026/sqlite-src-${_srcver}.zip
+        https://www.sqlite.org/2026/sqlite-doc-${_docver}.zip
+        sqlite-lemon-system-template.patch
+        license.txt)
+# upstream now switched to sha3sums - currently not supported by makepkg
+sha256sums=('8847659821e0c5116bd14a94644c82ba932b2d9a05ac81af2e34af814aad7c58'
+            '76742cbfaaaebea5355c6b474a18ca850ab510625fc33fa42d0250ffcac27a95'
+            'ce0083835e458236c83d4f74ad398816e29859cd2f940c7aad9080835b50dcec'
+            '4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d')
+
+prepare() {
+  cd sqlite-src-$_srcver
+
+  # Support system-wide template (located at /usr/share/lemon/lempar.c) in lemon.
+  patch -Np1 -i ../sqlite-lemon-system-template.patch
+
+  #autoreconf -vfi
+}
+
+build() {
+  # this uses malloc_usable_size, which is incompatible with fortification level 3
+  export CFLAGS="${CFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+  export CXXFLAGS="${CXXFLAGS/_FORTIFY_SOURCE=3/_FORTIFY_SOURCE=2}"
+
+  export CPPFLAGS="$CPPFLAGS \
+        -DSQLITE_ENABLE_COLUMN_METADATA=1 \
+        -DSQLITE_ENABLE_UNLOCK_NOTIFY \
+        -DSQLITE_ENABLE_DBSTAT_VTAB=1 \
+        -DSQLITE_ENABLE_FTS3_PARENTHESIS \
+        -DSQLITE_SECURE_DELETE \
+        -DSQLITE_ENABLE_STMTVTAB \
+        -DSQLITE_ENABLE_STAT4 \
+        -DSQLITE_MAX_VARIABLE_NUMBER=250000 \
+        -DSQLITE_MAX_EXPR_DEPTH=10000 \
+        -DSQLITE_ENABLE_MATH_FUNCTIONS"
+
+  # build sqlite
+  cd sqlite-src-$_srcver
+  ./configure --prefix=/usr \
+    --disable-static \
+    --enable-session \
+    --enable-fts3 \
+    --fts4 \
+    --fts5 \
+    --rtree \
+    --soname=legacy
+  sed -i 's/$(B.cc) -o \$@ $(TOP)\/tool\/lemon.c/$(B.cc) $(LDFLAGS) -o $@ $(TOP)\/tool\/lemon.c/' main.mk
+  sed -i -e 's/$(LDFLAGS.libsqlite3)/ -Wl,-O1,--as-needed \0/g' main.mk
+  make
+  # build additional tools - broken build: changeset rbu
+  make dbdump dbhash dbtotxt index_usage showdb showjournal showshm \
+       showstat4 showwal sqldiff sqlite3_analyzer \
+       sqlite3_expert sqlite3_rsync sqltclsh
+}
+
+package_sqlite() {
+
+ pkgdesc="A C library that implements an SQL database engine"
+ depends=('readline' 'zlib' 'glibc')
+ provides=("sqlite3=$pkgver" 'libsqlite3.so')
+ replaces=("sqlite3")
+
+  cd sqlite-src-$_srcver
+  make DESTDIR="${pkgdir}" install
+
+  install -m755 dbdump dbhash dbtotxt index_usage  showdb showjournal showshm \
+         showstat4 showwal sqldiff sqlite3_expert sqlite3_rsync "${pkgdir}"/usr/bin/
+
+  # install manpage
+  install -m755 -d "${pkgdir}"/usr/share/man/man1
+  install -m644 sqlite3.1 "${pkgdir}"/usr/share/man/man1/
+
+  # license
+  install -D -m644 "${srcdir}"/license.txt "${pkgdir}"/usr/share/licenses/${pkgname}/license.txt
+
+  # split out tcl extension
+  mkdir "$srcdir"/tcl
+  mv "$pkgdir"/usr/lib/tcl8.6/sqlite* "$srcdir"/tcl
+}
+
+package_sqlite-tcl() {
+
+ pkgdesc="sqlite Tcl Extension Architecture (TEA)"
+ depends=('sqlite' 'tcl' 'zlib' 'glibc')
+ provides=("sqlite3-tcl=$pkgver")
+ replaces=("sqlite3-tcl")
+
+  cd sqlite-src-$_srcver
+  install -m755 -d "${pkgdir}"/usr/lib
+  mv "$srcdir"/tcl/* "${pkgdir}"/usr/lib
+
+  install -m755 -d "${pkgdir}"/usr/bin
+  install -m755 sqltclsh "${pkgdir}"/usr/bin/
+
+  # license
+  install -D -m644 "${srcdir}"/license.txt "${pkgdir}"/usr/share/licenses/${pkgname}/license.txt
+}
+
+package_sqlite-analyzer() {
+
+ pkgdesc="An analysis program for sqlite3 database files"
+ depends=('sqlite' 'tcl' 'glibc')
+
+  cd sqlite-src-$_srcver
+  install -m755 -d "${pkgdir}"/usr/bin
+  install -m755 sqlite3_analyzer "${pkgdir}"/usr/bin/
+
+  # license
+  install -D -m644 "${srcdir}"/license.txt "${pkgdir}"/usr/share/licenses/${pkgname}/license.txt
+}
+
+package_lemon() {
+
+ # https://www.sqlite.org/lemon.html
+ pkgdesc="A parser generator"
+ depends=('glibc')
+
+  cd sqlite-src-$_srcver
+  # ELF file ('usr/bin/lemon') lacks FULL RELRO, check LDFLAGS. - no fix found so far
+  install -Dm755 lemon ${pkgdir}/usr/bin/lemon
+  install -Dm644 lempar.c ${pkgdir}/usr/share/lemon/lempar.c
+  
+  mkdir -p "${pkgdir}"/usr/share/doc/${pkgname}
+  cp ../sqlite-doc-${_docver}/lemon.html  "${pkgdir}"/usr/share/doc/${pkgname}/
+  # license
+  install -D -m644 "${srcdir}"/license.txt "${pkgdir}"/usr/share/licenses/${pkgname}/license.txt
+}
+
+package_sqlite-doc() {
+
+ pkgdesc="most of the static HTML files that comprise this website, including all of the SQL Syntax and the C/C++ interface specs and other miscellaneous documentation"
+ #arch=('any') - not yet supported
+ provides=("sqlite3-doc=$pkgver")
+ replaces=("sqlite3-doc")
+
+  cd sqlite-doc-${_docver}
+  mkdir -p "${pkgdir}"/usr/share/doc/${pkgbase}
+  cp -R *  "${pkgdir}"/usr/share/doc/${pkgbase}/
+
+  # license
+  install -D -m644 "${srcdir}"/license.txt "${pkgdir}"/usr/share/licenses/${pkgname}/license.txt
+  
+  rm "${pkgdir}"/usr/share/doc/${pkgbase}/lemon.html
+}
+
+unset -f pkgver

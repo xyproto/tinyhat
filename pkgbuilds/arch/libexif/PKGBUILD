@@ -1,0 +1,37 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Tobias Kieslich <tobias@justdreams.de>
+
+pkgname=libexif
+pkgver=0.6.26
+pkgrel="1"
+pkgdesc='Library to parse an EXIF file and read the data from those tags'
+url='https://github.com/libexif/libexif'
+arch=(i686 x32)
+license=('LGPL')
+depends=('glibc')
+provides=('libexif.so')
+source=($url/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.bz2{,.asc})
+sha512sums=('e99d2de0566284d98547915d6661effd18a51fe1687d923e57bd2250551d3ee73587f7c8386d926e7ff21df06887bedae3e10b4441bf544f04f559c381e258fe'
+            'SKIP')
+b2sums=('db29fe7095d8e44a47ba0e87f5f245498352c06192b85962e72d507cc979138cfb07ed4c0f22cfe3ea3e120e7ee9463f8d8a66a14952459822c38b262bf7a042'
+        'SKIP')
+validpgpkeys=('7C4AFD61D8AAE7570796A5172209D6902F969C95') # Marcus Meissner
+
+prepare() {
+  cd ${pkgname}-${pkgver}
+  autoreconf -fiv
+}
+
+build() {
+  cd ${pkgname}-${pkgver}
+  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd ${pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+}
+
+unset -f pkgver

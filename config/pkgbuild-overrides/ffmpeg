@@ -1,0 +1,9 @@
+if [ "$CARCH" = 'x32' ]; then
+  depends=(${depends[@]//librav1e.so/})
+  eval "$(
+    declare -f build | \
+      sed '
+        s@--enable-librav1e@--disable-librav1e@
+      '
+  )"
+fi

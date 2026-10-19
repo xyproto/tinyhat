@@ -1,0 +1,44 @@
+##
+## Arch Linux repository mirrorlist for i686
+## Generated on 2026-03-22
+##
+
+## Belarus
+#Server = http://mirror.datacenter.by/pub/archlinux32/$arch/$repo
+#Server = https://mirror.datacenter.by/pub/archlinux32/$arch/$repo
+
+## Brazil
+#Server = http://mirror.ufscar.br/archlinux32/$arch/$repo
+#Server = https://mirror.ufscar.br/archlinux32/$arch/$repo
+
+## Canada
+#Server = https://mirror.franscorack.com/arch32/$arch/$repo
+
+## Germany
+#Server = http://de.mirror.archlinux32.org/$arch/$repo
+#Server = https://de.mirror.archlinux32.org/$arch/$repo
+#Server = http://mirror.archlinux32.org/$arch/$repo
+#Server = https://mirror.archlinux32.org/$arch/$repo
+#Server = http://mirror.archlinux32.oss/$arch/$repo
+
+## Greece
+#Server = http://gr.mirror.archlinux32.org/$arch/$repo
+
+## Poland
+#Server = http://mirror.juniorjpdj.pl/archlinux32/$arch/$repo
+#Server = https://mirror.juniorjpdj.pl/archlinux32/$arch/$repo
+
+## Russia
+#Server = http://mirror.yandex.ru/archlinux32/$arch/$repo
+#Server = https://mirror.yandex.ru/archlinux32/$arch/$repo
+
+## Switzerland
+#Server = http://archlinux32.andreasbaumann.cc/$arch/$repo
+#Server = https://archlinux32.andreasbaumann.cc/$arch/$repo
+
+## United States
+#Server = https://32.arlm.tyzoid.com/$arch/$repo
+#Server = http://mirror.clarkson.edu/archlinux32/$arch/$repo
+#Server = https://mirror.clarkson.edu/archlinux32/$arch/$repo
+#Server = http://mirror.math.princeton.edu/pub/archlinux32/$arch/$repo
+#Server = https://mirror.math.princeton.edu/pub/archlinux32/$arch/$repo

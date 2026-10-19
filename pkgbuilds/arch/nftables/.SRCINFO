@@ -1,0 +1,34 @@
+pkgbase = nftables
+	pkgdesc = Netfilter tables userspace tools
+	pkgver = 1.1.7
+	pkgrel = 3
+	epoch = 1
+	url = https://netfilter.org/projects/nftables/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-only
+	makedepends = asciidoc
+	makedepends = python
+	makedepends = python-setuptools
+	makedepends = python-build
+	makedepends = git
+	makedepends = python-installer
+	makedepends = python-wheel
+	depends = glibc
+	depends = gmp
+	depends = jansson
+	depends = libmnl
+	depends = libnftnl
+	depends = readline
+	optdepends = python: Python bindings
+	optdepends = python-jsonschema: Python bindings
+	backup = etc/nftables.conf
+	source = git+https://git.netfilter.org/nftables.git?signed#tag=v1.1.7
+	source = nftables.conf
+	source = nftables.service
+	validpgpkeys = 8C5F7146A1757A65E2422A94D70D1A666ACF2B21
+	sha256sums = f2e877f7cd67fb473f5ea4b3b1ab7c9227e939a00d64207979ee9236e1db6570
+	sha256sums = fa2f984794025339cf2d26d329f9b0bf83a39b9fa310d06b4cc40a0c1b0c8f46
+	sha256sums = deffeef36fe658867dd9203ec13dec85047a6d224ea63334dcf60db97e1809ea
+
+pkgname = nftables

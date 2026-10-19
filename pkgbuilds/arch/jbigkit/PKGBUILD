@@ -1,0 +1,53 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: Angel 'angvp' Velasquez <angvp[at]archlinux.com.ve>
+# Contributor: Frank Ickstadt (frank dot ickstadt at gmail dot com)
+
+pkgname=jbigkit
+pkgver=2.2
+pkgrel="1"
+pkgdesc='Data compression library/utilities for bi-level high-resolution images'
+arch=(i686 x32)
+url='https://www.cl.cam.ac.uk/~mgk25/jbigkit/'
+license=(GPL-2.0-or-later)
+depends=(glibc)
+makedepends=(git)
+source=(
+  "git+https://www.cl.cam.ac.uk/~mgk25/git/jbigkit#tag=v$pkgver"
+  jbigkit-2.2-shared_lib.patch
+)
+b2sums=(
+  81e8031feccb247557cb077420d8e30d6cec42c77738956afdc704216304aa8bfbe5e024256245765d9bf6119d025a3aca5fe55e6fd9aa3d56ced050473efef9
+  d094077cf1e1b749ce7cc88add7557475b73f01dfa97ead0a291e4e5a00b47a7e1869f5f65206ece09658c6499237ad9fa6c329df2b233a6cd710bab1afcb38b
+)
+
+prepare() {
+  cd $pkgname
+
+  # instead of a static library, create a shared library
+  git apply -3 ../jbigkit-2.2-shared_lib.patch
+}
+
+build() {
+  cd $pkgname
+  make EXTRA_CFLAGS="$CFLAGS"
+}
+
+check() {
+  cd $pkgname
+  # NOTE: tests can not be parallelized
+  make test -j1 LD_LIBRARY_PATH=../libjbig
+}
+
+package() {
+  cd $pkgname
+  install -vDm 644 libjbig/*.h -t "$pkgdir/usr/include/"
+  install -vDm 755 libjbig/*.so.* -t "$pkgdir/usr/lib/"
+  for lib in libjbig.so libjbig85.so; do
+    ln -sv "$lib.$pkgver" "$pkgdir/usr/lib/$lib"
+  done
+  install -vDm 755 pbmtools/{jbgtopbm{,85},pbmtojbg{,85}} -t "$pkgdir/usr/bin/"
+  install -vDm 644 pbmtools/*.1* -t "$pkgdir/usr/share/man/man1/"
+}
+
+unset -f pkgver

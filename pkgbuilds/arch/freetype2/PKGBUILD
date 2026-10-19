@@ -1,0 +1,165 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=freetype2
+pkgname=(
+  freetype2
+  freetype2-demos
+  freetype2-docs
+)
+pkgver=2.15.0
+pkgrel="1"
+epoch=
+pkgdesc="Font rasterization library"
+url="https://www.freetype.org/"
+arch=(i686 x32)
+license=('FTL OR GPL-2.0-or-later')
+depends=(
+  brotli
+  bzip2
+  glibc
+  libpng
+  zlib
+)
+makedepends=(
+  cairo
+  glib2
+  harfbuzz
+  libgcc
+  librsvg
+  libstdc++
+  libx11
+  meson
+  qt6-base
+)
+source=(
+  https://download-mirror.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz{,.sig}
+  https://download-mirror.savannah.gnu.org/releases/freetype/freetype-doc-$pkgver.tar.xz{,.sig}
+  https://download-mirror.savannah.gnu.org/releases/freetype/ft2demos-$pkgver.tar.xz{,.sig}
+  freetype2.sh
+  0001-Enable-table-validation-modules.patch
+  0002-Enable-subpixel-rendering.patch
+  0003-Enable-long-PCF-family-names.patch
+)
+b2sums=('b49bbcf6eae90159b8c3f315a8175d23a0c6a8f8574361aaff1b05d19984b31c000c1d637ba128e6f2f09d984d583f36cc7dd84e196152214f6fc8bed20e810d'
+        'SKIP'
+        '1c807276219171ca09aa7adc454ad7f2e9d1994c2c4d06e7eb2d88164552e0d6f9d81c3a361a68193b3fbb9d176d16b52f2b4ea4650ccfe456cf8da152f0c273'
+        'SKIP'
+        '8b48ad3565c61632bacafb0006d621ae646bbf592c71127c066a99b2b824203b27516178e867302cd0c7a0a2d47217d8a95dc1eff109cdc122b353bcfc5c62f7'
+        'SKIP'
+        'a964f46886b5017a5c180f29408f72ae8aba29f37404c48b4681ff12ca0a2cfa2a8e219480e98d63d45fb5c266a6e5826df170c9a0d701cd866e395c5ac6e87d'
+        'ae576f598fd98d2088e8b9f7a964c18a7395f48c687c5c47381accf65c49760de798f0956e22f3671b8bfc85fd0ed8dbeaf2c8ccab0c3e2f812b4c4451b18f01'
+        'a09b1de5c8890aeff5d020194ffd1b23ca1fa7ea0d63f840fe600194fec78b837460e312db0503d3d76896d7ef25fdf8eb28a35a1c7e70ce60359ca802ac6672'
+        '45a3103bb0a26486b37926c253551c2840c2ea606ccb940aefbd0df8362a47d6d46ea343c20a38aa70b28f889e92625f84d7cee575cf6fa7e1302da5ba69890f')
+validpgpkeys=(
+  E30674707856409FF1948010BE6C3AAC63AD8E3F # Werner Lemberg <wl@gnu.org>
+)
+
+prepare() {
+  # Build FreeType as part of the demos
+  ln -sr freetype-$pkgver freetype2
+
+  cd freetype-$pkgver
+
+  patch -Np1 -i ../0001-Enable-table-validation-modules.patch
+  patch -Np1 -i ../0002-Enable-subpixel-rendering.patch
+  patch -Np1 -i ../0003-Enable-long-PCF-family-names.patch
+}
+
+build() {
+  local meson_options=(
+    -D freetype2:default_library=shared
+    -D freetype2:error_strings=true
+    -D freetype2:harfbuzz=dynamic
+    -D freetype2:hvf=disabled
+  )
+
+  # Build FreeType as part of the demos
+  export MESON_PACKAGE_CACHE_DIR="$srcdir"
+
+  arch-meson ft2demos-$pkgver build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_freetype2() {
+  optdepends=(
+    'harfbuzz: Improved autohinting'
+  )
+  provides=(
+    libfreetype.so
+  )
+  backup=(etc/profile.d/freetype2.sh)
+
+  meson install -C build --destdir="$pkgdir"
+
+  _pick demos "$pkgdir"/usr/bin
+  _pick demos "$pkgdir"/usr/share/man/man1
+
+  install -Dm644 freetype2.sh -t "$pkgdir/etc/profile.d"
+
+  install -Dm644 freetype-$pkgver/docs/FTL.TXT \
+    -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+package_freetype2-demos() {
+  pkgdesc="Freetype tools and demos"
+  depends=(
+    cairo
+    freetype2
+    glib2
+    glibc
+    libgcc
+    librsvg
+    libstdc++
+    libx11
+  )
+  optdepends=('qt6-base: ftinspect')
+
+  mv demos/* "$pkgdir"
+
+  install -Dm644 freetype-$pkgver/docs/FTL.TXT \
+    -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+package_freetype2-docs() {
+  pkgdesc="Freetype documentation"
+  depends=()
+
+  mkdir -p "${pkgdir}/usr/share/doc"
+  cp -r freetype-$pkgver/docs "$pkgdir/usr/share/doc/$pkgbase"
+
+  install -Dm644 freetype-$pkgver/docs/FTL.TXT \
+    -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# no Rust and librsvg on i486 (for now), use (a slugishly patched) librsvg-og instead
+# (modern SVG renderning with new API will now work and result in errors in the terminal)
+if [ "$CARCH" == 'i486' ]; then
+  makedepends=(${makedepends[@]//librsvg/})
+  makedepends+=(librsvg-og)
+fi
+
+# libxml2 is a runtime dep of librsvg-2.so but the freetype2 demos link
+# against librsvg with --no-undefined, so libxml2 must be present at link
+# time. The minimal arch32 build chroot doesn't pull it in transitively.
+makedepends+=(libxml2)
+
+
+
+unset -f pkgver

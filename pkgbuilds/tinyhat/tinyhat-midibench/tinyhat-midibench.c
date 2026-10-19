@@ -1,0 +1,1 @@
+../../../programs/tinyhat-midibench.c

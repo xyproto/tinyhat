@@ -1,0 +1,13 @@
+diff -rauN a/meson.build b/meson.build
+--- a/meson.build	2026-03-05 09:43:49.274024473 +0100
++++ b/meson.build	2026-03-05 09:54:46.447296203 +0100
+@@ -19,6 +19,9 @@
+ )
+ 
+ cdata = configuration_data()
++cdata.set('prefix', get_option('prefix'))
++cdata.set('exec_prefix', get_option('prefix')+'/bin')
++cdata.set('datarootdir', get_option('prefix')+'/share/pkgconfig')
+ 
+ check_functions = [
+   ['strlcat', 'string.h'],

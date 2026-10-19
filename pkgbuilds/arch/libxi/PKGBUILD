@@ -1,0 +1,40 @@
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Maintainer: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libxi
+pkgver=1.8.4
+pkgrel="1"
+pkgdesc="X11 Input extension library"
+arch=(i686 x32)
+url="https://xorg.freedesktop.org"
+depends=('libxext' 'libxfixes' 'libx11' 'glibc' 'xorgproto')
+makedepends=('git' 'xorg-util-macros')
+license=('MIT-open-group' 'SMLNJ' 'MIT')
+source=(git+https://gitlab.freedesktop.org/xorg/lib/libxi.git?signed#tag=libXi-${pkgver})
+sha512sums=('77bafa1909f4b9b2574c11b37ccebbc41d724e7843fa1aa24ff23650e98ed995bdc75b1e49856fd673d5f390ed3e3863531668057f2d579e4614d97122e779de')
+#validpgpkeys=('3C2C43D9447D5938EF4551EBE23B7E70B467F0BF') # Peter Hutterer
+validpgpkeys=('3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2') # Alan Coopersmith <alan.coopersmith@oracle.com>
+#validpgpkeys+=('C41C985FDCF1E5364576638B687393EE37D128F8') # Matthieu Herrb <matthieu.herrb@laas.fr>
+#validpgpkeys+=('3BB639E56F861FA2E86505690FDD682D974CA72A') # "Matt Turner <mattst88@gmail.com>"
+#validpgpkeys=('FD0004A26EADFE43A4C3F249C6F7AE200374452D') # "Povilas Kanapickas <povilas@radix.lt>"
+
+prepare() {
+  cd libxi
+  autoreconf -fiv
+}
+
+build() {
+  cd libxi
+  ./configure --prefix=/usr --sysconfdir=/etc --disable-static
+  make
+}
+
+package() {
+  cd libxi
+  make DESTDIR="${pkgdir}" install
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+unset -f pkgver

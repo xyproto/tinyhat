@@ -1,0 +1,122 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: David Herrmann <dh.herrmann@gmail.com>
+
+pkgbase=dbus-broker
+pkgname=(
+  dbus-broker
+  dbus-broker-units
+  dbus-units
+)
+pkgver=37
+pkgrel="3"
+pkgdesc="Linux D-Bus Message Broker"
+url="https://github.com/bus1/dbus-broker/wiki"
+arch=(i686 x32)
+license=(Apache-2.0)
+depends=(
+  audit
+  expat
+  glibc
+  libcap-ng
+  libgcc
+  systemd-libs
+)
+makedepends=(
+  meson
+  python-docutils
+  systemd
+)
+source=(
+  https://github.com/bus1/dbus-broker/releases/download/v$pkgver/$pkgbase-$pkgver.tar.xz{,.asc}
+  0001-units-Enable-statically.patch
+  0002-test-sockopt-loosen-verification-of-stale-pidfds.patch
+)
+b2sums=('151b176882b28190ff23dfdb5c57af18d365a21f7c7fc345df738f4a55388d929331fe4db917bb0dee51f2ebfc872c05f5310dc709cbf5d230944a94d382dd36'
+        'SKIP'
+        '02e30f49224835af2d327d6c3eecad5509913ad69b75c6b04d00cb4a8a0c9b8e0c043055d43172a215a4e3729527a2f807115117a9b1d1dc27c5f43259a12e36'
+        '05b53d4c0aac956a0c5fc8f95b0b8c2caeb9b2e8bb7b28ecdc54fb733c41a88f7c46ede9201ae656ae101a37e7a7f587364e14e288852243c7b4c9b25a9ee783')
+validpgpkeys=(
+  BE5FBC8C9C1C9F60A4F0AEAE7A4F3A09EBDEFF26  # David Herrmann <dh.herrmann@gmail.com>
+)
+
+# https://github.com/bus1/dbus-broker/releases
+sha256sums=('f819a8db8795fa08c767612e3823fd594694a0990f2543ecf35d6a1a6bf2ab5b'
+            'SKIP'
+            '20dcaf03d837d0715f71ccce3d393cba06a4b96f89f4fec3b6e35c1de0592d7d'
+            '2fcc5cf3742d160b2cc54f1fb7727433645a46f229aeeb23a7df36f304eae668')
+
+prepare() {
+  cd $pkgbase-$pkgver
+  patch -Np1 -i ../0001-units-Enable-statically.patch
+
+  # Fix tests with newer kernels
+  patch -Np1 -i ../0002-test-sockopt-loosen-verification-of-stale-pidfds.patch
+}
+
+build() {
+  local meson_options=(
+    -D audit=true
+    -D docs=true
+    -D linux-4-17=true
+    -D system-console-users=gdm,sddm,lightdm,lxdm
+  )
+
+  arch-meson $pkgbase-$pkgver build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_dbus-broker() {
+  depends+=(
+    libaudit.so
+    libcap-ng.so
+    libexpat.so
+    libsystemd.so
+  )
+  install=dbus-broker.install
+
+  meson install -C build --destdir "$pkgdir"
+
+  _pick unit "$pkgdir"/usr/lib/systemd/{system,user}/dbus.service
+}
+
+package_dbus-broker-units() {
+  pkgdesc+=" - Service units"
+  depends=(
+    dbus
+    dbus-broker
+  )
+  provides=(dbus-units)
+  conflicts=(dbus-daemon-units)
+
+  mv unit/* "$pkgdir"
+}
+
+package_dbus-units() {
+  pkgdesc="D-Bus service units (default provider)"
+  license=(CC0-1.0)
+  depends=(dbus-broker-units)
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# Disable sockopt and proc tests as they fail in the container
+eval "$(
+  declare -f prepare | \
+    sed '4 i sed -i '/test_sockopt/d' src/meson.build; sed -i '/test_proc/d' src/meson.build'
+)"
+
+unset -f pkgver

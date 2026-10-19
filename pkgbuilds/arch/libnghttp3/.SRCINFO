@@ -1,0 +1,20 @@
+pkgbase = libnghttp3
+	pkgdesc = HTTP/3 library written in C
+	pkgver = 1.18.0
+	pkgrel = 1
+	url = https://github.com/ngtcp2/nghttp3
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = git
+	depends = glibc
+	provides = libnghttp3.so
+	source = git+https://github.com/ngtcp2/nghttp3.git?signed#tag=v1.18.0
+	source = git+https://github.com/ngtcp2/munit.git
+	source = git+https://github.com/ngtcp2/sfparse.git
+	validpgpkeys = F4F3B91474D1EB29889BD0EF7E8403D5D673C366
+	sha256sums = 5e0c2de58014f949291cf70cba926c6435658652d681eee085226274b26e5062
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = libnghttp3

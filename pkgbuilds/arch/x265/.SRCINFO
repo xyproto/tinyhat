@@ -1,0 +1,24 @@
+pkgbase = x265
+	pkgdesc = Open Source H265/HEVC video encoder
+	pkgver = 4.3
+	pkgrel = 1
+	url = https://www.x265.org/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	makedepends = cmake
+	makedepends = git
+	makedepends = nasm
+	makedepends = ninja
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	provides = libx265.so
+	source = git+https://github.com/Multicorewareinc/x265.git#tag=4.3
+	source = 0001-Fix-build-with-GCC-15.patch
+	source = 0003-detect512-is-needed-on-all-architectures.patch
+	b2sums = bbbe9e0e595c1de114ddc08c4f13f6ce1e7490837749cb389682a9aaa28fe42707abcdea856aebb5fe805ea5c0500c4350c35afe90b7280fd1ea295fd5d469ab
+	b2sums = af2ee0460c0c2f6f36e4f124a9ac16610e3884001262a6f08043fa1de4a85e2b5fd4fb12c64b8c94cfb59c3031bb7a1324e307fa2049e3378e2add9a58f5bd9e
+	b2sums = 62a8b7780cb75f8a3a46b7b057bbc630aaa02ae078d6fb31c58f6f1a606b84d068f93701338fdde0f22820e17af179177b55539c6cba66efc7f797e540688ee7
+
+pkgname = x265

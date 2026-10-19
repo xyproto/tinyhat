@@ -1,0 +1,24 @@
+pkgbase = libxtst
+	pkgdesc = library for XTEST & RECORD extensions
+	pkgver = 1.2.6
+	pkgrel = 1
+	url = https://gitlab.freedesktop.org/xorg/lib/libxtst
+	arch = i686
+	arch = x32
+	license = MIT-open-group
+	license = HPND-sell-variant
+	license = X11
+	license = HPND-doc
+	license = HPND-doc-sell
+	makedepends = git
+	makedepends = xorg-util-macros
+	depends = libxext
+	depends = libxi
+	depends = libx11
+	depends = glibc
+	depends = xorgproto
+	source = git+https://gitlab.freedesktop.org/xorg/lib/libxtst.git?signed#tag=libXtst-1.2.6
+	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
+	sha512sums = fd5e1e3c81d4876730f47b4051954d19ca9ffc42a5fa0b0381db1ae9e642a119440187ae4bb307f0c54b823a3ef591d6b87cb414aedc9d348f7f217a4cf97570
+
+pkgname = libxtst

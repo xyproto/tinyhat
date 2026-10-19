@@ -1,0 +1,54 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgname=tinycompress
+pkgver=1.2.16
+pkgrel="2"
+pkgdesc="ALSA compressed device interface"
+url="https://github.com/alsa-project/tinycompress"
+arch=(i686 x32)
+license=("BSD-3-Clause OR LGPL-2.1-only")
+depends=(glibc)
+makedepends=(
+  ffmpeg
+  git
+)
+optdepends=("ffmpeg: fcplay utility")
+provides=(libtinycompress.so)
+options=(debug)
+source=(
+  "git+$url#tag=v$pkgver"
+)
+b2sums=('34745cbc05b376d618af1e9ccf8a191447c5345a545f6dd327f9bd7c6ca74308fc6d6edcf1aef1da2f6b2199f97336bfd3508fc58b645a5d934a11950f37c5e2')
+
+prepare() {
+  mkdir -p build
+
+  cd tinycompress
+  ./autogen.sh
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --localstatedir=/var
+    --enable-fcplay
+  )
+
+  cd build
+  ../tinycompress/configure "${configure_options[@]}"
+  make
+}
+
+check() {
+  make -C build check
+}
+
+package() {
+  make -C build install DESTDIR="$pkgdir"
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 tinycompress/COPYING
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver

@@ -1,0 +1,34 @@
+# Maintainer: George Rawlinson <grawlinson@archlinux.org>
+# Maintainer: Caleb Maclennan <caleb@alerque.com>
+# Contributor: Katie Wolfe <wolfe@katie.host>
+
+pkgname=fennel
+pkgver=1.6.1
+pkgrel="3"
+pkgdesc='A Lua Lisp language'
+arch=(any)
+url='https://fennel-lang.org'
+license=('MIT')
+depends=('lua54')
+makedepends=('git')
+source=("$pkgname::git+https://git.sr.ht/~technomancy/fennel#tag=$pkgver")
+sha256sums=('98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd')
+
+build() {
+  cd "$pkgname"
+  make LUA=lua5.4 build
+}
+
+check() {
+  cd "$pkgname"
+  make LUA=lua5.4 test
+}
+
+package() {
+  cd "$pkgname"
+  make LUA=lua5.4 DESTDIR="$pkgdir" PREFIX=/usr install
+  install -Dm0644 -t "$pkgdir/usr/share/doc/$pkgname/" *.md
+  install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE
+}
+
+unset -f pkgver

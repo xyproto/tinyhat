@@ -1,0 +1,123 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: Jason Chu <jchu@xentac.net>
+
+pkgbase=openal
+pkgname=(
+  openal
+  openal-examples
+)
+pkgver=1.25.2
+pkgrel="2"
+pkgdesc="Cross-platform 3D audio library, software implementation"
+url="https://github.com/kcat/openal-soft"
+arch=(i686 x32)
+license=(LGPL-2.0-or-later)
+depends=(
+  glibc
+  libgcc
+  libstdc++
+)
+makedepends=(
+  alsa-lib
+  cmake
+  ffmpeg
+  fluidsynth
+  git
+  jack
+  libmysofa
+  libpulse
+  libsndfile
+  ninja
+  pipewire
+  portaudio
+  qt6-base
+  sdl3
+)
+source=("git+https://github.com/kcat/openal-soft#tag=$pkgver")
+b2sums=('59ac97507c3fc01ebfeadd2d5fe53310e3a7eeaebcef3eb7de505530e9f3042e3921eabfec996f4ae91b76e4abd8c36a4aaf1730eec12227e21124c3df44f999')
+
+prepare() {
+  cd openal-soft
+}
+
+build() {
+  local cmake_options=(
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCMAKE_BUILD_TYPE=None
+    -DCMAKE_INSTALL_LIBDIR=lib
+  )
+
+  cmake -S openal-soft -B build -G Ninja "${cmake_options[@]}"
+  cmake --build build
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_openal() {
+  optdepends=(
+    'qt6-base: alsoft-config GUI Configurator'
+    'fluidsynth: MIDI rendering'
+    'libmysofa: makemhr tool'
+  )
+  provides+=(libopenal.so)
+
+  DESTDIR="$pkgdir" cmake --install build
+  install -Dt "$pkgdir/usr/share/doc/openal" -m644 openal-soft/docs/*
+
+  cd "$pkgdir"
+  _pick examples usr/bin/al{direct,ffplay,hrtf,latency,loopback,multireverb}
+  _pick examples usr/bin/al{debug,lafplay,play,record,reverb,stream,tonegen}
+}
+
+package_openal-examples() {
+  pkgdesc+=" (example programs)"
+  depends+=(
+    "openal=$pkgver-$pkgrel"
+    ffmpeg
+    libsndfile
+    sdl3
+  )
+
+  mv examples/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# disable Intel micro-optimizations and intrinsics per platform
+# patch done by KitsuWhooa, thanks (see https://github.com/kcat/openal-soft/pull/559)
+source+=('openal-i686.patch')
+b2sums+=(
+	'2a3900e993916b928fae3515e76120f3ec9e7f6c893b0b29706cf2cbd0d2688ddacd90f4f1d1111fa56fd7c7a64987c745248181c250c63ebea907ebf1003b03'
+)
+
+if [ "$CARCH" = 'pentium4' ]; then
+  eval "$(
+    declare -f build | \
+      sed '/cmake .*openal-soft/ s/;$/ -DALSOFT_CPUEXT_SSE4_1=0 -DALSOFT_CPUEXT_SSE3=0;/'
+  )"
+fi
+
+if [ "$CARCH" = 'i686' ]; then
+  eval "$(
+    declare -f build | \
+      sed '/cmake .*openal-soft/ s/;$/ -DALSOFT_CPUEXT_SSE4_1=0 -DALSOFT_CPUEXT_SSE3=0 -DALSOFT_CPUEXT_SSE2=0;/'
+  )"
+fi
+
+if [ "$CARCH" = 'i486' ]; then
+  eval "$(
+    declare -f build | \
+      sed '/cmake .*openal-soft/ s/;$/ -DALSOFT_CPUEXT_SSE4_1=0 -DALSOFT_CPUEXT_SSE3=0 -DALSOFT_CPUEXT_SSE2=0 -DALSOFT_CPUEXT_SSE=0;/'
+  )"
+fi
+
+unset -f pkgver

@@ -1,0 +1,45 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+
+pkgname=algernon
+pkgver=1.17.12
+pkgrel="1"
+pkgdesc='Web server with Lua, Markdown, QUIC, Redis and PostgreSQL support'
+arch=(i686)
+url='https://algernon.roboticoverlords.org/'
+license=(BSD-3-Clause)
+makedepends=(git go)
+depends=(glibc)
+optdepends=('mariadb: For using the MariaDB/MySQL database backend'
+            'ollama: For using Ollama from Lua or .prompt files'
+            'postgresql: For using the PostgreSQL database backend'
+            'redis: For using the Redis database backend'
+            'valkey: For using the Redis database backend')
+source=("git+https://github.com/xyproto/algernon#tag=v$pkgver")
+b2sums=('586b159393d3624d2b92b8a49cb747f82b2c35db7bec4edc85092859be7464654db27277750664fdf396118b8bcea07b69db0f65817f5c7b50b58a150e3bf632')
+
+prepare() {
+  cd $pkgname
+  go build -buildmode=pie -buildvcs=false -ldflags="-s -w -linkmode=external -extldflags '$LDFLAGS'" -mod=readonly -modcacherw -trimpath
+}
+
+package() {
+  cd $pkgname
+  install -Dm755 algernon "$pkgdir/usr/bin/algernon"
+  install -d "$pkgdir/usr/share/doc/$pkgname/samples"
+  cp -r samples "$pkgdir/usr/share/doc/$pkgname/samples"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  cd system
+  install -Dm644 logrotate "$pkgdir/etc/logrotate.d/algernon"
+  install -Dm644 serverconf.lua "$pkgdir/etc/algernon/serverconf.lua"
+  install -Dm644 algernon.service "$pkgdir/usr/share/doc/$pkgname/algernon.service.example"
+  install -Dm644 algernon_dev.service "$pkgdir/usr/share/doc/$pkgname/algernon_dev.service.example"
+
+  cd ../desktop
+  install -Dm755 mdview "$pkgdir/usr/bin/mdview"
+  install -Dm644 algernon.desktop "$pkgdir/usr/share/applications/algernon.desktop"
+  install -Dm644 algernon_md.desktop "$pkgdir/usr/share/applications/algernon_md.desktop"
+  install -Dm644 markdown.png "$pkgdir/usr/share/pixmaps/markdown.png"
+}
+
+unset -f pkgver

@@ -1,0 +1,46 @@
+# Maintainer: Thomas Bächler <thomas@archlinux.org>
+pkgname=v4l-utils
+pkgver=1.32.0
+pkgrel="2"
+pkgdesc="Userspace tools and conversion library for Video 4 Linux"
+arch=(i686 x32)
+url="https://linuxtv.org/"
+provides=("libv4l=$pkgver")
+replaces=('libv4l')
+conflicts=('libv4l')
+backup=(etc/rc_maps.cfg)
+license=('LGPL')
+depends=('hicolor-icon-theme' 'libgcc' 'libbpf' 'libjpeg-turbo'  'systemd-libs' 'json-c')
+makedepends=('qt6-base' 'qt6-5compat' 'alsa-lib' 'meson' 'clang' 'doxygen')
+optdepends=('qt6-base: for qv4l2 and qvidcap'
+            'qt6-5compat: for qv4l2'
+            'alsa-lib: for qv4l2')
+source=(https://linuxtv.org/downloads/v4l-utils/${pkgname}-${pkgver}.tar.xz{,.asc})
+sha256sums=('6828828a17775526eb93fb258a9294d1d1073d633c344dd71ecd4e7a1ffb7dfc'
+            'SKIP')
+validpgpkeys=('05D0169C26E41593418129DF199A64FADFB500FF') # Gregor Jasny <gjasny@googlemail.com>
+
+prepare() {
+  # HACK: inform upstream to make this configurable
+  cd "${pkgname}-${pkgver}"
+  sed -i 's/sbin/bin/' utils/v4l2-dbg/meson.build
+}
+
+build() {
+  arch-meson -Dgconv=disabled "${pkgname}-${pkgver}" build
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+}
+
+# force udevdir
+eval "$(
+  declare -f build | \
+    sed '
+      s@./configure@./configure --with-udevdir=/usr/lib@
+    '
+)"
+
+unset -f pkgver

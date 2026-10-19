@@ -1,0 +1,24 @@
+pkgbase = xkeyboard-config
+	pkgdesc = X keyboard configuration files
+	pkgver = 2.48
+	pkgrel = 1
+	url = https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
+	arch = any
+	license = LicenseRef-xkeyboard-config
+	checkdepends = python-pytest
+	checkdepends = python-pytest-xdist
+	checkdepends = libxkbcommon
+	makedepends = xorg-xkbcomp
+	makedepends = libxslt
+	makedepends = python
+	makedepends = meson
+	provides = xkbdata
+	conflicts = xkbdata
+	replaces = xkbdata
+	source = https://xorg.freedesktop.org/archive/individual/data/xkeyboard-config/xkeyboard-config-2.48.tar.xz
+	source = https://xorg.freedesktop.org/archive/individual/data/xkeyboard-config/xkeyboard-config-2.48.tar.xz.sig
+	validpgpkeys = FFB4CCD275AAA422F5F9808E0661D98FC933A145
+	sha256sums = b77041324f0109f77161ee43743fe04baa485866af8460d31e476ad3f7648fd5
+	sha256sums = SKIP
+
+pkgname = xkeyboard-config

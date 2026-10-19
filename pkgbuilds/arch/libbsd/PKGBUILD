@@ -1,0 +1,45 @@
+# Maintainer: Lukas Fleischer <lfleischer@archlinux.org>
+# Maintainer: T.J. Townsend <blakkheim@archlinux.org>
+# Contributor: Sven-Hendrik Haase <sh@lutzhaase.com>
+# Contributor: Gerardo Exequiel Pozzi <vmlinuz386@yahoo.com.ar>
+
+pkgname=libbsd
+pkgver=0.12.2
+pkgrel="2"
+pkgdesc='Provides useful functions commonly found on BSD systems like strlcpy()'
+arch=(i686 x32)
+url="https://libbsd.freedesktop.org"
+license=('custom')
+depends=('glibc' 'libmd')
+makedepends=('git')
+options=('staticlibs')
+source=("git+https://gitlab.freedesktop.org/libbsd/libbsd.git?signed#tag=${pkgver}")
+sha512sums=('cea336318d941992d0f624386d4d43828940de9b4ebbf580bb4771efb2cf00fd85e2d17c9006fe1b5fecaa277d25d5e6af15e7456722b172270e4a77e1a0299e')
+validpgpkeys=('4F3E74F436050C10F5696574B972BF3EA4AE57A3') # Guillem Jover
+
+build() {
+  cd "$pkgname"
+
+  autoreconf -vfi
+  CFLAGS+=' -ffat-lto-objects' \
+  ./configure --prefix=/usr
+  make
+}
+
+check() {
+  cd "$pkgname"
+  make check
+}
+
+package() {
+  cd "$pkgname"
+
+  make DESTDIR="$pkgdir" install
+  rm "${pkgdir}"/usr/lib/libbsd.a
+  install -D -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+
+  # included now in man-pages, FS#53351
+  rm -f "${pkgdir}"/usr/share/man/man3/explicit_bzero.3
+}
+
+unset -f pkgver

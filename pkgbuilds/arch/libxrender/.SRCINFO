@@ -1,0 +1,18 @@
+pkgbase = libxrender
+	pkgdesc = X Rendering Extension client library
+	pkgver = 0.9.13
+	pkgrel = 1
+	url = https://xorg.freedesktop.org/
+	arch = i686
+	arch = x32
+	license = HPND-sell-variant
+	makedepends = git
+	makedepends = xorg-util-macros
+	depends = libx11
+	depends = glibc
+	depends = xorgproto
+	source = git+https://gitlab.freedesktop.org/xorg/lib/libxrender.git?signed#tag=libXrender-0.9.13
+	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
+	sha512sums = 6291d3c95642ed44561991f9900f0f734dddee039be55c1b189700754f64548cd3c27beb71600f7b72e2e795ef58b3fc7407424d06973b19510e4ef7a064ba60
+
+pkgname = libxrender

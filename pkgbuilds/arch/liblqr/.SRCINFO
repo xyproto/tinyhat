@@ -1,0 +1,16 @@
+pkgbase = liblqr
+	pkgdesc = A seam-carving C/C++ library called Liquid Rescale
+	pkgver = 0.4.3
+	pkgrel = 1
+	url = https://liblqr.wikidot.com/
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	makedepends = git
+	depends = glib2
+	depends = glibc
+	options = !emptydirs
+	source = git+https://github.com/carlobaldassi/liblqr#tag=v0.4.3
+	sha256sums = 1b1d26ab3138b0ec34062c3f1b8cd808d5c7a85e37fdbb9c6fd6722f52b2122d
+
+pkgname = liblqr

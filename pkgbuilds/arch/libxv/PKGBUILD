@@ -1,0 +1,32 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgname=libxv
+pkgver=1.0.13
+pkgrel="1"
+pkgdesc="X11 Video extension library"
+arch=(i686 x32)
+license=('SMLNJ' 'HPND-sell-variant')
+url="https://xorg.freedesktop.org/"
+depends=('libxext' 'libx11' 'glibc' 'xorgproto')
+source=(${url}/releases/individual/lib/libXv-${pkgver}.tar.xz{,.sig})
+sha512sums=('80d7a11e6415fbe0fc50c3c2a1abf8f0f2ec38446c9c8d88ff48875cd94b8949cb1028f2ab37476c4b25cbd7eac34dde9132dd998c4e04ea576b95ae411ba946'
+            'SKIP')
+#validpgpkeys=('C41C985FDCF1E5364576638B687393EE37D128F8') # Matthieu Herrb <matthieu.herrb@laas.fr>
+validpgpkeys+=('4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E') # "Alan Coopersmith <alan.coopersmith@oracle.com>"
+
+build() {
+  cd libXv-${pkgver}
+  ./configure --prefix=/usr --disable-static 
+  make
+}
+
+package() {
+  cd libXv-${pkgver}
+  make DESTDIR="${pkgdir}" install
+
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+unset -f pkgver

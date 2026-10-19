@@ -1,0 +1,18 @@
+pkgbase = strace
+	pkgdesc = A diagnostic, debugging and instructional userspace tracer
+	pkgver = 7.2
+	pkgrel = 1
+	url = https://strace.io/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	depends = glibc
+	depends = libunwind
+	source = https://github.com/strace/strace/releases/download/v7.2/strace-7.2.tar.xz
+	source = https://github.com/strace/strace/releases/download/v7.2/strace-7.2.tar.xz.asc
+	validpgpkeys = 296D6F29A020808E8717A8842DB5BD89A340AEB7
+	validpgpkeys = 7BECFE3AF7B280BB52FF77F104BA4521C996DDE1
+	sha256sums = 4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5
+	sha256sums = SKIP
+
+pkgname = strace

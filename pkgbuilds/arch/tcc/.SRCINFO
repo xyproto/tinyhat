@@ -1,0 +1,15 @@
+pkgbase = tcc
+	pkgdesc = Tiny C Compiler (tinycc)
+	pkgver = 0.9.27.r1337.gb39cbc70
+	pkgrel = 1
+	url = https://bellard.org/tcc/
+	arch = i686
+	license = LGPL-2.0-or-later
+	makedepends = git
+	depends = glibc
+	options = docs
+	options = staticlibs
+	source = git+https://repo.or.cz/tinycc.git#commit=b39cbc70c4ccc0540c2ef65010b8241caf005ad4
+	sha256sums = 1f247760aebaf9d093be38ee500d860a22bd6b5d091a4735046e4e172c4d5b5d
+
+pkgname = tcc

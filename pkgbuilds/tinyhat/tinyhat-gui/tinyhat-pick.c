@@ -1,0 +1,1 @@
+../../../programs/tinyhat-pick.c

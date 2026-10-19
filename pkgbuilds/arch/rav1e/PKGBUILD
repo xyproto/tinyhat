@@ -1,0 +1,85 @@
+# Maintainer: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: Daniel Bermond <dbermond@archlinux.org>
+# Contributor: Chocobo1 <chocobo1@archlinux.net>
+
+pkgname=rav1e
+pkgver=0.8.1
+pkgrel="3"
+pkgdesc='An AV1 encoder focused on speed and safety'
+arch=(i686)
+url=https://github.com/xiph/rav1e/
+license=(BSD-2-Clause)
+depends=(
+  glibc
+  libgcc
+)
+makedepends=(
+  cargo-c
+  git
+  nasm
+  rust
+)
+provides=(librav1e.so)
+source=(
+  git+https://github.com/xiph/rav1e.git#tag=v${pkgver}
+  Cargo-rav1e-${pkgver}.lock::https://github.com/xiph/rav1e/releases/download/v${pkgver}/Cargo.lock
+)
+b2sums=('6d595597ae817653e8da4515c3649e8ad7618ed09f938525a91106ae059a91dba6ba2b7eb556c5abe1fcf99e8a99ba9f1933018669d0f2f85b2340f9a8ecf0af'
+        '4c0e7e271f8cd96bf5d47162a0072a7ba4ddb6f40ec03fc6deddd7b3166fffcdc60ddf85829d49359a9d49fe9a3fba1ed4ef2ea8c4303475076eba9ea6ae1cc4')
+
+prepare() {
+  cp -f Cargo-rav1e-${pkgver}.lock rav1e/Cargo.lock
+  cargo fetch \
+    --locked \
+    --manifest-path rav1e/Cargo.toml
+}
+
+build() {
+  cargo build \
+    --release \
+    --frozen \
+    --no-default-features \
+    --features binaries,asm,threading,signal_support \
+    --manifest-path rav1e/Cargo.toml
+  cargo cbuild \
+    --release \
+    --frozen \
+    --no-default-features \
+    --features binaries,asm,threading,signal_support \
+    --prefix=/usr \
+    --manifest-path rav1e/Cargo.toml
+}
+
+check() {
+  cargo test \
+    --release \
+    --frozen \
+    --no-default-features \
+    --features binaries,asm,threading,signal_support \
+    --manifest-path rav1e/Cargo.toml
+}
+
+package() {
+  cd rav1e
+  cargo install \
+    --frozen \
+    --no-default-features \
+    --features binaries,asm,threading,signal_support \
+    --offline \
+    --no-track \
+    --path . \
+    --root "${pkgdir}"/usr
+  cargo cinstall \
+    --release \
+    --frozen \
+    --no-default-features \
+    --features binaries,asm,threading,signal_support \
+    --prefix /usr \
+    --destdir "${pkgdir}"
+  install -Dm 644 LICENSE PATENTS -t "${pkgdir}"/usr/share/licenses/rav1e/
+}
+
+# still using llvm14, openssl-1.1 for rust
+makedepends+=(llvm14-libs openssl-1.1)
+
+unset -f pkgver

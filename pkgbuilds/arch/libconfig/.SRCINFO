@@ -1,0 +1,19 @@
+pkgbase = libconfig
+	pkgdesc = C/C++ Configuration File Library
+	pkgver = 1.8.2
+	pkgrel = 2
+	url = https://github.com/hyperrealm/libconfig
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-only
+	makedepends = texinfo
+	depends = libgcc
+	depends = libstdc++
+	depends = glibc
+	provides = libconfig++.so
+	provides = libconfig.so
+	source = https://github.com/hyperrealm/libconfig/archive/v1.8.2/libconfig-v1.8.2.tar.gz
+	sha512sums = c3ed6c8f500b449c4d94976745a3acba1c7176f87497d5cb0deb05e62f2ff009ca0636c7c9848601f6d92dd113d82983cbd1132735f0f2d4e40b32d257f4aaa7
+	b2sums = c19561fcc0ae376567ba024e4da874fb6cfe27d509aa6ed84000867c8e849bceb9ac0a883446b445de29d852b4d1b6d1a9ad526c129645903105bc7d82bd35c9
+
+pkgname = libconfig

@@ -1,0 +1,26 @@
+#!/bin/bash
+
+cd "${0%/*}"
+
+sed -i '
+  1i ##\
+## Arch Linux repository mirrorlist for i686\
+## Generated on '"$(date +%F)"'\
+##\
+
+  1,/^$/d
+' mirrorlist
+
+sed -i '
+  /^[^#]/d
+' PKGBUILD
+
+printf "pkgver=%s\n" "$(date '+%Y%m%d')" >> PKGBUILD
+for sum_type in sha256 md5 b2; do
+  printf "%ssums=('%s')\n" \
+    "${sum_type}" \
+    "$(
+      ${sum_type}sum mirrorlist | \
+        awk '{print $1}'
+    )" >> PKGBUILD
+done

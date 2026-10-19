@@ -1,0 +1,134 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+
+pkgbase=libproxy
+pkgname=(
+  libproxy
+  libproxy-docs
+)
+pkgver=0.5.12
+pkgrel="1"
+pkgdesc="Automatic proxy configuration management library"
+url="https://libproxy.github.io/libproxy/"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+depends=(
+  curl
+  duktape
+  gcc-libs
+  glib2
+  glibc
+)
+makedepends=(
+  gi-docgen
+  git
+  gobject-introspection
+  gsettings-desktop-schemas
+  meson
+  vala
+)
+source=(
+  "git+https://github.com/libproxy/libproxy#tag=$pkgver"
+)
+b2sums=('aa049e4f7f37683b5c64e35770e9c3e5463d4fcf81e259c9bbd2facbd34f2eec46f28a455d9252bef475bf33bf39c70fa274a8470f5c6279f5e9e1c2de1e04b9')
+
+prepare() {
+  cd libproxy
+}
+
+build() {
+  local meson_options=(
+    -D release=true
+  )
+
+  arch-meson libproxy build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package_libproxy() {
+  provides=(libproxy.so)
+  conflicts=('libproxy-webkit<0.5.0-1')
+
+  meson install -C build --destdir "$pkgdir"
+
+  mkdir -p doc/usr/share
+  mv {"$pkgdir",doc}/usr/share/doc
+}
+
+package_libproxy-docs() {
+  pkgdesc+=" (documentation)"
+  depends=()
+
+  mv doc/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# skip webkit2gtk on i486 - we don't have that there
+makedepends=(${makedepends[@]/webkit2gtk/})
+_oifs="${IFS}"
+IFS=$(printf '\n')
+optdepends=(${optdepends[@]/webkit2gtk:*/})
+IFS="${_oifs}"
+
+makedepends_i686=(webkit2gtk)
+makedepends_pentium4=(webkit2gtk)
+makedepends_x86_64=(webkit2gtk)
+optdepends_i686=('webkit2gtk: PAC proxy support (Webkit2gtk engine)')
+optdepends_pentium4=('webkit2gtk: PAC proxy support (Webkit2gtk engine)')
+optdepends_x86_64=('webkit2gtk: PAC proxy support (Webkit2gtk engine)')
+
+eval "$(
+  declare -f package_libproxy-webkit | \
+    sed '
+      /^\s*{\s*$/ a arch=('"$(
+        printf '%s\n' "${arch[@]}" | \
+          grep -vxF 'i486' | \
+          tr '\n' ' '
+      )"')
+    '
+)"
+
+if [ "${CARCH}" = 'i486' ]; then
+  pkgname=(
+    $(
+      printf '%s\n' "${pkgname[@]}" | \
+        grep -v '^libproxy-webkit'
+    )
+  )
+  eval "$(
+    declare -f build | \
+      sed '
+        /cmake / s,\( -DWITH_WEBKIT3=\)ON,\1OFF,
+      '
+    declare -f package | \
+      sed '
+        /zenmap/d
+      '
+    declare -f package_libproxy | \
+      sed '
+        /_pick.*webkit.*/d
+      '
+  )"
+fi
+
+# temporary do not test as testing new libproxy Perl module for version 5.36
+# uses a perl version 5.34 of libProxy
+unset check
+
+# gi-docgen needs the 'markdown' Python module which isn't importable on i486
+# (built for a different Python version). Disable docs there only.
+if [ "${CARCH}" = "i486" ]; then
+  eval "$(
+    declare -f build | \
+      sed '
+        s/arch-meson libproxy build/arch-meson libproxy build -D docs=false/
+      '
+  )"
+fi
+
+unset -f pkgver

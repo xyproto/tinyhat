@@ -1,0 +1,12 @@
+--- a/Makefile.flags	2025-03-17 19:31:52.639682447 +0800
++++ b/Makefile.flags	2025-03-17 19:45:03.536066251 +0800
+@@ -4,6 +4,9 @@
+ 
+ BB_VER = $(VERSION).$(PATCHLEVEL).$(SUBLEVEL)$(EXTRAVERSION)
+ export BB_VER
++ifdef BB_EXTRA_VERSION
++	CFLAGS += -DBB_EXTRA_VERSION=$(squote)$(quote)$(BB_EXTRA_VERSION)$(quote)$(squote)
++endif
+ SKIP_STRIP ?= n
+ 
+ # -std=gnu99 needed for [U]LLONG_MAX on some systems

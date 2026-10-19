@@ -1,0 +1,32 @@
+diff -rauN libsndfile-1.0.31/CMakeLists.txt libsndfile-1.0.31-no-sse2-patch/CMakeLists.txt
+--- libsndfile-1.0.31/CMakeLists.txt	2021-01-24 13:22:23.000000000 +0100
++++ libsndfile-1.0.31-no-sse2-patch/CMakeLists.txt	2021-03-18 12:58:16.439769086 +0100
+@@ -86,17 +86,17 @@
+ cmake_dependent_option (ENABLE_COMPATIBLE_LIBSNDFILE_NAME "Set DLL name to libsndfile-1.dll (canonical name), sndfile.dll otherwise" OFF "WIN32;BUILD_SHARED_LIBS" OFF)
+ cmake_dependent_option (INSTALL_MANPAGES "Install man pages for programs" ON "BUILD_PROGRAMS" OFF)
+ 
+-if (NOT MSVC)
+-	if (CPU_IS_X86)
+-		check_c_compiler_flag (-msse2 HAVE_MSSE2_COMPILER_FLAG)
+-		if (HAVE_MSSE2_COMPILER_FLAG)
+-			cmake_dependent_option (ENABLE_SSE2 "Add SSE2 compiler flag" ON "HAVE_MSSE2_COMPILER_FLAG" OFF)
+-		endif ()
+-	endif ()
+-endif ()
+-if (ENABLE_SSE2)
+-	add_compile_options (-msse2)
+-endif ()
++#if (NOT MSVC)
++#	if (CPU_IS_X86)
++#		check_c_compiler_flag (-msse2 HAVE_MSSE2_COMPILER_FLAG)
++#		if (HAVE_MSSE2_COMPILER_FLAG)
++#			cmake_dependent_option (ENABLE_SSE2 "Add SSE2 compiler flag" ON "HAVE_MSSE2_COMPILER_FLAG" OFF)
++#		endif ()
++#	endif ()
++#endif ()
++#if (ENABLE_SSE2)
++#	add_compile_options (-msse2)
++#endif ()
+ 
+ set (HAVE_EXTERNAL_XIPH_LIBS ${ENABLE_EXTERNAL_LIBS})
+ set (HAVE_SQLITE3 ${BUILD_REGTEST})

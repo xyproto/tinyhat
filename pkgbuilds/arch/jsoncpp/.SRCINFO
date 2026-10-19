@@ -1,0 +1,30 @@
+pkgbase = jsoncpp
+	pkgdesc = C++ library for interacting with JSON
+	pkgver = 1.9.8
+	pkgrel = 1
+	url = https://github.com/open-source-parsers/jsoncpp
+	arch = i686
+	arch = x32
+	license = MIT
+	license = custom:Public_Domain
+	makedepends = libgcc
+	makedepends = libstdc++
+	makedepends = doxygen
+	makedepends = graphviz
+	makedepends = python
+	makedepends = meson
+	options = staticlibs
+	source = https://github.com/open-source-parsers/jsoncpp/archive/1.9.8/jsoncpp-1.9.8.tar.gz
+	sha512sums = 849957d9c87edc1d375698a9ea2709b7304cabc2b05ba180dc09f68653e32316e1ae4fe0108ab63ec7b56d255ccbc6ccf8715cf8396c1438edda775bec74b05b
+	b2sums = 5af250cf6d641cc7d8c4897222cc97ccdcf110db0858abf11656835e91eb1976ee82c2cdf26e0b244aa914e2b2d8ca796a9642419f6d567bbd234a6b02bf82ff
+
+pkgname = jsoncpp
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	optdepends = jsoncpp-doc: documentation
+	provides = libjsoncpp.so
+
+pkgname = jsoncpp-doc
+	pkgdesc = C++ library for interacting with JSON (documentation)
+	optdepends = jsoncpp

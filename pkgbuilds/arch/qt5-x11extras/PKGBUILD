@@ -1,0 +1,48 @@
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Andrea Scarpino <andrea@archlinux.org>
+
+pkgname=qt5-x11extras
+_basever=5.15.19
+pkgver=5.15.19
+pkgrel="1"
+_commit=6695a3df4460577b3fcb5546b45a0c5cb3addac4
+arch=(i686 x32)
+url='https://www.qt.io'
+license=('GPL3' 'LGPL3' 'FDL' 'custom')
+pkgdesc='Provides platform-specific APIs for X11'
+depends=('qt5-base')
+makedepends=('git')
+groups=('qt5')
+_pkgfqn=${pkgname/5-/}
+source=(kde-$_pkgfqn::git+https://invent.kde.org/qt/qt/$_pkgfqn#commit=$_commit)
+sha256sums=('5261d8f76c011997ced1df0f50108fb561b398eeb58fd80aa4096d68c36dc6c3')
+
+pkgver() {
+  cd kde-$_pkgfqn
+  echo "$_basever+kde+r"`git rev-list --count v$_basever-lts-lgpl..$_commit` | sed -e 's|+kde+r0||'
+}
+
+prepare() {
+  mkdir -p build
+}
+
+build() {
+  cd build
+
+  qmake ../kde-$_pkgfqn
+  make
+}
+
+package() {
+  cd build
+  make INSTALL_ROOT="$pkgdir" install
+
+  # Drop QMAKE_PRL_BUILD_DIR because reference the build dir
+  find "$pkgdir/usr/lib" -type f -name '*.prl' \
+    -exec sed -i -e '/^QMAKE_PRL_BUILD_DIR/d' {} \;
+
+  install -d "$pkgdir"/usr/share/licenses
+  ln -s /usr/share/licenses/qt5-base "$pkgdir"/usr/share/licenses/${pkgname}
+}
+
+unset -f pkgver

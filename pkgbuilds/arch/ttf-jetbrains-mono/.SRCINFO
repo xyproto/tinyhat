@@ -1,0 +1,11 @@
+pkgbase = ttf-jetbrains-mono
+	pkgdesc = Typeface for developers, by JetBrains
+	pkgver = 2.304
+	pkgrel = 2
+	url = https://jetbrains.com/lp/mono
+	arch = any
+	license = custom:OFL
+	source = https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip
+	b2sums = c54913d1d7f11150afeb2974238ee26f09be5ea2b1db2510c00bafb2ae0d807d6ca64d4fcef5dfc95d524bb4f2f3324243fc6a693bd2b81c79820f48cb1e9909
+
+pkgname = ttf-jetbrains-mono

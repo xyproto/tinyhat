@@ -1,0 +1,22 @@
+diff -rauN dav1d-0.8.2/meson.build dav1d-0.8.2-sse2-asm-patch/meson.build
+--- dav1d-0.8.2/meson.build	2021-02-21 23:53:26.261634600 +0100
++++ dav1d-0.8.2-sse2-asm-patch/meson.build	2021-03-19 09:12:45.991939117 +0100
+@@ -250,12 +250,12 @@
+       '-Werror=missing-prototypes',
+       '-Wshorten-64-to-32',
+     ]
+-    if host_machine.cpu_family() == 'x86'
+-        optional_arguments += [
+-          '-msse2',
+-          '-mfpmath=sse',
+-        ]
+-    endif
++#    if host_machine.cpu_family() == 'x86'
++#        optional_arguments += [
++#          '-msse2',
++#          '-mfpmath=sse',
++#        ]
++#    endif
+ else
+     optional_arguments += [
+       '-wd4028', # parameter different from declaration

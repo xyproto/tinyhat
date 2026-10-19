@@ -1,0 +1,32 @@
+# Maintainer: AndyRTR <andyrtr@archlinux.org>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Alexander Baldeck <alexander@archlinux.org>
+
+pkgname=libxinerama
+pkgver=1.1.6
+pkgrel="1"
+pkgdesc="X11 Xinerama extension library"
+arch=(i686 x32)
+url="https://xorg.freedesktop.org/"
+license=('MIT' 'MIT-open-group' 'X11')
+depends=('libxext' 'libx11' 'glibc' 'xorgproto')
+makedepends=('xorg-util-macros')
+source=("${url}"/archive/individual/lib/libXinerama-${pkgver}.tar.xz{,.sig})
+sha512sums=('64bff837941625120da43b8876db4204bc5740bcf3147997fc4df1475f90d6d9e3f9caa8748c7ebbf69d681be8e5ab4bc40f82c56c367dddcec3ab27d1c71573'
+            'SKIP')
+validpgpkeys=('3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2') # "Alan Coopersmith <alan.coopersmith@oracle.com>"
+
+build() {
+  cd libXinerama-${pkgver}
+  ./configure --prefix=/usr
+  make
+}
+
+package() {
+  cd libXinerama-${pkgver}
+  make DESTDIR="${pkgdir}" install
+  install -m755 -d "${pkgdir}/usr/share/licenses/${pkgname}"
+  install -m644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/"
+}
+
+unset -f pkgver

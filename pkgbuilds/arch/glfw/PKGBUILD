@@ -1,0 +1,54 @@
+# Maintainer: Sven-Hendrik Haase <svenstaro@archlinux.org>
+# Contributor: philefou <tuxication AT gmail DOT com>
+# Contributor: lindquist <tomas@famolsen.dk>
+# Contributor: Christoph Siegenthaler <csi@gmx.ch>
+# Contributor: Mihai Militaru <mihai.militaru@ephemeros.org>
+# Contributor: SpepS <dreamspepser at yahoo dot it>
+
+pkgname=glfw
+pkgdesc="A free, open source, portable framework for graphical application development"
+pkgver=3.5.1
+pkgrel="1"
+epoch=1
+arch=(i686 x32)
+replaces=('glfw-x11' 'glfw-wayland' 'glfw-doc')
+provides=('glfw-x11' 'glfw-wayland')
+url="https://www.glfw.org/"
+license=('custom:ZLIB')
+depends=('libgl' 'libxkbcommon')
+makedepends=('mesa' 'cmake' 'doxygen' 'vulkan-headers' 'vulkan-icd-loader' 'extra-cmake-modules'
+             'wayland-protocols' 'libxi' 'libxrandr' 'libxcursor' 'libxinerama')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/glfw/glfw/archive/${pkgver}.tar.gz")
+sha512sums=('42e8b8bdc2ecaab8d33d43cab6cf6e4bfd1f23492a5f13ec4b3762b74661dc3c9625721f436fbf841909b9af3ac6dcb8080201b36592d33c2bb196f768fc307f')
+
+build() {
+  cmake -B build -S "$pkgname-$pkgver" \
+    -DCMAKE_BUILD_TYPE='None' \
+    -DCMAKE_INSTALL_PREFIX='/usr' \
+    -DBUILD_SHARED_LIBS=ON \
+    -Wno-dev
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+
+  install -Dm644 "$pkgname-$pkgver"/LICENSE.md "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"
+}
+
+eval "$(
+  declare -f package_glfw-x11 | \
+    sed '
+      2 a arch=('"${arch[*]}"')
+    '
+  declare -f package_glfw-wayland | \
+    sed '
+      2 a arch=('"${arch[*]}"')
+    '
+  declare -f package_glfw-doc | \
+    sed '
+      2 a arch=(any)
+    '
+)"
+
+unset -f pkgver

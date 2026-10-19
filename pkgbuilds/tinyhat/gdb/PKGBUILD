@@ -1,0 +1,28 @@
+pkgname=gdb
+pkgver=18.1
+pkgrel=1
+pkgdesc="GNU debugger, without Python"
+arch=(i686 x32)
+url="https://www.sourceware.org/gdb/"
+license=(GPL-3.0-or-later)
+depends=(expat gmp mpfr ncurses readline zlib)
+source=("https://ftp.gnu.org/gnu/gdb/gdb-$pkgver.tar.xz")
+sha256sums=('cd9fc3fe2b47743840e42c1592d3d87f8302eb18639c0b8b4ba0898002e2348f')
+
+build() {
+  mkdir -p build
+  cd build
+  ../gdb-$pkgver/configure --prefix=/usr --disable-nls --disable-werror --disable-sim --disable-gdbserver --disable-gprofng \
+    --disable-binutils --disable-ld --disable-gas --disable-gold --disable-gprof --disable-inprocess-agent \
+    --without-python --without-guile --without-babeltrace --without-debuginfod --without-intel-pt \
+    --disable-source-highlight --without-xxhash --with-system-readline --with-system-zlib --with-expat \
+    MAKEINFO=true
+  make MAKEINFO=true all-gdb
+}
+
+package() {
+  cd build
+  make MAKEINFO=true DESTDIR="$pkgdir" install-gdb
+  rm -rf "$pkgdir"/usr/{share/info,include,lib}
+  install -Dm644 "$srcdir/gdb-$pkgver/COPYING3" "$pkgdir/usr/share/licenses/$pkgname/COPYING3"
+}

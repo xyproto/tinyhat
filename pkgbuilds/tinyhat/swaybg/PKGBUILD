@@ -1,0 +1,31 @@
+pkgname=swaybg
+pkgver=1.2.2
+pkgrel=1
+pkgdesc="Wallpaper tool for Wayland, with the Tiny Hat help text patch"
+arch=(i686 x32)
+url="https://github.com/swaywm/swaybg"
+license=(MIT)
+depends=(cairo wayland)
+makedepends=(meson ninja wayland-protocols)
+source=("swaybg-$pkgver.tar.gz::https://github.com/swaywm/swaybg/archive/refs/tags/v$pkgver.tar.gz"
+        help-text.patch
+        left.patch)
+sha256sums=('94e5c06a765d969e554b0f321f9cdf9c283a3fdaf70ad4e3d28163b21bd4d240'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd swaybg-$pkgver
+  patch -Np1 -i ../help-text.patch
+  patch -Np1 -i ../left.patch
+}
+
+build() {
+  meson setup build swaybg-$pkgver --prefix=/usr --buildtype=minsize -Dgdk-pixbuf=disabled -Dman-pages=disabled
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 swaybg-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

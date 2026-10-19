@@ -1,0 +1,41 @@
+pkgname=gba-dev
+_tonc=c5af1b2cb019dcde43216596390490bc07800b21
+_tools=1.2.0
+pkgver=1
+pkgrel=1
+pkgdesc="libtonc, startup code, gba.specs and gbafix for GBA programming"
+arch=(i686 x32)
+url="https://github.com/gbadev-org/libtonc"
+license=(MIT LGPL-2.0-or-later)
+depends=(arm-none-eabi-gcc arm-none-eabi-newlib)
+makedepends=(arm-none-eabi-binutils)
+options=(!strip)
+source=("libtonc-$_tonc.tar.gz::https://github.com/gbadev-org/libtonc/archive/$_tonc.tar.gz"
+        "gba-tools-v$_tools.tar.gz::https://github.com/devkitPro/gba-tools/archive/refs/tags/v$_tools.tar.gz"
+        build-libtonc.sh gba_crt0.s gba_cart.ld gba.specs)
+sha256sums=('5f5703d4c3188ddcdd770c2dc43cae7bea0780b348b1cd9eb473ba777c0aa396'
+            '1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32'
+            'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+build() {
+  rm -rf tonc-build
+  mkdir tonc-build
+  (cd tonc-build && sh ../build-libtonc.sh "$srcdir/libtonc-$_tonc" "$srcdir/libtonc.a")
+  arm-none-eabi-gcc -mcpu=arm7tdmi -marm -c -o gba_crt0.o gba_crt0.s
+  gcc $CFLAGS -o gbafix gba-tools-$_tools/src/gbafix.c $LDFLAGS
+}
+
+package() {
+  local lib="$pkgdir/usr/arm-none-eabi/lib"
+  for d in "$lib" "$lib/thumb/nofp"; do
+    install -Dm644 gba_crt0.o gba_cart.ld gba.specs -t "$d/"
+  done
+  install -Dm644 libtonc.a "$lib/libtonc.a"
+  install -Dm644 libtonc-$_tonc/include/*.h -t "$pkgdir/usr/arm-none-eabi/include/"
+  install -Dm755 gbafix "$pkgdir/usr/bin/gbafix"
+  strip --strip-unneeded "$pkgdir/usr/bin/gbafix"
+  local l="$pkgdir/usr/share/licenses/$pkgname"
+  install -Dm644 libtonc-$_tonc/license.txt "$l/license.libtonc.txt"
+  install -Dm644 gba-tools-$_tools/COPYING "$l/COPYING.gbafix"
+  install -Dm644 gba-tools-$_tools/src/gbafix.c "$l/gbafix.c"
+}

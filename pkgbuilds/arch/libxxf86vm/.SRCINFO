@@ -1,0 +1,19 @@
+pkgbase = libxxf86vm
+	pkgdesc = X11 XFree86 video mode extension library
+	pkgver = 1.1.7
+	pkgrel = 1
+	url = https://xorg.freedesktop.org/
+	arch = i686
+	arch = x32
+	license = X11-distribute-modifications-variant
+	depends = libxext
+	depends = libx11
+	depends = glibc
+	depends = xorgproto
+	source = https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-1.1.7.tar.xz
+	source = https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-1.1.7.tar.xz.sig
+	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
+	sha512sums = d1051c9698a884d86e5beb00d5ee148d2b5ded7fd05168861f722b89643ad9b7f7d220f0cbb64b290a69faf9a6630181533aaddb01c9c68b46f1e5625030f094
+	sha512sums = SKIP
+
+pkgname = libxxf86vm

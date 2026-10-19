@@ -1,0 +1,40 @@
+# Maintainer: Bruno Pagani <archange@archlinux.org>
+
+pkgname=libyuv
+pkgver=r2921+644251f25
+pkgrel="1"
+pkgdesc="Library for YUV scaling"
+arch=(i686 x32)
+url="https://chromium.googlesource.com/libyuv/libyuv/"
+license=(custom)
+depends=(
+  libgcc
+  libstdc++
+  libjpeg-turbo
+)
+makedepends=(cmake git)
+_commit=644251f252a84bf8ce91ff0aca86a9b16b069ab8
+source=(git+${url}#commit=${_commit})
+b2sums=('74989fbc19963857a4bd12d5ed6a19badf03ff2147c0a65bf23f0ff08a0ec074dd56b4c4051bcf33d783dab5d98622ef413cce2359802277ba94895990c9af1b')
+
+pkgver() {
+  cd ${pkgname}
+  printf "r%s+%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  sed -i 's|yuvconvert ${JPEG_LIBRARY}|${ly_lib_shared} ${JPEG_LIBRARY}|' ${pkgname}/CMakeLists.txt
+}
+
+build() {
+  cmake -B build -S ${pkgname} \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  make -C build
+}
+
+package() {
+  make -C build DESTDIR="${pkgdir}" install
+  install -Dm644 ${pkgname}/LICENSE -t "${pkgdir}"/usr/share/licenses/${pkgname}/
+}
+
+unset -f pkgver

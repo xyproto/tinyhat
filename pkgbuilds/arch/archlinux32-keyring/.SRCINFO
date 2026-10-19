@@ -1,0 +1,17 @@
+pkgbase = archlinux32-keyring
+	pkgdesc = Arch Linux 32 PGP keyring
+	pkgver = 20261017
+	pkgrel = 1
+	url = https://archlinux32.org
+	install = archlinux32-keyring.install
+	arch = any
+	license = GPL
+	conflicts = archlinux32-keyring-transition
+	replaces = archlinux32-keyring-transition
+	source = https://sources.archlinux32.org/sources/archlinux32-keyring-v20261017.tar.gz
+	source = https://sources.archlinux32.org/sources/archlinux32-keyring-v20261017.tar.gz.sig
+	validpgpkeys = 33CA3597B0D161AAE4173F65C17F1214114574A4
+	sha512sums = 47186a638df8ba21361ab7f79634cff22925a762ebde438b7cdc70f26d988189d4d5ad2929686841b79901526130899b34aca654eb2e00c8262f6a88ae837941
+	sha512sums = SKIP
+
+pkgname = archlinux32-keyring

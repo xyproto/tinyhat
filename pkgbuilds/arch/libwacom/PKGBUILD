@@ -1,0 +1,37 @@
+# Maintainer: Andreas Radke <andyrtr@archlinux.org>
+
+pkgname=libwacom
+pkgver=2.20.0
+pkgrel="1"
+pkgdesc="Library to identify Wacom tablets and their features"
+arch=(i686 x32)
+url="https://github.com/linuxwacom/libwacom/wiki"
+license=('MIT')
+depends=('glib2' 'libevdev' 'libgudev' 'glibc' 'libgcc')
+makedepends=('libxml2' 'meson' 'python-pytest' 'python-libevdev' 'python-pyudev')
+optdepends=('python-libevdev: for libwacom-show-stylus'
+            'python-pyudev: for libwacom-show-stylus')
+source=(https://github.com/linuxwacom/libwacom/releases/download/${pkgname}-${pkgver}/${pkgname}-${pkgver}.tar.xz{,.sig})
+# https://github.com/linuxwacom/libwacom/releases
+sha256sums=('370b45b5e05a91960df0aeb9c9481ae05846aab92ab2d4ec66945a0da4216888'
+            'SKIP')
+validpgpkeys=('3C2C43D9447D5938EF4551EBE23B7E70B467F0BF') # "Peter Hutterer (Who-T) <office@who-t.net>"
+#validpgpkeys=('594ABBA066118C7A02D10A80A8AF906D9307FBAD') # "Joshua Dickens <Joshua@Joshua-Dickens.com>"
+
+build() {
+  arch-meson $pkgname-$pkgver build
+  # Print config
+  meson configure build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+  install -D -m644 $pkgname-$pkgver/COPYING "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+unset -f pkgver

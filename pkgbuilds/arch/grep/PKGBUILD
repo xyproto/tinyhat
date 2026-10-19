@@ -1,0 +1,49 @@
+# Maintainer: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=grep
+pkgver=3.12
+pkgrel="2"
+pkgdesc='A string search utility'
+arch=(i686 x32)
+license=('GPL3')
+url='https://www.gnu.org/software/grep/'
+depends=('glibc' 'pcre2')
+makedepends=('gperf' 'git' 'python' 'texinfo' 'wget')
+validpgpkeys=('155D3FC500C834486D1EEA677FD9FCCB000BEEEE') # Jim Meyering
+source=("git+https://git.savannah.gnu.org/git/grep.git#tag=v${pkgver}?signed"
+        "git+https://git.savannah.gnu.org/git/gnulib.git")
+sha256sums=('9543190d9ca2201ea46fddaeb39031a0acde1f6aa4351a72f33ef3455e6dd41e'
+            'SKIP')
+
+prepare() {
+  cd $pkgname
+
+  git submodule init
+  git config submodule.gnulib.url "${srcdir}/gnulib"
+  git -c protocol.file.allow=always submodule update
+
+  git cherry-pick -n \
+    '2e19d07ef1c08c3ce4771bb1bfee1ae6541f1c0d'
+
+  sh bootstrap
+}
+
+build() {
+  cd $pkgname
+  ./configure --prefix=/usr
+  make
+}
+
+check() {
+  cd $pkgname
+  make check
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+}
+
+unset -f pkgver

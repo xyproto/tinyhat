@@ -1,0 +1,14 @@
+pkgbase = png2xpm
+	pkgdesc = Convert PNG images to XPM format
+	pkgver = 0+9eb268ec
+	pkgrel = 1
+	url = https://github.com/xyproto/xpm
+	arch = i686
+	license = BSD-3-Clause
+	makedepends = go-tinyhat
+	depends = glibc
+	options = !buildflags
+	source = xpm-9eb268eca26e61eb7da0b1a9b25882b79195e9ab.tar.gz::https://github.com/xyproto/xpm/archive/9eb268eca26e61eb7da0b1a9b25882b79195e9ab.tar.gz
+	sha256sums = 7d7a02a683b675875febd5ab67d3d4f067db3111bf8a31da86c36ced8bae16b3
+
+pkgname = png2xpm

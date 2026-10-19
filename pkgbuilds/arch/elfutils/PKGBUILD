@@ -1,0 +1,184 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Laurent Carlier <lordheavym@gmail.com>
+# Contributor: Stéphane Gaudreault <stephane@archlinux.org>
+# Contributor: Andrej Gelenberg <andrej.gelenberg@udo.edu>
+
+pkgbase=elfutils
+pkgname=(
+  elfutils
+  libelf
+  debuginfod
+)
+pkgver=0.196
+pkgrel="1"
+pkgdesc="Handle ELF object files and DWARF debugging information"
+arch=(i686 x32)
+url="https://sourceware.org/elfutils/"
+_url=https://forge.sourceware.org/elfutils/elfutils-mirror.git
+makedepends=(
+  bzip2
+  curl
+  git
+  json-c
+  libarchive
+  libgcc
+  libmicrohttpd
+  libstdc++
+  sqlite
+  xz
+  zlib
+  zstd
+)
+options=(staticlibs)
+source=($pkgbase::git+$_url?signed#tag=$pkgbase-$pkgver)
+sha512sums=('ea440d94638326902e89506ab4a6e878f7ec9ae4c3672360bcc67511ca28b31fca8c0c7ef4ad1ae3463f635250ec745d55ce6afe3861ff63c90eb503ac63a47a')
+b2sums=('08adddadcac1194c73d244f3ac25fb3e4300e782ea304119016bfe056ca8f3c3a3a7492b992091a35b1a9e430d1dcaf0d77e49585fcefcee5bd10526ba03c200')
+validpgpkeys=(
+  'EC3CFE88F6CA0788774F5C1D1AA44BE649DE760A'  # Mark Wielaard <mjw@gnu.org>
+  '6C2B631563B8D330578D3CB474FD3FA2779E7073'  # Aaron Merey <amerey@redhat.com>
+)
+
+prepare() {
+  cd $pkgbase
+  # Skip tests failing due to missing PT_GNU_SFRAME support
+  sed \
+    -e 's/run-strip-strmerge.sh//g' \
+    -e 's/run-elflint-self.sh//g' \
+    -e 's/run-reverse-sections-self.sh//g' \
+    -i tests/Makefile.am
+
+  autoreconf -fiv
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --program-prefix="eu-"
+    --enable-deterministic-archives
+    --enable-maintainer-mode
+  )
+
+  # fat-lto-objects is required for non-mangled .a files in libelf
+  CFLAGS+=" -ffat-lto-objects"
+
+  # debugging information is required for test-suite
+  CFLAGS+=" -g"
+
+  cd $pkgbase
+  ./configure "${configure_options[@]}"
+  make
+}
+
+check() {
+  make -C $pkgbase check
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_elfutils() {
+  pkgdesc+=" (utilities)"
+  license=(
+    GPL-3.0-or-later
+  )
+  depends=(
+    glibc
+    json-c libjson-c.so
+    libarchive libarchive.so
+    libelf=$pkgver
+    libgcc
+    libstdc++
+    sh
+  )
+
+  make DESTDIR="$pkgdir" install -C $pkgbase
+
+  # set the default DEBUGINFOD_URLS environment variable to the distribution's debuginfod URL
+  echo "https://debuginfod.archlinux.org" > "$pkgdir/etc/debuginfod/archlinux.urls"
+
+  (
+    cd "$pkgdir"
+
+    _pick libelf etc/debuginfod
+    _pick libelf etc/profile.d/*
+    _pick libelf usr/{include,lib}
+    _pick libelf usr/share/man/*/{gelf,{,lib}elf}*
+    _pick debuginfod usr/bin/debuginfod*
+    _pick debuginfod usr/share/fish/vendor_conf.d/debuginfod.fish
+    _pick debuginfod usr/share/man/*/debuginfod*
+  )
+
+  install -vDm 644 $pkgbase/{AUTHORS,ChangeLog,NEWS,NOTES,README} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+package_libelf() {
+  pkgdesc+=" (libraries)"
+  license=(
+    'GPL-2.0-or-later OR LGPL-3.0-or-later'
+  )
+  depends=(
+    bzip2 libbz2.so
+    curl libcurl.so
+    glibc
+    json-c
+    xz liblzma.so
+    zlib
+    zstd libzstd.so
+  )
+  # NOTE: the shared objects can not be added to provides as they are not versioned
+
+  mv -v $pkgname/* "$pkgdir"
+  install -vDm 644 $pkgbase/{AUTHORS,ChangeLog,NEWS,NOTES,README} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+package_debuginfod() {
+  pkgdesc+=" (debuginfod)"
+  license=(
+    GPL-3.0-or-later
+  )
+  depends=(
+    glibc
+    json-c
+    libarchive libarchive.so
+    libelf=$pkgver
+    libgcc
+    libmicrohttpd libmicrohttpd.so
+    libstdc++
+    sqlite libsqlite3.so
+    xz liblzma.so
+  )
+  optdepends=("elfutils=$pkgver: for translations")
+
+  mv -v $pkgname/* "$pkgdir"
+  install -vDm 644 $pkgbase/{AUTHORS,ChangeLog,NEWS,NOTES,README} -t "$pkgdir/usr/share/doc/$pkgname/"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# fails on i486 with glibc 2.36
+#FAIL: run-backtrace-native.sh
+#=============================
+#
+#case 0: expected symname 'raise' got '(null)'
+#./test-subr.sh: line 84: 29497 Aborted                 (core dumped) LD_LIBRARY_PATH=
+#"${built_library_path}${LD_LIBRARY_PATH:+:}$LD_LIBRARY_PATH" $VALGRIND_CMD "$@"
+#backtrace-child: no main
+#FAIL run-backtrace-native.sh (exit status: 1)
+
+# some tests fail also upstream (nose)
+eval "$(
+  declare -f check | \
+    sed '
+      s/make\(.*\)check\(.*\)/make\1check\2 || true/
+    '
+)"
+
+unset -f pkgver

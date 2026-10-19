@@ -1,0 +1,16 @@
+pkgbase = sdl3_ttf
+	pkgdesc = SDL3 TrueType font library
+	pkgver = 3.2.2
+	pkgrel = 1
+	url = https://github.com/libsdl-org/SDL_ttf
+	arch = i686
+	arch = x32
+	license = Zlib
+	makedepends = cmake
+	makedepends = ninja
+	depends = sdl3
+	depends = freetype2
+	source = https://github.com/libsdl-org/SDL_ttf/releases/download/release-3.2.2/SDL3_ttf-3.2.2.tar.gz
+	sha256sums = 63547d58d0185c833213885b635a2c0548201cc8f301e6587c0be1a67e1e045d
+
+pkgname = sdl3_ttf

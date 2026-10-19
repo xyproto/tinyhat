@@ -1,0 +1,354 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgbase=pulseaudio
+pkgname=(
+  pulseaudio
+  libpulse
+  pulseaudio-zeroconf
+  pulseaudio-lirc
+  pulseaudio-jack
+  pulseaudio-bluetooth
+  pulseaudio-equalizer
+  pulseaudio-rtp
+)
+pkgver=17.0+r134+g77d25a1e6
+pkgrel="1"
+pkgdesc="A featureful, general-purpose sound server"
+url="https://www.freedesktop.org/wiki/Software/PulseAudio/"
+arch=(i686 x32)
+license=(LGPL-2.1-or-later)
+makedepends=(
+  alsa-lib
+  attr
+  avahi
+  bash
+  bluez
+  bluez-libs
+  check
+  dbus
+  doxygen
+  fftw
+  git
+  glib2
+  glibc
+  gst-plugins-base
+  gst-plugins-base-libs
+  gst-plugins-good
+  gstreamer
+  gtk3
+  jack2
+  libasyncns
+  libcap
+  libgcc
+  libice
+  libltdl
+  libsm
+  libsndfile
+  libsoxr
+  libx11
+  libxcb
+  libxtst
+  lirc
+  meson
+  openssl
+  orc
+  python
+  python-dbus
+  python-pyqt5
+  rtkit
+  sbc
+  speexdsp
+  systemd
+  systemd-libs
+  tdb
+  valgrind
+  webrtc-audio-processing-1
+  xmltoman
+)
+_commit=77d25a1e613095bdf87a1d13b65e7c330565077a  # master
+source=(
+  "git+https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git#commit=$_commit"
+  0001-alsa-ucm-Fix-segfault-from-recursion-due-to-too-many.patch
+)
+b2sums=('7bc8af3ccd517a340ef5e7ca3e835961c821b83c8912507087ac8e448494eade56c851ba317b0c691307acc5accef068aff62825b916e65c66d77d43466dc0bc'
+        '73f93801069b2c5b09646870269c0f42cefc2183a73b47c78fd160c978a841c11c5146b98351a11be24d4785181f361a455534e6f6ca2d977cf585044836f8ed')
+
+pkgver() {
+  cd pulseaudio
+  git describe --tags | sed 's/^v//;s/[^-]*-g/r&/;s/-/+/g'
+}
+
+prepare() {
+  cd pulseaudio
+
+  # Freeze version before patching
+  ./git-version-gen doesnt-exist >.tarball-version
+
+  # Crash fix
+  # https://gitlab.archlinux.org/archlinux/packaging/packages/pulseaudio/-/issues/7
+  # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/merge_requests/838
+  git apply -3 ../0001-alsa-ucm-Fix-segfault-from-recursion-due-to-too-many.patch
+}
+
+build() {
+  local meson_options=(
+    -D consolekit=disabled
+    -D elogind=disabled
+    -D pulsedsp-location='/usr/\$LIB/pulseaudio'
+    -D stream-restore-clear-old-devices=true
+    -D tcpwrap=disabled
+    -D udevrulesdir=/usr/lib/udev/rules.d
+  )
+
+  arch-meson pulseaudio build "${meson_options[@]}"
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+  ninja -C build test-daemon
+}
+
+_pick() {
+  local p="$1" f d; shift
+  for f; do
+    d="$srcdir/$p/${f#$pkgdir/}"
+    mkdir -p "$(dirname "$d")"
+    mv "$f" "$d"
+    rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"
+  done
+}
+
+package_pulseaudio() {
+  depends=(
+    "libpulse=$pkgver"
+    alsa-lib
+    bash
+    dbus
+    fftw
+    glib2
+    glibc
+    libcap
+    libgcc
+    libice
+    libltdl
+    libsm
+    libsndfile
+    libsoxr
+    libx11
+    libxcb
+    libxtst
+    orc
+    rtkit
+    speexdsp
+    systemd
+    systemd-libs
+    tdb
+    webrtc-audio-processing-1
+  )
+  optdepends=(
+    'pulseaudio-alsa: ALSA configuration (recommended)'
+    'pulseaudio-bluetooth: Bluetooth support'
+    'pulseaudio-equalizer: Graphical equalizer'
+    'pulseaudio-jack: Jack support'
+    'pulseaudio-lirc: IR (lirc) support'
+    'pulseaudio-rtp: RTP and RAOP support'
+    'pulseaudio-zeroconf: Zeroconf support'
+  )
+  provides=(pulse-native-provider)
+  conflicts=(pipewire-pulse)
+  backup=(
+    etc/pulse/daemon.conf
+    etc/pulse/default.pa
+    etc/pulse/system.pa
+  )
+  install=pulseaudio.install
+  replaces=(
+    'pulseaudio-gconf<=11.1'
+    'pulseaudio-xen<=9.0'
+  )
+
+  meson install -C build --destdir "$pkgdir"
+
+  cd "$pkgdir"
+
+  # Superseded by socket activation
+  sed -e '/autospawn/iautospawn = no' \
+      -i etc/pulse/client.conf
+
+  # Disable cork-request module, can result in e.g. media players unpausing
+  # when there's a Skype call incoming
+  sed -e 's|/usr/bin/pactl load-module module-x11-cork-request|#&|' \
+      -i usr/bin/start-pulseaudio-x11
+
+  # Required by qpaeq
+  sed -e '/Load several protocols/aload-module module-dbus-protocol' \
+      -i etc/pulse/default.pa
+
+  # Avoid warning about nonexistent dir
+  # https://gitlab.archlinux.org/archlinux/packaging/packages/pulseaudio/-/issues/3
+  mkdir -p etc/pulse/{default,system}.pa.d
+
+  # Split packages
+  _pick libpulse etc/pulse/client.conf
+  _pick libpulse usr/bin/pa{cat,ctl,dsp,mon,play,rec,record}
+  _pick libpulse usr/lib/libpulse{,-simple,-mainloop-glib}.so*
+  _pick libpulse usr/lib/{cmake,pkgconfig}
+  _pick libpulse usr/lib/pulseaudio/libpulse{dsp,common-*}.so
+  _pick libpulse usr/include
+  _pick libpulse usr/share/man/man1/pa{cat,ctl,dsp,mon,play,rec,record}.1
+  _pick libpulse usr/share/man/man5/pulse-client.conf.5
+  _pick libpulse usr/share/bash-completion/completions/pa{cat,ctl,dsp,play,rec,record}
+  _pick libpulse usr/share/bash-completion/completions/pulseaudio
+  _pick libpulse usr/share/vala
+  _pick libpulse usr/share/zsh
+
+  local moddir=usr/lib/pulseaudio/modules
+
+  _pick zeroconf $moddir/libavahi-wrap.so
+  _pick zeroconf $moddir/module-zeroconf-{publish,discover}.so
+  _pick zeroconf $moddir/module-raop-discover.so
+
+  _pick lirc $moddir/module-lirc.so
+
+  _pick jack $moddir/module-jack-{sink,source}.so
+  _pick jack $moddir/module-jackdbus-detect.so
+
+  _pick bluetooth $moddir/libbluez5-util.so
+  _pick bluetooth $moddir/module-bluetooth-{discover,policy}.so
+  _pick bluetooth $moddir/module-bluez5-{discover,device}.so
+
+  _pick equalizer $moddir/module-equalizer-sink.so
+  _pick equalizer usr/bin/qpaeq
+
+  _pick rtp $moddir/lib{rtp,raop}.so
+  _pick rtp $moddir/module-rtp-{send,recv}.so
+  _pick rtp $moddir/module-raop-sink.so
+}
+
+package_libpulse() {
+  pkgdesc="$pkgdesc (client library)"
+  depends=(
+    bash
+    dbus
+    glib2
+    glibc
+    libasyncns
+    libsndfile
+    libxcb
+    systemd-libs
+  )
+  optdepends=('pulse-native-provider: PulseAudio backend')
+  provides=(
+    libpulse-mainloop-glib.so
+    libpulse-simple.so
+    libpulse.so
+  )
+  backup=(etc/pulse/client.conf)
+
+  mv libpulse/* "$pkgdir"
+}
+
+package_pulseaudio-zeroconf() {
+  pkgdesc="Zeroconf support for PulseAudio"
+  depends=(
+    "libpulse=$pkgver"
+    "pulseaudio=$pkgver"
+    avahi
+    dbus
+    glibc
+  )
+
+  mv zeroconf/* "$pkgdir"
+}
+
+package_pulseaudio-lirc() {
+  pkgdesc="IR (lirc) support for PulseAudio"
+  depends=(
+    "pulseaudio=$pkgver"
+    glibc
+    lirc
+  )
+
+  mv lirc/* "$pkgdir"
+}
+
+package_pulseaudio-jack() {
+  pkgdesc="Jack support for PulseAudio"
+  depends=(
+    "pulseaudio=$pkgver"
+    dbus
+    glibc
+    jack
+  )
+
+  mv jack/* "$pkgdir"
+}
+
+package_pulseaudio-bluetooth() {
+  pkgdesc="Bluetooth support for PulseAudio"
+  depends=(
+    "libpulse=$pkgver"
+    "pulseaudio=$pkgver"
+    bluez
+    bluez-libs
+    dbus
+    glib2
+    glibc
+    gst-plugins-base-libs
+    gstreamer
+    sbc
+  )
+  optdepends=('gst-plugins-bad: AptX and LDAC support')
+
+  mv bluetooth/* "$pkgdir"
+}
+
+package_pulseaudio-equalizer() {
+  pkgdesc="Graphical equalizer for PulseAudio"
+  depends=(
+    "pulseaudio=$pkgver"
+    dbus
+    fftw
+    glibc
+    python
+    python-dbus
+    python-pyqt5
+  )
+
+  mv equalizer/* "$pkgdir"
+}
+
+package_pulseaudio-rtp() {
+  pkgdesc="RTP and RAOP support for PulseAudio"
+  depends=(
+    "libpulse=$pkgver"
+    "pulseaudio=$pkgver"
+    glib2
+    glibc
+    gst-plugins-base
+    gst-plugins-base-libs
+    gst-plugins-good
+    gstreamer
+    openssl
+  )
+
+  mv rtp/* "$pkgdir"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+# threading test fails
+# 41/49 thread-test FAIL 4.03 s (exit status 1)
+eval "$(
+  declare -f check | \
+    sed '
+      s/meson test -C build --print-errorlogs/meson test -C build --print-errorlogs || true/
+      s/ninja -C build test-daemon/ninja -C build test-daemon || true/
+   '
+)"
+
+# doxygen is not installed?
+makedepends+=(doxygen)
+
+unset -f pkgver

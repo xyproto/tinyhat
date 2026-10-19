@@ -1,0 +1,21 @@
+pkgbase = swaybg
+	pkgdesc = Wallpaper tool for Wayland, with the Tiny Hat help text patch
+	pkgver = 1.2.2
+	pkgrel = 1
+	url = https://github.com/swaywm/swaybg
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = meson
+	makedepends = ninja
+	makedepends = wayland-protocols
+	depends = cairo
+	depends = wayland
+	source = swaybg-1.2.2.tar.gz::https://github.com/swaywm/swaybg/archive/refs/tags/v1.2.2.tar.gz
+	source = help-text.patch
+	source = left.patch
+	sha256sums = 94e5c06a765d969e554b0f321f9cdf9c283a3fdaf70ad4e3d28163b21bd4d240
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = swaybg

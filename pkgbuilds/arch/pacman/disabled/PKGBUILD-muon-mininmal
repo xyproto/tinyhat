@@ -1,0 +1,113 @@
+# upstream git revision: 1a52f2e1d641587a1514c99b96d839368076288d
+
+depends+=(archlinux32-keyring)
+
+# fail if upstream changes makepkg.conf or pacman.conf
+for ((i=0; i<${#sha256sums[@]}; i++)); do
+  # pacman.conf
+  if [ "${sha256sums[${i}]}" = 'd6f6ca86104df026462ab634efa1ecc850bccfa748ed5a6a88283e7659ec90c5' ]; then
+    sha256sums[${i}]='b6a21497e35a65ff302e8fff46fac03cbdd386f568bbae9febb7d970f561d04f'
+  fi
+  # makepkg.conf
+  if [ "${sha256sums[${i}]}" = '20497c90cbb678a9ca1a71eca66cf2a1d0c991c3e695f7b7d10fb68fc0ac4f12' ]; then
+    sha256sums[${i}]='cada9469c3b3832e8cfa1d2fb0e4ce4d2b5a28a480eb52135ab7aad2b75ee5ec'
+  fi
+  # rust.conf (for now keep the upstream one)
+done
+
+if [ ! "${CARCH}" = "i686" ]; then
+  # patch architecture where needed
+  eval "$(
+    declare -f package | \
+      sed '
+        /install.*makepkg.conf/ a \
+          sed -i "s@i686@'"${CARCH}"'@g; /^CHOST/ s/pentium4-/i686-/" "$pkgdir/etc/makepkg.conf"
+      '
+  )"
+fi
+
+# patch pacman for automatic architecture detection (applied in wildcard patch above)
+source+=('replace-i686-by-pentium4-when-architecture-is-auto.patch')
+sha256sums+=('6a7906bd28a57cbcff58d856ffefbbb9096a163aaff79913b4fac69d75d0028a')
+
+# not supported on i486 -fcf-protection
+# LTO currently no available on i486
+if [ "${CARCH}" = "i486" ]; then
+  eval "$(
+    {
+      declare -f package || \
+      printf 'package() {\n}\n'
+    } \
+    | sed '
+      $i sed -i "s/-fcf-protection//g" "$pkgdir/etc/makepkg.conf"
+      $i sed -i "s/LTOFLAGS.*/LTOFLAGS=\\\"-fno-lto\\\"/" "$pkgdir/etc/makepkg.conf"
+    '
+  )"
+fi
+
+# If this still applies, it only does for i486:
+# (while not having Python, it's not working on any CARCH)
+makedepends=(${makedepends[@]//doxygen/})
+#if [ "${CARCH}" = "i486" ]; then
+# broken Python/asciidoc
+  eval "$(
+    declare -f build | \
+      sed '
+        /meson/s/-Ddoc=enabled/-Ddoc=disabled/
+        /meson/s/-DDdoxygen=enabled/-DDdoxygen=disabled/
+      '
+  )"
+#fi
+
+# gettext is linked against old ICU verison on i486, use ICU 72 stub
+#if [ "${CARCH}" = "i486" ]; then
+#  makedepends+=(icu72)
+#fi
+
+# git on i486 problem, cannot make sums of git checkout (yet?)
+if [ "${CARCH}" = "i486" ]; then
+  sha256sums[0]='SKIP'
+fi
+
+# libmakepkg-dropins: /usr/share/makepkg/reproducible/python.sh exists in filesystem (owned by pacman)
+depends=(${depends[@]//libmakepkg-dropins/})
+
+# use muon instead of meson, no python (and meson needs python)
+makedepends=(${makedepends[@]//meson/})
+makedepends+=(muon-meson)
+
+source+=(pacman-trailing-slash-muon.patch)
+sha256sums+=(f295ff9967d38117bb5a29237716abb997197c69d8d2eeb449db49b85582be02)
+
+eval "$(
+  declare -f build | \
+    sed '
+      /meson compile/ i \
+        cd $srcdir/pacman/build
+      s/meson compile.*/muon samu -v -j1/
+      s/meson\(.* build\)/muon meson setup -D default_library=shared \1/
+    '
+  declare -f check | \
+    sed '
+      /meson test/ i \
+        cd $srcdir/pacman/build
+      s/meson.*/muon test -v/
+    '
+  declare -f package | \
+    sed '
+      /meson install/ i \
+        cd $srcdir/pacman/build
+      /meson install/ a \
+        cd ..
+      s/DESTDIR="$pkgdir" meson install -C build/muon install -d "$pkgdir"/
+    '
+)"
+
+# fails happilly at the moment, going full risk now and installing it anyway..
+unset check
+unset checkdepends
+
+# overwrite wrong checksum on rust.conf? does't work in buildmaster, works
+# in chroot?! Disabling again..
+#sha256sums[5]='6fe03e6ea3f69d99d59a48847a8ae97c2160fca847c7aedf7b89d05e4aa9386d'
+

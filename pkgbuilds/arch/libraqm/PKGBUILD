@@ -1,0 +1,35 @@
+# Maintainer:
+# Maintainer: Caleb Maclennan <caleb@alerque.com>
+# Contributor: Daniel Bermond < yahoo-com: danielbermond >
+
+pkgname=libraqm
+pkgver=0.11.0
+pkgrel="1"
+pkgdesc='A library that encapsulates the logic for complex text layout'
+arch=(i686 x32)
+url='https://github.com/HOST-Oman/libraqm/'
+license=(MIT)
+depends=(freetype2
+         fribidi
+         glibc
+         harfbuzz)
+makedepends=(git
+             gtk-doc
+             meson)
+source=(git+https://github.com/HOST-Oman/libraqm#tag=v$pkgver)
+sha256sums=('6f3ddc83bc6de239fc992ce2ed8f69397813ca7977c7067c6d20e822122c6782')
+
+build() {
+  meson build libraqm \
+    --prefix=/usr \
+    -D docs=true
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+
+  install -D -m644 libraqm/COPYING "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+unset -f pkgver

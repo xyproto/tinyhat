@@ -1,0 +1,80 @@
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Contributor: Tobias Powalowski <tpowa@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=alsa-utils
+pkgver=1.2.16
+pkgrel="1"
+pkgdesc="Advanced Linux Sound Architecture - Utilities"
+arch=(i686 x32)
+url="https://www.alsa-project.org"
+license=(GPL-2.0-or-later)
+depends=(
+  bash
+  glibc
+  libgcc
+  pciutils
+  psmisc
+)
+makedepends=(
+  alsa-lib
+  docbook-xsl
+  fftw
+  libsamplerate
+  ncurses
+  python-docutils
+  systemd
+  xmlto
+)
+source=(
+  $url/files/pub/utils/$pkgname-$pkgver.tar.bz2{,.sig}
+  $pkgname.tmpfiles
+)
+sha512sums=('288c042f5acb8a7cf1b0a0c25327c74e0bce126124253bdb2d0dc2630b8bc80b5e5d694de97738d031377fd82d887db32af1c4b27c6d940357b318d0a3ef02cf'
+            'SKIP'
+            '17ca2d760f383c02ccd00073d4fe73d6687ee58eb0ab5e458ad9d09845be7891cfe389e365bef00c7885e8afad45ea9ebf2925950f8d3fd8157feb818f986990')
+b2sums=('9a4d6daf4bcb5564661eb92b0d11b3077d209282c4826c96531590b2d987bd1e4cf92f2ee65a9c388235f540cbaaea108eb90987112ed528620eaecb1d0f0137'
+        'SKIP'
+        '24b8e44833c7e8b142162878a837b10e1c2a862568280f2ce16fcb81ecc1383802654dbe88930f2cc13c345635c5003cbc3712e121e589dffc2e25c540749ee3')
+validpgpkeys=('F04DF50737AC1A884C4B3D718380596DA6E59C91') # ALSA Release Team (Package Signing Key v1) <release@alsa-project.org>
+
+prepare() {
+  cd $pkgname-$pkgver
+  autoreconf -fiv
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --disable-alsaconf
+    --sbindir=/usr/bin
+    --with-udev-rules-dir=/usr/lib/udev/rules.d
+    --with-systemdsystemunitdir=/usr/lib/systemd/system
+  )
+
+  cd $pkgname-$pkgver
+  ./configure "${configure_options[@]}"
+  # prevent excessive overlinking due to libtool
+  sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
+  make
+}
+
+check() {
+  make -k check -C $pkgname-$pkgver
+}
+
+package() {
+  depends+=(
+    alsa-lib libasound.so libatopology.so
+    fftw libfftw3f.so
+    ncurses libformw.so libmenuw.so libncursesw.so libpanelw.so
+    libsamplerate libsamplerate.so
+  )
+
+  make DESTDIR="$pkgdir" install -C $pkgname-$pkgver
+  install -vDm 644 $pkgname-$pkgver/README.md -t "$pkgdir/usr/share/doc/$pkgname/"
+
+  install -vDm 644 $pkgname.tmpfiles "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"
+}
+
+unset -f pkgver

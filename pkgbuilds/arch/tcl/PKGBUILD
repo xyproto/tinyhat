@@ -1,0 +1,75 @@
+# Maintainer: Caleb Maclennan <caleb@alerque.com>
+# Contributor: Eric Bélanger <eric@archlinux.org>
+
+pkgname=tcl
+pkgver=9.0.1
+pkgrel="1"
+pkgdesc='Powerful, easy-to-learn dynamic programming language'
+arch=(i686 x32)
+url='http://tcl.sourceforge.net/'
+license=(TCL)
+depends=(zlib)
+options=(staticlibs !lto)
+_archive="$pkgname$pkgver"
+source=("https://downloads.sourceforge.net/sourceforge/tcl/$_archive-src.tar.gz")
+sha256sums=('a72b1607d7a399c75148c80fcdead88ed3371a29884181f200f2200cdee33bbc')
+
+prepare() {
+	cd "$_archive"
+	# we build the tcl sqlite interface in sqlite-tcl package
+	rm -rf pkgs/sqlite3*
+}
+
+build() {
+	cd "$_archive/unix"
+	./configure \
+		--prefix=/usr \
+		--mandir=/usr/share/man \
+		--enable-threads \
+		--enable-64bit
+	# Since the test targets are known-broken with a race condition in
+	# prerequisites, forcing one job at a time just out of defensiveness.
+	make -j1
+}
+
+check() {
+	cd "$_archive/unix"
+	# Upstream test suite uses a custom test runner with two different
+	# invocations. The Makefile specifies dependencies for one of those
+	# runs, but not both—relying instead on them having been built by the
+	# other invocation. Running parallel jobs can run those in a different
+	# order which makes for non-deterministic test failures.
+	make -j1 test
+}
+
+package() {
+	cd "$_archive/unix"
+	make INSTALL_ROOT="$pkgdir" install install-private-headers
+	ln -sf tclsh${pkgver%.*} "$pkgdir/usr/bin/tclsh"
+	ln -sf libtcl${pkgver%.*}.so "$pkgdir/usr/lib/libtcl.so"
+	install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" ../license.terms
+	install -Dm644 tcl.m4 -t "$pkgdir/usr/share/aclocal"
+	chmod 644 "$pkgdir/usr/lib/libtclstub.a"
+
+	# remove buildroot traces
+	_tclver=8.6
+	sed -e "s#$srcdir/$_archive/unix#/usr/lib#" \
+		-e "s#$srcdir/$_archive#/usr/include#" \
+		-e "s#'{/usr/lib} '#'/usr/lib/tcl$_tclver'#" \
+		-i "$pkgdir/usr/lib/tclConfig.sh"
+
+	tdbcver=tdbc1.1.10
+	sed -e "s#$srcdir/$_archive/unix/pkgs/$tdbcver#/usr/lib/$tdbcver#" \
+		-e "s#$srcdir/$_archive/pkgs/$tdbcver/generic#/usr/include#" \
+		-e "s#$srcdir/$_archive/pkgs/$tdbcver/library#/usr/lib/tcl${pkgver%.*}#" \
+		-e "s#$srcdir/$_archive/pkgs/$tdbcver#/usr/include#" \
+		-i "$pkgdir/usr/lib/$tdbcver/tdbcConfig.sh"
+
+	itclver=itcl4.3.2
+	sed -e "s#$srcdir/$_archive/unix/pkgs/$itclver#/usr/lib/$itclver#" \
+		-e "s#$srcdir/$_archive/pkgs/$itclver/generic#/usr/include#" \
+		-e "s#$srcdir/$_archive/pkgs/$itclver#/usr/include#" \
+		-i "$pkgdir/usr/lib/$itclver/itclConfig.sh"
+}
+
+unset -f pkgver

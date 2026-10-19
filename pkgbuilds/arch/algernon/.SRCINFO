@@ -1,0 +1,19 @@
+pkgbase = algernon
+	pkgdesc = Web server with Lua, Markdown, QUIC, Redis and PostgreSQL support
+	pkgver = 1.17.12
+	pkgrel = 1
+	url = https://algernon.roboticoverlords.org/
+	arch = i686
+	license = BSD-3-Clause
+	makedepends = git
+	makedepends = go
+	depends = glibc
+	optdepends = mariadb: For using the MariaDB/MySQL database backend
+	optdepends = ollama: For using Ollama from Lua or .prompt files
+	optdepends = postgresql: For using the PostgreSQL database backend
+	optdepends = redis: For using the Redis database backend
+	optdepends = valkey: For using the Redis database backend
+	source = git+https://github.com/xyproto/algernon#tag=v1.17.12
+	b2sums = 586b159393d3624d2b92b8a49cb747f82b2c35db7bec4edc85092859be7464654db27277750664fdf396118b8bcea07b69db0f65817f5c7b50b58a150e3bf632
+
+pkgname = algernon

@@ -1,0 +1,40 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Jan de Groot <jgc@archlinux.org>
+# Contributor: Thomas Baechler <thomas@archlinux.org>
+# Contributor: Tom Newsom <Jeepster@gmx.co.uk>
+
+pkgname=libdvdread
+pkgver=7.1.1
+pkgrel="1"
+pkgdesc='Library for reading DVD video disks'
+arch=(i686 x32)
+url='https://www.videolan.org/developers/libdvdnav.html'
+license=(GPL-2.0-or-later)
+depends=(glibc)
+makedepends=(
+  git
+  meson
+)
+optdepends=('libdvdcss: Decoding encrypted DVDs')
+source=("git+https://code.videolan.org/videolan/libdvdread.git#tag=$pkgver")
+b2sums=(6da11c869a7fef3e21c6df94201b9fef4cc9ff51077d405431fba1915c829900b2cea93023afd9c7dad1a80898dd0faaa55679419523126c47fec141a546ef9c)
+validpgpkeys=(65F7C6B4206BD057A7EB73787180713BE58D1ADC) # VideoLAN Release Signing Key (2015)
+
+prepare() {
+  cd $pkgname
+
+  # Fix out of tree build
+  sed -i "s|'git', 'log'|'git', '-C', meson.project_source_root(), 'log' |" meson.build
+}
+
+build() {
+  arch-meson $pkgname build \
+    -D libdvdcss=disabled
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "$pkgdir"
+}
+
+unset -f pkgver

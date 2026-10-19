@@ -1,0 +1,54 @@
+pkgbase = glycin
+	pkgdesc = Sandboxed and extendable image decoding
+	pkgver = 2.2.3
+	pkgrel = 1
+	url = https://gnome.pages.gitlab.gnome.org/glycin/
+	arch = i686
+	license = MPL-2.0 OR LGPL-2.1-or-later
+	checkdepends = dav1d
+	checkdepends = ffmpeg
+	checkdepends = rav1e
+	checkdepends = svt-av1
+	makedepends = clang
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = gobject-introspection
+	makedepends = gtk4
+	makedepends = libheif
+	makedepends = meson
+	makedepends = rust
+	makedepends = vala
+	depends = bubblewrap
+	depends = cairo
+	depends = fontconfig
+	depends = glib2
+	depends = glibc
+	depends = lcms2
+	depends = libgcc
+	depends = libjxl
+	depends = librsvg
+	depends = libseccomp
+	source = git+https://gitlab.gnome.org/GNOME/glycin.git#tag=2.2.3
+	source = git+https://gitlab.gnome.org/sophie-h/test-images.git
+	b2sums = 94649bdbcba357187bcb45435a937a08cbe36367b4da6e77d898e63cf694af4bd88a0f9d0c980d60b585dd6ddebc1f21c5c56a1ac8cadd7d8062b069c9804792
+	b2sums = SKIP
+
+pkgname = glycin
+	optdepends = libheif: Load .avif, .heic and .heif
+	provides = libglycin-2.so
+
+pkgname = glycin-gtk4
+	pkgdesc = Sandboxed and extendable image decoding - GTK4 integration
+	depends = fontconfig
+	depends = glib2
+	depends = glibc
+	depends = glycin
+	depends = gtk4
+	depends = lcms2
+	depends = libgcc
+	depends = libseccomp
+	provides = libglycin-gtk4-2.so
+
+pkgname = glycin-docs
+	pkgdesc = Sandboxed and extendable image decoding - documentation
+	depends = 

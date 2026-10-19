@@ -1,0 +1,45 @@
+pkgbase = foot
+	pkgdesc = Fast, lightweight, and minimalistic Wayland terminal emulator
+	pkgver = 1.28.0
+	pkgrel = 2
+	url = https://codeberg.org/dnkl/foot
+	arch = i686
+	arch = x32
+	license = MIT
+	makedepends = fcft
+	makedepends = fontconfig
+	makedepends = git
+	makedepends = libutf8proc
+	makedepends = libxkbcommon
+	makedepends = llvm
+	makedepends = meson
+	makedepends = ncurses
+	makedepends = ninja
+	makedepends = pixman
+	makedepends = python
+	makedepends = scdoc
+	makedepends = sway
+	makedepends = tllist
+	makedepends = wayland
+	makedepends = wayland-protocols
+	optdepends = libutempter: utmp logging
+	source = foot::git+https://codeberg.org/dnkl/foot.git#tag=1.28.0
+	sha256sums = 05a057b1145507625d9f548ae546705d58ba60cbb26a8958ce72f0b9c1bdee46
+
+pkgname = foot
+	depends = fcft
+	depends = fontconfig
+	depends = libfcft.so
+	depends = libutf8proc
+	depends = libxkbcommon
+	depends = ncurses
+	depends = pixman
+	depends = wayland
+	optdepends = foot-terminfo: extra non-standard features over terminfo included in ncurses
+	optdepends = libnotify: desktop notifications
+	optdepends = xdg-utils: URI launching
+	backup = etc/xdg/foot/foot.ini
+
+pkgname = foot-terminfo
+	pkgdesc = Extra non-standard terminfo files for foot, a Wayland terminal emulator
+	depends = ncurses

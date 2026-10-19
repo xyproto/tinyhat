@@ -1,0 +1,14 @@
+pkgbase = tty-solitaire
+	pkgdesc = ncurses-based klondike solitaire game
+	pkgver = 1.4.1
+	pkgrel = 1
+	url = https://github.com/mpereira/tty-solitaire
+	arch = i686
+	arch = x32
+	license = MIT
+	depends = git
+	depends = ncurses
+	source = git+https://github.com/mpereira/tty-solitaire.git#tag=v1.4.1
+	b2sums = e9867c7a3895daa7e1756e10b60eb9426783ef1385c4ae99faf279a3795357a910df9a7b01492b0de544e58845b3ed256dbe7e5ac1626f95a7c860b49e48c55b
+
+pkgname = tty-solitaire

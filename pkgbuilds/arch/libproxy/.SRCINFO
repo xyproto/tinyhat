@@ -1,0 +1,31 @@
+pkgbase = libproxy
+	pkgdesc = Automatic proxy configuration management library
+	pkgver = 0.5.12
+	pkgrel = 1
+	url = https://libproxy.github.io/libproxy/
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = gi-docgen
+	makedepends = git
+	makedepends = gobject-introspection
+	makedepends = gsettings-desktop-schemas
+	makedepends = meson
+	makedepends = vala
+	depends = curl
+	depends = duktape
+	depends = gcc-libs
+	depends = glib2
+	depends = glibc
+	source = git+https://github.com/libproxy/libproxy#tag=0.5.12
+	b2sums = aa049e4f7f37683b5c64e35770e9c3e5463d4fcf81e259c9bbd2facbd34f2eec46f28a455d9252bef475bf33bf39c70fa274a8470f5c6279f5e9e1c2de1e04b9
+	optdepends_i686 = webkit2gtk: PAC proxy support (Webkit2gtk engine)
+	makedepends_i686 = webkit2gtk
+
+pkgname = libproxy
+	provides = libproxy.so
+	conflicts = libproxy-webkit<0.5.0-1
+
+pkgname = libproxy-docs
+	pkgdesc = Automatic proxy configuration management library (documentation)
+	depends = 

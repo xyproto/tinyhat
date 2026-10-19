@@ -1,0 +1,13 @@
+https://ftp.gnu.org/gnu/ https://ftp.fau.de/gnu/ https://mirror.netcologne.de/gnu/ https://ftp.halifax.rwth-aachen.de/gnu/
+https://ftp.gnu.org/pub/gnu/ https://ftp.fau.de/gnu/ https://mirror.netcologne.de/gnu/ https://ftp.halifax.rwth-aachen.de/gnu/
+https://ftpmirror.gnu.org/ https://ftp.fau.de/gnu/ https://mirror.netcologne.de/gnu/ https://ftp.halifax.rwth-aachen.de/gnu/
+https://download-mirror.savannah.gnu.org/releases/ https://mirror.netcologne.de/savannah/ https://www.mirrorservice.org/sites/download.savannah.gnu.org/releases/
+https://download.savannah.gnu.org/releases/ https://mirror.netcologne.de/savannah/ https://www.mirrorservice.org/sites/download.savannah.gnu.org/releases/
+https://cdn.kernel.org/pub/ https://www.mirrorservice.org/sites/ftp.kernel.org/pub/
+https://www.kernel.org/pub/ https://www.mirrorservice.org/sites/ftp.kernel.org/pub/
+https://mirrors.edge.kernel.org/pub/ https://www.mirrorservice.org/sites/ftp.kernel.org/pub/
+https://download.gnome.org/sources/ https://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME/sources/
+https://www.x.org/releases/individual/ https://www.mirrorservice.org/sites/ftp.x.org/pub/individual/
+https://www.x.org/pub/individual/ https://www.mirrorservice.org/sites/ftp.x.org/pub/individual/
+https://www.cpan.org/ https://ftp.halifax.rwth-aachen.de/cpan/ https://www.mirrorservice.org/sites/cpan.perl.org/CPAN/
+https://cpan.metacpan.org/ https://ftp.halifax.rwth-aachen.de/cpan/ https://www.mirrorservice.org/sites/cpan.perl.org/CPAN/

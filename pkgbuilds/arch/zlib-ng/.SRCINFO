@@ -1,0 +1,24 @@
+pkgbase = zlib-ng
+	pkgdesc = zlib replacement with optimizations for next generation systems
+	pkgver = 2.3.3
+	pkgrel = 1
+	url = https://github.com/zlib-ng/zlib-ng
+	arch = i686
+	arch = x32
+	license = Zlib
+	makedepends = git
+	makedepends = cmake
+	makedepends = ninja
+	depends = glibc
+	source = git+https://github.com/zlib-ng/zlib-ng#tag=2.3.3
+	sha256sums = aa625dc5ecdeb0ea6c12d76518dd10a55e865499c5a0fced68f52cb751542041
+	b2sums = 9380c04753e0eab0b3fb5a72b115a65f5841fccb03f7e711e4bf5ed78888b3bb19085ade58b47c229868774333d20cd29301ae4f0e7db8c2d40414dfe6e71af2
+
+pkgname = zlib-ng
+	provides = libz-ng.so
+
+pkgname = zlib-ng-compat
+	pkgdesc = zlib replacement with optimizations for next generation systems (zlib compat)
+	provides = zlib
+	provides = libz.so
+	conflicts = zlib

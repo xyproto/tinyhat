@@ -1,0 +1,32 @@
+# Maintainer: Antonio Rojas <arojas@archlinux.org>
+
+pkgname=gpgmepp
+pkgver=2.2.0
+pkgrel="1"
+pkgdesc='C++ bindings for GPGME'
+arch=(i686 x32)
+url='https://gnupg.org/software/gpgme/index.html'
+license=(LGPL-2.0-or-later)
+depends=(glibc
+         gpgme
+         libgcc
+         libgpg-error
+         libstdc++)
+makedepends=(cmake
+             git)
+provides=(libgpgmepp.so)
+conflicts=('gpgme<2')
+source=(git+https://github.com/gpg/gpgmepp#tag=gpgmepp-$pkgver)
+sha256sums=('c7224a52de49c925badc757f37a62baed52e01df612fbfe1f8e15f7c68e122b9')
+
+build() {
+  cmake -B build -S $pkgname \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build
+}
+
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+}
+
+unset -f pkgver
