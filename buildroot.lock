@@ -225,11 +225,9 @@ extra gstreamer 1.20.5-3.0 gstreamer-1.20.5-3.0-i686.pkg.tar.zst 249657bb7b699f3
 extra gtest 1.14.0-2.0 gtest-1.14.0-2.0-i686.pkg.tar.zst 9e38a181aa50da482e66728a6bf80b8cffc21ec6cbe35a4b6d812ca43e9013c2
 extra gtk-doc 1.34.0-1.0 gtk-doc-1.34.0-1.0-any.pkg.tar.zst 40f92e2958fb4fa7e0a4f2a5cbd9149be5239726f69908f44e9348c71f103e52
 extra gtk-update-icon-cache 1:4.16.7-1.0 gtk-update-icon-cache-1:4.16.7-1.0-i686.pkg.tar.zst 72d7a01948ef5a958ea4564024c6ad296d6989bbb6e33a7294700b3e7a30368c
-extra gtk2 2.24.33-5.0 gtk2-2.24.33-5.0-i686.pkg.tar.zst 7216cef102c559ea05adee976aada542de9d3314b17bbbce9c8c4d51c0721610
 extra gtk2-compat 1.0.0-5.0 gtk2-compat-1.0.0-5.0-any.pkg.tar.zst 2da097bf796e8cadfa1087d71998fd2fd31654f72d7c9570640afd95fac60e6b
 extra gtk3 1:3.24.43-2.0 gtk3-1:3.24.43-2.0-i686.pkg.tar.zst 5c140b65a2fcc4e62c04d77d4b1a91e82f8f9d943ef2790a438c35450519ddf3
 extra gtk4 1:4.16.7-1.0 gtk4-1:4.16.7-1.0-i686.pkg.tar.zst 76ee00cfad952a3f036741682de448410fd0683b94448a3d35a660cc3f3de4c5
-extra gtkmm 1:2.24.5-5.0 gtkmm-1:2.24.5-5.0-i686.pkg.tar.zst 39cea3b7dd4e68335a77074d49cf055044ec74974deaaeac723e29f1d2cf3e07
 extra gts 0.7.6.121130-5.0 gts-0.7.6.121130-5.0-i686.pkg.tar.zst 88a375ac0ec276baf70cb0554decf553e1bea283d7265d7508180048b7f267cb
 core guile 3.0.11-1.0 guile-3.0.11-1.0-i686.pkg.tar.zst 96e3bd3a589523ba0cfce65b40b5479e38b43bf717f032333ee86561563e65d5
 extra gumbo-parser 0.10.1-2.2 gumbo-parser-0.10.1-2.2-i686.pkg.tar.zst 8e8127b399b43b2949a341c834e2302e313c59041387c5b08004760bc21bfa6a
@@ -833,8 +831,6 @@ extra python-pylint 3.1.0-1.0 python-pylint-3.1.0-1.0-any.pkg.tar.zst 58615f6533
 extra python-pyparsing 3.1.2-1.0 python-pyparsing-3.1.2-1.0-any.pkg.tar.zst 909411f3712b654c8366b2d6285ee9dc25e81d58e4bd07ef1cddc13630139dfb
 extra python-pyproject-hooks 1.0.0-5.2 python-pyproject-hooks-1.0.0-5.2-any.pkg.tar.zst ac40698e0447ace684fc99f9b0b8b081e27ad7cde80486175ce0c2b81e43468b
 extra python-pyproject-metadata 0.7.1-2.0 python-pyproject-metadata-0.7.1-2.0-any.pkg.tar.zst dc7083350887f05a49663c9a2a62c8f5e545388cb760f86b348d79ea54231b4f
-extra python-pyqt5 5.15.10-1.0 python-pyqt5-5.15.10-1.0-i686.pkg.tar.zst d8ee695c233991457dc4fcee98900ad6514f95db233b43ea12d3eb0c90546279
-extra python-pyqt5-sip 12.13.0-1.0 python-pyqt5-sip-12.13.0-1.0-i686.pkg.tar.zst 231786e75fc64262f587277451fb775e53e1f7d84561b5e405970d354682e69a
 extra python-pytest 1:8.1.1-1.0 python-pytest-1:8.1.1-1.0-any.pkg.tar.zst a9bfeea53adf7e633084d848d1bfe89821207b8fcbd2eb0cb0fcb685e7279be7
 extra python-pytz 2024.1-1.0 python-pytz-2024.1-1.0-any.pkg.tar.zst 087bd2355286eab2ea4a1b37c9b450b77bf50c97a2414796952e46f84d379a02
 extra python-pyudev 0.24.1-2.0 python-pyudev-0.24.1-2.0-any.pkg.tar.zst 7bdfa66d7784177c8f989bef796af7e4fccd88ef0e8bd99832073cebcb389f7d
@@ -884,21 +880,6 @@ extra python-zope-interface 6.2-1.0 python-zope-interface-6.2-1.0-i686.pkg.tar.z
 extra qhull 2020.2-6.0 qhull-2020.2-6.0-i686.pkg.tar.zst 60958b6898dadea74e5ee4db8c792485c8c4d5048ea56b345f57c524fbce7446
 extra qpdf 11.9.1-1.0 qpdf-11.9.1-1.0-i686.pkg.tar.zst 7890c9b5bc2680496435c157e76b6e6394769e7ce229d131f44e10101e5c5eb8
 extra qrencode 4.1.1-4.0 qrencode-4.1.1-4.0-i686.pkg.tar.zst b927b4c18bd0ac7f01c6874ec32478a9a8eb8bc651380da8b04bc3cf62f9debf
-extra qt5-base 5.15.19+kde+r96-1.0 qt5-base-5.15.19+kde+r96-1.0-i686.pkg.tar.zst 9bfa0763779d24f483fa41c917ea59e5b250dd4600727ed13f5333e70e7d2c20
-extra qt5-declarative 5.15.19+kde+r23-1.0 qt5-declarative-5.15.19+kde+r23-1.0-i686.pkg.tar.zst c4989feebbbda53a4ec5a01624ed74100cb7c1f96d3e354544ea6cb6b569b257
-extra qt5-svg 5.15.19+kde+r5-1.0 qt5-svg-5.15.19+kde+r5-1.0-i686.pkg.tar.zst 6af922ba47e15de4563c07c4b95ce55a2f432e01d013fdc15539494615aff388
-extra qt5-tools 5.15.14+kde+r4-2.0 qt5-tools-5.15.14+kde+r4-2.0-i686.pkg.tar.zst 025a36aa9fc52c4bc6da628773f582adc64670d102efb4e0e96d52dbd4baea0d
-extra qt5-translations 5.15.19-1.0 qt5-translations-5.15.19-1.0-any.pkg.tar.zst 05fb4bf07785507ba2565b111ad67824b4f684fc8313e082a2aeda024d03fa97
-extra qt5-wayland 5.15.19+kde+r55-1.0 qt5-wayland-5.15.19+kde+r55-1.0-i686.pkg.tar.zst 7c5fd31975e5a3b5ca2c4a4ab22ba49ad9ce3e7ec3c3898dab99093450cc265e
-extra qt5-x11extras 5.15.19-1.0 qt5-x11extras-5.15.19-1.0-i686.pkg.tar.zst c02d1e316f6fff1768e04767031e4e1f2e433596ce7002b80bb65b9a93509371
-extra qt6-5compat 6.7.2-1.1 qt6-5compat-6.7.2-1.1-i686.pkg.tar.zst caee24c4c0eaea9e51c6d33419992b63c80d802b94814973b00a17d062aca270
-extra qt6-base 6.7.2-2.0 qt6-base-6.7.2-2.0-i686.pkg.tar.zst 1fc338fbf0985529797f84769d204e53dad8e22924a1b136076689a0cd64b147
-extra qt6-declarative 6.7.2-1.0 qt6-declarative-6.7.2-1.0-i686.pkg.tar.zst bba3373f1cd5e045282c0ebebb87f09c690a5ff231ff92699e07be398a522c5e
-extra qt6-languageserver 6.7.2-1.1 qt6-languageserver-6.7.2-1.1-i686.pkg.tar.zst 68b0f4914b39831d29fc18b0ef12a6e87bbcf42be0db527be44a61759aacc51a
-extra qt6-shadertools 6.7.2-1.1 qt6-shadertools-6.7.2-1.1-i686.pkg.tar.zst c82784c60fe540ebd7e37a42c7f868584a16fc965bb2e2f31f8864b7fceb96fa
-extra qt6-svg 6.7.2-1.1 qt6-svg-6.7.2-1.1-i686.pkg.tar.zst 0754c9b1ae573fb06787a84d19fab39ed6f172ebd3c21e6d5bd1f2e238b42aa1
-extra qt6-tools 6.7.2-2.0 qt6-tools-6.7.2-2.0-i686.pkg.tar.zst 9331163e42f980e562a35cb7f6432549d6aae4193b288a2dc7d6fc5247856228
-extra qt6-translations 6.11.0-1.0 qt6-translations-6.11.0-1.0-any.pkg.tar.zst 445b3cad14ab35f45e2dae386a128e55419543a1ca0322e8a9cff1d9724f2e3b
 extra quota-tools 1:4.11-1.0 quota-tools-1:4.11-1.0-i686.pkg.tar.zst 98444afdacff2b3c96f4613934c35e6e0cd05bb9ae2dcab11926af8f113c8b9d
 extra ragel 6.10-4.0 ragel-6.10-4.0-i686.pkg.tar.zst 34c6564cb408dcae95ab640d6f15c0150386f6e4569e414af3a55dd75755f63f
 extra raptor 2.0.15-21.2 raptor-2.0.15-21.2-i686.pkg.tar.zst 4b7b7ed0e95b57ddecce4aa90e0b25bb683f2db249a8f4484b3a1397855d3632
@@ -908,7 +889,6 @@ extra rdma-core 50.0-1.0 rdma-core-50.0-1.0-i686.pkg.tar.zst 26f94ea06b47a9a9ad5
 extra re2c 4.0.2-1.0 re2c-4.0.2-1.0-i686.pkg.tar.zst 8273632a991959b02cf5da0280b9255d373d6848ecf321ec5c1c257cd6757e87
 core readline 8.3.003-1.0 readline-8.3.003-1.0-i686.pkg.tar.zst 7a8d51cf4b31230ae54272cac315ebb51071d74beb561e397fd0d80be9b730a9
 extra rhash 1.4.3-1.0 rhash-1.4.3-1.0-i686.pkg.tar.zst 606e9204612cf2570ab953d13f9bb5c59ad94f8a74e301979bf438964e0243b8
-extra roc-toolkit 0.2.1-3.1 roc-toolkit-0.2.1-3.1-i686.pkg.tar.zst 9684bec497d2f31679f2576167a8c32a4735b06646b0865165abbff3bfccc4d8
 extra rrdtool 1.8.0-1.1 rrdtool-1.8.0-1.1-i686.pkg.tar.zst 3a6873036e3ea1728720cbe38799b10cae12f6335d50afb4f97da27512e70e82
 extra rsync 3.2.7-3.0 rsync-3.2.7-3.0-i686.pkg.tar.zst d1e0a50f65066a3f120cd5037c23838ca847798e9b3b576573abddb9276759fc
 extra rtkit 0.14-1.0 rtkit-0.14-1.0-i686.pkg.tar.zst 58eab470374521525cd6d4e65a9b5ab90a6004c6f53ec7e6dd510c60dfd2b6ef
@@ -921,7 +901,6 @@ extra sassc 3.6.2-5.0 sassc-3.6.2-5.0-i686.pkg.tar.zst 8449c1649fa4566fc823ffcbd
 extra sbc 2.2-1.0 sbc-2.2-1.0-i686.pkg.tar.zst 7ad890665dc82afb72f4f90c2722aead4e7f23df08c66a3a3f30193d6941e499
 extra scdoc 1.11.5-1.0 scdoc-1.11.5-1.0-i686.pkg.tar.zst 735384732d3879cbe27e8f0c14ef32384caf93caadc34cb898953003b2b32e36
 extra scons 4.7.0-1.0 scons-4.7.0-1.0-any.pkg.tar.zst 9d2c548d0cf67d291d26fb74070c2fefa507ccac9ede1b5351be47c1f0c17cb5
-extra sdl12-compat 1.2.68-2.0 sdl12-compat-1.2.68-2.0-i686.pkg.tar.zst 8edb268072598c7a50e326d68d272eeefb08981f2354ff39fff11aa088685f67
 extra sdl2 2.30.7-1.0 sdl2-2.30.7-1.0-i686.pkg.tar.zst 0158264726d27097e01cad4fc3b0834fe899e1a4aabfd79bb752ddb4e6a72c90
 extra sdl2_image 2.8.2-1.0 sdl2_image-2.8.2-1.0-i686.pkg.tar.zst c9345b574167cfe57c7ae426161d1a6f96beaefbc2a92a5ea7fb6cf9b2680995
 extra seatd 0.9.3-1.0 seatd-0.9.3-1.0-i686.pkg.tar.zst f499c0e5da0b7dbd872de04f0ed2251b73001b5132008ff9b20eff60953a2eeb
@@ -967,7 +946,6 @@ extra tesseract 5.5.3-1.0 tesseract-5.5.3-1.0-i686.pkg.tar.zst 1e0a2a6a10ecba34a
 extra tesseract-data-afr 2:4.1.0-5.0 tesseract-data-afr-2:4.1.0-5.0-any.pkg.tar.zst fe4976056e457d198d2a5b2c0a2962ef4d27eb5c2bca0cd18688c328027dcca3
 extra tesseract-data-osd 2:4.1.0-5.0 tesseract-data-osd-2:4.1.0-5.0-any.pkg.tar.zst beabffffc3a47a378be4fdd81588e24191dbd1fb21f3406d04ef869648656dee
 extra tevent 1:0.16.1-3.1 tevent-1:0.16.1-3.1-i686.pkg.tar.zst 23d534f5aa468ca0365b36b626fbf403e312dd7ff59f013c8d9429855c851ce5
-core texinfo 7.2-1.3 texinfo-7.2-1.3-i686.pkg.tar.zst d8b3e9647b15080ded303967067ab4d5a85226e46c16d3eeff355d017f2d208b
 extra texlive-basic 2026.1-1.0 texlive-basic-2026.1-1.0-any.pkg.tar.zst ef721b1ef563843b409335a90cfbda4f77e60555c49e6b4895149044cff1244a
 extra texlive-bin 2024.2-2.0 texlive-bin-2024.2-2.0-i686.pkg.tar.zst c2be785dd04d689901a0e6f38e7ac3a208427f7db67f7ac52f9afd8b7b716a14
 extra texlive-binextra 2026.1-1.0 texlive-binextra-2026.1-1.0-any.pkg.tar.zst 06fb21e1a9370c9daba1cbf4477931bb614f7f3ebdcc63c6bc3cd7fdf559c870
@@ -1029,7 +1007,6 @@ extra wayland-protocols 1.49-1.0 wayland-protocols-1.49-1.0-any.pkg.tar.zst 141b
 extra webkit2gtk 2.38.2-1.0 webkit2gtk-2.38.2-1.0-i686.pkg.tar.zst 1547f66bb4bd79bd1a4aff01bb454372583bc35e5f9413ba06057dcf082f06f5
 extra webrtc-audio-processing 0.3.1-4.0 webrtc-audio-processing-0.3.1-4.0-i686.pkg.tar.zst c0915549c83636378bc3ad61cd2fdcc7f87bad8a58d643a1d635ab1410fc3e03
 extra webrtc-audio-processing-1 1.3-5.0 webrtc-audio-processing-1-1.3-5.0-i686.pkg.tar.zst 1acc04a8595c7090c300367909733ebeec31dc0aa0ac54509ca3e155ccfd320a
-extra wget 1.25.0-6.1 wget-1.25.0-6.1-i686.pkg.tar.zst 1a5fb6255fe52ea551652df5f5b09b05634d978f07ca8154875d55e9885524ee
 core which 2.25-1.0 which-2.25-1.0-i686.pkg.tar.zst ca456224f39197c2d6194eeb295d48743698b3a3cbc0edf03c223b00c14385f7
 extra wildmidi 0.5.0-1.0 wildmidi-0.5.0-1.0-i686.pkg.tar.zst e2504e1dbf3877d66f7d1c0d9037bae310b8c7c7f1db6e13bff01ad135be84ab
 extra wireplumber 0.4.14-1.1 wireplumber-0.4.14-1.1-i686.pkg.tar.zst 08c315c691d2f7bdae81fbb82afc7c8606c40687f1805758813f64115598cc45
