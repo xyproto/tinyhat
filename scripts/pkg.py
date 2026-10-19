@@ -11,6 +11,7 @@ import urllib.request
 os.umask(0o022)
 
 MIRROR = os.environ.get("MIRROR", "https://mirror.archlinux32.org/i686")
+ARCHIVE = os.environ.get("ARCHIVE", "https://archive.archlinux32.org/packages")
 REPOS = ["core", "extra"]
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DBDIR = os.path.join(TOP, "vendor", "db")
@@ -227,6 +228,17 @@ def write_lock(sel, lockfile):
     print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
 
 
+def read_pins(path):
+    pins = {}
+    if os.path.exists(path):
+        with open(path) as f:
+            for line in f:
+                fields = line.split("#", 1)[0].split()
+                if fields:
+                    pins[fields[0]] = fields[1:]
+    return pins
+
+
 def cmd_lock(listfile, lockfile, *extra):
     os.makedirs(DBDIR, exist_ok=True)
     if os.environ.get("REFRESH") or not all(
@@ -234,7 +246,12 @@ def cmd_lock(listfile, lockfile, *extra):
     ):
         for repo in REPOS:
             download(f"{MIRROR}/{repo}/{repo}.db", os.path.join(DBDIR, f"{repo}.db"))
-    write_lock(resolve(listfile, extra), lockfile)
+    sel = resolve(listfile, extra)
+    pins = read_pins(os.path.join(TOP, "config", "pins.txt"))
+    for p in sel:
+        if p["name"] in pins:
+            p["version"], p["filename"], p["sha256"] = pins[p["name"]]
+    write_lock(sel, lockfile)
 
 
 def cmd_local(listfile, lockfile, repodir, arch="i686"):
@@ -265,7 +282,12 @@ def cmd_fetch(lockfile, pkgdir):
         dest = os.path.join(pkgdir, p["filename"])
         if os.path.exists(dest) and sha256(dest) == p["sha256"]:
             continue
-        download(f"{MIRROR}/{p['repo']}/{p['filename']}", dest)
+        try:
+            download(f"{MIRROR}/{p['repo']}/{p['filename']}", dest)
+        except urllib.error.HTTPError as e:
+            if e.code != 404:
+                raise
+            download(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{p['filename']}", dest)
         if sha256(dest) != p["sha256"]:
             os.unlink(dest)
             die(f"checksum mismatch for {p['filename']}")

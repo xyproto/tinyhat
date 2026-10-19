@@ -671,7 +671,7 @@ core pacman-mirrorlist 20260322-1.2 pacman-mirrorlist-20260322-1.2-any.pkg.tar.z
 extra pahole 1:1.31-1.0 pahole-1:1.31-1.0-i686.pkg.tar.zst 0669b32ec27ec1dce2e4300361f238d79390b2f00c6f77d9798d56969a76e46a
 core pam 1.5.2-1.0 pam-1.5.2-1.0-i686.pkg.tar.zst a550a967ce82842d6c6a152bf7b98e725dc50a9ea95603c1e6588814e5a57433
 core pambase 20260616-1.0 pambase-20260616-1.0-any.pkg.tar.zst 205331437cc8f904b68e335dc089f858b50e074636d1f43bcfb76aa300183c94
-extra pango 1:1.58.2-1.0 pango-1:1.58.2-1.0-i686.pkg.tar.zst c9a1ddbf403f40e532242629305f64b103243cd6a969083a56a97278847baaa0
+extra pango 1:1.54.0-1.0 pango-1:1.54.0-1.0-i686.pkg.tar.zst 69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef
 extra pangomm 2.46.3-1.0 pangomm-2.46.3-1.0-i686.pkg.tar.zst 1cf4a48679f20cd0dfb9e6a377a51d1abe45aa83981223b4435dff35a38b424f
 extra parallel 20241122-1.0 parallel-20241122-1.0-any.pkg.tar.zst bbb797537f47a3147bbb9227e5c5e0c4f497b88dd47f7afd909abd6b16d44bb9
 core patch 2.8-1.1 patch-2.8-1.1-i686.pkg.tar.zst 6efd537383a70ff27984ab186ab168a1889bb84919ed894d5fb528bcf9a92f37
