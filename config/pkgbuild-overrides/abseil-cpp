@@ -1,0 +1,1 @@
+eval "$(declare -f build | sed 's/-DABSL_BUILD_TESTING=ON/-DABSL_BUILD_TESTING=OFF/')"
