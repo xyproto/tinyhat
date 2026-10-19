@@ -1,0 +1,7 @@
+# Packages taken from archlinux32 instead of being built here, for now, because they take more than about 15 minutes
+# to build. Packages that are broken in archlinux32 are built anyway.
+gcc glibc binutils arm-none-eabi-gcc arm-none-eabi-newlib
+mesa gtk3 gtk4 librsvg
+systemd util-linux openssl nss gnutls gnupg krb5 git
+spirv-tools onetbb highway libjxl pipewire sysprof tinysparql
+linux-firmware

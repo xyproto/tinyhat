@@ -64,4 +64,10 @@ package() {
   install -vDm 644 -t "$pkgdir/usr/share/doc/$pkgname" doc/*.md doc/*.adoc
 }
 
+makedepends=(${makedepends[@]//asciidoctor/})
+eval "$(
+  declare -f build | sed '/--target doc/d'
+  declare -f package | sed '/install -C build\/doc/d'
+)"
+
 unset -f pkgver

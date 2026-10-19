@@ -13,6 +13,10 @@ CONFIG = os.path.join(TOP, "config")
 SEED_BASE = ["base-devel", "pacman", "fakeroot", "git", "ccache", "python", "perl"]
 SYSROOT = {"x32-gcc": ["glibc"]}
 FILES_CACHE = os.path.join(TOP, "build", "cache", "files")
+SEED_BROKEN = os.path.join(TOP, "build", "seed-broken.txt")
+PREBUILT = os.path.join(CONFIG, "prebuilt.txt")
+SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "gcc-libs", "binutils",
+             "llvm", "llvm-libs", "clang", "compiler-rt", "rust", "go"}
 
 
 def strip_ver(dep):
@@ -42,8 +46,10 @@ def parse(path):
     def get(fields, key):
         return fields.get(key, base.get(key, [])) + fields.get(key + "_i686", base.get(key + "_i686", []))
 
+    epoch = base.get("epoch", ["0"])
     info = {"pkgbase": base.get("pkgbase"), "pkgnames": list(pkgs), "depends": {}, "provides": {}, "arch": {},
-            "makedepends": get({}, "makedepends")}
+            "makedepends": get({}, "makedepends"),
+            "version": f"{epoch[0] if epoch else '0'}:{base.get('pkgver', [''])[0]}"}
     for name, fields in pkgs.items():
         info["depends"][name] = get(fields, "depends")
         info["provides"][name] = get(fields, "provides")
@@ -123,15 +129,99 @@ def seed_index():
         return {}, {}
 
 
-def auto_local(info, seed, idx, prefs):
-    out = []
+def rpmvercmp(a, b):
+    if a == b:
+        return 0
+    p1 = p2 = 0
+    while p1 < len(a) and p2 < len(b):
+        s1, s2 = p1, p2
+        while p1 < len(a) and not a[p1].isalnum():
+            p1 += 1
+        while p2 < len(b) and not b[p2].isalnum():
+            p2 += 1
+        if p1 >= len(a) or p2 >= len(b):
+            break
+        if p1 - s1 != p2 - s2:
+            return -1 if p1 - s1 < p2 - s2 else 1
+        s1, s2 = p1, p2
+        isnum = a[p1].isdigit()
+        test = str.isdigit if isnum else str.isalpha
+        while p1 < len(a) and test(a[p1]):
+            p1 += 1
+        while p2 < len(b) and test(b[p2]):
+            p2 += 1
+        seg1, seg2 = a[s1:p1], b[s2:p2]
+        if not seg2:
+            return 1 if isnum else -1
+        if isnum:
+            seg1, seg2 = seg1.lstrip("0"), seg2.lstrip("0")
+            if len(seg1) != len(seg2):
+                return 1 if len(seg1) > len(seg2) else -1
+        if seg1 != seg2:
+            return 1 if seg1 > seg2 else -1
+    if p1 >= len(a) and p2 >= len(b):
+        return 0
+    if (p1 >= len(a) and not b[p2].isalpha()) or (p1 < len(a) and a[p1].isalpha()):
+        return -1
+    return 1
+
+
+def newer(local, seed):
+    return rpmvercmp(local.rpartition(":")[2], seed.rpartition(":")[2].rsplit("-", 1)[0]) > 0
+
+
+def seed_closure(seed, name, prefs, cache):
+    if name not in cache:
+        cache[name] = set()
+        out, queue = set(), [name]
+        while queue:
+            n = queue.pop()
+            if n in out:
+                continue
+            out.add(n)
+            for d in seed[0].get(n, {}).get("depends", []):
+                m = pkg.lookup(seed, d, prefs, set())
+                if m is not None:
+                    queue.append(m)
+        cache[name] = out
+    return cache[name]
+
+
+def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozenset(), image=frozenset()):
+    hard, soft = [], []
     for dep in all_deps(info):
-        if pkg.lookup(seed, dep, prefs, set()) is not None:
+        seedname = pkg.lookup(seed, dep, prefs, set())
+        localname = pkg.lookup(idx["i686"], dep, prefs, set())
+        if localname in prebuilt and seedname is not None:
             continue
-        name = pkg.lookup(idx["i686"], dep, prefs, set())
-        if name and name not in info["pkgnames"] and name not in out:
-            out.append(name)
-    return out
+        if seedname is None:
+            wanted, out = [localname], hard
+        else:
+            wanted, out = sorted(seed_closure(seed, seedname, prefs, cache) & broken), hard
+            if localname in image and localname not in SEED_ONLY and localname in versions["local"] and seedname in versions["seed"] and \
+                    newer(versions["local"][localname], versions["seed"][seedname]):
+                soft.append(localname)
+        for name in wanted:
+            if name and name in idx["i686"][0] and name not in info["pkgnames"] and name not in out:
+                out.append(name)
+    soft = [n for n in soft if n in idx["i686"][0] and n not in info["pkgnames"] and n not in hard]
+    return hard, soft
+
+
+def prune_soft(plans, base_of):
+    while True:
+        graph = {b: {base_of[d] for d in hard + soft} - {b} for b, (_, hard, soft) in plans.items()}
+        drop = 0
+        for comp in sccs(graph):
+            if len(comp) < 2:
+                continue
+            for b in comp:
+                info, hard, soft = plans[b]
+                keep = [d for d in soft if base_of[d] not in comp]
+                drop += len(soft) - len(keep)
+                plans[b] = (info, hard, keep)
+        if not drop:
+            return [c for c in sccs(graph) if len(c) > 1]
 
 
 def all_deps(info):
@@ -259,21 +349,58 @@ def cmd_mk():
     libs = read_libs()
     idx = indexes(infos)
     seed = seed_index()
+    broken = set(pkg.read_list(SEED_BROKEN))
+    closures = {}
+    versions = {"local": {n: i["version"] for i in infos for n in i["pkgnames"]},
+                "seed": {p["name"]: p["version"] for p in pkg.read_lock(os.path.join(TOP, "buildroot.lock"))}}
     x32_base = {p["name"]: p["base"] for p in idx["x32"][0].values() if p["arch"] == "x32"}
     lines, i686_stamps, x32_stamps, tinyhat = [], [], [], []
 
+    targets, lprefs, skip = pkg.list_config(os.path.join(CONFIG, "rootfs.txt"))
+    rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
+    image = {p["name"] for p in rootfs_i686}
+    prebuilt = set()
+    for base in pkg.read_list(PREBUILT):
+        info = by_base.get(base)
+        if info is None or not set(info["pkgnames"]) & set(seed[0]):
+            print(f"mkpkgs.py: {base} is not available prebuilt, building it", file=sys.stderr)
+        elif set(info["pkgnames"]) & broken:
+            print(f"mkpkgs.py: prebuilt {base} is broken in the seed, building it", file=sys.stderr)
+        else:
+            prebuilt.add(base)
+    prebuilt_names = {n for b in prebuilt for n in by_base[b]["pkgnames"]}
+
+    i686_plans = {}
     for info in infos:
         arches = base_arches(info)
         if not arches & {"i686", "any"}:
             continue
         own = set(info["pkgnames"])
+        soft = []
+        if info["base"] in prebuilt:
+            target = stamp("i686", info["base"])
+            i686_stamps.append(target)
+            names_here = [n for n in info["pkgnames"] if set(info["arch"][n]) & {"i686", "any"}]
+            lines.append(f"{target}: $(B)/.buildroot")
+            lines.append("\t@mkdir -p $(@D)")
+            lines.append(f"\tpython3 scripts/pkg.py prebuilt $(REPO) {' '.join(names_here)}")
+            lines.append("\t@touch $@")
+            lines.append("")
+            continue
         if info["sub"] == "tinyhat":
             wanted = all_deps(info)
             tinyhat += info["pkgnames"]
             deps = resolve_local(wanted, names, provided, own)
         else:
-            wanted = localdeps.get(info["base"], []) + auto_local(info, seed, idx, prefs)
-            deps = [d for d in exact_local(wanted, full, local) if d not in own]
+            hard, soft = auto_local(info, seed, idx, prefs, broken, closures, versions, prebuilt_names, image)
+            deps = [d for d in exact_local(localdeps.get(info["base"], []) + hard, full, local) if d not in own]
+            soft = [d for d in exact_local(soft, full, local) if d not in own and d not in deps]
+        i686_plans[info["base"]] = (info, deps, soft)
+    for comp in prune_soft(i686_plans, base_of):
+        print(f"mkpkgs.py: dependency cycle: {' '.join(sorted(comp))}", file=sys.stderr)
+
+    for info, deps, soft in i686_plans.values():
+        deps = deps + soft
         args = [info["dir"]] + [f"i686/{d}" for d in deps]
         prereqs = [stamp("i686", base_of[d]) for d in deps]
         for d in SYSROOT.get(info["base"], []):
@@ -297,7 +424,7 @@ def cmd_mk():
             x32 = [n for n in ("glibc", "x32-runtime") if n not in x32] + x32
             chain = ["x32-binutils", "x32-gcc"]
             if info["sub"] == "arch":
-                wanted = localdeps.get(base, []) + auto_local(info, seed, idx, prefs)
+                wanted = localdeps.get(base, []) + auto_local(info, seed, idx, prefs, broken, closures, versions)[0]
                 tools += [d for d in exact_local(wanted, full, local) if d not in tools and d not in info["pkgnames"]]
         plans[base] = (x32, chain + [t for t in tools if t not in chain])
         graph[base] = {x32_base[n] for n in x32} - {base}
@@ -328,8 +455,6 @@ def cmd_mk():
         x32_stamps.append(target)
         rule(lines, target, info, prereqs, args, f"x32-{base}")
 
-    targets, lprefs, skip = pkg.list_config(os.path.join(CONFIG, "rootfs.txt"))
-    rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     rootfs_x32 = pkg.resolve_targets(targets, idx, "x32", lprefs, skip)
     print("I686_STAMPS := " + " ".join(i686_stamps))
     print("X32_STAMPS := " + " ".join(x32_stamps))

@@ -1,0 +1,2 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v '^qt6-'))
+eval "$(declare -f build | sed 's/arch-meson -Dgconv=disabled /arch-meson -Dgconv=disabled -Dqv4l2=disabled -Dqvidcap=disabled /')"

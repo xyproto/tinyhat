@@ -103,4 +103,6 @@ eval "$(
     '
 )"
 
+eval "$(declare -f build | sed 's/cmake -S flac /cmake -S flac -DINSTALL_MANPAGES=OFF /')"
+
 unset -f pkgver

@@ -17,13 +17,15 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest clean distclean patchcheck sourcecheck fuzzelcheck test dist
+.PHONY: all lock fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot clean distclean patchcheck sourcecheck fuzzelcheck test dist
 
 all: tinyhat32.img
 
+ifneq (,$(filter-out cleantest cleanchroot clean distclean,$(or $(MAKECMDGOALS),all)))
 include $(B)/pkgs.mk
+endif
 
-$(B)/pkgs.mk: scripts/mkpkgs.py scripts/pkg.py config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip $(wildcard pkgbuilds/*/*/.SRCINFO)
+$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip $(wildcard pkgbuilds/*/*/.SRCINFO)
 	@mkdir -p $(B)
 	python3 scripts/mkpkgs.py mk >$@
 
@@ -81,13 +83,17 @@ $(B)/.fetched-buildroot: buildroot.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg
 	@touch $@
 
-$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh
+$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 	chmod -R u+w $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
 	python3 scripts/pkg.py extract buildroot.lock vendor/pkg $(B)/buildroot
 	ldconfig -r $(B)/buildroot
 	scripts/postinstall.sh $(B)/buildroot buildroot.lock vendor/pkg
+	scripts/rust.sh $(B)/buildroot vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 	@touch $@
+
+$(B)/seed-broken.txt: $(B)/.buildroot scripts/seedcheck.py
+	python3 scripts/seedcheck.py $(B)/buildroot buildroot.lock vendor/pkg $@
 
 packages: $(I686_STAMPS)
 
@@ -156,6 +162,9 @@ qemutest64x32: tinyhat64x32.img
 
 cleantest:
 	rm -rf $(B)/qmt $(B)/test-usb.img
+
+cleanchroot:
+	scripts/userns.sh rm -rf $(B)/chroot
 
 clean:
 	scripts/userns.sh rm -rf $(B)
