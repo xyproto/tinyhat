@@ -1,0 +1,2 @@
+makedepends=(${makedepends[@]//asciidoctor/})
+eval "$(declare -f build | sed 's/--disable-static/--disable-static --disable-asciidoc/')"

@@ -1,0 +1,2 @@
+makedepends=(${makedepends[@]//qt6-base/})
+eval "$(declare -f prepare | sed '$ i\  sed -i "/subdir(.src\\/ftinspect.)/d" "$srcdir/ft2demos-$pkgver/meson.build"')"

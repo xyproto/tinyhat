@@ -50,4 +50,7 @@ package() {
   install -D -m0644 -t "${pkgdir}"/usr/share/doc/cryptsetup/ FAQ.md docs/{Keyring,LUKS2-locking}.txt
 }
 
+makedepends=(${makedepends[@]//asciidoctor/})
+eval "$(declare -f build | sed 's/--disable-static/--disable-static --disable-asciidoc/')"
+
 unset -f pkgver

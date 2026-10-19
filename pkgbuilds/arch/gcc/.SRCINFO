@@ -31,7 +31,6 @@ pkgbase = gcc
 	sha256sums = 44ea973558842f3f4bd666bdaf6e810fd7b7c7bd36b5cc4c69f93d2cd0124fc7
 	sha256sums = 1773f5137f08ac1f48f0f7297e324d5d868d55201c03068670ee4602babdef2f
 	sha256sums = 838e14d4ef76079107a5373316598025915eaf747a10522ec9f8842125ca9a8e
-	makedepends_i686 = gcc-ada
 	makedepends_i686 = rust
 
 pkgname = gcc
@@ -52,22 +51,6 @@ pkgname = gcc
 	depends = zlib
 	depends = zstd
 	optdepends = gcc-libs: for generating code for 32-bit ABI
-	provides = 
-	replaces = 
-	options = !emptydirs
-	options = staticlibs
-
-pkgname = gcc-ada
-	pkgdesc = Ada front-end for GCC (GNAT)
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libgcc
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
 	provides = 
 	replaces = 
 	options = !emptydirs

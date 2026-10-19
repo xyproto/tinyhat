@@ -6,7 +6,6 @@ pkgbase = gperftools
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause
-	makedepends = asciidoctor
 	makedepends = git
 	depends = glibc
 	depends = libgcc

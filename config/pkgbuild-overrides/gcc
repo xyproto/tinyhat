@@ -1,0 +1,9 @@
+pkgname=(${pkgname[@]//gcc-ada/})
+makedepends_i686=(${makedepends_i686[@]//gcc-ada/})
+_sedpatch build '
+  /enable-languages/ s/ada,//
+'
+_sedpatch package_gcc '
+  \,_pick gcc-ada, d
+'
+unset -f package_gcc-ada

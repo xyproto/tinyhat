@@ -1,0 +1,17 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -e git -e wget))
+source=("${source[@]:2}")
+b2sums=("${b2sums[@]:2}")
+prepare() {
+  cd "${pkgname}-${pkgver}"
+  local src
+  for src in "${source[@]}"; do
+    src="${src%%::*}"
+    src="${src##*/}"
+    [[ $src = *.patch ]] || continue
+    echo "Applying patch $src..."
+    patch -Np1 < "../$src"
+  done
+}
+eval "$(
+  declare -f build check package | sed 's/cd "${pkgname}"$/cd "${pkgname}-${pkgver}"/; s/cd "${pkgname}";$/cd "${pkgname}-${pkgver}";/'
+)"

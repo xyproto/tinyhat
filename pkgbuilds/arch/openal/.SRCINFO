@@ -18,7 +18,6 @@ pkgbase = openal
 	makedepends = ninja
 	makedepends = pipewire
 	makedepends = portaudio
-	makedepends = qt6-base
 	makedepends = sdl3
 	depends = glibc
 	depends = libgcc

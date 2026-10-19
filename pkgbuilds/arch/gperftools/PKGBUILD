@@ -54,4 +54,6 @@ package() {
   install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" COPYING
 }
 
+makedepends=(${makedepends[@]//asciidoctor/})
+
 unset -f pkgver
