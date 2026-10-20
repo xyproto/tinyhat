@@ -1,0 +1,1 @@
+eval "$(declare -f prepare | sed '$ i\  sed -i "s/^static unsigned int fpuctrl_\\(get\\|set\\)SSE_mxcsr/__attribute__((target(\\"sse\\"))) \&/" xhe-aac/mathlib/src/opt/fpucontrol_opt.h')"

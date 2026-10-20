@@ -1,4 +1,4 @@
 name: furnace
-version: 0.6.8.3
-url: https://github.com/tildearrow/furnace
-license: GPL-2.0-or-later
+version: 0.6.8.3-1
+url: https://tildearrow.org/furnace/
+license: GPL-2.0-or-later AND MIT AND Unlicense

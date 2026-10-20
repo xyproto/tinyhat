@@ -1,0 +1,1 @@
+eval "$(declare -f prepare | sed 's|cd "LuaJIT-${_commit}";|cd "LuaJIT-${_commit}"*/;|')"

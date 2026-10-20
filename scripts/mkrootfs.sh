@@ -46,7 +46,7 @@ for p in ${TINYHAT_PKGS-}; do
 done
 
 chmod -R u=rwX,go=rX "$modules"
-find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" -delete
+find "$root/usr/lib" -maxdepth 1 -name "libboost_*" ! -name "libboost_iostreams*" ! -name "libboost_filesystem*" ! -name "libboost_program_options*" ! -name "libboost_atomic*" ! -name "libboost_container*" ! -name "libboost_random*" -delete
 if [ "$arch" = x32 ]; then
 	ln -sfn usr/lib "$root/libx32"
 	ln -sfn lib "$root/usr/libx32"

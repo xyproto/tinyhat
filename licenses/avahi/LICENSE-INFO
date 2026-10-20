@@ -1,4 +1,4 @@
 name: avahi
-version: 0.8+22+gfd482a7-3.2
-url: https://github.com/lathiat/avahi
-license: LGPL
+version: 1:0.9rc5-2
+url: https://github.com/avahi/avahi
+license: LGPL-2.1-or-later

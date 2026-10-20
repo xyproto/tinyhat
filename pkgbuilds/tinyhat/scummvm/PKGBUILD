@@ -7,10 +7,8 @@ url="https://www.scummvm.org/"
 license=(GPL-3.0-or-later)
 depends=(sdl3 fluidsynth a52dec faad2 flac freetype2 fribidi giflib libjpeg-turbo libmad libmikmod libmpeg2 libpng libtheora libvorbis zlib)
 source=("https://downloads.scummvm.org/frs/scummvm/$pkgver/scummvm-$pkgver.tar.xz"
-        cursor-colorkey.patch
         sdl3-palette.patch)
 sha256sums=('cd660b34104da7f85ed0a11b7c6c2320c629bb87ee297935711ebc1e09731f12'
-            'SKIP'
             'SKIP')
 
 prepare() {

@@ -1,2 +1,12 @@
 makedepends=(${makedepends[@]//qt6-base/})
 eval "$(declare -f build | sed 's/cmake -S openal-soft /cmake -S openal-soft -DALSOFT_NO_CONFIG_UTIL=ON /')"
+source=("${source[@]/openal-i686.patch}")
+source=(${source[@]})
+b2sums=("${b2sums[@]:0:${#source[@]}}")
+pkgname=(openal)
+makedepends=(${makedepends[@]//ffmpeg/})
+eval "$(
+  declare -f build | sed 's/cmake -S openal-soft /cmake -S openal-soft -DALSOFT_EXAMPLES=OFF /'
+  declare -f package_openal | sed '/_pick examples/d'
+)"
+unset -f package_openal-examples

@@ -34,4 +34,6 @@ package () {
   install -Dm 644 NOTICE -t "${pkgdir}"/usr/share/licenses/${pkgname}/
 }
 
+eval "$(declare -f prepare | sed '$ i\  sed -i "s/^static unsigned int fpuctrl_\\(get\\|set\\)SSE_mxcsr/__attribute__((target(\\"sse\\"))) \&/" xhe-aac/mathlib/src/opt/fpucontrol_opt.h')"
+
 unset -f pkgver

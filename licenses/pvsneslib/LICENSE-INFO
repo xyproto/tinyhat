@@ -1,4 +1,4 @@
 name: pvsneslib
-version: master (e090f001)
+version: 0+e090f001-1
 url: https://github.com/alekmaul/pvsneslib
-license: MIT
+license: MIT AND LGPL-2.1-only AND GPL-2.0-or-later

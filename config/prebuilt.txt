@@ -1,5 +1,9 @@
-# Packages taken from archlinux32 instead of being built here, for now, because they take more than about 15 minutes
-# to build. Packages that are broken in archlinux32 are built anyway.
+# Packages taken from archlinux32 instead of being built here, for now. Packages that are broken in archlinux32, or
+# that archlinux32 does not have, are built anyway. "*" means every package in pkgbuilds/arch, to get an image quickly;
+# the named packages are the ones that take more than about 15 minutes to build. llvm (pkgbuilds/tinyhat, LLVM 23)
+# is taken as archlinux32's LLVM 15 for now, because the archlinux32 mesa needs libLLVM-15.so.
+*
+llvm
 gcc glibc binutils arm-none-eabi-gcc arm-none-eabi-newlib
 mesa gtk3 gtk4 librsvg
 systemd util-linux openssl nss gnutls gnupg krb5 git
