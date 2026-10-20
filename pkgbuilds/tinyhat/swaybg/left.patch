@@ -18,8 +18,8 @@
 +		if (scale > buffer_height * 0.55 / height) {
 +			scale = buffer_height * 0.55 / height;
 +		}
-+		if (scale > buffer_width * 0.28 / width) {
-+			scale = buffer_width * 0.28 / width;
++		if (scale > buffer_width * 0.20 / width) {
++			scale = buffer_width * 0.20 / width;
 +		}
 +		cairo_scale(cairo, scale, scale);
 +		cairo_set_source_surface(cairo, image,
@@ -48,6 +48,6 @@
  		"Background Modes:\n"
 -		"  stretch, fit, fill, center, tile, or solid_color\n";
 +		"  stretch, fit, fill, center, tile, left, or solid_color\n";
- 
+
  	struct swaybg_output_config *config = calloc(1, sizeof(struct swaybg_output_config));
  	config->output = strdup("*");
