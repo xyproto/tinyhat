@@ -4,7 +4,7 @@ pkgrel=1
 pkgdesc="Port of ASCIIAquarium from Perl to Go"
 arch=(i686)
 url="https://github.com/xyproto/aquarium"
-license=(GPL-2.0-Only)
+license=(GPL-2.0-only)
 depends=(glibc)
 makedepends=(go-tinyhat)
 options=(!buildflags)
@@ -12,12 +12,12 @@ source=("aquarium-v$pkgver.tar.gz::https://github.com/xyproto/aquarium/archive/v
 sha256sums=('f6607cc2f47ddcb84923ef0eac49beb1986acae7c2e9702e86b142cbea08d31d')
 
 build() {
-  cd aquarium-$_commit
+  cd aquarium-$pkgver
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
   /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/aquarium"
 }
 
 package() {
   install -Dm755 aquarium "$pkgdir/usr/bin/aquarium"
-  install -Dm644 aquarium-$_commit/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 aquarium-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
