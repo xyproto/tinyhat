@@ -1,4 +1,4 @@
-Tiny Hat
+Tiny Hat 1.0.1
 
 Alt+Space	Application Menu
 Alt+F2	Run a command (Win+R also works)
