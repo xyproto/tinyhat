@@ -1,0 +1,11 @@
+[Unit]
+Description=Stop the time sync service once the clock has been set
+After=systemd-timesyncd.service
+Wants=systemd-timesyncd.service
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c '/usr/lib/systemd/systemd-time-wait-sync && exec systemctl stop systemd-timesyncd.service'
+
+[Install]
+WantedBy=multi-user.target

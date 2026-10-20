@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tarfile
 import time
+import tomllib
 import shutil
 import urllib.parse
 import urllib.request
@@ -243,15 +244,10 @@ def write_lock(sel, lockfile):
     print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
 
 
-def read_pins(path):
-    pins = {}
-    if os.path.exists(path):
-        with open(path) as f:
-            for line in f:
-                fields = line.split("#", 1)[0].split()
-                if fields:
-                    pins[fields[0]] = fields[1:]
-    return pins
+def read_pins(path=os.path.join(TOP, "config", "build.toml")):
+    with open(path, "rb") as f:
+        pins = tomllib.load(f).get("pins", {})
+    return {name: [p["version"], p["file"], p["sha256"]] for name, p in pins.items()}
 
 
 def cmd_lock(listfile, lockfile, *extra):
@@ -262,7 +258,7 @@ def cmd_lock(listfile, lockfile, *extra):
         for repo in REPOS:
             download(f"{MIRROR}/{repo}/{repo}.db", os.path.join(DBDIR, f"{repo}.db"))
     sel = resolve(listfile, extra)
-    pins = read_pins(os.path.join(TOP, "config", "pins.txt"))
+    pins = read_pins()
     for p in sel:
         if p["name"] in pins:
             p["version"], p["filename"], p["sha256"] = pins[p["name"]]
@@ -344,7 +340,7 @@ def current_db(max_age=6 * 3600):
 def cmd_prebuilt(repodir, *names):
     os.makedirs(repodir, exist_ok=True)
     db = current_db()[0]
-    pins = read_pins(os.path.join(TOP, "config", "pins.txt"))
+    pins = read_pins()
     for name in names:
         if name in db:
             p = dict(db[name])

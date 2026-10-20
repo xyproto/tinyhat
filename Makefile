@@ -17,16 +17,17 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot clean distclean patchcheck sourcecheck fuzzelcheck test dist
+.PHONY: all lock fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist
 
 all: tinyhat32.img
 
-ifneq (,$(filter-out cleantest cleanchroot clean distclean,$(or $(MAKECMDGOALS),all)))
+ifneq (,$(filter-out cleantest cleanchroot clean distclean status,$(or $(MAKECMDGOALS),all)))
 include $(B)/pkgs.mk
 endif
 
-$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip $(wildcard pkgbuilds/*/*/.SRCINFO)
+$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/srcinfo.py config/build.toml config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip $(wildcard pkgbuilds/*/*/PKGBUILD pkgbuilds/*/*/.SRCINFO)
 	@mkdir -p $(B)
+	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py mk >$@
 
 tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
@@ -165,6 +166,10 @@ cleantest:
 
 cleanchroot:
 	scripts/userns.sh rm -rf $(B)/chroot
+
+status:
+	@python3 scripts/buildstatus.py tinyhat32.img
+	@python3 scripts/buildstatus.py tinyhat64x32.img
 
 clean:
 	scripts/userns.sh rm -rf $(B)
