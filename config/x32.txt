@@ -1,0 +1,3 @@
+# Packages built as x32 for tinyhat64x32.img; everything else in that image is the i686 version.
+# Empty until the x32 toolchain (x32-gcc-stage1, glibc, x32-gcc) builds again; the core set was:
+# glibc x32-runtime zlib zstd xz bzip2 libffi expat

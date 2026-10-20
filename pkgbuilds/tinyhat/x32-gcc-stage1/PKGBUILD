@@ -14,7 +14,7 @@ sha256sums=('e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e')
 build() {
   mkdir -p build
   cd build
-  ../gcc-$pkgver/configure --target=x86_64-pc-linux-gnux32 --prefix=/usr --libexecdir=/usr/lib --with-sysroot=/ \
+  ../gcc-$pkgver/configure --target=x86_64-pc-linux-gnux32 --prefix=/usr --libexecdir=/usr/lib --with-sysroot=/usr/x86_64-pc-linux-gnux32/sysroot \
     --with-abi=mx32 --enable-multilib --with-multilib-list=mx32 --with-glibc-version=2.44 \
     --with-gmp=/usr --with-mpfr=/usr --with-mpc=/usr --with-isl=/usr --with-system-zlib \
     --enable-languages=c --disable-nls --disable-bootstrap --disable-werror \

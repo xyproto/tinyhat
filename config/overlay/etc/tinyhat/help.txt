@@ -5,9 +5,8 @@ Alt+F2 / Win+R	Run a command
 Alt+Shift+W	Close window (Alt+F4 also works)
 Alt+Tab	Jump between windows (with one window: toggle the desktop)
 Alt+Shift+F	Toggle fullscreen
-Win+1..4	Go to desktop 1-4
-Shift+Win+1..4	Send the window to desktop 1-4
-Win+D / Win+M	Show the desktop / minimize the window
+Alt+1..4	Go to desktop 1-4
+Shift+Alt+1..4	Send the window to desktop 1-4
 Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Audio volume
 
