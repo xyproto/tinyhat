@@ -1,4 +1,5 @@
 algernon
+aquarium
 bluetui
 busybox
 dosbox-x
