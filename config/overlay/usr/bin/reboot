@@ -1,3 +1,4 @@
 #!/bin/sh
+sync
 [ "$(id -u)" = 0 ] || exec doas systemctl reboot "$@"
 exec systemctl reboot "$@"
