@@ -1,11 +1,11 @@
 Tiny Hat 1.0.1
 
 Alt+Space	Application Menu
-Alt+F2	Run a command (Win+R also works)
 Alt+Shift+W	Close window (Alt+F4 also works)
-Alt+Tab	Jump between windows
 Alt+Shift+F	Toggle fullscreen (Alt+Enter also works in some applications).
+Alt+Tab	Jump between windows
 Ctrl+Alt+Up / Down	Audio volume
+Alt+F2	Run a command (Win+R also works)
 
 Ctrl+Alt+A	Scan for ScummVM games
 Ctrl+Alt+B	Bluetooth devices
@@ -17,7 +17,7 @@ Ctrl+Alt+H	Toggle sharing
 Ctrl+Alt+I	LibreSprite
 Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
-Ctrl+Alt+L	Lock the screen
+Ctrl+Alt+L	Lock the screen (the default password is "tinyhat")
 Ctrl+Alt+M	Download and run a SNES, GBA or Genesis game
 Ctrl+Alt+N	Netsurf web browser
 Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
