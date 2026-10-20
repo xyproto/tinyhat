@@ -61,4 +61,6 @@ package_libxcrypt-compat() {
   rm -rf "${pkgdir}"/usr/{include,lib/{lib*.so,pkgconfig},share}
 }
 
+eval "$(declare -f build | sed 's/--disable-failure-tokens/--disable-failure-tokens --disable-werror/')"
+
 unset -f pkgver

@@ -8,7 +8,6 @@ pkgbase = openal
 	license = LGPL-2.0-or-later
 	makedepends = alsa-lib
 	makedepends = cmake
-	makedepends = ffmpeg
 	makedepends = fluidsynth
 	makedepends = git
 	makedepends = jack
@@ -32,13 +31,3 @@ pkgname = openal
 	optdepends = fluidsynth: MIDI rendering
 	optdepends = libmysofa: makemhr tool
 	provides = libopenal.so
-
-pkgname = openal-examples
-	pkgdesc = Cross-platform 3D audio library, software implementation (example programs)
-	depends = glibc
-	depends = libgcc
-	depends = libstdc++
-	depends = openal=1.25.2-2
-	depends = ffmpeg
-	depends = libsndfile
-	depends = sdl3

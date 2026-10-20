@@ -1,0 +1,4 @@
+name: libretro-blastem
+version: 0+ab743653-1
+url: https://github.com/libretro/blastem
+license: GPL-3.0-or-later AND BSD-3-Clause AND Zlib

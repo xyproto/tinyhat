@@ -1,4 +1,4 @@
 name: harfbuzz
-version: 7.1.0-1.0
-url: https://www.freedesktop.org/wiki/Software/HarfBuzz
+version: 14.6.0-1
+url: https://harfbuzz.github.io/
 license: MIT

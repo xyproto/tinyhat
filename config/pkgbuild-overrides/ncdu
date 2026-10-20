@@ -1,0 +1,17 @@
+pkgver=1.22
+depends=(ncurses glibc)
+makedepends=()
+source=("https://dev.yorhel.nl/download/${pkgname}-${pkgver}.tar.gz")
+sha256sums=('0ad6c096dc04d5120581104760c01b8f4e97d4191d6c9ef79654fa3c691a176b')
+unset b2sums
+build() {
+  cd "${pkgname}-${pkgver}"
+  ./configure --prefix=/usr
+  make
+}
+check() { :; }
+package() {
+  cd "${pkgname}-${pkgver}"
+  make DESTDIR="$pkgdir" install
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

@@ -1,0 +1,1 @@
+eval "$(declare -f build | sed 's/-Dbuild-tests=true/-Dbuild-tests=false/')"

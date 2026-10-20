@@ -58,4 +58,6 @@ package() {
   install -Dm0755 "${srcdir}/depmod.script" "${pkgdir}/usr/share/libalpm/scripts/depmod"
 }
 
+eval "$(declare -f build | sed 's/-Dbuild-tests=true/-Dbuild-tests=false/')"
+
 unset -f pkgver

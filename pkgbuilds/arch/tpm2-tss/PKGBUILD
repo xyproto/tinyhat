@@ -133,4 +133,6 @@ eval "$(
 # dependencies fullfilled, so dropping testing now..
 unset check
 
+eval "$(declare -f build | sed 's/ --enable-integration//; s/ --enable-unit//')"
+
 unset -f pkgver

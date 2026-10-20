@@ -7,9 +7,6 @@ pkgbase = llhttp
 	arch = x32
 	license = MIT
 	makedepends = cmake
-	makedepends = git
-	makedepends = npm
-	makedepends = ts-node
 	depends = glibc
 	source = git+https://github.com/nodejs/llhttp#tag=v9.3.1
 	sha256sums = b09cc993e0c9941257441b51b657c23542e01c9607ce2f38f8667ebdeb0bfb65
