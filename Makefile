@@ -70,8 +70,8 @@ test: patchcheck sourcecheck fuzzelcheck
 	@scripts/chroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
 	@echo "grub.cfg: ok"
 
-dist: tinyhat32.img
-	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $<
+dist: tinyhat32.img tinyhat64x32.img
+	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
 	@ls -l $(B)/dist
 
 fetch: $(B)/.fetched-buildroot sources
