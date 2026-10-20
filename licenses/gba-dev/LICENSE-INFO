@@ -1,0 +1,4 @@
+name: gba-dev
+version: 1-1
+url: https://github.com/gbadev-org/libtonc
+license: MIT AND LGPL-2.0-or-later

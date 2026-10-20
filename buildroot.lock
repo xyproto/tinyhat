@@ -984,6 +984,7 @@ extra unifdef 2.12-4.0 unifdef-2.12-4.0-i686.pkg.tar.zst 7bbb0ce8ad2d1c5ee9c72aa
 core unixodbc 2.3.14-1.0 unixodbc-2.3.14-1.0-i686.pkg.tar.zst a8739443cdc9a10fb6e8b3910bfd6f68da66b982e81138a0315efb660d1b8327
 extra unzip 6.0-23.0 unzip-6.0-23.0-i686.pkg.tar.zst 7f4aac47396a9ad59870e0e0ebd82121d4615f6419ca8f62a05f569148aa22d2
 extra utf8cpp 4.2.0-1.0 utf8cpp-4.2.0-1.0-any.pkg.tar.zst 3916c72b014531cc247aab60dd4d613c8de766418b5ae9283d31789e75deb4df
+extra uthash 2.3.0-2.0 uthash-2.3.0-2.0-any.pkg.tar.zst 536fda530415d57c25d7f60f2624137369826140592674d517340cb4a01c73f0
 core util-linux 2.41.3-2.3 util-linux-2.41.3-2.3-i686.pkg.tar.zst 194dd93b9d4461b994e818189809bc7a3b1c3c0c9f5734e65164f59b571afba0
 core util-linux-libs 2.41.3-2.3 util-linux-libs-2.41.3-2.3-i686.pkg.tar.zst 86f568813a382757786a51aeb37baa25790c87d1031701ece07f7379c53f7eaa
 extra v4l-utils 1.28.1-1.0 v4l-utils-1.28.1-1.0-i686.pkg.tar.zst f4e8154c271b4995679836bbbd2a615c120a89e43583dd31423f5417270398b7

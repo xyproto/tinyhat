@@ -1,4 +1,4 @@
 name: grafx2
-version: master (f84cb09d) ported to SDL3
+version: 0+678a0f54-1
 url: http://grafx2.eu/
-license: GPL-2.0-only
+license: GPL-2.0-only AND MIT AND GPL-2.0-or-later AND GPL-3.0-or-later

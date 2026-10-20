@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fcntl
 import fnmatch
 import hashlib
 import os
@@ -6,12 +7,17 @@ import re
 import subprocess
 import sys
 import tarfile
+import time
+import shutil
+import urllib.parse
 import urllib.request
 
 os.umask(0o022)
 
 MIRROR = os.environ.get("MIRROR", "https://mirror.archlinux32.org/i686")
 ARCHIVE = os.environ.get("ARCHIVE", "https://archive.archlinux32.org/packages")
+MIRRORS = os.environ.get("MIRRORS", "https://archlinux32.andreasbaumann.cc/i686 "
+                         f"https://mirror.math.princeton.edu/pub/archlinux32/i686 {MIRROR}").split()
 REPOS = ["core", "extra"]
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DBDIR = os.path.join(TOP, "vendor", "db")
@@ -33,13 +39,22 @@ def read_list(path):
     return out
 
 
-def download(url, dest):
+def download(url, dest, tries=4):
     tmp = f"{dest}.part.{os.getpid()}"
     print(f"  get {url}", file=sys.stderr)
     req = urllib.request.Request(url, headers={"User-Agent": "tinyhat-build/1.0"})
-    with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
-        while chunk := r.read(1 << 20):
-            f.write(chunk)
+    for attempt in range(tries):
+        try:
+            with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
+                while chunk := r.read(1 << 20):
+                    f.write(chunk)
+            break
+        except urllib.error.HTTPError:
+            raise
+        except (OSError, TimeoutError) as e:
+            if attempt == tries - 1:
+                raise
+            print(f"  retrying {url}: {e}", file=sys.stderr)
     os.replace(tmp, dest)
 
 
@@ -63,10 +78,10 @@ def add_pkg(pkgs, provides, p, provs):
         provides.setdefault(strip_ver(pv), []).append(p["name"])
 
 
-def load_db():
+def load_db(dbdir=DBDIR):
     pkgs, provides = {}, {}
     for repo in REPOS:
-        path = os.path.join(DBDIR, f"{repo}.db")
+        path = os.path.join(dbdir, f"{repo}.db")
         if not os.path.exists(path):
             die(f"missing {path}, run 'make lock'")
         with tarfile.open(path) as t:
@@ -280,12 +295,21 @@ def fetch_pkg(p, pkgdir):
     dest = os.path.join(pkgdir, p["filename"])
     if os.path.exists(dest) and sha256(dest) == p["sha256"]:
         return
-    try:
-        download(f"{MIRROR}/{p['repo']}/{p['filename']}", dest)
-    except urllib.error.HTTPError as e:
-        if e.code != 404:
-            raise
-        download(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{p['filename']}", dest)
+    cached = os.path.join(TOP, "vendor", "pkg", p["filename"])
+    if os.path.abspath(pkgdir) != os.path.dirname(cached) and os.path.exists(cached) and sha256(cached) == p["sha256"]:
+        shutil.copyfile(cached, dest)
+        return
+    fn = urllib.parse.quote(p["filename"])
+    urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS]
+    urls.append(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}")
+    for i, url in enumerate(urls):
+        try:
+            download(url, dest, tries=2)
+            break
+        except (urllib.error.URLError, OSError) as e:
+            if i == len(urls) - 1:
+                raise
+            print(f"  {url}: {e}", file=sys.stderr)
     if sha256(dest) != p["sha256"]:
         os.unlink(dest)
         die(f"checksum mismatch for {p['filename']}")
@@ -297,12 +321,36 @@ def cmd_fetch(lockfile, pkgdir):
         fetch_pkg(p, pkgdir)
 
 
+def current_db(max_age=6 * 3600):
+    dbdir = os.path.join(DBDIR, "current")
+    os.makedirs(dbdir, exist_ok=True)
+    with open(os.path.join(dbdir, ".lock"), "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        for repo in REPOS:
+            path = os.path.join(dbdir, f"{repo}.db")
+            if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age:
+                continue
+            for i, m in enumerate(MIRRORS):
+                try:
+                    download(f"{m}/{repo}/{repo}.db", path, tries=2)
+                    break
+                except (urllib.error.URLError, OSError) as e:
+                    if i == len(MIRRORS) - 1:
+                        raise
+                    print(f"  {m}: {e}", file=sys.stderr)
+    return load_db(dbdir)
+
+
 def cmd_prebuilt(repodir, *names):
     os.makedirs(repodir, exist_ok=True)
-    db = load_db()[0]
+    db = current_db()[0]
+    pins = read_pins(os.path.join(TOP, "config", "pins.txt"))
     for name in names:
         if name in db:
-            fetch_pkg(db[name], repodir)
+            p = dict(db[name])
+            if name in pins:
+                p["version"], p["filename"], p["sha256"] = pins[name]
+            fetch_pkg(p, repodir)
 
 
 def read_sources(path):

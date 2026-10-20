@@ -204,7 +204,13 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
         for name in wanted:
             if name and name in idx["i686"][0] and name not in info["pkgnames"] and name not in out:
                 out.append(name)
-    soft = [n for n in soft if n in idx["i686"][0] and n not in info["pkgnames"] and n not in hard]
+    pkgs = idx["i686"][0]
+    bases = {pkgs[n]["base"] for n in hard}
+    for dep in all_deps(info):
+        name = pkg.lookup(idx["i686"], dep, prefs, set())
+        if name in pkgs and pkgs[name]["base"] in bases and name not in info["pkgnames"] and name not in hard:
+            hard.append(name)
+    soft = [n for n in soft if n in pkgs and n not in info["pkgnames"] and n not in hard]
     return hard, soft
 
 
@@ -321,6 +327,18 @@ def sccs(graph):
     return out
 
 
+MODES = os.path.join(TOP, "build", "pkg", "mode")
+
+
+def mode_file(base, mode):
+    os.makedirs(MODES, exist_ok=True)
+    path = os.path.join(MODES, base)
+    if not os.path.exists(path) or open(path).read() != mode:
+        with open(path, "w") as f:
+            f.write(mode)
+    return f"$(B)/pkg/mode/{base}"
+
+
 def rule(lines, target, info, prereqs, args, log):
     lines.append(f"{target}: $(B)/.buildroot $(wildcard {info['dir']}/*) {' '.join(sorted(set(prereqs)))}".rstrip())
     lines.append("\t@mkdir -p $(B)/log $(@D)")
@@ -359,16 +377,54 @@ def cmd_mk():
     targets, lprefs, skip = pkg.list_config(os.path.join(CONFIG, "rootfs.txt"))
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
-    prebuilt = set()
-    for base in pkg.read_list(PREBUILT):
-        info = by_base.get(base)
-        if info is None or not set(info["pkgnames"]) & set(seed[0]):
-            print(f"mkpkgs.py: {base} is not available prebuilt, building it", file=sys.stderr)
-        elif set(info["pkgnames"]) & broken:
-            print(f"mkpkgs.py: prebuilt {base} is broken in the seed, building it", file=sys.stderr)
-        else:
-            prebuilt.add(base)
-    prebuilt_names = {n for b in prebuilt for n in by_base[b]["pkgnames"]}
+    listed = pkg.read_list(PREBUILT)
+    candidates = [b for b in listed if b != "*"]
+    if "*" in listed:
+        candidates += [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates]
+    local_pkgs, local_provides = idx["i686"]
+
+    def choose(image, metadata):
+        wanted_by = {}
+        for n in image:
+            for d in metadata.get(n, {}).get("depends", []):
+                m = pkg.lookup((metadata, local_provides), d, lprefs, set())
+                if m:
+                    wanted_by.setdefault(m, set()).add(n)
+        roots = set(pkg.read_list(os.path.join(CONFIG, "rootfs.txt")))
+        chosen, notes = set(), []
+        for base in candidates:
+            info = by_base.get(base)
+            quiet = base not in listed
+            own = [n for n in info["pkgnames"] if set(info["arch"][n]) & {"i686", "any"}] if info else []
+            needed = [n for n in own if n in image and (n in roots or wanted_by.get(n, set()) - set(own))] or own
+            if quiet:
+                available = needed and all(pkg.lookup(seed, n, prefs, set()) is not None for n in needed)
+            else:
+                available = set(own) & set(seed[0])
+            deps = {pkg.lookup(seed, d, prefs, set()) for n in needed if n in seed[0] for d in seed[0][n]["depends"]}
+            if not available:
+                notes.append(f"{base} is not available prebuilt, building it")
+            elif set(info["pkgnames"]) & broken:
+                notes.append(f"prebuilt {base} is broken in the seed, building it")
+            elif deps & broken:
+                notes.append(f"prebuilt {base} needs {' '.join(sorted(deps & broken))}, which is broken in the seed, building it")
+            else:
+                chosen.add(base)
+        return chosen, [n for n in notes if n.split()[0] in listed or n.split()[1] in listed]
+
+    metadata = local_pkgs
+    for _ in range(10):
+        prebuilt, notes = choose(image, metadata)
+        prebuilt_names = {n for b in prebuilt for n in by_base[b]["pkgnames"]}
+        as_built = {n: dict(p, depends=seed[0][n]["depends"]) if n in prebuilt_names and n in seed[0] else p
+                    for n, p in local_pkgs.items()}
+        rootfs_i686 = pkg.resolve_targets(targets, {"i686": (as_built, local_provides)}, "i686", lprefs, skip)
+        new_image = {p["name"] for p in rootfs_i686}
+        if new_image == image and metadata is as_built:
+            break
+        image, metadata = new_image, as_built
+    for note in notes:
+        print(f"mkpkgs.py: {note}", file=sys.stderr)
 
     i686_plans = {}
     for info in infos:
@@ -381,7 +437,8 @@ def cmd_mk():
             target = stamp("i686", info["base"])
             i686_stamps.append(target)
             names_here = [n for n in info["pkgnames"] if set(info["arch"][n]) & {"i686", "any"}]
-            lines.append(f"{target}: $(B)/.buildroot")
+            names_here = [n for n in names_here if n in image] or names_here
+            lines.append(f"{target}: $(B)/.buildroot {mode_file(info['base'], 'prebuilt')}")
             lines.append("\t@mkdir -p $(@D)")
             lines.append(f"\tpython3 scripts/pkg.py prebuilt $(REPO) {' '.join(names_here)}")
             lines.append("\t@touch $@")
@@ -408,6 +465,7 @@ def cmd_mk():
             prereqs.append(stamp("x32", x32_base[d]))
         target = stamp("i686", info["base"])
         i686_stamps.append(target)
+        prereqs.append(mode_file(info["base"], "built"))
         rule(lines, target, info, prereqs, args, f"i686-{info['base']}")
 
     plans, graph = {}, {}

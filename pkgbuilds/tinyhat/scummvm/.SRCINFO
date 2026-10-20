@@ -23,10 +23,8 @@ pkgbase = scummvm
 	depends = libvorbis
 	depends = zlib
 	source = https://downloads.scummvm.org/frs/scummvm/2026.4.0/scummvm-2026.4.0.tar.xz
-	source = cursor-colorkey.patch
 	source = sdl3-palette.patch
 	sha256sums = cd660b34104da7f85ed0a11b7c6c2320c629bb87ee297935711ebc1e09731f12
-	sha256sums = SKIP
 	sha256sums = SKIP
 
 pkgname = scummvm

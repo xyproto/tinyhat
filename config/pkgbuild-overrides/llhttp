@@ -1,0 +1,13 @@
+makedepends=(cmake)
+source=("$pkgname-release-v$pkgver.tar.gz::https://github.com/nodejs/llhttp/archive/refs/tags/release/v$pkgver.tar.gz")
+sha256sums=('c14a93f287d3dbd6580d08af968294f8bcc61e1e1e3c34301549d00f3cf09365')
+build() {
+  cmake -B build -S $pkgname-release-v$pkgver \
+    -DBUILD_SHARED_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=/usr
+  cmake --build build
+}
+package() {
+  DESTDIR="$pkgdir" cmake --install build
+  install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" $pkgname-release-v$pkgver/LICENSE
+}

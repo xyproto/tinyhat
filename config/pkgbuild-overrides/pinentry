@@ -1,0 +1,5 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'qt[56]-.*|kguiaddons|kwindowsystem|gcr.*|efl|emacs|fltk'))
+eval "$(
+  declare -f build | sed 's/--enable-libsecret/--enable-libsecret --disable-pinentry-efl --disable-pinentry-gtk2 --disable-pinentry-qt --disable-pinentry-qt5 --disable-pinentry-gnome3 --disable-pinentry-emacs --disable-pinentry-fltk --disable-pinentry-tqt/'
+  declare -f package | sed '/pinentry-gtk/d'
+)"
