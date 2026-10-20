@@ -23,6 +23,7 @@ x86_64-w64-mingw32-windres "$top/programs/tinyhat-write-win32.rc" -o "$out/win-r
 cd "$out"
 
 for img in "$@"; do
+	img=$(cd "$top" && readlink -f "$img")
 	case ${img##*/} in
 	tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
 	*) name=tinyhat32 prog=tinyhat formula=tinyhat-writer class=TinyhatWriter app="Tiny Hat Writer" ;;
