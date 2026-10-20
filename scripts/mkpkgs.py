@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import tarfile
+import tomllib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pkg
@@ -14,8 +15,8 @@ SEED_BASE = ["base-devel", "pacman", "fakeroot", "git", "ccache", "python", "per
 SYSROOT = {"x32-gcc": ["glibc"]}
 FILES_CACHE = os.path.join(TOP, "build", "cache", "files")
 SEED_BROKEN = os.path.join(TOP, "build", "seed-broken.txt")
-PREBUILT = os.path.join(CONFIG, "prebuilt.txt")
-X32_ONLY = os.path.join(CONFIG, "x32.txt")
+with open(os.path.join(CONFIG, "build.toml"), "rb") as f:
+    BUILD = tomllib.load(f)
 SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "gcc-libs", "binutils",
              "llvm", "llvm-libs", "clang", "compiler-rt", "rust", "go"}
 
@@ -378,9 +379,9 @@ def cmd_mk():
     targets, lprefs, skip = pkg.list_config(os.path.join(CONFIG, "rootfs.txt"))
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
-    listed = pkg.read_list(PREBUILT)
-    candidates = [b for b in listed if b != "*"]
-    if "*" in listed:
+    listed = BUILD.get("prebuilt", {}).get("packages", [])
+    candidates = list(listed)
+    if BUILD.get("prebuilt", {}).get("all"):
         candidates += [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates]
     local_pkgs, local_provides = idx["i686"]
 
@@ -469,7 +470,7 @@ def cmd_mk():
         prereqs.append(mode_file(info["base"], "built"))
         rule(lines, target, info, prereqs, args, f"i686-{info['base']}")
 
-    x32_only = set(pkg.read_list(X32_ONLY)) if os.path.exists(X32_ONLY) else None
+    x32_only = set(BUILD["x32"]["packages"]) if "packages" in BUILD.get("x32", {}) else None
     plans, graph = {}, {}
     for info in infos:
         if "x32" not in base_arches(info):

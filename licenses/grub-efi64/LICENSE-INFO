@@ -1,0 +1,4 @@
+name: grub-efi64
+version: 2.14-2
+url: https://www.gnu.org/software/grub/
+license: GPL-3.0-or-later
