@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-import gzip, math, os, random, struct, sys, zlib
+import gzip, math, os, random, struct, sys, tomllib, zlib
 
 BG = (0x1a, 0x1b, 0x26)
 TEAL = (0x1a, 0x9e, 0x96)
-HAT = (0x3d, 0x7a, 0x2a)
-GREEN = (0x9e, 0xce, 0x6a)
+with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distro.toml"), "rb") as f:
+    DISTRO = tomllib.load(f)
+HAT = tuple(int(DISTRO["hat_color"][i:i + 2], 16) for i in (1, 3, 5))
+HIGHLIGHT = tuple(int(DISTRO["hat_highlight_color"][i:i + 2], 16) for i in (1, 3, 5))
 GRAY = (0x49, 0x49, 0x49)
 LIGHT = (0xc0, 0xca, 0xf5)
 SLATE = (0xa9, 0xb1, 0xd6)
@@ -12,7 +14,7 @@ SLATE = (0xa9, 0xb1, 0xd6)
 CYAN = (0x7d, 0xcf, 0xff)
 WHITE = (0xff, 0xff, 0xff)
 
-INK = [BG, HAT, GREEN, GRAY, LIGHT, CYAN, TEAL]
+INK = [BG, HAT, HIGHLIGHT, GRAY, LIGHT, CYAN, TEAL]
 LOW, SEGMENTS, HAT_SCALE = 64, 16, 2
 ITEM, SPACING, BAR = 32, 2, 28
 

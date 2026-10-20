@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-import re, struct, sys, zlib
+import os, re, struct, sys, tomllib, zlib
 
 svg, out = sys.argv[1], sys.argv[2]
 SCALE = 16
 BG = (0x1a, 0x1b, 0x26)
 text = open(svg).read()
+with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distro.toml"), "rb") as f:
+    HAT = tomllib.load(f)["hat_color"]
 size = int(re.search(r'viewBox="0 0 (\d+) \d+"', text).group(1))
 pixels = [[BG] * (size * SCALE) for _ in range(size * SCALE)]
 
@@ -17,7 +19,7 @@ fill = None
 for tag in re.finditer(r"<(/?)(g|rect)([^>]*)>", text):
     closing, name, attrs = tag.groups()
     if name == "g":
-        fill = None if closing else (re.search(r'fill="(#[0-9a-fA-F]{6})"', attrs) or [None, None])[1]
+        fill = None if closing else HAT
         continue
     a = dict(re.findall(r'(\w+)="([^"]*)"', attrs))
     c = color(a.get("fill") or fill)
