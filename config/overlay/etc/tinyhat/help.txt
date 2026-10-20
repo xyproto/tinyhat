@@ -1,12 +1,10 @@
 Tiny Hat
 
 Alt+Space	Application Menu
-Alt+F2 / Win+R	Run a command
+Alt+F2		Run a command (Win+R also works)
 Alt+Shift+W	Close window (Alt+F4 also works)
-Alt+Tab	Jump between windows (with one window: toggle the desktop)
+Alt+Tab	Jump between windows
 Alt+Shift+F	Toggle fullscreen
-Alt+1..4	Go to desktop 1-4
-Shift+Alt+1..4	Send the window to desktop 1-4
 Alt+Enter	Toggle fullscreen in ScummVM, DOSBox-X and ZSNES 2
 Ctrl+Alt+Up / Down	Audio volume
 
@@ -21,7 +19,7 @@ Ctrl+Alt+I	LibreSprite
 Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen
-Ctrl+Alt+M	Download and run a SNES, GBA or Genesis homebrew game
+Ctrl+Alt+M	Download and run a SNES, GBA or Genesis game
 Ctrl+Alt+N	Netsurf web browser
 Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
 Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
@@ -37,10 +35,11 @@ Ctrl+Alt+Z	ZSNES 2
 Right click desktop	Toggle background
 Alt+Left drag	Move a window
 Alt+Right drag	Resize a window
+Alt+1..4	Go to desktop 1-4
+Shift+Alt+1..4	Send the window to desktop 1-4
+
 PrtSc	Screenshot to ~/Pictures
 Ctrl+Alt+Shift+Q	Power off
 
-USB sticks and CDs show up in /media and as D: in DOSBox-X.
-Put DOS games in ~/DOS, which is C: in DOSBox-X.
-A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:.
-Bring your own games with tinyhat-import: cartridge dumps, GOG installers and DOS archives.
+USB sticks and CDs show up in /media and as D: in DOSBox-X. DOS games can be placed in ~/DOS,
+which is C: in DOSBox-X. A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:.
