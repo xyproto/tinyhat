@@ -1,0 +1,14 @@
+pkgbase = aquarium
+	pkgdesc = Port of ASCIIAquarium from Perl to Go
+	pkgver = 1.0.0
+	pkgrel = 1
+	url = https://github.com/xyproto/aquarium
+	arch = i686
+	license = GPL2-Only
+	makedepends = go-tinyhat
+	depends = glibc
+	options = !buildflags
+	source = aquarium-dd3cbc29e923585b7cbfed5a5daaf0a4de45a2f9.tar.gz::https://github.com/xyproto/aquarium/archive/dd3cbc29e923585b7cbfed5a5daaf0a4de45a2f9.tar.gz
+	sha256sums = e55bc5083fb4579020199157c032b94710f9ab66d9f6f9402558e3ba782afe70
+
+pkgname = aquarium
