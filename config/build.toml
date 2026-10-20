@@ -1,0 +1,25 @@
+[prebuilt]
+# Taken from archlinux32 instead of built here, unless archlinux32 lacks it or ships it broken.
+# all = true means every package in pkgbuilds/arch; the named ones take more than about 15 minutes to build.
+all = true
+packages = [
+    "llvm",
+    "gcc", "glibc", "binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
+    "mesa", "gtk3", "gtk4", "librsvg",
+    "systemd", "util-linux", "openssl", "nss", "gnutls", "gnupg", "krb5", "git",
+    "spirv-tools", "onetbb", "highway", "libjxl", "pipewire", "sysprof", "tinysparql",
+    "linux-firmware",
+]
+reasons = { llvm = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23" }
+
+[x32]
+# Built as x32 for tinyhat64x32.img; everything else in that image is the i686 version.
+# Empty until the x32 toolchain (x32-gcc-stage1, glibc, x32-gcc) builds; the core set was:
+# glibc x32-runtime zlib zstd xz bzip2 libffi expat
+packages = []
+
+[pins.pango]
+version = "1:1.54.0-1.0"
+file = "pango-1:1.54.0-1.0-i686.pkg.tar.zst"
+sha256 = "69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef"
+reason = "archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have"

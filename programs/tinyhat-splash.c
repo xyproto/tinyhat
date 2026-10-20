@@ -538,7 +538,7 @@ int main(void)
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
 	unlink(FIFO);
-	if (mkfifo(FIFO, 0600) || (ff = open(FIFO, O_RDWR | O_NONBLOCK | O_CLOEXEC)) < 0)
+	if (mkfifo(FIFO, 0600) || chmod(FIFO, 0622) || (ff = open(FIFO, O_RDWR | O_NONBLOCK | O_CLOEXEC)) < 0)
 		return 1;
 	if (!map()) {
 		unlink(FIFO);

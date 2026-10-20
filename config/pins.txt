@@ -1,2 +1,0 @@
-# pango: archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have
-pango 1:1.54.0-1.0 pango-1:1.54.0-1.0-i686.pkg.tar.zst 69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef
