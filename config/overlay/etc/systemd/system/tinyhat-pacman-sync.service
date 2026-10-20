@@ -8,6 +8,7 @@ Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
 ExecStart=/usr/lib/tinyhat/pacman-sync
+ExecStopPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 
 [Install]
 WantedBy=multi-user.target

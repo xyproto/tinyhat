@@ -170,8 +170,8 @@ systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 systemctl mask systemd-nsresourced.socket systemd-nsresourced.service systemd-boot-update.service systemd-pcrmachine.service systemd-pcrphase.service systemd-pcrphase-sysinit.service ldconfig.service 2>/dev/null || true
+systemctl --global disable syncthing.service mpris-proxy.service filter-chain.service 2>/dev/null || true
 systemctl --global enable pipewire.socket wireplumber.service
-systemctl --global disable syncthing.service mpris-proxy.service 2>/dev/null || true
 systemctl --global mask gcr-ssh-agent.socket gcr-ssh-agent.service p11-kit-server.socket p11-kit-server.service 2>/dev/null || true
 systemctl set-default multi-user.target
 '
