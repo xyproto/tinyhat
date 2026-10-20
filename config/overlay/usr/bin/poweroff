@@ -1,0 +1,4 @@
+#!/bin/sh
+sync
+[ "$(id -u)" = 0 ] || exec doas systemctl poweroff "$@"
+exec systemctl poweroff "$@"
