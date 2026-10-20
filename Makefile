@@ -1,4 +1,4 @@
-VERSION := 1.0.1
+VERSION := 1.0.2
 KVER := 7.2.9
 export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
 DIST_HOME ?= https://github.com/xyproto/tinyhat
