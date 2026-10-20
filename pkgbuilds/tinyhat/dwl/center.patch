@@ -1,13 +1,17 @@
 diff -Nur a/dwl.c b/dwl.c
 --- a/dwl.c
 +++ b/dwl.c
-@@ -2300,6 +2300,25 @@
+@@ -2300,6 +2300,29 @@
  	} else {
  		applyrules(c);
  	}
 +	if (c->mon && !c->isfullscreen && (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)) {
 +		Client *o;
 +		int moved = 1, step = 32;
++		if (!client_is_float_type(c)) {
++			c->geom.width = c->mon->w.width * 3 / 4;
++			c->geom.height = c->mon->w.height * 3 / 4;
++		}
 +		c->geom.x = c->mon->w.x + MAX(0, (c->mon->w.width - c->geom.width) / 2);
 +		c->geom.y = c->mon->w.y + MAX(0, (c->mon->w.height - c->geom.height) / 2);
 +		while (moved) {

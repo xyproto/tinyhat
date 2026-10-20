@@ -31,14 +31,21 @@ typedef struct {
 
 static const Rgb BG = { 0x1a, 0x1b, 0x26 };
 static const Rgb TEAL = { 0x1a, 0x9e, 0x96 };
-static const Rgb HAT = { 0x3d, 0x7a, 0x2a };
-static const Rgb GREEN = { 0x9e, 0xce, 0x6a };
+#ifndef HAT_COLOR
+#define HAT_COLOR 0x922424
+#endif
+#ifndef HAT_HIGHLIGHT_COLOR
+#define HAT_HIGHLIGHT_COLOR 0xf7768e
+#endif
+#define RGB(c) { ((c) >> 16) & 0xff, ((c) >> 8) & 0xff, (c) & 0xff }
+static const Rgb HAT = RGB(HAT_COLOR);
+static const Rgb HIGHLIGHT = RGB(HAT_HIGHLIGHT_COLOR);
 static const Rgb GRAY = { 0x49, 0x49, 0x49 };
 static const Rgb LIGHT = { 0xc0, 0xca, 0xf5 };
 static const Rgb CYAN = { 0x7d, 0xcf, 0xff };
 static const Rgb WHITE = { 0xff, 0xff, 0xff };
 
-static const Rgb *const ink[] = { &BG, &HAT, &GREEN, &GRAY, &LIGHT, &CYAN, &TEAL };
+static const Rgb *const ink[] = { &BG, &HAT, &HIGHLIGHT, &GRAY, &LIGHT, &CYAN, &TEAL };
 static const Rgb STAR[] = { { 0x2f, 0x34, 0x4b }, { 0x56, 0x5f, 0x89 }, { 0xa9, 0xb1, 0xd6 }, { 0xff, 0xff, 0xff } };
 
 static struct {

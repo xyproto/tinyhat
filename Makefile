@@ -10,7 +10,7 @@ SOURCES := $(addprefix vendor/src/,$(shell awk '!/^#/ { print $$1 }' sources.txt
 QEMU_MEM ?= 1024
 SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
 BOOT_PKGS := $(B)/pkg/i686/grub $(B)/pkg/i686/linux-firmware $(B)/pkg/i686/intel-ucode $(B)/pkg/i686/memtest86+ $(B)/pkg/i686/kbd
-IMG_DEPS := config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py $(BOOT_PKGS)
+IMG_DEPS := distro.toml config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py $(BOOT_PKGS)
 
 ifeq (,$(findstring -j,$(MAKEFLAGS)))
 MAKEFLAGS += -j$(shell nproc)
@@ -132,7 +132,7 @@ $(B)/.licenses-x32: $(B)/rootfs-x32.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi6
 	python3 scripts/mklicenses.py $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@touch $@
 
-ROOTFS_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py
+ROOTFS_DEPS := distro.toml $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py
 
 $(B)/root.sfs: $(ROOTFS_DEPS) $(B)/rootfs.lock $(B)/.licenses $(B)/vmlinuz
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock licenses

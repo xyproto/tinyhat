@@ -9,6 +9,8 @@ pkgbase = tinyhat-splash
 	makedepends = kbd
 	makedepends = python
 	source = tinyhat-splash.c
+	source = distro.toml
+	sha256sums = SKIP
 	sha256sums = SKIP
 
 pkgname = tinyhat-splash

@@ -15,6 +15,7 @@ SYSROOT = {"x32-gcc": ["glibc"]}
 FILES_CACHE = os.path.join(TOP, "build", "cache", "files")
 SEED_BROKEN = os.path.join(TOP, "build", "seed-broken.txt")
 PREBUILT = os.path.join(CONFIG, "prebuilt.txt")
+X32_ONLY = os.path.join(CONFIG, "x32.txt")
 SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "gcc-libs", "binutils",
              "llvm", "llvm-libs", "clang", "compiler-rt", "rust", "go"}
 
@@ -468,11 +469,14 @@ def cmd_mk():
         prereqs.append(mode_file(info["base"], "built"))
         rule(lines, target, info, prereqs, args, f"i686-{info['base']}")
 
+    x32_only = set(pkg.read_list(X32_ONLY)) if os.path.exists(X32_ONLY) else None
     plans, graph = {}, {}
     for info in infos:
         if "x32" not in base_arches(info):
             continue
         base = info["base"]
+        if x32_only is not None and base not in x32_only:
+            continue
         if base == "glibc":
             x32, tools, chain = [], [], ["x32-binutils", "x32-gcc-stage1"]
         elif base == "x32-runtime":
@@ -484,6 +488,8 @@ def cmd_mk():
             if info["sub"] == "arch":
                 wanted = localdeps.get(base, []) + auto_local(info, seed, idx, prefs, broken, closures, versions)[0]
                 tools += [d for d in exact_local(wanted, full, local) if d not in tools and d not in info["pkgnames"]]
+        if x32_only is not None:
+            x32 = [n for n in x32 if x32_base.get(n) in x32_only]
         plans[base] = (x32, chain + [t for t in tools if t not in chain])
         graph[base] = {x32_base[n] for n in x32} - {base}
 
@@ -513,7 +519,14 @@ def cmd_mk():
         x32_stamps.append(target)
         rule(lines, target, info, prereqs, args, f"x32-{base}")
 
-    rootfs_x32 = pkg.resolve_targets(targets, idx, "x32", lprefs, skip)
+    x32_index = idx["x32"]
+    if x32_only is not None:
+        kept, kept_provides = {}, {}
+        for n, p in idx["x32"][0].items():
+            if p["arch"] == "any" or p["base"] in x32_only:
+                pkg.add_pkg(kept, kept_provides, p, [pv for pv, names in idx["x32"][1].items() if n in names])
+        x32_index = (kept, kept_provides)
+    rootfs_x32 = pkg.resolve_targets(targets, {"i686": (as_built, local_provides), "x32": x32_index}, "x32", lprefs, skip)
     print("I686_STAMPS := " + " ".join(i686_stamps))
     print("X32_STAMPS := " + " ".join(x32_stamps))
     print("ROOTFS_I686_STAMPS := " + " ".join(stamps_for(rootfs_i686)))
