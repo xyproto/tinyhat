@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Aquarium
+Icon=fish
+Comment=ASCII aquarium in the terminal
+Exec=tinyhat-term aquarium
+Terminal=false
+Categories=Game;Amusement;
