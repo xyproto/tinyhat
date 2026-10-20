@@ -1,6 +1,6 @@
 #!/bin/sh
 mkdir -p "$HOME/DOS"
-set -- -conf /etc/tinyhat/dosbox-x.conf -userconf "$@"
+set -- -conf /etc/tinyhat/dosbox-x.conf -userconf -fastlaunch "$@"
 [ ! -f /run/tinyhat-midi/dosbox-x.conf ] || set -- "$@" -conf /run/tinyhat-midi/dosbox-x.conf
 set -- "$@" -set "midi fluid.soundfont=$(tinyhat-soundfont)"
 mt32=$HOME/.local/share/tinyhat/mt32
@@ -18,34 +18,38 @@ for d in /media/*/; do
 	*) [ -n "$harddisk" ] || harddisk=$d ;;
 	esac
 done
-set -- "$@" -c "@echo off" -c "mount y /usr/share/tinyhat/dos -ro" -c "set PATH=Z:\\;Y:\\"
+conf=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-dosbox.conf
+ae() { printf '%s\n' "$@" >>"$conf"; }
+printf '[autoexec]\n' >"$conf"
+set -- "$@" -conf "$conf"
+ae "@echo off" "mount y /usr/share/tinyhat/dos -ro" "set PATH=Z:\\;Y:\\"
 drivec="the DOS folder in your home directory"
 drived=
 drivee=
 if [ -n "$harddisk" ] && [ -n "$(find "$harddisk" -maxdepth 1 \( -iname command.com -o -iname autoexec.bat \) -print -quit)" ]; then
-	set -- "$@" -c "mount c \"$harddisk\"" -c "mount e \"$HOME/DOS\""
+	ae "mount c \"$harddisk\"" "mount e \"$HOME/DOS\""
 	drivee=$drivec
 	drivec="the DOS hard disk of this PC"
 else
-	set -- "$@" -c "mount c \"$HOME/DOS\""
+	ae "mount c \"$HOME/DOS\""
 	if [ -n "$harddisk" ]; then
-		set -- "$@" -c "mount e \"$harddisk\""
+		ae "mount e \"$harddisk\""
 		drivee="the hard disk of this PC"
 	fi
 fi
 if [ -n "$removable" ]; then
 	case $(findmnt -no FSTYPE --target "$removable") in
-	iso9660 | udf) set -- "$@" -c "mount d \"$removable\" -t cdrom" ;;
-	*) set -- "$@" -c "mount d \"$removable\"" ;;
+	iso9660 | udf) ae "mount d \"$removable\" -t cdrom" ;;
+	*) ae "mount d \"$removable\"" ;;
 	esac
 	drived="the USB stick or CD"
 fi
-set -- "$@" -c "cls" -c "c:" -c "echo Tiny Hat DOS" -c "echo." -c "echo C:  $drivec"
-[ -z "$drived" ] || set -- "$@" -c "echo D:  $drived"
-[ -z "$drivee" ] || set -- "$@" -c "echo E:  $drivee"
-set -- "$@" -c "echo." \
-	-c "echo DIR lists files, CD NAME enters a folder, CD .. goes back." \
-	-c "echo K lists the programs here. Type a program name to run it." \
-	-c "echo Alt+Enter: fullscreen   Ctrl+F10: grab or release the mouse   EXIT: quit" \
-	-c "echo." -c "@echo on"
+ae "cls" "c:" "echo Tiny Hat DOS" "echo." "echo C:  $drivec"
+[ -z "$drived" ] || ae "echo D:  $drived"
+[ -z "$drivee" ] || ae "echo E:  $drivee"
+ae "echo." \
+	"echo DIR lists files, CD NAME enters a folder, CD .. goes back." \
+	"echo K lists the programs here. Type a program name to run it." \
+	"echo Alt+Enter: fullscreen   Ctrl+F10: grab or release the mouse   EXIT: quit" \
+	"echo." "@echo on"
 LD_BIND_NOW=1 SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec nice -n -5 dosbox-x "$@"
