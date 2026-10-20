@@ -21,6 +21,8 @@ endif
 
 all: tinyhat32.img
 
+both: tinyhat32.img tinyhat64x32.img
+
 ifneq (,$(filter-out cleantest cleanchroot clean distclean status,$(or $(MAKECMDGOALS),all)))
 include $(B)/pkgs.mk
 endif
