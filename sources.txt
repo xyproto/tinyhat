@@ -6,7 +6,7 @@ GeneralUser-GS-2.0.3.sf2 9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5
 GeneralUser-GS-LICENSE.txt 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca16b9b8b405be https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/documentation/LICENSE.txt
 pixelitos-icon-theme-20260721.tar.gz 61a4bd9570b791897f3d6f9ddb363887bb6290afa6d4aa3d88c07e76f529d229 https://github.com/ItzSelenux/pixelitos-icon-theme/archive/refs/tags/20260721.tar.gz
 shim-x64-16.1-10.x86_64.rpm 50ca8ad0f0893a9b69d257b232cc38fe572d7f2c814bc9aec4df5e492800cdc7 https://kojipkgs.fedoraproject.org/packages/shim/16.1/10/x86_64/shim-x64-16.1-10.x86_64.rpm
-linux-7.2.9.tar.xz b4c5dfbe51a364a6c7f03869200f88c8e1f77403539005f14b7fc6bc91b8d8ba https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.2.9.tar.xz
+linux-7.3.tar.xz 87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953 https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.xz
 open-watcom-2026-10-01.tar.xz e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
 xpadneo-0.10.4.tar.gz 5271c02a788f9470199e9e18596e0d8537687ff68b2fcc64c03ecf92638f5c84 https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.4.tar.gz
 lure-1.1.zip f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108 https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip
