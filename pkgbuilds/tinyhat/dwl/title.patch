@@ -1,0 +1,15 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -1873,6 +1873,11 @@
+ 		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
+ 	}
+ 	m->taskx[n] = x + gap + n * bw;
++	if (sel && !sel->isminimized && x + w - m->taskx[n] > m->b.height * 3) {
++		const char *title = client_get_title(sel);
++		int tw = TEXTW(m, title), aw = x + w - m->taskx[n];
++		drwl_text(m->drw, m->taskx[n], 0, aw, m->b.height, tw < aw ? (aw - tw) / 2 + m->lrpad / 2 : m->lrpad / 2, title, 0);
++	}
+ }
+ 
+ void
