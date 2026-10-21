@@ -326,6 +326,9 @@ end
 function adv.update(dt)
     local w, h = love.graphics.getDimensions()
     scale = math.min(w / adv.width, h / adv.height)
+    if scale > 1 then
+        scale = math.floor(scale)
+    end
     offsetX, offsetY = (w - adv.width * scale) / 2, (h - adv.height * scale) / 2
     local mx, my = love.mouse.getPosition()
     mouseX, mouseY = (mx - offsetX) / scale, (my - offsetY) / scale
