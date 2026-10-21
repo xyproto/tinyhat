@@ -19,7 +19,7 @@ Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+L	Lock the screen (the default password is "tinyhat")
 Ctrl+Alt+M	Download and run a SNES, GBA or Genesis game
-Ctrl+Alt+N	Netsurf web browser
+Ctrl+Alt+N	NetSurf web browser
 Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
 Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
 Ctrl+Alt+R	Terminal
