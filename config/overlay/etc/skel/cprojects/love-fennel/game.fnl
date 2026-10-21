@@ -1,4 +1,4 @@
-;; A hat that glides after the mouse under twinkling stars. Esc quits.
+;; A hat that glides after the mouse under twinkling stars.
 ;; Press Ctrl+Space twice in rapid succession to build and run it.
 
 (local stars [])
