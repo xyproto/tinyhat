@@ -13,7 +13,7 @@ if [ "$arch" = i386 ]; then
 	src=$top/build/linux-$ver
 	modules=$top/build/modules
 fi
-if [ ! -f "$src/Makefile" ]; then
+if [ ! -f "$src/Makefile" ] || [ ! -f "$src/scripts/Kbuild.include" ]; then
 	rm -rf "$src"
 	mkdir -p "$src"
 	tar -xf "$top/vendor/src/linux-$ver.tar.xz" -C "$src" --strip-components=1
