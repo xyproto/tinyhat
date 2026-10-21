@@ -1,5 +1,5 @@
 pkgname=aquarium
-pkgver=1.0.1
+pkgver=1.0.2
 pkgrel=1
 pkgdesc="Port of ASCIIAquarium from Perl to Go"
 arch=(i686)
@@ -9,7 +9,7 @@ depends=(glibc)
 makedepends=(go-tinyhat)
 options=(!buildflags)
 source=("aquarium-v$pkgver.tar.gz::https://github.com/xyproto/aquarium/archive/v$pkgver.tar.gz")
-sha256sums=('f6607cc2f47ddcb84923ef0eac49beb1986acae7c2e9702e86b142cbea08d31d')
+sha256sums=('851f1df0017184470eddc49b36a7c20bd52112122200c89aa045cd93121ece8e')
 
 build() {
   cd aquarium-$pkgver
