@@ -1,4 +1,4 @@
-// Press Ctrl+Space in the editor to build, or press it twice quickly to build and run. Esc quits.
+// Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run. Esc quits.
 #include <SDL3/SDL.h>
 #include "music.h"
 

@@ -1,5 +1,5 @@
 // The boot animation. hat() draws frame number "tick" (12.5 frames per second) into the LOW x LOW pixels in "low".
-// Press Ctrl+Space in the editor to build it and use it from the next boot, or press it twice quickly to also preview it.
+// Press Ctrl+Space in this editor to build it and use it from the next boot, or press it twice in rapid succession to also preview it.
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>

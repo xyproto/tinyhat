@@ -1,3 +1,4 @@
+/* Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run it in VICE. */
 #include <c64.h>
 #include <conio.h>
 

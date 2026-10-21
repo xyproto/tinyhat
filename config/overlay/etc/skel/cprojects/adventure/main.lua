@@ -1,4 +1,4 @@
--- The Tiny Hat: a point-and-click adventure in LÖVE. Press Ctrl+Space twice to run it.
+-- The Tiny Hat: a point-and-click adventure in LÖVE. Press Ctrl+Space twice in rapid succession in this editor to run it.
 -- Rooms, hotspots and items are plain Lua tables, and adventure.lua is the engine.
 -- In the game: left click walks and uses, right click looks, F2 shows the hotspots and copies coordinates.
 local adv = require("adventure")
