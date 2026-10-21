@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Edit the boot animation in C
+Icon=applications-development
+Comment=Change the spinning hat that is shown while booting
+Exec=tinyhat-bootanim
+Terminal=false
+Categories=Development;
