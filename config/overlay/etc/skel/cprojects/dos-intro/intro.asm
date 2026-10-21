@@ -1,4 +1,4 @@
-; A 256 byte demoscene intro: a moving rainbow pattern in 320x200 VGA mode 13h. Esc quits.
+; A 256 byte demoscene intro: a moving rainbow pattern in 320x200 VGA mode 13h.
 ; Press Ctrl+Space twice in rapid succession in this editor to build it with nasm and run it in DOSBox-X.
 org 100h
 

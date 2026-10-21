@@ -1,5 +1,5 @@
 ; Hello SNES: shows two lines of text on a background that slowly changes colour.
-; Build with "make", run it in ZSNES with "make run".
+; Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run it in ZSNES.
 
 .p816
 

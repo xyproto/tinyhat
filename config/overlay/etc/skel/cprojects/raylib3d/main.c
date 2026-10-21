@@ -1,5 +1,5 @@
 // A small 3D world made with raylib. Walk with WASD or the arrow keys and look around with the mouse.
-// Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run. Esc quits.
+// Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run.
 #include <raylib.h>
 #include <rlgl.h>
 
