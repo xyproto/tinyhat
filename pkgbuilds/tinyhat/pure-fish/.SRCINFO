@@ -1,0 +1,12 @@
+pkgbase = pure-fish
+	pkgdesc = Pretty, minimal and fast fish prompt
+	pkgver = 4.19.2
+	pkgrel = 1
+	url = https://github.com/pure-fish/pure
+	arch = any
+	license = MIT
+	depends = fish
+	source = pure-fish-4.19.2.tar.gz::https://github.com/pure-fish/pure/archive/refs/tags/v4.19.2.tar.gz
+	sha256sums = 3d42523b48d92a83861257f902ff4c8c39ee7ee80d8da51d22b6ad5e1ad091d4
+
+pkgname = pure-fish
