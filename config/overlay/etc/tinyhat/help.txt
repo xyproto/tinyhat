@@ -1,4 +1,4 @@
-Tiny Hat 1.0.2
+Tiny Hat 1.0.3
 
 Alt+Space	Application Menu
 Alt+Shift+W	Close window (Alt+F4 also works)
