@@ -1,5 +1,5 @@
 ; A 256 byte demoscene intro: a moving rainbow pattern in 320x200 VGA mode 13h. Esc quits.
-; Press Ctrl+Space twice rapidly to build it with nasm and run it in DOSBox-X.
+; Press Ctrl+Space twice in rapid succession in this editor to build it with nasm and run it in DOSBox-X.
 org 100h
 
     mov al, 13h             ; 320x200 with 256 colours
