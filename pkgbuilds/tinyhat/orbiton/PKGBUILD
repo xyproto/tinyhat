@@ -24,4 +24,6 @@ package() {
     ln -sf o "$pkgdir/usr/bin/$l"
   done
   install -Dm644 orbiton-$_commit/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  gzip -n -9 -c orbiton-$_commit/o.1 > o.1.gz
+  install -Dm644 o.1.gz "$pkgdir/usr/share/man/man1/o.1.gz"
 }
