@@ -1,3 +1,7 @@
 #!/bin/sh
+if [ -z "$(ls /sys/class/ieee80211 2>/dev/null)" ]; then
+	tinyhat-notice "No Wi-Fi adapter was found" 6
+	exit 1
+fi
 systemctl -q is-active iwd.service || doas systemctl start iwd.service
 exec tinyhat-term impala
