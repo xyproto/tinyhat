@@ -122,6 +122,11 @@ cp -a config/overlay/. "$root/"
 		chmod 644 "$root/$p"
 	fi
 done
+for c in hat_color:HAT_COLOR hat_highlight_color:HAT_HIGHLIGHT_COLOR; do
+	v=$(sed -n "s/^${c%%:*} = \"#\([0-9a-fA-F]\{6\}\)\"$/\1/p" distro.toml)
+	sed -i "s/^#define ${c#*:} 0x.*/#define ${c#*:} 0x$v/" "$root/etc/skel/cprojects/bootanim/hat.h"
+	grep -qx "#define ${c#*:} 0x$v" "$root/etc/skel/cprojects/bootanim/hat.h"
+done
 mkdir -p "$root/usr/share/licenses/tinyhat"
 cp -a "$licdir/." "$root/usr/share/licenses/tinyhat/"
 
