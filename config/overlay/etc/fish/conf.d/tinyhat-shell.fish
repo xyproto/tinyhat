@@ -71,6 +71,8 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias .....='cd ../../../..'
 alias grep='grep --color=auto'
+alias mv='mv -i'
+alias neofetch='fastfetch'
 alias update='doas pacman -Syu'
 alias cleanup='doas pacman -Rns (pacman -Qtdq)'
 alias jctl='journalctl -p 3 -xb'
@@ -188,6 +190,10 @@ function help --description 'DOS commands and their Linux names'
     echo 'Tab completes names, Up repeats commands, and "man ls" explains any command.'
 end
 
-if test "$TERM" != linux; and type -q fastfetch
-    fastfetch
+if type -q o; and type -q fastfetch
+    if mkdir /tmp/.tinyhat-fastfetch 2>/dev/null
+        fastfetch
+    else
+        o --upsie
+    end
 end
