@@ -1,5 +1,5 @@
 ;; A hat that glides after the mouse under twinkling stars. Esc quits.
-;; Press Ctrl+Space twice in rapid succession in this editor to run it.
+;; Press Ctrl+Space twice in rapid succession to build and run it.
 
 (local stars [])
 (var hat-x 320)
