@@ -1,14 +1,21 @@
 pkgname=fuzzel
 pkgver=1.15.0
-pkgrel=1
+pkgrel=2
 pkgdesc="Application launcher for Wayland"
 arch=(i686 x32)
 url="https://codeberg.org/dnkl/fuzzel"
 license=(MIT)
 depends=(cairo fcft libpng libxkbcommon pixman wayland)
 makedepends=(meson ninja scdoc tllist wayland-protocols)
-source=("fuzzel-$pkgver.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/$pkgver.tar.gz")
-sha256sums=('95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b')
+source=("fuzzel-$pkgver.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/$pkgver.tar.gz"
+        "wheel-repaint.patch")
+sha256sums=('95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b'
+            '0562d17389f2c0a09ade45f26823fbffb729823616c6759916f4712535143267')
+
+prepare() {
+  cd fuzzel
+  patch -Np1 -i ../wheel-repaint.patch
+}
 
 build() {
   meson setup build fuzzel --prefix=/usr --buildtype=minsize -Dwerror=false \

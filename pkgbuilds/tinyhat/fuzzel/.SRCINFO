@@ -1,7 +1,7 @@
 pkgbase = fuzzel
 	pkgdesc = Application launcher for Wayland
 	pkgver = 1.15.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://codeberg.org/dnkl/fuzzel
 	arch = i686
 	arch = x32
@@ -18,6 +18,8 @@ pkgbase = fuzzel
 	depends = pixman
 	depends = wayland
 	source = fuzzel-1.15.0.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/1.15.0.tar.gz
+	source = wheel-repaint.patch
 	sha256sums = 95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b
+	sha256sums = 0562d17389f2c0a09ade45f26823fbffb729823616c6759916f4712535143267
 
 pkgname = fuzzel

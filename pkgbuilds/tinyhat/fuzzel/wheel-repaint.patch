@@ -1,0 +1,22 @@
+--- a/wayland.c
++++ b/wayland.c
+@@ -1144,11 +1144,17 @@
+         wayl->render, wayl->width, seat->pointer.x, seat->pointer.y,
+         wayl->matches);
+ 
+-    if (hovered_row < 0)
++    if (hovered_row < 0) {
++        if (refresh_always)
++            wayl_refresh(wayl);
+         return;
++    }
+ 
+-    if (hovered_row == matches_get_match_index(wayl->matches))
++    if (hovered_row == matches_get_match_index(wayl->matches)) {
++        if (refresh_always)
++            wayl_refresh(wayl);
+         return;
++    }
+ 
+     if (!matches_idx_select(wayl->matches, hovered_row))
+         return;
