@@ -2,7 +2,7 @@
 Type=Application
 Name=SNES programming
 Icon=input-gaming
-Comment=Write a Super Nintendo program in C with PVSnesLib (2x Ctrl+Space builds and runs it in ZSNES)
+Comment=Write a Super Nintendo program in C with PVSnesLib (press Ctrl+Space twice in rapid succession to build and run it in ZSNES)
 Exec=tinyhat-snesdev
 Terminal=false
 Categories=Development;

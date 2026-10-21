@@ -2,7 +2,7 @@
 Type=Application
 Name=C64 programming
 Icon=input-gaming
-Comment=Write a Commodore 64 program in C with cc65 (2x Ctrl+Space builds and runs it in VICE)
+Comment=Write a Commodore 64 program in C with cc65 (press Ctrl+Space twice in rapid succession to build and run it in VICE)
 Exec=tinyhat-c64dev
 Terminal=false
 Categories=Development;
