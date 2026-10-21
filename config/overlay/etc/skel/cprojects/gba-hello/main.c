@@ -1,6 +1,5 @@
 // Hello GBA: a hat you can move around with the D-pad, drawn in bitmap mode 3.
 // Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run it in mGBA.
-// From a terminal, "make" builds it and "make run" runs it.
 #include <tonc.h>
 
 #define HAT_W 24

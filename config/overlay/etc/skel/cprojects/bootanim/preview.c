@@ -1,4 +1,4 @@
-// Shows the boot animation in a window, by running ./hat the same way as the boot splash does. Esc quits.
+// Shows the boot animation in a window, by running ./hat the same way as the boot splash does.
 // With --test, it only checks that ./hat answers quickly enough to be used at boot.
 #include <SDL3/SDL.h>
 #include <poll.h>
