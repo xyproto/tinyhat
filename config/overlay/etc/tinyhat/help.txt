@@ -34,7 +34,7 @@ Ctrl+Alt+Z	ZSNES 2
 Right click desktop	Toggle background
 Alt+Left drag	Move a window
 Alt+Right drag	Resize a window
-Alt+1..4	Go to desktop 1-4 (combine with Shift to send windows there)
+Alt+1..4	Go to desktop 1-4 (combine with Shift to send a window there)
 
 Ctrl+Alt+Shift+Q	Power off
 
