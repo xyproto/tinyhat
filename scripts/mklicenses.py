@@ -18,8 +18,8 @@ PKGDIR = os.path.join(TOP, "build", "repo")
 SRC = os.path.join(TOP, "vendor", "src")
 
 SOURCES = [
-    ("linux", "7.2.9", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
-     "linux-7.2.9.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
+    ("linux", "7.3", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
+     "linux-7.3.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
     ("xpadneo", "0.10.4", "https://github.com/atar-axis/xpadneo", "GPL-2.0-only",
      "xpadneo-0.10.4.tar.gz", ["LICENSE.md", "LICENSES/"]),
     ("open-watcom", "2.0 (2026-10-01 build)", "https://github.com/open-watcom/open-watcom-v2", "Watcom-1.0",
