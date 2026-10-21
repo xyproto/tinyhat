@@ -1,4 +1,7 @@
+#define _GNU_SOURCE
+#include <errno.h>
 #include <fcntl.h>
+#include <grp.h>
 #include <linux/fb.h>
 #include <linux/kd.h>
 #include <math.h>
@@ -10,20 +13,25 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
+#include <sys/prctl.h>
+#include <sys/resource.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
 #include "font.h"
+#include "hat.h"
 
 #define FIFO "/run/tinyhat-splash"
+#define HAT_ACK "/run/tinyhat-splash.hat"
 #define FBDEV "/dev/fb0"
 #define TTY "/dev/tty1"
 #define FRAME_MS 80
 #define IDLE_TIMEOUT_MS 120000
-#define LOW 64
+#define HAT_FIRST_MS 3000
+#define HAT_FRAME_MS 500
 #define MAXSTARS 160
-#define SEGMENTS 16
 
 typedef struct {
 	unsigned char r, g, b;
@@ -31,21 +39,12 @@ typedef struct {
 
 static const Rgb BG = { 0x1a, 0x1b, 0x26 };
 static const Rgb TEAL = { 0x1a, 0x9e, 0x96 };
-#ifndef HAT_COLOR
-#define HAT_COLOR 0x922424
-#endif
-#ifndef HAT_HIGHLIGHT_COLOR
-#define HAT_HIGHLIGHT_COLOR 0xf7768e
-#endif
 #define RGB(c) { ((c) >> 16) & 0xff, ((c) >> 8) & 0xff, (c) & 0xff }
-static const Rgb HAT = RGB(HAT_COLOR);
-static const Rgb HIGHLIGHT = RGB(HAT_HIGHLIGHT_COLOR);
 static const Rgb GRAY = { 0x49, 0x49, 0x49 };
 static const Rgb LIGHT = { 0xc0, 0xca, 0xf5 };
-static const Rgb CYAN = { 0x7d, 0xcf, 0xff };
 static const Rgb WHITE = { 0xff, 0xff, 0xff };
 
-static const Rgb *const ink[] = { &BG, &HAT, &HIGHLIGHT, &GRAY, &LIGHT, &CYAN, &TEAL };
+static const uint32_t ink[INKS] = INK_COLORS;
 static const Rgb STAR[] = { { 0x2f, 0x34, 0x4b }, { 0x56, 0x5f, 0x89 }, { 0xa9, 0xb1, 0xd6 }, { 0xff, 0xff, 0xff } };
 
 static struct {
@@ -58,7 +57,6 @@ static struct {
 } fb = { -1, NULL, 0, 0, 0, "", { 0 } };
 
 static unsigned char *back;
-static unsigned char low[LOW * LOW];
 static int W, H, BPP;
 static int dx0, dy0, dx1, dy1;
 static char message[128];
@@ -70,6 +68,13 @@ static struct {
 } stars[MAXSTARS];
 static int nstars, starsize;
 static int handoff;
+static struct {
+	pid_t pid;
+	int in, out, shown;
+	size_t have;
+	long deadline;
+	unsigned char frame[LOW * LOW];
+} remote = { -1, -1, -1, 0, 0, 0, { 0 } };
 
 static long now_ms(void)
 {
@@ -205,96 +210,93 @@ static int hat_y(void)
 	return H * 2 / 5 - LOW * hat_scale() / 2;
 }
 
-static void line(int x0, int y0, int x1, int y1, unsigned char c)
+static void hat_stop(void)
 {
-	int dx = abs(x1 - x0), sx = x0 < x1 ? 1 : -1, dy = -abs(y1 - y0), sy = y0 < y1 ? 1 : -1, e = dx + dy;
-	for (;;) {
-		if (x0 >= 0 && y0 >= 0 && x0 < LOW && y0 < LOW)
-			low[y0 * LOW + x0] = c;
-		if (x0 == x1 && y0 == y1)
-			break;
-		int e2 = 2 * e;
-		if (e2 >= dy)
-			e += dy, x0 += sx;
-		if (e2 <= dx)
-			e += dx, y0 += sy;
+	if (remote.pid > 0) {
+		kill(remote.pid, SIGKILL);
+		waitpid(remote.pid, NULL, 0);
 	}
+	if (remote.in >= 0)
+		close(remote.in);
+	if (remote.out >= 0)
+		close(remote.out);
+	remote.pid = remote.in = remote.out = -1;
 }
 
-typedef struct {
-	int x, y;
-	double z;
-} Point;
-
-static double tilt = 0.38;
-
-static Point project(double angle, double x, double y, double z)
+static void hat_child(int dir, int exe, int in, int out, int null)
 {
-	double x1 = x * cos(angle) + z * sin(angle), z1 = -x * sin(angle) + z * cos(angle);
-	double y1 = y - 0.45;
-	double y2 = y1 * cos(tilt) - z1 * sin(tilt), z2 = y1 * sin(tilt) + z1 * cos(tilt);
-	double f = 3.4 / (z2 + 3.4);
-	Point p = { (int)lround(LOW / 2 + x1 * f * 25), (int)lround(LOW / 2 - y2 * f * 25), z2 };
-	return p;
+	static char *const argv[] = { "hat", NULL }, *const envp[] = { "PATH=/usr/bin", NULL };
+	struct rlimit mem = { 64 << 20, 64 << 20 }, none = { 0, 0 };
+	signal(SIGPIPE, SIG_DFL);
+	signal(SIGHUP, SIG_DFL);
+	signal(SIGTERM, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
+	if (dup2(in, 0) < 0 || dup2(out, 1) < 0 || dup2(null, 2) < 0 || fchdir(dir) || chroot(".") || chdir("/") ||
+	    setgroups(0, NULL) || setgid(65534) || setuid(65534) || prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) ||
+	    setrlimit(RLIMIT_AS, &mem) || setrlimit(RLIMIT_FSIZE, &none) || setrlimit(RLIMIT_CORE, &none))
+		_exit(127);
+	setpriority(PRIO_PROCESS, 0, 10);
+	fexecve(exe, argv, envp);
+	_exit(127);
 }
 
-static void edge(int pass, Point a, Point b, unsigned char front, unsigned char rear)
+static int hat_send(void)
 {
-	int is_front = a.z + b.z < 0;
-	if (is_front == pass)
-		line(a.x, a.y, b.x, b.y, is_front ? front : rear);
+	int32_t t = (int32_t)tick;
+	remote.have = 0;
+	return write(remote.in, &t, sizeof(t)) == sizeof(t);
 }
 
-static void ring(int pass, double angle, double y, double r, unsigned char front, unsigned char rear)
+static void hat_start(char *args)
 {
-	for (int i = 0; i < SEGMENTS; i++) {
-		double a0 = 2 * M_PI * i / SEGMENTS, a1 = 2 * M_PI * (i + 1) / SEGMENTS;
-		edge(pass, project(angle, r * cos(a0), y, r * sin(a0)), project(angle, r * cos(a1), y, r * sin(a1)), front,
-		     rear);
-	}
-}
-
-static Point at(double angle, double r, double y, double a, double t)
-{
-	return project(angle, r * cos(a) - t * sin(a), y, r * sin(a) + t * cos(a));
-}
-
-static Point quill(double angle, double t, double spread)
-{
-	double w = spread * sin(M_PI * t);
-	return at(angle, 0.58 + 0.45 * t - 0.15 * t * t + (w != 0 ? 0.04 : 0), 0.2 + 0.95 * t - (w != 0 ? 0.08 : 0),
-		  -0.45 - 0.35 * t, w);
-}
-
-static void hat(double angle)
-{
-	memset(low, 0, sizeof(low));
-	tilt = 0.36 + 0.1 * sin(2 * angle);
-	for (int pass = 0; pass < 2; pass++) {
-		for (int side = -1; side <= 1; side += 2) {
-			Point knot = at(angle, 0.56, 0.19, 0, 0);
-			Point top = at(angle, 0.6, 0.27, 0, side * 0.15), bottom = at(angle, 0.6, 0.11, 0, side * 0.15);
-			edge(pass, knot, top, 4, 3);
-			edge(pass, top, bottom, 4, 3);
-			edge(pass, bottom, knot, 4, 3);
+	char *path = strchr(args, ' ');
+	int dir = -1, exe = -1, null = -1, in[2] = { -1, -1 }, out[2] = { -1, -1 };
+	if (remote.pid > 0 || !path)
+		return;
+	*path++ = '\0';
+	if ((dir = open(args, O_RDONLY | O_DIRECTORY | O_CLOEXEC)) >= 0 && (exe = open(path, O_RDONLY | O_CLOEXEC)) >= 0 &&
+	    (null = open("/dev/null", O_RDWR | O_CLOEXEC)) >= 0 && !pipe2(in, O_CLOEXEC) && !pipe2(out, O_CLOEXEC)) {
+		remote.pid = fork();
+		if (remote.pid == 0)
+			hat_child(dir, exe, in[0], out[1], null);
+		if (remote.pid > 0) {
+			remote.in = in[1];
+			remote.out = out[0];
+			in[1] = out[0] = -1;
+			fcntl(remote.in, F_SETFL, O_NONBLOCK);
+			fcntl(remote.out, F_SETFL, O_NONBLOCK);
+			remote.shown = 0;
+			remote.deadline = now_ms() + HAT_FIRST_MS;
+			if (!hat_send())
+				hat_stop();
 		}
-		ring(pass, angle, 0, 1.0, 2, 1);
-		ring(pass, angle, 0, 0.55, 2, 1);
-		ring(pass, angle, 0.12, 0.555, 4, 3);
-		ring(pass, angle, 0.26, 0.56, 4, 3);
-		ring(pass, angle, 0.95, 0.6, 2, 1);
-		for (int i = 0; i < SEGMENTS; i += 2) {
-			double a = 2 * M_PI * i / SEGMENTS;
-			edge(pass, project(angle, 0.55 * cos(a), 0, 0.55 * sin(a)),
-			     project(angle, 0.6 * cos(a), 0.95, 0.6 * sin(a)), 2, 1);
-			edge(pass, project(angle, 0.55 * cos(a), 0, 0.55 * sin(a)), project(angle, cos(a), 0, sin(a)), 2, 1);
-		}
-		for (int k = 0; k < 6; k++)
-			edge(pass, quill(angle, k / 6.0, 0), quill(angle, (k + 1) / 6.0, 0), 5, 6);
-		for (int k = 1; k < 6; k++)
-			for (int side = -1; side <= 1; side += 2)
-				edge(pass, quill(angle, k / 6.0, 0), quill(angle, k / 6.0, side * 0.17), 5, 6);
 	}
+	int fds[] = { dir, exe, null, in[0], in[1], out[0], out[1] };
+	for (size_t i = 0; i < sizeof(fds) / sizeof(fds[0]); i++)
+		if (fds[i] >= 0)
+			close(fds[i]);
+}
+
+static int hat_remote(void)
+{
+	ssize_t n = -1;
+	if (remote.pid <= 0)
+		return 0;
+	while (remote.have < sizeof(remote.frame) &&
+	       (n = read(remote.out, remote.frame + remote.have, sizeof(remote.frame) - remote.have)) > 0)
+		remote.have += (size_t)n;
+	if (remote.have == sizeof(remote.frame)) {
+		for (size_t i = 0; i < sizeof(low); i++)
+			low[i] = remote.frame[i] < INKS ? remote.frame[i] : INK_BG;
+		remote.shown = 1;
+		remote.deadline = now_ms() + HAT_FRAME_MS;
+		if (hat_send())
+			return 1;
+	} else if (n < 0 && (errno == EAGAIN || errno == EINTR) && now_ms() < remote.deadline) {
+		return remote.shown;
+	}
+	hat_stop();
+	return 0;
 }
 
 static void draw_hat(void)
@@ -302,8 +304,9 @@ static void draw_hat(void)
 	int s = hat_scale(), x0 = hat_x(), y0 = hat_y();
 	uint32_t c[sizeof(ink) / sizeof(ink[0])];
 	for (size_t i = 0; i < sizeof(ink) / sizeof(ink[0]); i++)
-		c[i] = pack(*ink[i]);
-	hat(2 * M_PI * (double)(tick % 75) / 75);
+		c[i] = pack((Rgb)RGB(ink[i]));
+	if (!hat_remote())
+		hat(tick);
 	for (int y = 0; y < LOW * s; y++)
 		for (int x = 0; x < LOW * s; x++) {
 			int px = x0 + x, py = y0 + y;
@@ -509,6 +512,9 @@ static void command(char *line)
 		progress = atoi(line + 8);
 		if (progress > 100)
 			progress = 100;
+	} else if (!strncmp(line, "hat ", 4)) {
+		hat_start(line + 4);
+		close(open(HAT_ACK, O_WRONLY | O_CREAT | O_CLOEXEC, 0644));
 	} else if (!strcmp(line, "quit")) {
 		stop = 1;
 	} else if (!strcmp(line, "handoff")) {
@@ -538,6 +544,7 @@ int main(void)
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
 	unlink(FIFO);
+	unlink(HAT_ACK);
 	if (mkfifo(FIFO, 0600) || chmod(FIFO, 0622) || (ff = open(FIFO, O_RDWR | O_NONBLOCK | O_CLOEXEC)) < 0)
 		return 1;
 	if (!map()) {
@@ -597,7 +604,9 @@ int main(void)
 		}
 		flush();
 	}
+	hat_stop();
 	unlink(FIFO);
+	unlink(HAT_ACK);
 	if (tty >= 0) {
 		if (!handoff)
 			ioctl(tty, KDSETMODE, KD_TEXT);

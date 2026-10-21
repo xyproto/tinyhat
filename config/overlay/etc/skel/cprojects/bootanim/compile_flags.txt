@@ -1,0 +1,2 @@
+-std=gnu17
+-Wall

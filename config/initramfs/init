@@ -198,6 +198,14 @@ elif [ "$where" = file ] && find_savefile "$disk"; then
 else
 	where=
 fi
+if [ -n "$where" ] && [ -f /run/tinyhat/data/state/bootanim/hat ] && [ -p /run/tinyhat-splash ]; then
+	say "hat /run/tinyhat/lower /run/tinyhat/data/state/bootanim/hat"
+	i=0
+	while [ ! -e /run/tinyhat-splash.hat ] && [ "$i" -lt 20 ]; do
+		sleep 0.1
+		i=$((i + 1))
+	done
+fi
 if [ -n "$where" ]; then
 	root=root-$(od -An -tu4 -j8 -N4 "$sfs" | tr -d ' ')
 	mkdir -p "/run/tinyhat/data/$root/upper" "/run/tinyhat/data/$root/work"
