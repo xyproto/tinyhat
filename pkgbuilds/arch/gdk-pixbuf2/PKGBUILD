@@ -7,15 +7,18 @@ pkgname=(
   gdk-pixbuf2-docs
 )
 pkgver=2.44.8
-pkgrel="1"
+pkgrel="2"
 pkgdesc="An image loading library"
 url="https://gitlab.gnome.org/GNOME/gdk-pixbuf"
 arch=(i686 x32)
 license=(LGPL-2.0-or-later)
 depends=(
+  giflib
   glib2
   glibc
-  glycin
+  libjpeg-turbo
+  libpng
+  libtiff
   shared-mime-info
 )
 makedepends=(
@@ -44,18 +47,18 @@ build() {
     -D android=disabled
     -D builtin_loaders=all
     -D documentation=true
-    -D gif=disabled
-    -D glycin=enabled
+    -D gif=enabled
+    -D glycin=disabled
     -D gtk_doc=true
     -D installed_tests=false
     -D introspection=enabled
-    -D jpeg=disabled
+    -D jpeg=enabled
     -D legacy_xpm=enabled
     -D man=true
     -D others=enabled
-    -D png=disabled
+    -D png=enabled
     -D thumbnailer=disabled
-    -D tiff=disabled
+    -D tiff=enabled
   )
 
   arch-meson gdk-pixbuf build "${meson_options[@]}"
