@@ -28,7 +28,7 @@ printf 'search --set=root --file /.disk/%s.uuid\nset prefix=($root)/boot/grub\n'
 printf '# tinyhat\n' >"$tools/pccfg"
 bsdtar -xf "$(pkg grub)" -C "$tools/grub" usr/bin/grub-mkimage usr/lib/grub/i386-pc usr/lib/grub/i386-efi
 if [ "$(basename "$img" .img)" = tinyhat64x32 ]; then
-	bsdtar -xf "$(pkg grub-efi64)" -C "$tools" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
+	bsdtar -xf "$(pkg grub-efi64)" -C "$tools/grub64" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
 fi
 $top/scripts/chroot.sh "$br" --bind "$work" /img \
 	/img/isotools/grub/usr/bin/grub-mkimage -d /img/isotools/grub/usr/lib/grub/i386-efi -O i386-efi \
