@@ -70,9 +70,15 @@ test: patchcheck sourcecheck fuzzelcheck
 	@scripts/chroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
 	@echo "grub.cfg: ok"
 
-dist: tinyhat32.img tinyhat64x32.img
+dist: tinyhat32.img tinyhat64x32.img $(B)/tinyhat32.iso $(B)/tinyhat64x32.iso
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
 	@ls -l $(B)/dist
+
+$(B)/tinyhat32.iso: tinyhat32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+	scripts/mkiso.sh $< $@
+
+$(B)/tinyhat64x32.iso: tinyhat64x32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+	scripts/mkiso.sh $< $@
 
 fetch: $(B)/.fetched-buildroot sources
 

@@ -9,8 +9,9 @@ shift
 home=${DIST_HOME:-https://github.com/xyproto/tinyhat}
 base=${DIST_URL:-$home/releases/download}
 out=$top/build/dist
+system=$top/build/system
 stage=$out/src/tinyhat-write-$ver
-mkdir -p "$out"
+mkdir -p "$out" "$system"
 rm -rf "$out/src"
 mkdir -p "$stage"
 cp "$top/programs/tinyhat-write.c" "$top/programs/tinyhat-write-core.h" "$top/programs/tinyhat-write-mac.m" "$stage/"
@@ -25,6 +26,12 @@ cd "$out"
 for img in "$@"; do
 	img=$(cd "$top" && readlink -f "$img")
 	case ${img##*/} in
+	*.iso)
+		name=${img##*/}; name=${name%.iso}
+		cp "$img" "$name-$ver.iso"
+		files="$files $name-$ver.iso"
+		continue
+		;;
 	tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
 	*) name=tinyhat32 prog=tinyhat formula=tinyhat-writer class=TinyhatWriter app="Tiny Hat Writer" ;;
 	esac
@@ -43,7 +50,7 @@ for img in "$@"; do
 		$(pkg-config --cflags --libs gtk+-3.0)
 	rm -f "$out/img.gz"
 	imgsha=$(sha256sum "$gz" | awk '{ print $1 }')
-	cat >"$out/$formula.rb" <<EOF
+	cat >"$system/$formula.rb" <<EOF
 class $class < Formula
   desc "Write Tiny Hat images to USB sticks"
   homepage "$home"
@@ -95,7 +102,15 @@ class $class < Formula
   end
 end
 EOF
-	files="$files $name-$ver.img.gz $prog-$ver.exe $prog-$ver-linux-x86_64 $formula.rb"
+	files="$files $name-$ver.img.gz $prog-$ver.exe $prog-$ver-linux-x86_64"
+	if command -v VBoxManage >/dev/null 2>&1; then
+		vdi=$name-$ver.vdi
+		if [ ! -f "$out/$vdi" ] || [ "$img" -nt "$out/$vdi" ]; then
+			VBoxManage convertfromraw "$img" "$out/$vdi.tmp" --format VDI
+			mv "$out/$vdi.tmp" "$out/$vdi"
+		fi
+		files="$files $vdi"
+	fi
 done
 rm -f "$out/win-res.o"
 
