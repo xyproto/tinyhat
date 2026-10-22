@@ -1,0 +1,34 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+
+pkgname=meson
+pkgver=1.12.1
+pkgrel=1
+pkgdesc="High productivity build system"
+arch=(any)
+url="https://mesonbuild.com/"
+license=(Apache-2.0)
+depends=(python ninja)
+makedepends=(git)
+source=("git+https://github.com/mesonbuild/meson.git#tag=$pkgver")
+b2sums=('4995b1a06b106c0cda8d3cbd2d09d4069422875abbeb0e7717579d477ea36714a08c92fab938114fa53d3e348f79ecf15a87a8aff0d5f4b0e0c6f07155c68701')
+
+prepare() {
+  cd meson
+}
+
+build() {
+  cd meson
+  python -m build --wheel --no-isolation
+}
+
+package_meson() {
+  cd meson
+  python -m installer --destdir="$pkgdir" dist/*.whl
+
+  install -d "$pkgdir/usr/share/vim/vimfiles"
+  cp -rt "$pkgdir/usr/share/vim/vimfiles" data/syntax-highlighting/vim/*/
+
+  install -Dm644 data/shell-completions/bash/* -t "$pkgdir/usr/share/bash-completion/completions"
+  install -Dm644 data/shell-completions/zsh/* -t "$pkgdir/usr/share/zsh/site-functions"
+}
