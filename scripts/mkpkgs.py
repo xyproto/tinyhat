@@ -452,7 +452,7 @@ def cmd_mk():
         if info["sub"] == "tinyhat":
             wanted = all_deps(info)
             tinyhat += info["pkgnames"]
-            deps = resolve_local(wanted, names, provided, own)
+            deps = [d for d in exact_local(localdeps.get(info["base"], []) + resolve_local(wanted, names, provided, own), full, local) if d not in own]
         else:
             hard, soft = auto_local(info, seed, idx, prefs, broken, closures, versions, prebuilt_names, image)
             deps = [d for d in exact_local(localdeps.get(info["base"], []) + hard, full, local) if d not in own]
