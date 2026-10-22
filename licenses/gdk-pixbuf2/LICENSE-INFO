@@ -1,4 +1,4 @@
 name: gdk-pixbuf2
-version: 2.42.12-2.0
-url: https://wiki.gnome.org/Projects/GdkPixbuf
+version: 2.44.8-2
+url: https://gitlab.gnome.org/GNOME/gdk-pixbuf
 license: LGPL-2.0-or-later

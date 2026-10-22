@@ -2,4 +2,6 @@ netsurf libcss libdom libhubbub libnsgif libnsbmp libparserutils libnsutils libs
 spirv-llvm-translator llvm-libs llvm
 libclc llvm-libs llvm clang spirv-llvm-translator
 mesa llvm-libs llvm clang libclc spirv-llvm-translator
-gdk-pixbuf2 meson
+gdk-pixbuf2 meson shared-mime-info
+fcft libutf8proc
+foot fcft libutf8proc
