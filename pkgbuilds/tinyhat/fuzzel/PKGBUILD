@@ -5,7 +5,7 @@ pkgdesc="Application launcher for Wayland"
 arch=(i686 x32)
 url="https://codeberg.org/dnkl/fuzzel"
 license=(MIT)
-depends=(cairo fcft libpng libxkbcommon pixman wayland)
+depends=(cairo fcft libpng libutf8proc libxkbcommon pixman wayland)
 makedepends=(meson ninja scdoc tllist wayland-protocols)
 source=("fuzzel-$pkgver.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/$pkgver.tar.gz"
         "wheel-repaint.patch")

@@ -20,6 +20,12 @@ force_build = [
     # can be decoded everywhere (the prebuilt one has the classic loaders disabled
     # and glycin, which is not available here, would be needed instead).
     "gdk-pixbuf2",
+    # Current upstream meson; the archlinux32 one (1.4.0) is too old to configure
+    # gdk-pixbuf2 2.x/2.44, which needs meson >= 1.5.
+    "meson",
+    # Rebuilt against the utf8proc 2.12 soname bump (libutf8proc.so.3); the
+    # archlinux32 binaries still reference libutf8proc.so.2.
+    "fcft", "foot", "fuzzel",
 ]
 reasons = { llvm = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23" }
 
