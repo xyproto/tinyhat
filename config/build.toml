@@ -1,5 +1,6 @@
 [prebuilt]
-# Taken from archlinux32 instead of built here, unless archlinux32 lacks it or ships it broken.
+# Taken from archlinux32 instead of built here, unless archlinux32 lacks it, ships it
+# broken, or it is in force_build (usually to pick a newer upstream release than archlinux32).
 # all = true means every package in pkgbuilds/arch; the named ones take more than about 15 minutes to build.
 all = true
 packages = [
@@ -9,6 +10,12 @@ packages = [
     "systemd", "util-linux", "openssl", "nss", "gnutls", "gnupg", "krb5", "git",
     "spirv-tools", "onetbb", "highway", "libjxl", "pipewire", "sysprof", "tinysparql",
     "linux-firmware",
+]
+force_build = [
+    # The whole netsurf stack, so that netsurf is built against matching library versions
+    "netsurf",
+    "libcss", "libdom", "libhubbub", "libnsbmp", "libnsgif", "libnsutils",
+    "libparserutils", "libsvgtiny", "libutf8proc", "libwapcaplet",
 ]
 reasons = { llvm = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23" }
 
