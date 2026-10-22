@@ -1,4 +1,4 @@
-netsurf libdom libhubbub libparserutils libnsutils libnsbmp
+netsurf libcss libdom libhubbub libnsgif libnsbmp libparserutils libnsutils libsvgtiny libutf8proc libwapcaplet
 spirv-llvm-translator llvm-libs llvm
 libclc llvm-libs llvm clang spirv-llvm-translator
 mesa llvm-libs llvm clang libclc spirv-llvm-translator

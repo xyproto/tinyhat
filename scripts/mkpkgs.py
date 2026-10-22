@@ -380,9 +380,12 @@ def cmd_mk():
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
     listed = BUILD.get("prebuilt", {}).get("packages", [])
-    candidates = list(listed)
+    force_build = set(BUILD.get("prebuilt", {}).get("force_build", []))
+    candidates = [b for b in listed if b not in force_build]
     if BUILD.get("prebuilt", {}).get("all"):
-        candidates += [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates]
+        all_arch = [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates
+                    and i["base"] not in force_build]
+        candidates += all_arch
     local_pkgs, local_provides = idx["i686"]
 
     def choose(image, metadata):
