@@ -1,4 +1,4 @@
 name: netsurf
-version: 3.10-7.2
+version: 3.11-10
 url: https://www.netsurf-browser.org/
-license: GPL2 AND MIT
+license: GPL-2.0-only AND MIT

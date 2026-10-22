@@ -1,0 +1,14 @@
+pkgbase = meson
+	pkgdesc = High productivity build system
+	pkgver = 1.12.1
+	pkgrel = 1
+	url = https://mesonbuild.com/
+	arch = any
+	license = Apache-2.0
+	makedepends = git
+	depends = python
+	depends = ninja
+	source = git+https://github.com/mesonbuild/meson.git#tag=1.12.1
+	b2sums = 4995b1a06b106c0cda8d3cbd2d09d4069422875abbeb0e7717579d477ea36714a08c92fab938114fa53d3e348f79ecf15a87a8aff0d5f4b0e0c6f07155c68701
+
+pkgname = meson
