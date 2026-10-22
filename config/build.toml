@@ -16,6 +16,10 @@ force_build = [
     "netsurf",
     "libcss", "libdom", "libhubbub", "libnsbmp", "libnsgif", "libnsutils",
     "libparserutils", "libsvgtiny", "libutf8proc", "libwapcaplet",
+    # Current upstream gdk-pixbuf2 with classic loaders, so that PNG/JPEG/GIF/TIFF
+    # can be decoded everywhere (the prebuilt one has the classic loaders disabled
+    # and glycin, which is not available here, would be needed instead).
+    "gdk-pixbuf2",
 ]
 reasons = { llvm = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23" }
 
