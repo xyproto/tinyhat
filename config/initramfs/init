@@ -59,6 +59,19 @@ find_label() {
 	return 1
 }
 
+find_cd() {
+	for b in /sys/class/block/sr*; do
+		d=/dev/${b##*/}
+		[ -b "$d" ] || continue
+		[ "$(dd if="$d" bs=1 skip=32769 count=5 2>/dev/null)" = CD001 ] || continue
+		mkdir -p /run/tinyhat/boot
+		mount -t iso9660 -o ro "$d" /run/tinyhat/boot 2>/dev/null || continue
+		[ -f /run/tinyhat/boot/tinyhat/root.sfs ] && echo "$d" && return 0
+		umount /run/tinyhat/boot
+	done
+	return 1
+}
+
 removable() {
 	[ "$(cat "/sys/block/$1/removable" 2>/dev/null)" = 1 ] && return 0
 	case $(readlink -f "/sys/block/$1/device") in */usb*) return 0 ;; esac
@@ -150,15 +163,19 @@ uptime() { read -r up _ </proc/uptime; echo "${up%.*}"; }
 deadline=$(($(uptime) + 30))
 while :; do
 	dev=$(find_label "$label") && break
+	dev=$(find_cd) && break
 	if [ "$(uptime)" -ge $deadline ]; then
-		rescue "no partition labeled $label found"
+		rescue "no bootable partition, USB stick or CDROM labeled $label found"
 		deadline=$(($(uptime) + 30))
 	fi
 	sleep 0.2
 done
 
 mkdir -p /run/tinyhat/boot /run/tinyhat/lower /run/tinyhat/rw /newroot
-mount -t xfs -o ro,noatime "$dev" /run/tinyhat/boot || rescue "could not mount $dev"
+case $dev in
+/dev/sr*) mount -t iso9660 -o ro "$dev" /run/tinyhat/boot 2>/dev/null || true ;;
+*) mount -t xfs -o ro,noatime "$dev" /run/tinyhat/boot || rescue "could not mount $dev" ;;
+esac
 sfs=/run/tinyhat/boot/tinyhat/root.sfs
 if [ "$toram" = auto ]; then
 	toram=0
