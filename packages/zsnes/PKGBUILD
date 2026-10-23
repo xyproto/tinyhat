@@ -7,8 +7,8 @@ url="https://github.com/xyproto/zsnes"
 license=(GPL-2.0-or-later)
 depends=(sdl3 libglvnd libpng pipewire zlib)
 makedepends=(nasm mesa)
-source=("zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('963b8243ee69d6a92e519991c457298dd1419b1406158607dfc387379c4b505e')
+source=("zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/$pkgver.tar.gz")
+b2sums=('c44f6d169ff4051382cf3fc125d828edb510d78ea5b55fd6162519339e21944bd8867c3e17b75b2970591b2b0b2ca6a8d34673b8b5b7be6818a59e26e7f73f6c')
 
 build() {
   cd zsnes-$pkgver
