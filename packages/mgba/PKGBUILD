@@ -1,24 +1,27 @@
 pkgname=mgba
 pkgver=0.10.5
 pkgrel=1
-pkgdesc="Game Boy Advance emulator, SDL frontend"
+pkgdesc="Game Boy Advance emulator, SDL3 frontend"
 arch=(i686 x32)
 url="https://mgba.io/"
 license=(MPL-2.0)
-depends=(sdl2-compat libpng zlib)
+depends=(sdl3 libpng zlib)
 makedepends=(cmake ninja)
 source=("mgba-$pkgver.tar.gz::https://github.com/mgba-emu/mgba/archive/refs/tags/$pkgver.tar.gz"
-        altenter.patch)
+        altenter.patch
+        sdl3.patch)
 sha256sums=('91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14'
+            'SKIP'
             'SKIP')
 
 prepare() {
   cd mgba-$pkgver
   patch -Np1 -i ../altenter.patch
+  patch -Np1 -i ../sdl3.patch
 }
 
 build() {
-  cmake -S mgba-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+  cmake -S mgba-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DSDL_VERSION=3 \
     -DBUILD_QT=OFF -DBUILD_SDL=ON -DBUILD_GL=OFF -DBUILD_GLES2=OFF -DBUILD_GLES3=OFF -DUSE_EPOXY=OFF \
     -DBUILD_SHARED=OFF -DBUILD_STATIC=ON -DUSE_FFMPEG=OFF -DUSE_MINIZIP=OFF -DUSE_LIBZIP=OFF \
     -DUSE_SQLITE3=OFF -DUSE_ELF=OFF -DUSE_LUA=OFF -DENABLE_SCRIPTING=OFF -DUSE_LZMA=OFF \

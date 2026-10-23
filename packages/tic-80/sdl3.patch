@@ -1,0 +1,490 @@
+diff --git a/cmake/sdl.cmake b/cmake/sdl.cmake
+index de82fa0..dc1c6eb 100644
+--- a/cmake/sdl.cmake
++++ b/cmake/sdl.cmake
+@@ -2,19 +2,11 @@
+ # SDL2
+ ################################
+ if(PREFER_SYSTEM_SDL2)
+-    find_package(SDL2)
+-    if(SDL2_FOUND)
+-        if(NINTENDO_SWITCH)
+-            add_library(SDL2 ALIAS SDL2::SDL2-static)
+-            add_library(SDL2-static ALIAS SDL2::SDL2-static)
+-        else()
+-            add_library(SDL2 ALIAS SDL2::SDL2)
+-            add_library(SDL2-static ALIAS SDL2::SDL2)
+-        endif()
+-        message(STATUS "Use system library: SDL2")
+-    else()
+-        message(WARNING "System library SDL2 not found")
+-    endif()
++    find_package(SDL3 REQUIRED CONFIG)
++    add_library(SDL2 ALIAS SDL3::SDL3-shared)
++    add_library(SDL2-static ALIAS SDL3::SDL3-shared)
++    add_compile_definitions(SDL_ENABLE_OLD_NAMES)
++    message(STATUS "Use system library: SDL3")
+ endif()
+ 
+ 
+@@ -104,7 +96,7 @@ if(BUILD_SDL AND BUILD_PLAYER AND NOT RPI)
+         target_link_libraries(player-sdl PRIVATE SDL2main)
+     endif()
+ 
+-    if(BUILD_STATIC AND NOT USE_GLES2)
++    if(BUILD_STATIC AND NOT USE_GLES2 AND NOT PREFER_SYSTEM_SDL2)
+         target_link_libraries(player-sdl PRIVATE SDL2-static)
+     else()
+         target_link_libraries(player-sdl PRIVATE SDL2)
+@@ -203,7 +195,7 @@ endif()
+ if(NOT EMSCRIPTEN)
+     if(PREFER_SYSTEM_SDL2)
+         target_link_libraries(sdlgpu SDL2)
+-    elseif(BUILD_STATIC AND NOT USE_GLES2)
++    elseif(BUILD_STATIC AND NOT USE_GLES2 AND NOT PREFER_SYSTEM_SDL2)
+         target_link_libraries(sdlgpu SDL2-static)
+     else()
+         target_link_libraries(sdlgpu SDL2)
+@@ -291,7 +283,7 @@ if(BUILD_SDL)
+         elseif(RPI)
+             target_link_libraries(${TIC80_TARGET} libSDL2.a bcm_host pthread)
+         else()
+-            if(BUILD_STATIC AND NOT USE_GLES2)
++            if(BUILD_STATIC AND NOT USE_GLES2 AND NOT PREFER_SYSTEM_SDL2)
+                 target_link_libraries(${TIC80_TARGET} SDL2-static)
+             else()
+                 target_link_libraries(${TIC80_TARGET} SDL2)
+diff --git a/src/system/sdl/main.c b/src/system/sdl/main.c
+index baa7eda..e315eb6 100644
+--- a/src/system/sdl/main.c
++++ b/src/system/sdl/main.c
+@@ -42,7 +42,7 @@ extern void gotoMenu(Studio* studio);
+ #if defined(CRT_SHADER_SUPPORT)
+ #include <SDL_gpu.h>
+ #else
+-#include <SDL.h>
++#include <SDL3/SDL.h>
+ #endif
+ 
+ #if defined(__EMSCRIPTEN__)
+@@ -194,7 +194,7 @@ static struct
+     {
+         SDL_mutex           *mutex;
+         SDL_AudioSpec       spec;
+-        SDL_AudioDeviceID   device;
++        SDL_AudioStream     *device;
+         s32                 bufferRemaining;
+     } audio;
+ 
+@@ -295,7 +295,10 @@ static void renderCopy(Renderer render, Texture tex, SDL_Rect src, SDL_Rect dst)
+     else
+ #endif
+     {
+-        SDL_RenderCopy(render.sdl, tex.sdl, &src, &dst);
++        SDL_FRect fsrc, fdst;
++        SDL_RectToFRect(&src, &fsrc);
++        SDL_RectToFRect(&dst, &fdst);
++        SDL_RenderTexture(render.sdl, tex.sdl, &fsrc, &fdst);
+     }
+ }
+ 
+@@ -318,6 +321,19 @@ static void audioCallback(void* userdata, u8* stream, s32 len)
+     }
+ }
+ 
++static void audioStreamCallback(void* userdata, SDL_AudioStream* stream, s32 additional, s32 total)
++{
++    static u8 buf[4096];
++
++    while(additional > 0)
++    {
++        s32 len = additional < (s32)sizeof buf ? additional : (s32)sizeof buf;
++        audioCallback(userdata, buf, len);
++        SDL_PutAudioStreamData(stream, buf, len);
++        additional -= len;
++    }
++}
++
+ static void initSound()
+ {
+     platform.audio.mutex = SDL_CreateMutex();
+@@ -325,19 +341,19 @@ static void initSound()
+     SDL_AudioSpec want =
+     {
+         .freq = TIC80_SAMPLERATE,
+-        .format = AUDIO_S16,
++        .format = SDL_AUDIO_S16,
+         .channels = TIC80_SAMPLE_CHANNELS,
+-        .userdata = NULL,
+-        .callback = audioCallback,
+-        .samples = 1024,
+     };
+ 
++    SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, "1024");
++
+     if (studio_config(platform.studio)->fft)
+     {
+         FFT_Open(studio_config(platform.studio)->fftcaptureplaybackdevices, studio_config(platform.studio)->fftdevice);
+     }
+ 
+-    platform.audio.device = SDL_OpenAudioDevice(NULL, 0, &want, &platform.audio.spec, 0);
++    platform.audio.spec = want;
++    platform.audio.device = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, audioStreamCallback, NULL);
+ }
+ 
+ static const u8* getSpritePtr(const tic_tile* tiles, s32 x, s32 y)
+@@ -367,9 +383,7 @@ static void setWindowIcon()
+                 pixels[index] = color == ColorKey ? 0 : pal.data[color];
+             }
+ 
+-        SDL_Surface* surface = SDL_CreateRGBSurfaceFrom(pixels, Size, Size,
+-            sizeof(s32) * BITS_IN_BYTE, Size * sizeof(s32),
+-            0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
++        SDL_Surface* surface = SDL_CreateSurfaceFrom(Size, Size, SDL_PIXELFORMAT_ABGR8888, pixels, Size * sizeof(s32));
+ 
+         SCOPE(SDL_FreeSurface(surface))
+         {
+@@ -586,17 +600,16 @@ static void initGPU()
+     else
+ #endif
+     {
+-        platform.screen.renderer.sdl = SDL_CreateRenderer(platform.window, -1,
+ #if defined(CRT_SHADER_SUPPORT)
+-            SDL_RENDERER_SOFTWARE
+-#else
+-            (soft ? SDL_RENDERER_SOFTWARE : SDL_RENDERER_ACCELERATED)
++        soft = true;
+ #endif
+-            | (!soft && vsync ? SDL_RENDERER_PRESENTVSYNC : 0)
+-        );
++        platform.screen.renderer.sdl = SDL_CreateRenderer(platform.window, soft ? SDL_SOFTWARE_RENDERER : NULL);
++        if(!soft && vsync)
++            SDL_SetRenderVSync(platform.screen.renderer.sdl, 1);
+ 
+         platform.screen.texture.sdl = SDL_CreateTexture(platform.screen.renderer.sdl, SDL_PIXELFORMAT_ABGR8888,
+             SDL_TEXTUREACCESS_STREAMING, TIC80_FULLWIDTH, TIC80_FULLHEIGHT);
++        SDL_SetTextureScaleMode(platform.screen.texture.sdl, SDL_SCALEMODE_NEAREST);
+     }
+ 
+ #if defined(TOUCH_INPUT_SUPPORT)
+@@ -677,13 +690,18 @@ static void calcTextureRect(SDL_Rect* rect)
+ static void processMouse()
+ {
+     tic_point pt;
+-    s32 mb = SDL_GetMouseState(&pt.x, &pt.y);
++    float fx, fy;
++    s32 mb = SDL_GetMouseState(&fx, &fy);
++    pt.x = (s32)fx;
++    pt.y = (s32)fy;
+ 
+     tic80_input* input = &platform.input;
+ 
+-    if(SDL_GetRelativeMouseMode())
++    if(SDL_GetWindowRelativeMouseMode(platform.window))
+     {
+-        SDL_GetRelativeMouseState(&pt.x, &pt.y);
++        SDL_GetRelativeMouseState(&fx, &fy);
++        pt.x = (s32)fx;
++        pt.y = (s32)fy;
+ 
+         input->mouse.rx = pt.x;
+         input->mouse.ry = pt.y;
+@@ -696,7 +714,7 @@ static void processMouse()
+         {
+             if(!platform.mouse.moved)
+             {
+-                SDL_ShowCursor(SDL_DISABLE);
++                SDL_HideCursor();
+             }
+             else
+             {
+@@ -708,10 +726,10 @@ static void processMouse()
+                     tic_point m = {(pt.x - rect.x) * TIC80_FULLWIDTH / rect.w, (pt.y - rect.y) * TIC80_FULLHEIGHT / rect.h};
+ 
+                     if(m.x < 0 || m.y < 0 || m.x >= TIC80_FULLWIDTH || m.y >= TIC80_FULLHEIGHT)
+-                        SDL_ShowCursor(SDL_ENABLE);
++                        SDL_ShowCursor();
+                     else
+                     {
+-                        SDL_ShowCursor(SDL_DISABLE);
++                        SDL_HideCursor();
+                         input->mouse.x = m.x;
+                         input->mouse.y = m.y;
+                     }
+@@ -762,8 +780,8 @@ static void processKeyboard()
+     if(platform.keyboard.touch.state[tic_key_board])
+     {
+         *input->keyboard.keys = tic_key_board;
+-        if(!SDL_IsTextInputActive())
+-            SDL_StartTextInput();
++        if(!SDL_TextInputActive(platform.window))
++            SDL_StartTextInput(platform.window);
+     }
+ #endif
+ 
+@@ -826,7 +844,7 @@ static bool isKbdVisible()
+ 
+     return h - rect.h - KBD_ROWS * w / KBD_COLS >= 0
+ #if defined(__TIC_ANDROID__)
+-        && !SDL_IsTextInputActive()
++        && !SDL_TextInputActive(platform.window)
+ #endif
+         ;
+ }
+@@ -1068,8 +1086,9 @@ static void processGamepad()
+                             platform.mouse.x += (float)x_mag / 1000.0f;
+                             platform.mouse.y += (float)y_mag / 1000.0f;
+ 
+-                            s32 mx, my;
+-                            SDL_GetMouseState(&mx, &my);
++                            float fmx, fmy;
++                            SDL_GetMouseState(&fmx, &fmy);
++                            s32 mx = (s32)fmx, my = (s32)fmy;
+ 
+                             if (abs((s32)platform.mouse.x) > 0 || abs((s32)platform.mouse.y) > 0)
+                             {
+@@ -1194,9 +1213,9 @@ static void resetKeyboardStateOnFocusLoss()
+ 
+ tic_layout detect_keyboard_layout()
+ {
+-    char q = SDL_GetKeyFromScancode(SDL_SCANCODE_Q);
+-    char w = SDL_GetKeyFromScancode(SDL_SCANCODE_W);
+-    char y = SDL_GetKeyFromScancode(SDL_SCANCODE_Y);
++    char q = SDL_GetKeyFromScancode(SDL_SCANCODE_Q, SDL_KMOD_NONE, false);
++    char w = SDL_GetKeyFromScancode(SDL_SCANCODE_W, SDL_KMOD_NONE, false);
++    char y = SDL_GetKeyFromScancode(SDL_SCANCODE_Y, SDL_KMOD_NONE, false);
+ 
+     tic_layout layout = tic_layout_unknown;
+ 
+@@ -1217,15 +1236,15 @@ static void pollEvents()
+     // check if releative mode was enabled
+     {
+         const tic_mem* tic = studio_mem(platform.studio);
+-        if((bool)tic->ram->input.mouse.relative != (bool)SDL_GetRelativeMouseMode())
+-            SDL_SetRelativeMouseMode(tic->ram->input.mouse.relative ? SDL_TRUE : SDL_FALSE);
++        if((bool)tic->ram->input.mouse.relative != SDL_GetWindowRelativeMouseMode(platform.window))
++            SDL_SetWindowRelativeMouseMode(platform.window, tic->ram->input.mouse.relative ? true : false);
+     }
+ 
+     ZEROMEM(platform.input);
+     tic80_input* input = &platform.input;
+ 
+     // keep relative mode enabled
+-    input->mouse.relative = SDL_GetRelativeMouseMode() ? 1 : 0;
++    input->mouse.relative = SDL_GetWindowRelativeMouseMode(platform.window) ? 1 : 0;
+ 
+ #if defined(TOUCH_INPUT_SUPPORT)
+     ZEROMEM(platform.gamepad.touch.joystick);
+@@ -1269,7 +1288,7 @@ static void pollEvents()
+             {
+                 s32 id = event.cdevice.which;
+ 
+-                const char* name = SDL_GameControllerNameForIndex(id);
++                const char* name = SDL_GetGamepadNameForID(id);
+ 
+                 if(name && SDL_strcmp(name, "Serial/Keyboard/Mouse/Joystick") == 0)
+                     break;
+@@ -1315,22 +1334,20 @@ static void pollEvents()
+                 }
+             }
+             break;
+-        case SDL_WINDOWEVENT:
+-            switch(event.window.event)
+-            {
++            break;
+             case SDL_WINDOWEVENT_SHOWN:
+             case SDL_WINDOWEVENT_EXPOSED:
+             case SDL_WINDOWEVENT_RESTORED:
+             case SDL_WINDOWEVENT_RESIZED:
+                 platform.screen.force_redraw = true;
+                 break;
+-            case SDL_WINDOWEVENT_ENTER:
++            case SDL_EVENT_WINDOW_MOUSE_ENTER:
+                 platform.mouse.focus = true;
+                 break;
+-            case SDL_WINDOWEVENT_LEAVE:
++            case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+                 platform.mouse.focus = false;
+                 break;
+-            case SDL_WINDOWEVENT_SIZE_CHANGED:
++            case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+                 {
+                     platform.screen.force_redraw = true;
+ 
+@@ -1358,20 +1375,18 @@ static void pollEvents()
+                 lockInput = 10;
+                 break;
+ #endif
+-            }
+-            break;
+ 
+         case SDL_KEYDOWN:
+ 
+ #if defined(TOUCH_INPUT_SUPPORT)
+             platform.keyboard.touch.useText = false;
+-            handleKeydown(event.key.keysym.sym, true, platform.keyboard.touch.state, NULL);
++            handleKeydown(event.key.key, true, platform.keyboard.touch.state, NULL);
+ #endif
+ 
+-            handleKeydown(event.key.keysym.sym, true, platform.keyboard.state, platform.keyboard.pressed);
++            handleKeydown(event.key.key, true, platform.keyboard.state, platform.keyboard.pressed);
+             break;
+         case SDL_KEYUP:
+-            handleKeydown(event.key.keysym.sym, false, platform.keyboard.state, platform.keyboard.pressed);
++            handleKeydown(event.key.key, false, platform.keyboard.state, platform.keyboard.pressed);
+             break;
+         case SDL_KEYMAPCHANGED:
+             studio_keymapchanged(platform.studio, detect_keyboard_layout());
+@@ -1381,7 +1396,7 @@ static void pollEvents()
+                 platform.keyboard.text = event.text.text[0];
+             break;
+         case SDL_DROPFILE:
+-            studio_load(platform.studio, event.drop.file);
++            studio_load(platform.studio, event.drop.data);
+             break;
+         case SDL_QUIT:
+             studio_exit(platform.studio);
+@@ -1590,7 +1605,7 @@ bool tic_sys_fullscreen_get()
+     else
+ #endif
+     {
+-        return SDL_GetWindowFlags(platform.window) & SDL_WINDOW_FULLSCREEN_DESKTOP
++        return SDL_GetWindowFlags(platform.window) & SDL_WINDOW_FULLSCREEN
+             ? true : false;
+     }
+ }
+@@ -1605,8 +1620,7 @@ void tic_sys_fullscreen_set(bool value)
+     else
+ #endif
+     {
+-        SDL_SetWindowFullscreen(platform.window,
+-            value ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
++        SDL_SetWindowFullscreen(platform.window, value);
+     }
+ }
+ 
+@@ -1901,7 +1915,7 @@ void tic_sys_default_mapping(tic_mapping* mapping)
+ 
+     for(s32 s = 0; s < COUNT_OF(Scancodes); ++s)
+     {
+-        SDL_Keycode keycode = SDL_GetKeyFromScancode(Scancodes[s]);
++        SDL_Keycode keycode = SDL_GetKeyFromScancode(Scancodes[s], SDL_KMOD_NONE, false);
+ 
+         mapping->data[s] = Fallback[s];
+ 
+@@ -2069,18 +2083,17 @@ static void emsGpuTick()
+ 
+ s32 determineMaximumScale()
+ {
+-    SDL_DisplayMode current;
+-    int result = SDL_GetCurrentDisplayMode(0, &current);
++    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(SDL_GetPrimaryDisplay());
+     s32 maxScale;
+ 
+-    if (result != 0)
++    if (mode == NULL)
+     {
+         SDL_Log("Unable to SDL_GetCurrentDisplayMode: %s", SDL_GetError());
+         return INT32_MAX;
+     }
+ 
+-    int maxScaleByW = current.w / TIC80_WIDTH;
+-    int maxScaleByH = current.h / TIC80_HEIGHT;
++    int maxScaleByW = mode->w / TIC80_WIDTH;
++    int maxScaleByH = mode->h / TIC80_HEIGHT;
+ 
+     if (maxScaleByH < maxScaleByW)
+     {
+@@ -2111,23 +2124,20 @@ static s32 start(s32 argc, char **argv, const char* folder)
+     SDL_SetHint(SDL_HINT_TOUCH_MOUSE_EVENTS, "1");
+ #endif
+ 
+-    int result = SDL_Init(SDL_INIT_VIDEO);
+-    if (result != 0)
++    if (!SDL_Init(SDL_INIT_VIDEO))
+     {
+-        SDL_Log("Unable to initialize SDL Video: %i, %s\n", result, SDL_GetError());
+-        return result;
++        SDL_Log("Unable to initialize SDL Video: %s\n", SDL_GetError());
++        return -1;
+     }
+ 
+-    result = SDL_Init(SDL_INIT_AUDIO);
+-    if (result != 0)
++    if (!SDL_Init(SDL_INIT_AUDIO))
+     {
+-        SDL_Log("Unable to initialize SDL Audio: %i, %s\n", result, SDL_GetError());
++        SDL_Log("Unable to initialize SDL Audio: %s\n", SDL_GetError());
+     }
+ 
+-    result = SDL_Init(SDL_INIT_GAMECONTROLLER);
+-    if (result != 0)
++    if (!SDL_Init(SDL_INIT_GAMEPAD))
+     {
+-        SDL_Log("Unable to initialize SDL Game Controller: %i, %s\n", result, SDL_GetError());
++        SDL_Log("Unable to initialize SDL Game Controller: %s\n", SDL_GetError());
+     }
+ 
+     for(s32 i = 0; i < COUNT_OF(platform.gamepad.mapping); i++)
+@@ -2150,9 +2160,9 @@ static s32 start(s32 argc, char **argv, const char* folder)
+                 const s32 Width = TIC80_FULLWIDTH * studio_config(platform.studio)->uiScale;
+                 const s32 Height = TIC80_FULLHEIGHT * studio_config(platform.studio)->uiScale;
+ 
+-                s32 flags = SDL_WINDOW_SHOWN
++                SDL_WindowFlags flags = 0
+ #if !defined(__EMSCRIPTEN__) && !defined(__MACOSX__)
+-                        | SDL_WINDOW_ALLOW_HIGHDPI
++                        | SDL_WINDOW_HIGH_PIXEL_DENSITY
+ #endif
+                         | SDL_WINDOW_RESIZABLE;
+ 
+@@ -2162,7 +2172,11 @@ static s32 start(s32 argc, char **argv, const char* folder)
+                     flags |= SDL_WINDOW_OPENGL;
+ #endif
+ 
+-                platform.window = SDL_CreateWindow(TIC_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, Width, Height, flags);
++                platform.window = SDL_CreateWindow(TIC_TITLE, Width, Height, flags);
++                SDL_SetWindowPosition(platform.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
++#if !defined(TOUCH_INPUT_SUPPORT)
++                SDL_StartTextInput(platform.window);
++#endif
+ 
+                 setWindowIcon();
+                 initGPU();
+@@ -2170,14 +2184,14 @@ static s32 start(s32 argc, char **argv, const char* folder)
+ #if defined(__TIC_ANDROID__)
+                 // The SDLActivity from SDL v2.32 starts with text input active.
+                 // We must explicitly stop it to show our custom keyboard by default.
+-                SDL_StopTextInput();
++                SDL_StopTextInput(platform.window);
+ #endif
+ 
+                 if(studio_config(platform.studio)->options.fullscreen)
+                     tic_sys_fullscreen_set(true);
+             }
+ 
+-            SDL_PauseAudioDevice(platform.audio.device, 0);
++            SDL_ResumeAudioStreamDevice(platform.audio.device);
+ 
+ #if defined(__EMSCRIPTEN__)
+             emscripten_set_main_loop(emsGpuTick, 0, 1);
+@@ -2201,8 +2215,8 @@ static s32 start(s32 argc, char **argv, const char* folder)
+ #endif
+ 
+ #if defined(TOUCH_INPUT_SUPPORT)
+-            if(SDL_IsTextInputActive())
+-                SDL_StopTextInput();
++            if(SDL_TextInputActive(platform.window))
++                SDL_StopTextInput(platform.window);
+ #endif
+ 
+             {
+@@ -2220,7 +2234,7 @@ static s32 start(s32 argc, char **argv, const char* folder)
+ #endif
+ 
+                 SDL_DestroyWindow(platform.window);
+-                SDL_CloseAudioDevice(platform.audio.device);
++                SDL_DestroyAudioStream(platform.audio.device);
+ 
+                 if (studio_config(platform.studio)->fft)
+                 {

@@ -1,0 +1,558 @@
+diff --git a/src/platform/sdl/CMakeLists.txt b/src/platform/sdl/CMakeLists.txt
+index 2bc7c49..5802a6d 100644
+--- a/src/platform/sdl/CMakeLists.txt
++++ b/src/platform/sdl/CMakeLists.txt
+@@ -1,4 +1,18 @@
+-set(SDL_VERSION "2" CACHE STRING "Version of SDL to use (1.2 or 2)")
++set(SDL_VERSION "2" CACHE STRING "Version of SDL to use (1.2, 2 or 3)")
++
++if (SDL_VERSION EQUAL "3")
++	include(FindPkgConfig)
++	pkg_search_module(SDL3 sdl3)
++	if (SDL3_FOUND)
++		set(SDL_INCLUDE_DIR ${SDL3_INCLUDE_DIRS})
++		set(SDL_LIBRARY ${SDL3_LIBRARIES})
++		link_directories(${SDL3_LIBDIR})
++		set(SDL_VERSION_DEBIAN "3-0")
++		set(SDL_FOUND ON PARENT_SCOPE)
++		set(SDLMAIN_LIBRARY "")
++		add_definitions(-DUSE_SDL3 -DSDL_ENABLE_OLD_NAMES)
++	endif()
++endif()
+ 
+ if (SDL_VERSION EQUAL "2")
+ 	find_package(SDL2)
+@@ -29,7 +43,7 @@ if (SDL_VERSION EQUAL "2")
+ 	endif()
+ endif()
+ 
+-if(SDL_VERSION EQUAL "1.2" OR NOT SDL2_FOUND)
++if(SDL_VERSION EQUAL "1.2" OR (NOT SDL2_FOUND AND NOT SDL3_FOUND))
+ 	find_package(SDL 1.2)
+ 	if(SDL_FOUND)
+ 		set(SDL_VERSION "1.2")
+@@ -38,7 +52,7 @@ if(SDL_VERSION EQUAL "1.2" OR NOT SDL2_FOUND)
+ 	endif()
+ endif()
+ 
+-if (NOT SDL2_FOUND AND NOT SDL_FOUND)
++if (NOT SDL3_FOUND AND NOT SDL2_FOUND AND NOT SDL_FOUND)
+ 	set(SDL_FOUND OFF PARENT_SCOPE)
+ 	return()
+ endif()
+@@ -106,7 +120,7 @@ else()
+ 		list(APPEND PLATFORM_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/gl-common.c)
+ 		include_directories(${OPENGLES2_INCLUDE_DIR})
+ 	endif()
+-	if(SDL_VERSION EQUAL "2")
++	if(SDL_VERSION EQUAL "2" OR SDL_VERSION EQUAL "3")
+ 		list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sw-sdl2.c)
+ 	else()
+ 		list(APPEND MAIN_SRC ${CMAKE_SOURCE_DIR}/src/platform/sdl/sw-sdl1.c)
+diff --git a/src/platform/sdl/main.c b/src/platform/sdl/main.c
+index 96a7979..5bb1f86 100644
+--- a/src/platform/sdl/main.c
++++ b/src/platform/sdl/main.c
+@@ -32,7 +32,11 @@
+ #include <mgba/feature/commandline.h>
+ #include <mgba-util/vfs.h>
+ 
++#ifdef USE_SDL3
++#include <SDL3/SDL.h>
++#else
+ #include <SDL.h>
++#endif
+ 
+ #include <errno.h>
+ #include <signal.h>
+@@ -89,7 +93,11 @@ int main(int argc, char** argv) {
+ 		return 0;
+ 	}
+ 
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	if (!SDL_Init(SDL_INIT_VIDEO)) {
++#else
+ 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
++#endif
+ 		printf("Could not initialize video: %s\n", SDL_GetError());
+ 		mArgumentsDeinit(&args);
+ 		return 1;
+diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
+index f1666aa..2a0f259 100644
+--- a/src/platform/sdl/sdl-audio.c
++++ b/src/platform/sdl/sdl-audio.c
+@@ -18,17 +18,51 @@ mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio", "platform.sdl.audio");
+ 
+ static void _mSDLAudioCallback(void* context, Uint8* data, int len);
+ 
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++static void _mSDLAudioStreamCallback(void* context, SDL_AudioStream* stream, int additional, int total) {
++	UNUSED(total);
++	Uint8 data[4096];
++	while (additional > 0) {
++		int len = (additional + 3) & ~3;
++		if (len > (int) sizeof(data)) {
++			len = sizeof(data);
++		}
++		_mSDLAudioCallback(context, data, len);
++		SDL_PutAudioStreamData(stream, data, len);
++		additional -= len;
++	}
++}
++#endif
++
+ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext) {
+ #if defined(_WIN32) && SDL_VERSION_ATLEAST(2, 0, 8)
+ 	if (!getenv("SDL_AUDIODRIVER")) {
+ 		_putenv_s("SDL_AUDIODRIVER", "directsound");
+ 	}
+ #endif
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
++#else
+ 	if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
++#endif
+ 		mLOG(SDL_AUDIO, ERROR, "Could not initialize SDL sound system: %s", SDL_GetError());
+ 		return false;
+ 	}
+ 
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	context->desiredSpec.freq = context->sampleRate;
++	context->desiredSpec.format = SDL_AUDIO_S16;
++	context->desiredSpec.channels = 2;
++	char frames[16];
++	snprintf(frames, sizeof(frames), "%u", (unsigned) context->samples);
++	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, frames);
++	context->stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &context->desiredSpec, _mSDLAudioStreamCallback, context);
++	if (!context->stream) {
++		mLOG(SDL_AUDIO, ERROR, "Could not open SDL sound system");
++		return false;
++	}
++	context->obtainedSpec = context->desiredSpec;
++#else
+ 	context->desiredSpec.freq = context->sampleRate;
+ 	context->desiredSpec.format = AUDIO_S16SYS;
+ 	context->desiredSpec.channels = 2;
+@@ -45,13 +79,16 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
+ 		mLOG(SDL_AUDIO, ERROR, "Could not open SDL sound system");
+ 		return false;
+ 	}
++#endif
+ 	context->core = 0;
+ 
+ 	if (threadContext) {
+ 		context->core = threadContext->core;
+ 		context->sync = &threadContext->impl->sync;
+ 
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++		SDL_ResumeAudioStreamDevice(context->stream);
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ 		SDL_PauseAudioDevice(context->deviceId, 0);
+ #else
+ 		SDL_PauseAudio(0);
+@@ -63,7 +100,10 @@ bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext)
+ 
+ void mSDLDeinitAudio(struct mSDLAudio* context) {
+ 	UNUSED(context);
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_DestroyAudioStream(context->stream);
++	context->stream = NULL;
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ 	SDL_PauseAudioDevice(context->deviceId, 1);
+ 	SDL_CloseAudioDevice(context->deviceId);
+ #else
+@@ -74,7 +114,9 @@ void mSDLDeinitAudio(struct mSDLAudio* context) {
+ }
+ 
+ void mSDLPauseAudio(struct mSDLAudio* context) {
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_PauseAudioStreamDevice(context->stream);
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ 	SDL_PauseAudioDevice(context->deviceId, 1);
+ #else
+ 	UNUSED(context);
+@@ -83,7 +125,9 @@ void mSDLPauseAudio(struct mSDLAudio* context) {
+ }
+ 
+ void mSDLResumeAudio(struct mSDLAudio* context) {
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_ResumeAudioStreamDevice(context->stream);
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ 	SDL_PauseAudioDevice(context->deviceId, 0);
+ #else
+ 	UNUSED(context);
+diff --git a/src/platform/sdl/sdl-audio.h b/src/platform/sdl/sdl-audio.h
+index 2ae920a..199683e 100644
+--- a/src/platform/sdl/sdl-audio.h
++++ b/src/platform/sdl/sdl-audio.h
+@@ -12,7 +12,11 @@ CXX_GUARD_START
+ 
+ #include <mgba/core/log.h>
+ 
++#ifdef USE_SDL3
++#include <SDL3/SDL.h>
++#else
+ #include <SDL.h>
++#endif
+ // Altivec sometimes defines this
+ #ifdef vector
+ #undef vector
+@@ -32,7 +36,9 @@ struct mSDLAudio {
+ 	// State
+ 	SDL_AudioSpec desiredSpec;
+ 	SDL_AudioSpec obtainedSpec;
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_AudioStream* stream;
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ 	SDL_AudioDeviceID deviceId;
+ #endif
+ 
+diff --git a/src/platform/sdl/sdl-events.c b/src/platform/sdl/sdl-events.c
+index de53656..7f46142 100644
+--- a/src/platform/sdl/sdl-events.c
++++ b/src/platform/sdl/sdl-events.c
+@@ -21,6 +21,18 @@
+ #define GUI_MOD KMOD_CTRL
+ #endif
+ 
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++#define KEY_SYM(event) ((event)->key)
++#define KEY_MOD(event) ((event)->mod)
++#define INIT_FAILED(result) (!(result))
++#define JOYSTICK_GUID_STRING(joystick, name, size) SDL_GUIDToString(SDL_GetJoystickGUID(joystick), name, size)
++#else
++#define KEY_SYM(event) ((event)->keysym.sym)
++#define KEY_MOD(event) ((event)->keysym.mod)
++#define INIT_FAILED(result) ((result) < 0)
++#define JOYSTICK_GUID_STRING(joystick, name, size) SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick), name, size)
++#endif
++
+ #define GYRO_STEPS 100
+ #define RUMBLE_PWM 16
+ #define RUMBLE_STEPS 2
+@@ -38,7 +50,11 @@ static int32_t _mSDLReadGyroZ(struct mRotationSource* rumble);
+ static void _mSDLRotationSample(struct mRotationSource* source);
+ 
+ static struct SDL_JoystickCombo* _mSDLOpenJoystick(struct mSDLEvents* events, int i) {
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_Joystick* sdlJoystick = SDL_OpenJoystick(i);
++#else
+ 	SDL_Joystick* sdlJoystick = SDL_JoystickOpen(i);
++#endif
+ 	if (!sdlJoystick) {
+ 		return NULL;
+ 	}
+@@ -50,7 +66,11 @@ static struct SDL_JoystickCombo* _mSDLOpenJoystick(struct mSDLEvents* events, in
+ #if !SDL_VERSION_ATLEAST(2, 0, 9)
+ 	joystick->haptic = SDL_HapticOpenFromJoystick(joystick->joystick);
+ #endif
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	joystick->controller = SDL_IsGamepad(i) ? SDL_OpenGamepad(i) : NULL;
++#else
+ 	joystick->controller = SDL_GameControllerOpen(i);
++#endif
+ #if SDL_VERSION_ATLEAST(2, 0, 14)
+ 	if (joystick->controller) {
+ 		if (SDL_GameControllerHasSensor(joystick->controller, SDL_SENSOR_GYRO) && !SDL_GameControllerIsSensorEnabled(joystick->controller, SDL_SENSOR_GYRO)) {
+@@ -71,25 +91,42 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
+ #if SDL_VERSION_ATLEAST(2, 0, 4)
+ 	SDL_SetHint(SDL_HINT_NO_SIGNAL_HANDLERS, "1");
+ #endif
+-	if (SDL_InitSubSystem(SDL_INIT_JOYSTICK) < 0) {
++	if (INIT_FAILED(SDL_InitSubSystem(SDL_INIT_JOYSTICK))) {
+ 		mLOG(SDL_EVENTS, ERROR, "SDL joystick initialization failed: %s", SDL_GetError());
+ 	}
+ 
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+ 	SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+ #if !SDL_VERSION_ATLEAST(2, 0, 9)
+-	if (SDL_InitSubSystem(SDL_INIT_HAPTIC) < 0) {
++	if (INIT_FAILED(SDL_InitSubSystem(SDL_INIT_HAPTIC))) {
+ 		mLOG(SDL_EVENTS, ERROR, "SDL haptic initialization failed: %s", SDL_GetError());
+ 	}
+ #endif
+-	if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) < 0) {
++	if (INIT_FAILED(SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER))) {
+ 		mLOG(SDL_EVENTS, ERROR, "SDL game controller initialization failed: %s", SDL_GetError());
+ 	}
+-	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0) {
++	if (INIT_FAILED(SDL_InitSubSystem(SDL_INIT_VIDEO))) {
+ 		mLOG(SDL_EVENTS, ERROR, "SDL video initialization failed: %s", SDL_GetError());
+ 	}
+ #endif
+ 
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_SetJoystickEventsEnabled(true);
++	int nJoysticks = 0;
++	SDL_JoystickID* joystickIds = SDL_GetJoysticks(&nJoysticks);
++	SDL_JoystickListInit(&context->joysticks, nJoysticks);
++	if (nJoysticks > 0) {
++		mSDLUpdateJoysticks(context, NULL);
++		// Some OSes don't do hotplug detection
++		if (!SDL_JoystickListSize(&context->joysticks)) {
++			int i;
++			for (i = 0; i < nJoysticks; ++i) {
++				_mSDLOpenJoystick(context, joystickIds[i]);
++			}
++		}
++	}
++	SDL_free(joystickIds);
++#else
+ 	SDL_JoystickEventState(SDL_ENABLE);
+ 	int nJoysticks = SDL_NumJoysticks();
+ 	SDL_JoystickListInit(&context->joysticks, nJoysticks);
+@@ -103,6 +140,7 @@ bool mSDLInitEvents(struct mSDLEvents* context) {
+ 			}
+ 		}
+ 	}
++#endif
+ 
+ 	context->playersAttached = 0;
+ 
+@@ -230,7 +268,7 @@ bool mSDLAttachPlayer(struct mSDLEvents* events, struct mSDLPlayer* player) {
+ 
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+ 		char joystickName[34] = {0};
+-		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick), joystickName, sizeof(joystickName));
++		JOYSTICK_GUID_STRING(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick, joystickName, sizeof(joystickName));
+ #else
+ 		const char* joystickName = SDL_JoystickName(SDL_JoystickIndex(SDL_JoystickListGetPointer(&events->joysticks, i)->joystick));
+ 		if (!joystickName) {
+@@ -287,7 +325,7 @@ void mSDLPlayerLoadConfig(struct mSDLPlayer* context, const struct Configuration
+ 		mInputMapLoad(context->bindings, SDL_BINDING_BUTTON, config);
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+ 		char name[34] = {0};
+-		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
++		JOYSTICK_GUID_STRING(context->joystick->joystick, name, sizeof(name));
+ #else
+ 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
+ 		if (!name) {
+@@ -349,7 +387,7 @@ void mSDLPlayerSaveConfig(const struct mSDLPlayer* context, struct Configuration
+ 	if (context->joystick) {
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+ 		char name[34] = {0};
+-		SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(context->joystick->joystick), name, sizeof(name));
++		JOYSTICK_GUID_STRING(context->joystick->joystick, name, sizeof(name));
+ #else
+ 		const char* name = SDL_JoystickName(SDL_JoystickIndex(context->joystick->joystick));
+ 		if (!name) {
+@@ -402,7 +440,7 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration*
+ 			}
+ 
+ 			char joystickName[34] = {0};
+-			SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick->joystick), joystickName, sizeof(joystickName));
++			JOYSTICK_GUID_STRING(joystick->joystick, joystickName, sizeof(joystickName));
+ 			for (i = 0; (int) i < events->playersAttached; ++i) {
+ 				if (events->players[i]->joystick) {
+ 					continue;
+@@ -456,6 +494,16 @@ void mSDLUpdateJoysticks(struct mSDLEvents* events, const struct Configuration*
+ #endif
+ }
+ 
++#if SDL_VERSION_ATLEAST(2, 0, 0)
++static void _mSDLToggleFullscreen(struct mSDLPlayer* sdlContext) {
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_SetWindowFullscreen(sdlContext->window, !sdlContext->fullscreen);
++#else
++	SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
++#endif
++}
++#endif
++
+ static void _pauseAfterFrame(struct mCoreThread* context) {
+ 	context->frameCallback = 0;
+ 	mCoreThreadPauseFromThread(context);
+@@ -463,8 +511,8 @@ static void _pauseAfterFrame(struct mCoreThread* context) {
+ 
+ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_KeyboardEvent* event) {
+ 	int key = -1;
+-	if (!(event->keysym.mod & ~(KMOD_NUM | KMOD_CAPS))) {
+-		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, event->keysym.sym);
++	if (!(KEY_MOD(event) & ~(KMOD_NUM | KMOD_CAPS))) {
++		key = mInputMapKey(sdlContext->bindings, SDL_BINDING_KEY, KEY_SYM(event));
+ 	}
+ 	if (key != -1) {
+ 		mCoreThreadInterrupt(context);
+@@ -476,23 +524,23 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer*
+ 		mCoreThreadContinue(context);
+ 		return;
+ 	}
+-	if (event->keysym.sym == SDLK_TAB) {
++	if (KEY_SYM(event) == SDLK_TAB) {
+ 		context->impl->sync.audioWait = event->type != SDL_KEYDOWN;
+ 		return;
+ 	}
+-	if (event->keysym.sym == SDLK_BACKQUOTE) {
++	if (KEY_SYM(event) == SDLK_BACKQUOTE) {
+ 		mCoreThreadSetRewinding(context, event->type == SDL_KEYDOWN);
+ 	}
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+-	if (event->type == SDL_KEYDOWN && event->keysym.sym == SDLK_RETURN && (event->keysym.mod & KMOD_ALT)) {
+-		SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
++	if (event->type == SDL_KEYDOWN && KEY_SYM(event) == SDLK_RETURN && (KEY_MOD(event) & KMOD_ALT)) {
++		_mSDLToggleFullscreen(sdlContext);
+ 		sdlContext->fullscreen = !sdlContext->fullscreen;
+ 		sdlContext->windowUpdated = 1;
+ 		return;
+ 	}
+ #endif
+ 	if (event->type == SDL_KEYDOWN) {
+-		switch (event->keysym.sym) {
++		switch (KEY_SYM(event)) {
+ #ifdef USE_DEBUGGERS
+ 		case SDLK_F11:
+ 			if (context->core->debugger) {
+@@ -516,11 +564,11 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer*
+ 			return;
+ #endif
+ 		default:
+-			if ((event->keysym.mod & GUI_MOD) && (event->keysym.mod & GUI_MOD) == event->keysym.mod) {
+-				switch (event->keysym.sym) {
++			if ((KEY_MOD(event) & GUI_MOD) && (KEY_MOD(event) & GUI_MOD) == KEY_MOD(event)) {
++				switch (KEY_SYM(event)) {
+ #if SDL_VERSION_ATLEAST(2, 0, 0)
+ 				case SDLK_f:
+-					SDL_SetWindowFullscreen(sdlContext->window, sdlContext->fullscreen ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
++					_mSDLToggleFullscreen(sdlContext);
+ 					sdlContext->fullscreen = !sdlContext->fullscreen;
+ 					sdlContext->windowUpdated = 1;
+ 					break;
+@@ -540,8 +588,8 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer*
+ 					break;
+ 				}
+ 			}
+-			if (event->keysym.mod & KMOD_SHIFT) {
+-				switch (event->keysym.sym) {
++			if (KEY_MOD(event) & KMOD_SHIFT) {
++				switch (KEY_SYM(event)) {
+ 				case SDLK_F1:
+ 				case SDLK_F2:
+ 				case SDLK_F3:
+@@ -552,14 +600,14 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer*
+ 				case SDLK_F8:
+ 				case SDLK_F9:
+ 					mCoreThreadInterrupt(context);
+-					mCoreSaveState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
++					mCoreSaveState(context->core, KEY_SYM(event) - SDLK_F1 + 1, SAVESTATE_SAVEDATA | SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+ 					mCoreThreadContinue(context);
+ 					break;
+ 				default:
+ 					break;
+ 				}
+ 			} else {
+-				switch (event->keysym.sym) {
++				switch (KEY_SYM(event)) {
+ 				case SDLK_F1:
+ 				case SDLK_F2:
+ 				case SDLK_F3:
+@@ -570,7 +618,7 @@ static void _mSDLHandleKeypress(struct mCoreThread* context, struct mSDLPlayer*
+ 				case SDLK_F8:
+ 				case SDLK_F9:
+ 					mCoreThreadInterrupt(context);
+-					mCoreLoadState(context->core, event->keysym.sym - SDLK_F1 + 1, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
++					mCoreLoadState(context->core, KEY_SYM(event) - SDLK_F1 + 1, SAVESTATE_SCREENSHOT | SAVESTATE_RTC);
+ 					mCoreThreadContinue(context);
+ 					break;
+ 				default:
+@@ -627,7 +675,17 @@ static void _mSDLHandleJoyAxis(struct mCoreThread* context, struct mSDLPlayer* s
+ 
+ }
+ 
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
++	switch (event->type) {
++	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
++		sdlContext->windowUpdated = 1;
++		break;
++	default:
++		break;
++	}
++}
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ static void _mSDLHandleWindowEvent(struct mSDLPlayer* sdlContext, const struct SDL_WindowEvent* event) {
+ 	switch (event->event) {
+ 	case SDL_WINDOWEVENT_SIZE_CHANGED:
+@@ -642,7 +700,11 @@ void mSDLHandleEvent(struct mCoreThread* context, struct mSDLPlayer* sdlContext,
+ 	case SDL_QUIT:
+ 		mCoreThreadEnd(context);
+ 		break;
+-#if SDL_VERSION_ATLEAST(2, 0, 0)
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
++		_mSDLHandleWindowEvent(sdlContext, &event->window);
++		break;
++#elif SDL_VERSION_ATLEAST(2, 0, 0)
+ 	case SDL_WINDOWEVENT:
+ 		_mSDLHandleWindowEvent(sdlContext, &event->window);
+ 		break;
+@@ -750,8 +812,12 @@ static void _mSDLRotationSample(struct mRotationSource* source) {
+ 		SDL_GameController* controller = rotation->p->joystick->controller;
+ 		if (SDL_GameControllerHasSensor(controller, SDL_SENSOR_ACCEL)) {
+ 			float accel[3];
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++			if (SDL_GetGamepadSensorData(controller, SDL_SENSOR_ACCEL, accel, 3)) {
++#else
+ 			int count = SDL_GameControllerGetSensorData(controller, SDL_SENSOR_ACCEL, accel, 3);
+ 			if (count >= 0) {
++#endif
+ 				rotation->accelX = accel[0];
+ 				rotation->accelY = accel[2];
+ 				rotation->axisX = -1;
+@@ -760,8 +826,12 @@ static void _mSDLRotationSample(struct mRotationSource* source) {
+ 		}
+ 		if (SDL_GameControllerHasSensor(controller, SDL_SENSOR_GYRO)) {
+ 			float theta[3];
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++			if (SDL_GetGamepadSensorData(controller, SDL_SENSOR_GYRO, theta, 3)) {
++#else
+ 			int count = SDL_GameControllerGetSensorData(controller, SDL_SENSOR_GYRO, theta, 3);
+ 			if (count >= 0) {
++#endif
+ 				rotation->zDelta = theta[1] / -20.f;
+ 			}
+ 			return;
+diff --git a/src/platform/sdl/sdl-events.h b/src/platform/sdl/sdl-events.h
+index 8bdbd7c..78343f4 100644
+--- a/src/platform/sdl/sdl-events.h
++++ b/src/platform/sdl/sdl-events.h
+@@ -15,7 +15,11 @@ CXX_GUARD_START
+ #include <mgba-util/circle-buffer.h>
+ #include <mgba-util/vector.h>
+ 
++#ifdef USE_SDL3
++#include <SDL3/SDL.h>
++#else
+ #include <SDL.h>
++#endif
+ // Altivec sometimes defines this
+ #ifdef vector
+ #undef vector
+diff --git a/src/platform/sdl/sw-sdl2.c b/src/platform/sdl/sw-sdl2.c
+index 48afc33..457fde6 100644
+--- a/src/platform/sdl/sw-sdl2.c
++++ b/src/platform/sdl/sw-sdl2.c
+@@ -22,10 +22,18 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
+ bool mSDLSWInit(struct mSDLRenderer* renderer) {
+ 	unsigned width, height;
+ 	renderer->core->desiredVideoDimensions(renderer->core, &width, &height);
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	renderer->window = SDL_CreateWindow(projectName, renderer->viewportWidth, renderer->viewportHeight, renderer->player.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
++	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
++	renderer->player.window = renderer->window;
++	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, NULL);
++	SDL_SetRenderVSync(renderer->sdlRenderer, 1);
++#else
+ 	renderer->window = SDL_CreateWindow(projectName, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, renderer->viewportWidth, renderer->viewportHeight, SDL_WINDOW_OPENGL | (SDL_WINDOW_FULLSCREEN_DESKTOP * renderer->player.fullscreen));
+ 	SDL_GetWindowSize(renderer->window, &renderer->viewportWidth, &renderer->viewportHeight);
+ 	renderer->player.window = renderer->window;
+ 	renderer->sdlRenderer = SDL_CreateRenderer(renderer->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
++#endif
+ #ifdef COLOR_16_BIT
+ #ifdef COLOR_5_6_5
+ 	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, width, height);

@@ -11,10 +11,13 @@ pkgbase = pt2-clone
 	makedepends = cmake
 	depends = glibc
 	depends = alsa-lib
-	depends = sdl2
+	depends = sdl3
 	depends = hicolor-icon-theme
 	source = pt2-clone::git+https://github.com/8bitbubsy/pt2-clone#tag=v1.92
+	source = sdl3.patch
 	sha512sums = 260acd687a1f1928f3bcd7e0a0df9d1c7c1aed78aab4c1cfe72d1d6c00cde196f8d1befde2283b277874ccb1dc2c0151033638b4c37db1b67d6359f8eadc1956
+	sha512sums = 7bdc729a6719526d4791493619f098da291de08ced83e88522a89d53670f6fb6ec8426244e3966308f420a77976713aa20159d9ff6d267c301bc7d0a793d79ad
 	b2sums = 899eaa863cf11831eaec4af82c530e5e14fa0a7e97fa2b45fdfdf96adf56b006bde0a75fb95f1f9b2be73ed6148d2f51244e96a44cae93ff064832e7deb3d95d
+	b2sums = 830c6553632e3a1929829ce879a26c3fc9e6ad71abbb64a0f95c6a09732af6697447ed96bf83e4f43655fb1559284add4cbc576a7d2bc8b671b7aec35e459a30
 
 pkgname = pt2-clone

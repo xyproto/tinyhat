@@ -3,7 +3,7 @@
 # Contributor: Alex Gentilucci <alexander.gentilucci@gmail.com>
 
 pkgname=ft2-clone
-pkgver=2.25
+pkgver=2.26.1
 pkgrel="1"
 pkgdesc='Portable Fasttracker II clone'
 arch=(i686 x32)
@@ -18,7 +18,7 @@ depends=(
   libgcc
   libstdc++
   alsa-lib
-  sdl2
+  sdl3
   hicolor-icon-theme
 )
 makedepends=(
@@ -30,12 +30,12 @@ makedepends=(
 )
 source=(
   "$pkgname::git+https://github.com/8bitbubsy/ft2-clone#tag=v$pkgver"
-  templatify-build-date.patch
+  sdl3.patch
 )
-sha512sums=('39ba120d5dc2c6514f610ddc341e56e189604fabffb04e5fabb303311414e9a12a2713d9adc507a3b885c006ca31d8e401f95cfa1f2208ebf87261f7f74ce0d3'
-            '0c0c31c396107079839698569b0b5ccaf19728794bec321e52e56fc30a9243a881468897385ef04eb051998460fd88ae75253ea49d531403254a0c2426941440')
-b2sums=('e8f15e733f3a39effd8665a7bcfe0eddfa1d59eb5fc26b9f62d7af482b6e59d9df03981f47dc1e664213d014008d62dabf95ed9b84222e129ff990772b1b9df2'
-        'bf66c1fa1a4357292f0fb8970d576835146a59a54843707e1745210b22c676b059090099a60f85cdb88b8153995c74d24bdd132007cb4b91887169c0a3883312')
+sha512sums=('93490b4f64c2f5d292115d3ee624a07be0a79e5bc61fda1d515b3a485d7e5918b0f9c0e3bd00e038c50fbd27e672233e96b404f608a58961d93053a66a427c89'
+            '0ad089a993af8a9a1cb6bf533304128f9407224b549c05841532c07d3f87c96dfcfdd08de37ad97cc8bb7efc53c0614af0c3eff6450767b2b72e50c8092eefee')
+b2sums=('ac280aa9654533e28690b3b6937e191912e259796c9dc6d6a03ab8334b7804ffd1fa80d96f9835ccfa7f39aa85742c44c55f647793513427d39bf8497ac0d74d'
+        'f9126b59b074cd2affb7cc837059fa1f0f87d0a0d7b08b369553e6e4241b82a75812e31d92c5be660844f44d372c475960b9d7dcedea9f3049daaf31d6618356')
 
 prepare() {
   cd "$pkgname"
@@ -56,12 +56,9 @@ prepare() {
   # attempt repro build by using commit date as build date
   local commit_date="$(git show --no-patch --format=%cd --date=format:'%d %B %Y')"
 
-  # modify + apply template
-  sed -e "s/@PKGVER@/$pkgver/" -i "$srcdir/templatify-build-date.patch"
-  patch -p1 -i "$srcdir/templatify-build-date.patch"
+  patch -p1 -i "$srcdir/sdl3.patch"
 
-  # patch in commit date
-  sed -e "s/@DATE@/$commit_date/" -i src/ft2_header.h
+  sed -e "s/__DATE__/\"$commit_date\"/" -i src/ft2_about.c
 }
 
 build() {

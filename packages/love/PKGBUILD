@@ -2,33 +2,30 @@
 # Contributor: Linus Sjögren <thelinx@unreliablepollution.net>
 # Contributor: Eric Forgeot < http://anamnese.online.fr >, dreeze
 pkgname=love
-pkgver=11.5
-pkgrel="3"
+pkgver=12.0.r1835.gb7daef0
+_commit=b7daef0f7c1dc5888090f5d5b22d4eaf4ffd1d87
+pkgrel=1
 pkgdesc="An open-source 2D game engine which uses the versatile Lua scripting language to create dynamic gaming experiences"
 arch=(i686)
 url="http://love2d.org/"
 license=('zlib')
-depends=('luajit' 'freetype2' 'mpg123' 'openal' 'libvorbis' 'libmodplug' 'sdl2' 'shared-mime-info' 'hicolor-icon-theme' 'desktop-file-utils' 'libtheora')
-source=("https://github.com/love2d/love/releases/download/${pkgver}/love-${pkgver}-linux-src.tar.gz")
-sha512sums=('86fe29939e0d48317e742c99c80b1805821f91539c37d1701207585593b10e3a12f335dac9c25069e0de61a7c6af7c6d5e30bc36826c29f963df8f64084a9a5b')
+depends=('luajit' 'freetype2' 'harfbuzz' 'openal' 'libvorbis' 'libogg' 'libmodplug' 'sdl3' 'zlib' 'shared-mime-info' 'hicolor-icon-theme' 'desktop-file-utils' 'libtheora')
+makedepends=('cmake' 'ninja' 'git')
+source=("love::git+https://github.com/love2d/love#commit=$_commit")
+sha512sums=('6f1e23c9456ce83be9227a0036373da8c17e7082d76c871acb7db801d24ab30a23ce1a7c6f72f9a4c67793cef5ce0226e7b2316f59367242926f894ab74eae7f')
 
 prepare() {
-  cd "$srcdir"/love-$pkgver
-  autoreconf -fiv
+  echo 'target_link_libraries(love_physics_box2d PUBLIC love_3p_box2d)' >> love/CMakeLists.txt
 }
 
 build() {
-  cd "$srcdir"/love-$pkgver
-  ./configure --prefix=/usr
-  make
+  cmake -S love -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr
+  ninja -C build
 }
 
 package() {
-  cd "$srcdir"/love-$pkgver
-
-  make DESTDIR="$pkgdir" install
-
-  install -Dm0644 "license.txt" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm0644 love/license.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
 
 # vim:set ts=2 sw=2 et:
