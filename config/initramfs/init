@@ -11,11 +11,13 @@ label=TINYHAT
 toram=auto
 persist=1
 mode=stick
+init=/usr/lib/systemd/systemd
 quiet=0
 splash=1
 for arg in $(cat /proc/cmdline); do
 	case $arg in
 	tinyhat.label=*) label=${arg#*=} ;;
+	init=*) init=${arg#*=} ;;
 	tinyhat.toram | tinyhat.toram=1) toram=1 ;;
 	tinyhat.toram=0) toram=0 ;;
 	tinyhat.nopersist) persist=0 ;;
@@ -244,4 +246,4 @@ fi
 echo "$dev" >/run/tinyhat/bootdev
 mount --move /run /newroot/run
 umount /sys /proc
-exec switch_root /newroot /usr/lib/systemd/systemd
+exec switch_root /newroot "$init"
