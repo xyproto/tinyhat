@@ -5,7 +5,7 @@ pkgdesc="TIC-80 fantasy console with Lua and Fennel"
 arch=(i686 x32)
 url="https://tic80.com/"
 license=(MIT LGPL-2.1-or-later Libpng Zlib Unlicense)
-depends=(sdl2-compat)
+depends=(sdl3)
 makedepends=(cmake ninja)
 _vendor=(argparse-0d5f5d07 blip-buf-330226d9 giflib-1aa11b06 jsmn-25647e69 libpng-ed217e3e lua-75ea9ccb naett-10a96244 zip-296ff242 zlib-51b7f2ab)
 source=("tic80-$pkgver.tar.gz::https://github.com/nesbox/TIC-80/archive/refs/tags/v$pkgver.tar.gz"
@@ -17,8 +17,9 @@ source=("tic80-$pkgver.tar.gz::https://github.com/nesbox/TIC-80/archive/refs/tag
         "tic80-lua-75ea9ccb.tar.gz::https://github.com/lua/lua/archive/75ea9ccbea7c4886f30da147fb67b693b2624c26.tar.gz"
         "tic80-naett-10a96244.tar.gz::https://github.com/erkkah/naett/archive/10a9624456829e5f2b4c264e14760301125d12eb.tar.gz"
         "tic80-zip-296ff242.tar.gz::https://github.com/kuba--/zip/archive/296ff2421b6bdb82575dd943fb8b5d7d5d443903.tar.gz"
-        "tic80-zlib-51b7f2ab.tar.gz::https://github.com/madler/zlib/archive/51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf.tar.gz")
-noextract=("${source[@]%%::*}")
+        "tic80-zlib-51b7f2ab.tar.gz::https://github.com/madler/zlib/archive/51b7f2abdade71cd9bb0e7a373ef2610ec6f9daf.tar.gz"
+        sdl3.patch)
+noextract=("${source[@]:0:10}")
 sha256sums=('e99f26ba4b1cbad16bb1455bd14905bd912f13786b2f897e97733563c0475fe0'
             'b14cfe4b95a4cd1cf148eeecf0dba94ebf5b4312de12f5f5254e7040017477f1'
             'e86870ecb4b7c3feac6afbf5ddd0aff809e14b2d16d9bde251b712fd4ecd6d99'
@@ -28,7 +29,8 @@ sha256sums=('e99f26ba4b1cbad16bb1455bd14905bd912f13786b2f897e97733563c0475fe0'
             '9f2f625653b8a6ce9e4489385370256831e71fe2fc15801d9b738aadde45e98d'
             'f476b55a6983fc08150ed37cc91dbc0a0a24e05c0891de7e1c86b0536ac8eb76'
             '62d9fde7c175654d9d10f76460aae441b355b37cbec2263ef63dc9d149449269'
-            'd9e270d46252734aa49770fbc544125391617956266f220bd63216c834f3a522')
+            'd9e270d46252734aa49770fbc544125391617956266f220bd63216c834f3a522'
+            '74f7f9b9e9b9e308f5f94cfd46615de1e859dbb8a2a31cbefcc67ee19c45fec1')
 
 prepare() {
   rm -rf tic80
@@ -39,7 +41,7 @@ prepare() {
     mkdir -p "vendor/${m%-*}"
     tar --no-same-owner -xf "../tic80-$m.tar.gz" --strip-components=1 -C "vendor/${m%-*}"
   done
-  sed -i 's/if(BUILD_STATIC AND NOT USE_GLES2)/if(BUILD_STATIC AND NOT USE_GLES2 AND NOT PREFER_SYSTEM_SDL2)/' cmake/sdl.cmake
+  patch -p1 -i "$srcdir/sdl3.patch"
 }
 
 build() {

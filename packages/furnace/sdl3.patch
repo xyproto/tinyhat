@@ -1,0 +1,1451 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index acd0475..82f8d25 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -129,6 +129,7 @@ option(SYSTEM_PORTAUDIO "Use a system-installed version of PortAudio instead of
+ option(SYSTEM_RTMIDI "Use a system-installed version of RtMidi instead of the vendored one" OFF)
+ option(SYSTEM_ZLIB "Use a system-installed version of zlib instead of the vendored one" OFF)
+ option(SYSTEM_SDL2 "Use a system-installed version of SDL2 instead of the vendored one" ${SYSTEM_SDL2_DEFAULT})
++option(USE_SDL3 "Build against a system-installed SDL3 instead of SDL2" OFF)
+ option(SUPPORT_XP "Build a Windows XP-compatible binary" OFF)
+ option(SUPPORT_VISTA "Build a Windows Vista-compatible binary" OFF)
+ option(WARNINGS_ARE_ERRORS "Whether warnings in furnace's C++ code should be treated as errors" OFF)
+@@ -365,7 +366,18 @@ else()
+ endif()
+ 
+ if (USE_SDL2)
+-  if (SYSTEM_SDL2)
++  if (USE_SDL3)
++    pkg_check_modules(SDL3 REQUIRED sdl3)
++    pkg_get_variable(SDL3_INCLUDEDIR sdl3 includedir)
++    list(APPEND DEPENDENCIES_DEFINES HAVE_SDL2 USE_SDL3 SDL_ENABLE_OLD_NAMES)
++    list(APPEND DEPENDENCIES_INCLUDE_DIRS ${SDL3_INCLUDE_DIRS} ${SDL3_INCLUDEDIR}/SDL3)
++    list(APPEND DEPENDENCIES_COMPILE_OPTIONS ${SDL3_CFLAGS_OTHER})
++    list(APPEND DEPENDENCIES_LIBRARIES ${SDL3_LIBRARIES})
++    list(APPEND DEPENDENCIES_LIBRARY_DIRS ${SDL3_LIBRARY_DIRS})
++    list(APPEND DEPENDENCIES_LINK_OPTIONS ${SDL3_LDFLAGS_OTHER})
++    list(APPEND DEPENDENCIES_LEGACY_LDFLAGS ${SDL3_LDFLAGS})
++    message(STATUS "Using system-installed SDL3")
++  elseif (SYSTEM_SDL2)
+     if (PKG_CONFIG_FOUND)
+       pkg_check_modules(SDL2 sdl2>=${SYSTEM_SDL_MIN_VER})
+       if (SDL2_FOUND)
+diff --git a/extern/imgui_patched/backends/imgui_impl_sdl2.cpp b/extern/imgui_patched/backends/imgui_impl_sdl2.cpp
+index ddbad7b..109eecc 100644
+--- a/extern/imgui_patched/backends/imgui_impl_sdl2.cpp
++++ b/extern/imgui_patched/backends/imgui_impl_sdl2.cpp
+@@ -91,7 +91,9 @@
+ // SDL
+ // (the multi-viewports feature requires SDL features supported from SDL 2.0.4+. SDL 2.0.5+ is highly recommended)
+ #include <SDL.h>
++#ifndef USE_SDL3
+ #include <SDL_syswm.h>
++#endif
+ #if defined(__APPLE__)
+ #include <TargetConditionals.h>
+ extern "C" {
+@@ -166,6 +168,23 @@ static void ImGui_ImplSDL2_SetClipboardText(void*, const char* text)
+ // Note: native IME will only display if user calls SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1") _before_ SDL_CreateWindow().
+ static void ImGui_ImplSDL2_SetPlatformImeData(ImGuiViewport* viewport, ImGuiPlatformImeData* data)
+ {
++#ifdef USE_SDL3
++    SDL_Window* window = (SDL_Window*)viewport->PlatformHandle;
++    if (data->WantVisible)
++    {
++        SDL_Rect r;
++        r.x = (int)(data->InputPos.x - viewport->Pos.x);
++        r.y = (int)(data->InputPos.y - viewport->Pos.y + data->InputLineHeight);
++        r.w = 1;
++        r.h = (int)data->InputLineHeight;
++        SDL_SetTextInputArea(window, &r, 0);
++        SDL_StartTextInput(window);
++    }
++    else
++    {
++        SDL_StopTextInput(window);
++    }
++#else
+     if (data->WantVisible)
+     {
+         SDL_Rect r;
+@@ -175,6 +194,7 @@ static void ImGui_ImplSDL2_SetPlatformImeData(ImGuiViewport* viewport, ImGuiPlat
+         r.h = (int)data->InputLineHeight;
+         SDL_SetTextInputRect(&r);
+     }
++#endif
+ }
+ 
+ static ImGuiKey ImGui_ImplSDL2_KeycodeToImGuiKey(int keycode)
+@@ -331,7 +351,10 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
+         case SDL_MOUSEWHEEL:
+         {
+             //IMGUI_DEBUG_LOG("wheel %.2f %.2f, precise %.2f %.2f\n", (float)event->wheel.x, (float)event->wheel.y, event->wheel.preciseX, event->wheel.preciseY);
+-#if SDL_VERSION_ATLEAST(2,0,18) // If this fails to compile on Emscripten: update to latest Emscripten!
++#if defined(USE_SDL3)
++            float wheel_x = -event->wheel.x;
++            float wheel_y = event->wheel.y;
++#elif SDL_VERSION_ATLEAST(2,0,18) // If this fails to compile on Emscripten: update to latest Emscripten!
+             float wheel_x = -event->wheel.preciseX;
+             float wheel_y = event->wheel.preciseY;
+ #else
+@@ -372,12 +395,66 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
+         case SDL_KEYDOWN:
+         case SDL_KEYUP:
+         {
++#ifdef USE_SDL3
++            ImGui_ImplSDL2_UpdateKeyModifiers((SDL_Keymod)event->key.mod);
++            ImGuiKey key = ImGui_ImplSDL2_KeycodeToImGuiKey(event->key.key);
++            io.AddKeyEvent(key, (event->type == SDL_KEYDOWN));
++            io.SetKeyEventNativeData(key, event->key.key, event->key.scancode, event->key.scancode);
++#else
+             ImGui_ImplSDL2_UpdateKeyModifiers((SDL_Keymod)event->key.keysym.mod);
+             ImGuiKey key = ImGui_ImplSDL2_KeycodeToImGuiKey(event->key.keysym.sym);
+             io.AddKeyEvent(key, (event->type == SDL_KEYDOWN));
+             io.SetKeyEventNativeData(key, event->key.keysym.sym, event->key.keysym.scancode, event->key.keysym.scancode); // To support legacy indexing (<1.87 user code). Legacy backend uses SDLK_*** as indices to IsKeyXXX() functions.
++#endif
+             return true;
+         }
++#ifdef USE_SDL3
++        case SDL_EVENT_DISPLAY_ORIENTATION:
++        case SDL_EVENT_DISPLAY_ADDED:
++        case SDL_EVENT_DISPLAY_REMOVED:
++        case SDL_EVENT_DISPLAY_MOVED:
++        case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
++        {
++            bd->WantUpdateMonitors = true;
++            return true;
++        }
++        case SDL_EVENT_WINDOW_MOUSE_ENTER:
++        {
++            bd->MouseWindowID = event->window.windowID;
++            bd->PendingMouseLeaveFrame = 0;
++            return true;
++        }
++        case SDL_EVENT_WINDOW_MOUSE_LEAVE:
++        {
++            bd->PendingMouseLeaveFrame = ImGui::GetFrameCount() + 1;
++            return true;
++        }
++        case SDL_EVENT_WINDOW_FOCUS_GAINED:
++        {
++            io.AddFocusEvent(true);
++            return true;
++        }
++        case SDL_EVENT_WINDOW_FOCUS_LOST:
++        {
++            io.AddFocusEvent(false);
++            return true;
++        }
++        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
++        case SDL_EVENT_WINDOW_MOVED:
++        case SDL_EVENT_WINDOW_RESIZED:
++        {
++            if (ImGuiViewport* viewport = ImGui::FindViewportByPlatformHandle((void*)SDL_GetWindowFromID(event->window.windowID)))
++            {
++                if (event->type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
++                    viewport->PlatformRequestClose = true;
++                if (event->type == SDL_EVENT_WINDOW_MOVED)
++                    viewport->PlatformRequestMove = true;
++                if (event->type == SDL_EVENT_WINDOW_RESIZED)
++                    viewport->PlatformRequestResize = true;
++            }
++            return true;
++        }
++#else
+ #if SDL_HAS_DISPLAY_EVENT
+         case SDL_DISPLAYEVENT:
+         {
+@@ -419,6 +496,7 @@ bool ImGui_ImplSDL2_ProcessEvent(const SDL_Event* event)
+                 }
+             return true;
+         }
++#endif
+     }
+     return false;
+ }
+@@ -482,6 +560,13 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
+     ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+     main_viewport->PlatformHandle = (void*)window;
+     main_viewport->PlatformHandleRaw = nullptr;
++#ifdef USE_SDL3
++#if defined(SDL_PLATFORM_WIN32)
++    main_viewport->PlatformHandleRaw = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
++#elif defined(SDL_PLATFORM_MACOS)
++    main_viewport->PlatformHandleRaw = SDL_GetPointerProperty(SDL_GetWindowProperties(window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
++#endif
++#else
+     SDL_SysWMinfo info;
+     SDL_VERSION(&info.version);
+     if (SDL_GetWindowWMInfo(window, &info))
+@@ -492,6 +577,7 @@ static bool ImGui_ImplSDL2_Init(SDL_Window* window, SDL_Renderer* renderer, void
+         main_viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
+ #endif
+     }
++#endif
+ 
+     // From 2.0.5: Set SDL hint to receive mouse click events on window focus, otherwise SDL doesn't emit the event.
+     // Without this, when clicking to gain focus, our widgets wouldn't activate even though they showed as hovered.
+@@ -613,7 +699,14 @@ static void ImGui_ImplSDL2_UpdateMouseData()
+             // Single-viewport mode: mouse position in client window coordinates (io.MousePos is (0,0) when the mouse is on the upper-left corner of the app window)
+             // Multi-viewport mode: mouse position in OS absolute coordinates (io.MousePos is (0,0) when the mouse is on the upper-left of the primary monitor)
+             int mouse_x, mouse_y, window_x, window_y;
++#ifdef USE_SDL3
++            float global_x, global_y;
++            SDL_GetGlobalMouseState(&global_x, &global_y);
++            mouse_x = (int)global_x;
++            mouse_y = (int)global_y;
++#else
+             SDL_GetGlobalMouseState(&mouse_x, &mouse_y);
++#endif
+             if (!(io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
+             {
+                 SDL_GetWindowPosition(focused_window, &window_x, &window_y);
+@@ -655,7 +748,11 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
+     if (io.MouseDrawCursor || imgui_cursor == ImGuiMouseCursor_None)
+     {
+         // Hide OS mouse cursor if imgui is drawing it or if it wants no cursor
++#ifdef USE_SDL3
++        SDL_HideCursor();
++#else
+         SDL_ShowCursor(SDL_FALSE);
++#endif
+     }
+     else
+     {
+@@ -666,7 +763,11 @@ static void ImGui_ImplSDL2_UpdateMouseCursor()
+             SDL_SetCursor(expected_cursor); // SDL function doesn't have an early out (see #6113)
+             bd->LastMouseCursor = expected_cursor;
+         }
++#ifdef USE_SDL3
++        SDL_ShowCursor();
++#else
+         SDL_ShowCursor(SDL_TRUE);
++#endif
+     }
+ }
+ 
+@@ -678,7 +779,14 @@ static void ImGui_ImplSDL2_UpdateGamepads()
+ 
+     // Get gamepad
+     io.BackendFlags &= ~ImGuiBackendFlags_HasGamepad;
++#ifdef USE_SDL3
++    int gamepad_count = 0;
++    SDL_JoystickID* gamepads = SDL_GetGamepads(&gamepad_count);
++    SDL_Gamepad* game_controller = (gamepads != nullptr && gamepad_count > 0) ? SDL_OpenGamepad(gamepads[0]) : nullptr;
++    SDL_free(gamepads);
++#else
+     SDL_GameController* game_controller = SDL_GameControllerOpen(0);
++#endif
+     if (!game_controller)
+         return;
+     io.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+@@ -723,16 +831,29 @@ static void ImGui_ImplSDL2_UpdateMonitors()
+     ImGuiPlatformIO& platform_io = ImGui::GetPlatformIO();
+     platform_io.Monitors.resize(0);
+     bd->WantUpdateMonitors = false;
++#ifdef USE_SDL3
++    int display_count = 0;
++    SDL_DisplayID* displays = SDL_GetDisplays(&display_count);
++#else
+     int display_count = SDL_GetNumVideoDisplays();
++#endif
+     for (int n = 0; n < display_count; n++)
+     {
+         // Warning: the validity of monitor DPI information on Windows depends on the application DPI awareness settings, which generally needs to be set in the manifest or at runtime.
+         ImGuiPlatformMonitor monitor;
+         SDL_Rect r;
++#ifdef USE_SDL3
++        SDL_GetDisplayBounds(displays[n], &r);
++#else
+         SDL_GetDisplayBounds(n, &r);
++#endif
+         monitor.MainPos = monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+         monitor.MainSize = monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+-#if SDL_HAS_USABLE_DISPLAY_BOUNDS
++#ifdef USE_SDL3
++        SDL_GetDisplayUsableBounds(displays[n], &r);
++        monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
++        monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
++#elif SDL_HAS_USABLE_DISPLAY_BOUNDS
+         SDL_GetDisplayUsableBounds(n, &r);
+         monitor.WorkPos = ImVec2((float)r.x, (float)r.y);
+         monitor.WorkSize = ImVec2((float)r.w, (float)r.h);
+@@ -743,6 +864,9 @@ static void ImGui_ImplSDL2_UpdateMonitors()
+         monitor.PlatformHandle = (void*)(intptr_t)n;
+         platform_io.Monitors.push_back(monitor);
+     }
++#ifdef USE_SDL3
++    SDL_free(displays);
++#endif
+ }
+ 
+ void ImGui_ImplSDL2_NewFrame()
+@@ -757,6 +881,16 @@ void ImGui_ImplSDL2_NewFrame()
+     SDL_GetWindowSize(bd->Window, &w, &h);
+     if (SDL_GetWindowFlags(bd->Window) & SDL_WINDOW_MINIMIZED)
+         w = h = 0;
++#ifdef USE_SDL3
++    if (bd->Renderer != NULL) {
++        if (!SDL_GetCurrentRenderOutputSize(bd->Renderer, &display_w, &display_h)) {
++          display_w=0;
++          display_h=0;
++        }
++    } else {
++        SDL_GetWindowSizeInPixels(bd->Window, &display_w, &display_h);
++    }
++#else
+     if (bd->Renderer != NULL) {
+         if (SDL_GetRendererOutputSize(bd->Renderer, &display_w, &display_h)!=0) {
+           display_w=0;
+@@ -765,6 +899,7 @@ void ImGui_ImplSDL2_NewFrame()
+     } else {
+         SDL_GL_GetDrawableSize(bd->Window, &display_w, &display_h);
+     }
++#endif
+     if (w > 0 && h > 0) {
+         io.DisplaySize = ImVec2((float)w, (float)h);
+         io.DisplayFramebufferScale = ImVec2((float)display_w / w, (float)display_h / h);
+@@ -865,7 +1000,13 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
+ #if SDL_HAS_ALWAYS_ON_TOP
+     sdl_flags |= (viewport->Flags & ImGuiViewportFlags_TopMost) ? SDL_WINDOW_ALWAYS_ON_TOP : 0;
+ #endif
++#ifdef USE_SDL3
++    vd->Window = SDL_CreateWindow("No Title Yet", (int)viewport->Size.x, (int)viewport->Size.y, sdl_flags);
++    if (vd->Window)
++        SDL_SetWindowPosition(vd->Window, (int)viewport->Pos.x, (int)viewport->Pos.y);
++#else
+     vd->Window = SDL_CreateWindow("No Title Yet", (int)viewport->Pos.x, (int)viewport->Pos.y, (int)viewport->Size.x, (int)viewport->Size.y, sdl_flags);
++#endif
+     vd->WindowOwned = true;
+     if (use_opengl)
+     {
+@@ -877,6 +1018,13 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
+ 
+     viewport->PlatformHandle = (void*)vd->Window;
+     viewport->PlatformHandleRaw = nullptr;
++#ifdef USE_SDL3
++#if defined(SDL_PLATFORM_WIN32)
++    viewport->PlatformHandleRaw = SDL_GetPointerProperty(SDL_GetWindowProperties(vd->Window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
++#elif defined(SDL_PLATFORM_MACOS)
++    viewport->PlatformHandleRaw = SDL_GetPointerProperty(SDL_GetWindowProperties(vd->Window), SDL_PROP_WINDOW_COCOA_WINDOW_POINTER, nullptr);
++#endif
++#else
+     SDL_SysWMinfo info;
+     SDL_VERSION(&info.version);
+     if (SDL_GetWindowWMInfo(vd->Window, &info))
+@@ -887,6 +1035,7 @@ static void ImGui_ImplSDL2_CreateWindow(ImGuiViewport* viewport)
+         viewport->PlatformHandleRaw = (void*)info.info.cocoa.window;
+ #endif
+     }
++#endif
+ }
+ 
+ static void ImGui_ImplSDL2_DestroyWindow(ImGuiViewport* viewport)
+@@ -1016,7 +1165,11 @@ static int ImGui_ImplSDL2_CreateVkSurface(ImGuiViewport* viewport, ImU64 vk_inst
+ {
+     ImGui_ImplSDL2_ViewportData* vd = (ImGui_ImplSDL2_ViewportData*)viewport->PlatformUserData;
+     (void)vk_allocator;
++#ifdef USE_SDL3
++    bool ret = SDL_Vulkan_CreateSurface(vd->Window, (VkInstance)vk_instance, (const VkAllocationCallbacks*)vk_allocator, (VkSurfaceKHR*)out_vk_surface);
++#else
+     SDL_bool ret = SDL_Vulkan_CreateSurface(vd->Window, (VkInstance)vk_instance, (VkSurfaceKHR*)out_vk_surface);
++#endif
+     return ret ? 0 : 1; // ret ? VK_SUCCESS : VK_NOT_READY
+ }
+ #endif // SDL_HAS_VULKAN
+@@ -1052,7 +1205,7 @@ static void ImGui_ImplSDL2_InitPlatformInterface(SDL_Window* window, void* sdl_g
+     vd->Window = window;
+     vd->WindowID = SDL_GetWindowID(window);
+     vd->WindowOwned = false;
+-    vd->GLContext = sdl_gl_context;
++    vd->GLContext = (SDL_GLContext)sdl_gl_context;
+     main_viewport->PlatformUserData = vd;
+     main_viewport->PlatformHandle = vd->Window;
+ }
+diff --git a/extern/imgui_patched/backends/imgui_impl_sdlrenderer2.cpp b/extern/imgui_patched/backends/imgui_impl_sdlrenderer2.cpp
+index d8c4dd6..821c0d9 100644
+--- a/extern/imgui_patched/backends/imgui_impl_sdlrenderer2.cpp
++++ b/extern/imgui_patched/backends/imgui_impl_sdlrenderer2.cpp
+@@ -152,6 +152,18 @@ void ImGui_ImplSDLRenderer2_RenderDrawData(ImDrawData* draw_data)
+         const ImDrawList* cmd_list = draw_data->CmdLists[n];
+         const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;
+         const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
++#ifdef USE_SDL3
++        static ImVector<SDL_FColor> colors;
++        colors.resize(cmd_list->VtxBuffer.Size);
++        for (int i = 0; i < cmd_list->VtxBuffer.Size; i++)
++        {
++            const ImU32 col = vtx_buffer[i].col;
++            colors[i].r = ((col >> IM_COL32_R_SHIFT) & 0xFF) / 255.0f;
++            colors[i].g = ((col >> IM_COL32_G_SHIFT) & 0xFF) / 255.0f;
++            colors[i].b = ((col >> IM_COL32_B_SHIFT) & 0xFF) / 255.0f;
++            colors[i].a = ((col >> IM_COL32_A_SHIFT) & 0xFF) / 255.0f;
++        }
++#endif
+ 
+         for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+         {
+@@ -182,7 +194,9 @@ void ImGui_ImplSDLRenderer2_RenderDrawData(ImDrawData* draw_data)
+ 
+                 const float* xy = (const float*)(const void*)((const char*)(vtx_buffer + pcmd->VtxOffset) + IM_OFFSETOF(ImDrawVert, pos));
+                 const float* uv = (const float*)(const void*)((const char*)(vtx_buffer + pcmd->VtxOffset) + IM_OFFSETOF(ImDrawVert, uv));
+-#if SDL_VERSION_ATLEAST(2,0,19)
++#if defined(USE_SDL3)
++                const SDL_FColor* color = colors.Data + pcmd->VtxOffset;
++#elif SDL_VERSION_ATLEAST(2,0,19)
+                 const SDL_Color* color = (const SDL_Color*)(const void*)((const char*)(vtx_buffer + pcmd->VtxOffset) + IM_OFFSETOF(ImDrawVert, col)); // SDL 2.0.19+
+ #else
+                 const int* color = (const int*)(const void*)((const char*)(vtx_buffer + pcmd->VtxOffset) + IM_OFFSETOF(ImDrawVert, col)); // SDL 2.0.17 and 2.0.18
+@@ -192,7 +206,11 @@ void ImGui_ImplSDLRenderer2_RenderDrawData(ImDrawData* draw_data)
+ 				SDL_Texture* tex = (SDL_Texture*)pcmd->GetTexID();
+                 SDL_RenderGeometryRaw(bd->SDLRenderer, tex,
+                     xy, (int)sizeof(ImDrawVert),
++#ifdef USE_SDL3
++                    color, (int)sizeof(SDL_FColor),
++#else
+                     color, (int)sizeof(ImDrawVert),
++#endif
+                     uv, (int)sizeof(ImDrawVert),
+                     cmd_list->VtxBuffer.Size - pcmd->VtxOffset,
+                     idx_buffer + pcmd->IdxOffset, pcmd->ElemCount, sizeof(ImDrawIdx));
+diff --git a/src/audio/sdlAudio.cpp b/src/audio/sdlAudio.cpp
+index 1fab6e3..cd3174e 100644
+--- a/src/audio/sdlAudio.cpp
++++ b/src/audio/sdlAudio.cpp
+@@ -26,6 +26,23 @@ void taSDLProcess(void* inst, unsigned char* buf, int nframes) {
+   in->onProcess(buf,nframes);
+ }
+ 
++#ifdef USE_SDL3
++static void SDLCALL taSDLStream(void* inst, SDL_AudioStream* s, int additional, int total) {
++  (void)total;
++  TAAudioSDL* in=(TAAudioSDL*)inst;
++  in->onStream(s,additional);
++}
++
++void TAAudioSDL::onStream(SDL_AudioStream* s, int additional) {
++  int frameSize=sizeof(float)*MAX(1,desc.outChans);
++  if (additional<=0) return;
++  int len=((additional+frameSize-1)/frameSize)*frameSize;
++  if (streamBuf.size()<(size_t)len) streamBuf.resize(len);
++  onProcess(streamBuf.data(),len);
++  SDL_PutAudioStreamData(s,streamBuf.data(),len);
++}
++#endif
++
+ void TAAudioSDL::onProcess(unsigned char* buf, int nframes) {
+   unsigned int unframes=nframes/(sizeof(float)*MAX(1,desc.outChans));
+   if (nframes<0) {
+@@ -70,9 +87,16 @@ void* TAAudioSDL::getContext() {
+ bool TAAudioSDL::quit() {
+   if (!initialized) return false;
+ 
++#ifdef USE_SDL3
++  if (stream!=NULL) {
++    SDL_DestroyAudioStream(stream);
++    stream=NULL;
++  }
++#else
+   if (ai!=0) {
+     SDL_CloseAudioDevice(ai);
+   }
++#endif
+ 
+   if (running) {
+     running=false;
+@@ -90,7 +114,15 @@ bool TAAudioSDL::quit() {
+ 
+ bool TAAudioSDL::setRun(bool run) {
+   if (!initialized) return false;
++#ifdef USE_SDL3
++  if (run) {
++    SDL_ResumeAudioStreamDevice(stream);
++  } else {
++    SDL_PauseAudioStreamDevice(stream);
++  }
++#else
+   SDL_PauseAudioDevice(ai,!run);
++#endif
+   running=run;
+   return running;
+ }
+@@ -98,13 +130,28 @@ bool TAAudioSDL::setRun(bool run) {
+ std::vector<String> TAAudioSDL::listAudioDevices() {
+   std::vector<String> ret;
+   if (!audioSysStarted) {
++#ifdef USE_SDL3
++    if (!SDL_Init(SDL_INIT_AUDIO)) {
++#else
+     if (SDL_Init(SDL_INIT_AUDIO)<0) {
++#endif
+       logE("could not initialize SDL to list audio devices");
+     } else {
+       audioSysStarted=true;
+     }
+   }
+ 
++#ifdef USE_SDL3
++  int count=0;
++  SDL_AudioDeviceID* devices=SDL_GetAudioPlaybackDevices(&count);
++  for (int i=0; i<count; i++) {
++    const char* devName=SDL_GetAudioDeviceName(devices[i]);
++    if (devName!=NULL) {
++      ret.push_back(String(devName));
++    }
++  }
++  SDL_free(devices);
++#else
+   int count=SDL_GetNumAudioDevices(false);
+   if (count<0) return ret;
+ 
+@@ -114,6 +161,7 @@ std::vector<String> TAAudioSDL::listAudioDevices() {
+       ret.push_back(String(devName));
+     }
+   }
++#endif
+ 
+   return ret;
+ }
+@@ -124,7 +172,11 @@ bool TAAudioSDL::init(TAAudioDesc& request, TAAudioDesc& response) {
+     return false;
+   }
+   if (!audioSysStarted) {
++#ifdef USE_SDL3
++    if (!SDL_Init(SDL_INIT_AUDIO)) {
++#else
+     if (SDL_Init(SDL_INIT_AUDIO)<0) {
++#endif
+       logE("could not initialize SDL");
+       return false;
+     }
+@@ -141,6 +193,46 @@ bool TAAudioSDL::init(TAAudioDesc& request, TAAudioDesc& response) {
+   desc=request;
+   desc.outFormat=TA_AUDIO_FORMAT_F32;
+ 
++#ifdef USE_SDL3
++  ac.freq=desc.rate;
++  ac.format=SDL_AUDIO_F32;
++  ac.channels=desc.outChans;
++
++  SDL_AudioDeviceID dev=SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
++  if (!request.deviceName.empty()) {
++    int count=0;
++    SDL_AudioDeviceID* devices=SDL_GetAudioPlaybackDevices(&count);
++    for (int i=0; i<count; i++) {
++      const char* devName=SDL_GetAudioDeviceName(devices[i]);
++      if (devName!=NULL && request.deviceName==devName) {
++        dev=devices[i];
++        break;
++      }
++    }
++    SDL_free(devices);
++  }
++
++  char frames[16];
++  snprintf(frames,sizeof(frames),"%u",desc.bufsize);
++  SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES,frames);
++
++  logV("opening audio device...");
++  stream=SDL_OpenAudioDeviceStream(dev,&ac,taSDLStream,this);
++  if (stream==NULL) {
++    logE("could not open audio device: %s",SDL_GetError());
++    return false;
++  }
++  ai=SDL_GetAudioStreamDevice(stream);
++  ar=ac;
++
++  int deviceFrames=0;
++  SDL_AudioSpec deviceSpec;
++  if (SDL_GetAudioDeviceFormat(ai,&deviceSpec,&deviceFrames) && deviceFrames>0 && deviceSpec.freq>0) {
++    deviceFrames=(int)(((Sint64)deviceFrames*ac.freq)/deviceSpec.freq);
++  } else {
++    deviceFrames=desc.bufsize;
++  }
++#else
+   ac.freq=desc.rate;
+ #ifdef TA_BIG_ENDIAN
+   ac.format=AUDIO_F32MSB;
+@@ -158,6 +250,7 @@ bool TAAudioSDL::init(TAAudioDesc& request, TAAudioDesc& response) {
+     logE("could not open audio device: %s",SDL_GetError());
+     return false;
+   }
++#endif
+ 
+   const char* backendName=SDL_GetCurrentAudioDriver();
+ 
+@@ -170,7 +263,11 @@ bool TAAudioSDL::init(TAAudioDesc& request, TAAudioDesc& response) {
+   desc.rate=ar.freq;
+   desc.inChans=0;
+   desc.outChans=ar.channels;
++#ifdef USE_SDL3
++  desc.bufsize=deviceFrames;
++#else
+   desc.bufsize=ar.samples;
++#endif
+   desc.fragments=1;
+ 
+   logV("got info: %d channels, %d bufsize",desc.outChans,desc.bufsize);
+diff --git a/src/audio/sdlAudio.h b/src/audio/sdlAudio.h
+index 4f8cc32..4d91d53 100644
+--- a/src/audio/sdlAudio.h
++++ b/src/audio/sdlAudio.h
+@@ -23,10 +23,17 @@
+ class TAAudioSDL: public TAAudio {
+   SDL_AudioSpec ac, ar;
+   SDL_AudioDeviceID ai;
++#ifdef USE_SDL3
++  SDL_AudioStream* stream;
++  std::vector<unsigned char> streamBuf;
++#endif
+   bool audioSysStarted;
+ 
+   public:
+     void onProcess(unsigned char* buf, int nframes);
++#ifdef USE_SDL3
++    void onStream(SDL_AudioStream* s, int additional);
++#endif
+ 
+     void* getContext();
+     bool quit();
+@@ -35,5 +42,8 @@ class TAAudioSDL: public TAAudio {
+     bool init(TAAudioDesc& request, TAAudioDesc& response);
+     TAAudioSDL():
+       ai(0),
++#ifdef USE_SDL3
++      stream(NULL),
++#endif
+       audioSysStarted(false) {}
+ };
+diff --git a/src/gui/doAction.cpp b/src/gui/doAction.cpp
+index 093e1c1..6e2fe3f 100644
+--- a/src/gui/doAction.cpp
++++ b/src/gui/doAction.cpp
+@@ -181,7 +181,11 @@ void FurnaceGUI::doAction(int what) {
+       break;
+     case GUI_ACTION_FULLSCREEN:
+       fullScreen=!fullScreen;
++#ifdef USE_SDL3
++      SDL_SetWindowFullscreen(sdlWin,fullScreen);
++#else
+       SDL_SetWindowFullscreen(sdlWin,fullScreen?(SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP):0);
++#endif
+       break;
+     case GUI_ACTION_TX81Z_REQUEST: {
+       TAMidiMessage msg;
+diff --git a/src/gui/gui.cpp b/src/gui/gui.cpp
+index 90aa88c..621c23c 100644
+--- a/src/gui/gui.cpp
++++ b/src/gui/gui.cpp
+@@ -1471,24 +1471,24 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+   if (aboutOpen) return;
+   if (cvOpen) return;
+ 
+-  int mapped=ev.key.keysym.sym;
+-  if (ev.key.keysym.mod&KMOD_CTRL) {
++  int mapped=SDL_KEYSYM_SYM(ev.key);
++  if (SDL_KEYSYM_MOD(ev.key)&KMOD_CTRL) {
+     mapped|=FURKMOD_CTRL;
+   }
+-  if (ev.key.keysym.mod&KMOD_ALT) {
++  if (SDL_KEYSYM_MOD(ev.key)&KMOD_ALT) {
+     mapped|=FURKMOD_ALT;
+   }
+-  if (ev.key.keysym.mod&KMOD_GUI) {
++  if (SDL_KEYSYM_MOD(ev.key)&KMOD_GUI) {
+     mapped|=FURKMOD_META;
+   }
+-  if (ev.key.keysym.mod&KMOD_SHIFT) {
++  if (SDL_KEYSYM_MOD(ev.key)&KMOD_SHIFT) {
+     mapped|=FURKMOD_SHIFT;
+   }
+ 
+   if (!ImGuiFileDialog::Instance()->IsOpened()) {
+     if (bindSetActive) {
+       if (!ev.key.repeat) {
+-        switch (ev.key.keysym.sym) {
++        switch (SDL_KEYSYM_SYM(ev.key)) {
+           case SDLK_LCTRL: case SDLK_RCTRL:
+           case SDLK_LALT: case SDLK_RALT:
+           case SDLK_LGUI: case SDLK_RGUI:
+@@ -1537,7 +1537,7 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+             break;
+         }
+       } else {
+-        auto it=valueKeys.find(ev.key.keysym.sym);
++        auto it=valueKeys.find(SDL_KEYSYM_SYM(ev.key));
+         if (it!=valueKeys.cend()) {
+           int num=it->second;
+           switch (latchTarget) {
+@@ -1562,11 +1562,11 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+     if (sampleMapWaitingInput) {
+       switch (sampleMapColumn) {
+         case 0: {
+-          if (ev.key.keysym.scancode==SDL_SCANCODE_DELETE) {
++          if (SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_DELETE) {
+             alterSampleMap(0,-1);
+             return;
+           }
+-          auto it=valueKeys.find(ev.key.keysym.sym);
++          auto it=valueKeys.find(SDL_KEYSYM_SYM(ev.key));
+           if (it!=valueKeys.cend()) {
+             int num=it->second;
+             if (num<10) {
+@@ -1577,11 +1577,11 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+           break;
+         }
+         case 1: {
+-          if (ev.key.keysym.scancode==SDL_SCANCODE_DELETE) {
++          if (SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_DELETE) {
+             alterSampleMap(1,-1);
+             return;
+           }
+-          auto it=noteKeys.find(ev.key.keysym.scancode);
++          auto it=noteKeys.find(SDL_KEYSYM_SCANCODE(ev.key));
+           if (it!=noteKeys.cend()) {
+             int key=it->second;
+             int num=12*curOctave+key;
+@@ -1595,11 +1595,11 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+           break;
+         }
+         case 2: {
+-          if (ev.key.keysym.scancode==SDL_SCANCODE_DELETE) {
++          if (SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_DELETE) {
+             alterSampleMap(2,-1);
+             return;
+           }
+-          auto it=valueKeys.find(ev.key.keysym.sym);
++          auto it=valueKeys.find(SDL_KEYSYM_SYM(ev.key));
+           if (it!=valueKeys.cend()) {
+             int num=it->second;
+             if (num<10) {
+@@ -1610,11 +1610,11 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+           break;
+         }
+         case 3: {
+-          if (ev.key.keysym.scancode==SDL_SCANCODE_DELETE) {
++          if (SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_DELETE) {
+             alterSampleMap(3,-1);
+             return;
+           }
+-          auto it=valueKeys.find(ev.key.keysym.sym);
++          auto it=valueKeys.find(SDL_KEYSYM_SYM(ev.key));
+           if (it!=valueKeys.cend()) {
+             int num=it->second;
+             if (num<16) {
+@@ -1642,7 +1642,7 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+         if (mapped&(FURKMOD_ALT|FURKMOD_CTRL|FURKMOD_META|FURKMOD_SHIFT)) break;
+         if (!ev.key.repeat || settings.inputRepeat) {
+           if (cursor.xFine==0) { // note
+-            auto it=noteKeys.find(ev.key.keysym.scancode);
++            auto it=noteKeys.find(SDL_KEYSYM_SCANCODE(ev.key));
+             if (it!=noteKeys.cend()) {
+               int key=it->second;
+               int num=12*curOctave+key;
+@@ -1655,7 +1655,7 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+               }
+             }
+           } else if (edit) { // value
+-            auto it=valueKeys.find(ev.key.keysym.sym);
++            auto it=valueKeys.find(SDL_KEYSYM_SYM(ev.key));
+             if (it!=valueKeys.cend()) {
+               int num=it->second;
+               valueInput(num);
+@@ -1676,7 +1676,7 @@ void FurnaceGUI::keyDown(SDL_Event& ev) {
+         // order input otherwise
+         if (mapped&(FURKMOD_ALT|FURKMOD_CTRL|FURKMOD_META|FURKMOD_SHIFT)) break;
+         if (orderEditMode!=0) {
+-          auto it=valueKeys.find(ev.key.keysym.sym);
++          auto it=valueKeys.find(SDL_KEYSYM_SYM(ev.key));
+           if (it!=valueKeys.cend()) {
+             int num=it->second;
+             orderInput(num);
+@@ -3321,9 +3321,15 @@ void FurnaceGUI::popToggleColors() {
+   ImGui::PopStyleColor(3);
+ }
+ 
++#ifdef USE_SDL3
++bool _processEvent(void* instance, SDL_Event* event) {
++  return ((FurnaceGUI*)instance)->processEvent(event);
++}
++#else
+ int _processEvent(void* instance, SDL_Event* event) {
+   return ((FurnaceGUI*)instance)->processEvent(event);
+ }
++#endif
+ 
+ #if SDL_VERSION_ATLEAST(2,0,17)
+ #define VALID_MODS KMOD_NUM|KMOD_CAPS|KMOD_SCROLL
+@@ -3343,12 +3349,12 @@ int FurnaceGUI::processEvent(SDL_Event* ev) {
+ #endif
+   if (cvOpen) return 1;
+   if (ev->type==SDL_KEYDOWN) {
+-    if (!ev->key.repeat && latchTarget==0 && !wantCaptureKeyboard && !sampleMapWaitingInput && (ev->key.keysym.mod&(~(VALID_MODS)))==0) {
++    if (!ev->key.repeat && latchTarget==0 && !wantCaptureKeyboard && !sampleMapWaitingInput && (SDL_KEYSYM_MOD(ev->key)&(~(VALID_MODS)))==0) {
+       if (settings.notePreviewBehavior==0) return 1;
+       switch (curWindow) {
+         case GUI_WINDOW_SAMPLE_EDIT:
+         case GUI_WINDOW_SAMPLE_LIST: {
+-          auto it=noteKeys.find(ev->key.keysym.scancode);
++          auto it=noteKeys.find(SDL_KEYSYM_SCANCODE(ev->key));
+           if (it!=noteKeys.cend()) {
+             int key=it->second;
+             int num=12*curOctave+key;
+@@ -3368,7 +3374,7 @@ int FurnaceGUI::processEvent(SDL_Event* ev) {
+               }
+               e->previewSample(curSample,num,pStart,pEnd);
+               samplePreviewOn=true;
+-              samplePreviewKey=ev->key.keysym.scancode;
++              samplePreviewKey=SDL_KEYSYM_SCANCODE(ev->key);
+               samplePreviewNote=num;
+             }
+           }
+@@ -3376,14 +3382,14 @@ int FurnaceGUI::processEvent(SDL_Event* ev) {
+         }
+         case GUI_WINDOW_WAVE_LIST:
+         case GUI_WINDOW_WAVE_EDIT: {
+-          auto it=noteKeys.find(ev->key.keysym.scancode);
++          auto it=noteKeys.find(SDL_KEYSYM_SCANCODE(ev->key));
+           if (it!=noteKeys.cend()) {
+             int key=it->second;
+             int num=12*curOctave+key;
+             if (key!=100 && key!=101 && key!=102) {
+               e->previewWave(curWave,num);
+               wavePreviewOn=true;
+-              wavePreviewKey=ev->key.keysym.scancode;
++              wavePreviewKey=SDL_KEYSYM_SCANCODE(ev->key);
+               wavePreviewNote=num;
+             }
+           }
+@@ -3399,7 +3405,7 @@ int FurnaceGUI::processEvent(SDL_Event* ev) {
+           }
+           // fall-through
+         default: {
+-          auto it=noteKeys.find(ev->key.keysym.scancode);
++          auto it=noteKeys.find(SDL_KEYSYM_SCANCODE(ev->key));
+           if (it!=noteKeys.cend()) {
+             int key=it->second;
+             int num=12*curOctave+key;
+@@ -3416,15 +3422,15 @@ int FurnaceGUI::processEvent(SDL_Event* ev) {
+       }
+     }
+   } else if (ev->type==SDL_KEYUP) {
+-    stopPreviewNote(ev->key.keysym.scancode,true);
++    stopPreviewNote(SDL_KEYSYM_SCANCODE(ev->key),true);
+     if (wavePreviewOn) {
+-      if (ev->key.keysym.scancode==wavePreviewKey) {
++      if (SDL_KEYSYM_SCANCODE(ev->key)==wavePreviewKey) {
+         wavePreviewOn=false;
+         e->stopWavePreview();
+       }
+     }
+     if (samplePreviewOn) {
+-      if (ev->key.keysym.scancode==samplePreviewKey) {
++      if (SDL_KEYSYM_SCANCODE(ev->key)==samplePreviewKey) {
+         samplePreviewOn=false;
+         e->stopSamplePreview();
+       }
+@@ -3484,7 +3490,7 @@ void FurnaceGUI::processPoint(SDL_Event& ev) {
+     }
+     case SDL_FINGERMOTION: {
+       TouchPoint* point=NULL;
+-      FIND_POINT(point,ev.tfinger.fingerId);
++      FIND_POINT(point,SDL_FINGER_ID(ev.tfinger));
+       if (point!=NULL) {
+         float prevX=point->x;
+         float prevY=point->y;
+@@ -3502,13 +3508,13 @@ void FurnaceGUI::processPoint(SDL_Event& ev) {
+     case SDL_FINGERDOWN: {
+       for (size_t i=0; i<activePoints.size(); i++) {
+         TouchPoint& point=activePoints[i];
+-        if (point.id==ev.tfinger.fingerId) {
++        if (point.id==SDL_FINGER_ID(ev.tfinger)) {
+           releasedPoints.push_back(point);
+           activePoints.erase(activePoints.begin()+i);
+           break;
+         }
+       }
+-      TouchPoint newPoint(ev.tfinger.fingerId,ev.tfinger.x*canvasW,ev.tfinger.y*canvasH,ev.tfinger.pressure);
++      TouchPoint newPoint(SDL_FINGER_ID(ev.tfinger),ev.tfinger.x*canvasW,ev.tfinger.y*canvasH,ev.tfinger.pressure);
+       activePoints.push_back(newPoint);
+       pressedPoints.push_back(newPoint);
+ 
+@@ -3522,7 +3528,7 @@ void FurnaceGUI::processPoint(SDL_Event& ev) {
+     case SDL_FINGERUP: {
+       for (size_t i=0; i<activePoints.size(); i++) {
+         TouchPoint& point=activePoints[i];
+-        if (point.id==ev.tfinger.fingerId) {
++        if (point.id==SDL_FINGER_ID(ev.tfinger)) {
+           if (point.id==0) {
+             ImGui::GetIO().AddMouseButtonEvent(ImGuiMouseButton_Left,false);
+             //ImGui::GetIO().AddMousePosEvent(-FLT_MAX,-FLT_MAX);
+@@ -3649,7 +3655,15 @@ void FurnaceGUI::pointMotion(int x, int y, int xrel, int yrel) {
+ #define OOB_PIXELS_SAFETY 25
+ 
+ bool FurnaceGUI::detectOutOfBoundsWindow(SDL_Rect& failing) {
++#ifdef USE_SDL3
++  int count=0;
++  SDL_DisplayID* displayList=SDL_GetDisplays(&count);
++  std::vector<SDL_DisplayID> displays;
++  if (displayList!=NULL) displays.assign(displayList,displayList+count);
++  SDL_free(displayList);
++#else
+   int count=SDL_GetNumVideoDisplays();
++#endif
+   if (count<1) {
+     logW("bounds check: error: %s",SDL_GetError());
+     return false;
+@@ -3657,7 +3671,11 @@ bool FurnaceGUI::detectOutOfBoundsWindow(SDL_Rect& failing) {
+ 
+   SDL_Rect rect;
+   for (int i=0; i<count; i++) {
++#ifdef USE_SDL3
++    if (!SDL_GetDisplayUsableBounds(displays[i],&rect)) {
++#else
+     if (SDL_GetDisplayUsableBounds(i,&rect)!=0) {
++#endif
+       logW("bounds check: error in display %d: %s",i,SDL_GetError());
+       continue;
+     }
+@@ -3806,8 +3824,21 @@ bool FurnaceGUI::loop() {
+           wheelY+=ev.wheel.y;
+           insEditMayBeDirty=true;
+           break;
++#ifdef USE_SDL3
++        case SDL_EVENT_WINDOW_RESIZED:
++        case SDL_EVENT_WINDOW_MOVED:
++        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
++        case SDL_EVENT_WINDOW_MINIMIZED:
++        case SDL_EVENT_WINDOW_MAXIMIZED:
++        case SDL_EVENT_WINDOW_RESTORED:
++        case SDL_EVENT_WINDOW_SHOWN:
++        case SDL_EVENT_WINDOW_HIDDEN:
++        case SDL_EVENT_WINDOW_EXPOSED:
++          switch (ev.type) {
++#else
+         case SDL_WINDOWEVENT:
+           switch (ev.window.event) {
++#endif
+             case SDL_WINDOWEVENT_RESIZED:
+               scrW=ev.window.data1;
+               scrH=ev.window.data2;
+@@ -3857,15 +3888,22 @@ bool FurnaceGUI::loop() {
+           break;
+ #endif
+ #if SDL_VERSION_ATLEAST(2,0,17)
++#ifdef USE_SDL3
++        case SDL_EVENT_DISPLAY_ADDED:
++        case SDL_EVENT_DISPLAY_REMOVED:
++        case SDL_EVENT_DISPLAY_ORIENTATION: {
++          switch (ev.type) {
++#else
+         case SDL_DISPLAYEVENT: {
+           switch (ev.display.event) {
++#endif
+             case SDL_DISPLAYEVENT_CONNECTED:
+-              logD("display %d connected!",ev.display.display);
++              logD("display %d connected!",SDL_DISPLAY_ID(ev.display));
+               updateWindow=true;
+               shallDetectScale=16;
+               break;
+             case SDL_DISPLAYEVENT_DISCONNECTED:
+-              logD("display %d disconnected!",ev.display.display);
++              logD("display %d disconnected!",SDL_DISPLAY_ID(ev.display));
+               updateWindow=true;
+               shallDetectScale=16;
+               break;
+@@ -3882,7 +3920,7 @@ bool FurnaceGUI::loop() {
+             keyDown(ev);
+           }
+           if (introPos<11.0 && !shortIntro) {
+-            if (ev.key.keysym.scancode==SDL_SCANCODE_SPACE || ev.key.keysym.scancode==SDL_SCANCODE_ESCAPE || ev.key.keysym.scancode==SDL_SCANCODE_RETURN) {
++            if (SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_SPACE || SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_ESCAPE || SDL_KEYSYM_SCANCODE(ev.key)==SDL_SCANCODE_RETURN) {
+               introSkip=0.5;
+             }
+             introSkipDo=true;
+@@ -3900,14 +3938,16 @@ bool FurnaceGUI::loop() {
+           }
+           break;
+         case SDL_DROPFILE:
+-          if (ev.drop.file!=NULL) {
++          if (SDL_DROP_FILE(ev.drop)!=NULL) {
+             if (introPos<11.0) {
++#ifndef USE_SDL3
+               SDL_free(ev.drop.file);
++#endif
+               break;
+             }
+             int sampleCountBefore=e->song.sampleLen;
+-            std::vector<DivInstrument*> instruments=e->instrumentFromFile(ev.drop.file,true,settings.readInsNames);
+-            std::vector<DivSample*> samples = e->sampleFromFile(ev.drop.file);
++            std::vector<DivInstrument*> instruments=e->instrumentFromFile(SDL_DROP_FILE(ev.drop),true,settings.readInsNames);
++            std::vector<DivSample*> samples = e->sampleFromFile(SDL_DROP_FILE(ev.drop));
+             DivWavetable* droppedWave=NULL;
+             //DivSample* droppedSample=NULL;
+             if (!instruments.empty()) {
+@@ -3926,7 +3966,7 @@ bool FurnaceGUI::loop() {
+               }
+               nextWindow=GUI_WINDOW_INS_LIST;
+               MARK_MODIFIED;
+-            } else if ((droppedWave=e->waveFromFile(ev.drop.file,false))!=NULL) {
++            } else if ((droppedWave=e->waveFromFile(SDL_DROP_FILE(ev.drop),false))!=NULL) {
+               int waveCount=-1;
+               waveCount=e->addWavePtr(droppedWave);
+               if (waveCount>=0 && settings.selectAssetOnLoad) {
+@@ -3958,14 +3998,16 @@ bool FurnaceGUI::loop() {
+               nextWindow=GUI_WINDOW_SAMPLE_LIST;
+               MARK_MODIFIED;
+             } else if (modified) {
+-              nextFile=ev.drop.file;
++              nextFile=SDL_DROP_FILE(ev.drop);
+               showWarning(_("Unsaved changes! Save changes before opening file?"),GUI_WARN_OPEN_DROP);
+             } else {
+-              if (load(ev.drop.file)>0) {
++              if (load(SDL_DROP_FILE(ev.drop))>0) {
+                 showError(fmt::sprintf(_("Error while loading file! (%s)"),lastError));
+               }
+             }
++#ifndef USE_SDL3
+             SDL_free(ev.drop.file);
++#endif
+           }
+           break;
+         case SDL_USEREVENT:
+@@ -4014,11 +4056,19 @@ bool FurnaceGUI::loop() {
+ 
+     if (wantCaptureKeyboard!=oldWantCaptureKeyboard) {
+       oldWantCaptureKeyboard=wantCaptureKeyboard;
++#ifdef USE_SDL3
++      if (wantCaptureKeyboard) {
++        SDL_StartTextInput(sdlWin);
++      } else {
++        SDL_StopTextInput(sdlWin);
++      }
++#else
+       if (wantCaptureKeyboard) {
+         SDL_StartTextInput();
+       } else {
+         SDL_StopTextInput();
+       }
++#endif
+     }
+ 
+     if (wantCaptureKeyboard) {
+@@ -7428,18 +7478,22 @@ bool FurnaceGUI::init() {
+ #endif
+ 
+   // This sets the icon in wayland
++#ifdef USE_SDL3
++  SDL_SetHint(SDL_HINT_APP_ID,FURNACE_APP_ID);
++#else
+   SDL_setenv("SDL_VIDEO_WAYLAND_WMCLASS", FURNACE_APP_ID, 0);
++#endif
+ 
+   // initialize SDL
+   logD("initializing video...");
+-  if (SDL_Init(SDL_INIT_VIDEO)!=0) {
++  if (!SDL_SUCCEEDED(SDL_Init(SDL_INIT_VIDEO))) {
+     logE("could not initialize video! %s",SDL_GetError());
+     return false;
+   }
+ 
+ #ifdef IS_MOBILE
+   logD("initializing haptic...");
+-  if (SDL_Init(SDL_INIT_HAPTIC)!=0) {
++  if (!SDL_SUCCEEDED(SDL_Init(SDL_INIT_HAPTIC))) {
+     logW("could not initialize haptic! %s",SDL_GetError());
+   }
+ #endif
+@@ -7478,7 +7532,11 @@ bool FurnaceGUI::init() {
+   const FurnaceGUIImage* furIcon=getImage(GUI_IMAGE_ICON);
+   SDL_Surface* icon=NULL;
+   if (furIcon!=NULL) {
++#ifdef USE_SDL3
++    icon=SDL_CreateSurfaceFrom(furIcon->width,furIcon->height,SDL_GetPixelFormatForMasks(32,0xff,0xff00,0xff0000,0xff000000),furIcon->data,256*4);
++#else
+     icon=SDL_CreateRGBSurfaceFrom(furIcon->data,furIcon->width,furIcon->height,32,256*4,0xff,0xff00,0xff0000,0xff000000);
++#endif
+   } else {
+     logE("furIcon is NULL!");
+   }
+@@ -7563,7 +7621,14 @@ bool FurnaceGUI::init() {
+   rend->preInit(e->getConfObject());
+ 
+   logD("creating window...");
++#ifdef USE_SDL3
++  sdlWin=SDL_CreateWindow("Furnace",scrW,scrH,SDL_WINDOW_RESIZABLE|SDL_WINDOW_HIGH_PIXEL_DENSITY|(scrMax?SDL_WINDOW_MAXIMIZED:0)|(fullScreen?SDL_WINDOW_FULLSCREEN:0)|rend->getWindowFlags());
++  if (sdlWin!=NULL) {
++    SDL_SetWindowPosition(sdlWin,scrX,scrY);
++  }
++#else
+   sdlWin=SDL_CreateWindow("Furnace",scrX,scrY,scrW,scrH,SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI|(scrMax?SDL_WINDOW_MAXIMIZED:0)|(fullScreen?SDL_WINDOW_FULLSCREEN_DESKTOP:0)|rend->getWindowFlags());
++#endif
+   if (sdlWin==NULL) {
+     const char* sdlErr=SDL_GetError();
+     lastError=fmt::sprintf(_("could not open window! %s"),sdlErr);
+@@ -7577,7 +7642,7 @@ bool FurnaceGUI::init() {
+   }
+ 
+ #ifndef IS_MOBILE
+-  if (SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(sdlWin),&displaySize)==0) {
++  if (SDL_SUCCEEDED(SDL_GetDisplayUsableBounds(SDL_GetWindowDisplayIndex(sdlWin),&displaySize))) {
+     bool mustChange=false;
+     if (scrW>((displaySize.w)-48) && scrH>((displaySize.h)-64)) {
+       // maximize
+@@ -7635,14 +7700,23 @@ bool FurnaceGUI::init() {
+   if (numDrivers<0) {
+     logW("could not list render drivers! %s",SDL_GetError());
+   } else {
+-    SDL_RendererInfo ri;
+     logV("available render drivers:");
++#ifdef USE_SDL3
++    for (int i=0; i<numDrivers; i++) {
++      const char* name=SDL_GetRenderDriver(i);
++      if (name==NULL) continue;
++      availRenderDrivers.push_back(String(name));
++      logV("- %s",name);
++    }
++#else
++    SDL_RendererInfo ri;
+     for (int i=0; i<numDrivers; i++) {
+       int r=SDL_GetRenderDriverInfo(i,&ri);
+       if (r!=0) continue;
+       availRenderDrivers.push_back(String(ri.name));
+       logV("- %s",ri.name);
+     }
++#endif
+   }
+ 
+   if (!settings.renderDriver.empty()) {
+@@ -7867,11 +7941,18 @@ bool FurnaceGUI::init() {
+   });
+ 
+ #ifdef IS_MOBILE
++#ifdef USE_SDL3
++  int hapticCount=0;
++  SDL_HapticID* haptics=SDL_GetHaptics(&hapticCount);
++  vibrator=(haptics!=NULL && hapticCount>0)?SDL_OpenHaptic(haptics[0]):NULL;
++  SDL_free(haptics);
++#else
+   vibrator=SDL_HapticOpen(0);
++#endif
+   if (vibrator==NULL) {
+     logD("could not open vibration device: %s",SDL_GetError());
+   } else {
+-    if (SDL_HapticRumbleInit(vibrator)==0) {
++    if (SDL_SUCCEEDED(SDL_HapticRumbleInit(vibrator))) {
+       vibratorAvailable=true;
+     } else {
+       logD("vibration not available: %s",SDL_GetError());
+diff --git a/src/gui/gui.h b/src/gui/gui.h
+index 15963e2..c43ee9c 100644
+--- a/src/gui/gui.h
++++ b/src/gui/gui.h
+@@ -26,6 +26,32 @@
+ #include "imgui.h"
+ #include "imgui_impl_sdl2.h"
+ #include <SDL.h>
++#ifdef USE_SDL3
++#define SDL_KEYSYM_SYM(k) ((k).key)
++#define SDL_KEYSYM_SCANCODE(k) ((k).scancode)
++#define SDL_KEYSYM_MOD(k) ((k).mod)
++#define SDL_FINGER_ID(f) ((f).fingerID)
++#define SDL_DROP_FILE(d) ((d).data)
++#define SDL_DISPLAY_ID(d) ((d).displayID)
++#define SDL_SUCCEEDED(x) (x)
++#define SDL_GL_GetDrawableSize SDL_GetWindowSizeInPixels
++static inline int furnaceGetSwapInterval() {
++  int interval=0;
++  SDL_GL_GetSwapInterval(&interval);
++  return interval;
++}
++#else
++#define SDL_KEYSYM_SYM(k) ((k).keysym.sym)
++#define SDL_KEYSYM_SCANCODE(k) ((k).keysym.scancode)
++#define SDL_KEYSYM_MOD(k) ((k).keysym.mod)
++#define SDL_FINGER_ID(f) ((f).fingerId)
++#define SDL_DROP_FILE(d) ((d).file)
++#define SDL_DISPLAY_ID(d) ((d).display)
++#define SDL_SUCCEEDED(x) ((x)==0)
++static inline int furnaceGetSwapInterval() {
++  return SDL_GL_GetSwapInterval();
++}
++#endif
+ #include <fftw3.h>
+ #include <stdint.h>
+ #ifndef PRIu64
+@@ -61,7 +87,7 @@
+ // for now
+ #define NOTIFY_LONG_HOLD \
+   if (vibrator && vibratorAvailable) { \
+-    if (SDL_HapticRumblePlay(vibrator,settings.vibrationStrength,settings.vibrationLength)!=0) { \
++    if (!SDL_SUCCEEDED(SDL_HapticRumblePlay(vibrator,settings.vibrationStrength,settings.vibrationLength))) { \
+       logV("could not vibrate: %s!",SDL_GetError()); \
+     } \
+   } else { \
+diff --git a/src/gui/render/renderGL.cpp b/src/gui/render/renderGL.cpp
+index 8a10ad0..7a2dd1f 100644
+--- a/src/gui/render/renderGL.cpp
++++ b/src/gui/render/renderGL.cpp
+@@ -588,7 +588,7 @@ const char* FurnaceGUIRenderGL::getAPIVersion() {
+ 
+ void FurnaceGUIRenderGL::setSwapInterval(int swapInterval) {
+   SDL_GL_SetSwapInterval(swapInterval);
+-  if (swapInterval>0 && SDL_GL_GetSwapInterval()==0) {
++  if (swapInterval>0 && furnaceGetSwapInterval()==0) {
+     swapIntervalSet=false;
+     logW("tried to enable VSync but couldn't!");
+   } else {
+@@ -652,7 +652,7 @@ bool FurnaceGUIRenderGL::init(SDL_Window* win, int swapInterval) {
+   }
+   SDL_GL_MakeCurrent(win,context);
+   SDL_GL_SetSwapInterval(swapInterval);
+-  if (swapInterval>0 && SDL_GL_GetSwapInterval()==0) {
++  if (swapInterval>0 && furnaceGetSwapInterval()==0) {
+     swapIntervalSet=false;
+     logW("tried to enable VSync but couldn't!");
+   } else {
+diff --git a/src/gui/render/renderGL1.cpp b/src/gui/render/renderGL1.cpp
+index e689c37..113539d 100644
+--- a/src/gui/render/renderGL1.cpp
++++ b/src/gui/render/renderGL1.cpp
+@@ -259,7 +259,7 @@ const char* FurnaceGUIRenderGL1::getAPIVersion() {
+ 
+ void FurnaceGUIRenderGL1::setSwapInterval(int swapInterval) {
+   SDL_GL_SetSwapInterval(swapInterval);
+-  if (swapInterval>0 && SDL_GL_GetSwapInterval()==0) {
++  if (swapInterval>0 && furnaceGetSwapInterval()==0) {
+     swapIntervalSet=false;
+     logW("tried to enable VSync but couldn't!");
+   } else {
+@@ -306,7 +306,7 @@ bool FurnaceGUIRenderGL1::init(SDL_Window* win, int swapInterval) {
+   }
+   SDL_GL_MakeCurrent(win,context);
+   SDL_GL_SetSwapInterval(swapInterval);
+-  if (swapInterval>0 && SDL_GL_GetSwapInterval()==0) {
++  if (swapInterval>0 && furnaceGetSwapInterval()==0) {
+     swapIntervalSet=false;
+     logW("tried to enable VSync but couldn't!");
+   } else {
+diff --git a/src/gui/render/renderSDL.cpp b/src/gui/render/renderSDL.cpp
+index f8022ef..b905cb2 100644
+--- a/src/gui/render/renderSDL.cpp
++++ b/src/gui/render/renderSDL.cpp
+@@ -42,7 +42,7 @@ FurnaceGUITextureFormat FurnaceGUIRenderSDL::getTextureFormat(FurnaceGUITexture*
+ 
+ bool FurnaceGUIRenderSDL::lockTexture(FurnaceGUITexture* which, void** data, int* pitch) {
+   FurnaceSDLTexture* t=(FurnaceSDLTexture*)which;
+-  return SDL_LockTexture(t->tex,NULL,data,pitch)==0;
++  return SDL_SUCCEEDED(SDL_LockTexture(t->tex,NULL,data,pitch));
+ }
+ 
+ bool FurnaceGUIRenderSDL::unlockTexture(FurnaceGUITexture* which) {
+@@ -53,7 +53,7 @@ bool FurnaceGUIRenderSDL::unlockTexture(FurnaceGUITexture* which) {
+ 
+ bool FurnaceGUIRenderSDL::updateTexture(FurnaceGUITexture* which, void* data, int pitch) {
+   FurnaceSDLTexture* t=(FurnaceSDLTexture*)which;
+-  return SDL_UpdateTexture(t->tex,NULL,data,pitch)==0;
++  return SDL_SUCCEEDED(SDL_UpdateTexture(t->tex,NULL,data,pitch));
+ }
+ 
+ FurnaceGUITexture* FurnaceGUIRenderSDL::createTexture(bool dynamic, int width, int height, bool interpolate, FurnaceGUITextureFormat format) {
+@@ -61,11 +61,17 @@ FurnaceGUITexture* FurnaceGUIRenderSDL::createTexture(bool dynamic, int width, i
+     logE("unsupported texture format!");
+     return NULL;
+   }
++#ifdef USE_SDL3
++  SDL_Texture* t=SDL_CreateTexture(sdlRend,SDL_PIXELFORMAT_ABGR8888,dynamic?SDL_TEXTUREACCESS_STREAMING:SDL_TEXTUREACCESS_STATIC,width,height);
++  if (t==NULL) return NULL;
++  SDL_SetTextureScaleMode(t,interpolate?SDL_SCALEMODE_LINEAR:SDL_SCALEMODE_NEAREST);
++#else
+   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,interpolate?"1":"0");
+   SDL_Texture* t=SDL_CreateTexture(sdlRend,SDL_PIXELFORMAT_ABGR8888,dynamic?SDL_TEXTUREACCESS_STREAMING:SDL_TEXTUREACCESS_STATIC,width,height);
+   SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"1");
+ 
+   if (t==NULL) return NULL;
++#endif
+   FurnaceSDLTexture* ret=new FurnaceSDLTexture;
+   ret->tex=t;
+   ret->format=format;
+@@ -151,7 +157,7 @@ void FurnaceGUIRenderSDL::present() {
+ }
+ 
+ bool FurnaceGUIRenderSDL::getOutputSize(int& w, int& h) {
+-  return SDL_GetRendererOutputSize(sdlRend,&w,&h)==0;
++  return SDL_SUCCEEDED(SDL_GetRendererOutputSize(sdlRend,&w,&h));
+ }
+ 
+ int FurnaceGUIRenderSDL::getWindowFlags() {
+@@ -160,12 +166,20 @@ int FurnaceGUIRenderSDL::getWindowFlags() {
+ 
+ int FurnaceGUIRenderSDL::getMaxTextureWidth() {
+   if (!hasInfo) return 2048;
++#ifdef USE_SDL3
++  return maxTextureSize;
++#else
+   return renderInfo.max_texture_width;
++#endif
+ }
+ 
+ int FurnaceGUIRenderSDL::getMaxTextureHeight() {
+   if (!hasInfo) return 2048;
++#ifdef USE_SDL3
++  return maxTextureSize;
++#else
+   return renderInfo.max_texture_height;
++#endif
+ }
+ 
+ unsigned int FurnaceGUIRenderSDL::getTextureFormats() {
+@@ -182,7 +196,11 @@ const char* FurnaceGUIRenderSDL::getVendorName() {
+ 
+ const char* FurnaceGUIRenderSDL::getDeviceName() {
+   if (!hasInfo) return "???";
++#ifdef USE_SDL3
++  return rendererName;
++#else
+   return renderInfo.name;
++#endif
+ }
+ 
+ const char* FurnaceGUIRenderSDL::getAPIVersion() {
+@@ -190,7 +208,7 @@ const char* FurnaceGUIRenderSDL::getAPIVersion() {
+ }
+ 
+ void FurnaceGUIRenderSDL::setSwapInterval(int swapInterval) {
+-  if (SDL_RenderSetVSync(sdlRend,(swapInterval>=0)?1:0)!=0) {
++  if (!SDL_SUCCEEDED(SDL_RenderSetVSync(sdlRend,(swapInterval>=0)?1:0))) {
+     swapIntervalSet=false;
+     logW("tried to enable VSync but couldn't!");
+   } else {
+@@ -203,6 +221,13 @@ void FurnaceGUIRenderSDL::preInit(const DivConfig& conf) {
+ 
+ bool FurnaceGUIRenderSDL::init(SDL_Window* win, int swapInterval) {
+   logV("creating SDL renderer...");
++#ifdef USE_SDL3
++  sdlRend=SDL_CreateRenderer(win,NULL);
++  if (sdlRend==NULL) return false;
++  maxTextureSize=(int)SDL_GetNumberProperty(SDL_GetRendererProperties(sdlRend),SDL_PROP_RENDERER_MAX_TEXTURE_SIZE_NUMBER,2048);
++  rendererName=SDL_GetRendererName(sdlRend);
++  hasInfo=(rendererName!=NULL);
++#else
+   sdlRend=SDL_CreateRenderer(win,-1,SDL_RENDERER_ACCELERATED|((swapInterval>0)?SDL_RENDERER_PRESENTVSYNC:0)|SDL_RENDERER_TARGETTEXTURE);
+   if (sdlRend==NULL) return false;
+   if (SDL_GetRendererInfo(sdlRend,&renderInfo)==0) {
+@@ -211,7 +236,8 @@ bool FurnaceGUIRenderSDL::init(SDL_Window* win, int swapInterval) {
+     logE("could not get renderer info! %s",SDL_GetError());
+     hasInfo=false;
+   }
+-  if (SDL_RenderSetVSync(sdlRend,(swapInterval>=0)?1:0)!=0) {
++#endif
++  if (!SDL_SUCCEEDED(SDL_RenderSetVSync(sdlRend,(swapInterval>=0)?1:0))) {
+     swapIntervalSet=false;
+     logW("tried to enable VSync but couldn't!");
+   } else {
+diff --git a/src/gui/render/renderSDL.h b/src/gui/render/renderSDL.h
+index f5dcef1..3fb33d0 100644
+--- a/src/gui/render/renderSDL.h
++++ b/src/gui/render/renderSDL.h
+@@ -21,7 +21,12 @@
+ 
+ class FurnaceGUIRenderSDL: public FurnaceGUIRender {
+   SDL_Renderer* sdlRend;
++#ifdef USE_SDL3
++  int maxTextureSize;
++  const char* rendererName;
++#else
+   SDL_RendererInfo renderInfo;
++#endif
+   bool hasInfo;
+   bool swapIntervalSet;
+   public:
+diff --git a/src/gui/render/renderSoftware.cpp b/src/gui/render/renderSoftware.cpp
+index 007d919..7a7ce07 100644
+--- a/src/gui/render/renderSoftware.cpp
++++ b/src/gui/render/renderSoftware.cpp
+@@ -94,7 +94,7 @@ void FurnaceGUIRenderSoftware::clear(ImVec4 color) {
+ 
+   bool mustLock=SDL_MUSTLOCK(surf);
+   if (mustLock) {
+-    if (SDL_LockSurface(surf)!=0) return;
++    if (!SDL_SUCCEEDED(SDL_LockSurface(surf))) return;
+   }
+   unsigned int* pixels=(unsigned int*)surf->pixels;
+   for (size_t total=surf->w*surf->h; total; total--) {
+diff --git a/src/gui/scaling.cpp b/src/gui/scaling.cpp
+index f851190..e09ad86 100644
+--- a/src/gui/scaling.cpp
++++ b/src/gui/scaling.cpp
+@@ -21,7 +21,9 @@
+ #include "scaling.h"
+ #include "../ta-log.h"
+ #include <SDL.h>
++#ifndef USE_SDL3
+ #include <SDL_syswm.h>
++#endif
+ 
+ #ifdef _WIN32
+ #include <windows.h>
+@@ -108,7 +110,13 @@ double getScaleFactor(const char* driverHint, void* windowHint) {
+   if (driverHint==NULL) {
+     return getMacDPIScale(NULL,false);
+   } else if (strcmp(driverHint,"cocoa")==0) {
+-#ifdef SDL_VIDEO_DRIVER_COCOA
++#ifdef USE_SDL3
++    void* nsWindow=NULL;
++    if (windowHint!=NULL) {
++      nsWindow=SDL_GetPointerProperty(SDL_GetWindowProperties((SDL_Window*)windowHint),SDL_PROP_WINDOW_COCOA_WINDOW_POINTER,NULL);
++    }
++    return getMacDPIScale(nsWindow,false);
++#elif defined(SDL_VIDEO_DRIVER_COCOA)
+     void* nsWindow=NULL;
+     SDL_SysWMinfo wmInfo;
+     if (windowHint!=NULL) {
+@@ -120,7 +128,13 @@ double getScaleFactor(const char* driverHint, void* windowHint) {
+     return getMacDPIScale(nsWindow,false);
+ #endif
+   } else if (strcmp(driverHint,"uikit")==0) {
+-#ifdef SDL_VIDEO_DRIVER_UIKIT
++#ifdef USE_SDL3
++    void* uiWindow=NULL;
++    if (windowHint!=NULL) {
++      uiWindow=SDL_GetPointerProperty(SDL_GetWindowProperties((SDL_Window*)windowHint),SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER,NULL);
++    }
++    return getMacDPIScale(uiWindow,true);
++#elif defined(SDL_VIDEO_DRIVER_UIKIT)
+     void* uiWindow=NULL;
+     SDL_SysWMinfo wmInfo;
+     if (windowHint!=NULL) {
+@@ -229,7 +243,17 @@ double getScaleFactor(const char* driverHint, void* windowHint) {
+ #endif
+ 
+   // SDL fallback
++#ifdef USE_SDL3
++  float contentScale=SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
++  if (contentScale>0.0f) {
+ #ifdef ANDROID
++    ret=contentScale;
++#else
++    ret=round(contentScale);
++#endif
++    if (ret<1) ret=1;
++  }
++#elif defined(ANDROID)
+   float dpiScaleF=160.0f;
+   if (SDL_GetDisplayDPI(0,&dpiScaleF,NULL,NULL)==0) {
+     ret=dpiScaleF/160.0f;
+diff --git a/src/gui/tutorial.cpp b/src/gui/tutorial.cpp
+index 9c1247e..159573f 100644
+--- a/src/gui/tutorial.cpp
++++ b/src/gui/tutorial.cpp
+@@ -1962,7 +1962,11 @@ bool FurnaceCV::init(DivEngine* eng) {
+   memset(tileData,0,8*8*4096);
+   GIF_Load((void*)tileDataC,tileDataC_len,_tileDataRead,NULL,this,0);
+ 
++#ifdef USE_SDL3
++  surface=SDL_CreateSurface(320,224,SDL_PIXELFORMAT_ARGB8888);
++#else
+   surface=SDL_CreateRGBSurfaceWithFormat(0,320,224,32,SDL_PIXELFORMAT_ARGB8888);
++#endif
+   if (surface==NULL) {
+     logE("FurnaceCV: couldn't create surface!");
+     return false;
