@@ -1,1 +1,0 @@
-../../../programs/gba/build-libtonc.sh

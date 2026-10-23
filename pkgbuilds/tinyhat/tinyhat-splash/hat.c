@@ -1,1 +1,0 @@
-../../../config/overlay/etc/skel/cprojects/bootanim/hat.c
