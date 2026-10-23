@@ -252,27 +252,32 @@ terminal-border: "0"
     ) + label("70%", "2%", "28%", 20, "E EDIT  C CONSOLE", SMALL, SLATE, "right")
 
 
-out, psf = sys.argv[1], sys.argv[2]
-data = gzip.open(psf).read()
-magic, _, header, _, count, glyph, height, width = struct.unpack("<8I", data[:32])
-if magic != 0x864AB572 or count < 256 or glyph != 16 or height != 16 or width != 8:
-    sys.exit(f"{psf}: expected an 8x16 PSF2 font")
-glyphs = data[header:header + 256 * 16]
-os.makedirs(out, exist_ok=True)
-png(os.path.join(out, "hat.png"), LOW * HAT_SCALE, LOW * HAT_SCALE, hat(0.45))
-starfield(os.path.join(out, "stars.png"))
-slices(out, "select", ITEM, TEAL)
-slices(out, "bar", BAR, GRAY)
-slices(out, "fill", BAR, TEAL)
-bdf(os.path.join(out, "vga-16.bdf"), glyphs, 1)
-bdf(os.path.join(out, "vga-32.bdf"), glyphs, 2)
-with open(os.path.join(out, "theme.txt"), "w") as f:
-    f.write(theme())
-with open(os.path.join(out, "theme.cfg"), "w") as f:
-    f.write("if loadfont $theme_dir/vga-16.pf2 $theme_dir/vga-32.pf2; then\n")
-    f.write(f'  set gfxterm_font="{SMALL}"\n')
-    f.write("  set gfxmode=auto\n")
-    f.write("  if terminal_output gfxterm; then\n")
-    f.write("    set theme=$theme_dir/theme.txt\n")
-    f.write("  fi\n")
-    f.write("fi\n")
+def main():
+    out, psf = sys.argv[1], sys.argv[2]
+    data = gzip.open(psf).read()
+    magic, _, header, _, count, glyph, height, width = struct.unpack("<8I", data[:32])
+    if magic != 0x864AB572 or count < 256 or glyph != 16 or height != 16 or width != 8:
+        sys.exit(f"{psf}: expected an 8x16 PSF2 font")
+    glyphs = data[header:header + 256 * 16]
+    os.makedirs(out, exist_ok=True)
+    png(os.path.join(out, "hat.png"), LOW * HAT_SCALE, LOW * HAT_SCALE, hat(0.45))
+    starfield(os.path.join(out, "stars.png"))
+    slices(out, "select", ITEM, TEAL)
+    slices(out, "bar", BAR, GRAY)
+    slices(out, "fill", BAR, TEAL)
+    bdf(os.path.join(out, "vga-16.bdf"), glyphs, 1)
+    bdf(os.path.join(out, "vga-32.bdf"), glyphs, 2)
+    with open(os.path.join(out, "theme.txt"), "w") as f:
+        f.write(theme())
+    with open(os.path.join(out, "theme.cfg"), "w") as f:
+        f.write("if loadfont $theme_dir/vga-16.pf2 $theme_dir/vga-32.pf2; then\n")
+        f.write(f'  set gfxterm_font="{SMALL}"\n')
+        f.write("  set gfxmode=auto\n")
+        f.write("  if terminal_output gfxterm; then\n")
+        f.write("    set theme=$theme_dir/theme.txt\n")
+        f.write("  fi\n")
+        f.write("fi\n")
+
+
+if __name__ == "__main__":
+    main()

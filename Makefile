@@ -141,14 +141,23 @@ $(B)/.licenses-x32: $(B)/rootfs-x32.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi6
 	python3 scripts/mklicenses.py $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@touch $@
 
-ROOTFS_DEPS := distro.toml $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(OVERLAY) config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/elfcheck.py scripts/symcheck.sh scripts/mklocaldb.py
+ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
+ROOTFS_FINAL_DEPS := distro.toml $(OVERLAY) scripts/elfcheck.py scripts/symcheck.sh
 
-$(B)/root.sfs: $(ROOTFS_DEPS) $(B)/rootfs.lock $(B)/.licenses $(B)/vmlinuz
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock licenses
+$(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock licenses
+	touch $@
+
+$(B)/rootfs-x32.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x32.lock $(B)/vmlinuz-x32
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs64 $(B)/modules-x86_64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
+	touch $@
+
+$(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock licenses
 	@ls -l $@
 
-$(B)/root64.sfs: $(ROOTFS_DEPS) $(B)/rootfs-x32.lock $(B)/.licenses-x32 $(B)/vmlinuz-x32
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
+$(B)/root64.sfs: $(B)/rootfs-x32.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x32
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@ls -l $@
 
 $(B)/test-usb.img: tinyhat32.img
