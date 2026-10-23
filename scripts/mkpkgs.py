@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pkg
 
 TOP = pkg.TOP
-PKGBUILDS = os.path.join(TOP, "pkgbuilds")
 CONFIG = os.path.join(TOP, "config")
 SEED_BASE = ["base-devel", "pacman", "fakeroot", "git", "ccache", "python", "perl"]
 SYSROOT = {"x32-gcc": ["glibc"]}
@@ -17,6 +16,8 @@ FILES_CACHE = os.path.join(TOP, "build", "cache", "files")
 SEED_BROKEN = os.path.join(TOP, "build", "seed-broken.txt")
 with open(os.path.join(CONFIG, "build.toml"), "rb") as f:
     BUILD = tomllib.load(f)
+with open(os.path.join(TOP, "packages", "packages.toml"), "rb") as f:
+    PKGCONF = tomllib.load(f)
 SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "gcc-libs", "binutils",
              "llvm", "llvm-libs", "clang", "compiler-rt", "rust", "go"}
 
@@ -60,17 +61,18 @@ def parse(path):
 
 
 def load():
-    out = []
-    for sub in ("arch", "tinyhat"):
-        root = os.path.join(PKGBUILDS, sub)
-        for base in sorted(os.listdir(root)):
-            path = os.path.join(root, base, ".SRCINFO")
-            if os.path.exists(path):
-                info = parse(path)
-                info["dir"] = f"pkgbuilds/{sub}/{base}"
-                info["sub"] = sub
-                info["base"] = base
-                out.append(info)
+    out, seen = [], set()
+    root = os.path.join(TOP, "packages")
+    for base in sorted(os.listdir(root)):
+        path = os.path.join(root, base, ".SRCINFO")
+        if not os.path.exists(path) or base in seen:
+            continue
+        info = parse(path)
+        info["dir"] = f"packages/{base}"
+        info["base"] = base
+        info["sub"] = "tinyhat" if PKGCONF.get(base, {}).get("source") == "sources" else "arch"
+        seen.add(base)
+        out.append(info)
     return out
 
 
@@ -380,7 +382,7 @@ def cmd_mk():
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
     listed = BUILD.get("prebuilt", {}).get("packages", [])
-    force_build = set(BUILD.get("prebuilt", {}).get("force_build", []))
+    force_build = {b for b, e in PKGCONF.items() if e.get("build")}
     candidates = [b for b in listed if b not in force_build]
     if BUILD.get("prebuilt", {}).get("all"):
         all_arch = [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates
@@ -445,7 +447,7 @@ def cmd_mk():
             names_here = [n for n in names_here if n in image] or names_here
             lines.append(f"{target}: $(B)/.buildroot {mode_file(info['base'], 'prebuilt')}")
             lines.append("\t@mkdir -p $(@D)")
-            lines.append(f"\tpython3 scripts/pkg.py prebuilt $(REPO) {' '.join(names_here)}")
+            lines.append(f"\tpython3 scripts/pkg.py prebuilt $(REPO) vendor/archlinux32/pkg.lock {' '.join(names_here)}")
             lines.append("\t@touch $@")
             lines.append("")
             continue
