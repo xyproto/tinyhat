@@ -1,0 +1,1 @@
+../../programs/tinyhat-splash.c

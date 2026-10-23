@@ -1,1 +1,0 @@
-../../../programs/tinyhat-restore.c

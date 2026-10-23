@@ -1,0 +1,1 @@
+../../programs/gba/gba_crt0.s
