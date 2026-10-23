@@ -27,7 +27,7 @@ ifneq (,$(filter-out cleantest cleanchroot clean distclean status,$(or $(MAKECMD
 include $(B)/pkgs.mk
 endif
 
-$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/srcinfo.py config/build.toml config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip $(wildcard pkgbuilds/*/*/PKGBUILD pkgbuilds/*/*/.SRCINFO)
+$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/srcinfo.py config/build.toml config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip packages/packages.toml $(wildcard packages/*/*)
 	@mkdir -p $(B)
 	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py mk >$@
@@ -53,7 +53,7 @@ import:
 	python3 scripts/importpkg.py all
 
 srcinfo:
-	python3 scripts/importpkg.py srcinfo pkgbuilds/tinyhat/*/
+	python3 scripts/importpkg.py srcinfo packages/*/
 
 patchcheck: $(B)/.buildroot
 	scripts/patchcheck.sh
