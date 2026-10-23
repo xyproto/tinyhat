@@ -9,11 +9,9 @@ pkgbase = findutils
 	makedepends = gperf
 	makedepends = python
 	depends = glibc
-	source = git+https://git.savannah.gnu.org/git/findutils.git?signed#tag=v4.11.0
-	source = git+https://git.savannah.gnu.org/git/gnulib.git
+	source = https://ftp.gnu.org/gnu/findutils/findutils-4.11.0.tar.xz
 	validpgpkeys = A5189DB69C1164D33002936646502EF796917195
 	validpgpkeys = 0CF4E8D871593224842832B888DD9E08C5DDACB9
-	b2sums = 234e55a7eb5d9b882e45f9fb40446f765741130e4c3ebd01154344e48f0d3bcb6b36442d1c99c3574df239511959d542ec9b201fe269a1fd7b527edd058c54d5
-	b2sums = SKIP
+	sha256sums = bfd19cb06cc71f3352d567e90284d8cdac02ac89774bbeadf0b533b0c11432fd
 
 pkgname = findutils
