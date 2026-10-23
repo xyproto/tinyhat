@@ -194,6 +194,7 @@ if type -q o; and type -q fastfetch
     if mkdir /tmp/.tinyhat-fastfetch 2>/dev/null
         fastfetch
     else
+        clear
         o --upsie
     end
 end
