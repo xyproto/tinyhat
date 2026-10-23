@@ -27,6 +27,15 @@ def crc32c(data):
 
 
 def normalize(img, epoch):
+    def is_inode(chunk, base):
+        if chunk[base:base + 2] != b"\x49\x4e" or chunk[base + 4] not in (2, 3):
+            return False
+        if chunk[base + 4] == 2:
+            return chunk[base + 160:base + 176] == uuid
+        buf = bytearray(chunk[base:base + inodesize])
+        buf[100:104] = b"\0\0\0\0"
+        return struct.pack("<I", crc32c(buf)) == chunk[base + 100:base + 104]
+
     with open(img, "r+b") as f:
         data = bytearray(f.read())
         if data[0:4] != b"XFSB":
@@ -46,16 +55,14 @@ def normalize(img, epoch):
                 slots = min(CHUNK_INODES, (len(data) - cbase) // inodesize)
                 valid = False
                 for s in range(slots):
-                    off = cbase + s * inodesize
-                    if data[off:off + 2] == b"\x49\x4e" and data[off + 4] in (2, 3):
-                        if data[off + 4] == 2 or data[off + 160:off + 176] == uuid:
-                            valid = True
-                            break
+                    if is_inode(data, cbase + s * inodesize):
+                        valid = True
+                        break
                 if not valid:
                     continue
                 for s in range(slots):
                     off = cbase + s * inodesize
-                    if data[off:off + 2] != b"\x49\x4e" or data[off + 4] not in (2, 3):
+                    if not is_inode(data, off):
                         continue
                     if data[off + 32:off + 56] == stamp * 2 + stamp and data[off + 144:off + 152] == stamp:
                         if data[off + 4] != 3:
