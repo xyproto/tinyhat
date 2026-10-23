@@ -10,10 +10,11 @@
 
 #define UA "Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0"
 #define MAX_PAGE (4 * 1024 * 1024)
-#define MAX_FILE (32 * 1024 * 1024)
 #define MAX_RESULTS 10
+#define MB (1024 * 1024)
 
 static GtkWidget *win, *entry, *button, *statuslbl;
+static GtkWidget *radios[6];
 static gboolean busy = FALSE;
 static gboolean headless = FALSE;
 static int play_ok = 0;
@@ -24,16 +25,24 @@ static const char *archive_exts = " zip 7z rar gz tgz bz2 xz ";
 typedef struct {
 	const char *name;
 	const char *dir;
+	const char *romdir;
 	const char *search;
 	const char *exts;
 	const char *keywords;
+	const char *launcher;
+	gsize max;
 } Platform;
 
 static const Platform platforms[] = {
-	{ "SNES", "snes", "snes rom", " sfc smc fig swc ", "\\b(snes|super nintendo|super famicom|sfc)\\b" },
-	{ "GBA", "gba", "gba rom", " gba ", "\\b(gba|game ?boy advance)\\b" },
-	{ "Sega Genesis", "genesis", "sega genesis rom", " md gen smd bin ", "\\b(genesis|mega ?drive)\\b" },
+	{ "SNES", "snes", "ROMs/snes", "snes rom", " sfc smc fig swc ", "\\b(snes|super nintendo|super famicom|sfc)\\b", "tinyhat-emulate", 64 * MB },
+	{ "GBA", "gba", "ROMs/gba", "gba rom", " gba ", "\\b(gba|game ?boy advance)\\b", "tinyhat-emulate", 64 * MB },
+	{ "Sega Genesis", "genesis", "ROMs/genesis", "sega genesis rom", " md gen smd bin ", "\\b(genesis|mega ?drive)\\b", "tinyhat-emulate", 32 * MB },
+	{ "C64", "c64", "ROMs/c64", "c64 game", " d64 d71 d81 g64 prg t64 tap crt p00 ", "\\b(commodore ?64|c64)\\b", "tinyhat-emulate", 16 * MB },
+	{ "DOS", "dos", "DOS", "dos game", " exe com bat iso img cue ", "\\b(dos|ms-?dos)\\b", "tinyhat-dosbox", 512 * MB },
+	{ "TIC-80", "tic80", "ROMs/tic80", "tic-80 game", " tic tic80 ", "\\b(tic-?80)\\b", "tic80", 16 * MB },
 };
+
+static const int radio_order[] = { 3, 4, 1, 2, 0, 5 };
 
 static const Platform *plat = &platforms[0];
 
@@ -51,9 +60,14 @@ static const char *home(void)
 	return h && *h ? h : "/tmp";
 }
 
+static char *rom_dir_for(const Platform *p)
+{
+	return g_build_filename(home(), p->romdir, NULL);
+}
+
 static char *rom_dir(void)
 {
-	return g_build_filename(home(), "ROMs", plat->dir, NULL);
+	return rom_dir_for(plat);
 }
 
 static char *cache_dir(void)
@@ -91,14 +105,6 @@ static int ext_in(const char *name, const char *bag)
 	e[j] = '\0';
 	snprintf(hit, sizeof(hit), " %s ", e);
 	return strstr(bag, hit) != NULL;
-}
-
-static const Platform *platform_of(const char *rom)
-{
-	for (size_t i = 0; i < G_N_ELEMENTS(platforms); i++)
-		if (ext_in(rom, platforms[i].exts))
-			return &platforms[i];
-	return &platforms[0];
 }
 
 static int match_score(const char *query, const char *name)
@@ -143,68 +149,89 @@ static char *index_path(void)
 	return p;
 }
 
-static char *index_lookup(const char *query)
+static char *index_key(const char *query, const Platform *p)
 {
-	char nq[256], *p = index_path(), *data = NULL, *found = NULL;
+	char nq[256];
 	norm(query, nq, sizeof(nq));
-	if (nq[0] && g_file_get_contents(p, &data, NULL, NULL)) {
+	return g_strdup_printf("%s/%s", p->dir, nq);
+}
+
+static char *index_lookup(const char *query, const Platform *p)
+{
+	char *key = index_key(query, p), *path = index_path(), *data = NULL, *found = NULL;
+	if (g_file_get_contents(path, &data, NULL, NULL)) {
 		char **lines = g_strsplit(data, "\n", -1);
 		for (int i = 0; lines[i] && !found; i++) {
 			char *tab = strchr(lines[i], '\t');
 			if (!tab)
 				continue;
 			*tab = '\0';
-			if (!strcmp(lines[i], nq) && g_file_test(tab + 1, G_FILE_TEST_IS_REGULAR))
+			if (!strcmp(lines[i], key) && g_file_test(tab + 1, G_FILE_TEST_IS_REGULAR))
 				found = g_strdup(tab + 1);
 		}
 		g_strfreev(lines);
 		g_free(data);
 	}
-	g_free(p);
+	g_free(path);
+	g_free(key);
 	return found;
 }
 
-static void index_add(const char *query, const char *rom)
+static void index_add(const char *query, const char *rom, const Platform *p)
 {
-	char nq[256], *c = cache_dir(), *p = index_path();
+	char *key = index_key(query, p), *c = cache_dir(), *path = index_path();
 	FILE *f;
-	norm(query, nq, sizeof(nq));
 	g_mkdir_with_parents(c, 0755);
-	if (nq[0] && (f = fopen(p, "a"))) {
-		fprintf(f, "%s\t%s\n", nq, rom);
+	if (key[0] && (f = fopen(path, "a"))) {
+		fprintf(f, "%s\t%s\n", key, rom);
 		fclose(f);
 	}
 	g_free(c);
-	g_free(p);
+	g_free(path);
+	g_free(key);
 }
 
-static char *find_cached(const char *query)
+static char *find_cached(const char *query, const Platform **found_plat)
 {
-	char *hit = index_lookup(query);
-	int best = 0;
-	if (hit)
-		return hit;
+	char *best_path = NULL;
+	int best_score = 0;
+	const Platform *best_plat = NULL;
 	for (size_t i = 0; i < G_N_ELEMENTS(platforms); i++) {
-		char *dir = g_build_filename(home(), "ROMs", platforms[i].dir, NULL);
-		DIR *d = opendir(dir);
+		const Platform *p = &platforms[i];
+		char *hit, *dir;
+		DIR *d;
 		struct dirent *e;
+		if (!headless && p != plat)
+			continue;
+		hit = index_lookup(query, p);
+		if (hit) {
+			if (found_plat)
+				*found_plat = p;
+			return hit;
+		}
+		dir = rom_dir_for(p);
+		d = opendir(dir);
 		if (d) {
 			while ((e = readdir(d))) {
 				int s;
-				if (e->d_name[0] == '.' || !ext_in(e->d_name, platforms[i].exts))
+				if (e->d_name[0] == '.' || !ext_in(e->d_name, p->exts))
 					continue;
 				s = match_score(query, e->d_name);
-				if (s > best) {
-					best = s;
-					g_free(hit);
-					hit = g_build_filename(dir, e->d_name, NULL);
+				if (s > best_score) {
+					char *path = g_build_filename(dir, e->d_name, NULL);
+					g_free(best_path);
+					best_path = path;
+					best_score = s;
+					best_plat = p;
 				}
 			}
 			closedir(d);
 		}
 		g_free(dir);
 	}
-	return hit;
+	if (best_path && found_plat)
+		*found_plat = best_plat;
+	return best_path;
 }
 
 static gboolean status_idle(gpointer data)
@@ -228,38 +255,71 @@ static void status(const char *fmt, ...)
 	va_end(ap);
 }
 
+static void set_controls(gboolean active)
+{
+	busy = !active;
+	if (headless)
+		return;
+	gtk_widget_set_sensitive(button, active);
+	gtk_widget_set_sensitive(entry, active);
+	for (size_t i = 0; i < G_N_ELEMENTS(radios); i++)
+		if (radios[i])
+			gtk_widget_set_sensitive(radios[i], active);
+}
+
+static gboolean spawn_game(const char *rom, GError **err)
+{
+	char *argv[4];
+	if (!rom)
+		return FALSE;
+	if (!strcmp(plat->launcher, "tinyhat-emulate")) {
+		argv[0] = "tinyhat-emulate";
+		argv[1] = (char *)plat->dir;
+		argv[2] = (char *)rom;
+		argv[3] = NULL;
+	} else if (!strcmp(plat->launcher, "tinyhat-dosbox")) {
+		argv[0] = "tinyhat-dosbox";
+		argv[1] = (char *)rom;
+		argv[2] = NULL;
+	} else {
+		argv[0] = (char *)plat->launcher;
+		argv[1] = (char *)rom;
+		argv[2] = NULL;
+	}
+	return g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, err);
+}
+
 static gboolean launch_idle(gpointer data)
 {
-	char *argv[] = { "tinyhat-emulate", data ? (char *)platform_of(data)->dir : NULL, data, NULL };
 	GError *err = NULL;
-	if (data && g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &err)) {
+	if (!data) {
+		set_controls(TRUE);
+		return G_SOURCE_REMOVE;
+	}
+	if (spawn_game(data, &err)) {
 		g_free(data);
 		gtk_widget_destroy(win);
 		return G_SOURCE_REMOVE;
 	}
-	if (data) {
+	{
 		char *m = g_strdup_printf("Could not start the emulator: %s", err->message);
 		gtk_label_set_text(GTK_LABEL(statuslbl), m);
 		g_free(m);
 		g_error_free(err);
 	}
 	g_free(data);
-	busy = FALSE;
-	gtk_widget_set_sensitive(button, TRUE);
-	gtk_widget_set_sensitive(entry, TRUE);
+	set_controls(TRUE);
 	return G_SOURCE_REMOVE;
 }
 
 static void finish(char *rom)
 {
 	if (headless) {
-		char *argv[] = { "tinyhat-emulate", rom ? (char *)platform_of(rom)->dir : NULL, rom, NULL };
 		GError *err = NULL;
-		play_ok = rom != NULL;
-		if (rom && !g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, &err)) {
+		play_ok = rom && spawn_game(rom, &err);
+		if (rom && !play_ok) {
 			fprintf(stderr, "tinyhat-play: could not start the emulator: %s\n", err->message);
 			g_error_free(err);
-			play_ok = 0;
 		}
 		g_free(rom);
 	} else {
@@ -340,6 +400,35 @@ static int fetch(const char *url, const char *post, Sink *s, char **effective)
 	if (!c)
 		return 0;
 	ok = fetch_with(c, url, post, NULL, s, effective);
+	curl_easy_cleanup(c);
+	return ok;
+}
+
+static curl_off_t remote_size(const char *url)
+{
+	CURL *c = new_handle(0);
+	curl_off_t len = -1;
+	CURLcode rc;
+	if (!c)
+		return -1;
+	curl_easy_setopt(c, CURLOPT_URL, url);
+	curl_easy_setopt(c, CURLOPT_NOBODY, 1L);
+	curl_easy_setopt(c, CURLOPT_TIMEOUT, 30L);
+	rc = curl_easy_perform(c);
+	if (rc == CURLE_OK)
+		curl_easy_getinfo(c, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &len);
+	curl_easy_cleanup(c);
+	return len;
+}
+
+static int fetch_limited(const char *url, Sink *s, curl_off_t max)
+{
+	CURL *c = new_handle(0);
+	int ok;
+	if (!c)
+		return 0;
+	curl_easy_setopt(c, CURLOPT_MAXFILESIZE_LARGE, max);
+	ok = fetch_with(c, url, NULL, NULL, s, NULL);
 	curl_easy_cleanup(c);
 	return ok;
 }
@@ -930,7 +1019,7 @@ static char *install(const char *query, Candidate *c, const char *work)
 {
 	char *name = c->name ? g_strdup(c->name) : url_filename(c->url), *file, *extract, *url;
 	char *rom = NULL, *dest = NULL;
-	Sink s = { NULL, NULL, 0, MAX_FILE };
+	Sink s = { NULL, NULL, 0, 0 };
 	int ok;
 	if (!name || !name[0] || !strcmp(name, "/")) {
 		g_free(name);
@@ -938,15 +1027,32 @@ static char *install(const char *query, Candidate *c, const char *work)
 		                 : g_strdup("game.zip");
 	}
 	file = g_build_filename(work, name, NULL);
+	url = c->page ? itch_resolve(c) : g_strdup(c->url);
+	if (!url) {
+		g_free(name);
+		g_free(file);
+		return NULL;
+	}
+	{
+		curl_off_t size = remote_size(url);
+		if (size > (curl_off_t)plat->max) {
+			status("Skipping %s: %lld MB is too large for %s", name, (long long)(size / MB), plat->name);
+			g_free(url);
+			g_free(name);
+			g_free(file);
+			return NULL;
+		}
+	}
+	s.max = plat->max;
 	s.fp = fopen(file, "wb");
 	if (!s.fp) {
+		g_free(url);
 		g_free(name);
 		g_free(file);
 		return NULL;
 	}
 	status("Downloading %s", name);
-	url = c->page ? itch_resolve(c) : g_strdup(c->url);
-	ok = url && fetch(url, NULL, &s, NULL);
+	ok = fetch_limited(url, &s, (curl_off_t)plat->max);
 	g_free(url);
 	fclose(s.fp);
 	if (!ok || looks_like_html(file)) {
@@ -1092,10 +1198,13 @@ static char *search_platform(const char *query, GPtrArray **itch)
 
 static gpointer worker(gpointer data)
 {
-	char *query = data, *rom = find_cached(query);
+	char *query = data, *rom;
+	const Platform *found = NULL;
 	GPtrArray *itch = NULL;
+	rom = find_cached(query, &found);
 	if (rom) {
 		char *b = g_path_get_basename(rom);
+		plat = found;
 		status("Playing %s (cached)", b);
 		g_free(b);
 		finish(rom);
@@ -1103,21 +1212,27 @@ static gpointer worker(gpointer data)
 		return NULL;
 	}
 	ddg_blocked = FALSE;
-	for (size_t i = 0; i < G_N_ELEMENTS(platforms) && !rom; i++) {
-		plat = &platforms[i];
+	if (headless) {
+		for (size_t i = 0; i < G_N_ELEMENTS(platforms) && !rom; i++) {
+			plat = &platforms[i];
+			rom = search_platform(query, &itch);
+		}
+	} else {
 		rom = search_platform(query, &itch);
 	}
 	if (itch)
 		g_ptr_array_free(itch, TRUE);
 	if (rom) {
 		char *b = g_path_get_basename(rom);
-		index_add(query, rom);
+		index_add(query, rom, plat);
 		status("Playing %s (%s)", b, plat->name);
 		g_free(b);
 	} else if (ddg_blocked) {
 		status("No ROM found on itch.io for \"%s\", and DuckDuckGo is limiting searches right now", query);
+	} else if (headless) {
+		status("No ROM found for \"%s\"", query);
 	} else {
-		status("No SNES, GBA or Sega Genesis ROM found for \"%s\"", query);
+		status("No %s ROM found for \"%s\"", plat->name, query);
 	}
 	finish(rom);
 	g_free(query);
@@ -1139,9 +1254,14 @@ static void on_play(GtkWidget *w, gpointer data)
 		return;
 	}
 	busy = TRUE;
-	gtk_widget_set_sensitive(button, FALSE);
-	gtk_widget_set_sensitive(entry, FALSE);
+	set_controls(FALSE);
 	g_thread_unref(g_thread_new("tinyhat-play", worker, trimmed));
+}
+
+static void on_platform_toggled(GtkToggleButton *b, gpointer data)
+{
+	if (gtk_toggle_button_get_active(b))
+		plat = data;
 }
 
 static gboolean on_key(GtkWidget *w, GdkEventKey *ev, gpointer data)
@@ -1178,14 +1298,28 @@ int main(int argc, char **argv)
 	gtk_init(&argc, &argv);
 	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title(GTK_WINDOW(win), "Tiny Hat Play");
-	gtk_window_set_default_size(GTK_WINDOW(win), 480, 150);
+	gtk_window_set_default_size(GTK_WINDOW(win), 540, 230);
 	g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 	g_signal_connect(win, "key-press-event", G_CALLBACK(on_key), NULL);
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
 	gtk_container_set_border_width(GTK_CONTAINER(box), 16);
 	gtk_container_add(GTK_CONTAINER(win), box);
-	GtkWidget *label = gtk_label_new("Search for a SNES, GBA or Genesis homebrew game to download and run");
+	GtkWidget *label = gtk_label_new("Choose a platform, then search for a homebrew game to download and run");
 	gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+	GtkWidget *grid = gtk_grid_new();
+	gtk_grid_set_column_spacing(GTK_GRID(grid), 12);
+	gtk_grid_set_row_spacing(GTK_GRID(grid), 4);
+	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+	for (size_t i = 0; i < G_N_ELEMENTS(radio_order); i++) {
+		int idx = radio_order[i];
+		GtkWidget *radio = gtk_radio_button_new_with_label_from_widget(
+		    i ? GTK_RADIO_BUTTON(radios[radio_order[0]]) : NULL, platforms[idx].name);
+		radios[idx] = radio;
+		g_signal_connect(radio, "toggled", G_CALLBACK(on_platform_toggled), (gpointer)&platforms[idx]);
+		gtk_grid_attach(GTK_GRID(grid), radio, (int)(i % 3), (int)(i / 3), 1, 1);
+	}
+	gtk_box_pack_start(GTK_BOX(box), grid, FALSE, FALSE, 0);
+	gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(radios[0]), TRUE);
 	entry = gtk_entry_new();
 	g_signal_connect(entry, "activate", G_CALLBACK(on_play), NULL);
 	gtk_box_pack_start(GTK_BOX(box), entry, FALSE, FALSE, 0);
