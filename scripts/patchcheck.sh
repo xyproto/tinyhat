@@ -4,7 +4,7 @@ umask 022
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
 mkdir -p "$top/build/log"
 rc=0
-for dir in "$top"/pkgbuilds/tinyhat/*/; do
+for dir in "$top"/packages/*/; do
 	set -- "$dir"*.patch
 	[ -e "$1" ] || continue
 	base=$(basename "$dir")
