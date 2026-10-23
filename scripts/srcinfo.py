@@ -15,7 +15,8 @@ def stale(d):
     if not os.path.exists(info):
         return True
     t = os.path.getmtime(info)
-    return any(os.path.getmtime(os.path.join(d, f)) > t for f in os.listdir(d) if f != ".SRCINFO")
+    return any(os.path.getmtime(os.path.join(d, f)) > t
+               for f in os.listdir(d) if f != ".SRCINFO" and os.path.exists(os.path.join(d, f)))
 
 
 def refresh(d):
@@ -28,9 +29,8 @@ def refresh(d):
 
 
 def main():
-    dirs = sys.argv[1:] or [os.path.join(TOP, "pkgbuilds", sub, base)
-                            for sub in ("arch", "tinyhat")
-                            for base in sorted(os.listdir(os.path.join(TOP, "pkgbuilds", sub)))]
+    dirs = sys.argv[1:] or [os.path.join(TOP, "packages", base)
+                            for base in sorted(os.listdir(os.path.join(TOP, "packages")))]
     todo = [d.rstrip("/") for d in dirs if os.path.isfile(os.path.join(d, "PKGBUILD")) and (sys.argv[1:] or stale(d))]
     failed = False
     with ThreadPoolExecutor(os.cpu_count()) as ex:

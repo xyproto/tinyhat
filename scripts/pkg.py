@@ -22,6 +22,7 @@ MIRRORS = os.environ.get("MIRRORS", "https://archlinux32.andreasbaumann.cc/i686 
 REPOS = ["core", "extra"]
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DBDIR = os.path.join(TOP, "vendor", "db")
+VENDORDIR = os.path.join(TOP, "vendor", "archlinux32")
 
 
 def die(msg):
@@ -292,23 +293,30 @@ def fetch_pkg(p, pkgdir):
     if os.path.exists(dest) and sha256(dest) == p["sha256"]:
         return
     cached = os.path.join(TOP, "vendor", "pkg", p["filename"])
-    if os.path.abspath(pkgdir) != os.path.dirname(cached) and os.path.exists(cached) and sha256(cached) == p["sha256"]:
-        shutil.copyfile(cached, dest)
-        return
-    fn = urllib.parse.quote(p["filename"])
-    urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS]
-    urls.append(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}")
-    for i, url in enumerate(urls):
-        try:
-            download(url, dest, tries=2)
-            break
-        except (urllib.error.URLError, OSError) as e:
-            if i == len(urls) - 1:
-                raise
-            print(f"  {url}: {e}", file=sys.stderr)
-    if sha256(dest) != p["sha256"]:
-        os.unlink(dest)
-        die(f"checksum mismatch for {p['filename']}")
+    vendored = os.path.join(VENDORDIR, p["name"], p["filename"])
+    for src in (cached, vendored):
+        if os.path.abspath(pkgdir) == os.path.dirname(os.path.abspath(src)):
+            continue
+        if os.path.exists(src) and sha256(src) == p["sha256"]:
+            shutil.copyfile(src, dest)
+            return
+    if not os.path.exists(vendored) or sha256(vendored) != p["sha256"]:
+        os.makedirs(os.path.dirname(vendored), exist_ok=True)
+        fn = urllib.parse.quote(p["filename"])
+        urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS]
+        urls.append(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}")
+        for i, url in enumerate(urls):
+            try:
+                download(url, vendored, tries=2)
+                break
+            except (urllib.error.URLError, OSError) as e:
+                if i == len(urls) - 1:
+                    raise
+                print(f"  {url}: {e}", file=sys.stderr)
+        if sha256(vendored) != p["sha256"]:
+            os.unlink(vendored)
+            die(f"checksum mismatch for {p['filename']}")
+    shutil.copyfile(vendored, dest)
 
 
 def cmd_fetch(lockfile, pkgdir):
@@ -337,16 +345,39 @@ def current_db(max_age=6 * 3600):
     return load_db(dbdir)
 
 
-def cmd_prebuilt(repodir, *names):
+def cmd_prebuilt(repodir, lockfile, *names):
     os.makedirs(repodir, exist_ok=True)
+    os.makedirs(os.path.dirname(lockfile), exist_ok=True)
     db = current_db()[0]
     pins = read_pins()
-    for name in names:
-        if name in db:
-            p = dict(db[name])
+    with open(lockfile, "a+") as lf:
+        fcntl.flock(lf, fcntl.LOCK_EX)
+        lf.seek(0)
+        locked = {}
+        for line in lf:
+            if line.strip():
+                repo, name, ver, fn, h = line.split()
+                locked[name] = {"repo": repo, "name": name, "version": ver, "filename": fn, "sha256": h}
+        fresh = []
+        for name in names:
+            if name in locked:
+                p = dict(locked[name])
+            elif name in db:
+                p = dict(db[name])
+                fresh.append(p)
+            else:
+                print(f"  prebuilt: {name}: not found", file=sys.stderr)
+                continue
             if name in pins:
                 p["version"], p["filename"], p["sha256"] = pins[name]
             fetch_pkg(p, repodir)
+        entries = locked
+        for p in fresh:
+            entries[p["name"]] = {k: p[k] for k in ("repo", "name", "version", "filename", "sha256")}
+        lf.seek(0)
+        lf.truncate()
+        for p in sorted(entries.values(), key=lambda p: p["name"]):
+            lf.write(f"{p['repo']} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
 
 
 def read_sources(path):

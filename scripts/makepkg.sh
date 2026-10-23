@@ -16,6 +16,15 @@ done
 dir=$(readlink -f "$1")
 shift
 base=${dir##*/}
+if python3 -c "
+import sys, tomllib
+d = tomllib.load(open(sys.argv[1], 'rb'))
+sys.exit(0 if d.get(sys.argv[2], {}).get('source') == 'sources' else 1)
+" "$top/packages/packages.toml" "$base" 2>/dev/null; then
+	conf=/tinyhat/config/makepkg-tinyhat.conf
+else
+	conf=/tinyhat/config/makepkg.conf
+fi
 seed=$top/build/buildroot
 repo=$top/build/repo
 boot=$top/build/bootstrap
@@ -26,8 +35,6 @@ if [ -n "$bootstrap" ]; then
 	work=$top/build/chroot/boot-$base
 fi
 epoch=${SOURCE_DATE_EPOCH:-$(git -C "$top" log -1 --format=%ct 2>/dev/null || echo 315532800)}
-conf=/tinyhat/config/makepkg.conf
-case $dir in "$top"/pkgbuilds/tinyhat/*) conf=/tinyhat/config/makepkg-tinyhat.conf ;; esac
 tc=x86_64-pc-linux-gnux32
 path=/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 libpath=
