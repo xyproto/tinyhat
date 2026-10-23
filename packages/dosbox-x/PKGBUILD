@@ -1,40 +1,30 @@
 pkgname=dosbox-x
-pkgver=2026.10.01
+pkgver=2026.10.23
 pkgrel=1
-pkgdesc="DOS emulator, with the Tiny Hat patches"
+pkgdesc="DOS emulator, Tiny Hat fork using SDL3"
 arch=(i686)
-url="https://dosbox-x.com/"
+url="https://github.com/xyproto/dosbox-x"
 license=(GPL-2.0-or-later)
-depends=(sdl2-compat fluidsynth libslirp libpng zlib alsa-lib ncurses libpcap)
+depends=(sdl3 libglvnd fluidsynth libslirp libpng zlib alsa-lib ncurses libpcap duktape freetype2)
 makedepends=(autoconf automake)
-_patches=(alt-enter-fullscreen bpp24-warning env-conf lazy-soundfont modeswitch-aspect optimize quiet-fluidsynth quiet-log surface-bounds)
-source=("dosbox-x-$pkgver.tar.gz::https://github.com/joncampbell123/dosbox-x/archive/refs/tags/dosbox-x-v$pkgver.tar.gz"
-        "${_patches[@]/%/.patch}")
-sha256sums=('df023a6c0e4a139dcbd60befff5947e0db2cc68e4e79db463670f581a4044ed4'
-            SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP)
+source=("dosbox-x-$pkgver.tar.gz::https://github.com/xyproto/dosbox-x/archive/refs/tags/$pkgver.tar.gz")
+sha256sums=('2a1e8d4a8a84d0dd8969b6488c80a4ce8a564307d22a90667661374349b41760')
 
 prepare() {
-  cd dosbox-x-dosbox-x-v$pkgver
-  for p in "${_patches[@]}"; do
-    patch -Np1 -i "../$p.patch"
-  done
-  sed -i 's/fluiddrivers\[\] = {"pulseaudio", /fluiddrivers[] = {"pipewire", "pulseaudio", /' src/dosbox.cpp
-  sed -i 's/fluid_settings_setstr(settings, "audio.driver", "pulseaudio");/fluid_settings_setstr(settings, "audio.driver", "pipewire");/' src/gui/midi_synth.h
-  grep -q '"pipewire", "pulseaudio"' src/dosbox.cpp
-  grep -q '"audio.driver", "pipewire"' src/gui/midi_synth.h
+  cd dosbox-x-$pkgver
   ./autogen.sh
 }
 
 build() {
-  cd dosbox-x-dosbox-x-v$pkgver
-  ./configure --prefix=/usr --enable-sdl2 --disable-x11 --enable-core-inline \
-    --disable-opengl --disable-debug --disable-avcodec --enable-libfluidsynth --enable-libslirp \
+  cd dosbox-x-$pkgver
+  ./configure --prefix=/usr --enable-sdl3 --enable-opengl --disable-x11 --enable-core-inline \
+    --disable-debug --disable-avcodec --enable-libfluidsynth --enable-libslirp \
     --disable-printer --disable-sdlnet
   make
 }
 
 package() {
-  cd dosbox-x-dosbox-x-v$pkgver
+  cd dosbox-x-$pkgver
   make install DESTDIR="$pkgdir"
   rm -f "$pkgdir/usr/share/dosbox-x/SarasaGothicFixed.ttf"
   install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
