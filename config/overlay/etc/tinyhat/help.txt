@@ -7,7 +7,7 @@ Alt+Tab	Jump between windows
 Ctrl+Alt+Up / Down	Audio volume
 Alt+F2	Run a command (Win+R also works)
 
-Ctrl+Alt+A	Scan for ScummVM games
+Ctrl+Alt+A	Scan drives for ScummVM games
 Ctrl+Alt+B	Bluetooth devices
 Ctrl+Alt+C	Example game in C (2x Ctrl+Space to run)
 Ctrl+Alt+D	Launch DOSBox-X
