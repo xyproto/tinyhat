@@ -1,7 +1,7 @@
 pkgbase = scummvm
 	pkgdesc = Engine for classic adventure games
 	pkgver = 2026.4.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.scummvm.org/
 	arch = i686
 	arch = x32
@@ -24,7 +24,9 @@ pkgbase = scummvm
 	depends = zlib
 	source = https://downloads.scummvm.org/frs/scummvm/2026.4.0/scummvm-2026.4.0.tar.xz
 	source = sdl3-palette.patch
+	source = sdl3-net-and-prefer-sdl3.patch
 	sha256sums = cd660b34104da7f85ed0a11b7c6c2320c629bb87ee297935711ebc1e09731f12
+	sha256sums = SKIP
 	sha256sums = SKIP
 
 pkgname = scummvm
