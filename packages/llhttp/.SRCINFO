@@ -8,7 +8,7 @@ pkgbase = llhttp
 	license = MIT
 	makedepends = cmake
 	depends = glibc
-	source = git+https://github.com/nodejs/llhttp#tag=v9.3.1
-	sha256sums = b09cc993e0c9941257441b51b657c23542e01c9607ce2f38f8667ebdeb0bfb65
+	source = llhttp-release-v9.3.1.tar.gz::https://github.com/nodejs/llhttp/archive/refs/tags/release/v9.3.1.tar.gz
+	sha256sums = c14a93f287d3dbd6580d08af968294f8bcc61e1e1e3c34301549d00f3cf09365
 
 pkgname = llhttp
