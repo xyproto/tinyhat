@@ -1,0 +1,499 @@
+diff --git a/backends/networking/sdl_net/client.cpp b/backends/networking/sdl_net/client.cpp
+index aafe3f819c5..bf5a76b8e57 100644
+--- a/backends/networking/sdl_net/client.cpp
++++ b/backends/networking/sdl_net/client.cpp
+@@ -24,7 +24,11 @@
+ #include "backends/networking/sdl_net/client.h"
+ #include "backends/networking/sdl_net/localwebserver.h"
+ #include "common/memstream.h"
++#if SDL_NET_MAJOR == 3
++#include <SDL3_net/SDL_net.h>
++#else
+ #include <SDL_net.h>
++#endif
+ 
+ namespace Networking {
+ 
+@@ -58,12 +62,14 @@ void Client::open(SDLNet_SocketSet set, TCPsocket socket) {
+ 		delete _previousHandler;
+ 	_previousHandler = nullptr;
+ 	_stream = new Common::MemoryReadWriteStream(DisposeAfterUse::YES);
++#if SDL_NET_MAJOR != 3
+ 	if (set) {
+ 		int numused = SDLNet_TCP_AddSocket(set, socket);
+ 		if (numused == -1) {
+ 			error("Client: SDLNet_AddSocket: %s\n", SDLNet_GetError());
+ 		}
+ 	}
++#endif
+ }
+ 
+ bool Client::readMoreIfNeeded() {
+@@ -73,6 +79,16 @@ bool Client::readMoreIfNeeded() {
+ 		return true; //not needed, some data left in the stream
+ 	if (!_socket)
+ 		return false;
++#if SDL_NET_MAJOR == 3
++	int bytes = NET_ReadFromStreamSocket(_socket, _buffer, CLIENT_BUFFER_SIZE);
++	if (bytes == 0)
++		return false; //nothing new to read (yet)
++	if (bytes < 0) {
++		warning("Client::readMoreIfNeeded: recv fail");
++		close();
++		return false;
++	}
++#else
+ 	if (!SDLNet_SocketReady(_socket))
+ 		return false;
+ 
+@@ -82,6 +98,7 @@ bool Client::readMoreIfNeeded() {
+ 		close();
+ 		return false;
+ 	}
++#endif
+ 
+ 	if (_stream->write(_buffer, bytes) != (uint32)bytes) {
+ 		warning("Client::readMoreIfNeeded: failed to write() into MemoryReadWriteStream");
+@@ -150,6 +167,12 @@ void Client::handle() {
+ }
+ 
+ void Client::close() {
++#if SDL_NET_MAJOR == 3
++	if (_socket) {
++		NET_DestroyStreamSocket(_socket);
++		_socket = nullptr;
++	}
++#else
+ 	if (_set) {
+ 		if (_socket) {
+ 			int numused = SDLNet_TCP_DelSocket(_set, _socket);
+@@ -163,6 +186,7 @@ void Client::close() {
+ 		SDLNet_TCP_Close(_socket);
+ 		_socket = nullptr;
+ 	}
++#endif
+ 
+ 	if (_stream) {
+ 		delete _stream;
+@@ -189,10 +213,33 @@ Common::String Client::anchor() const { return _reader.anchor(); }
+ 
+ bool Client::noMoreContent() const { return _reader.noMoreContent(); }
+ 
+-bool Client::socketIsReady() { return SDLNet_SocketReady(_socket); }
++bool Client::socketIsReady() {
++#if SDL_NET_MAJOR == 3
++	if (!_socket)
++		return false;
++	NET_StreamSocket *socket = _socket;
++	return NET_WaitUntilInputAvailable((void **)&socket, 1, 0) > 0;
++#else
++	return SDLNet_SocketReady(_socket);
++#endif
++}
+ 
+-int Client::recv(void *data, int maxlen) { return SDLNet_TCP_Recv(_socket, data, maxlen); }
++int Client::recv(void *data, int maxlen) {
++#if SDL_NET_MAJOR == 3
++	return _socket ? NET_ReadFromStreamSocket(_socket, data, maxlen) : -1;
++#else
++	return SDLNet_TCP_Recv(_socket, data, maxlen);
++#endif
++}
+ 
+-int Client::send(void *data, int len) { return SDLNet_TCP_Send(_socket, data, len); }
++int Client::send(void *data, int len) {
++#if SDL_NET_MAJOR == 3
++	if (!_socket || !NET_WriteToStreamSocket(_socket, data, len))
++		return -1;
++	return NET_WaitUntilStreamSocketDrained(_socket, -1) == 0 ? len : -1;
++#else
++	return SDLNet_TCP_Send(_socket, data, len);
++#endif
++}
+ 
+ } // End of namespace Networking
+diff --git a/backends/networking/sdl_net/localwebserver.cpp b/backends/networking/sdl_net/localwebserver.cpp
+index 960591630f6..78d2a53a27a 100644
+--- a/backends/networking/sdl_net/localwebserver.cpp
++++ b/backends/networking/sdl_net/localwebserver.cpp
+@@ -28,7 +28,11 @@
+ #include "common/system.h"
+ #include "common/timer.h"
+ #include "common/translation.h"
++#if SDL_NET_MAJOR == 3
++#include <SDL3_net/SDL_net.h>
++#else
+ #include <SDL_net.h>
++#endif
+ #include "common/config-manager.h"
+ 
+ #ifdef POSIX
+@@ -119,6 +123,17 @@ void LocalWebserver::start(bool useMinimalMode) {
+ 	startTimer();
+ 
+ 	// Create a listening TCP socket
++#if SDL_NET_MAJOR == 3
++	_serverSocket = NET_CreateServer(nullptr, _serverPort, 0);
++	if (!_serverSocket) {
++		warning("LocalWebserver: NET_CreateServer: %s", SDL_GetError());
++		stopTimer();
++		g_system->displayMessageOnOSD(_("Failed to start local webserver.\nCheck whether selected port is not used by another application and try again."));
++		_handleMutex.unlock();
++		return;
++	}
++	resolveAddress(nullptr);
++#else
+ 	IPaddress ip;
+ 	if (SDLNet_ResolveHost(&ip, nullptr, _serverPort) == -1) {
+ 		error("LocalWebserver: SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+@@ -145,6 +160,7 @@ void LocalWebserver::start(bool useMinimalMode) {
+ 	if (numused == -1) {
+ 		error("LocalWebserver: SDLNet_AddSocket: %s\n", SDLNet_GetError());
+ 	}
++#endif
+ 
+ 	if (_timerStarted)
+ 		g_system->taskStarted(OSystem::kLocalServer);
+@@ -168,7 +184,11 @@ void LocalWebserver::stop() {
+ 	}
+ 
+ 	if (_serverSocket) {
++#if SDL_NET_MAJOR == 3
++		NET_DestroyServer(_serverSocket);
++#else
+ 		SDLNet_TCP_Close(_serverSocket);
++#endif
+ 		_serverSocket = nullptr;
+ 	}
+ 
+@@ -177,10 +197,12 @@ void LocalWebserver::stop() {
+ 
+ 	_clients = 0;
+ 
++#if SDL_NET_MAJOR != 3
+ 	if (_set) {
+ 		SDLNet_FreeSocketSet(_set);
+ 		_set = nullptr;
+ 	}
++#endif
+ 	_handleMutex.unlock();
+ }
+ 
+@@ -214,12 +236,16 @@ uint32 LocalWebserver::getPort() {
+ 
+ void LocalWebserver::handle() {
+ 	_handleMutex.lock();
++#if SDL_NET_MAJOR == 3
++	acceptClient();
++#else
+ 	int numready = SDLNet_CheckSockets(_set, 0);
+ 	if (numready == -1) {
+ 		error("LocalWebserver: SDLNet_CheckSockets: %s\n", SDLNet_GetError());
+ 	} else if (numready) {
+ 		acceptClient();
+ 	}
++#endif
+ 
+ 	for (uint32 i = 0; i < MAX_CONNECTIONS; ++i)
+ 		handleClient(i);
+@@ -282,6 +308,32 @@ void LocalWebserver::handleClient(uint32 i) {
+ }
+ 
+ void LocalWebserver::acceptClient() {
++#if SDL_NET_MAJOR == 3
++	while (_clients < MAX_CONNECTIONS) {
++		NET_StreamSocket *accepted = nullptr;
++		if (!NET_AcceptClient(_serverSocket, &accepted)) {
++			warning("LocalWebserver: NET_AcceptClient: %s", SDL_GetError());
++			return;
++		}
++		if (!accepted)
++			break;
++
++		uint32 slot = MAX_CONNECTIONS;
++		for (uint32 i = 0; i < MAX_CONNECTIONS; ++i)
++			if (_client[i].state() == INVALID) {
++				slot = i;
++				break;
++			}
++
++		if (slot == MAX_CONNECTIONS) {
++			NET_DestroyStreamSocket(accepted);
++			return;
++		}
++
++		_client[slot].open(nullptr, accepted);
++		++_clients;
++	}
++#else
+ 	if (!SDLNet_SocketReady(_serverSocket))
+ 		return;
+ 
+@@ -300,15 +352,34 @@ void LocalWebserver::acceptClient() {
+ 			_client[i].open(_set, client);
+ 			break;
+ 		}
++#endif
+ }
+ 
+ void LocalWebserver::resolveAddress(void *ipAddress) {
+-	IPaddress *ip = (IPaddress *)ipAddress;
+-
+ 	// not resolved
+ 	_address = Common::String::format("http://127.0.0.1:%u/ (unresolved)", _serverPort);
+ 
++#if SDL_NET_MAJOR == 3
++	int numAddresses = 0;
++	NET_Address **addresses = NET_GetLocalAddresses(&numAddresses);
++	if (addresses) {
++		for (int i = 0; i < numAddresses; ++i) {
++			const char *addr = NET_GetAddressString(addresses[i]);
++			Common::String address(addr ? addr : "");
++			if (!address.empty() && !address.contains(':') &&
++				!address.equals("127.0.0.1") && !address.equals("0.0.0.0")) {
++				_address = Common::String::format("http://%s:%u/", addr, _serverPort);
++				break;
++			}
++		}
++		NET_FreeLocalAddresses(addresses);
++	} else {
++		warning("LocalWebserver: NET_GetLocalAddresses: %s", SDL_GetError());
++	}
++#else
+ 	// default way (might work everywhere, surely works on Windows)
++	IPaddress *ip = (IPaddress *)ipAddress;
++
+ 	const char *name = SDLNet_ResolveIP(ip);
+ 	if (name == nullptr) {
+ 		warning("LocalWebserver: SDLNet_ResolveIP: %s", SDLNet_GetError());
+@@ -324,6 +395,7 @@ void LocalWebserver::resolveAddress(void *ipAddress) {
+ 			);
+ 		}
+ 	}
++#endif
+ 
+ 	// check that our trick worked
+ 	if (_address.contains("/127.0.0.1:") || _address.contains("localhost") || _address.contains("/0.0.0.0:"))
+diff --git a/backends/networking/sdl_net/localwebserver.h b/backends/networking/sdl_net/localwebserver.h
+index ec2d42f278f..7f52ca22e0e 100644
+--- a/backends/networking/sdl_net/localwebserver.h
++++ b/backends/networking/sdl_net/localwebserver.h
+@@ -37,6 +37,10 @@
+ #include "common/singleton.h"
+ #include "common/scummsys.h"
+ 
++#if SDL_NET_MAJOR == 3
++#include <SDL3_net/SDL_net.h>
++#endif
++
+ #ifdef USE_CLOUD
+ #include "backends/networking/sdl_net/handlers/connectcloudhandler.h"
+ #endif // USE_CLOUD
+@@ -60,7 +64,11 @@ class LocalWebserver : public Common::Singleton<LocalWebserver> {
+ 	friend void localWebserverTimer(void *); //calls handle()
+ 
+ 	SDLNet_SocketSet _set;
++#if SDL_NET_MAJOR == 3
++	NET_Server *_serverSocket;
++#else
+ 	TCPsocket _serverSocket;
++#endif
+ 	Client _client[MAX_CONNECTIONS];
+ 	uint32 _clients;
+ 	bool _timerStarted, _stopOnIdle, _minimalMode;
+diff --git a/backends/platform/sdl/sdl.cpp b/backends/platform/sdl/sdl.cpp
+index f2c4e5149d1..7ae6f79dad7 100644
+--- a/backends/platform/sdl/sdl.cpp
++++ b/backends/platform/sdl/sdl.cpp
+@@ -69,8 +69,12 @@
+ #endif
+ 
+ #ifdef USE_SDL_NET
++#if SDL_NET_MAJOR == 3
++#include <SDL3_net/SDL_net.h>
++#else
+ #include <SDL_net.h>
+ #endif
++#endif
+ 
+ #if SDL_VERSION_ATLEAST(3, 0, 0)
+ #include <SDL3/SDL_clipboard.h>
+@@ -164,7 +168,13 @@ OSystem_SDL::~OSystem_SDL() {
+ #endif
+ 
+ #ifdef USE_SDL_NET
+-	if (_initedSDLnet) SDLNet_Quit();
++	if (_initedSDLnet) {
++#if SDL_NET_MAJOR == 3
++		NET_Quit();
++#else
++		SDLNet_Quit();
++#endif
++	}
+ #endif
+ 
+ 	SDL_Quit();
+@@ -638,8 +648,13 @@ void OSystem_SDL::initSDL() {
+ 	// Check if SDL_net has not been initialized
+ 	if (!_initedSDLnet) {
+ 		// Initialize SDL_net
++#if SDL_NET_MAJOR == 3
++		if (!NET_Init())
++			error("Could not initialize SDL_net: %s", SDL_GetError());
++#else
+ 		if (SDLNet_Init() == -1)
+ 			error("Could not initialize SDL_net: %s", SDLNet_GetError());
++#endif
+ 
+ 		_initedSDLnet = true;
+ 	}
+diff --git a/configure b/configure
+index 43897a7d2d1..92612594781 100755
+--- a/configure
++++ b/configure
+@@ -271,7 +271,7 @@ _xcodetoolspath=
+ _sparklepath=
+ _pkgconfig=pkg-config
+ _sdlconfig=sdl2-config
+-_prefer_sdl3=no
++_prefer_sdl2=no
+ _libcurlconfig=curl-config
+ _libmikmodconfig=libmikmod-config
+ _freetypeconfig=freetype-config
+@@ -564,7 +564,7 @@ define_in_config_if_no() {
+ # TODO: small bit of code to test sdl usability
+ find_sdlconfig() {
+ 	echo_n "Looking for sdl-config... "
+-	sdlconfigs="$SDL_CONFIG:$_sdlconfig:sdl2-config:sdl12-config:sdl11-config:sdl-config"
++	sdlconfigs="$SDL_CONFIG:$_sdlconfig:sdl3-config:sdl2-config:sdl12-config:sdl11-config:sdl-config"
+ 	_sdlconfig=
+ 
+ 	IFS="${IFS=   }"; ac_save_ifs="$IFS"; IFS="$SEPARATOR"
+@@ -1201,7 +1201,7 @@ Optional Libraries:
+                            then you should pass:
+                            '--with-sdl-prefix=/opt/mxe/usr/i686-w64-mingw32.static'
+ 
+-  --prefer-sdl3               prefer SDL3 over SDL2 if both are available [no]
++  --prefer-sdl2               prefer SDL2 over SDL3 if both are available [no]
+ 
+   --with-freetype2-prefix=DIR prefix where the freetype-config script is
+                               installed (optional)
+@@ -1450,7 +1450,7 @@ for ac_option in $@; do
+ 	--disable-ext-avx2)          _ext_avx2=no            ;;
+ 	--enable-ext-neon)           _ext_neon=yes           ;;
+ 	--disable-ext-neon)          _ext_neon=no            ;;
+-	--prefer-sdl3)               _prefer_sdl3=yes        ;;
++	--prefer-sdl2)               _prefer_sdl2=yes        ;;
+ 	--with-fluidsynth-prefix=*)
+ 		arg=`echo $ac_option | cut -d '=' -f 2`
+ 		FLUIDSYNTH_CFLAGS="-I$arg/include"
+@@ -4486,19 +4486,19 @@ fi
+ # Setup SDL specifics for SDL based backends
+ #
+ if test "$_sdl" = auto ; then
+-	if test "$_pkg_config" = "yes" && test "$_prefer_sdl3" = "no" && ($_pkgconfig --exists sdl || $_pkgconfig --exists sdl2); then
+-		find_sdlconfig
+-		_sdlversion=`$_sdlconfig --version`
+-		cat > $TMPC << EOF
+-#include "SDL.h"
+-int main(int argc, char *argv[]) { SDL_Init(0); return 0; }
+-EOF
+-	elif test "$_pkg_config" = "yes" && $_pkgconfig --exists sdl3; then
++	if test "$_pkg_config" = "yes" && test "$_prefer_sdl2" = "no" && $_pkgconfig --exists sdl3; then
+ 		_sdlconfig="pkg-config sdl3"
+ 		_sdlversion=`$_sdlconfig --modversion`
+ 		cat > $TMPC << EOF
+ #include "SDL3/SDL.h"
+ int main(int argc, char *argv[]) { SDL_Init(0); return 0; }
++EOF
++	elif test "$_pkg_config" = "yes" && ($_pkgconfig --exists sdl || $_pkgconfig --exists sdl2); then
++		find_sdlconfig
++		_sdlversion=`$_sdlconfig --version`
++		cat > $TMPC << EOF
++#include "SDL.h"
++int main(int argc, char *argv[]) { SDL_Init(0); return 0; }
+ EOF
+ 	else
+ 		find_sdlconfig
+@@ -4571,9 +4571,9 @@ if test "$_sdlnet" = auto ; then
+ 	set_var SDL1_NET_CFLAGS "$SDL_NET_CFLAGS"
+ 
+ 	if test "$_sdl" = no || test "$_sdlMajorVersionNumber" = 3; then
+-		if test "$_pkg_config" = "yes" && $_pkgconfig --exists SDL3_net; then
+-			append_var SDL3_NET_LIBS "`$_pkgconfig --libs SDL3_net`"
+-			append_var SDL3_NET_CFLAGS "`$_pkgconfig --cflags SDL3_net | sed 's/[[:space:]]*-Dmain=SDL_main//g'`"
++		if test "$_pkg_config" = "yes" && $_pkgconfig --exists sdl3-net; then
++			append_var SDL3_NET_LIBS "`$_pkgconfig --libs sdl3-net`"
++			append_var SDL3_NET_CFLAGS "`$_pkgconfig --cflags sdl3-net | sed 's/[[:space:]]*-Dmain=SDL_main//g'`"
+ 		else
+ 			append_var SDL3_NET_LIBS "-lSDL3_net"
+ 		fi
+@@ -4597,20 +4597,39 @@ if test "$_sdlnet" = auto ; then
+ 		fi
+ 	fi
+ 
+-	# Check for SDL_Net
+ 	echocheck "SDL_Net"
+ 	_sdlnet=no
+-	cat > $TMPC << EOF
++	if test "$_sdlMajorVersionNumber" = 3 || test "$_sdl" = no; then
++		cat > $TMPC << EOF
++#include <SDL3_net/SDL_net.h>
++int main(int argc, char *argv[]) { NET_Init(); return 0; }
++EOF
++		# shellcheck disable=SC2153 # variable names are close
++		cc_check $SDL3_NET_LIBS $LIBS $INCLUDES $SDL3_NET_CFLAGS && _sdlnet=yes
++		if test "$_sdlnet" = yes ; then
++			set_var SDL_NET_LIBS   "$SDL3_NET_LIBS"
++			set_var SDL_NET_CFLAGS "$SDL3_NET_CFLAGS"
++			add_line_to_config_mk "SDL_NET_MAJOR = 3"
++			add_line_to_config_h "#define SDL_NET_MAJOR 3"
++		fi
++	fi
++
++	if test "$_sdlnet" = no ; then
++		cat > $TMPC << EOF
+ #include "SDL_net.h"
+ int main(int argc, char *argv[]) { SDLNet_Init(); return 0; }
+ EOF
+-	# shellcheck disable=SC2153 # variable names are close
+-	cc_check $SDL2_NET_LIBS $LIBS $INCLUDES $SDL2_NET_CFLAGS && _sdlnet=yes
+-	if test "$_sdlnet" = yes ; then
+-		set_var SDL_NET_LIBS   "$SDL2_NET_LIBS"
+-		set_var SDL_NET_CFLAGS "$SDL2_NET_CFLAGS"
+-		add_line_to_config_mk "SDL_NET_MAJOR = 2"
+-	else
++		# shellcheck disable=SC2153 # variable names are close
++		cc_check $SDL2_NET_LIBS $LIBS $INCLUDES $SDL2_NET_CFLAGS && _sdlnet=yes
++		if test "$_sdlnet" = yes ; then
++			set_var SDL_NET_LIBS   "$SDL2_NET_LIBS"
++			set_var SDL_NET_CFLAGS "$SDL2_NET_CFLAGS"
++			add_line_to_config_mk "SDL_NET_MAJOR = 2"
++			add_line_to_config_h "#define SDL_NET_MAJOR 2"
++		fi
++	fi
++
++	if test "$_sdlnet" = no ; then
+ 		cat > $TMPC << EOF
+ #include "SDL_net.h"
+ int main(int argc, char *argv[]) { SDLNet_Init(); return 0; }
+@@ -4621,18 +4640,7 @@ EOF
+ 			set_var SDL_NET_LIBS   "$SDL1_NET_LIBS"
+ 			set_var SDL_NET_CFLAGS "$SDL1_NET_CFLAGS"
+ 			add_line_to_config_mk "SDL_NET_MAJOR = 1"
+-		else
+-			cat > $TMPC << EOF
+-#include "SDL3/SDL_net.h"
+-int main(int argc, char *argv[]) { SDLNet_Init(); return 0; }
+-EOF
+-			# shellcheck disable=SC2153 # variable names are close
+-			cc_check $SDL3_NET_LIBS $LIBS $INCLUDES $SDL3_NET_CFLAGS && _sdlnet=yes
+-			if test "$_sdlnet" = yes ; then
+-				set_var SDL_NET_LIBS   "$SDL2_NET_LIBS"
+-				set_var SDL_NET_CFLAGS "$SDL2_NET_CFLAGS"
+-				add_line_to_config_mk "SDL_NET_MAJOR = 2"
+-			fi
++			add_line_to_config_h "#define SDL_NET_MAJOR 1"
+ 		fi
+ 	fi
+ 
