@@ -5,18 +5,21 @@ pkgdesc="Chiptune tracker for many old sound chips"
 arch=(i686 x32)
 url="https://tildearrow.org/furnace/"
 license=(GPL-2.0-or-later MIT Unlicense)
-depends=(sdl2-compat freetype2 zlib libglvnd)
+depends=(sdl3 freetype2 zlib libglvnd)
 makedepends=(cmake ninja mesa)
 source=("furnace-$pkgver.tar.gz::https://github.com/tildearrow/furnace/archive/refs/tags/v$pkgver.tar.gz"
         "furnace-fmt-e57ca2e3.tar.gz::https://github.com/fmtlib/fmt/archive/e57ca2e3685b160617d3d95fcd9e789c4e06ca88.tar.gz"
-        "furnace-adpcm-ef7a2171.tar.gz::https://github.com/superctr/adpcm/archive/ef7a217154badc3b99978ac481b268c8aab67bd8.tar.gz")
+        "furnace-adpcm-ef7a2171.tar.gz::https://github.com/superctr/adpcm/archive/ef7a217154badc3b99978ac481b268c8aab67bd8.tar.gz"
+        sdl3.patch)
 noextract=(furnace-fmt-e57ca2e3.tar.gz furnace-adpcm-ef7a2171.tar.gz)
 sha256sums=('c54b93dc7211a8e86828ea6b436628920df7a7dc87b130b3752f2251f5466e9c'
             '2d18d7b1c393791a180c8321cedd702093b5527625be955178bef8af2b1cf6db'
-            '46da29342d2968ff222ba00e07c646e038b76af2e6c86de037c653059a056251')
+            '46da29342d2968ff222ba00e07c646e038b76af2e6c86de037c653059a056251'
+            'SKIP')
 
 prepare() {
   cd furnace-$pkgver
+  patch -Np1 -i ../sdl3.patch
   for m in fmt-e57ca2e3 adpcm-ef7a2171; do
     rm -rf "extern/${m%-*}"
     mkdir -p "extern/${m%-*}"
@@ -26,7 +29,7 @@ prepare() {
 
 build() {
   cmake -S furnace-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_FLAGS_RELEASE=-O2 -DCMAKE_CXX_FLAGS_RELEASE=-Os -DCMAKE_INSTALL_PREFIX=/usr \
-    -DSYSTEM_SDL2=ON -DSYSTEM_ZLIB=ON -DSYSTEM_FREETYPE=ON -DUSE_RTMIDI=OFF -DWITH_JACK=OFF -DWITH_PORTAUDIO=OFF \
+    -DUSE_SDL3=ON -DSYSTEM_ZLIB=ON -DSYSTEM_FREETYPE=ON -DUSE_RTMIDI=OFF -DWITH_JACK=OFF -DWITH_PORTAUDIO=OFF \
     -DUSE_BACKWARD=OFF -DWITH_LOCALE=OFF -DWITH_OGG=OFF -DWITH_MPEG=OFF -DWITH_DEMOS=OFF \
     -DWITH_RENDER_SDL=ON -DWITH_RENDER_OPENGL=ON -DWITH_RENDER_OPENGL1=ON -DUSE_GLES=OFF
   ninja -C build

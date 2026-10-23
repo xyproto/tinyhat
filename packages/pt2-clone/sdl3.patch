@@ -1,0 +1,831 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d5c9ccf..b85e110 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.7)
+ 
+ project(pt2-clone)
+ 
+-find_package(SDL2 REQUIRED)
++find_package(SDL3 REQUIRED CONFIG)
+ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${pt2-clone_SOURCE_DIR}/release/other/")
+ 
+ if((CMAKE_CXX_COMPILER_ID MATCHES "Clang") OR (CMAKE_CXX_COMPILER_ID MATCHES "GNU"))
+@@ -19,16 +19,10 @@ file(GLOB pt2-clone_SRC
+ 
+ add_executable(pt2-clone ${pt2-clone_SRC})
+ 
+-target_include_directories(pt2-clone SYSTEM
+-    PRIVATE ${SDL2_INCLUDE_DIRS})
+-
+-if("${SDL2_LIBRARIES}" STREQUAL "")
+-    message(WARNING "SDL2_LIBRARIES wasn't set, manually setting to SDL2::SDL2")
+-    set(SDL2_LIBRARIES "SDL2::SDL2")
+-endif()
++target_compile_definitions(pt2-clone PRIVATE SDL_ENABLE_OLD_NAMES)
+ 
+ target_link_libraries(pt2-clone
+-    PRIVATE m ${SDL2_LIBRARIES})
++    PRIVATE m SDL3::SDL3)
+ 
+ install(TARGETS pt2-clone
+     RUNTIME DESTINATION bin)
+diff --git a/src/pt2_askbox.c b/src/pt2_askbox.c
+index e7039fd..0e84bba 100644
+--- a/src/pt2_askbox.c
++++ b/src/pt2_askbox.c
+@@ -171,7 +171,7 @@ uint32_t askBox(uint32_t dialogType, const char *statusText)
+ 	ui.disableVisualizer = true;
+ 	ui.askBoxShown = true;
+ 
+-	SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
++	SDL_SetEventEnabled(SDL_DROPFILE, false);
+ 
+ 	// setup dialog based on type
+ 	switch (dialogType)
+@@ -314,20 +314,20 @@ uint32_t askBox(uint32_t dialogType, const char *statusText)
+ 
+ 		while (SDL_PollEvent(&event))
+ 		{
+-			if (event.type == SDL_WINDOWEVENT)
++			if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST)
+ 			{
+-				if (event.window.event == SDL_WINDOWEVENT_HIDDEN)
++				if (event.type == SDL_EVENT_WINDOW_HIDDEN)
+ 					video.windowHidden = true;
+-				else if (event.window.event == SDL_WINDOWEVENT_SHOWN)
++				else if (event.type == SDL_EVENT_WINDOW_SHOWN)
+ 					video.windowHidden = false;
+ 
+ 				// reset vblank end time if we minimize window
+-				if (event.window.event == SDL_WINDOWEVENT_MINIMIZED || event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
++				if (event.type == SDL_EVENT_WINDOW_MINIMIZED || event.type == SDL_EVENT_WINDOW_FOCUS_LOST)
+ 					hpc_ResetCounters(&video.vblankHpc);
+ 			}
+ 			else if (event.type == SDL_KEYDOWN)
+ 			{
+-				SDL_Keycode key = event.key.keysym.sym;
++				SDL_Keycode key = event.key.key;
+ 
+ 				// abort (escape key)
+ 				if (key == SDLK_ESCAPE)
+@@ -459,6 +459,6 @@ uint32_t askBox(uint32_t dialogType, const char *statusText)
+ 	pointerSetPreviousMode();
+ 	setPrevStatusMessage();
+ 
+-	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
++	SDL_SetEventEnabled(SDL_DROPFILE, true);
+ 	return returnValue;
+ }
+diff --git a/src/pt2_audio.c b/src/pt2_audio.c
+index 299986c..c4ee2ba 100644
+--- a/src/pt2_audio.c
++++ b/src/pt2_audio.c
+@@ -9,7 +9,7 @@
+ #include <stdbool.h>
+ #include <string.h>
+ #include <math.h>
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
+ #ifdef _WIN32
+ #include <io.h>
+ #else
+@@ -38,7 +38,7 @@ static uint8_t panningMode;
+ static int32_t stereoSeparation = 100;
+ static uint32_t randSeed = INITIAL_DITHER_SEED;
+ static float *fMixBufferL, *fMixBufferR, fSideFactor, fPrngStateL, fPrngStateR;
+-static SDL_AudioDeviceID dev;
++static SDL_AudioStream *dev;
+ 
+ audio_t audio; // globalized
+ 
+@@ -111,8 +111,8 @@ void toggleLEDFilter(void)
+ 
+ void lockAudio(void)
+ {
+-	if (dev != 0)
+-		SDL_LockAudioDevice(dev);
++	if (dev != NULL)
++		SDL_LockAudioStream(dev);
+ 
+ 	audio.locked = true;
+ 
+@@ -122,8 +122,8 @@ void lockAudio(void)
+ 
+ void unlockAudio(void)
+ {
+-	if (dev != 0)
+-		SDL_UnlockAudioDevice(dev);
++	if (dev != NULL)
++		SDL_UnlockAudioStream(dev);
+ 
+ 	audio.resetSyncTickTimeFlag = true;
+ 	resetChSyncQueue();
+@@ -450,6 +450,26 @@ void updateReplayerTimingMode(void)
+ 		unlockAudio();
+ }
+ 
++static void audioStreamCallback(void *userdata, SDL_AudioStream *stream, int additional, int total)
++{
++	static Uint8 buf[16384];
++	(void)total;
++
++	while (additional > 0)
++	{
++		int len = additional;
++		if (len > (int)sizeof (buf))
++			len = sizeof (buf);
++		len &= ~3;
++		if (len <= 0)
++			break;
++
++		audioCallback(userdata, buf, len);
++		SDL_PutAudioStreamData(stream, buf, len);
++		additional -= len;
++	}
++}
++
+ bool setupAudio(void)
+ {
+ 	SDL_AudioSpec want, have;
+@@ -457,19 +477,22 @@ bool setupAudio(void)
+ 	audio.callbackOngoing = false;
+ 
+ 	want.freq = config.soundFrequency;
+-	want.samples = (uint16_t)config.soundBufferSize;
+-	want.format = AUDIO_S16;
++	want.format = SDL_AUDIO_S16;
+ 	want.channels = 2;
+-	want.callback = audioCallback;
+-	want.userdata = NULL;
+ 
+-	dev = SDL_OpenAudioDevice(NULL, 0, &want, &have, SDL_AUDIO_ALLOW_FREQUENCY_CHANGE);
+-	if (dev == 0)
++	char samplesHint[16];
++	snprintf(samplesHint, sizeof (samplesHint), "%u", (uint32_t)config.soundBufferSize);
++	SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, samplesHint);
++
++	dev = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &want, audioStreamCallback, NULL);
++	if (dev == NULL)
+ 	{
+ 		showErrorMsgBox("Couldn't open audio device:\n\"%s\"\n\nDo you have an audio device enabled and plugged in?", SDL_GetError());
+ 		return false;
+ 	}
+ 
++	have = want;
++
+ 	// lower than this is not safe for the BLEP synthesis in the mixer
+ 	const int32_t minFreq = (int32_t)(PAULA_PAL_CLK / 113.0 / 2.0)+1; // /2 because we do 2x oversampling
+ 	if (have.freq < minFreq)
+@@ -478,8 +501,15 @@ bool setupAudio(void)
+ 		return false;
+ 	}
+ 
++	int deviceSamples = config.soundBufferSize;
++	SDL_AudioSpec deviceSpec;
++	if (SDL_GetAudioDeviceFormat(SDL_GetAudioStreamDevice(dev), &deviceSpec, &deviceSamples) && deviceSpec.freq > 0 && deviceSamples > 0)
++		deviceSamples = (int)(((int64_t)deviceSamples * have.freq) / deviceSpec.freq);
++	else
++		deviceSamples = config.soundBufferSize;
++
+ 	audio.outputRate = have.freq;
+-	audio.audioBufferSize = have.samples;
++	audio.audioBufferSize = deviceSamples;
+ 	audio.oversamplingFlag = (audio.outputRate < 96000); // we do 2x oversampling if the audio output rate is below 96kHz
+ 	audio.amigaModel = config.amigaModel;
+ 
+@@ -517,17 +547,16 @@ bool setupAudio(void)
+ 	audio.tickSampleCounter = 0; // zero tick sample counter so that it will instantly initiate a tick
+ 	audio.tickSampleCounterFrac = 0;
+ 
+-	SDL_PauseAudioDevice(dev, false);
++	SDL_ResumeAudioStreamDevice(dev);
+ 	return true;
+ }
+ 
+ void audioClose(void)
+ {
+-	if (dev > 0)
++	if (dev != NULL)
+ 	{
+-		SDL_PauseAudioDevice(dev, true);
+-		SDL_CloseAudioDevice(dev);
+-		dev = 0;
++		SDL_DestroyAudioStream(dev);
++		dev = NULL;
+ 	}
+ 
+ 	audio.callbackOngoing = false;
+diff --git a/src/pt2_edit.h b/src/pt2_edit.h
+index f753349..92581b4 100644
+--- a/src/pt2_edit.h
++++ b/src/pt2_edit.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
+ #include <stdint.h>
+ #include <stdbool.h>
+ 
+diff --git a/src/pt2_header.h b/src/pt2_header.h
+index b79eaf4..c84a6dc 100644
+--- a/src/pt2_header.h
++++ b/src/pt2_header.h
+@@ -1,6 +1,10 @@
+ #pragma once
+ 
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
++#include <stdlib.h>
++#include <string.h>
++#include <ctype.h>
++#include <math.h>
+ #include <stdint.h>
+ #include <stdbool.h>
+ #ifdef _DEBUG
+diff --git a/src/pt2_helpers.c b/src/pt2_helpers.c
+index 4151b11..fc67d47 100644
+--- a/src/pt2_helpers.c
++++ b/src/pt2_helpers.c
+@@ -3,7 +3,7 @@
+ #include <crtdbg.h>
+ #endif
+ 
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
+ #include <stdarg.h>
+ #include <stdio.h>
+ #include <stdint.h>
+diff --git a/src/pt2_hpc.c b/src/pt2_hpc.c
+index d892468..b903b20 100644
+--- a/src/pt2_hpc.c
++++ b/src/pt2_hpc.c
+@@ -16,7 +16,8 @@
+ #else
+ #include <unistd.h>
+ #endif
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
++#include <math.h>
+ #include <stdint.h>
+ #include <stdbool.h>
+ #include "pt2_hpc.h"
+diff --git a/src/pt2_keyboard.h b/src/pt2_keyboard.h
+index 516482f..682adb2 100644
+--- a/src/pt2_keyboard.h
++++ b/src/pt2_keyboard.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
+ #ifdef _WIN32
+ #include <windows.h>
+ #endif
+diff --git a/src/pt2_main.c b/src/pt2_main.c
+index 071618b..1f48095 100644
+--- a/src/pt2_main.c
++++ b/src/pt2_main.c
+@@ -206,9 +206,9 @@ int main(int argc, char *argv[])
+ 	** Ref.: https://bugzilla.libsdl.org/show_bug.cgi?id=4391
+ 	*/
+ #if defined _WIN32 && SDL_MAJOR_VERSION == 2 && SDL_MINOR_VERSION == 0 && SDL_PATCHLEVEL == 9
+-	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) != 0)
++	if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK))
+ #else
+-	if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO) != 0)
++	if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO))
+ #endif
+ 	{
+ 		showErrorMsgBox("Couldn't initialize SDL: %s", SDL_GetError());
+@@ -221,7 +221,7 @@ int main(int argc, char *argv[])
+ 	** We manuallay start it again when someone clicks on a text edit box, and stop it when done.
+ 	** Ref.: https://bugzilla.libsdl.org/show_bug.cgi?id=4166
+ 	*/
+-	SDL_StopTextInput();
++	SDL_StopTextInput(video.window);
+ 
+  #ifdef __APPLE__
+ 	if (checkIfAppWasTranslocated(argc, argv))
+@@ -271,7 +271,7 @@ int main(int argc, char *argv[])
+ 		return 0; // close current instance, the main instance got a message now
+ 	}
+ 
+-	SDL_EventState(SDL_SYSWMEVENT, SDL_ENABLE);
++	SDL_SetEventEnabled(SDL_SYSWMEVENT, true);
+ #endif
+ 
+ 	hpc_SetDurationInHz(&video.vblankHpc, VBLANK_HZ);
+@@ -346,7 +346,7 @@ int main(int argc, char *argv[])
+ 	changePathToDesktop(); // change path to desktop now
+ 	diskOpSetInitPath(); // set path to custom path in config (if present)
+ 
+-	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
++	SDL_SetEventEnabled(SDL_DROPFILE, true);
+ 
+ 	editor.mainLoopOngoing = true;
+ 	hpc_ResetCounters(&video.vblankHpc); // this must be the last thing we do before entering the main loop
+@@ -385,18 +385,18 @@ static void handleInput(void)
+ 	SDL_Event event;
+ 	while (SDL_PollEvent(&event))
+ 	{
+-		if (event.type == SDL_WINDOWEVENT)
++		if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST)
+ 		{
+-			if (event.window.event == SDL_WINDOWEVENT_HIDDEN)
++			if (event.type == SDL_EVENT_WINDOW_HIDDEN)
+ 				video.windowHidden = true;
+-			else if (event.window.event == SDL_WINDOWEVENT_SHOWN)
++			else if (event.type == SDL_EVENT_WINDOW_SHOWN)
+ 				video.windowHidden = false;
+ 
+-			if (event.window.event == SDL_WINDOWEVENT_FOCUS_GAINED)
++			if (event.type == SDL_EVENT_WINDOW_FOCUS_GAINED)
+ 				focusGained = true;
+ 
+ 			// reset vblank end time if we minimize window
+-			if (event.window.event == SDL_WINDOWEVENT_MINIMIZED || event.window.event == SDL_WINDOWEVENT_FOCUS_LOST)
++			if (event.type == SDL_EVENT_WINDOW_MINIMIZED || event.type == SDL_EVENT_WINDOW_FOCUS_LOST)
+ 				hpc_ResetCounters(&video.vblankHpc);
+ 		}
+ 
+@@ -430,8 +430,7 @@ static void handleInput(void)
+ 				SDL_RaiseWindow(video.window);
+ 			}
+ 
+-			loadDroppedFile(event.drop.file, (uint32_t)strlen(event.drop.file), false, true);
+-			SDL_free(event.drop.file);
++			loadDroppedFile((char *)event.drop.data, (uint32_t)strlen(event.drop.data), false, true);
+ 		}
+ 		else if (event.type == SDL_QUIT)
+ 		{
+@@ -450,12 +449,12 @@ static void handleInput(void)
+ 		}
+ 		else if (event.type == SDL_KEYUP)
+ 		{
+-			keyUpHandler(event.key.keysym.scancode);
++			keyUpHandler(event.key.scancode);
+ 		}
+ 		else if (event.type == SDL_KEYDOWN)
+ 		{
+-			if (editor.repeatKeyFlag || keyb.lastRepKey != event.key.keysym.scancode)
+-				keyDownHandler(event.key.keysym.scancode, event.key.keysym.sym);
++			if (editor.repeatKeyFlag || keyb.lastRepKey != event.key.scancode)
++				keyDownHandler(event.key.scancode, event.key.key);
+ 		}
+ 		else if (event.type == SDL_MOUSEBUTTONUP)
+ 		{
+diff --git a/src/pt2_mouse.c b/src/pt2_mouse.c
+index b8ca7c1..7cb0a35 100644
+--- a/src/pt2_mouse.c
++++ b/src/pt2_mouse.c
+@@ -187,7 +187,7 @@ bool createMouseCursors(void) // creates scaled SDL surfaces for current mouse p
+ 
+ 	for (uint32_t i = 0; i < NUM_CURSORS; i++)
+ 	{
+-		SDL_Surface *surface = SDL_CreateRGBSurface(0, POINTER_W*scaleFactor, POINTER_H*scaleFactor, 32, 0, 0, 0, 0);
++		SDL_Surface *surface = SDL_CreateSurface(POINTER_W*scaleFactor, POINTER_H*scaleFactor, SDL_PIXELFORMAT_XRGB8888);
+ 		if (surface == NULL)
+ 		{
+ 			freeMouseCursors();
+@@ -200,10 +200,10 @@ bool createMouseCursors(void) // creates scaled SDL surfaces for current mouse p
+ 		uint32_t color3 = cursorColors[i][2];
+ 		uint32_t colorkey = 0x12345678;
+ 
+-		color1 = SDL_MapRGB(surface->format, R24(color1), G24(color1), B24(color1));
+-		color2 = SDL_MapRGB(surface->format, R24(color2), G24(color2), B24(color2));
+-		color3 = SDL_MapRGB(surface->format, R24(color3), G24(color3), B24(color3));
+-		colorkey = SDL_MapRGB(surface->format, R24(colorkey), G24(colorkey), B24(colorkey));
++		color1 = SDL_MapSurfaceRGB(surface, R24(color1), G24(color1), B24(color1));
++		color2 = SDL_MapSurfaceRGB(surface, R24(color2), G24(color2), B24(color2));
++		color3 = SDL_MapSurfaceRGB(surface, R24(color3), G24(color3), B24(color3));
++		colorkey = SDL_MapSurfaceRGB(surface, R24(colorkey), G24(colorkey), B24(colorkey));
+ 
+ 		SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_NONE);
+ 		SDL_SetColorKey(surface, SDL_TRUE, colorkey);
+@@ -269,6 +269,7 @@ void updateMouseScaling(void)
+ void readMouseXY(void)
+ {
+ 	int32_t mx, my, windowX, windowY;
++	float fx, fy;
+ 
+ 	if (mouse.updatePointerColorFlag) // used when changing pointer color from other threads
+ 	{
+@@ -287,14 +288,18 @@ void readMouseXY(void)
+ 
+ 	if (video.fullscreen)
+ 	{
+-		mouse.buttonState = SDL_GetMouseState(&mx, &my);
++		mouse.buttonState = SDL_GetMouseState(&fx, &fy);
++		mx = (int32_t)fx;
++		my = (int32_t)fy;
+ 
+ 		mouse.absX = mx;
+ 		mouse.absY = my;
+ 	}
+ 	else
+ 	{
+-		mouse.buttonState = SDL_GetGlobalMouseState(&mx, &my);
++		mouse.buttonState = SDL_GetGlobalMouseState(&fx, &fy);
++		mx = (int32_t)fx;
++		my = (int32_t)fy;
+ 
+ 		mouse.absX = mx;
+ 		mouse.absY = my;
+diff --git a/src/pt2_mouse.h b/src/pt2_mouse.h
+index 3082efe..947309c 100644
+--- a/src/pt2_mouse.h
++++ b/src/pt2_mouse.h
+@@ -2,7 +2,7 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
+ 
+ // taken from the ptplay project and modified
+ enum ptbuttons
+diff --git a/src/pt2_sampling.c b/src/pt2_sampling.c
+index c48fb21..e4b16f7 100644
+--- a/src/pt2_sampling.c
++++ b/src/pt2_sampling.c
+@@ -49,6 +49,7 @@ enum
+ static volatile bool callbackBusy, displayingBuffer, samplingEnded;
+ static bool audioDevOpen;
+ static char *audioInputDevs[MAX_INPUT_DEVICES];
++static SDL_AudioDeviceID audioInputDevIDs[MAX_INPUT_DEVICES];
+ static uint8_t samplingNote = 33, samplingFinetune = 4; // period 124, max safe period for PAL Paula
+ static int16_t displayBuffer[SAMPLING_BUFFER_SIZE];
+ static int32_t samplingMode = SAMPLE_MIX, inputFrequency, roundedOutputFrequency;
+@@ -56,7 +57,7 @@ static int32_t numAudioInputDevs, audioInputDevListOffset, selectedDev;
+ static int32_t bytesSampled, maxSamplingLength, inputBufferSize;
+ static float *fSincLUT, *fSamplingBuffer, *fSamplingBufferOrig;
+ static double dOutputFrequency, dResamplingRatio;
+-static SDL_AudioDeviceID recordDev;
++static SDL_AudioStream *recordDev;
+ 
+ static void listAudioDevices(void);
+ 
+@@ -220,12 +221,31 @@ static void samplingCallback(void *userdata, Uint8 *stream, int len)
+ 	(void)userdata;
+ }
+ 
++static void recordStreamCallback(void *userdata, SDL_AudioStream *stream, int additional, int total)
++{
++	static Uint8 buf[SAMPLING_BUFFER_SIZE * 4];
++	(void)additional;
++	(void)total;
++
++	int len;
++	while ((len = SDL_GetAudioStreamAvailable(stream)) >= 4)
++	{
++		if (len > (int)sizeof (buf))
++			len = sizeof (buf);
++		len = SDL_GetAudioStreamData(stream, buf, len & ~3);
++		if (len <= 0)
++			break;
++
++		samplingCallback(userdata, buf, len);
++	}
++}
++
+ static void stopInputAudio(void)
+ {
+-	if (recordDev > 0)
++	if (recordDev != NULL)
+ 	{
+-		SDL_CloseAudioDevice(recordDev);
+-		recordDev = 0;
++		SDL_DestroyAudioStream(recordDev);
++		recordDev = NULL;
+ 	}
+ 	callbackBusy = false;
+ }
+@@ -234,7 +254,7 @@ static void startInputAudio(void)
+ {
+ 	SDL_AudioSpec want, have;
+ 
+-	if (recordDev > 0)
++	if (recordDev != NULL)
+ 		stopInputAudio();
+ 
+ 	if (numAudioInputDevs == 0 || selectedDev >= numAudioInputDevs)
+@@ -247,19 +267,18 @@ static void startInputAudio(void)
+ 
+ 	memset(&want, 0, sizeof (SDL_AudioSpec));
+ 	want.freq = config.audioInputFrequency;
+-	want.format = AUDIO_S16;
++	want.format = SDL_AUDIO_S16;
+ 	want.channels = 2;
+-	want.callback = samplingCallback;
+-	want.userdata = NULL;
+-	want.samples = SAMPLING_BUFFER_SIZE;
+ 
+-	recordDev = SDL_OpenAudioDevice(audioInputDevs[selectedDev], true, &want, &have, 0);
+-	audioDevOpen = (recordDev != 0);
++	recordDev = SDL_OpenAudioDeviceStream(audioInputDevIDs[selectedDev], &want, recordStreamCallback, NULL);
++	audioDevOpen = (recordDev != NULL);
+ 
++	have = want;
+ 	inputFrequency = have.freq;
+-	inputBufferSize = have.samples;
++	inputBufferSize = SAMPLING_BUFFER_SIZE;
+ 
+-	SDL_PauseAudioDevice(recordDev, false);
++	if (audioDevOpen)
++		SDL_ResumeAudioStreamDevice(recordDev);
+ }
+ 
+ static void selectAudioDevice(int32_t dev)
+@@ -302,13 +321,16 @@ static void scanAudioDevices(void)
+ {
+ 	freeAudioDeviceList();
+ 
+-	numAudioInputDevs = SDL_GetNumAudioDevices(true);
++	int devCount = 0;
++	SDL_AudioDeviceID *devs = SDL_GetAudioRecordingDevices(&devCount);
++	numAudioInputDevs = (devs != NULL) ? devCount : 0;
+ 	if (numAudioInputDevs > MAX_INPUT_DEVICES)
+ 		numAudioInputDevs = MAX_INPUT_DEVICES;
+ 
+ 	for (int32_t i = 0; i < numAudioInputDevs; i++)
+ 	{
+-		const char *deviceName = SDL_GetAudioDeviceName(i, true);
++		audioInputDevIDs[i] = devs[i];
++		const char *deviceName = SDL_GetAudioDeviceName(devs[i]);
+ 		if (deviceName == NULL)
+ 		{
+ 			numAudioInputDevs--; // hide device
+@@ -326,6 +348,7 @@ static void scanAudioDevices(void)
+ 
+ 		audioInputDevs[i][stringLen+1] = '\0'; // UTF-8 needs double null termination (XXX: citation needed)
+ 	}
++	SDL_free(devs);
+ 
+ 	audioInputDevListOffset = 0; // reset scroll position
+ 
+diff --git a/src/pt2_textedit.c b/src/pt2_textedit.c
+index b6fda4d..34646c0 100644
+--- a/src/pt2_textedit.c
++++ b/src/pt2_textedit.c
+@@ -338,7 +338,7 @@ void enterTextEditMode(int16_t editObject)
+ 	}
+ 
+ 	renderTextEditCursor();
+-	SDL_StartTextInput();
++	SDL_StartTextInput(video.window);
+ }
+ 
+ void enterNumberEditMode(uint8_t type, int16_t editObject)
+@@ -352,7 +352,7 @@ void enterNumberEditMode(uint8_t type, int16_t editObject)
+ 	ui.editTextFlag = true;
+ 
+ 	renderTextEditCursor();
+-	SDL_StartTextInput();
++	SDL_StartTextInput(video.window);
+ }
+ 
+ static void redrawTextEditObject(void)
+@@ -396,7 +396,7 @@ void leaveTextEditMode(bool updateValue)
+ 	int16_t tmp16;
+ 	int32_t tmp32;
+ 
+-	SDL_StopTextInput();
++	SDL_StopTextInput(video.window);
+ 
+ 	// if user updated the disk op path text
+ 	if (ui.diskOpScreenShown && textEdit.object == PTB_DO_DATAPATH)
+diff --git a/src/pt2_textedit.h b/src/pt2_textedit.h
+index 855120c..0eda99c 100644
+--- a/src/pt2_textedit.h
++++ b/src/pt2_textedit.h
+@@ -2,7 +2,7 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
+-#include <SDL2/SDL.h>
++#include <SDL3/SDL.h>
+ 
+ void renderTextEditCursor(void);
+ void removeTextEditCursor(void);
+diff --git a/src/pt2_visuals.c b/src/pt2_visuals.c
+index 37d3b65..ba5cdbe 100644
+--- a/src/pt2_visuals.c
++++ b/src/pt2_visuals.c
+@@ -1631,9 +1631,7 @@ void endFPSCounter(void)
+ 
+ static void drawDebugBox(void)
+ {
+-	SDL_version SDLVer;
+-
+-	SDL_GetVersion(&SDLVer);
++	const int SDLVer = SDL_GetVersion();
+ 
+ 	if (++videoFrameCounter >= FPS_SCAN_FRAMES)
+ 	{
+@@ -1673,7 +1671,7 @@ static void drawDebugBox(void)
+ 	    "Relative mouse coords: %d,%d\n" \
+ 	    "Absolute mouse coords: %d,%d\n" \
+ 	    "Press CTRL+SHIFT+F to close this box.\n",
+-	    SDLVer.major, SDLVer.minor, SDLVer.patch,
++	    SDL_VERSIONNUM_MAJOR(SDLVer), SDL_VERSIONNUM_MINOR(SDLVer), SDL_VERSIONNUM_MICRO(SDLVer),
+ 	    dAvgFPS,
+ 	    dRefreshRate,
+ 	    video.vsync60HzPresent ? "yes" : "no",
+@@ -1734,9 +1732,15 @@ void flipFrame(void)
+ 		SDL_RenderClear(video.renderer);
+ 
+ 	if (video.useCustomRenderRect)
+-		SDL_RenderCopy(video.renderer, video.texture, NULL, &video.renderRect);
++	{
++		SDL_FRect renderRect;
++		SDL_RectToFRect(&video.renderRect, &renderRect);
++		SDL_RenderTexture(video.renderer, video.texture, NULL, &renderRect);
++	}
+ 	else
+-		SDL_RenderCopy(video.renderer, video.texture, NULL, NULL);
++	{
++		SDL_RenderTexture(video.renderer, video.texture, NULL, NULL);
++	}
+ 
+ 	SDL_RenderPresent(video.renderer);
+ 
+@@ -1845,17 +1849,20 @@ void sinkVisualizerBars(void) // sinks visualizer bars
+ 	}
+ }
+ 
+-void updateRenderSizeVars(void)
++static const SDL_DisplayMode *getDesktopDisplayMode(void)
+ {
+-	SDL_DisplayMode dm;
++	SDL_DisplayID di = (video.window != NULL) ? SDL_GetDisplayForWindow(video.window) : 0;
++	if (di == 0)
++		di = SDL_GetPrimaryDisplay();
+ 
+-	int32_t di = SDL_GetWindowDisplayIndex(video.window);
+-	if (di < 0)
+-		di = 0; // return display index 0 (default) on error
++	return SDL_GetDesktopDisplayMode(di);
++}
+ 
+-	SDL_GetDesktopDisplayMode(di, &dm);
+-	video.displayW = dm.w;
+-	video.displayH = dm.h;
++void updateRenderSizeVars(void)
++{
++	const SDL_DisplayMode *dm = getDesktopDisplayMode();
++	video.displayW = (dm != NULL) ? dm->w : 0;
++	video.displayH = (dm != NULL) ? dm->h : 0;
+ 
+ 	SDL_GetWindowSize(video.window, &video.windowW, &video.windowH);
+ 	video.renderX = 0;
+@@ -1884,7 +1891,7 @@ void updateRenderSizeVars(void)
+ 
+ 			// get hi-DPI upscale factors (returns 1.0 if no hi-DPI upscaling)
+ 			int32_t widthInPixels, heightInPixels;
+-			SDL_GL_GetDrawableSize(video.window, &widthInPixels, &heightInPixels);
++			SDL_GetWindowSizeInPixels(video.window, &widthInPixels, &heightInPixels);
+ 			double dHiDPIScaleX = (double)widthInPixels / video.windowW;
+ 			double dHiDPIScaleY = (double)heightInPixels / video.windowH;
+ 
+@@ -1911,9 +1918,9 @@ void toggleFullscreen(void)
+ {
+ 	video.fullscreen ^= 1;
+ 	if (video.fullscreen)
+-		SDL_SetWindowFullscreen(video.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
++		SDL_SetWindowFullscreen(video.window, true);
+ 	else
+-		SDL_SetWindowFullscreen(video.window, 0);
++		SDL_SetWindowFullscreen(video.window, false);
+ 
+ 	SDL_Delay(15); // fixes possible issues
+ 
+@@ -1939,19 +1946,15 @@ bool setupVideo(void)
+ 	if (config.autoFitVideoScale)
+ 	{
+ 		int8_t i;
+-		SDL_DisplayMode dm;
+-
+-		int32_t di = SDL_GetWindowDisplayIndex(video.window);
+-		if (di < 0)
+-			di = 0; // return display index 0 (default) on error
++		const SDL_DisplayMode *dm = getDesktopDisplayMode();
+ 
+ 		// find out which upscaling factor is the biggest to fit on screen
+-		if (SDL_GetDesktopDisplayMode(di, &dm) == 0)
++		if (dm != NULL)
+ 		{
+ 			for (i = MAX_UPSCALE_FACTOR; i >= 1; i--)
+ 			{
+ 				// height test is slightly taller because of window title, window borders and taskbar/menu/dock
+-				if (dm.w >= SCREEN_W*i && dm.h >= (SCREEN_H+64)*i)
++				if (dm->w >= SCREEN_W*i && dm->h >= (SCREEN_H+64)*i)
+ 				{
+ 					config.videoScaleFactor = i;
+ 					break;
+@@ -1971,28 +1974,17 @@ bool setupVideo(void)
+ 	int32_t screenW = SCREEN_W * config.videoScaleFactor;
+ 	int32_t screenH = SCREEN_H * config.videoScaleFactor;
+ 
+-	uint32_t rendererFlags = 0;
+-
+-	SDL_DisplayMode dm;
+-
+-	int32_t di = SDL_GetWindowDisplayIndex(video.window);
+-	if (di < 0)
+-		di = 0; // return display index 0 (default) on error
+-
+-	SDL_GetDesktopDisplayMode(di, &dm);
+-	video.dMonitorRefreshRate = (double)dm.refresh_rate;
++	const SDL_DisplayMode *dm = getDesktopDisplayMode();
++	video.dMonitorRefreshRate = (dm != NULL) ? (double)dm->refresh_rate : 0.0;
+ 
+ 	video.vsync60HzPresent = false;
+ 	if (!config.vsyncOff)
+ 	{
+-		if (dm.refresh_rate >= 59 && dm.refresh_rate <= 61)
+-		{
++		if (video.dMonitorRefreshRate >= 59 && video.dMonitorRefreshRate <= 61)
+ 			video.vsync60HzPresent = true;
+-			rendererFlags |= SDL_RENDERER_PRESENTVSYNC;
+-		}
+ 	}
+ 
+-	uint32_t windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
++	SDL_WindowFlags windowFlags = SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+ 
+ #ifndef SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR
+ /* older SDL2 versions don't define this, don't fail the build for it */
+@@ -2000,8 +1992,9 @@ bool setupVideo(void)
+ #endif
+ 	SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
+ 
+-	video.window = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED,
+-		SDL_WINDOWPOS_CENTERED, screenW, screenH, windowFlags);
++	video.window = SDL_CreateWindow("", screenW, screenH, windowFlags);
++	if (video.window != NULL)
++		SDL_SetWindowPosition(video.window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+ 
+ 	if (video.window == NULL)
+ 	{
+@@ -2009,32 +2002,18 @@ bool setupVideo(void)
+ 		return false;
+ 	}
+ 
+-	video.renderer = SDL_CreateRenderer(video.window, -1, rendererFlags);
++	video.renderer = SDL_CreateRenderer(video.window, NULL);
+ 	if (video.renderer == NULL)
+ 	{
+-		if (video.vsync60HzPresent) // try again without vsync flag
+-		{
+-			video.vsync60HzPresent = false;
+-			rendererFlags &= ~SDL_RENDERER_PRESENTVSYNC;
+-			video.renderer = SDL_CreateRenderer(video.window, -1, rendererFlags);
+-		}
+-
+-		if (video.renderer == NULL)
+-		{
+-			showErrorMsgBox("Couldn't create SDL renderer:\n%s\n\n" \
+-			                "Is your GPU (+ driver) too old?", SDL_GetError());
+-			return false;
+-		}
++		showErrorMsgBox("Couldn't create SDL renderer:\n%s\n\n" \
++		                "Is your GPU (+ driver) too old?", SDL_GetError());
++		return false;
+ 	}
+ 
+-	SDL_SetRenderDrawBlendMode(video.renderer, SDL_BLENDMODE_NONE);
++	if (video.vsync60HzPresent && !SDL_SetRenderVSync(video.renderer, 1))
++		video.vsync60HzPresent = false;
+ 
+-	if (config.pixelFilter == PIXELFILTER_LINEAR)
+-		SDL_SetHint("SDL_RENDER_SCALE_QUALITY", "linear");
+-	else if (config.pixelFilter == PIXELFILTER_BEST)
+-		SDL_SetHint("SDL_RENDER_SCALE_QUALITY", "best");
+-	else
+-		SDL_SetHint("SDL_RENDER_SCALE_QUALITY", "nearest");
++	SDL_SetRenderDrawBlendMode(video.renderer, SDL_BLENDMODE_NONE);
+ 
+ 	video.texture = SDL_CreateTexture(video.renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_W, SCREEN_H);
+ 	if (video.texture == NULL)
+@@ -2045,6 +2024,7 @@ bool setupVideo(void)
+ 	}
+ 
+ 	SDL_SetTextureBlendMode(video.texture, SDL_BLENDMODE_NONE);
++	SDL_SetTextureScaleMode(video.texture, (config.pixelFilter == PIXELFILTER_NEAREST) ? SDL_SCALEMODE_NEAREST : SDL_SCALEMODE_LINEAR);
+ 
+ 	// frame buffer used by SDL (for texture)
+ 	video.frameBuffer = (uint32_t *)malloc(SCREEN_W * SCREEN_H * sizeof (int32_t));
+@@ -2058,9 +2038,9 @@ bool setupVideo(void)
+ 	updateMouseScaling();
+ 
+ 	if (config.hwMouse)
+-		SDL_ShowCursor(SDL_TRUE);
++		SDL_ShowCursor();
+ 	else
+-		SDL_ShowCursor(SDL_FALSE);
++		SDL_HideCursor();
+ 
+ 	SDL_SetRenderDrawColor(video.renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+ 
