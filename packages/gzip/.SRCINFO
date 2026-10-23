@@ -16,10 +16,8 @@ pkgbase = gzip
 	optdepends = grep: zegrep/zfgrep/zforce/zgrep support
 	optdepends = less: zless support
 	optdepends = util-linux: zmore support
-	source = git+https://git.savannah.gnu.org/git/gzip.git?signed#tag=v1.15
-	source = git+https://git.savannah.gnu.org/git/gnulib.git
+	source = https://ftp.gnu.org/gnu/gzip/gzip-1.15.tar.xz
 	validpgpkeys = 155D3FC500C834486D1EEA677FD9FCCB000BEEEE
-	sha256sums = 1496b08cdd5320634b59860b09c6c5048ebb04b32a723fa39a3652f08102e2ba
-	sha256sums = SKIP
+	sha256sums = 9aa0cc780dec156b8282844833b342ab7cb08c25d2cd9a1869cdd0df31deff48
 
 pkgname = gzip
