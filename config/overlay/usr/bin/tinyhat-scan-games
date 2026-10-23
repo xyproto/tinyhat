@@ -5,62 +5,62 @@ fixup=
 notify=
 case ${1:-} in
 -f)
-	rm -f "$cache"/scanned-*
-	notify=1
-	;;
+    rm -f "$cache"/scanned-*
+    notify=1
+    ;;
 --fixup) fixup=1 ;;
 esac
 exec 9>"${XDG_RUNTIME_DIR:-/tmp}/tinyhat-scummvm.lock"
 if [ -n "$notify" ]; then
-	if ! flock -n 9; then
-		tinyhat-notice "Close ScummVM first, then scan for games again" 6
-		exit 1
-	fi
-	if [ -z "$(find /media -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
-		tinyhat-notice "Insert a USB stick or CD with ScummVM games, then scan again" 6
-		exit 0
-	fi
-	tinyhat-notice "Scanning USB sticks and CDs for ScummVM games..."
+    if ! flock -n 9; then
+        tinyhat-notice "Close ScummVM first, then scan for games again" 6
+        exit 1
+    fi
+    if [ -z "$(find /media -mindepth 1 -maxdepth 1 -type d 2>/dev/null)" ]; then
+        tinyhat-notice "Insert a USB stick or CD with ScummVM games, then scan again" 6
+        exit 0
+    fi
+    tinyhat-notice "Scanning drives for ScummVM games..."
 else
-	flock 9
+    flock 9
 fi
 ini=$HOME/.config/scummvm/scummvm.ini
 before=$(grep -c '^\[' "$ini" 2>/dev/null)
 for d in /media/*/; do
-	[ -z "$fixup" ] && [ -d "$d" ] || continue
-	id=$(findmnt -no UUID --target "$d" 2>/dev/null)
-	[ -n "$id" ] || id=$(basename "$d")
-	[ -e "$cache/scanned-$id" ] && continue
-	nice -n 19 ionice -c 3 scummvm --add --recursive --path="$d" >"$cache/scan-$id.log" 2>&1 &&
-		: >"$cache/scanned-$id"
+    [ -z "$fixup" ] && [ -d "$d" ] || continue
+    id=$(findmnt -no UUID --target "$d" 2>/dev/null)
+    [ -n "$id" ] || id=$(basename "$d")
+    [ -e "$cache/scanned-$id" ] && continue
+    nice -n 19 ionice -c 3 scummvm --add --recursive --path="$d" >"$cache/scan-$id.log" 2>&1 &&
+        : >"$cache/scanned-$id"
 done
 for g in bass lure soltys; do
-	if [ -d "/usr/share/games/$g" ] && ! grep -qsx "path=/usr/share/games/$g" "$ini"; then
-		scummvm --add --path="/usr/share/games/$g" >"$cache/scan-$g.log" 2>&1
-	fi
+    if [ -d "/usr/share/games/$g" ] && ! grep -qsx "path=/usr/share/games/$g" "$ini"; then
+        scummvm --add --path="/usr/share/games/$g" >"$cache/scan-$g.log" 2>&1
+    fi
 done
 if [ -n "$notify" ]; then
-	added=$(($(grep -c '^\[' "$ini" 2>/dev/null) - ${before:-0}))
-	if [ "$added" -gt 0 ]; then
-		tinyhat-notice "Found $added new games, Ctrl+Alt+S starts ScummVM" 8
-	else
-		tinyhat-notice "No new ScummVM games were found" 6
-	fi
+    added=$(($(grep -c '^\[' "$ini" 2>/dev/null) - ${before:-0}))
+    if [ "$added" -gt 0 ]; then
+        tinyhat-notice "Found $added new games, Ctrl+Alt+S starts ScummVM" 8
+    else
+        tinyhat-notice "No new ScummVM games were found" 6
+    fi
 fi
 [ -f "$ini" ] || exit 0
 awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }
-	$1 == "path" { p[t] = $2 }
-	$1 == "savepath" { s[t] = 1 }
-	END { for (t in p) if (!(t in s)) print t "=" p[t] }' "$ini" |
+    $1 == "path" { p[t] = $2 }
+    $1 == "savepath" { s[t] = 1 }
+    END { for (t in p) if (!(t in s)) print t "=" p[t] }' "$ini" |
 while IFS== read -r t p; do
-	sed -i "/^\[$t\]\$/a savepath=$p" "$ini"
+    sed -i "/^\[$t\]\$/a savepath=$p" "$ini"
 done
 awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }
-	$1 == "gameid" && ($2 == "tentacle" || $2 == "samnmax") { g[t] = 1 }
-	$1 == "path" { p[t] = $2 }
-	$1 == "music_driver" { m[t] = 1 }
-	END { for (t in g) if (!(t in m) && (t in p)) print t "=" p[t] }' "$ini" |
+    $1 == "gameid" && ($2 == "tentacle" || $2 == "samnmax") { g[t] = 1 }
+    $1 == "path" { p[t] = $2 }
+    $1 == "music_driver" { m[t] = 1 }
+    END { for (t in g) if (!(t in m) && (t in p)) print t "=" p[t] }' "$ini" |
 while IFS== read -r t p; do
-	grep -qsF -e '.$-I' -e ';&%I' "$p"/*.001 "$p"/*.LA1 && continue
-	sed -i "/^\[$t\]\$/a music_driver=adlib" "$ini"
+    grep -qsF -e '.$-I' -e ';&%I' "$p"/*.001 "$p"/*.LA1 && continue
+    sed -i "/^\[$t\]\$/a music_driver=adlib" "$ini"
 done
