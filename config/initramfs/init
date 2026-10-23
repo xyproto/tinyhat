@@ -29,6 +29,9 @@ for arg in $(cat /proc/cmdline); do
 done
 [ "$quiet" = 1 ] && printf '\033[?25l' >/dev/tty1 2>/dev/null
 [ "$quiet" = 1 ] && [ "$splash" = 1 ] && [ -c /dev/fb0 ] && /bin/tinyhat-splash
+if [ "$init" != /usr/lib/systemd/systemd ]; then
+	echo 1 >/proc/sys/kernel/ctrl-alt-del
+fi
 
 say() {
 	[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo "$1" >/run/tinyhat-splash' sh "$1" 2>/dev/null
@@ -244,6 +247,11 @@ if [ "$where" = file ] && [ ! -f /run/tinyhat/persistroot ]; then
 fi
 
 echo "$dev" >/run/tinyhat/bootdev
+if [ "$init" != /usr/lib/systemd/systemd ]; then
+	printf '\033[?25h'
+	say quit
+	sleep 0.3
+fi
 mount --move /run /newroot/run
 umount /sys /proc
 exec switch_root /newroot "$init"
