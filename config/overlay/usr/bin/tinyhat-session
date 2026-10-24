@@ -5,6 +5,14 @@ mkdir -p "$HOME/downloads"
 : "${MANPAGER:=/usr/bin/o}"
 export BROWSER EDITOR MANPAGER
 export DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
+eval "$(MESA_SHADER_CACHE_DISABLE=true tinyhat-glinfo 2>/dev/null)"
+TINYHAT_SDL_RENDER=software
+if [ "${TINYHAT_GLES_VERSION:-0}" != 0.0 ]; then
+	TINYHAT_SDL_RENDER=opengles2,opengl,software
+elif [ "${TINYHAT_GL_VERSION%%.*}" -ge 3 ] 2>/dev/null || [ "${TINYHAT_GL_VERSION:-0}" = 2.1 ]; then
+	TINYHAT_SDL_RENDER=opengl,software
+fi
+export TINYHAT_GL_VERSION TINYHAT_GLES_VERSION TINYHAT_GL_RENDERER TINYHAT_GL_SOFTWARE TINYHAT_SDL_RENDER
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
 printf '\033[?25l'
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
