@@ -1,17 +1,21 @@
 pkgname=vice
 pkgver=3.10
 pkgrel=1
-pkgdesc="Commodore 64 emulator (x64sc) with the SDL2 UI"
+pkgdesc="Commodore 64 emulator (x64sc) with the SDL UI, ported to SDL3"
 arch=(i686 x32)
 url="https://vice-emu.sourceforge.io/"
 license=(GPL-2.0-or-later)
-depends=(sdl2-compat sdl2_image libpng zlib)
-makedepends=(flex xa)
-source=("vice-$pkgver.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-$pkgver.tar.gz/download")
-sha256sums=('8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1')
+depends=(sdl3 sdl3_image libpng zlib)
+makedepends=(flex xa autoconf automake)
+source=("vice-$pkgver.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-$pkgver.tar.gz/download"
+        sdl3.patch)
+sha256sums=('8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1'
+            '50e65f20cea982a1543ccef1df66fc6fd8fb37c38e60db4eb058399387f65c98')
 
 prepare() {
   cd vice-$pkgver
+  patch -p1 -i "$srcdir/sdl3.patch"
+  autoreconf -fi
   sed -i 's/if ((log_to_file) || (!log_colorize)) {/if ((log_to_file) || (!log_colorize) || (log_to_stdout)) {/' src/log.c
   mkdir -p "$srcdir/bin"
   printf '#!/bin/sh\nfor f; do sed -i "s/\\r$//" "$f"; done\n' >"$srcdir/bin/dos2unix"
@@ -26,8 +30,7 @@ build() {
   export CFLAGS CXXFLAGS
   ./configure --prefix=/usr --enable-sdl2ui --with-sdlsound --without-alsa --without-pulse \
     --disable-html-docs --disable-pdf-docs --without-flac --without-vorbis --without-mpg123 --without-lame \
-    --disable-ffmpeg --disable-ethernet --disable-catweasel --disable-hardsid --disable-parsid --disable-midi \
-    SDL2_IMAGE_CFLAGS="-I/usr/include/SDL2 $(pkg-config --cflags sdl2-compat)" SDL2_IMAGE_LIBS="-lSDL2_image"
+    --disable-ffmpeg --disable-ethernet --disable-catweasel --disable-hardsid --disable-parsid --disable-midi
   make
 }
 
