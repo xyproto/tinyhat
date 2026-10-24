@@ -434,8 +434,6 @@ roc-toolkit
 rubberband
 sane
 sbc
-sdl2-compat
-sdl2_image
 sdl3
 sdl3-man
 sdl3_image

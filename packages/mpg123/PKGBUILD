@@ -9,9 +9,8 @@ url='https://mpg123.de/'
 arch=(i686 x32)
 license=('LGPL-2.1-only')
 depends=('alsa-lib' 'glibc')
-makedepends=('jack' 'libpulse' 'sdl2-compat')
+makedepends=('jack' 'libpulse')
 optdepends=(
-  'sdl2-compat: for sdl audio support'
   'jack: for jack audio support'
   'libpulse: for pulse audio support'
   'perl: for conplay'
@@ -27,7 +26,7 @@ build() {
   ./configure \
     --prefix=/usr \
     --enable-int-quality \
-    --with-audio="alsa oss sdl jack pulse"
+    --with-audio="alsa oss jack pulse"
   # https://bugzilla.gnome.org/show_bug.cgi?id=655517
   sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool
   make

@@ -2327,6 +2327,7 @@ nvchecker = "[mpfr]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/mpfr/'\nre
 source = "arch"
 version = "1.33.7-1"
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
+build = true
 nvchecker = "[mpg123]\nsource = \"httpheader\"\nurl = \"https://sourceforge.net/projects/mpg123/files/latest/download\"\nregex = \"mpg123-(.*)\\\\.tar.bz2\"\n\n#source = \"regex\"\n#url = \"https://www.mpg123.de/\"\n#regex = 'Releasing mpg123 version (\\d+\\.\\d+\\.\\d+)'\n"
 
 [mtdev]
