@@ -534,7 +534,7 @@ index 8bdbd7c..78343f4 100644
  #ifdef vector
  #undef vector
 diff --git a/src/platform/sdl/sw-sdl2.c b/src/platform/sdl/sw-sdl2.c
-index 48afc33..457fde6 100644
+index 48afc33..7fa3a76 100644
 --- a/src/platform/sdl/sw-sdl2.c
 +++ b/src/platform/sdl/sw-sdl2.c
 @@ -22,10 +22,18 @@ void mSDLSWCreate(struct mSDLRenderer* renderer) {
@@ -556,3 +556,13 @@ index 48afc33..457fde6 100644
  #ifdef COLOR_16_BIT
  #ifdef COLOR_5_6_5
  	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_RGB565, SDL_TEXTUREACCESS_STREAMING, width, height);
+@@ -35,6 +43,9 @@ bool mSDLSWInit(struct mSDLRenderer* renderer) {
+ #else
+ 	renderer->sdlTex = SDL_CreateTexture(renderer->sdlRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, height);
+ #endif
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	SDL_SetTextureScaleMode(renderer->sdlTex, renderer->filter ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
++#endif
+ 
+ 	int stride;
+ 	SDL_LockTexture(renderer->sdlTex, 0, (void**) &renderer->outputBuffer, &stride);
