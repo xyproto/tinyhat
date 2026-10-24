@@ -9,7 +9,7 @@ case $choice in
 "$test")
 	mkdir -p "$dir"
 	log=$(mktemp) || exit 1
-	(cd "$dir" && SDL_RENDER_DRIVER=opengles2 testcontroller >"$log" 2>&1)
+	(cd "$dir" && SDL_RENDER_DRIVER=${TINYHAT_SDL_RENDER:-opengles2} testcontroller >"$log" 2>&1)
 	awk '/Mapping complete:/ { getline; sub(/^INFO: /, ""); print }' "$log" | while IFS= read -r mapping; do
 		guid=${mapping%%,*}
 		[ -f "$db" ] && grep -v "^$guid," "$db" >"$db.tmp" && mv -f "$db.tmp" "$db"
