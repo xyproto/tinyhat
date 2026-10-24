@@ -32,7 +32,7 @@ if [ -z "$game" ]; then
 		fi
 	fi
 fi
-export SDL_RENDER_DRIVER=opengles2,opengl,software
+export SDL_RENDER_DRIVER=${TINYHAT_SDL_RENDER:-opengles2,opengl,software}
 if [ -n "$emu" ]; then
 	exec "$emu" "$game"
 fi

@@ -1,3 +1,3 @@
 #!/bin/sh
-export SDL_RENDER_DRIVER=opengles2,opengl,software
+export SDL_RENDER_DRIVER=${TINYHAT_SDL_RENDER:-opengles2,opengl,software}
 exec nice -n -5 "$@"
