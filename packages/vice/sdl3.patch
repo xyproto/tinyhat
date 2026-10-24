@@ -1,0 +1,957 @@
+diff --git a/configure.ac b/configure.ac
+index 11f1863..f64cfd6 100755
+--- a/configure.ac
++++ b/configure.ac
+@@ -1377,7 +1377,7 @@ if test x"$check_sdl2" = "xyes"; then
+ 
+   found_sdl2=no
+ 
+-  PKG_CHECK_MODULES(SDL2, sdl2, [
++  PKG_CHECK_MODULES(SDL2, sdl3, [
+     use_sdl_prefix=no
+     found_sdl2=yes
+     VICE_CFLAGS="$VICE_CFLAGS $SDL2_CFLAGS"
+@@ -1407,8 +1407,8 @@ if test x"$check_sdl2" = "xyes"; then
+     dnl only do if audio needs to be checked
+     if test x"$check_sdl2audio" = "xyes"; then
+       AC_MSG_CHECKING(for SDL audio support)
+-      AC_TRY_LINK([#include <SDL_audio.h>],
+-                  [SDL_OpenAudio(NULL, NULL)],
++      AC_TRY_LINK([#include <SDL3/SDL.h>],
++                  [SDL_OpenAudioDeviceStream(0, NULL, NULL, NULL)],
+                   [AC_MSG_RESULT(yes);
+                     USE_SDL_AUDIO_SUPPORT="yes";
+                     AC_DEFINE(USE_SDL_AUDIO,,[Enable SDL sound support.])],
+@@ -1432,7 +1432,7 @@ if test x"$check_sdl2" = "xyes"; then
+       AC_DEFINE(HAVE_HWSCALE,,[Enable arbitrary window scaling])
+       HAVE_HWSCALE_SUPPORT="yes"
+ 
+-      AC_CHECK_FUNCS(SDL_NumJoysticks)
++      AC_DEFINE(HAVE_SDL_NUMJOYSTICKS,,[The SDL_NumJoysticks function is available])
+ 
+       dnl now that the SDL 2.0 UI support has been detected, define
+       dnl enable_sdl2ui and undefine the others to prevent checks
+@@ -1447,7 +1447,7 @@ if test x"$check_sdl2" = "xyes"; then
+ 
+       dnl Require SDL2_image
+       PKG_CHECK_MODULES(SDL2_IMAGE,
+-                        [SDL2_image >= 2.0.0],
++                        [sdl3-image >= 3.0.0],
+                         [have_sdl2_image=yes],
+                         [have_sdl2_image=no; AC_MSG_RESULT([no])])
+       if test x"$have_sdl2_image" = "xyes"; then
+diff --git a/src/arch/sdl/archdep.c b/src/arch/sdl/archdep.c
+index bd6d25b..0d59350 100644
+--- a/src/arch/sdl/archdep.c
++++ b/src/arch/sdl/archdep.c
+@@ -103,7 +103,7 @@ int archdep_init(int *argc, char **argv)
+     archdep_create_user_cache_dir();
+     archdep_create_user_config_dir();
+ 
+-    if (SDL_REALINIT(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) {
++    if (!SDL_REALINIT(SDL_INIT_VIDEO)) {
+         fprintf(stderr, "SDL error: %s\n", SDL_GetError());
+         return 1;
+     }
+diff --git a/src/arch/sdl/fullscreen.c b/src/arch/sdl/fullscreen.c
+index bc922bd..575ea5f 100644
+--- a/src/arch/sdl/fullscreen.c
++++ b/src/arch/sdl/fullscreen.c
+@@ -75,7 +75,7 @@ static int fullscreen_enable(struct video_canvas_s *canvas, int enable)
+                 switch (e.type) {
+                     case SDL_KEYDOWN:
+                     case SDL_KEYUP:
+-                        sdlkbd_release(SDL2x_to_SDL1x_Keys(e.key.keysym.sym), e.key.keysym.mod);
++                        sdlkbd_release(SDL2x_to_SDL1x_Keys(e.key.key), e.key.mod);
+                         break;
+                 }
+             }
+diff --git a/src/arch/sdl/icon.c b/src/arch/sdl/icon.c
+index 765348b..66ef754 100644
+--- a/src/arch/sdl/icon.c
++++ b/src/arch/sdl/icon.c
+@@ -33,15 +33,7 @@
+ #include "archdep.h"
+ #include "archdep_defs.h"
+ #include "vice_sdl.h"
+-#ifndef USE_SDL_PREFIX
+-# include <SDL_image.h>
+-#else
+-# ifdef USE_SDL2UI
+-#  include <SDL2/SDL_image.h>
+-# else
+-#  include <SDL/SDL_image.h>
+-# endif
+-#endif
++#include <SDL3_image/SDL_image.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <stdint.h>
+@@ -69,7 +61,6 @@ void sdl_ui_set_window_icon(SDL_Window *window)
+         return;
+     }
+ 
+-    IMG_Init(IMG_INIT_PNG);
+     surface = IMG_Load(path);
+     lib_free(path);
+ 
+@@ -107,7 +98,6 @@ void sdl_ui_set_window_icon(void *window)
+         return;
+     }
+ 
+-    IMG_Init(IMG_INIT_PNG);
+     surface = IMG_Load(path);
+     lib_free(path);
+ 
+diff --git a/src/arch/sdl/joy.c b/src/arch/sdl/joy.c
+index 8a9d6e4..d06210d 100644
+--- a/src/arch/sdl/joy.c
++++ b/src/arch/sdl/joy.c
+@@ -238,7 +238,7 @@ void joystick_arch_init(void)
+ {
+     sdljoy_log = log_open("SDLJoystick");
+ 
+-    if (SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
++    if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK)) {
+         log_error(sdljoy_log, "Subsystem init failed!");
+     }
+ 
+@@ -598,7 +598,7 @@ static joystick_mapping_t *sdljoy_get_mapping(SDL_Event e)
+         case SDL_JOYBUTTONDOWN:
+             joynum = sdljoy_get_joynum_for_event((VICE_SDL_JoystickID)e.jbutton.which);
+             if (joynum != -1) {
+-                retval = joy_get_button_mapping_not_setting_value(joynum, e.jbutton.button, e.jbutton.state);
++                retval = joy_get_button_mapping_not_setting_value(joynum, e.jbutton.button, e.jbutton.down);
+             }
+             break;
+         default:
+diff --git a/src/arch/sdl/menu_joystick.c b/src/arch/sdl/menu_joystick.c
+index 3402079..6712bf4 100644
+--- a/src/arch/sdl/menu_joystick.c
++++ b/src/arch/sdl/menu_joystick.c
+@@ -394,7 +394,7 @@ static UI_MENU_CALLBACK(custom_keyset_callback)
+         e = sdl_ui_poll_event("key", (const char *)param, -1, 0, 1, 1, 5);
+ 
+         if (e.type == SDL_KEYDOWN) {
+-            resources_set_int((const char *)param, (int)SDL2x_to_SDL1x_Keys(e.key.keysym.sym));
++            resources_set_int((const char *)param, (int)SDL2x_to_SDL1x_Keys(e.key.key));
+         }
+     } else {
+         return SDL_GetKeyName(SDL1x_to_SDL2x_Keys(previous));
+@@ -561,7 +561,7 @@ static UI_MENU_CALLBACK(custom_joymap_callback)
+                 sdljoy_set_joystick(e, 1 << pin);
+                 break;
+             case SDL_KEYDOWN:
+-                if (e.key.keysym.sym == SDLK_DELETE || e.key.keysym.sym == SDLK_BACKSPACE) {
++                if (e.key.key == SDLK_DELETE || e.key.key == SDLK_BACKSPACE) {
+                     joy_delete_pin_mapping(joystick_device, 1 << pin);
+                 }
+                 break;
+@@ -619,7 +619,7 @@ static UI_MENU_CALLBACK(custom_joymap_axis_callback)
+                 resources_set_int_sprintf("PaddlesInput%d", PADDLES_INPUT_MOUSE, port + 1);
+                 break;
+             case SDL_KEYDOWN:
+-                if (e.key.keysym.sym == SDLK_DELETE || e.key.keysym.sym == SDLK_BACKSPACE) {
++                if (e.key.key == SDLK_DELETE || e.key.key == SDLK_BACKSPACE) {
+                     joy_delete_pot_mapping(joystick_device, pot);
+                 }
+                 break;
+@@ -653,7 +653,7 @@ static UI_MENU_CALLBACK(custom_joy_misc_callback)
+                 sdljoy_set_extra(e, type);
+                 break;
+             case SDL_KEYDOWN:
+-                if (e.key.keysym.sym == SDLK_DELETE || e.key.keysym.sym == SDLK_BACKSPACE) {
++                if (e.key.key == SDLK_DELETE || e.key.key == SDLK_BACKSPACE) {
+                     joy_delete_extra_mapping(type);
+                 }
+                 break;
+diff --git a/src/arch/sdl/menu_settings.c b/src/arch/sdl/menu_settings.c
+index 6511ffc..8f67afc 100644
+--- a/src/arch/sdl/menu_settings.c
++++ b/src/arch/sdl/menu_settings.c
+@@ -475,7 +475,7 @@ static UI_MENU_CALLBACK(custom_ui_keyset_callback)
+         e = sdl_ui_poll_event("key", (const char *)param, -1, 0, 1, 1, 5);
+ 
+         if (e.type == SDL_KEYDOWN) {
+-            resources_set_int((const char *)param, (int)SDL2x_to_SDL1x_Keys(e.key.keysym.sym));
++            resources_set_int((const char *)param, (int)SDL2x_to_SDL1x_Keys(e.key.key));
+         }
+     } else {
+         return SDL_GetKeyName(SDL1x_to_SDL2x_Keys(previous));
+diff --git a/src/arch/sdl/ui.c b/src/arch/sdl/ui.c
+index 87fa027..2526803 100644
+--- a/src/arch/sdl/ui.c
++++ b/src/arch/sdl/ui.c
+@@ -132,11 +132,11 @@ void ui_handle_misc_sdl_event(SDL_Event e)
+ #ifdef SDL_DEBUG
+     int wh, ww;
+ #endif
+-    if (e.type == SDL_WINDOWEVENT) {
++    if (e.type >= SDL_EVENT_WINDOW_FIRST && e.type <= SDL_EVENT_WINDOW_LAST) {
+         SDL_Window* window = SDL_GetWindowFromID(e.window.windowID);
+         video_canvas_t* canvas = (video_canvas_t*)(SDL_GetWindowData(window, VIDEO_SDL2_CANVAS_INDEX_KEY));
+         DBG(("ui_handle_misc_sdl_event: SDL_WINDOWEVENT"));
+-        switch (e.window.event) {
++        switch (e.type) {
+             case SDL_WINDOWEVENT_RESIZED:
+ #ifdef SDL_DEBUG
+                 SDL_GetWindowSize(window, &ww, &wh);
+@@ -172,7 +172,7 @@ void ui_handle_misc_sdl_event(SDL_Event e)
+                 DBG(("ui_handle_misc_sdl_event: SDL_WINDOWEVENT_FOCUS_LOST"));
+                 keyboard_key_clear();
+                 break;
+-            case SDL_WINDOWEVENT_CLOSE:
++            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                 DBG(("ui_handle_misc_sdl_event: SDL_WINDOWEVENT_CLOSE"));
+                 ui_sdl_quit();
+                 break;
+@@ -208,13 +208,13 @@ void ui_handle_misc_sdl_event(SDL_Event e)
+                 resources_get_int("AutostartDropMode", &drop_mode);
+                 switch (drop_mode) {
+                     case AUTOSTART_DROP_MODE_ATTACH:
+-                        res = file_system_attach_disk(8, 0, e.drop.file);
++                        res = file_system_attach_disk(8, 0, (char *)e.drop.data);
+                         break;
+                     case AUTOSTART_DROP_MODE_LOAD:
+-                        res = autostart_autodetect(e.drop.file, NULL, 0, AUTOSTART_MODE_LOAD);
++                        res = autostart_autodetect((char *)e.drop.data, NULL, 0, AUTOSTART_MODE_LOAD);
+                         break;
+                     case AUTOSTART_DROP_MODE_RUN:
+-                        res = autostart_autodetect(e.drop.file, NULL, 0, AUTOSTART_MODE_RUN);
++                        res = autostart_autodetect((char *)e.drop.data, NULL, 0, AUTOSTART_MODE_RUN);
+                         break;
+                     default:
+                         break;
+@@ -225,8 +225,8 @@ void ui_handle_misc_sdl_event(SDL_Event e)
+             } else {
+                 /* try to load PSID file */
+ 
+-                if (machine_autodetect_psid(e.drop.file) < 0) {
+-                    ui_error("%s is not a valid SID file.", e.drop.file);
++                if (machine_autodetect_psid((char *)e.drop.data) < 0) {
++                    ui_error("%s is not a valid SID file.", (char *)e.drop.data);
+                 }
+                 if (psid_init_func != NULL && psid_play_func != NULL) {
+                     psid_init_func();
+@@ -266,11 +266,11 @@ void ui_dispatch_events(void)
+         switch (e.type) {
+             case SDL_KEYDOWN:
+                 ui_display_kbd_status(&e);
+-                sdlkbd_press(SDL2x_to_SDL1x_Keys(e.key.keysym.sym), e.key.keysym.mod);
++                sdlkbd_press(SDL2x_to_SDL1x_Keys(e.key.key), e.key.mod);
+                 break;
+             case SDL_KEYUP:
+                 ui_display_kbd_status(&e);
+-                sdlkbd_release(SDL2x_to_SDL1x_Keys(e.key.keysym.sym), e.key.keysym.mod);
++                sdlkbd_release(SDL2x_to_SDL1x_Keys(e.key.key), e.key.mod);
+                 break;
+ #ifdef HAVE_SDL_NUMJOYSTICKS
+             case SDL_JOYAXISMOTION:
+@@ -301,7 +301,7 @@ void ui_dispatch_events(void)
+             case SDL_MOUSEBUTTONDOWN:
+             case SDL_MOUSEBUTTONUP:
+                 if (_mouse_enabled) {
+-                    mouse_button((int)(e.button.button), (e.button.state == SDL_PRESSED));
++                    mouse_button((int)(e.button.button), (e.button.down));
+                 }
+                 break;
+             default:
+@@ -323,11 +323,11 @@ ui_menu_action_t ui_dispatch_events_for_menu_action(void)
+         switch (e.type) {
+             case SDL_KEYDOWN:
+                 ui_display_kbd_status(&e);
+-                retval = sdlkbd_press_for_menu_action(SDL2x_to_SDL1x_Keys(e.key.keysym.sym), e.key.keysym.mod);
++                retval = sdlkbd_press_for_menu_action(SDL2x_to_SDL1x_Keys(e.key.key), e.key.mod);
+                 break;
+             case SDL_KEYUP:
+                 ui_display_kbd_status(&e);
+-                retval = sdlkbd_release_for_menu_action(SDL2x_to_SDL1x_Keys(e.key.keysym.sym), e.key.keysym.mod);
++                retval = sdlkbd_release_for_menu_action(SDL2x_to_SDL1x_Keys(e.key.key), e.key.mod);
+                 break;
+ #ifdef HAVE_SDL_NUMJOYSTICKS
+             case SDL_JOYAXISMOTION:
+@@ -370,7 +370,7 @@ ui_menu_action_t ui_dispatch_events_for_menu_action(void)
+             case SDL_MOUSEBUTTONDOWN:
+             case SDL_MOUSEBUTTONUP:
+                 if (_mouse_enabled) {
+-                    mouse_button((int)(e.button.button), (e.button.state == SDL_PRESSED));
++                    mouse_button((int)(e.button.button), (e.button.down));
+                 }
+                 break;
+             default:
+@@ -417,44 +417,57 @@ static void set_crosshair_cursor(void)
+ 
+ static int mouse_pointer_hidden = 0;
+ 
++#ifdef USE_SDL2UI
++static void set_relative_mouse_mode(bool enabled)
++{
++    if (sdl_active_canvas && sdl_active_canvas->container && sdl_active_canvas->container->window) {
++        SDL_SetWindowRelativeMouseMode(sdl_active_canvas->container->window, enabled);
++    }
++}
++#endif
++
+ void ui_check_mouse_cursor(void)
+ {
+     if (_mouse_enabled && !lightpen_enabled && !sdl_menu_state) {
+         /* mouse grabbed, not in menu. grab input but do not show a pointer */
+-        SDL_ShowCursor(SDL_DISABLE);
++        SDL_HideCursor();
+ #ifndef USE_SDL2UI
+         SDL_WM_GrabInput(SDL_GRAB_ON);
+ #else
+         set_arrow_cursor();
+-        SDL_SetRelativeMouseMode(SDL_TRUE);
++        set_relative_mouse_mode(true);
+ #endif
+     } else if (lightpen_enabled && !sdl_menu_state) {
+         /* lightpen active, not in menu. show a pointer for the lightpen emulation */
+-        SDL_ShowCursor(SDL_ENABLE);
++        SDL_ShowCursor();
+ #ifndef USE_SDL2UI
+         SDL_WM_GrabInput(SDL_GRAB_OFF);
+ #else
+         set_crosshair_cursor();
+-        SDL_SetRelativeMouseMode(SDL_FALSE);
++        set_relative_mouse_mode(false);
+ #endif
+     } else {
+         if (sdl_active_canvas->fullscreenconfig->enable) {
+             /* fullscreen, never show pointer (we really never need it) */
+-            SDL_ShowCursor(SDL_DISABLE);
++            SDL_HideCursor();
+ #ifndef USE_SDL2UI
+             SDL_WM_GrabInput(SDL_GRAB_OFF);
+ #else
+             set_arrow_cursor();
+-            SDL_SetRelativeMouseMode(SDL_FALSE);
++            set_relative_mouse_mode(false);
+ #endif
+         } else {
+             /* windowed */
+-            SDL_ShowCursor(mouse_pointer_hidden ? SDL_DISABLE : SDL_ENABLE);
++            if (mouse_pointer_hidden) {
++                SDL_HideCursor();
++            } else {
++                SDL_ShowCursor();
++            }
+ #ifndef USE_SDL2UI
+             SDL_WM_GrabInput(SDL_GRAB_OFF);
+ #else
+             set_arrow_cursor();
+-            SDL_SetRelativeMouseMode(SDL_FALSE);
++            set_relative_mouse_mode(false);
+ #endif
+         }
+     }
+@@ -488,8 +501,8 @@ void ui_set_mouse_grab_window_title(int enabled)
+ 
+ void ui_autohide_mouse_cursor(void)
+ {
+-    int local_x, local_y;
+-    static int last_x = 0, last_y = 0;
++    float local_x, local_y;
++    static float last_x = 0, last_y = 0;
+     static int hidecounter = 60;
+     SDL_GetMouseState(&local_x, &local_y);
+     if ((local_x != last_x) || (local_y != last_y)) {
+diff --git a/src/arch/sdl/uihotkey.c b/src/arch/sdl/uihotkey.c
+index 45ac9b6..b1a0387 100644
+--- a/src/arch/sdl/uihotkey.c
++++ b/src/arch/sdl/uihotkey.c
+@@ -130,9 +130,9 @@ bool sdl_ui_hotkey_map(ui_menu_entry_t *item)
+     switch (e.type) {
+         case SDL_KEYDOWN:
+ #if 0
+-            sdlkbd_set_hotkey(SDL2x_to_SDL1x_Keys(e.key.keysym.sym), e.key.keysym.mod, item);
++            sdlkbd_set_hotkey(SDL2x_to_SDL1x_Keys(e.key.key), e.key.mod, item);
+ #endif
+-            if (!hotkeys_set_hotkey_from_menu(e.key.keysym.sym, e.key.keysym.mod, item)) {
++            if (!hotkeys_set_hotkey_from_menu(e.key.key, e.key.mod, item)) {
+                 return false;
+             }
+             break;
+diff --git a/src/arch/sdl/uimenu.c b/src/arch/sdl/uimenu.c
+index f2e9ea1..e4db01b 100644
+--- a/src/arch/sdl/uimenu.c
++++ b/src/arch/sdl/uimenu.c
+@@ -1159,7 +1159,7 @@ static int sdl_ui_readline_input(SDLKey *key, SDLMod *mod, Uint16 *c_uni)
+     *c_uni = 0;
+ 
+ #ifdef USE_SDL2UI
+-    SDL_StartTextInput();
++    SDL_StartTextInput(sdl_active_canvas->container->window);
+ #endif
+ 
+     do {
+@@ -1170,12 +1170,12 @@ static int sdl_ui_readline_input(SDLKey *key, SDLMod *mod, Uint16 *c_uni)
+ 
+         switch (e.type) {
+             case SDL_KEYDOWN:
+-                *key = SDL2x_to_SDL1x_Keys(e.key.keysym.sym);
+-                *mod = e.key.keysym.mod;
++                *key = SDL2x_to_SDL1x_Keys(e.key.key);
++                *mod = e.key.mod;
+ #ifdef USE_SDL2UI
+                 /* For SDL2x only get 'special' keys from keydown event. */
+                 for (i = 0; keytable_pc_special[i] != -1; ++i) {
+-                    SDLKey special = SDL2x_to_SDL1x_Keys(e.key.keysym.sym);
++                    SDLKey special = SDL2x_to_SDL1x_Keys(e.key.key);
+                     if (special == keytable_pc_special[i]) {
+                         *c_uni = special;
+                         got_key = 1;
+@@ -1192,8 +1192,8 @@ static int sdl_ui_readline_input(SDLKey *key, SDLMod *mod, Uint16 *c_uni)
+                 if (e.text.text[0] != 0) {
+                     *key = e.text.text[0];
+                     *c_uni = (Uint16)e.text.text[0];
+-                    SDL_StopTextInput();
+-                    SDL_StartTextInput();
++                    SDL_StopTextInput(sdl_active_canvas->container->window);
++                    SDL_StartTextInput(sdl_active_canvas->container->window);
+                     got_key = 1;
+                 }
+                 break;
+@@ -1250,7 +1250,7 @@ static int sdl_ui_readline_input(SDLKey *key, SDLMod *mod, Uint16 *c_uni)
+     } while (!got_key);
+ 
+ #ifdef USE_SDL2UI
+-    SDL_StopTextInput();
++    SDL_StopTextInput(sdl_active_canvas->container->window);
+ #endif
+ 
+     return got_key;
+diff --git a/src/arch/sdl/uipoll.c b/src/arch/sdl/uipoll.c
+index 1668585..eae0e71 100644
+--- a/src/arch/sdl/uipoll.c
++++ b/src/arch/sdl/uipoll.c
+@@ -88,7 +88,7 @@ SDL_Event sdl_ui_poll_event(const char *what, const char *target, VICE_SDL_Joyst
+         while (polling && SDL_PollEvent(&e)) {
+             switch (e.type) {
+                 case SDL_KEYDOWN:
+-                    if (allow_keyboard && (allow_modifier || is_not_modifier(e.key.keysym.sym))) {
++                    if (allow_keyboard && (allow_modifier || is_not_modifier(e.key.key))) {
+                         polling = 0;
+                     }
+                     break;
+diff --git a/src/arch/sdl/uistatusbar.c b/src/arch/sdl/uistatusbar.c
+index 987478c..f9f2422 100644
+--- a/src/arch/sdl/uistatusbar.c
++++ b/src/arch/sdl/uistatusbar.c
+@@ -514,7 +514,7 @@ void ui_display_kbd_status(SDL_Event *e)
+         memmove(kbdstatusbar_text, &kbdstatusbar_text[KBDSTATUSENTRYLEN],
+                 MAX_STATUSBAR_LEN - KBDSTATUSENTRYLEN);
+         memset(p + KBDSTATUSENTRYLEN, ' ', MAX_STATUSBAR_LEN - (KBDSTATUSENTRYLEN * 3));
+-        /* The SDL1 and SDL2 ports have different types for the e->key.keysym.sym
++        /* The SDL1 and SDL2 ports have different types for the e->key.key
+          * and SDLKey arguments. We could cast the arguments to fix the -Wformat
+          * warnings, but that might bite us in the arse in the future.
+          * So I use conditional compiling to make the issue clear.  -- compyx
+@@ -525,20 +525,20 @@ void ui_display_kbd_status(SDL_Event *e)
+         sprintf(p, "%c%03u>%03u %c%04x    ",
+ #endif
+                 (e->type == SDL_KEYUP) ? 'U' : 'D',
+-                e->key.keysym.sym & 0xffff,
+-                SDL2x_to_SDL1x_Keys(e->key.keysym.sym),
+-                ((e->key.keysym.sym & 0xffff0000) == 0x40000000) ? 'M' : ((e->key.keysym.sym & 0xffff0000) != 0x00000000) ? 'E' : ' ',
+-                e->key.keysym.mod);
++                e->key.key & 0xffff,
++                SDL2x_to_SDL1x_Keys(e->key.key),
++                ((e->key.key & 0xffff0000) == 0x40000000) ? 'M' : ((e->key.key & 0xffff0000) != 0x00000000) ? 'E' : ' ',
++                e->key.mod);
+ #ifdef USE_SDL2UI
+         log_message(LOG_DEFAULT, "%s %03d>%03d %c%04x",
+ #else
+         log_message(LOG_DEFAULT, "%s %03u>%03u %c%04x",
+ #endif
+                 (e->type == SDL_KEYUP) ? "release" : "press  ",
+-                e->key.keysym.sym & 0xffff,
+-                SDL2x_to_SDL1x_Keys(e->key.keysym.sym),
+-                ((e->key.keysym.sym & 0xffff0000) == 0x40000000) ? 'M' : ((e->key.keysym.sym & 0xffff0000) != 0x00000000) ? 'E' : ' ',
+-                e->key.keysym.mod);
++                e->key.key & 0xffff,
++                SDL2x_to_SDL1x_Keys(e->key.key),
++                ((e->key.key & 0xffff0000) == 0x40000000) ? 'M' : ((e->key.key & 0xffff0000) != 0x00000000) ? 'E' : ' ',
++                e->key.mod);
+     }
+ }
+ 
+diff --git a/src/arch/sdl/vice_sdl.h b/src/arch/sdl/vice_sdl.h
+index 7c20c14..85f1c3a 100644
+--- a/src/arch/sdl/vice_sdl.h
++++ b/src/arch/sdl/vice_sdl.h
+@@ -44,6 +44,41 @@
+ #endif
+ 
+ #ifdef USE_SDL2UI
++#  define SDL_ENABLE_OLD_NAMES
++#  include <SDL3/SDL.h>
++#  include <SDL3/SDL_opengl.h>
++#  define SDL_ENABLE 1
++#  define SDL_SetWindowData(w, key, p) SDL_SetPointerProperty(SDL_GetWindowProperties(w), (key), (p))
++#  define SDL_GetWindowData(w, key) SDL_GetPointerProperty(SDL_GetWindowProperties(w), (key), NULL)
++#  define SDL_WINDOW_FULLSCREEN_DESKTOP SDL_WINDOW_FULLSCREEN
++#  define SDL_DISABLE 0
++#  define SDL_QUERY -1
++static inline SDL_JoystickID vice_sdl3_joystick_id(int index)
++{
++    int count = 0;
++    SDL_JoystickID id = 0;
++    SDL_JoystickID *ids = SDL_GetJoysticks(&count);
++    if (ids != NULL && index >= 0 && index < count) {
++        id = ids[index];
++    }
++    SDL_free(ids);
++    return id;
++}
++static inline int SDL_NumJoysticks(void)
++{
++    int count = 0;
++    SDL_free(SDL_GetJoysticks(&count));
++    return count;
++}
++#  undef SDL_JoystickNameForIndex
++#  define SDL_JoystickNameForIndex(i) SDL_GetJoystickNameForID(vice_sdl3_joystick_id(i))
++#  undef SDL_JoystickOpen
++#  define SDL_JoystickOpen(i) SDL_OpenJoystick(vice_sdl3_joystick_id(i))
++#  undef SDL_JoystickGetDeviceInstanceID
++#  define SDL_JoystickGetDeviceInstanceID(i) vice_sdl3_joystick_id(i)
++#  define SDL_JoystickNumBalls(j) 0
++#  define SDL_JoystickEventState(state) SDL_SetJoystickEventsEnabled((state) == SDL_ENABLE)
++#elif 0
+ #  ifdef USE_SDL_PREFIX
+ #    include <SDL2/SDL.h>
+ #    include <SDL2/SDL_keycode.h>
+diff --git a/src/arch/sdl/video_sdl2.c b/src/arch/sdl/video_sdl2.c
+index 07c4416..620298d 100644
+--- a/src/arch/sdl/video_sdl2.c
++++ b/src/arch/sdl/video_sdl2.c
+@@ -279,6 +279,7 @@ int ui_set_rotate(int val, void *canvas)
+ static void recreate_canvas_textures(video_canvas_t *canvas)
+ {
+     SDL_Surface *surface;
++    SDL_ScaleMode scalemode;
+     int width, height;
+ 
+     if (!canvas || !canvas->container) {
+@@ -293,13 +294,6 @@ static void recreate_canvas_textures(video_canvas_t *canvas)
+     width = surface->w;
+     height = surface->h;
+ 
+-    /* This hint controls the scaling mode of textures created afterwards */
+-    if (canvas->videoconfig->glfilter == VIDEO_GLFILTER_BILINEAR) {
+-        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
+-    } else {
+-        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+-    }
+-
+     if (canvas->texture) {
+         SDL_DestroyTexture(canvas->texture);
+     }
+@@ -317,6 +311,10 @@ static void recreate_canvas_textures(video_canvas_t *canvas)
+         log_error(sdlvideo_log, "SDL_CreateTexture() failed on recreation: %s\n", SDL_GetError());
+         return;
+     }
++
++    scalemode = (canvas->videoconfig->glfilter == VIDEO_GLFILTER_BILINEAR) ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST;
++    SDL_SetTextureScaleMode(canvas->texture, scalemode);
++    SDL_SetTextureScaleMode(canvas->previous_frame_texture, scalemode);
+ }
+ 
+ 
+@@ -628,7 +626,7 @@ static video_container_t* sdl_container_create(int canvas_idx)
+     unsigned int window_width = 0, window_height = 0;
+     int window_x = 0, window_y = 0;
+     unsigned int width = 0, height = 0;
+-    SDL_RendererInfo info;
++    const char *drv_name = NULL;
+     video_canvas_t* canvas = sdl_canvaslist[canvas_idx];
+     video_container_t* container = NULL;
+     SDL_WindowFlags flags = sdl2_ui_generate_flags_for_canvas(canvas);
+@@ -663,7 +661,6 @@ static video_container_t* sdl_container_create(int canvas_idx)
+            window_width, window_height, window_x, window_y));
+ 
+     container->window = SDL_CreateWindow("",
+-                                         window_x, window_y,
+                                          window_width, window_height,
+                                          flags);
+     if (container->window == NULL) {
+@@ -683,11 +680,11 @@ static video_container_t* sdl_container_create(int canvas_idx)
+ 
+     /* Fill in the renderlist and render info string */
+     for (it = 0; it < renderamount; ++it) {
+-        SDL_GetRenderDriverInfo(it, &info);
++        const char *name = SDL_GetRenderDriver(it);
+ 
+-        strcat(rendername, info.name);
++        strcat(rendername, name);
+         strcat(rendername, " ");
+-        renderlist[it] = lib_strdup(info.name);
++        renderlist[it] = lib_strdup(name);
+     }
+     renderlist[it] = NULL;
+ 
+@@ -697,6 +694,7 @@ static video_container_t* sdl_container_create(int canvas_idx)
+         for (it = 0; it < renderamount; ++it) {
+             if (!strcmp(sdl2_renderer_name, renderlist[it])) {
+                 drv_index = it;
++                drv_name = SDL_GetRenderDriver(it);
+             }
+         }
+         if (drv_index == -1) {
+@@ -720,24 +718,9 @@ static video_container_t* sdl_container_create(int canvas_idx)
+        them again */
+     vsync = canvas->videoconfig->vsync;
+     log_message(sdlvideo_log, "VSync is %s.", vsync ? "enabled" : "disabled");
+-    if (vsync) {
+-        SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, "1", SDL_HINT_OVERRIDE);
+-        container->renderer = SDL_CreateRenderer(container->window,
+-                                                drv_index,
+-                                                SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+-    } else {
+-        SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, "0", SDL_HINT_OVERRIDE);
+-        container->renderer = SDL_CreateRenderer(container->window,
+-                                                drv_index,
+-                                                SDL_RENDERER_ACCELERATED);
+-    }
+-
+-    if (!container->renderer && drv_index == -1) {
+-        log_warning(sdlvideo_log, "SDL_CreateRenderer() failed. Falling back to basic renderer: %s", SDL_GetError());
+-        SDL_SetHintWithPriority(SDL_HINT_RENDER_VSYNC, "0", SDL_HINT_OVERRIDE);
+-        container->renderer = SDL_CreateRenderer(container->window,
+-                                                drv_index,
+-                                                0);
++    container->renderer = SDL_CreateRenderer(container->window, drv_name);
++    if (container->renderer) {
++        SDL_SetRenderVSync(container->renderer, vsync ? 1 : 0);
+     }
+ 
+     if (!container->renderer) {
+@@ -746,17 +729,16 @@ static video_container_t* sdl_container_create(int canvas_idx)
+         return NULL;
+     }
+ 
+-    SDL_GetRendererInfo(container->renderer, &info);
+-    log_message(sdlvideo_log, "SDL2 backend driver selected: %s", info.name);
++    log_message(sdlvideo_log, "SDL3 backend driver selected: %s", SDL_GetRendererName(container->renderer));
+     SDL_SetRenderDrawColor(container->renderer, 0, 0, 0, 255);
+     SDL_RenderClear(container->renderer);
+     SDL_RenderPresent(container->renderer);
+ 
+     /* Enable file/text drag and drop support */
+-    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
++    SDL_SetEventEnabled(SDL_EVENT_DROP_FILE, true);
+ 
+-    SDL_SetWindowPosition(container->window, window_x, window_y);
+     SDL_SetWindowSize(container->window, window_width, window_height);
++    SDL_SetWindowPosition(container->window, window_x, window_y);
+ 
+     /* Explicitly minimize if the window was created minimized */
+     if ((flags & SDL_WINDOW_MINIMIZED) != 0) {
+@@ -890,7 +872,7 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
+          * render of the menu shows the emu screen behind it!
+          */
+         SDL_SetTextureBlendMode(canvas->previous_frame_texture, SDL_BLENDMODE_NONE);
+-        SDL_RenderCopyEx(canvas->container->renderer, canvas->previous_frame_texture, NULL, NULL, angle, NULL, flip);
++        SDL_RenderTextureRotated(canvas->container->renderer, canvas->previous_frame_texture, NULL, NULL, angle, NULL, flip);
+         SDL_SetTextureBlendMode(canvas->texture, SDL_BLENDMODE_BLEND);
+     } else {
+         SDL_SetTextureBlendMode(canvas->texture, SDL_BLENDMODE_NONE);
+@@ -904,9 +886,10 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
+         int curr_w;
+         int curr_h;
+         float scale;
+-        SDL_Rect rect = {0, 0, 0, 0};
++        SDL_FRect rect = {0, 0, 0, 0};
+ 
+-        SDL_QueryTexture(canvas->texture, NULL, NULL, &tw, &th);
++        tw = canvas->texture->w;
++        th = canvas->texture->h;
+         SDL_GetWindowSize(canvas->container->window, &curr_w, &curr_h);
+ 
+         scale = (double)curr_h / (double)tw;
+@@ -919,9 +902,9 @@ void video_canvas_refresh(struct video_canvas_s *canvas,
+         rect.h = tw * scale;
+ 
+         DBG(("video_canvas_refresh angle:%f scale:%f", angle, scale));
+-        SDL_RenderCopyEx(canvas->container->renderer, canvas->texture, NULL, &rect, angle, NULL, flip);
++        SDL_RenderTextureRotated(canvas->container->renderer, canvas->texture, NULL, &rect, angle, NULL, flip);
+     } else {
+-        SDL_RenderCopyEx(canvas->container->renderer, canvas->texture, NULL, NULL, angle, NULL, flip);
++        SDL_RenderTextureRotated(canvas->container->renderer, canvas->texture, NULL, NULL, angle, NULL, flip);
+     }
+ 
+     SDL_RenderPresent(canvas->container->renderer);
+@@ -955,7 +938,7 @@ int video_canvas_set_palette(struct video_canvas_s *canvas, struct palette_s *pa
+ {
+     unsigned int i, col = 0;
+     video_render_color_tables_t *color_tables = &canvas->videoconfig->color_tables;
+-    SDL_PixelFormat *fmt;
++    const SDL_PixelFormatDetails *fmt;
+ 
+     DBG(("video_canvas_set_palette canvas: %p (index:%d)", canvas, canvas->index));
+ 
+@@ -969,7 +952,7 @@ int video_canvas_set_palette(struct video_canvas_s *canvas, struct palette_s *pa
+         log_error(LOG_DEFAULT, "FIXME: video_canvas_set_palette() canvas->screen is NULL");
+         return 0;
+     }
+-    fmt = canvas->screen->format;
++    fmt = SDL_GetPixelFormatDetails(canvas->screen->format);
+ 
+     /* FIXME: needs further investigation how it can reach here without being fully initialized */
+     /* NOTE: check removed in r44823 - with the check x128 can not properly set
+@@ -988,14 +971,14 @@ int video_canvas_set_palette(struct video_canvas_s *canvas, struct palette_s *pa
+ 
+     for (i = 0; i < palette->num_entries; i++) {
+         if (canvas->depth % 8 == 0) {
+-            col = SDL_MapRGB(fmt, palette->entries[i].red, palette->entries[i].green, palette->entries[i].blue);
++            col = SDL_MapRGB(fmt, NULL, palette->entries[i].red, palette->entries[i].green, palette->entries[i].blue);
+         }
+         video_render_setphysicalcolor(canvas->videoconfig, i, col, canvas->depth);
+     }
+ 
+     if (canvas->depth % 8 == 0) {
+         for (i = 0; i < 256; i++) {
+-            video_render_setrawrgb(color_tables, i, SDL_MapRGB(fmt, (Uint8)i, 0, 0), SDL_MapRGB(fmt, 0, (Uint8)i, 0), SDL_MapRGB(fmt, 0, 0, (Uint8)i));
++            video_render_setrawrgb(color_tables, i, SDL_MapRGB(fmt, NULL, (Uint8)i, 0, 0), SDL_MapRGB(fmt, NULL, 0, (Uint8)i, 0), SDL_MapRGB(fmt, NULL, 0, 0, (Uint8)i));
+         }
+         video_render_initraw(canvas->videoconfig);
+     }
+@@ -1020,7 +1003,7 @@ static void sdl_correct_logical_size(void)
+                 corrected_height = canvas->height;
+             }
+             DBG(("sdl_correct_logical_size w:%d h:%d", corrected_width, corrected_height));
+-            SDL_RenderSetLogicalSize(container->renderer, corrected_width, corrected_height);
++            SDL_SetRenderLogicalPresentation(container->renderer, corrected_width, corrected_height, SDL_LOGICAL_PRESENTATION_LETTERBOX);
+         }
+     }
+ }
+@@ -1038,7 +1021,7 @@ static void sdl_correct_logical_and_minimum_size(void)
+             } else {
+                 int width, height;
+                 sdl_correct_logical_size();
+-                SDL_RenderGetLogicalSize(container->renderer, &width, &height);
++                SDL_GetRenderLogicalPresentation(container->renderer, &width, &height, NULL);
+                 DBG(("sdl_correct_logical_and_minimum_size w:%d h:%d", width, height));
+                 SDL_SetWindowMinimumSize(container->window, width, height);
+             }
+@@ -1100,7 +1083,7 @@ void video_canvas_resize(struct video_canvas_s *canvas, char resize_canvas)
+     if (canvas->container->renderer) {
+         SDL_Surface *new_screen;
+ 
+-        new_screen = SDL_CreateRGBSurface(0, width, height, sdl_bitdepth, rmask, gmask, bmask, amask);
++        new_screen = SDL_CreateSurface(width, height, SDL_GetPixelFormatForMasks(sdl_bitdepth, rmask, gmask, bmask, amask));
+         if (!new_screen) {
+             log_error(sdlvideo_log, "SDL_CreateRGBSurface() failed: %s\n", SDL_GetError());
+             return;
+@@ -1152,7 +1135,7 @@ void sdl_video_restore_size(void)
+         int w, h;
+ 
+         if (container->renderer) {
+-            SDL_RenderGetLogicalSize(container->renderer, &w, &h);
++            SDL_GetRenderLogicalPresentation(container->renderer, &w, &h, NULL);
+             SDL_SetWindowSize(container->window, w, h);
+         }
+     }
+@@ -1415,8 +1398,8 @@ int sdl_ui_get_mouse_state(int *px, int *py, unsigned int *pbuttons)
+         return 0;
+     }
+ 
+-    buttons = SDL_GetMouseState(&x, &y);
+-    SDL_RenderGetLogicalSize(renderer, &w, &h);
++    buttons = SDL_GetMouseState(NULL, NULL);
++    SDL_GetRenderLogicalPresentation(renderer, &w, &h, NULL);
+     x = last_mouse_x;
+     y = last_mouse_y;
+     ratio = (double) w / (double)sdl_active_canvas->width;
+@@ -1438,8 +1421,12 @@ int sdl_ui_get_mouse_state(int *px, int *py, unsigned int *pbuttons)
+ void sdl_ui_consume_mouse_event(SDL_Event *event)
+ {
+     if (event && event->type == SDL_MOUSEMOTION) {
+-        last_mouse_x = event->motion.x;
+-        last_mouse_y = event->motion.y;
++        SDL_Event converted = *event;
++        if (sdl_active_canvas && sdl_active_canvas->container && sdl_active_canvas->container->renderer) {
++            SDL_ConvertEventToRenderCoordinates(sdl_active_canvas->container->renderer, &converted);
++        }
++        last_mouse_x = (int)converted.motion.x;
++        last_mouse_y = (int)converted.motion.y;
+     }
+     ui_autohide_mouse_cursor();
+ }
+diff --git a/src/arch/sdl/vkbd.c b/src/arch/sdl/vkbd.c
+index 410486a..97ea726 100644
+--- a/src/arch/sdl/vkbd.c
++++ b/src/arch/sdl/vkbd.c
+@@ -220,9 +220,9 @@ static void sdl_vkbd_key_map(void)
+             if (!unmap) {
+                 vkbd_shiftflags = (1 << 3);
+                 sdl_ui_external_menu_activate((ui_menu_entry_t *)shift_menu);
+-                keyboard_set_map_any((signed long)SDL2x_to_SDL1x_Keys(e.key.keysym.sym), mr, mc, vkbd_shiftflags);
++                keyboard_set_map_any((signed long)SDL2x_to_SDL1x_Keys(e.key.key), mr, mc, vkbd_shiftflags);
+             } else {
+-                keyboard_set_unmap_any((signed long)SDL2x_to_SDL1x_Keys(e.key.keysym.sym));
++                keyboard_set_unmap_any((signed long)SDL2x_to_SDL1x_Keys(e.key.key));
+             }
+             break;
+ #ifdef HAVE_SDL_NUMJOYSTICKS
+diff --git a/src/arch/shared/sounddrv/soundsdl.c b/src/arch/shared/sounddrv/soundsdl.c
+index 412fe49..41a259f 100644
+--- a/src/arch/shared/sounddrv/soundsdl.c
++++ b/src/arch/shared/sounddrv/soundsdl.c
+@@ -45,6 +45,8 @@ static log_t sdlaudio_log = LOG_DEFAULT;
+ 
+ static int16_t *sdl_buf = NULL;
+ static SDL_AudioSpec sdl_spec;
++static SDL_AudioStream *sdl_stream = NULL;
++static int sdl_samples = 0;
+ static volatile int sdl_inptr = 0;
+ static volatile int sdl_outptr = 0;
+ static volatile int sdl_full = 0;
+@@ -82,6 +84,22 @@ static void sdl_callback(void *userdata, Uint8 *stream, int len)
+     }
+ }
+ 
++static void sdl_stream_callback(void *userdata, SDL_AudioStream *stream, int additional, int total)
++{
++    Uint8 buf[4096];
++
++    while (additional > 0) {
++        int len = additional < (int)sizeof(buf) ? additional : (int)sizeof(buf);
++        len &= ~1;
++        if (len <= 0) {
++            break;
++        }
++        sdl_callback(userdata, buf, len);
++        SDL_PutAudioStreamData(stream, buf, len);
++        additional -= len;
++    }
++}
++
+ #ifdef USE_SDL2UI
+ static void printdrivers(void)
+ {
+@@ -99,6 +117,7 @@ static int sdl_init(const char *param, int *speed,
+                     int *fragsize, int *fragnr, int *channels)
+ {
+     SDL_AudioSpec spec;
++    char hint[16];
+     int nr;
+ 
+     sdlaudio_log = log_open("SDLAudio");
+@@ -109,14 +128,11 @@ static int sdl_init(const char *param, int *speed,
+ 
+     memset(&spec, 0, sizeof(spec));
+     spec.freq = *speed;
+-    spec.format = AUDIO_S16SYS;
+-    spec.channels = (Uint8)*channels;
+-#ifdef USE_SDL2UI
+-    spec.samples = (Uint16)(*fragsize * 2);
+-#else
+-    spec.samples = (Uint16)((*fragsize < 512) ? 1024 : (*fragsize * 2));
+-#endif
+-    spec.callback = sdl_callback;
++    spec.format = SDL_AUDIO_S16;
++    spec.channels = *channels;
++    sdl_samples = *fragsize;
++    snprintf(hint, sizeof(hint), "%d", sdl_samples);
++    SDL_SetHint(SDL_HINT_AUDIO_DEVICE_SAMPLE_FRAMES, hint);
+ 
+     /* NOTE: on some backends the first (input/desired) spec passed to SDL_OpenAudio
+      *       may also get modified! because of this we can not use the spec struct
+@@ -129,8 +145,15 @@ static int sdl_init(const char *param, int *speed,
+      *       see eg http://forums.libsdl.org/viewtopic.php?t=9248&sid=92130a5b4cfd7fd713e076e122d7e2a1
+      *       to get an idea of the whole mess
+      */
+-    if (SDL_OpenAudio(&spec, NULL)) {
+-        log_message(sdlaudio_log, "SDLAudio: SDL_OpenAudio() failed: %s",
++    if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
++        log_message(sdlaudio_log, "SDLAudio: SDL_InitSubSystem() failed: %s",
++                SDL_GetError());
++        return 1;
++    }
++
++    sdl_stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, sdl_stream_callback, NULL);
++    if (sdl_stream == NULL) {
++        log_message(sdlaudio_log, "SDLAudio: SDL_OpenAudioDeviceStream() failed: %s",
+                 SDL_GetError());
+         return 1;
+     }
+@@ -147,33 +170,27 @@ static int sdl_init(const char *param, int *speed,
+             SDL_GetCurrentAudioDriver());
+ #endif
+ 
+-    if ((sdl_spec.format != AUDIO_S16 && sdl_spec.format != AUDIO_S16MSB)
+-            || sdl_spec.channels != *channels) {
+-        SDL_CloseAudio();
+-        log_warning(sdlaudio_log, "SDLAudio: got invalid audio spec.");
+-        return 1;
+-    }
+-    log_verbose(sdlaudio_log, "SDLAudio: got proper audio spec.");
+ 
+ 
+     /* recalculate the number of fragments since the frag size might
+      * have changed and we want to keep approximately the same
+      * buffersize */
+-    nr = ((*fragnr) * (*fragsize)) / sdl_spec.samples;
++    nr = ((*fragnr) * (*fragsize)) / sdl_samples;
+ 
+-    sdl_len = sdl_spec.samples * nr;
++    sdl_len = sdl_samples * nr;
+     sdl_inptr = sdl_outptr = sdl_full = 0;
+     sdl_buf = lib_calloc((size_t)sdl_len, sizeof(int16_t));
+ 
+     if (!sdl_buf) {
+-        SDL_CloseAudio();
++        SDL_DestroyAudioStream(sdl_stream);
++        sdl_stream = NULL;
+         return 1;
+     }
+ 
+     *speed = sdl_spec.freq;
+-    *fragsize = sdl_spec.samples;
++    *fragsize = sdl_samples;
+     *fragnr = nr;
+-    SDL_PauseAudio(0);
++    SDL_ResumeAudioStreamDevice(sdl_stream);
+     return 0;
+ }
+ 
+@@ -203,7 +220,7 @@ static int sdl_write(int16_t *pbuf, size_t nr)
+     total = 0;
+ 
+ #ifdef WORDS_BIGENDIAN
+-    if (sdl_spec.format != AUDIO_S16MSB) {
++    if (sdl_spec.format != SDL_AUDIO_S16BE) {
+         /* Swap bytes if we're on a big-endian machine, like the Macintosh */
+         swab(pbuf, pbuf, sizeof(int16_t) * nr);
+     }
+@@ -260,7 +277,10 @@ static int sdl_bufferspace(void)
+ 
+ static void sdl_close(void)
+ {
+-    SDL_CloseAudio();
++    if (sdl_stream != NULL) {
++        SDL_DestroyAudioStream(sdl_stream);
++        sdl_stream = NULL;
++    }
+     lib_free(sdl_buf);
+     sdl_buf = NULL;
+     sdl_inptr = sdl_outptr = sdl_len = sdl_full = 0;
+@@ -268,14 +288,14 @@ static void sdl_close(void)
+ 
+ static int sdl_suspend(void)
+ {
+-    SDL_PauseAudio(1);
++    SDL_PauseAudioStreamDevice(sdl_stream);
+     sdl_full = 0;
+     return 0;
+ }
+ 
+ static int sdl_resume(void)
+ {
+-    SDL_PauseAudio(0);
++    SDL_ResumeAudioStreamDevice(sdl_stream);
+     return 0;
+ }
+ 
