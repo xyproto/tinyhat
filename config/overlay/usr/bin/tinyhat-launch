@@ -1,7 +1,12 @@
 #!/bin/sh
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
 name=
+if [ "$1" = -n ]; then
+	name=$2
+	shift 2
+fi
 for f in /usr/share/applications/*.desktop; do
+	[ -n "$name" ] && break
 	if grep -qxF "Exec=$*" "$f"; then
 		name=$(sed -n 's/^Name=//p' "$f" | head -n 1)
 		break
