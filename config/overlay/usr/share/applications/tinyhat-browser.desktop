@@ -3,6 +3,6 @@ Type=Application
 Name=Web browser
 Icon=web-browser
 Comment=NetSurf web browser
-Exec=netsurf-gtk3
+Exec=tinyhat-launch -n NetSurf netsurf-gtk3
 Terminal=false
 Categories=Network;WebBrowser;
