@@ -1,5 +1,6 @@
 #!/bin/sh
-dir=$HOME/Books
+dir=$HOME/books
+[ -d "$HOME/Books" ] && [ ! -e "$dir" ] && mv "$HOME/Books" "$dir"
 mkdir -p "$dir"
-[ -e "$dir/book.md" ] || cp /etc/skel/Books/book.md "$dir/book.md"
+[ -e "$dir/book.md" ] || cp /etc/skel/books/book.md "$dir/book.md"
 cd "$dir" && IMAGEPREVIEW_SIXEL=0 exec foot -T "Writing a book" o --book-mode-text book.md
