@@ -26,5 +26,6 @@ package() {
     rmdir "$pkgdir/usr/man"
   fi
   [ -e "$pkgdir/usr/bin/qe" ] || ln -s qemacs "$pkgdir/usr/bin/qe"
+  ln -s qe "$pkgdir/usr/bin/emacs"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
