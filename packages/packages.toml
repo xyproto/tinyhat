@@ -2823,12 +2823,6 @@ nvchecker = "[sbsigntools]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub
 [scummvm]
 source = "sources"
 
-[sdl2-compat]
-source = "sources"
-
-[sdl2_image]
-source = "sources"
-
 [sdl3]
 source = "sources"
 

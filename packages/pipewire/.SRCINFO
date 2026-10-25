@@ -46,7 +46,6 @@ pkgbase = pipewire
 	makedepends = readline
 	makedepends = rtkit
 	makedepends = sbc
-	makedepends = sdl2
 	makedepends = spandsp
 	makedepends = systemd
 	makedepends = valgrind

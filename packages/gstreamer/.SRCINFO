@@ -143,7 +143,6 @@ pkgbase = gstreamer
 	makedepends = rtmpdump
 	makedepends = rust
 	makedepends = sbc
-	makedepends = sdl2
 	makedepends = shaderc
 	makedepends = soundtouch
 	makedepends = spandsp

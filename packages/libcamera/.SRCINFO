@@ -21,7 +21,6 @@ pkgbase = libcamera
 	makedepends = python-jinja
 	makedepends = python-ply
 	makedepends = python-pyyaml
-	makedepends = sdl2
 	makedepends = systemd
 	source = git+https://git.libcamera.org/libcamera/libcamera.git#tag=v0.7.2
 	source = libcamera-fix-python3.14-macro-redefinition.patch

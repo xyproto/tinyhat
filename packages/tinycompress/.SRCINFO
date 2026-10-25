@@ -6,10 +6,8 @@ pkgbase = tinycompress
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause OR LGPL-2.1-only
-	makedepends = ffmpeg
 	makedepends = git
 	depends = glibc
-	optdepends = ffmpeg: fcplay utility
 	provides = libtinycompress.so
 	options = debug
 	source = git+https://github.com/alsa-project/tinycompress#tag=v1.2.16

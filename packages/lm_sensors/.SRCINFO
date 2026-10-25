@@ -26,7 +26,5 @@ pkgbase = lm_sensors
 	sha256sums = 5d17a366b175cf9cb4bb0115c030d4b8d91231546f713784a74935b6e533da9f
 	sha256sums = 2638cd363e60f8d36bcac468f414a6ba29a1b5599f40fc651ca953858c8429d7
 	sha256sums = 23bebef4c250f8c0aaba2c75fd3d2c8ee9473cc91a342161a9f5b3a34ddfa9e5
-	optdepends_i686 = rrdtool: for logging with sensord
-	makedepends_i686 = rrdtool
 
 pkgname = lm_sensors

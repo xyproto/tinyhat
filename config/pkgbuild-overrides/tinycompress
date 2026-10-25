@@ -1,0 +1,5 @@
+makedepends=(${makedepends[@]/ffmpeg/})
+optdepends=()
+eval "$(
+  declare -f build | sed 's/--enable-fcplay/--disable-fcplay/'
+)"

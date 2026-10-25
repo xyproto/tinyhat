@@ -40,4 +40,7 @@ if [ "$CARCH" = 'i486' ]; then
   )"  
 fi
 
+makedepends=(${makedepends[@]/sdl2-compat/})
+optdepends=(${optdepends[@]/sdl2-compat*/})
+
 unset -f pkgver

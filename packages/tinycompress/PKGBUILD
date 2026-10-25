@@ -51,4 +51,10 @@ package() {
 
 # vim:set sw=2 sts=-1 et:
 
+makedepends=(${makedepends[@]/ffmpeg/})
+optdepends=()
+eval "$(
+  declare -f build | sed 's/--enable-fcplay/--disable-fcplay/'
+)"
+
 unset -f pkgver
