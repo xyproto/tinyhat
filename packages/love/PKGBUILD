@@ -22,6 +22,18 @@ build() {
 
 package() {
   DESTDIR="$pkgdir" ninja -C build install
+  install -Dm755 "$pkgdir/usr/bin/love" "$pkgdir/usr/lib/love/love"
+  cat >"$pkgdir/usr/bin/love" <<'EOF'
+#!/bin/sh
+ver() { IFS=. read -r major minor <<V
+$1
+V
+  echo $((${major:-0} * 100 + ${minor:-0})); }
+if [ -n "$TINYHAT_GL_VERSION" ] && [ "$(ver "$TINYHAT_GL_VERSION")" -lt 303 ] && [ "$(ver "${TINYHAT_GLES_VERSION:-0.0}")" -lt 300 ]; then
+  export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe
+fi
+exec /usr/lib/love/love "$@"
+EOF
   install -Dm0644 love/license.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
 
