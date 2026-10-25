@@ -1471,5 +1471,6 @@ if [ "$CARCH" = 'x32' ]; then
     declare -f package_gst-devtools | sed '\,usr/bin/gst-dots-viewer,d'
   )"
 fi
+makedepends=(${makedepends[@]/sdl2/})
 
 unset -f pkgver

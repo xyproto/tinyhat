@@ -191,6 +191,11 @@ def seed_closure(seed, name, prefs, cache):
     return cache[name]
 
 
+def local_first(idx, name):
+    p = idx["i686"][0].get(name) if name else None
+    return p is not None and name not in SEED_ONLY and (p["sub"] == "tinyhat" or PKGCONF.get(p["base"], {}).get("build", False))
+
+
 def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozenset(), image=frozenset()):
     hard, soft = [], []
     for dep in all_deps(info):
@@ -198,7 +203,7 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
         localname = pkg.lookup(idx["i686"], dep, prefs, set())
         if localname in prebuilt and seedname is not None:
             continue
-        if seedname is None:
+        if seedname is None or local_first(idx, localname):
             wanted, out = [localname], hard
         else:
             wanted, out = sorted(seed_closure(seed, seedname, prefs, cache) & broken), hard
@@ -542,8 +547,38 @@ def cmd_mk():
     print("\n".join(lines))
 
 
+def image_bases():
+    path = os.path.join(TOP, "build", "pkgs.mk")
+    if not os.path.exists(path):
+        return None
+    deps, cur = {}, None
+    text = open(path).read()
+    for line in text.splitlines():
+        m = re.match(r"^\$\(B\)/pkg/(?:i686|x32)/([^:\s]+):(.*)$", line)
+        if m:
+            cur = m.group(1)
+            deps.setdefault(cur, set()).update(re.findall(r"\$\(B\)/pkg/(?:i686|x32)/([^\s)]+)", m.group(2)))
+        elif cur and line.startswith("\t"):
+            deps[cur].update(re.findall(r"(?:i686|x32|sysroot)/([A-Za-z0-9@._+-]+)", line))
+        else:
+            cur = None
+    roots = set()
+    for v in re.findall(r"^ROOTFS_\w*STAMPS := (.*)$", text, re.M):
+        roots |= {x.rsplit("/", 1)[1] for x in v.split()}
+    with open(os.path.join(TOP, "Makefile")) as f:
+        roots |= set(re.findall(r"pkg/(?:i686|x32)/([a-z0-9][A-Za-z0-9@._+-]*)", f.read()))
+    need, todo = set(), list(roots)
+    while todo:
+        b = todo.pop()
+        if b not in need:
+            need.add(b)
+            todo += deps.get(b, ())
+    return need
+
+
 def cmd_seed():
     infos = load()
+    used = image_bases()
     names, provided, _ = local_index(infos)
     localdeps = read_localdeps()
     db = seed_index()
@@ -551,9 +586,13 @@ def cmd_seed():
     prefs = pkg.parse_prefs(os.path.join(CONFIG, "providers.txt"))
     seed = list(SEED_BASE)
     for info in infos:
+        if used is not None and info["base"] not in used:
+            continue
         skip = set(info["pkgnames"]) | set(localdeps.get(info["base"], []))
         for dep in all_deps(info):
             if info["sub"] == "tinyhat" and (dep in names or dep in provided):
+                continue
+            if local_first(idx, pkg.lookup(idx["i686"], dep, prefs, set())):
                 continue
             if pkg.lookup(db, dep, prefs, set()) is None and pkg.lookup(idx["i686"], dep, prefs, set()) is not None:
                 continue

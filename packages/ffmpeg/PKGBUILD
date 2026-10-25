@@ -439,5 +439,6 @@ if [ "$CARCH" = 'x32' ]; then
       '
   )"
 fi
+depends=(${depends[@]/sdl2/})
 
 unset -f pkgver

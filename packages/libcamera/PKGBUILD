@@ -250,7 +250,7 @@ if [ "$CARCH" = 'i486' ]; then
 fi
 
 pkgname=(libcamera libcamera-ipa)
-makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -E '^(qt6-.*|gst-plugins-base|gstreamer|python-sphinx.*|doxygen|texlive.*|pybind11)$'))
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -E '^(qt6-.*|gst-plugins-base|gstreamer|python-sphinx.*|doxygen|texlive.*|pybind11|sdl2)$'))
 eval "$(
   declare -f build | sed 's/-D test=true/-D test=false -D qcam=disabled -D cam=disabled -D lc-compliance=disabled -D gstreamer=disabled -D pycamera=disabled -D documentation=disabled/'
   declare -f package_libcamera | sed -E 's/_pick (\$pkgbase-(docs|tools)|gst-plugin-\$pkgbase|python-\$pkgbase) [^;)]*/:/'

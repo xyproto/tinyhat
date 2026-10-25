@@ -41,6 +41,7 @@ extra clang 15.0.7-8.0 clang-15.0.7-8.0-i686.pkg.tar.zst 49fb22d579938de30032bce
 core coreutils 9.11-2.0 coreutils-9.11-2.0-i686.pkg.tar.zst 8754c113d7e886e9795fbfe60e39c75bb0184729b33ae591f0d245cbbc529fe2
 core cryptsetup 2.7.2-1.1 cryptsetup-2.7.2-1.1-i686.pkg.tar.zst 4cdbd1e72bf900bb1b5a66d1638f51bec1323c6e77a62fa27e9ca1482cd0fdcb
 core curl 8.22.0-1.1 curl-8.22.0-1.1-i686.pkg.tar.zst 3556a67de75be7031e874ef4a9ec91909142964fd783ea27579ede58fd941b15
+extra dav1d 1.2.1-1.0 dav1d-1.2.1-1.0-i686.pkg.tar.zst eae15027d584903069e520e4eac63f3487bc4dc481434fac8f43961264587d79
 core dbus 1.14.10-2.1 dbus-1.14.10-2.1-i686.pkg.tar.zst fe1e491ea1411d823ef0733d442cc68781aa6c03399ca9704e835846316bbea3
 core dbus-broker 36-1.0 dbus-broker-36-1.0-i686.pkg.tar.zst f042684e87118e20085238752e54e4835f4116c0bc1528561ca11d46d2e8f2dd
 core dbus-broker-units 36-1.0 dbus-broker-units-36-1.0-i686.pkg.tar.zst 9402c7f69929bddf8b0ebfa66c57219ee59878d7f1774b91efcfdfa16374199c
@@ -129,6 +130,7 @@ extra libbsd 0.12.2-2.0 libbsd-0.12.2-2.0-i686.pkg.tar.zst 2e1d5aeeb10f4734d96a0
 extra libcamera 0.0.4-1.3 libcamera-0.0.4-1.3-i686.pkg.tar.zst 154a84c194b39676e60c969defe0c6054fd297ea6ed4ad4dea5f60ae1b9b9428
 core libcap 2.78-1.0 libcap-2.78-1.0-i686.pkg.tar.zst 5b80e8ead97bc0f2617d449d7303334131e9f03c588c1f80e2925cdc9fb97180
 core libcap-ng 0.8.5-1.0 libcap-ng-0.8.5-1.0-i686.pkg.tar.zst 932b49ab8bc7874742a0b695e53d0f3d5b0bd87e055a63b894b713aa6314334a
+extra libclc 15.0.7-1.3 libclc-15.0.7-1.3-any.pkg.tar.zst 28e08ce0efaf4f8ba1660ca2af50c25699fd878858e10b2f8edc0ad498743c68
 extra libcloudproviders 0.4.1-1.0 libcloudproviders-0.4.1-1.0-i686.pkg.tar.zst dc8f0d69622ad1436357b17d44b3c36a5d71a29536166b0f6daad80f936e1bdb
 extra libcolord 1.4.8-1.0 libcolord-1.4.8-1.0-i686.pkg.tar.zst affdc4b332d004b537983a60a8bd114042c5bbdfb4987e316f05d857ba2de47f
 extra libdaemon 0.14-6.0 libdaemon-0.14-6.0-i686.pkg.tar.zst fea7d473505d5bed22a9143d53030012eb0d44a9098c95459d55f41c03a66b18
@@ -298,6 +300,7 @@ extra shared-mime-info 2.5.1-2.0 shared-mime-info-2.5.1-2.0-i686.pkg.tar.zst d03
 extra sl 5.05-6.0 sl-5.05-6.0-i686.pkg.tar.zst 93e2058d94193f422d7fac62a51dddd4151904d07f53f294db60f7e812358f8b
 extra slang 2.3.3-4.0 slang-2.3.3-4.0-i686.pkg.tar.zst 57e3778d13f66fa7b6c2cab691712133770bea13a0c58166cbe92cc0e201d041
 extra sord 0.16.22-1.0 sord-0.16.22-1.0-i686.pkg.tar.zst 02031f2e4342d0faaafd6e78b55860237c3a4d9ecd4f64ea8e1f0ceacee891b4
+extra spirv-tools 1:1.4.341.0-2.0 spirv-tools-1:1.4.341.0-2.0-i686.pkg.tar.zst 47a7f3341981d1596b66e0ad84838d2a29d95fd7a1c6374a1aebfeed54278fee
 core sqlite 3.53.4-1.0 sqlite-3.53.4-1.0-i686.pkg.tar.zst ab0e35e3e6a92470bc053262254f3e901044c409b4f4d4e416fea6200237cbd1
 extra sratom 0.6.22-1.0 sratom-0.6.22-1.0-i686.pkg.tar.zst 012a69d785b565aaafd1e5f7c15224e2ee4bddffe4802f25e1864024545327da
 extra strace 6.10-1.0 strace-6.10-1.0-i686.pkg.tar.zst 69bfd3a2255f52a0bd184e0afd7cd648f71fab3d69a7ba22ec2e115c1fbe3976

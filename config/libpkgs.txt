@@ -436,8 +436,6 @@ roc-toolkit
 rubberband
 sane
 sbc
-sdl2-compat
-sdl2_image
 sdl3
 sdl3-man
 sdl3_image
@@ -496,6 +494,7 @@ vulkan-virtio
 wavpack
 wayland
 webrtc-audio-processing
+webrtc-audio-processing-0.3
 webrtc-audio-processing-1
 wlroots0.20
 woff2
