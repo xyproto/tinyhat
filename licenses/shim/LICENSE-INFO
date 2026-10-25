@@ -1,4 +1,0 @@
-name: shim and MokManager (signed by Microsoft and Fedora)
-version: 16.1-10
-url: https://github.com/rhboot/shim
-license: BSD-2-Clause AND BSD-2-Clause-Patent AND OpenSSL

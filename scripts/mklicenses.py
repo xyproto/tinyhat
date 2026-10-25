@@ -12,7 +12,7 @@ import pkg
 os.umask(0o022)
 
 TOP = pkg.TOP
-OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(TOP, "licenses")
+OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(TOP, "build", "licenses")
 LOCK = sys.argv[1] if len(sys.argv) > 1 else os.path.join(TOP, "build", "rootfs.lock")
 PKGDIR = os.path.join(TOP, "build", "repo")
 SRC = os.path.join(TOP, "vendor", "src")

@@ -59,7 +59,7 @@ It also includes MemTest86+.
 
 ### Licenses
 
-The licenses are in the `licenses` directory.
+The licenses are generated during the build (`make licenses` writes them to `build/licenses`). In Tiny Hat they are in `/usr/share/licenses/tinyhat`, and each release includes them as `tinyhat-licenses-<version>.tar.gz`.
 
 ### General
 
