@@ -259,7 +259,6 @@ core libbpf 1.7.0-1.0 libbpf-1.7.0-1.0-i686.pkg.tar.zst c03ee0ada5034fbe08dca905
 extra libbsd 0.12.2-2.0 libbsd-0.12.2-2.0-i686.pkg.tar.zst 2e1d5aeeb10f4734d96a084d3b6a98b15c34a6313b6a8dedd6bac94237b5d47e
 extra libburn 1.5.8-1.0 libburn-1.5.8-1.0-i686.pkg.tar.zst e1192f7eeba122916d6faec0f90534064b5bb1b5bff36ab41db64c161af5c56a
 extra libcamera 0.0.4-1.3 libcamera-0.0.4-1.3-i686.pkg.tar.zst 154a84c194b39676e60c969defe0c6054fd297ea6ed4ad4dea5f60ae1b9b9428
-extra libcanberra 1:0.30+r2+gc0620e4-4.0 libcanberra-1:0.30+r2+gc0620e4-4.0-i686.pkg.tar.zst 9f683202bf59a29229d56d83cf8f5f2da9cc27e496cf4aab9efb31a096b0d09f
 core libcap 2.78-1.0 libcap-2.78-1.0-i686.pkg.tar.zst 5b80e8ead97bc0f2617d449d7303334131e9f03c588c1f80e2925cdc9fb97180
 core libcap-ng 0.8.5-1.0 libcap-ng-0.8.5-1.0-i686.pkg.tar.zst 932b49ab8bc7874742a0b695e53d0f3d5b0bd87e055a63b894b713aa6314334a
 extra libcbor 0.9.0-1.0 libcbor-0.9.0-1.0-i686.pkg.tar.zst 1c0bdfb6c4506548413075b13de1894093838022bef8d91e3a18131859f7fb40
@@ -705,7 +704,6 @@ extra shared-mime-info 2.5.1-2.0 shared-mime-info-2.5.1-2.0-i686.pkg.tar.zst d03
 extra slang 2.3.3-4.0 slang-2.3.3-4.0-i686.pkg.tar.zst 57e3778d13f66fa7b6c2cab691712133770bea13a0c58166cbe92cc0e201d041
 extra smbclient 4.20.1-1.0 smbclient-4.20.1-1.0-i686.pkg.tar.zst 086d0d5645be6092395c1901f8d0b3d14196124c5c78f71bb1aa7670b59d1495
 extra sord 0.16.22-1.0 sord-0.16.22-1.0-i686.pkg.tar.zst 02031f2e4342d0faaafd6e78b55860237c3a4d9ecd4f64ea8e1f0ceacee891b4
-extra sound-theme-freedesktop 0.8-6.0 sound-theme-freedesktop-0.8-6.0-any.pkg.tar.zst a2bca98d41f2c88e4b60d920c48051b18e5e4682a25dcc6750260442a2ebebd3
 extra source-highlight 3.1.9-12.0 source-highlight-3.1.9-12.0-i686.pkg.tar.zst 840474c297ac89d3c0a48c4154ea6e43fbba70b88dae2693d17ba76a358803a1
 extra spandsp 0.0.6-7.0 spandsp-0.0.6-7.0-i686.pkg.tar.zst 1b25a38c345d68c76ab34e2580f495b115681fcfe32ea2681651494cbab5ad6a
 extra spirv-tools 1:1.4.341.0-2.0 spirv-tools-1:1.4.341.0-2.0-i686.pkg.tar.zst 47a7f3341981d1596b66e0ad84838d2a29d95fd7a1c6374a1aebfeed54278fee

@@ -23,7 +23,6 @@ pkgbase = pipewire
 	makedepends = gst-plugins-base
 	makedepends = jack2
 	makedepends = libcamera
-	makedepends = libcanberra
 	makedepends = libebur128
 	makedepends = libfdk-aac
 	makedepends = libffado
@@ -36,8 +35,6 @@ pkgbase = pipewire
 	makedepends = libsndfile
 	makedepends = libstdc++
 	makedepends = libusb
-	makedepends = libx11
-	makedepends = libxfixes
 	makedepends = lilv
 	makedepends = meson
 	makedepends = ncurses
@@ -69,25 +66,6 @@ pkgname = pipewire
 	depends = libncursesw.so
 	depends = readline
 	depends = libreadline.so
-	optdepends = gst-plugin-pipewire: GStreamer plugin
-	optdepends = pipewire-alsa: ALSA configuration
-	optdepends = pipewire-audio: Audio support
-	optdepends = pipewire-docs: Documentation
-	optdepends = pipewire-ffado: FireWire support
-	optdepends = pipewire-jack-client: PipeWire as JACK client
-	optdepends = pipewire-jack: JACK replacement
-	optdepends = pipewire-libcamera: Libcamera support
-	optdepends = pipewire-netjack2: netJACK2 support
-	optdepends = pipewire-onnx: ONNX filter support
-	optdepends = pipewire-pulse: PulseAudio replacement
-	optdepends = pipewire-roc: ROC streaming
-	optdepends = pipewire-session-manager: Session manager
-	optdepends = pipewire-system-services: System daemon (not recommended)
-	optdepends = pipewire-v4l2: V4L2 interceptor
-	optdepends = pipewire-x11-bell: X11 bell
-	optdepends = pipewire-zeroconf: Zeroconf support
-	optdepends = realtime-privileges: realtime privileges with rt module
-	optdepends = rtkit: realtime privileges with rtkit module
 
 pkgname = alsa-card-profiles
 	pkgdesc = Low-latency audio/video router and processor - ALSA card profiles
@@ -283,18 +261,6 @@ pkgname = pipewire-v4l2
 	depends = glibc
 	depends = pipewire-session-manager
 	depends = sh
-
-pkgname = pipewire-x11-bell
-	pkgdesc = Low-latency audio/video router and processor - X11 bell
-	depends = libpipewire=1:1.6.9
-	depends = libpipewire-0.3.so
-	depends = pipewire-audio=1:1.6.9
-	depends = pipewire=1:1.6.9
-	depends = glibc
-	depends = libcanberra
-	depends = libcanberra.so
-	depends = libx11
-	depends = libxfixes
 
 pkgname = pipewire-zeroconf
 	pkgdesc = Low-latency audio/video router and processor - Zeroconf support
