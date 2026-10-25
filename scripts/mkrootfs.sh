@@ -99,7 +99,7 @@ base)
 	chmod 644 "$root"/usr/share/games/lure/* "$root"/usr/share/games/soltys/*
 	mkdir -p "$root/usr/lib/watcom"
 	bsdtar -xf vendor/src/open-watcom-2026-10-01.tar.xz -C "$root/usr/lib/watcom" \
-		--exclude './binl/*.sym' --exclude './binl/w??axp' --exclude './binl/wccppc' --exclude './binl/wccmps' \
+		--exclude './binl/*.sym' --exclude './binl/vi' --exclude './binl/w??axp' --exclude './binl/wccppc' --exclude './binl/wccmps' \
 		--exclude './binl/wfc*' --exclude './binl/wipfc' --exclude './h/nt' --exclude './h/os2' --exclude './h/os21x' --exclude './h/win' \
 		--exclude './lib286/os2' --exclude './lib286/win' --exclude './lib386/nt' --exclude './lib386/os2' --exclude './lib386/win' \
 		--exclude './lib386/linux' --exclude './lib386/netware' --exclude './lib386/rdos*' \

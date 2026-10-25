@@ -18,4 +18,4 @@ ft2-clone pt2-clone libretro-nestopia nasm mandoc man-pages sl tinyionice mc lsd
 sdl3 sdl3_image sdl3_ttf sdl3-man raylib fluidsynth fontconfig libxml2 libxml2-legacy
 libdisplay-info wlroots0.20 dwl fuzzel swaylock swaybg tinyhat-gui
 zsnes dosbox-x scummvm mgba vice tic-80 furnace libretro-blastem tinyhat-retro tinyhat-midibench testcontroller
-aquarium orbiton grafx2 gdb cc65 gba-dev rfxgen make llvm-libs clang vtgbte pvsneslib png2xpm tinyxxd qemacs
+aquarium orbiton grafx2 gdb cc65 gba-dev rfxgen make llvm-libs clang vtgbte pvsneslib png2xpm tinyxxd qemacs nvi2

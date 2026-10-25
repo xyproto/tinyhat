@@ -375,6 +375,7 @@ nspr
 nss
 ntfs-3g
 numactl
+nvi2
 ocl-icd
 onetbb
 openal
