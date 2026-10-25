@@ -2423,6 +2423,9 @@ version = "2.0.19-1"
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[numactl]\nsource = \"git\"\ngit = \"https://github.com/numactl/numactl.git\"\nprefix = \"v\"\n"
 
+[nvi2]
+source = "sources"
+
 [ocl-icd]
 source = "arch"
 version = "2.3.5-1"
