@@ -1,0 +1,7 @@
+pkgname=(dav1d)
+makedepends=(${makedepends[@]/doxygen/})
+makedepends=(${makedepends[@]/graphviz/})
+eval "$(
+  declare -f build | sed "s/-Denable_docs='true'/-Denable_docs='false'/; s/-Dtestdata_tests='true'/-Dtestdata_tests='false'/; s| doc/html||"
+  declare -f package_dav1d | sed '/optdepends=/d'
+)"

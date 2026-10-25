@@ -401,9 +401,8 @@ def main():
         backfill_nvcheckers()
         return
     if args[0] == "add":
-        base, version, builddate = args[1:4]
-        if len(args) > 4:
-            builddate = args[4]
+        base, version = args[1:3]
+        builddate = args[3] if len(args) > 3 else None
         if os.path.isdir(os.path.join(TOP, "packages", base)):
             die(f"packages/{base} already exists")
         fields = [("source", '"arch"'), ("version", f'"{version}"')]

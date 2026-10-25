@@ -254,6 +254,12 @@ version = "1:0.311-1"
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[cantarell-fonts]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/cantarell-fonts.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n"
 
+[cargo-c]
+source = "arch"
+version = "0.10.26-1"
+build = true
+nvchecker = "[cargo-c]\nsource = \"git\"\ngit = \"https://github.com/lu-zero/cargo-c.git\"\nprefix = \"v\"\n"
+
 [cc65]
 source = "sources"
 
@@ -320,6 +326,7 @@ nvchecker = "[curl]\nsource = 'git'\ngit = 'https://github.com/curl/curl.git'\np
 [dav1d]
 source = "arch"
 version = "1.5.4-1"
+build = true
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[dav1d]\nsource = \"git\"\ngit = \"https://code.videolan.org/videolan/dav1d.git\"\n"
 
@@ -670,6 +677,7 @@ nvchecker = "[\"glibmm\"]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GN
 [glslang]
 source = "arch"
 version = "1:1.4.363.0-1"
+build = true
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[glslang]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/glslang.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n"
 
@@ -2924,6 +2932,12 @@ version = "1.2.1-3"
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[speexdsp]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/speexdsp.git\"\nprefix = \"SpeexDSP-\"\n"
 
+[spirv-headers]
+source = "arch"
+version = "1:1.4.363.0-1"
+build = true
+nvchecker = "[spirv-headers]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/SPIRV-Headers.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n"
+
 [spirv-llvm-translator]
 source = "arch"
 version = "23.1.2-1"
@@ -2933,6 +2947,7 @@ nvchecker = "[spirv-llvm-translator]\nsource = \"git\"\ngit = \"https://github.c
 [spirv-tools]
 source = "arch"
 version = "1:1.4.363.0-1"
+build = true
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[spirv-tools]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/SPIRV-Tools.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n"
 
