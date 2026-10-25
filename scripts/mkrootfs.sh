@@ -122,7 +122,20 @@ EOF
 	grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 	sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 	grep -q '^NoExtract' "$root/etc/pacman.conf"
-	sed -i "s|^#IgnorePkg *=.*|IgnorePkg =$localpkgs|" "$root/etc/pacman.conf"
+	ignore=$(
+		for m in build/pkg/mode/*; do
+			[ "$(cat "$m")" = built ] && sed -n 's/^pkgname = //p' "packages/${m##*/}/.SRCINFO"
+		done
+		sed -n 's/^\[pins\.\(.*\)\]$/\1/p' config/build.toml
+	)
+	ignorepkgs=
+	for p in $(printf '%s\n' $localpkgs $ignore | sort -u); do
+		inlock "$p" && ignorepkgs="$ignorepkgs $p"
+	done
+	sed -i "s|^#IgnorePkg *=.*|IgnorePkg =$ignorepkgs glfw-x11 glfw-wayland|" "$root/etc/pacman.conf"
+	grep -q '^IgnorePkg = .* pt2-clone' "$root/etc/pacman.conf"
+	sed -i 's|^CheckSpace$|&\nILoveCandy|' "$root/etc/pacman.conf"
+	grep -qx ILoveCandy "$root/etc/pacman.conf"
 	grep -q '^IgnorePkg = .* sdl3' "$root/etc/pacman.conf"
 	sed -i "s|^Architecture = auto$|Architecture = $arch|" "$root/etc/pacman.conf"
 	grep -q "^Architecture = $arch$" "$root/etc/pacman.conf"
