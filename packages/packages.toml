@@ -3225,6 +3225,12 @@ version = "2.1-9"
 a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 nvchecker = "[webrtc-audio-processing]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git\"\nprefix = \"v\"\n"
 
+["webrtc-audio-processing-0.3"]
+source = "arch"
+version = "0.3.1-6"
+a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
+nvchecker = "[\"webrtc-audio-processing-0.3\"]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git\"\ninclude_regex = 'v0\\.3\\..*'\nprefix = \"v\"\n"
+
 [webrtc-audio-processing-1]
 source = "arch"
 version = "1.3-6"
