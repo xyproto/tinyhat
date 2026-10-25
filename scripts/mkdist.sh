@@ -20,6 +20,14 @@ tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOU
 rm -rf "$out/src"
 sha=$(sha256sum "$out/tinyhat-write-$ver.tar.gz" | awk '{ print $1 }')
 files="tinyhat-write-$ver.tar.gz"
+lic=$out/src/tinyhat-licenses-$ver
+mkdir -p "$lic"
+cp -a "$top/build/licenses" "$lic/tinyhat32"
+[ -d "$top/build/licenses-x32" ] && cp -a "$top/build/licenses-x32" "$lic/tinyhat64x32"
+tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
+	-cf - "tinyhat-licenses-$ver" | gzip -n -9 >"$out/tinyhat-licenses-$ver.tar.gz"
+rm -rf "$out/src"
+files="$files tinyhat-licenses-$ver.tar.gz"
 x86_64-w64-mingw32-windres "$top/programs/tinyhat-write-win32.rc" -o "$out/win-res.o"
 cd "$out"
 

@@ -1,4 +1,0 @@
-name: linux
-version: 7.3
-url: https://www.kernel.org/
-license: GPL-2.0-only WITH Linux-syscall-note

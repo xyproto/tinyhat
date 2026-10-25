@@ -1,4 +1,0 @@
-name: openssl
-version: 3.6.5-1.0
-url: https://www.openssl.org
-license: Apache-2.0
