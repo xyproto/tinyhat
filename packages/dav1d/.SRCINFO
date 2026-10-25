@@ -6,9 +6,7 @@ pkgbase = dav1d
 	arch = i686
 	arch = x32
 	license = BSD-2-Clause
-	makedepends = doxygen
 	makedepends = glibc
-	makedepends = graphviz
 	makedepends = meson
 	makedepends = nasm
 	makedepends = ninja
@@ -28,8 +26,4 @@ pkgbase = dav1d
 
 pkgname = dav1d
 	depends = glibc
-	optdepends = dav1d-doc: HTML documentation
 	provides = libdav1d.so
-
-pkgname = dav1d-doc
-	pkgdesc = AV1 cross-platform decoder focused on speed and correctness (documentation)

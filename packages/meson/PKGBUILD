@@ -3,7 +3,7 @@
 
 pkgname=meson
 pkgver=1.12.1
-pkgrel=1
+pkgrel=2
 pkgdesc="High productivity build system"
 arch=(any)
 url="https://mesonbuild.com/"
@@ -31,4 +31,18 @@ package_meson() {
 
   install -Dm644 data/shell-completions/bash/* -t "$pkgdir/usr/share/bash-completion/completions"
   install -Dm644 data/shell-completions/zsh/* -t "$pkgdir/usr/share/zsh/site-functions"
+
+  install -Dm755 /dev/stdin "$pkgdir/usr/bin/arch-meson" <<'EOF'
+#!/bin/bash -ex
+exec meson setup \
+  --prefix        /usr \
+  --libexecdir    lib \
+  --sbindir       bin \
+  --buildtype     plain \
+  --auto-features enabled \
+  --wrap-mode     nodownload \
+  -D              b_pie=true \
+  -D              python.bytecompile=1 \
+  "$@"
+EOF
 }

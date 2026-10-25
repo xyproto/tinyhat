@@ -49,7 +49,6 @@ core ca-certificates-mozilla 3.107-1.0 ca-certificates-mozilla-3.107-1.0-i686.pk
 core ca-certificates-utils 20240618-1.0 ca-certificates-utils-20240618-1.0-any.pkg.tar.zst 6f9242cbe0ae5a41d537ef8e321d1f8517418b354ddc8e07c3cf2897ce2a3280
 extra cairo 1.18.6-1.0 cairo-1.18.6-1.0-i686.pkg.tar.zst 92f8c251bf8b15e3be86fd3ae70d9f18e6dd2a231467041b127f8cc22d16c001
 extra cantarell-fonts 1:0.303.1-2.0 cantarell-fonts-1:0.303.1-2.0-any.pkg.tar.zst a129966e3568997fdc82ba7331b71eb0b369fb4f8af983e30a7d7aed7b14a389
-extra cargo-c 0.9.22-1.0 cargo-c-0.9.22-1.0-i686.pkg.tar.zst 507ff1ed8fa72585f4c8e3b3d4cb04f71cececd6bbec03f3f6fec991b9d93242
 extra cblas 3.12.1-2.0 cblas-3.12.1-2.0-i686.pkg.tar.zst d9960f743758abddc82046c6bfbd3b6556fa3266dad5328a415ea9e831c5309b
 extra ccache 4.7.4-2.0 ccache-4.7.4-2.0-i686.pkg.tar.zst 40c7f77a4f6c8f6dd64446059c604e5187ee4421b6d018c9e4e9ff8961faea8e
 extra cdparanoia 10.2-10.0 cdparanoia-10.2-10.0-i686.pkg.tar.zst 6284cf25508d382f220ad7f7974c9c588aaefed1d8dcc63702761aa2665a9bda
@@ -709,7 +708,6 @@ extra sord 0.16.22-1.0 sord-0.16.22-1.0-i686.pkg.tar.zst 02031f2e4342d0faaafd6e7
 extra sound-theme-freedesktop 0.8-6.0 sound-theme-freedesktop-0.8-6.0-any.pkg.tar.zst a2bca98d41f2c88e4b60d920c48051b18e5e4682a25dcc6750260442a2ebebd3
 extra source-highlight 3.1.9-12.0 source-highlight-3.1.9-12.0-i686.pkg.tar.zst 840474c297ac89d3c0a48c4154ea6e43fbba70b88dae2693d17ba76a358803a1
 extra spandsp 0.0.6-7.0 spandsp-0.0.6-7.0-i686.pkg.tar.zst 1b25a38c345d68c76ab34e2580f495b115681fcfe32ea2681651494cbab5ad6a
-extra spirv-headers 1:1.4.357.0-1.0 spirv-headers-1:1.4.357.0-1.0-any.pkg.tar.zst 7905ad310a5abe0ce35d810f2ac9d20015eb6cf2876455fddb89e2094b0a62e6
 extra spirv-tools 1:1.4.341.0-2.0 spirv-tools-1:1.4.341.0-2.0-i686.pkg.tar.zst 47a7f3341981d1596b66e0ad84838d2a29d95fd7a1c6374a1aebfeed54278fee
 core sqlite 3.53.4-1.0 sqlite-3.53.4-1.0-i686.pkg.tar.zst ab0e35e3e6a92470bc053262254f3e901044c409b4f4d4e416fea6200237cbd1
 extra sratom 0.6.22-1.0 sratom-0.6.22-1.0-i686.pkg.tar.zst 012a69d785b565aaafd1e5f7c15224e2ee4bddffe4802f25e1864024545327da

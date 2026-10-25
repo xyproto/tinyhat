@@ -831,6 +831,7 @@ eval "$(
       s/-D gallium-rusticl-enable-drivers=[^ ]* //
       s/-D html-docs=enabled/-D html-docs=disabled/
       s/microsoft-experimental,nouveau,/microsoft-experimental,/
+      s/-D intel-rt=enabled/-D intel-rt=disabled/
     '
   declare -f package_mesa | \
     sed '

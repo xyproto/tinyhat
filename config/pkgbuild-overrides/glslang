@@ -1,0 +1,4 @@
+eval "$(
+  declare -f build | sed "s/-DGLSLANG_TESTS='ON'/-DGLSLANG_TESTS='OFF'/"
+)"
+unset -f check

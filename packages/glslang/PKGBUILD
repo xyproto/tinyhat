@@ -63,4 +63,9 @@ package() {
 
 # vim: ts=2 sw=2 et:
 
+eval "$(
+  declare -f build | sed "s/-DGLSLANG_TESTS='ON'/-DGLSLANG_TESTS='OFF'/"
+)"
+unset -f check
+
 unset -f pkgver

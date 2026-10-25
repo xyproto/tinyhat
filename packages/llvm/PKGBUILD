@@ -1,7 +1,7 @@
 pkgbase=llvm
 pkgname=(llvm-libs llvm clang)
 pkgver=23.1.3
-pkgrel=1
+pkgrel=2
 arch=(i686 x32)
 url="https://llvm.org/"
 license=('Apache-2.0 WITH LLVM-exception')
@@ -11,7 +11,9 @@ sha256sums=('c44186a7762ed28954be72e5ff6df9808e0779d4f1bf014ecc4e7e211d31ee34')
 
 build() {
   cmake -S llvm-project-$pkgver.src/llvm -B build -G Ninja \
-    -DCMAKE_BUILD_TYPE=MinSizeRel \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_FLAGS_RELEASE="-Os -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS_RELEASE="-Os -DNDEBUG" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
     -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
@@ -63,7 +65,7 @@ package_clang() {
   done
   cd "$pkgdir/usr/lib/clang"
   rm -rf analyze-c++ analyze-cc ccc-analyzer intercept-cc
-  rm -rf */include/arm* */include/opencl* */include/riscv* */include/hexagon* */include/hvx*
+  rm -rf */include/arm* */include/riscv* */include/hexagon* */include/hvx*
   rm -rf */include/msa.h */include/htm* */include/vecintrin.h */include/s390intrin.h */include/velintrin*
   rm -rf */include/wasm* */include/__clang_cuda* */include/__clang_hip* */include/cuda_wrappers
   rm -rf */include/openmp_wrappers */include/ppc_wrappers */include/llvm_libc_wrappers */include/altivec.h

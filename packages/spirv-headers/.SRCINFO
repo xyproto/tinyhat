@@ -1,0 +1,16 @@
+pkgbase = spirv-headers
+	pkgdesc = SPIR-V header files and registry
+	pkgver = 1.4.363.0
+	pkgrel = 1
+	epoch = 1
+	url = https://www.khronos.org/spirv/
+	arch = any
+	groups = vulkan-devel
+	license = MIT
+	makedepends = cmake
+	makedepends = git
+	makedepends = ninja
+	source = git+https://github.com/KhronosGroup/SPIRV-Headers#tag=vulkan-sdk-1.4.363.0
+	b2sums = f34ee9e4c663fe9b70a23991e7626a54b9066fc23659bfdc806e0747ba413b8b880bcc65c86a3fddff440b41f90b9cb0fb7734cb82a2673b5d56a2ac3ff157e6
+
+pkgname = spirv-headers
