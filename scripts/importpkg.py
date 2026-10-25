@@ -148,7 +148,7 @@ def split_blocks(text):
     pre = re.match(r"(?:[^[]|\A)*?(?=^\[)", text, re.M)
     pre = pre.group(0) if pre else ""
     names, blocks = [], []
-    for m in re.finditer(rf"^\[{key_motif}\]\n[^[]*", text[len(pre):], re.M):
+    for m in re.finditer(rf"^\[{key_motif}\]\n(?:(?!\[).*(?:\n|\Z))*", text[len(pre):], re.M):
         names.append(m.group(1) or m.group(2))
         blocks.append(m.group(0).rstrip("\n") + "\n")
     return pre, names, blocks
