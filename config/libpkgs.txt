@@ -6,6 +6,7 @@ alsa-lib
 aom
 appstream
 appstream-qt
+aquarium
 argon2
 at-spi2-core
 attr
@@ -64,7 +65,6 @@ fuse2
 fuse3
 gba-dev
 gcc
-gcc-ada
 gcc-d
 gcc-go
 gd
@@ -415,6 +415,7 @@ procps-ng
 protobuf
 prrte
 pugixml
+pure-fish
 pvsneslib
 python
 python-cairo
@@ -435,6 +436,8 @@ roc-toolkit
 rubberband
 sane
 sbc
+sdl2-compat
+sdl2_image
 sdl3
 sdl3-man
 sdl3_image
