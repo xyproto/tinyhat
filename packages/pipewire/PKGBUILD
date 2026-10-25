@@ -636,5 +636,13 @@ makedepends=(${makedepends[@]/sdl2/})
 eval "$(
   declare -f build | sed 's/-D selinux=disabled/-D selinux=disabled -D sdl2=disabled/'
 )"
+pkgname=(${pkgname[@]/pipewire-x11-bell/})
+makedepends=(${makedepends[@]/libcanberra/})
+makedepends=(${makedepends[@]/libx11/})
+makedepends=(${makedepends[@]/libxfixes/})
+eval "$(
+  declare -f build | sed 's/-D selinux=disabled/-D selinux=disabled -D libcanberra=disabled -D x11=disabled -D x11-xfixes=disabled/'
+  declare -f package_pipewire | sed '/_pick x11-bell /d; /pipewire-x11-bell: /d'
+)"
 
 unset -f pkgver
