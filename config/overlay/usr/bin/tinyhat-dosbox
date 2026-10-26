@@ -1,5 +1,11 @@
 #!/bin/sh
 mkdir -p "$HOME/DOS"
+dos=$(readlink -f "$HOME/DOS")
+prog=
+if [ -f "${1-}" ]; then
+	p=$(readlink -f "$1")
+	case $p in "$dos"/*) prog=${p#"$dos"/} && shift ;; esac
+fi
 set -- -conf /etc/tinyhat/dosbox-x.conf -userconf -fastlaunch "$@"
 [ ! -f /run/tinyhat-midi/dosbox-x.conf ] || set -- "$@" -conf /run/tinyhat-midi/dosbox-x.conf
 set -- "$@" -set "midi fluid.soundfont=$(tinyhat-soundfont)"
@@ -28,10 +34,12 @@ drived=
 drivee=
 if [ -n "$harddisk" ] && [ -n "$(find "$harddisk" -maxdepth 1 \( -iname command.com -o -iname autoexec.bat \) -print -quit)" ]; then
 	ae "mount c \"$harddisk\"" "mount e \"$HOME/DOS\""
+	home=e
 	drivee=$drivec
 	drivec="the DOS hard disk of this PC"
 else
 	ae "mount c \"$HOME/DOS\""
+	home=c
 	if [ -n "$harddisk" ]; then
 		ae "mount e \"$harddisk\""
 		drivee="the hard disk of this PC"
@@ -52,4 +60,24 @@ ae "echo." \
 	"echo K lists the programs here. Type a program name to run it." \
 	"echo Alt+Enter: fullscreen   Ctrl+F10: grab or release the mouse   EXIT: quit" \
 	"echo." "@echo on"
+if [ -n "$prog" ]; then
+	gdir=${prog%/*}
+	[ "$gdir" != "$prog" ] || gdir=
+	ae "$home:"
+	[ -z "$gdir" ] || ae "cd \\$(printf '%s' "$gdir" | tr / '\\')"
+	mark=${XDG_CACHE_HOME:-$HOME/.cache}/tinyhat/dos-setup/$(printf '%s' "$gdir" | tr / _)
+	if [ -n "$gdir" ] && [ ! -e "$mark" ]; then
+		setup=
+		for want in setup install; do
+			for f in "$dos/$gdir"/*; do
+				case $(printf '%s' "${f##*/}" | tr 'A-Z' 'a-z') in
+				"$want"*.bat | "$want"*.exe | "$want"*.com) setup=${f##*/} && break 2 ;;
+				esac
+			done
+		done
+		mkdir -p "${mark%/*}" && : >"$mark"
+		[ -z "$setup" ] || ae "$setup"
+	fi
+	ae "${prog##*/}"
+fi
 LD_BIND_NOW=1 SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec nice -n -5 dosbox-x "$@"

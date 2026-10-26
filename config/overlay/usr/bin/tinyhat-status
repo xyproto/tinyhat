@@ -2,8 +2,10 @@
 wifi=
 vol=
 n=0
-warn=
-mountpoint -q /persist || warn="running live | "
+refresh=
+trap 'refresh=1' USR1
+echo $$ >"${XDG_RUNTIME_DIR:-/tmp}/tinyhat-status.pid"
+mountpoint -q /persist || echo "live 1"
 while :; do
 	if [ $((n % 6)) -eq 0 ]; then
 		wifi=
@@ -14,18 +16,26 @@ while :; do
 			wifi=$(iwctl station "${dev##*/}" show 2>/dev/null | sed -n 's/^ *Connected network *//p' | sed 's/ *$//')
 			[ -n "$wifi" ] && break
 		done
+	fi
+	if [ $((n % 6)) -eq 0 ] || [ -n "$refresh" ]; then
+		refresh=
 		vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{ v = int($2 * 100 + 0.5); print ($3 == "[MUTED]") ? "muted" : v "%" }')
 	fi
-	bat=
+	set --
+	[ -f "${XDG_RUNTIME_DIR:-/tmp}/tinyhat-share.pid" ] && set -- "$@" "S http://$(tinyhat-addr):3000"
+	systemctl -q is-active dropbear.service && set -- "$@" "ssh on"
+	[ -n "$wifi" ] && set -- "$@" "W $wifi"
+	[ -n "$vol" ] && set -- "$@" "V $vol"
 	for b in /sys/class/power_supply/BAT*/capacity; do
-		[ -r "$b" ] && bat=" | B $(cat "$b")%"
+		[ -r "$b" ] && set -- "$@" "B $(cat "$b")%"
 	done
-	share=
-	if [ -f "${XDG_RUNTIME_DIR:-/tmp}/tinyhat-share.pid" ]; then
-		share="S http://$(tinyhat-addr):3000 | "
-	fi
-	systemctl -q is-active dropbear.service && share="${share}ssh on | "
-	printf '%s%s%s%s%s | %s\n' "$warn" "$share" "${wifi:+W $wifi | }" "${vol:+V $vol}" "$bat" "$(date '+%Y-%m-%d %H:%M')"
+	line=
+	for f in "$@" "$(date '+%Y-%m-%d %H:%M')"; do
+		line="${line:+$line | }$f"
+	done
+	printf '%s\n' "$line"
 	n=$((n + 1))
-	sleep 5
+	sleep 5 &
+	wait $!
+	kill $! 2>/dev/null
 done

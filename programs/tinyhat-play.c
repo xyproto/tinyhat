@@ -14,7 +14,7 @@
 #define MB (1024 * 1024)
 
 static GtkWidget *win, *entry, *button, *statuslbl;
-static GtkWidget *radios[6];
+static GtkWidget *radios[8];
 static gboolean busy = FALSE;
 static gboolean headless = FALSE;
 static int play_ok = 0;
@@ -40,9 +40,11 @@ static const Platform platforms[] = {
 	{ "C64", "c64", "ROMs/c64", "c64 game", " d64 d71 d81 g64 prg t64 tap crt p00 ", "\\b(commodore ?64|c64)\\b", "tinyhat-emulate", 16 * MB },
 	{ "DOS", "dos", "DOS", "dos game", " exe com bat iso img cue ", "\\b(dos|ms-?dos)\\b", "tinyhat-dosbox", 512 * MB },
 	{ "TIC-80", "tic80", "ROMs/tic80", "tic-80 game", " tic tic80 ", "\\b(tic-?80)\\b", "tic80", 16 * MB },
+	{ "NES", "nes", "ROMs/nes", "nes rom", " nes fds unf unif ", "\\b(nes|famicom|nintendo entertainment system)\\b", "tinyhat-emulate", 8 * MB },
+	{ "Sega Master System", "sms", "ROMs/sms", "sega master system rom", " sms gg ", "\\b(master ?system|sms|game ?gear)\\b", "tinyhat-emulate", 8 * MB },
 };
 
-static const int radio_order[] = { 3, 4, 1, 2, 0, 5 };
+static const int radio_order[] = { 3, 4, 1, 6, 2, 7, 0, 5 };
 
 static const Platform *plat = &platforms[0];
 
@@ -933,6 +935,8 @@ static int rom_ok(const char *path)
 		return 0;
 	if (!strcmp(plat->dir, "gba"))
 		return b[0xb2] == 0x96;
+	if (!strcmp(plat->dir, "nes") && ext_in(path, " nes "))
+		return !memcmp(b, "NES\x1a", 4);
 	if (!strcmp(plat->dir, "genesis") && !ext_in(path, " smd ")) {
 		for (size_t i = 0x100; i + 4 <= sizeof(b); i++)
 			if (!memcmp(b + i, "SEGA", 4))
@@ -1015,6 +1019,122 @@ static int move_file(const char *src, const char *dst)
 	return ok;
 }
 
+static int same_name(const char *ns, const char *name)
+{
+	char nw[256];
+	if (!name)
+		return 0;
+	norm(name, nw, sizeof(nw));
+	return nw[0] && (!strcmp(ns, nw) || (strlen(ns) == 8 && !strncmp(ns, nw, 8)));
+}
+
+static void dos_scan(const char *dir, int depth, const char *game, const char *query, char **best, int *best_rank,
+                     int *best_depth)
+{
+	GDir *d = g_dir_open(dir, 0, NULL);
+	char *folder = g_path_get_basename(dir);
+	const char *n;
+	if (!d) {
+		g_free(folder);
+		return;
+	}
+	while ((n = g_dir_read_name(d))) {
+		char *p = g_build_filename(dir, n, NULL), *st, ns[64];
+		int rank;
+		if (g_file_test(p, G_FILE_TEST_IS_SYMLINK)) {
+			g_free(p);
+			continue;
+		}
+		if (g_file_test(p, G_FILE_TEST_IS_DIR)) {
+			dos_scan(p, depth + 1, game, query, best, best_rank, best_depth);
+			g_free(p);
+			continue;
+		}
+		rank = ext_in(n, " bat ") ? 1 : ext_in(n, " exe ") ? 2 : ext_in(n, " com ") ? 3 : 0;
+		st = stem(n);
+		norm(st, ns, sizeof(ns));
+		g_free(st);
+		if (!rank || !strncmp(ns, "setup", 5) || !strncmp(ns, "install", 7)) {
+			g_free(p);
+			continue;
+		}
+		if (same_name(ns, game) || same_name(ns, query) || (depth && same_name(ns, folder)))
+			rank = 0;
+		if (!*best || rank < *best_rank ||
+		    (rank == *best_rank && (depth < *best_depth || (depth == *best_depth && strcmp(p, *best) < 0)))) {
+			g_free(*best);
+			*best = p;
+			*best_rank = rank;
+			*best_depth = depth;
+		} else {
+			g_free(p);
+		}
+	}
+	g_dir_close(d);
+	g_free(folder);
+}
+
+static char *install_dos(const char *extract, const char *game, const char *query)
+{
+	GDir *d = g_dir_open(extract, 0, NULL);
+	char *root = g_strdup(extract), *best = NULL, *dir, *target, *dest = NULL, nm[256], base[9];
+	const char *n;
+	int count = 0, rank = 0, depth = 0;
+	size_t len = 0;
+	if (d) {
+		char *only = NULL;
+		while ((n = g_dir_read_name(d))) {
+			count++;
+			g_free(only);
+			only = g_build_filename(extract, n, NULL);
+		}
+		g_dir_close(d);
+		if (count == 1 && g_file_test(only, G_FILE_TEST_IS_DIR) && !g_file_test(only, G_FILE_TEST_IS_SYMLINK)) {
+			g_free(root);
+			root = only;
+		} else {
+			g_free(only);
+		}
+	}
+	dos_scan(root, 0, game, query, &best, &rank, &depth);
+	if (!best) {
+		g_free(root);
+		return NULL;
+	}
+	norm(game && game[0] ? game : query, nm, sizeof(nm));
+	for (; nm[len] && len < 8; len++)
+		base[len] = (char)toupper((unsigned char)nm[len]);
+	base[len] = '\0';
+	if (!len)
+		g_strlcpy(base, "GAME", sizeof(base));
+	dir = rom_dir();
+	g_mkdir_with_parents(dir, 0755);
+	target = g_build_filename(dir, base, NULL);
+	for (char i = '2'; g_file_test(target, G_FILE_TEST_EXISTS) && i <= '9'; i++) {
+		size_t k = strlen(base) < 8 ? strlen(base) : 7;
+		base[k] = i;
+		base[k + 1] = '\0';
+		g_free(target);
+		target = g_build_filename(dir, base, NULL);
+	}
+	if (!g_file_test(target, G_FILE_TEST_EXISTS)) {
+		int ok = rename(root, target) == 0;
+		if (!ok) {
+			char *argv[] = { "cp", "-a", root, target, NULL };
+			int st = 1;
+			ok = g_spawn_sync(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL, &st, NULL) &&
+			     g_spawn_check_wait_status(st, NULL);
+		}
+		if (ok)
+			dest = g_strconcat(target, best + strlen(root), NULL);
+	}
+	g_free(target);
+	g_free(dir);
+	g_free(best);
+	g_free(root);
+	return dest;
+}
+
 static char *install(const char *query, Candidate *c, const char *work)
 {
 	char *name = c->name ? g_strdup(c->name) : url_filename(c->url), *file, *extract, *url;
@@ -1072,8 +1192,15 @@ static char *install(const char *query, Candidate *c, const char *work)
 		status("Extracting %s", name);
 		if (g_spawn_sync(NULL, argv, NULL, G_SPAWN_SEARCH_PATH | G_SPAWN_STDOUT_TO_DEV_NULL |
 		                 G_SPAWN_STDERR_TO_DEV_NULL, NULL, NULL, NULL, NULL, &st, NULL) &&
-		    g_spawn_check_wait_status(st, NULL))
-			rom = find_rom_in(extract, query);
+		    g_spawn_check_wait_status(st, NULL)) {
+			if (!strcmp(plat->dir, "dos")) {
+				char *game = stem(c->name ? c->name : name);
+				dest = install_dos(extract, game, query);
+				g_free(game);
+			}
+			if (!dest)
+				rom = find_rom_in(extract, query);
+		}
 		g_free(extract);
 	}
 	if (rom) {

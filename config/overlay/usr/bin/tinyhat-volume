@@ -4,5 +4,9 @@ up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
 down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
 mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
 esac
+pid=$(cat "${XDG_RUNTIME_DIR:-/tmp}/tinyhat-status.pid" 2>/dev/null)
+case $(tr '\0' ' ' <"/proc/${pid:-0}/cmdline" 2>/dev/null) in
+*tinyhat-status*) kill -USR1 "$pid" ;;
+esac
 vol=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '{ v = int($2 * 100 + 0.5); print ($3 == "[MUTED]") ? "muted" : v "%" }')
 exec tinyhat-notice "Volume ${vol:-unavailable}" 2
