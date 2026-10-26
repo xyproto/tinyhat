@@ -1,6 +1,6 @@
 pkgname=zsnes
 pkgver=2.3.8
-pkgrel=1
+pkgrel=2
 pkgdesc="Super Nintendo emulator"
 arch=(i686)
 url="https://github.com/xyproto/zsnes"

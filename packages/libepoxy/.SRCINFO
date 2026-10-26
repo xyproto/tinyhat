@@ -15,7 +15,6 @@ pkgbase = libepoxy
 	makedepends = graphviz
 	depends = glibc
 	depends = libglvnd
-	depends = libx11
 	source = git+https://github.com/anholt/libepoxy#commit=c84bc9459357a40e46e2fec0408d04fbdde2c973
 	validpgpkeys = 53EF3DC3B63E2899271BD26322E8091EEA11BBB7
 	sha256sums = SKIP

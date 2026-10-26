@@ -61,4 +61,10 @@ package() {
   install -vDm 644 $pkgname-$pkgver/{README,NEWS} -t "$pkgdir/usr/share/doc/$pkgname"
 }
 
+makedepends=(texinfo)
+optdepends=()
+eval "$(
+  declare -f build | sed 's/--sysconfdir=\/etc/--sysconfdir=\/etc --disable-floppyd --without-x/'
+)"
+
 unset -f pkgver

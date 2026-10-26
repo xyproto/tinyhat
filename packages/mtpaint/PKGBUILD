@@ -37,4 +37,8 @@ package() {
   make -C $pkgname DESTDIR="$pkgdir" install
 }
 
+eval "$(
+  declare -f prepare | sed '$i sed -i "/PKGCONFIG gtk+-x11-3.0/d" configure'
+)"
+
 unset -f pkgver
