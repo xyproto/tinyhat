@@ -1,0 +1,7 @@
+pkgname=(libxkbcommon)
+_d=(); for _p in "${makedepends[@]}"; do [[ $_p =~ ^(bash-completion|doxygen|graphviz|libxcb|xorgproto)$ ]] || _d+=("$_p"); done; makedepends=("${_d[@]}")
+checkdepends=()
+eval "$(
+  declare -f build | sed 's|-D enable-docs=true|-D enable-docs=false -D enable-x11=false -D x-locale-root=/usr/share/xkbcommon/locale|'
+  declare -f package_libxkbcommon | sed '/_pick /d; /libxkbcommon-x11: /d'
+)"

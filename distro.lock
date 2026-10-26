@@ -329,7 +329,6 @@ libpkgs = [
     "libxi",
     "libxinerama",
     "libxkbcommon",
-    "libxkbcommon-x11",
     "libxml++",
     "libxml2",
     "libxml2-legacy",

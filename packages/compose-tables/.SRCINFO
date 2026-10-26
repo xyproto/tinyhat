@@ -1,7 +1,7 @@
 pkgbase = compose-tables
 	pkgdesc = XKB Compose tables (dead keys and the Compose key) for libxkbcommon, from libX11's nls data
 	pkgver = 1.8.13
-	pkgrel = 1
+	pkgrel = 2
 	url = https://gitlab.freedesktop.org/xorg/lib/libx11
 	arch = any
 	license = MIT AND X11
