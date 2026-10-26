@@ -1,3 +1,912 @@
 name = "Tiny Hat"
 hat_color = "#922424"
 hat_highlight_color = "#f7768e"
+
+# Packages are taken prebuilt from archlinux32 when possible, unless a package below
+# has build = true or archlinux32 lacks it or ships it broken. prebuilt = true marks
+# the slow ones (more than about 15 minutes to build) that should stay prebuilt.
+prebuilt_all = true
+
+# Built as x32 for tinyhat64x32.img; everything else in that image is the i686 version.
+# Empty until the x32 toolchain (x32-gcc-stage1, glibc, x32-gcc) builds; the core set was:
+# glibc x32-runtime zlib zstd xz bzip2 libffi expat
+x32 = []
+
+[image]
+packages = [
+    "filesystem", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "gawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
+    "systemd", "shadow",
+    "xfsprogs", "dosfstools", "exfatprogs", "mtools", "ntfs-3g",
+    "alsa-utils", "pipewire", "pipewire-alsa", "wireplumber",
+    "bluez", "bluez-utils", "bluetui",
+    "iwd", "impala",
+    "wayland", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "archlinux-wallpaper", "xcursor-vanilla-dmz",
+    "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
+    "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
+    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "cairo", "syncthing",
+    "opendoas",
+    "libmnl",
+    "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
+    "the_silver_searcher", "ripgrep",
+    "earlyoom",
+    "pacman", "archlinux32-keyring", "pacman-mirrorlist",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "ldns", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "love", "mtpaint", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
+    "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
+    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "tinyhat-gui",
+    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "testcontroller",
+    "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "vtgbte", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
+]
+skip = [
+    "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
+]
+exclude = [
+    "usr/include",
+    "usr/share/man/[a-z][a-z]",
+    "usr/share/man/[a-z][a-z]_*",
+    "usr/share/man/[a-z][a-z].*",
+    "usr/share/doc",
+    "usr/share/info",
+    "usr/share/gtk-doc",
+    "usr/share/devhelp",
+    "usr/share/help",
+    "usr/share/locale",
+    "usr/share/i18n",
+    "usr/share/aclocal",
+    "usr/share/pkgconfig",
+    "usr/lib/pkgconfig",
+    "usr/lib/cmake",
+    "usr/share/cmake",
+    "usr/share/gir-1.0",
+    "usr/share/vala",
+    "usr/share/bash-completion",
+    "usr/share/zsh",
+    "usr/share/metainfo",
+    "usr/share/appdata",
+    "usr/share/fish/man",
+    "usr/share/fish/tools",
+    "usr/share/gdb",
+    "usr/share/git-gui",
+    "usr/share/gitk",
+    "usr/share/gitweb",
+    "usr/share/perl5",
+    "usr/lib/perl5",
+    "usr/share/sounds",
+    "usr/share/installed-tests",
+    "usr/lib/*.a",
+    "usr/lib/*.o",
+    "usr/lib/libgallium*vulkan*",
+    "usr/share/vulkan",
+    "usr/lib/libvulkan_*",
+    "usr/lib/dri/*_drv_video.so",
+    "usr/lib/vdpau",
+    "usr/lib/libOSMesa*",
+    "usr/lib/libxatracker*",
+    "usr/lib/systemd/system/systemd-homed*",
+    "usr/lib/systemd/system/systemd-portabled*",
+    "usr/lib/systemd/system/systemd-importd*",
+    "usr/lib/systemd/system/systemd-machined*",
+    "usr/lib/systemd/systemd-homed*",
+    "usr/lib/systemd/systemd-portabled*",
+    "usr/lib/systemd/systemd-importd*",
+    "usr/lib/systemd/systemd-machined*",
+    "usr/lib/systemd/systemd-pull",
+    "usr/lib/systemd/systemd-import*",
+    "usr/lib/systemd/systemd-export",
+    "usr/lib/systemd/systemd-sysupdate*",
+    "usr/lib/systemd/boot",
+    "usr/lib/systemd/portable",
+    "usr/lib/systemd/tests",
+    "usr/share/systemd/bootctl",
+    "usr/bin/homectl",
+    "usr/bin/portablectl",
+    "usr/bin/machinectl",
+    "usr/bin/importctl",
+    "usr/bin/systemd-repart",
+    "usr/bin/ukify",
+    "usr/lib/kernel",
+    "usr/share/factory/etc/pam.d",
+    "usr/lib/firmware/intel/ipu",
+    "usr/lib/firmware/intel/vsc",
+    "usr/lib/firmware/intel/vpu",
+    "usr/lib/firmware/intel/ish",
+    "usr/lib/firmware/intel/avs",
+    "usr/lib/firmware/intel/catpt",
+    "usr/lib/firmware/intel/sof*",
+    "usr/lib/firmware/intel/ice",
+    "usr/lib/firmware/intel/qat*",
+    "usr/lib/firmware/qat*",
+    "usr/lib/firmware/LENOVO",
+    "usr/lib/firmware/xe",
+    "usr/lib/firmware/i915",
+    "usr/lib/firmware/ath10k",
+    "usr/lib/firmware/ath11k",
+    "usr/lib/firmware/ath12k",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-so-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-ty-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-gl-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-ma-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-bz-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-sc-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-dr-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-br-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-wh-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-sh-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-gf-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-Qu*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-cc-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-hr-*",
+    "usr/lib/firmware/intel/iwlwifi/iwlwifi-*.pnvm*",
+    "usr/lib/d3d",
+    "usr/lib/bellagio",
+    "usr/lib/python3*",
+    "usr/lib/libavahi-qt5*",
+    "usr/lib/whiptcl.so",
+    "usr/lib/imlib2/loaders/heif.so",
+    "usr/lib/imlib2/loaders/id3.so",
+    "usr/lib/imlib2/loaders/jxl.so",
+    "usr/lib/imlib2/loaders/j2k.so",
+    "usr/lib/imlib2/loaders/ps.so",
+    "usr/lib/imlib2/loaders/webp.so",
+    "usr/lib/systemd/systemd-journal-gatewayd",
+    "usr/lib/systemd/systemd-journal-remote",
+    "usr/lib/systemd/system/systemd-journal-gatewayd*",
+    "usr/lib/systemd/system/systemd-journal-remote*",
+    "usr/bin/fcplay",
+    "usr/bin/arpd",
+    "usr/bin/alsabat",
+    "usr/bin/memusagestat",
+    "usr/bin/tiffgt",
+    "usr/bin/sensord",
+    "usr/bin/gcr-viewer-gtk4",
+    "usr/bin/tc",
+    "usr/lib/libxml2-legacy",
+    "usr/lib/gtk-3.0/3.0.0/printbackends/libprintbackend-cups.so",
+    "usr/bin/pinentry-gnome3",
+    "usr/bin/pinentry-qt",
+    "usr/bin/pinentry-qt5",
+    "usr/bin/pinentry-gtk",
+    "usr/bin/xfs_scrub",
+    "usr/bin/xfs_scrub_all",
+    "usr/lib/systemd/system/xfs_scrub*",
+    "usr/lib/mpg123/output_pulse.so",
+    "usr/lib/mpg123/output_jack.so",
+    "usr/share/kbd/consolefonts/ter-*",
+    "usr/share/backgrounds/archlinux/*",
+    "usr/share/icons/hicolor",
+    "usr/lib/gcc",
+    "usr/lib/bfd-plugins/liblto_plugin.so",
+    "usr/lib/libcc1.so*",
+    "usr/lib/libgomp.spec",
+    "usr/lib/libitm.spec",
+    "usr/lib/libsanitizer.spec",
+    "usr/lib/libstdc++.modules.json",
+    "usr/share/gcc-*",
+    "usr/bin/c++",
+    "usr/bin/c89",
+    "usr/bin/c99",
+    "usr/bin/cc",
+    "usr/bin/cpp",
+    "usr/bin/g++",
+    "usr/bin/gcc",
+    "usr/bin/gcc-ar",
+    "usr/bin/gcc-nm",
+    "usr/bin/gcc-ranlib",
+    "usr/bin/gcov",
+    "usr/bin/gcov-tool",
+    "usr/bin/gcov-dump",
+    "usr/bin/lto-dump",
+    "usr/bin/i686-pc-linux-gnu-*",
+    "usr/bin/x86_64-linux-gnu-*",
+    "usr/bin/analyze-build",
+    "usr/bin/c-index-test",
+    "usr/bin/clang-apply-replacements",
+    "usr/bin/clang-change-namespace",
+    "usr/bin/clang-check",
+    "usr/bin/clang-cl",
+    "usr/bin/clang-doc",
+    "usr/bin/clang-extdef-mapping",
+    "usr/bin/clang-include-fixer",
+    "usr/bin/clang-linker-wrapper",
+    "usr/bin/clang-move",
+    "usr/bin/clang-offload-bundler",
+    "usr/bin/clang-offload-packager",
+    "usr/bin/clang-offload-wrapper",
+    "usr/bin/clang-pseudo",
+    "usr/bin/clang-query",
+    "usr/bin/clang-refactor",
+    "usr/bin/clang-rename",
+    "usr/bin/clang-reorder-fields",
+    "usr/bin/clang-repl",
+    "usr/bin/clang-scan-deps",
+    "usr/bin/clang-tidy",
+    "usr/bin/diagtool",
+    "usr/bin/find-all-symbols",
+    "usr/bin/git-clang-format",
+    "usr/bin/hmaptool",
+    "usr/bin/intercept-build",
+    "usr/bin/modularize",
+    "usr/bin/pp-trace",
+    "usr/bin/run-clang-tidy",
+    "usr/bin/scan-build",
+    "usr/bin/scan-build-py",
+    "usr/bin/scan-view",
+    "usr/lib/clang/analyze-c++",
+    "usr/lib/clang/analyze-cc",
+    "usr/lib/clang/c++-analyzer",
+    "usr/lib/clang/ccc-analyzer",
+    "usr/lib/clang/intercept-c++",
+    "usr/lib/clang/intercept-cc",
+    "usr/lib/libclang.so*",
+    "usr/share/clang",
+    "usr/share/scan-build",
+    "usr/share/scan-view",
+    "usr/share/man/man1/diagtool.1.gz",
+    "usr/share/man/man1/extraclangtools.1.gz",
+    "usr/share/man/man1/scan-build.1.gz",
+    "usr/lib/clang/*/include/arm*",
+    "usr/lib/clang/*/include/altivec.h",
+    "usr/lib/clang/*/include/opencl*",
+    "usr/lib/clang/*/include/riscv*",
+    "usr/lib/clang/*/include/hexagon*",
+    "usr/lib/clang/*/include/hvx*",
+    "usr/lib/clang/*/include/msa.h",
+    "usr/lib/clang/*/include/htm*",
+    "usr/lib/clang/*/include/vecintrin.h",
+    "usr/lib/clang/*/include/s390intrin.h",
+    "usr/lib/clang/*/include/velintrin*",
+    "usr/lib/clang/*/include/wasm*",
+    "usr/lib/clang/*/include/__clang_cuda*",
+    "usr/lib/clang/*/include/__clang_hip*",
+    "usr/lib/clang/*/include/cuda_wrappers",
+    "usr/lib/clang/*/include/openmp_wrappers",
+    "usr/lib/clang/*/include/ppc_wrappers",
+    "usr/lib/clang/*/include/llvm_libc_wrappers",
+    "usr/share/fonts/TTF/JetBrainsMono-*",
+    "usr/lib/tinysparql-3.0/libtracker-parser-libicu.so",
+    "usr/bin/strace-log-merge",
+    "usr/bin/ldns-*",
+    "usr/share/applications/libresprite.desktop",
+    "usr/share/applications/mtpaint.desktop",
+    "usr/share/applications/love.desktop",
+    "usr/bin/alsoft-config",
+    "usr/bin/makemhr",
+    "usr/bin/autopoint",
+    "usr/bin/envsubst",
+    "usr/bin/gettext",
+    "usr/bin/gettext.sh",
+    "usr/bin/gettextize",
+    "usr/bin/msg*",
+    "usr/bin/ngettext",
+    "usr/bin/po-fetch",
+    "usr/bin/printf_gettext",
+    "usr/bin/printf_ngettext",
+    "usr/bin/recode-sr-latin",
+    "usr/bin/spit",
+    "usr/bin/xgettext",
+    "usr/lib/gcc/arm-none-eabi/*/cc1plus",
+    "usr/lib/gcc/arm-none-eabi/*/lto1",
+    "usr/lib/gcc/arm-none-eabi/*/lto-wrapper",
+    "usr/lib/gcc/arm-none-eabi/*/g++-mapper-server",
+    "usr/lib/gcc/arm-none-eabi/*/plugin",
+    "usr/lib/gcc/arm-none-eabi/*/install-tools",
+    "usr/lib/gcc/arm-none-eabi/*/libgcov.a",
+    "usr/lib/gcc/arm-none-eabi/*/arm",
+    "usr/lib/gcc/arm-none-eabi/*/thumb/v*",
+    "usr/arm-none-eabi/lib/arm",
+    "usr/arm-none-eabi/lib/thumb/v*",
+    "usr/arm-none-eabi/lib/cpu-init",
+    "usr/arm-none-eabi/lib/libstdc++*",
+    "usr/arm-none-eabi/lib/libsupc++*",
+    "usr/arm-none-eabi/lib/thumb/nofp/libstdc++*",
+    "usr/arm-none-eabi/lib/thumb/nofp/libsupc++*",
+    "usr/arm-none-eabi/include/c++",
+    "usr/bin/arm-none-eabi-c++",
+    "usr/bin/arm-none-eabi-g++",
+    "usr/bin/arm-none-eabi-gcov*",
+    "usr/bin/arm-none-eabi-lto-dump",
+    "usr/lib/bfd-plugins/liblto_plugin.so",
+    "usr/bin/dbdump",
+    "usr/bin/dbhash",
+    "usr/bin/dbtotxt",
+    "usr/bin/index_usage",
+    "usr/bin/showdb",
+    "usr/bin/showjournal",
+    "usr/bin/showshm",
+    "usr/bin/showstat4",
+    "usr/bin/showwal",
+    "usr/bin/sqldiff",
+    "usr/bin/sqlite3_expert",
+    "usr/bin/sqlite3_rsync",
+    "usr/bin/rsvg-convert",
+    "usr/share/man/man1/rsvg-convert.1.gz",
+    "usr/share/hwdata/oui.txt",
+    "usr/share/hwdata/iab.txt",
+    "usr/share/libresprite/data/fonts/font-zh.ttf",
+    "usr/share/libresprite/data/fonts/font-kr.ttf",
+    "usr/share/libresprite/data/fonts/font-jp.ttf",
+    "usr/lib/sox/libsox_fmt_ao.so",
+    "usr/lib/sox/libsox_fmt_amr_nb.so",
+    "usr/lib/sox/libsox_fmt_amr_wb.so",
+    "usr/lib/sox/libsox_fmt_opus.so",
+    "usr/lib/sox/libsox_fmt_pulseaudio.so",
+    "usr/lib/sox/libsox_fmt_wavpack.so",
+]
+
+[buildroot]
+packages = [
+    "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
+    "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson", "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
+    "wayland", "wayland-protocols", "libglvnd", "mesa", "gtk3", "vte3", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
+    "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile",
+    "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo", "libmikmod",
+    "grub",
+    "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
+]
+skip = [
+    "pandoc",
+    "asciidoctor",
+    "ruby",
+    "rubygems",
+    "ruby-abbrev",
+    "ruby-base64",
+    "ruby-benchmark",
+    "ruby-bigdecimal",
+    "ruby-bundledgems",
+    "ruby-bundler",
+    "ruby-cgi",
+    "ruby-csv",
+    "ruby-date",
+    "ruby-delegate",
+    "ruby-did_you_mean",
+    "ruby-digest",
+    "ruby-drb",
+    "ruby-english",
+    "ruby-erb",
+    "ruby-etc",
+    "ruby-fcntl",
+    "ruby-ffi",
+    "ruby-ffi-compiler",
+    "ruby-fiddle",
+    "ruby-fileutils",
+    "ruby-find",
+    "ruby-forwardable",
+    "ruby-getoptlong",
+    "ruby-io-console",
+    "ruby-io-nonblock",
+    "ruby-io-wait",
+    "ruby-ipaddr",
+    "ruby-irb",
+    "ruby-json",
+    "ruby-kramdown",
+    "ruby-kramdown-parser-gfm",
+    "ruby-logger",
+    "ruby-mini_portile2",
+    "ruby-minitest",
+    "ruby-mustache",
+    "ruby-mutex_m",
+    "ruby-net-http",
+    "ruby-nokogiri",
+    "ruby-open-uri",
+    "ruby-power_assert",
+    "ruby-psych",
+    "ruby-racc",
+    "ruby-rake",
+    "ruby-rake-compiler",
+    "ruby-rdiscount",
+    "ruby-rdoc",
+    "ruby-reline",
+    "ruby-rexml",
+    "ruby-ronn-ng",
+    "ruby-ruby2_keywords",
+    "ruby-stdlib",
+    "ruby-stringio",
+    "ruby-test-unit",
+    "ruby-time",
+    "ruby-tmpdir",
+    "ruby-uri",
+    "wget",
+    "sdl",
+    "sdl12-compat",
+    "gtk2",
+    "gtkmm",
+    "pulseaudio",
+    "python-pyqt5",
+    "python-pyqt5-sip",
+    "qt5-base",
+    "qt5-declarative",
+    "qt5-svg",
+    "qt5-tools",
+    "qt5-translations",
+    "qt5-wayland",
+    "qt5-x11extras",
+    "qt6-5compat",
+    "qt6-base",
+    "qt6-declarative",
+    "qt6-languageserver",
+    "qt6-shadertools",
+    "qt6-svg",
+    "qt6-tools",
+    "qt6-translations",
+    "texinfo",
+    "libmfx",
+    "uv",
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings",
+    "python-pymdown-extensions",
+    "libultrahdr",
+    "pandoc-cli",
+    "python-sphinx-book-theme",
+    "python-sphinxcontrib-doxylink",
+    "add-determinism",
+    "cuda",
+    "nvidia-utils",
+    "hip-runtime-amd",
+    "openucc",
+    "isk",
+    "renderdoc",
+    "viskores",
+    "adios2",
+    "paraview-catalyst",
+    "anari-sdk",
+    "openimagedenoise",
+    "ospray",
+    "svt-hevc",
+    "rocm-language-runtime",
+    "onnxruntime",
+]
+
+[providers]
+"libjack.so" = "pipewire-jack"
+jack = "pipewire-jack"
+dbus-units = "dbus-broker-units"
+"libxtables.so" = "iptables"
+"libwebrtc_audio_processing.so" = "webrtc-audio-processing-0.3"
+pipewire-session-manager = "wireplumber"
+glib2-devel = "glib2"
+lv2-host = "jalv"
+xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
+
+[mirrors]
+"https://ftp.gnu.org/gnu/" = ["https://ftp.fau.de/gnu/", "https://mirror.netcologne.de/gnu/", "https://ftp.halifax.rwth-aachen.de/gnu/"]
+"https://ftp.gnu.org/pub/gnu/" = ["https://ftp.fau.de/gnu/", "https://mirror.netcologne.de/gnu/", "https://ftp.halifax.rwth-aachen.de/gnu/"]
+"https://ftpmirror.gnu.org/" = ["https://ftp.fau.de/gnu/", "https://mirror.netcologne.de/gnu/", "https://ftp.halifax.rwth-aachen.de/gnu/"]
+"https://download-mirror.savannah.gnu.org/releases/" = ["https://mirror.netcologne.de/savannah/", "https://www.mirrorservice.org/sites/download.savannah.gnu.org/releases/"]
+"https://download.savannah.gnu.org/releases/" = ["https://mirror.netcologne.de/savannah/", "https://www.mirrorservice.org/sites/download.savannah.gnu.org/releases/"]
+"https://cdn.kernel.org/pub/" = ["https://www.mirrorservice.org/sites/ftp.kernel.org/pub/"]
+"https://www.kernel.org/pub/" = ["https://www.mirrorservice.org/sites/ftp.kernel.org/pub/"]
+"https://mirrors.edge.kernel.org/pub/" = ["https://www.mirrorservice.org/sites/ftp.kernel.org/pub/"]
+"https://download.gnome.org/sources/" = ["https://www.mirrorservice.org/sites/ftp.gnome.org/pub/GNOME/sources/"]
+"https://www.x.org/releases/individual/" = ["https://www.mirrorservice.org/sites/ftp.x.org/pub/individual/"]
+"https://www.x.org/pub/individual/" = ["https://www.mirrorservice.org/sites/ftp.x.org/pub/individual/"]
+"https://www.cpan.org/" = ["https://ftp.halifax.rwth-aachen.de/cpan/", "https://www.mirrorservice.org/sites/cpan.perl.org/CPAN/"]
+"https://cpan.metacpan.org/" = ["https://ftp.halifax.rwth-aachen.de/cpan/", "https://www.mirrorservice.org/sites/cpan.perl.org/CPAN/"]
+
+[sources]
+"beej-bgclr.zip" = { url = "https://beej.us/guide/bgclr/html/bgclr.zip", sha256 = "3bd027e25142cf58cccab2398bcc2bdad1f718f7cd5d9baf407f0ae59a9d7296" }
+"beej-bgc.zip" = { url = "https://beej.us/guide/bgc/html/bgc.zip", sha256 = "44f1927ee60cd65678c551f88f443f7069be9c5069e87c280c9904f73c31104b" }
+"BASS-Floppy-1.3.zip" = { url = "https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip", sha256 = "d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818" }
+"rust-1.99.1-i686-unknown-linux-gnu.tar.xz" = { url = "https://static.rust-lang.org/dist/rust-1.99.1-i686-unknown-linux-gnu.tar.xz", sha256 = "f5fae4c94233314fef8cc186e0bb8b7cd4165ee39268fcdb5d1fcd69afd7d7ae" }
+"GeneralUser-GS-2.0.3.sf2" = { url = "https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/GeneralUser-GS.sf2", sha256 = "9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe" }
+"GeneralUser-GS-LICENSE.txt" = { url = "https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/documentation/LICENSE.txt", sha256 = "7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca16b9b8b405be" }
+"pixelitos-icon-theme-20260721.tar.gz" = { url = "https://github.com/ItzSelenux/pixelitos-icon-theme/archive/refs/tags/20260721.tar.gz", sha256 = "61a4bd9570b791897f3d6f9ddb363887bb6290afa6d4aa3d88c07e76f529d229" }
+"shim-x64-16.1-10.x86_64.rpm" = { url = "https://kojipkgs.fedoraproject.org/packages/shim/16.1/10/x86_64/shim-x64-16.1-10.x86_64.rpm", sha256 = "50ca8ad0f0893a9b69d257b232cc38fe572d7f2c814bc9aec4df5e492800cdc7" }
+"linux-7.3.tar.xz" = { url = "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.xz", sha256 = "87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953" }
+"open-watcom-2026-10-01.tar.xz" = { url = "https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz", sha256 = "e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe" }
+"xpadneo-0.10.4.tar.gz" = { url = "https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.4.tar.gz", sha256 = "5271c02a788f9470199e9e18596e0d8537687ff68b2fcc64c03ecf92638f5c84" }
+"lure-1.1.zip" = { url = "https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip", sha256 = "f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108" }
+"soltys-en-v1.0.zip" = { url = "https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip", sha256 = "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6" }
+
+# Packages: [name] tables. source = "arch" (the default) imports the PKGBUILD from the
+# Arch Linux packaging repos at the version recorded in distro.lock; "sources" means
+# packages/<name>/PKGBUILD is Tiny Hat's own. A version here pins the import; a recipe
+# with no version anywhere is maintained by hand and never re-imported.
+# build = true builds even if a prebuilt package exists; arch = "i686" means no x32 build;
+# localdeps lists locally built packages the build needs; pin* picks the archlinux32
+# package used in the build environment.
+
+[algernon]
+arch = "i686"
+
+[aquarium]
+source = "sources"
+arch = "i686"
+
+[arm-none-eabi-gcc]
+prebuilt = true
+
+[arm-none-eabi-newlib]
+prebuilt = true
+
+[at-spi2-core]
+build = true
+
+[binutils]
+prebuilt = true
+
+[bluetui]
+arch = "i686"
+
+[bonzomatic]
+build = true
+localdeps = ["libglvnd"]
+
+[busybox]
+arch = "i686"
+
+[cairo]
+build = true
+
+[cargo-c]
+build = true
+
+[cc65]
+source = "sources"
+
+[dav1d]
+build = true
+
+[dosbox-x]
+source = "sources"
+arch = "i686"
+localdeps = ["libglvnd"]
+
+[dwl]
+source = "sources"
+
+[fcft]
+build = true
+localdeps = ["libutf8proc"]
+
+[fish]
+arch = "i686"
+
+[fluidsynth]
+source = "sources"
+
+[fontconfig]
+source = "sources"
+
+[foot]
+build = true
+localdeps = ["fcft", "libutf8proc"]
+
+[ft2-clone]
+build = true
+
+[furnace]
+source = "sources"
+localdeps = ["libglvnd"]
+
+[fuzzel]
+source = "sources"
+localdeps = ["fcft", "libutf8proc"]
+
+[gba-dev]
+source = "sources"
+
+[gcc]
+arch = "i686"
+prebuilt = true
+
+[gdb]
+source = "sources"
+
+[gdk-pixbuf2]
+build = true
+localdeps = ["meson", "shared-mime-info"]
+
+[git]
+prebuilt = true
+
+[glew]
+build = true
+
+[glibc]
+prebuilt = true
+
+[glslang]
+build = true
+
+[glu]
+build = true
+
+[glycin]
+arch = "i686"
+
+[gnupg]
+prebuilt = true
+
+[gnutls]
+prebuilt = true
+
+[go-tinyhat]
+source = "sources"
+arch = "i686"
+
+[grafx2]
+source = "sources"
+
+[grub]
+arch = "i686"
+
+[grub-efi64]
+source = "sources"
+arch = "i686"
+
+[gtk3]
+prebuilt = true
+
+[gtk4]
+prebuilt = true
+
+[highway]
+prebuilt = true
+
+[impala]
+arch = "i686"
+
+[krb5]
+prebuilt = true
+
+[libclc]
+localdeps = ["llvm-libs", "llvm", "clang", "spirv-llvm-translator"]
+
+[libcss]
+build = true
+
+[libdisplay-info]
+source = "sources"
+
+[libdom]
+source = "sources"
+
+[libepoxy]
+build = true
+
+[libglvnd]
+build = true
+
+[libhubbub]
+source = "sources"
+
+[libjxl]
+prebuilt = true
+
+[libnsbmp]
+source = "sources"
+
+[libnsgif]
+build = true
+
+[libnsutils]
+source = "sources"
+
+[libparserutils]
+source = "sources"
+
+[libresprite]
+build = true
+
+[libretro-blastem]
+source = "sources"
+arch = "i686"
+
+[librsvg]
+arch = "i686"
+prebuilt = true
+
+[libsvgtiny]
+build = true
+
+[libunwind]
+arch = "i686"
+
+[libutf8proc]
+build = true
+
+[libwapcaplet]
+build = true
+
+[libxml2]
+source = "sources"
+
+[libxml2-legacy]
+source = "sources"
+
+[linux-firmware]
+prebuilt = true
+
+[llvm]
+source = "sources"
+prebuilt = true
+prebuilt_reason = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23"
+
+[love]
+arch = "i686"
+build = true
+
+[lsd]
+arch = "i686"
+
+[luajit]
+arch = "i686"
+
+[make]
+source = "sources"
+
+[mesa]
+prebuilt = true
+localdeps = ["llvm-libs", "llvm", "clang", "libclc", "spirv-llvm-translator"]
+
+[meson]
+build = true
+
+[mgba]
+source = "sources"
+
+[mpg123]
+build = true
+
+[mtools]
+build = true
+
+[mtpaint]
+build = true
+
+[netsurf]
+source = "sources"
+localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "libsvgtiny", "libutf8proc", "libwapcaplet", "shared-mime-info"]
+
+[nss]
+prebuilt = true
+
+[nvi2]
+source = "sources"
+
+[onetbb]
+prebuilt = true
+
+[openssl]
+prebuilt = true
+
+[orbiton]
+source = "sources"
+arch = "i686"
+
+[pango]
+build = true
+version = "1:1.54.0-1"
+pin = "1:1.54.0-1.0"
+pin_sha256 = "69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef"
+pin_reason = "archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have"
+
+[pipewire]
+prebuilt = true
+
+[png2xpm]
+source = "sources"
+arch = "i686"
+
+[pt2-clone]
+build = true
+
+[pure-fish]
+source = "sources"
+
+[pvsneslib]
+source = "sources"
+
+[qemacs]
+source = "sources"
+
+[rav1e]
+arch = "i686"
+
+[raylib]
+source = "sources"
+
+[rfxgen]
+source = "sources"
+
+[ripgrep]
+arch = "i686"
+
+[scummvm]
+source = "sources"
+
+[sdl3]
+source = "sources"
+
+[sdl3-man]
+source = "sources"
+
+[sdl3_image]
+source = "sources"
+
+[sdl3_ttf]
+source = "sources"
+
+[spirv-headers]
+build = true
+
+[spirv-llvm-translator]
+localdeps = ["llvm-libs", "llvm"]
+
+[spirv-tools]
+build = true
+prebuilt = true
+
+[swaybg]
+source = "sources"
+
+[swaylock]
+source = "sources"
+
+[syncthing]
+arch = "i686"
+
+[sysprof]
+prebuilt = true
+
+[systemd]
+prebuilt = true
+
+[tcc]
+arch = "i686"
+
+[testcontroller]
+source = "sources"
+
+[tic-80]
+source = "sources"
+
+[tinyhat-gui]
+source = "sources"
+
+[tinyhat-midibench]
+source = "sources"
+
+[tinyhat-retro]
+source = "sources"
+
+[tinyhat-splash]
+source = "sources"
+
+[tinysparql]
+prebuilt = true
+
+[tinyxxd]
+source = "sources"
+
+[util-linux]
+prebuilt = true
+
+[vice]
+source = "sources"
+
+[vtgbte]
+source = "sources"
+
+["wlroots0.20"]
+source = "sources"
+
+[x32-binutils]
+source = "sources"
+arch = "i686"
+
+[x32-gcc]
+source = "sources"
+arch = "i686"
+
+[x32-gcc-stage1]
+source = "sources"
+arch = "i686"
+
+[x32-runtime]
+source = "sources"
+
+[zsnes]
+source = "sources"
+arch = "i686"
+localdeps = ["libglvnd"]

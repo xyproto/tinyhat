@@ -5,7 +5,7 @@ svg, out = sys.argv[1], sys.argv[2]
 SCALE = 16
 BG = (0x1a, 0x1b, 0x26)
 text = open(svg).read()
-with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distro.toml"), "rb") as f:
+with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build", "theme.toml"), "rb") as f:
     HAT = tomllib.load(f)["hat_color"]
 size = int(re.search(r'viewBox="0 0 (\d+) \d+"', text).group(1))
 pixels = [[BG] * (size * SCALE) for _ in range(size * SCALE)]

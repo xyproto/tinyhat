@@ -3,7 +3,7 @@ import gzip, math, os, random, struct, sys, tomllib, zlib
 
 BG = (0x1a, 0x1b, 0x26)
 TEAL = (0x1a, 0x9e, 0x96)
-with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "distro.toml"), "rb") as f:
+with open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "build", "theme.toml"), "rb") as f:
     DISTRO = tomllib.load(f)
 HAT = tuple(int(DISTRO["hat_color"][i:i + 2], 16) for i in (1, 3, 5))
 HIGHLIGHT = tuple(int(DISTRO["hat_highlight_color"][i:i + 2], 16) for i in (1, 3, 5))

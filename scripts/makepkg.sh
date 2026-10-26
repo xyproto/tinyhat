@@ -16,11 +16,7 @@ done
 dir=$(readlink -f "$1")
 shift
 base=${dir##*/}
-if python3 -c "
-import sys, tomllib
-d = tomllib.load(open(sys.argv[1], 'rb'))
-sys.exit(0 if d.get(sys.argv[2], {}).get('source') == 'sources' else 1)
-" "$top/packages/packages.toml" "$base" 2>/dev/null; then
+if [ "$(python3 "$top/scripts/distro.py" source "$base")" = sources ]; then
 	conf=/tinyhat/config/makepkg-tinyhat.conf
 else
 	conf=/tinyhat/config/makepkg.conf

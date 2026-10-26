@@ -8,10 +8,11 @@ import subprocess
 import sys
 import tarfile
 import time
-import tomllib
 import shutil
 import urllib.parse
 import urllib.request
+
+import distro
 
 os.umask(0o022)
 
@@ -167,14 +168,6 @@ def load_repo(repodir, arch="i686"):
     return pkgs, provides
 
 
-def parse_prefs(path):
-    prefs = {}
-    for item in read_list(path):
-        k, v = item.split("=", 1)
-        prefs[k] = v
-    return prefs
-
-
 def lookup(index, dep, prefs, chosen):
     pkgs, provides = index
     if dep in prefs and prefs[dep] in pkgs:
@@ -214,19 +207,16 @@ def resolve_targets(targets, indexes, arch, prefs, skip):
     return [chosen[k] for k in sorted(chosen)]
 
 
-def list_config(listfile, extra=()):
-    cfg = os.path.dirname(listfile)
-    prefs = parse_prefs(os.path.join(cfg, "providers.txt"))
-    base = os.path.splitext(os.path.basename(listfile))[0]
-    skip = set(read_list(os.path.join(cfg, f"{base}.skip")))
-    targets = read_list(listfile)
+def list_config(name, extra=()):
+    s = distro.section(name)
+    targets = list(s.get("packages", []))
     for path in extra:
         targets += [t for t in read_list(path) if t not in targets]
-    return targets, prefs, skip
+    return targets, distro.providers(), set(s.get("skip", []))
 
 
-def resolve(listfile, extra=(), repodir=None, arch="i686"):
-    targets, prefs, skip = list_config(listfile, extra)
+def resolve(name, extra=(), repodir=None, arch="i686"):
+    targets, prefs, skip = list_config(name, extra)
     if repodir:
         indexes = {a: load_repo(repodir, a) for a in {"i686", arch}}
     else:
@@ -245,29 +235,25 @@ def write_lock(sel, lockfile):
     print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
 
 
-def read_pins(path=os.path.join(TOP, "config", "build.toml")):
-    with open(path, "rb") as f:
-        pins = tomllib.load(f).get("pins", {})
-    return {name: [p["version"], p["file"], p["sha256"]] for name, p in pins.items()}
-
-
-def cmd_lock(listfile, lockfile, *extra):
+def cmd_lock(name, *extra):
     os.makedirs(DBDIR, exist_ok=True)
     if os.environ.get("REFRESH") or not all(
         os.path.exists(os.path.join(DBDIR, f"{r}.db")) for r in REPOS
     ):
         for repo in REPOS:
             download(f"{MIRROR}/{repo}/{repo}.db", os.path.join(DBDIR, f"{repo}.db"))
-    sel = resolve(listfile, extra)
-    pins = read_pins()
+    sel = resolve(name, extra)
+    pins = distro.pins()
     for p in sel:
         if p["name"] in pins:
             p["version"], p["filename"], p["sha256"] = pins[p["name"]]
-    write_lock(sel, lockfile)
+    distro.write_lock(**{name: {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"],
+                                            "sha256": p["sha256"]} for p in sel}})
+    print(f"distro.lock [{name}]: {len(sel)} packages", file=sys.stderr)
 
 
-def cmd_local(listfile, lockfile, repodir, arch="i686"):
-    write_lock(resolve(listfile, repodir=repodir, arch=arch), lockfile)
+def cmd_local(name, lockfile, repodir, arch="i686"):
+    write_lock(resolve(name, repodir=repodir, arch=arch), lockfile)
 
 
 def cmd_repofiles(repodir, arch, *names):
@@ -349,7 +335,7 @@ def cmd_prebuilt(repodir, lockfile, *names):
     os.makedirs(repodir, exist_ok=True)
     os.makedirs(os.path.dirname(lockfile), exist_ok=True)
     db = current_db()[0]
-    pins = read_pins()
+    pins = distro.pins()
     with open(lockfile, "a+") as lf:
         fcntl.flock(lf, fcntl.LOCK_EX)
         lf.seek(0)
@@ -380,23 +366,12 @@ def cmd_prebuilt(repodir, lockfile, *names):
             lf.write(f"{p['repo']} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
 
 
-def read_sources(path):
-    out = {}
-    with open(path) as f:
-        for line in f:
-            fields = line.split()
-            if fields and not fields[0].startswith("#"):
-                name, h, url = fields
-                out[name] = (h, url)
-    return out
-
-
-def cmd_source(sourcesfile, srcdir, *names):
-    src = read_sources(sourcesfile)
+def cmd_source(srcdir, *names):
+    src = distro.sources()
     os.makedirs(srcdir, exist_ok=True)
     for name in names or src:
         if name not in src:
-            die(f"{name} is not listed in {sourcesfile}")
+            die(f"{name} is not listed in distro.toml [sources]")
         h, url = src[name]
         dest = os.path.join(srcdir, name)
         if os.path.exists(dest) and sha256(dest) == h:
@@ -447,8 +422,8 @@ def extract_lib32(path, root, libs_only, excludes):
 
 def main():
     if len(sys.argv) < 2:
-        die("usage: pkg.py lock LIST LOCK [LIST...] | local LIST LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
-            "fetch LOCK DIR | prebuilt REPODIR NAME... | extract LOCK DIR ROOT [EXCLUDEFILE] | source SOURCES DIR [NAME...]")
+        die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
+            "fetch LOCK DIR | prebuilt REPODIR NAME... | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...]")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
@@ -463,7 +438,7 @@ def main():
     elif cmd == "source":
         cmd_source(*args)
     elif cmd == "extract":
-        ex = read_list(args[3]) if len(args) > 3 else []
+        ex = distro.section(args[3]).get("exclude", []) if len(args) > 3 else []
         cmd_extract(args[0], args[1], args[2], ex)
     else:
         die(f"unknown command {cmd}")

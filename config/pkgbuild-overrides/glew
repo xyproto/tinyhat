@@ -1,0 +1,5 @@
+depends=(glibc libegl libgl glu)
+eval "$(
+  declare -f build | sed 's/make STRIP=/make SYSTEM=linux-egl STRIP=/'
+  declare -f package | sed 's/make install.all DESTDIR=/make SYSTEM=linux-egl install.all DESTDIR=/'
+)"

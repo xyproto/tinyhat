@@ -1,0 +1,4 @@
+depends=(glibc libglvnd)
+eval "$(
+  declare -f build | sed 's/-D docs=true/-D docs=true -D x11=false -D glx=no/'
+)"

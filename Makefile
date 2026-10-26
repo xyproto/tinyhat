@@ -6,18 +6,18 @@ B := build
 REPO := $(B)/repo
 SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
-SOURCES := $(addprefix vendor/src/,$(shell awk '!/^#/ { print $$1 }' sources.txt))
+SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
 SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
 BOOT_PKGS := $(B)/pkg/i686/grub $(B)/pkg/i686/linux-firmware $(B)/pkg/i686/intel-ucode $(B)/pkg/i686/memtest86+ $(B)/pkg/i686/kbd
-IMG_DEPS := distro.toml config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py $(BOOT_PKGS)
+IMG_DEPS := $(B)/theme.toml config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py $(BOOT_PKGS)
 
 ifeq (,$(findstring -j,$(MAKEFLAGS)))
 MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all lock lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
 
 all: tinyhat32.img
 
@@ -27,7 +27,7 @@ ifneq (,$(filter-out cleantest cleanchroot clean distclean status,$(or $(MAKECMD
 include $(B)/pkgs.mk
 endif
 
-$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/srcinfo.py config/build.toml config/localdeps.txt config/libpkgs.txt config/providers.txt config/rootfs.txt config/rootfs.skip packages/packages.toml $(wildcard packages/*/*)
+$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/distro.py scripts/srcinfo.py distro.toml distro.lock $(wildcard packages/*/*)
 	@mkdir -p $(B)
 	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py mk >$@
@@ -55,7 +55,28 @@ lock:
 	@mkdir -p $(B)
 	python3 scripts/mkpkgs.py seed >$(B)/seed.txt
 	python3 scripts/mkpkgs.py libs
-	python3 scripts/pkg.py lock config/buildroot.txt buildroot.lock $(B)/seed.txt
+	python3 scripts/pkg.py lock buildroot $(B)/seed.txt
+
+lock-check:
+	@mkdir -p $(B)
+	@cp distro.lock $(B)/distro.lock.before
+	@$(MAKE) -s lock
+	@if cmp -s distro.lock $(B)/distro.lock.before; then echo "distro.lock is up to date"; \
+	else cp $(B)/distro.lock.before distro.lock; echo "distro.lock is stale, run make lock" >&2; exit 1; fi
+
+$(B)/theme.toml: distro.toml scripts/distro.py
+	@mkdir -p $(B)
+	python3 scripts/distro.py view theme $@
+
+$(B)/image.toml: distro.toml scripts/distro.py
+	@mkdir -p $(B)
+	python3 scripts/distro.py view image $@
+
+$(B)/buildroot.lock: distro.lock scripts/distro.py
+	@mkdir -p $(B)
+	python3 scripts/distro.py lockfile buildroot $@
+
+$(B)/pkg/i686/tinyhat-splash: $(B)/theme.toml
 
 import:
 	python3 scripts/importpkg.py all
@@ -93,9 +114,9 @@ fetch: $(B)/.fetched-buildroot sources
 sources: $(SOURCES)
 
 vendor/src/%:
-	python3 scripts/pkg.py source sources.txt vendor/src $*
+	python3 scripts/pkg.py source vendor/src $*
 
-$(B)/.fetched-buildroot: buildroot.lock
+$(B)/.fetched-buildroot: $(B)/buildroot.lock
 	@mkdir -p $(B)
 	python3 scripts/pkg.py fetch $< vendor/pkg
 	@touch $@
@@ -103,24 +124,24 @@ $(B)/.fetched-buildroot: buildroot.lock
 $(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 	chmod -R u+w $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
-	python3 scripts/pkg.py extract buildroot.lock vendor/pkg $(B)/buildroot
+	python3 scripts/pkg.py extract $(B)/buildroot.lock vendor/pkg $(B)/buildroot
 	ldconfig -r $(B)/buildroot
-	scripts/postinstall.sh $(B)/buildroot buildroot.lock vendor/pkg
+	scripts/postinstall.sh $(B)/buildroot $(B)/buildroot.lock vendor/pkg
 	scripts/rust.sh $(B)/buildroot vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 	@touch $@
 
 $(B)/seed-broken.txt: $(B)/.buildroot scripts/seedcheck.py
-	python3 scripts/seedcheck.py $(B)/buildroot buildroot.lock vendor/pkg $@
+	python3 scripts/seedcheck.py $(B)/buildroot $(B)/buildroot.lock vendor/pkg $@
 
 packages: $(I686_STAMPS)
 
 x32packages: $(ROOTFS_X32_STAMPS)
 
-$(B)/rootfs.lock: $(ROOTFS_I686_STAMPS) config/rootfs.txt config/rootfs.skip config/providers.txt
-	python3 scripts/pkg.py local config/rootfs.txt $@ $(REPO)
+$(B)/rootfs.lock: $(ROOTFS_I686_STAMPS) $(B)/image.toml
+	python3 scripts/pkg.py local image $@ $(REPO)
 
-$(B)/rootfs-x32.lock: $(ROOTFS_X32_STAMPS) config/rootfs.txt config/rootfs.skip config/providers.txt
-	python3 scripts/pkg.py local config/rootfs.txt $@ $(REPO) x32
+$(B)/rootfs-x32.lock: $(ROOTFS_X32_STAMPS) $(B)/image.toml
+	python3 scripts/pkg.py local image $@ $(REPO) x32
 
 $(B)/vmlinuz: config/kernel-i686.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
 	@mkdir -p $(B)
@@ -149,8 +170,8 @@ $(B)/.licenses-x32: $(B)/rootfs-x32.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi6
 	python3 scripts/mklicenses.py $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz config/rootfs.exclude scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
-ROOTFS_FINAL_DEPS := distro.toml $(OVERLAY) scripts/elfcheck.py scripts/symcheck.sh
+ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
+ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) scripts/elfcheck.py scripts/symcheck.sh
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses

@@ -1,0 +1,5 @@
+_d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(libx11|libxft|libxrender)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+eval "$(
+  declare -f build | sed 's/-D sysprof=enabled/-D sysprof=enabled -D xft=disabled/'
+  declare -f package_pango | sed 's/libpangoxft-1.0.so//'
+)"
