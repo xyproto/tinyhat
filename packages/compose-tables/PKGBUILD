@@ -1,6 +1,6 @@
 pkgname=compose-tables
 pkgver=1.8.13
-pkgrel=1
+pkgrel=2
 pkgdesc="XKB Compose tables (dead keys and the Compose key) for libxkbcommon, from libX11's nls data"
 arch=(any)
 url="https://gitlab.freedesktop.org/xorg/lib/libx11"
@@ -12,7 +12,7 @@ sha256sums=('69606f485c2c07c14ef64f75b7bb326d48587af33795d9ab3e607c0b5f94f11c')
 _magic() {
   LC_CTYPE=C sed -e '/^#  *[0-9][0-9]*  *.*$/d' -e '/^#line  *[0-9][0-9]*  *.*$/d' \
     -e '/^[	 ]*XCOMM$/s/XCOMM/#/' -e '/^[	 ]*XCOMM[^a-zA-Z0-9_]/s/XCOMM/#/' \
-    -e '/^[	 ]*XHASH/s/XHASH/#/' -e 's,X11_LOCALEDATADIR,/usr/share/X11/locale,g' \
+    -e '/^[	 ]*XHASH/s/XHASH/#/' -e 's,X11_LOCALEDATADIR,/usr/share/xkbcommon/locale,g' \
     -e '/@@$/s/@@$/\\/' -e '/^$/d'
 }
 
@@ -33,7 +33,7 @@ build() {
 
 package() {
   cd libX11-$pkgver
-  install -Dm644 -t "$pkgdir/usr/share/X11/locale" nls/out/compose.dir nls/out/locale.alias
-  install -Dm644 -t "$pkgdir/usr/share/X11/locale/en_US.UTF-8" nls/out/en_US.UTF-8/Compose
+  install -Dm644 -t "$pkgdir/usr/share/xkbcommon/locale" nls/out/compose.dir nls/out/locale.alias
+  install -Dm644 -t "$pkgdir/usr/share/xkbcommon/locale/en_US.UTF-8" nls/out/en_US.UTF-8/Compose
   install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
 }

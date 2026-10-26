@@ -712,6 +712,9 @@ build = true
 [libwapcaplet]
 build = true
 
+[libxkbcommon]
+build = true
+
 [libxml2]
 source = "sources"
 
