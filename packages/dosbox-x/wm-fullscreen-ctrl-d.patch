@@ -1,0 +1,35 @@
+--- a/src/gui/sdlmain.cpp	2026-10-23 20:54:54.000000000 +0200
++++ b/src/gui/sdlmain.cpp	2026-10-26 20:49:37.878529700 +0100
+@@ -6102,6 +6102,13 @@
+             case SDL_WINDOWEVENT_RESIZED:
+                 GFX_HandleVideoResize(event.window.data1, event.window.data2);
+                 continue;
++#if defined(C_SDL3)
++            case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
++            case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
++                if (sdl.desktop.fullscreen != (event.type == SDL_EVENT_WINDOW_ENTER_FULLSCREEN))
++                    GFX_SwitchFullScreen();
++                continue;
++#endif
+             case SDL_WINDOWEVENT_EXPOSED:
+                 if (sdl.desktop.type == SCREEN_GAMELINK) break;
+                 if (sdl.draw.callback) sdl.draw.callback( GFX_CallBackRedraw );
+--- a/src/shell/shell_misc.cpp	2026-10-23 20:54:54.000000000 +0200
++++ b/src/shell/shell_misc.cpp	2026-10-26 20:49:37.879772649 +0100
+@@ -1051,6 +1051,16 @@
+                 DOS_BreakFlag = false; // clear break flag so the next program doesn't get hit with it
+                 DOS_BreakConioFlag = false;
+                 break;
++            case 0x04:				/* Ctrl-D on an empty line exits */
++                if (str_len == 0) {
++                    strcpy(line, "exit");
++                    str_len = str_index = 4;
++                    uint16_t a = 4;
++                    DOS_WriteFile(STDOUT, reinterpret_cast<uint8_t*>(line), &a);
++                    if(!echo) { outc('\r'); outc('\n'); }
++                    size=0;
++                }
++                break;
+             case 0x0d:				/* Don't care, and return */
+             {
+                 uint16_t a = str_len - str_index;
