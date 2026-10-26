@@ -1,5 +1,5 @@
-beej-bgclr.zip a317eea64d7f99132fc302249a395b5ba88b20ec65e7d3af171c2bab6e23f659 https://beej.us/guide/bgclr/html/bgclr.zip
-beej-bgc.zip 6064437173f4d1723e5896117f9d4007b214ea71f61e7917ffdaa6a7534386eb https://beej.us/guide/bgc/html/bgc.zip
+beej-bgclr.zip 3bd027e25142cf58cccab2398bcc2bdad1f718f7cd5d9baf407f0ae59a9d7296 https://beej.us/guide/bgclr/html/bgclr.zip
+beej-bgc.zip 44f1927ee60cd65678c551f88f443f7069be9c5069e87c280c9904f73c31104b https://beej.us/guide/bgc/html/bgc.zip
 BASS-Floppy-1.3.zip d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818 https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
 rust-1.99.1-i686-unknown-linux-gnu.tar.xz f5fae4c94233314fef8cc186e0bb8b7cd4165ee39268fcdb5d1fcd69afd7d7ae https://static.rust-lang.org/dist/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 GeneralUser-GS-2.0.3.sf2 9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/GeneralUser-GS.sf2

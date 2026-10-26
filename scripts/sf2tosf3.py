@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 import os
 import math
+import shutil
 import struct
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
-import numpy as np
+try:
+    import numpy as np
+except ImportError:
+    sys.exit("sf2tosf3.py: numpy is missing (install python-numpy)")
+if not shutil.which("oggenc"):
+    sys.exit("sf2tosf3.py: oggenc is missing (install vorbis-tools)")
 
 os.umask(0o022)
 
