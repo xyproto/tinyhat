@@ -1,6 +1,0 @@
-libjack.so=pipewire-jack jack=pipewire-jack dbus-units=dbus-broker-units libxtables.so=iptables
-libwebrtc_audio_processing.so=webrtc-audio-processing-0.3
-pipewire-session-manager=wireplumber
-glib2-devel=glib2
-lv2-host=jalv
-xdg-desktop-portal-impl=xdg-desktop-portal-gtk

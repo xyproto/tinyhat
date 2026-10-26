@@ -27,7 +27,7 @@ case $mode in
 base)
 	rm -rf "$root"
 	mkdir -p "$root"
-	python3 scripts/pkg.py extract "$lock" "$repo" "$root" config/rootfs.exclude
+	python3 scripts/pkg.py extract "$lock" "$repo" "$root" image
 	pkgfile() { echo "$repo/$(awk -v p="$1" '$2 == p && $1 != "lib32" { print $4 }' "$lock")"; }
 	bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/include/*' 'usr/lib/*.o' usr/lib/libc_nonshared.a
 	bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
@@ -48,7 +48,7 @@ base)
 	for p in libglvnd glu glew glfw; do
 		bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/lib/pkgconfig/*'
 	done
-	python3 scripts/mklocaldb.py "$lock" "$repo" "$root" config/rootfs.txt
+	python3 scripts/mklocaldb.py "$lock" "$repo" "$root" image
 	for p in ${TINYHAT_PKGS-}; do
 		if inlock "$p"; then
 			bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
@@ -74,7 +74,7 @@ base)
 	rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
 	find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
 	sstrip "$root/usr/bin/zsnes-bin" "$root/usr/bin/dosbox-x" "$root/usr/bin/scummvm" "$root/usr/bin/dwl" "$root/usr/bin/fuzzel" "$root/usr/bin/grafx2-sdl3" "$root/usr/bin/algernon" "$root/usr/bin/syncthing"
-	sstrip "$root/usr/lib/dri/swrast_dri.so"
+	sstrip "$root"/usr/lib/libgallium-*.so
 	strip --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
 
 	for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do
@@ -124,9 +124,9 @@ EOF
 	grep -q '^NoExtract' "$root/etc/pacman.conf"
 	ignore=$(
 		for m in build/pkg/mode/*; do
-			[ "$(cat "$m")" = built ] && sed -n 's/^pkgname = //p' "packages/${m##*/}/.SRCINFO"
+			[ "$(cat "$m")" = built ] && [ -f "packages/${m##*/}/.SRCINFO" ] && sed -n 's/^pkgname = //p' "packages/${m##*/}/.SRCINFO"
 		done
-		sed -n 's/^\[pins\.\(.*\)\]$/\1/p' config/build.toml
+		python3 scripts/distro.py pins
 	)
 	ignorepkgs=
 	for p in $(printf '%s\n' $localpkgs $ignore | sort -u); do
@@ -160,7 +160,7 @@ finalize)
 		fi
 	done
 	for c in hat_color:HAT_COLOR hat_highlight_color:HAT_HIGHLIGHT_COLOR; do
-		v=$(sed -n "s/^${c%%:*} = \"#\([0-9a-fA-F]\{6\}\)\"$/\1/p" distro.toml)
+		v=$(sed -n "s/^${c%%:*} = \"#\([0-9a-fA-F]\{6\}\)\"$/\1/p" build/theme.toml)
 		sed -i "s/^#define ${c#*:} 0x.*/#define ${c#*:} 0x$v/" "$root/etc/skel/cprojects/bootanim/hat.h"
 		grep -qx "#define ${c#*:} 0x$v" "$root/etc/skel/cprojects/bootanim/hat.h"
 	done

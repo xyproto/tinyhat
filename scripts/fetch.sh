@@ -3,7 +3,7 @@ out=$1
 url=$2
 name=${out%.part}
 name=${name##*/}
-mirrors=$(dirname "$(dirname "$(readlink -f "$0")")")/config/mirrors.txt
+top=$(dirname "$(dirname "$(readlink -f "$0")")")
 try() {
 	rm -f "$out"
 	curl -qgb "" -fL --retry 2 --retry-delay 3 --connect-timeout 20 -o "$out" "$1"
@@ -20,5 +20,7 @@ while read -r from to; do
 		done
 		;;
 	esac
-done <"$mirrors"
+done <<EOF
+$(python3 "$top/scripts/distro.py" mirrors)
+EOF
 try "$url"

@@ -6,6 +6,7 @@ import tarfile
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import distro
 import pkg
 
 os.umask(0o022)
@@ -16,8 +17,8 @@ MULTI = {"license": "LICENSE", "replaces": "REPLACES", "depend": "DEPENDS", "opt
          "conflict": "CONFLICTS", "provides": "PROVIDES", "group": "GROUPS"}
 
 
-def main(lockfile, pkgdir, root, listfile):
-    explicit = set(pkg.read_list(listfile))
+def main(lockfile, pkgdir, root, name):
+    explicit = set(distro.section(name).get("packages", []))
     local = os.path.join(root, "var/lib/pacman/local")
     os.makedirs(local, exist_ok=True)
     with open(os.path.join(local, "ALPM_DB_VERSION"), "w") as f:

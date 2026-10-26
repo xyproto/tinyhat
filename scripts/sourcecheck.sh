@@ -32,7 +32,9 @@ while read -r file sum url; do
 		echo "$file: URL is not reachable: $url" >&2
 		rc=1
 	fi
-done < "$top/sources.txt"
+done <<EOF
+$(python3 "$top/scripts/distro.py" sources)
+EOF
 if [ "$rc" = 0 ]; then
 	echo "sources: ok ($checked entries, $missing missing locally)"
 fi

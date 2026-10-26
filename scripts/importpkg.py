@@ -11,6 +11,9 @@ import tempfile
 import tomllib
 import urllib.parse
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import distro
+
 os.umask(0o022)
 
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,7 +21,7 @@ GITLAB = os.environ.get("ARCH_GITLAB", "https://gitlab.archlinux.org/archlinux/p
 API = f"{re.match(r'https?://[^/]+', GITLAB).group(0)}/api/v4"
 A32 = os.environ.get("A32_PACKAGES", "https://git.archlinux32.org/archlinux32/packages.git")
 CACHE = os.path.join(TOP, "build", "cache", "a32packages")
-PKGCONF = os.path.join(TOP, "packages", "packages.toml")
+PKGCONF = distro.DISTRO
 OVERRIDES = os.path.join(TOP, "config", "pkgbuild-overrides")
 DROP = {".SRCINFO", "REUSE.toml", ".gitignore", ".gitlab-ci.yml", "LICENSES", "keys"}
 NV_CHECKER = ".nvchecker.toml"
@@ -118,22 +121,15 @@ def fetch_overlay(base, commit):
 
 
 def packages():
-    with open(PKGCONF, "rb") as f:
-        return tomllib.load(f)
+    return distro.packages()
 
 
 def i686only(pkgs):
     return {name for name, e in pkgs.items() if e.get("arch") == "i686"}
 
 
-def key(name):
-    return f'"{name}"' if any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_" for c in name) else name
-
-
-def fmt_value(v):
-    if isinstance(v, bool):
-        return "true" if v else "false"
-    return json.dumps(v, ensure_ascii=False)
+key = distro.key
+fmt_value = distro.value
 
 
 def fields_for(e):
@@ -145,7 +141,7 @@ def fields_for(e):
 
 
 def split_blocks(text):
-    pre = re.match(r"(?:[^[]|\A)*?(?=^\[)", text, re.M)
+    pre = re.match(r"(?s).*?(?=^\[)", text, re.M)
     pre = pre.group(0) if pre else ""
     names, blocks = [], []
     for m in re.finditer(rf"^\[{key_motif}\]\n(?:(?!\[).*(?:\n|\Z))*", text[len(pre):], re.M):
@@ -158,31 +154,37 @@ key_motif = r"(?:\"([^\"]+)\"|([^\][ \n]+))"
 
 
 def write_blocks(pre, kept):
-    with open(PKGCONF, "w") as f:
-        f.write(pre + "\n".join(b for n, b in sorted(kept)))
+    order = lambda nb: (0, distro.SECTIONS.index(nb[0])) if nb[0] in distro.SECTIONS else (1, nb[0])
+    distro.write_if_changed(PKGCONF, pre + "\n".join(b for n, b in sorted(kept, key=order)))
 
 
 def upsert(base, fields):
-    old = packages()
-    text = open(PKGCONF).read()
-    pre, names, blocks = split_blocks(text)
-    e = dict(old.get(base, {}))
+    table = dict(distro.tables().get(base, {}))
+    recipe = dict(distro.lock().get("recipes", {}).get(base, {}))
+    changed = False
     for k, v in fields:
-        e[k] = tomllib.loads(f"{k} = {v}")[k]
-    kept = [(n, b) for n, b in zip(names, blocks) if n != base]
-    kept.append((base, f"[{key(base)}]\n" + "".join(f"{k} = {fmt_value(v)}\n" for k, v in e.items())))
-    write_blocks(pre, kept)
+        v = tomllib.loads(f"{k} = {v}")[k]
+        if k in distro.FACTS and k not in table:
+            recipe[k] = v
+        elif table.get(k, "arch" if k == "source" else None) != v:
+            table[k] = v
+            changed = True
+    if recipe:
+        recipes = dict(distro.lock().get("recipes", {}))
+        recipes[base] = recipe
+        distro.write_lock(recipes=recipes)
+    if changed:
+        pre, names, blocks = split_blocks(open(PKGCONF).read())
+        kept = [(n, b) for n, b in zip(names, blocks) if n != base]
+        kept.append((base, f"[{key(base)}]\n" + "".join(f"{k} = {fmt_value(v)}\n" for k, v in table.items())))
+        write_blocks(pre, kept)
 
 
 def assign_nvcheckers(map):
-    text = open(PKGCONF).read()
-    pre, names, blocks = split_blocks(text)
-    kept = [(n, b) for n, b in zip(names, blocks) if n not in map]
-    for n, b in zip(names, blocks):
-        if n in map:
-            b = b.rstrip("\n") + "\n" + f"nvchecker = {json.dumps(map[n], ensure_ascii=False)}\n"
-            kept.append((n, b))
-    write_blocks(pre, kept)
+    recipes = {n: dict(r) for n, r in distro.lock().get("recipes", {}).items()}
+    for n, text in map.items():
+        recipes.setdefault(n, {})["nvchecker"] = text
+    distro.write_lock(recipes=recipes)
 
 
 def mangle(text, pkgrel, base, restrict):
@@ -392,7 +394,7 @@ def backfill_nvcheckers():
 def main():
     args = sys.argv[1:]
     if not args:
-        die("usage: importpkg.py all | BASE... | add BASE VERSION [BUILDDATE] | nvchecker | srcinfo DIR...")
+        die("usage: importpkg.py all | BASE... | add BASE VERSION [BUILDDATE] | update BASE... | nvchecker | srcinfo DIR...")
     if args[0] == "srcinfo":
         for d in args[1:]:
             srcinfo(d)
@@ -412,6 +414,17 @@ def main():
         upsert(base, fields)
         pkgs = packages()
         import_one(base, pkgs[base], pkgs[base].get("source", "arch"), i686only(pkgs))
+        return
+    if args[0] == "update":
+        for base in args[1:]:
+            e = packages().get(base)
+            if e is None or e.get("source") != "arch" or not e.get("version"):
+                die(f"{base}: not an imported Arch recipe")
+            if "version" in distro.tables().get(base, {}):
+                print(f"{base}: version is pinned in distro.toml", file=sys.stderr)
+                continue
+            upsert(base, [("version", fmt_value(latest_version(base)[0]))])
+            import_one(base, packages()[base], "arch", i686only(packages()))
         return
     restrict = i686only(packages())
     wanted = None if args == ["all"] else set(args)

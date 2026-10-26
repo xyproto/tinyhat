@@ -3,21 +3,17 @@ import os
 import re
 import sys
 import tarfile
-import tomllib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import distro
 import pkg
 
 TOP = pkg.TOP
-CONFIG = os.path.join(TOP, "config")
 SEED_BASE = ["base-devel", "pacman", "fakeroot", "git", "ccache", "python", "perl"]
 SYSROOT = {"x32-gcc": ["glibc"]}
 FILES_CACHE = os.path.join(TOP, "build", "cache", "files")
 SEED_BROKEN = os.path.join(TOP, "build", "seed-broken.txt")
-with open(os.path.join(CONFIG, "build.toml"), "rb") as f:
-    BUILD = tomllib.load(f)
-with open(os.path.join(TOP, "packages", "packages.toml"), "rb") as f:
-    PKGCONF = tomllib.load(f)
+PKGCONF = distro.packages()
 SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "gcc-libs", "binutils",
              "llvm", "llvm-libs", "clang", "compiler-rt", "rust", "go"}
 
@@ -77,13 +73,7 @@ def load():
 
 
 def read_localdeps():
-    out = {}
-    with open(os.path.join(CONFIG, "localdeps.txt")) as f:
-        for line in f:
-            fields = line.split()
-            if fields and not fields[0].startswith("#"):
-                out[fields[0]] = fields[1:]
-    return out
+    return distro.localdeps()
 
 
 def local_index(infos, subs=("tinyhat",)):
@@ -269,7 +259,7 @@ def indexes(infos):
 
 
 def read_libs():
-    return set(pkg.read_list(os.path.join(CONFIG, "libpkgs.txt")))
+    return set(distro.lock().get("libpkgs", []))
 
 
 def stamp(kind, base):
@@ -372,24 +362,24 @@ def cmd_mk():
     full = local_index(infos, ("arch", "tinyhat"))
     base_of = full[2]
     localdeps = read_localdeps()
-    prefs = pkg.parse_prefs(os.path.join(CONFIG, "providers.txt"))
+    prefs = distro.providers()
     libs = read_libs()
     idx = indexes(infos)
     seed = seed_index()
     broken = set(pkg.read_list(SEED_BROKEN))
     closures = {}
     versions = {"local": {n: i["version"] for i in infos for n in i["pkgnames"]},
-                "seed": {p["name"]: p["version"] for p in pkg.read_lock(os.path.join(TOP, "buildroot.lock"))}}
+                "seed": {p["name"]: p["version"] for p in distro.locked("buildroot")}}
     x32_base = {p["name"]: p["base"] for p in idx["x32"][0].values() if p["arch"] == "x32"}
     lines, i686_stamps, x32_stamps, tinyhat = [], [], [], []
 
-    targets, lprefs, skip = pkg.list_config(os.path.join(CONFIG, "rootfs.txt"))
+    targets, lprefs, skip = pkg.list_config("image")
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
-    listed = BUILD.get("prebuilt", {}).get("packages", [])
+    listed = distro.prebuilt_listed()
     force_build = {b for b, e in PKGCONF.items() if e.get("build")}
     candidates = [b for b in listed if b not in force_build]
-    if BUILD.get("prebuilt", {}).get("all"):
+    if distro.load().get("prebuilt_all"):
         all_arch = [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates
                     and i["base"] not in force_build]
         candidates += all_arch
@@ -402,7 +392,7 @@ def cmd_mk():
                 m = pkg.lookup((metadata, local_provides), d, lprefs, set())
                 if m:
                     wanted_by.setdefault(m, set()).add(n)
-        roots = set(pkg.read_list(os.path.join(CONFIG, "rootfs.txt")))
+        roots = set(distro.section("image").get("packages", []))
         chosen, notes = set(), []
         for base in candidates:
             info = by_base.get(base)
@@ -480,7 +470,7 @@ def cmd_mk():
         prereqs.append(mode_file(info["base"], "built"))
         rule(lines, target, info, prereqs, args, f"i686-{info['base']}")
 
-    x32_only = set(BUILD["x32"]["packages"]) if "packages" in BUILD.get("x32", {}) else None
+    x32_only = set(distro.load()["x32"]) if "x32" in distro.load() else None
     plans, graph = {}, {}
     for info in infos:
         if "x32" not in base_arches(info):
@@ -583,7 +573,7 @@ def cmd_seed():
     localdeps = read_localdeps()
     db = seed_index()
     idx = indexes(infos)
-    prefs = pkg.parse_prefs(os.path.join(CONFIG, "providers.txt"))
+    prefs = distro.providers()
     seed = list(SEED_BASE)
     for info in infos:
         if used is not None and info["base"] not in used:
@@ -625,8 +615,7 @@ def cmd_libs():
         for name in info["pkgnames"]:
             if name in libnames or (info["sub"] == "tinyhat" and name not in dbnames):
                 out.append(name)
-    with open(os.path.join(CONFIG, "libpkgs.txt"), "w") as f:
-        f.write("\n".join(sorted(set(out))) + "\n")
+    distro.write_lock(libpkgs=sorted(set(out)))
 
 
 def main():

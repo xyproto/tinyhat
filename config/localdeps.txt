@@ -1,8 +1,0 @@
-netsurf libcss libdom libhubbub libnsgif libnsbmp libparserutils libnsutils libsvgtiny libutf8proc libwapcaplet shared-mime-info
-spirv-llvm-translator llvm-libs llvm
-libclc llvm-libs llvm clang spirv-llvm-translator
-mesa llvm-libs llvm clang libclc spirv-llvm-translator
-gdk-pixbuf2 meson shared-mime-info
-fcft libutf8proc
-foot fcft libutf8proc
-fuzzel fcft libutf8proc
