@@ -17,9 +17,11 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all lock lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all iso lock lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
 
 all: tinyhat32.img
+
+iso: tinyhat32.iso
 
 both: tinyhat32.img tinyhat64x32.img
 
@@ -99,14 +101,14 @@ test: patchcheck sourcecheck fuzzelcheck
 	@scripts/chroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
 	@echo "grub.cfg: ok"
 
-dist: tinyhat32.img tinyhat64x32.img $(B)/tinyhat32.iso $(B)/tinyhat64x32.iso
+dist: tinyhat32.img tinyhat64x32.img tinyhat32.iso tinyhat64x32.iso
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
 	@ls -l $(B)/dist
 
-$(B)/tinyhat32.iso: tinyhat32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+tinyhat32.iso: tinyhat32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
 	scripts/mkiso.sh $< $@
 
-$(B)/tinyhat64x32.iso: tinyhat64x32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+tinyhat64x32.iso: tinyhat64x32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
 	scripts/mkiso.sh $< $@
 
 fetch: $(B)/.fetched-buildroot sources
@@ -219,7 +221,7 @@ status:
 
 clean:
 	scripts/userns.sh rm -rf $(B)
-	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat32.vdi tinyhat32.vdi.tmp tinyhat64x32.img tinyhat64x32.img.tmp
+	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat32.vdi tinyhat32.vdi.tmp tinyhat64x32.img tinyhat64x32.img.tmp tinyhat32.iso tinyhat64x32.iso
 
 distclean: clean
 	rm -rf vendor/pkg
