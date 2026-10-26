@@ -22,11 +22,11 @@ Ctrl+Alt+U	Example C64 program in C (2x Ctrl+Space to run)
 Ctrl+Alt+X	Example 256 byte demoscene intro (2x Ctrl+Space to run)
 Ctrl+Alt+L	Lock the screen (the default password is "tinyhat")
 Ctrl+Alt+H	Toggle sharing
-Ctrl+Alt+M	Download and run a SNES, GBA or Genesis game
+Ctrl+Alt+M	Download and run a homebrew game (NES, SNES, GBA, Genesis or Master System)
 Ctrl+Alt+A	Scan drives for ScummVM games
 Ctrl+Alt+S	ScummVM
 Ctrl+Alt+D	DOSBox-X
-Ctrl+Alt+T	TIC-80
+Ctrl+Alt+T	TIC-80 fantasy console
 Ctrl+Alt+Z	ZSNES 2
 Ctrl+Alt+V	C64 (VICE)
 Ctrl+Alt+I	LibreSprite
