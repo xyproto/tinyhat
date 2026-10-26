@@ -42,12 +42,11 @@ It also includes MemTest86+.
 
 For `make` to be able to create `tinyhat32.img`, these Arch Linux packages are needed:
 
-* `python-numpy`
-* `vorbis-tools`
+    base-devel bc python-numpy vorbis-tools
 
 For `make vdi`, these packages are also needed:
 
-* `virtualbox`
+    virtualbox
 
 ### Installation
 
