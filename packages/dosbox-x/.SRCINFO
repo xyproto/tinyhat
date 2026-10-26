@@ -1,7 +1,7 @@
 pkgbase = dosbox-x
 	pkgdesc = DOS emulator, Tiny Hat fork using SDL3
 	pkgver = 2026.10.23
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/xyproto/dosbox-x
 	arch = i686
 	license = GPL-2.0-or-later
@@ -19,6 +19,8 @@ pkgbase = dosbox-x
 	depends = duktape
 	depends = freetype2
 	source = dosbox-x-2026.10.23.tar.gz::https://github.com/xyproto/dosbox-x/archive/refs/tags/2026.10.23.tar.gz
+	source = wm-fullscreen-ctrl-d.patch
 	sha256sums = 2a1e8d4a8a84d0dd8969b6488c80a4ce8a564307d22a90667661374349b41760
+	sha256sums = SKIP
 
 pkgname = dosbox-x

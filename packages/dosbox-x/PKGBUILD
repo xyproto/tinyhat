@@ -1,17 +1,20 @@
 pkgname=dosbox-x
 pkgver=2026.10.23
-pkgrel=2
+pkgrel=3
 pkgdesc="DOS emulator, Tiny Hat fork using SDL3"
 arch=(i686)
 url="https://github.com/xyproto/dosbox-x"
 license=(GPL-2.0-or-later)
 depends=(sdl3 libglvnd fluidsynth libslirp libpng zlib alsa-lib ncurses libpcap duktape freetype2)
 makedepends=(autoconf automake)
-source=("dosbox-x-$pkgver.tar.gz::https://github.com/xyproto/dosbox-x/archive/refs/tags/$pkgver.tar.gz")
-sha256sums=('2a1e8d4a8a84d0dd8969b6488c80a4ce8a564307d22a90667661374349b41760')
+source=("dosbox-x-$pkgver.tar.gz::https://github.com/xyproto/dosbox-x/archive/refs/tags/$pkgver.tar.gz"
+        wm-fullscreen-ctrl-d.patch)
+sha256sums=('2a1e8d4a8a84d0dd8969b6488c80a4ce8a564307d22a90667661374349b41760'
+            'SKIP')
 
 prepare() {
   cd dosbox-x-$pkgver
+  patch -Np1 -i ../wm-fullscreen-ctrl-d.patch
   ./autogen.sh
 }
 
