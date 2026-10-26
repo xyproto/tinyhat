@@ -1,4 +1,6 @@
 *.bak
+*.idea
+*.iml
 *.o
 *.part
 *.part.*
@@ -6,6 +8,7 @@
 *.pyo
 *.swp
 *.tmp
+*.vdi
 /build/
 /tinyhat32.img
 /tinyhat32.img.tmp
