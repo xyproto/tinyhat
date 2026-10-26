@@ -6,12 +6,18 @@ mountpoint -q /dev || mount -t devtmpfs dev /dev
 mkdir -p /dev/pts /dev/shm
 mount -t devpts -o gid=5,mode=620 devpts /dev/pts
 mount -t tmpfs -o mode=1777 tmp /tmp
+/usr/lib/systemd/systemd-udevd --daemon
+udevadm trigger --type=subsystems --action=add
+udevadm trigger --type=devices --action=add
+udevadm settle -t 10
 /usr/lib/tinyhat/persist >/dev/null 2>&1
+/usr/lib/systemd/systemd-vconsole-setup /dev/tty1 2>/dev/null
 cd "$HOME"
 if ! setsid -w -c setpriv --reuid=tinyhat --regid=tinyhat --init-groups o "$HOME" </dev/tty1 >/dev/tty1 2>&1; then
 	printf '\nOrbiton exited with an error. Press Enter to power off.\n' >/dev/tty1
 	read -r _ </dev/tty1
 fi
 /usr/lib/tinyhat/persist stop >/dev/null 2>&1
+udevadm control --exit
 sync
 exec systemctl poweroff -ff
