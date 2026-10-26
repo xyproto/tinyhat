@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Battle.NET
-Icon=applications-games
-Comment=Install wine-staging and the Battle.net app, then start it
-Exec=tinyhat-battlenet
-Terminal=false
-Categories=Game;
