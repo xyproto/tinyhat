@@ -1,16 +1,13 @@
 [Unit]
 Description=Initialize the pacman keyring
 After=tinyhat-persist.service time-sync.target
-ConditionPathExists=!/etc/pacman.d/gnupg/trustdb.gpg
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 Nice=19
 IOSchedulingClass=idle
-ExecStart=/usr/bin/pacman-key --init
-ExecStart=/usr/bin/pacman-key --populate archlinux32
-ExecStart=/usr/bin/pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160
+ExecStart=/usr/lib/tinyhat/pacman-init
 ExecStartPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 
 [Install]
