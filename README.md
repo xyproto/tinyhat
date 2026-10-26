@@ -38,6 +38,17 @@ It also includes MemTest86+.
 * One can veryfy the image hash sum file with `gpg --verify SHA256SUMS.asc SHA256SUMS` and then `sha256sum -c SHA256SUMS`.
 * Each build of the image (`tinyhat32.img`). is reproducible and bit-identical.
 
+### Dependencies
+
+For `make` to be able to create `tinyhat32.img`, these Arch Linux packages are needed:
+
+* `python-numpy`
+* `vorbis-tools`
+
+For `make vdi`, these packages are also needed:
+
+* `virtualbox`
+
 ### Installation
 
 #### From Linux, UNIX or FreeBSD
