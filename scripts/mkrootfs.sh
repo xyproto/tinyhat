@@ -40,6 +40,7 @@ base)
 	mkdir -p "$root/usr/share/backgrounds/tinyhat"
 	python3 scripts/mkwallpaper.py img/tinyhat.svg "$root/usr/share/backgrounds/tinyhat/tinyhat.png"
 	python3 scripts/mkhatwallpaper.py "$root/usr/share/backgrounds/tinyhat/wirehat.png"
+	python3 scripts/mkhundetann.py "$root/usr/share/backgrounds/tinyhat/hundetann.png"
 	python3 scripts/mkpixelitos.py vendor/src/pixelitos-icon-theme-20260721.tar.gz "$root/usr/share/icons/pixelitos-dark"
 	bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
 	for p in linux-api-headers libxcrypt libglvnd glu glew glfw; do
@@ -84,6 +85,14 @@ base)
 	rm -f "$root/etc/fonts/conf.d/70-no-bitmaps-except-emoji.conf"
 
 	cp -a "$modules/." "$root/"
+	for k in "$modules"/usr/lib/modules/*/; do
+		k=${k%/}
+		k=${k##*/}
+		db=$root/var/lib/pacman/local/linux-tinyhat-${k%-tinyhat}-1
+		mkdir -p "$db"
+		printf '%%NAME%%\nlinux-tinyhat\n\n%%VERSION%%\n%s-1\n\n%%DESC%%\nThe Tiny Hat Linux kernel\n\n%%ARCH%%\n%s\n\n%%PROVIDES%%\nNTSYNC-MODULE\n\n' "${k%-tinyhat}" "$arch" >"$db/desc"
+		printf '%%FILES%%\n\n' >"$db/files"
+	done
 
 	install -Dm644 vendor/soundfont/GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/GeneralUser-GS-2.0.3.sf3"
 	ln -sf GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/default.sf2"

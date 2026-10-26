@@ -263,6 +263,10 @@ else
 		[ "$created" = 1 ] || exit 0
 	fi
 	mount -o noatime,lazytime "$part" /persist || exit 0
+	if [ -f /persist/.tinyhat-seed ]; then
+		copy_dirs /persist
+		rm -f /persist/.tinyhat-seed
+	fi
 fi
 for d in $dirs; do
 	mkdir -p "/persist/${d%%:*}" "${d#*:}"
