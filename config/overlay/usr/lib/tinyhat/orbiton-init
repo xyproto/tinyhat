@@ -1,0 +1,17 @@
+#!/bin/sh
+export PATH=/usr/bin TERM=linux LANG=C.UTF-8 HOME=/home/tinyhat USER=tinyhat
+mount -t proc proc /proc
+mount -t sysfs sys /sys
+mountpoint -q /dev || mount -t devtmpfs dev /dev
+mkdir -p /dev/pts /dev/shm
+mount -t devpts -o gid=5,mode=620 devpts /dev/pts
+mount -t tmpfs -o mode=1777 tmp /tmp
+/usr/lib/tinyhat/persist >/dev/null 2>&1
+cd "$HOME"
+if ! setsid -w -c setpriv --reuid=tinyhat --regid=tinyhat --init-groups o "$HOME" </dev/tty1 >/dev/tty1 2>&1; then
+	printf '\nOrbiton exited with an error. Press Enter to power off.\n' >/dev/tty1
+	read -r _ </dev/tty1
+fi
+/usr/lib/tinyhat/persist stop >/dev/null 2>&1
+sync
+exec systemctl poweroff -ff
