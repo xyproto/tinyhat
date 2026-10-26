@@ -1,6 +1,6 @@
 pkgname=furnace
 pkgver=0.6.8.3
-pkgrel=1
+pkgrel=2
 pkgdesc="Chiptune tracker for many old sound chips"
 arch=(i686 x32)
 url="https://tildearrow.org/furnace/"

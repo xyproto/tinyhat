@@ -31,4 +31,14 @@ package() {
   install -Dm644 license-from-upstream "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
+makedepends=(python meson)
+provides=(${provides[@]/libGLX.so/})
+eval "$(
+  declare -f build | sed 's/-D gles1=false/-D gles1=false -D x11=disabled -D glx=disabled/'
+  declare -f package | sed "
+    s/depends=('libxext' 'mesa' 'opengl-driver')/depends=('mesa' 'opengl-driver')/
+    s|meson install -C build --destdir \"\$pkgdir\"|&; printf 'INPUT(-lOpenGL)\\\\n' > \"\$pkgdir/usr/lib/libGL.so\"; sed 's/^Name: .*/Name: gl/' \"\$pkgdir/usr/lib/pkgconfig/opengl.pc\" > \"\$pkgdir/usr/lib/pkgconfig/gl.pc\"|
+  "
+)"
+
 unset -f pkgver

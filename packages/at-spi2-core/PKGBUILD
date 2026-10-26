@@ -96,4 +96,9 @@ package_at-spi2-core-docs() {
 
 # vim:set sw=2 sts=-1 et:
 
+_d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(libx11|libxi|libxtst|xorg-xprop)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+eval "$(
+  declare -f build | sed 's/-D default_bus=dbus-broker/-D default_bus=dbus-broker -D x11=disabled/'
+)"
+
 unset -f pkgver

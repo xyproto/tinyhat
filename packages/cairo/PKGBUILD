@@ -77,4 +77,9 @@ package_cairo-docs() {
 
 # vim:set sw=2 sts=-1 et:
 
+_d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(libx11|libxcb|libxext|libxrender)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+eval "$(
+  declare -f build | sed 's/-D dwrite=disabled/-D dwrite=disabled -D xlib=disabled -D xcb=disabled/'
+)"
+
 unset -f pkgver

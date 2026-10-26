@@ -1,7 +1,7 @@
 pkgbase = libresprite
 	pkgdesc = Animated sprite editor and pixel art tool, based on the last GPL2 commit of Aseprite
 	pkgver = 1.3.r49.g0a62d62
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/LibreSprite/LibreSprite
 	arch = i686
 	arch = x32
@@ -14,7 +14,6 @@ pkgbase = libresprite
 	depends = libjpeg-turbo
 	depends = libpng
 	depends = libwebp
-	depends = libxi
 	depends = pixman
 	depends = sdl3
 	depends = sdl3_image

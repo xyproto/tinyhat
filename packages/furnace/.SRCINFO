@@ -1,7 +1,7 @@
 pkgbase = furnace
 	pkgdesc = Chiptune tracker for many old sound chips
 	pkgver = 0.6.8.3
-	pkgrel = 1
+	pkgrel = 2
 	url = https://tildearrow.org/furnace/
 	arch = i686
 	arch = x32

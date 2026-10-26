@@ -1,6 +1,6 @@
 pkgname=dosbox-x
 pkgver=2026.10.23
-pkgrel=1
+pkgrel=2
 pkgdesc="DOS emulator, Tiny Hat fork using SDL3"
 arch=(i686)
 url="https://github.com/xyproto/dosbox-x"

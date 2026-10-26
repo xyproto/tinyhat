@@ -196,4 +196,23 @@ fi
 # atk bridge is missing, fast hack to work around atk-bridge/atk conflicts
 depends+=('at-spi2-core')
 
+_d=()
+for _p in "${depends[@]}"; do
+  case $_p in
+    libgl|libx11|libxcomposite|libxcursor|libxdamage|libxext|libxfixes|libxi|libxinerama|libxrandr|libxrender) ;;
+    *) _d+=("$_p") ;;
+  esac
+done
+depends=("${_d[@]}")
+eval "$(
+  declare -f build | sed 's/-D broadway_backend=true/-D broadway_backend=false -D x11_backend=false/'
+  declare -f package_gtk3 | sed '
+    /depends+=(gtk-update-icon-cache)/d
+    s/provides=(gtk3-print-backends/provides=(gtk-update-icon-cache gtk3-print-backends/
+    s/conflicts=(gtk3-print-backends)/conflicts=(gtk-update-icon-cache gtk3-print-backends)/
+    /rm usr\/bin\/gtk-update-icon-cache/d
+    /rm usr\/share\/man\/man1\/gtk-update-icon-cache.1/d
+  '
+)"
+
 unset -f pkgver
