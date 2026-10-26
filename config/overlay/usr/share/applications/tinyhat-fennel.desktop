@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Fennel and LÖVE programming
+Name=Example game in Fennel and LÖVE
 Icon=applications-games
 Comment=Write a game in Fennel, a Lisp, with the LÖVE engine
 Exec=tinyhat-fennel

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=C64 programming
+Name=Example C64 program in C
 Icon=input-gaming
 Comment=Write a Commodore 64 program in C with cc65 (press Ctrl+Space twice in rapid succession to build and run it in VICE)
 Exec=tinyhat-c64dev

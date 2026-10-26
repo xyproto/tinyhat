@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=256 byte demoscene intro
+Name=Example 256 byte demoscene intro
 Icon=applications-development
 Comment=A tiny DOS intro in assembly, built with nasm and run in DOSBox-X
 Exec=tinyhat-intro

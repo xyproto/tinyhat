@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Wi-Fi
+Name=Wi-Fi settings
 Icon=network-wireless
 Comment=Connect to a wireless network
 Exec=tinyhat-wifi

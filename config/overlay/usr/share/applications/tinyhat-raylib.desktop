@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Example Raylib program in C (2x Ctrl+Space to run)
+Name=Example Raylib program in C
 Icon=applications-development
 Comment=Edit and build a small 3D world made with raylib
 Exec=tinyhat-raylib
