@@ -1,6 +1,7 @@
 *.bak
 *.o
 *.part
+*.part.*
 *.pyc
 *.pyo
 *.swp
@@ -12,6 +13,7 @@
 /tinyhat64.img.tmp
 /tinyhat64x32.img
 /tinyhat64x32.img.tmp
+/vendor/archlinux32/
 /vendor/pkg/
 /vendor/soundfont/
 /vendor/src/
