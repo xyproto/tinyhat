@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Web browser
+Name=NetSurf web browser
 Icon=web-browser
 Comment=NetSurf web browser
 Exec=tinyhat-launch -n NetSurf netsurf-gtk3

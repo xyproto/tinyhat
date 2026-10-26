@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Example DOS program in C
+Icon=applications-development
+Comment=Edit and build a DOS program in C with Open Watcom, and run it in DOSBox-X
+Exec=tinyhat-watcom
+Terminal=false
+Categories=Development;

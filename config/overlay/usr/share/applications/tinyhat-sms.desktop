@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Sega Master System emulator (BlastEm)
+Icon=applications-games
+Comment=Play Sega Master System and Game Gear games from ~/ROMs/sms or a USB stick. A, Z, X, Enter and arrows, F5 saves, F9 loads
+Exec=tinyhat-emulate sms
+Terminal=false
+Categories=Game;Emulator;

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=SNES programming
+Name=Example SNES program in C
 Icon=input-gaming
 Comment=Write a Super Nintendo program in C with PVSnesLib (press Ctrl+Space twice in rapid succession to build and run it in ZSNES)
 Exec=tinyhat-snesdev

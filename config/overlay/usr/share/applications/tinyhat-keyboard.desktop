@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Keyboard layout
+Name=Keyboard layout selection
 Icon=input-keyboard
 Comment=Choose the keyboard layout for the desktop and the console
 Exec=tinyhat-keyboard

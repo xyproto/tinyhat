@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Super Nintendo emulator (ZSNES)
+Name=ZSNES 2
 Icon=applications-games
 Comment=Play Super Nintendo games from ~/ROMs/snes or a USB stick
 Exec=tinyhat-emulate snes

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=GBA programming
+Name=Example GBA program in C
 Icon=input-gaming
 Comment=Write a Game Boy Advance program in C (press Ctrl+Space twice in rapid succession to build and run it in mGBA)
 Exec=tinyhat-gba

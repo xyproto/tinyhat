@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=C programming
+Name=Example game in C
 Icon=applications-development
 Comment=Edit and build an SDL3 example in C
 Exec=tinyhat-code
