@@ -1,6 +1,6 @@
 pkgname=tinyhat-retro
 pkgver=1
-pkgrel=1
+pkgrel=2
 pkgdesc="Small SDL3 frontend for libretro emulator cores"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"

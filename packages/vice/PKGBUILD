@@ -1,6 +1,6 @@
 pkgname=vice
 pkgver=3.10
-pkgrel=1
+pkgrel=2
 pkgdesc="Commodore 64 emulator (x64sc) with the SDL UI, ported to SDL3"
 arch=(i686 x32)
 url="https://vice-emu.sourceforge.io/"
@@ -40,6 +40,16 @@ package() {
   cd "$pkgdir/usr"
   find bin -type f ! -name x64sc ! -name x64 ! -name c1541 -delete
   find bin -type l -delete
+  install -Dm755 bin/x64sc lib/vice/x64sc
+  rm bin/x64sc
+  install -Dm755 /dev/stdin bin/x64sc <<'EOF'
+#!/bin/sh
+set -- -autostartprgmode 1 -autostart-warp "$@"
+if tinyhat-slow; then
+	set -- -sidengine 0 -soundrate 22050 -VICIIfilter 0 "$@"
+fi
+exec /usr/lib/vice/x64sc "$@"
+EOF
   rm -rf share/doc share/man share/info share/applications share/icons share/metainfo
   cd share/vice
   rm -rf C128 C64DTV CBM-II PET PLUS4 SCPU64 VIC20 GLSL

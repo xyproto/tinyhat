@@ -1,7 +1,7 @@
 pkgbase = vice
 	pkgdesc = Commodore 64 emulator (x64sc) with the SDL UI, ported to SDL3
 	pkgver = 3.10
-	pkgrel = 1
+	pkgrel = 2
 	url = https://vice-emu.sourceforge.io/
 	arch = i686
 	arch = x32
