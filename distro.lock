@@ -30,6 +30,7 @@ libpkgs = [
     "chafa",
     "clang",
     "colord",
+    "compose-tables",
     "confuse",
     "cryptsetup",
     "cups",
@@ -484,7 +485,6 @@ libpkgs = [
     "verdict",
     "vid.stab",
     "vmaf",
-    "vtgbte",
     "vtk",
     "vulkan-icd-loader",
     "vulkan-intel",
@@ -1332,7 +1332,6 @@ abseil-cpp = { version = "20260817.0-2", a32 = "aee39c468775915b9a4b26602f00c7e3
 acl = { version = "2.4.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[acl]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/acl.git\"\nprefix = \"v\"\n" }
 adwaita-icon-theme = { version = "51.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[adwaita-icon-theme]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
 adwaita-icon-theme-legacy = { version = "46.2-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[adwaita-icon-theme-legacy]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/adwaita-icon-theme-legacy.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\n" }
-algernon = { version = "1.17.12-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[algernon]\nsource = \"git\"\ngit = \"https://github.com/xyproto/algernon.git\"\nprefix = \"v\"\n" }
 alsa-lib = { version = "1.2.16.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[alsa-lib]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-lib\"\nprefix = \"v\"\n" }
 alsa-topology-conf = { version = "1.2.5.1-4", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[alsa-topology-conf]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-topology-conf\"\nprefix = \"v\"\n" }
 alsa-ucm-conf = { version = "1.2.16.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[alsa-ucm-conf]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-ucm-conf\"\nprefix = \"v\"\n" }
