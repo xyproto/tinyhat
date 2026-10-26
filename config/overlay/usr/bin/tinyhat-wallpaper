@@ -6,11 +6,12 @@ pidfile=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-swaybg.pid
 if [ "${1-}" = --cycle ]; then
 	mkdir -p "$confdir"
 	case $(cat "$mode" 2>/dev/null) in
-	0) n=1 ;;
-	1) n=2 ;;
-	2) n=4 ;;
-	4) n=3 ;;
-	*) if [ -e "$hide" ]; then n=3; else n=0; fi ;;
+	4) n=1 ;;
+	1) n=0 ;;
+	0) n=5 ;;
+	5) n=2 ;;
+	2) n=3 ;;
+	*) if [ -e "$hide" ]; then n=3; else n=4; fi ;;
 	esac
 	if [ "$n" = 3 ]; then
 		rm -f "$hide"
@@ -31,7 +32,8 @@ case $(cat "$mode" 2>/dev/null) in
 2) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
 	;;
 4) set -- -m center -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png ;;
-*) set -- -m left -c 1a1b26 -i /usr/share/backgrounds/tinyhat/tinyhat.png
+5) set -- -m tile -c 1a1b26 -i /usr/share/backgrounds/tinyhat/hundetann.png ;;
+*) set -- -m left -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png
 	[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
 	;;
 esac

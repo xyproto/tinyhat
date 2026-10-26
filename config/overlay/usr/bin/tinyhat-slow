@@ -1,0 +1,5 @@
+#!/bin/sh
+bench=/run/tinyhat-midi/dosbox-x.conf
+rate=$(sed -n 's/^rate=//p' "$bench" 2>/dev/null)
+poly=$(sed -n 's/^fluid.polyphony=//p' "$bench" 2>/dev/null)
+[ -n "$rate" ] && { [ "$rate" -lt 44100 ] || [ "${poly:-32}" -lt 32 ]; }

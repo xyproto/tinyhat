@@ -20,19 +20,35 @@ if [ -n "$notify" ]; then
         tinyhat-notice "Insert a USB stick or CD with ScummVM games, then scan again" 6
         exit 0
     fi
-    tinyhat-notice "Scanning drives for ScummVM games..."
+    tinyhat-notice "Scanning drives for ScummVM games (0 games found)..."
 else
     flock 9
 fi
 ini=$HOME/.config/scummvm/scummvm.ini
 before=$(grep -c '^\[' "$ini" 2>/dev/null)
+found=0
+shown=0
 for d in /media/*/; do
     [ -z "$fixup" ] && [ -d "$d" ] || continue
     id=$(findmnt -no UUID --target "$d" 2>/dev/null)
     [ -n "$id" ] || id=$(basename "$d")
     [ -e "$cache/scanned-$id" ] && continue
-    nice -n 19 ionice -c 3 scummvm --add --recursive --path="$d" >"$cache/scan-$id.log" 2>&1 &&
-        : >"$cache/scanned-$id"
+    log=$cache/scan-$id.log
+    : >"$log"
+    nice -n 19 ionice -c 3 stdbuf -oL scummvm --add --recursive --path="$d" >"$log" 2>&1 &
+    pid=$!
+    while kill -0 "$pid" 2>/dev/null; do
+        n=$((found + $(grep -c '^Game Added' "$log")))
+        if [ -n "$notify" ] && [ "$n" != "$shown" ]; then
+            shown=$n
+            s=s
+            [ "$n" = 1 ] && s=
+            tinyhat-notice "Scanning drives for ScummVM games ($n game$s found)..."
+        fi
+        sleep 1
+    done
+    wait "$pid" && : >"$cache/scanned-$id"
+    found=$((found + $(grep -c '^Game Added' "$log")))
 done
 for g in bass lure soltys; do
     if [ -d "/usr/share/games/$g" ] && ! grep -qsx "path=/usr/share/games/$g" "$ini"; then

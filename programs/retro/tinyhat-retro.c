@@ -413,7 +413,9 @@ int main(int argc, char **argv)
     const double fps = av.timing.fps > 0 ? av.timing.fps : 60.0;
     const Uint64 frame_ns = (Uint64)(1e9 / fps);
     const int max_queued = (int)(av.timing.sample_rate * 4 / 10);
+    const int low_queued = (int)(av.timing.sample_rate * 4 / 25);
     Uint64 next = SDL_GetTicksNS();
+    int skipped = 0;
     bool running = true;
     while (running) {
         SDL_Event e;
@@ -437,8 +439,16 @@ int main(int argc, char **argv)
                 }
             }
         }
-        if (audio && SDL_GetAudioStreamQueued(audio) > max_queued) {
-            SDL_Delay(1);
+        if (audio) {
+            if (SDL_GetAudioStreamQueued(audio) > max_queued) {
+                SDL_Delay(1);
+                continue;
+            }
+            core_run();
+            if (SDL_GetAudioStreamQueued(audio) >= low_queued || ++skipped > 3) {
+                draw();
+                skipped = 0;
+            }
             continue;
         }
         core_run();
