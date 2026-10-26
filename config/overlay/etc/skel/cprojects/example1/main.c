@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
     }
     CLEANUP(destroy_window) SDL_Window *window = NULL;
     CLEANUP(destroy_renderer) SDL_Renderer *renderer = NULL;
-    if (!SDL_CreateWindowAndRenderer("Tiny Hat", 640, 400, SDL_WINDOW_FULLSCREEN, &window, &renderer)) {
+    if (!SDL_CreateWindowAndRenderer("Tiny Hat", 640, 400, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
         SDL_Log("Could not create a window: %s", SDL_GetError());
         return 1;
     }
@@ -122,6 +122,11 @@ int main(int argc, char *argv[])
                 switch (event.key.key) {
                 case SDLK_ESCAPE:
                     running = false;
+                    break;
+                case SDLK_RETURN:
+                    if (event.key.mod & SDL_KMOD_ALT) {
+                        SDL_SetWindowFullscreen(window, !(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN));
+                    }
                     break;
                 case SDLK_LEFT:
                     dx -= 1.5f;

@@ -293,8 +293,8 @@ end
 function adv.init()
     love.graphics.setDefaultFilter("nearest", "nearest")
     canvas = love.graphics.newCanvas(adv.width, adv.height)
-    font = love.graphics.newFont(14)
-    bigFont = love.graphics.newFont(30)
+    font = love.graphics.newFont(14, "mono")
+    bigFont = love.graphics.newFont(30, "mono")
     love.graphics.setFont(font)
     local ok, source = pcall(makeChime)
     if ok then
@@ -329,7 +329,7 @@ function adv.update(dt)
     if scale > 1 then
         scale = math.floor(scale)
     end
-    offsetX, offsetY = (w - adv.width * scale) / 2, (h - adv.height * scale) / 2
+    offsetX, offsetY = math.floor((w - adv.width * scale) / 2), math.floor((h - adv.height * scale) / 2)
     local mx, my = love.mouse.getPosition()
     mouseX, mouseY = (mx - offsetX) / scale, (my - offsetY) / scale
 
