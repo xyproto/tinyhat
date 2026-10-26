@@ -1,0 +1,12 @@
+pkgbase = compose-tables
+	pkgdesc = XKB Compose tables (dead keys and the Compose key) for libxkbcommon, from libX11's nls data
+	pkgver = 1.8.13
+	pkgrel = 1
+	url = https://gitlab.freedesktop.org/xorg/lib/libx11
+	arch = any
+	license = MIT AND X11
+	makedepends = gcc
+	source = https://www.x.org/releases/individual/lib/libX11-1.8.13.tar.xz
+	sha256sums = 69606f485c2c07c14ef64f75b7bb326d48587af33795d9ab3e607c0b5f94f11c
+
+pkgname = compose-tables

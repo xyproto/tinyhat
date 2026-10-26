@@ -1,0 +1,39 @@
+pkgname=compose-tables
+pkgver=1.8.13
+pkgrel=1
+pkgdesc="XKB Compose tables (dead keys and the Compose key) for libxkbcommon, from libX11's nls data"
+arch=(any)
+url="https://gitlab.freedesktop.org/xorg/lib/libx11"
+license=('MIT AND X11')
+makedepends=(gcc)
+source=("https://www.x.org/releases/individual/lib/libX11-$pkgver.tar.xz")
+sha256sums=('69606f485c2c07c14ef64f75b7bb326d48587af33795d9ab3e607c0b5f94f11c')
+
+_magic() {
+  LC_CTYPE=C sed -e '/^#  *[0-9][0-9]*  *.*$/d' -e '/^#line  *[0-9][0-9]*  *.*$/d' \
+    -e '/^[	 ]*XCOMM$/s/XCOMM/#/' -e '/^[	 ]*XCOMM[^a-zA-Z0-9_]/s/XCOMM/#/' \
+    -e '/^[	 ]*XHASH/s/XHASH/#/' -e 's,X11_LOCALEDATADIR,/usr/share/X11/locale,g' \
+    -e '/@@$/s/@@$/\\/' -e '/^$/d'
+}
+
+_pre() {
+  cpp -undef -traditional -DWCHAR32=1 <"$1" | _magic
+}
+
+build() {
+  cd libX11-$pkgver/nls
+  mkdir -p out/en_US.UTF-8
+  for f in compose.dir locale.alias; do
+    _pre $f.pre >out/$f.l1
+    LC_CTYPE=C sed -e '/^[^#][^	 ]*:/s/://' -e '/^[^#].*[	 ].*:/d' <out/$f.l1 >out/$f.l2
+    cat out/$f.l2 out/$f.l1 >out/$f
+  done
+  _pre en_US.UTF-8/Compose.pre >out/en_US.UTF-8/Compose
+}
+
+package() {
+  cd libX11-$pkgver
+  install -Dm644 -t "$pkgdir/usr/share/X11/locale" nls/out/compose.dir nls/out/locale.alias
+  install -Dm644 -t "$pkgdir/usr/share/X11/locale/en_US.UTF-8" nls/out/en_US.UTF-8/Compose
+  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}
