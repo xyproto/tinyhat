@@ -1,0 +1,21 @@
+#!/bin/sh
+[ "$1" = --run ] || exec foot -T "Install Wine" "$0" --run
+fail() {
+	printf '\n%s\nPress Enter to close.\n' "$1"
+	read -r _
+	exit 1
+}
+doas systemctl start tinyhat-pacman-init.service
+doas pacman -Sy --noconfirm || fail "Could not update the package database."
+doas pacman -S --needed --noconfirm archlinux32-keyring || fail "Could not update the archlinux32 keyring."
+doas pacman -S --needed --noconfirm wine-staging winetricks || fail "Could not install Wine."
+doas modprobe binfmt_misc
+doas systemctl restart systemd-binfmt.service || fail "Could not register Windows programs with binfmt_misc."
+printf '\nSetting up Wine in ~/.wine (one time only)...\n'
+export WINEDEBUG=-all
+WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=d" wineboot -i >/dev/null 2>&1 || fail "Could not set up ~/.wine."
+wine reg add 'HKCU\Software\Wine\Drivers' /v Graphics /d wayland /f >/dev/null 2>&1
+wine reg add 'HKCU\Software\Wine\DllOverrides' /v winemenubuilder.exe /d '' /f >/dev/null 2>&1
+wineserver -w
+printf '\nWine is ready. Start Windows programs with "wine program.exe", or run .exe files directly.\nPress Enter to close.\n'
+read -r _

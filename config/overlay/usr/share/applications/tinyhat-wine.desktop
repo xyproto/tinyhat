@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install Wine
+Icon=applications-system
+Comment=Install Wine (wine-staging and winetricks) for running Windows programs, and set it up
+Exec=tinyhat-wine
+Terminal=false
+Categories=System;
