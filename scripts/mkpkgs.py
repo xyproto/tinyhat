@@ -647,6 +647,83 @@ def cmd_libs():
     distro.write_lock(libpkgs=sorted(set(out)))
 
 
+def cmd_lock_arch(arch):
+    """Lock the prebuilt packages of the image for another architecture ([image-ARCH] in distro.toml).
+
+    The image is [image] with the packages in remove left out and the ones in add added. Packages come
+    prebuilt (pkg.ARCH_SOURCES), except for the recipes that are built from source:
+    - Tiny Hat's own recipes that the prebuilt repositories lack, that change something (patches or
+      other files next to the PKGBUILD) or that are listed in build,
+    - recipes with a version pinned in distro.toml, when the prebuilt version is different,
+    - recipes for prebuilt packages that would pull in something [image] deny names that the x86 image
+      does not have (like X11 or SDL2), repeated until nothing new is pulled in.
+    The versions and checksums of the prebuilt packages are written to [image-ARCH] in distro.lock."""
+    section = f"image-{arch}"
+    conf, base = distro.section(section), distro.section("image")
+    remove = set(conf.get("remove", []))
+    targets = [t for t in base.get("packages", []) if t not in remove]
+    targets += [t for t in conf.get("add", []) if t not in targets]
+    skip = set(base.get("skip", [])) | set(conf.get("skip", []))
+    prefs = distro.providers()
+    db, provides = pkg.arch_db(arch)
+    infos = load()
+    by_base = {i["base"]: i for i in infos}
+    base_of = {n: i["base"] for i in infos for n in i["pkgnames"]}
+    rules = deny_rules()
+    name_rules = [r for r in rules if not r[1]]
+    x86 = {p["name"] for p in pkg.resolve_targets(base.get("packages", []), indexes(infos), "i686", prefs, skip)}
+
+    local = set(conf.get("build", []))
+    for info in infos:
+        changed = set(os.listdir(os.path.join(TOP, info["dir"]))) - {"PKGBUILD", ".SRCINFO", "LICENSE"}
+        if info["sub"] == "tinyhat" and (changed or any(n not in db for n in info["pkgnames"])):
+            local.add(info["base"])
+        # A version pinned in distro.toml is pinned for a reason, so build it if the prebuilt one differs
+        pin = distro.tables().get(info["base"], {}).get("version")
+        if pin and any(n in db and db[n]["version"] != pin for n in info["pkgnames"]):
+            local.add(info["base"])
+
+    def resolve():
+        pkgs, provs = {}, {}
+        for b in sorted(local):
+            for name in by_base[b]["pkgnames"]:
+                pkg.add_pkg(pkgs, provs, {"name": name, "base": b, "local": True,
+                                          "depends": by_base[b]["depends"][name]}, by_base[b]["provides"][name])
+        for name, p in db.items():
+            pkg.add_pkg(pkgs, provs, p, [])
+        for pv, names in provides.items():
+            provs.setdefault(pv, []).extend(n for n in names if n not in provs.get(pv, []))
+        sel = pkg.resolve_targets(targets, {arch: (pkgs, provs)}, arch, prefs, skip)
+        names = {p["name"] for p in sel}
+        users = {}
+        for p in sel:
+            for d in p["depends"]:
+                users.setdefault(pkg.lookup((pkgs, provs), d, prefs, names), []).append(p)
+        bad = {p["name"] for p in sel if p["name"] not in x86 and denied(p["name"], None, name_rules)}
+        return sel, users, bad
+
+    while True:
+        sel, users, bad = resolve()
+        more = {base_of[u["name"]] for n in bad for u in users.get(n, [])
+                if not u.get("local") and u["name"] not in bad and u["name"] in base_of} - local
+        if not more:
+            break
+        local |= more
+
+    built = sorted({p["base"] for p in sel if p.get("local")})
+    prebuilt = {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"], "sha256": p["sha256"]}
+                for p in sel if not p.get("local")}
+    distro.write_lock(**{section: prebuilt})
+    print(f"mkpkgs.py: {section}: {len(prebuilt)} prebuilt packages locked, {len(built)} recipes to build: "
+          + " ".join(built), file=sys.stderr)
+    for n in sorted(bad):
+        print(f"mkpkgs.py: {section}: {n} ([image] deny) is still pulled in by "
+              + " ".join(sorted(u["name"] for u in users.get(n, []))), file=sys.stderr)
+    old = sorted(f"{n} {e['version']}" for n, e in prebuilt.items() if denied(n, e["version"], [r for r in rules if r[1]]))
+    if old:
+        sys.exit(f"mkpkgs.py: {section}: older than [image] deny allows: {', '.join(old)}")
+
+
 def main():
     cmd = sys.argv[1] if len(sys.argv) > 1 else "mk"
     if cmd == "mk":
@@ -655,8 +732,10 @@ def main():
         cmd_seed()
     elif cmd == "libs":
         cmd_libs()
+    elif cmd == "lock-arch" and len(sys.argv) == 3:
+        cmd_lock_arch(sys.argv[2])
     else:
-        sys.exit("usage: mkpkgs.py mk | seed | libs")
+        sys.exit("usage: mkpkgs.py mk | seed | libs | lock-arch ARCH")
 
 
 if __name__ == "__main__":

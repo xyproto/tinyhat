@@ -344,6 +344,20 @@ exclude = [
     "usr/lib/sox/libsox_fmt_wavpack.so",
 ]
 
+[image-aarch64]
+# The Raspberry Pi 4 image (in progress, see TODO.md): [image] packages with these changes. Packages come
+# prebuilt from Arch Linux ARM, except Tiny Hat's own recipes, which are built ("make lock-aarch64")
+add = ["archlinuxarm-keyring", "linux-rpi", "raspberrypi-bootloader", "firmware-raspberrypi"]
+remove = [
+    "archlinux32-keyring",
+    # PC hardware
+    "linux-firmware-radeon", "linux-firmware-intel",
+    # x86 assembly
+    "zsnes",
+    # Not in Arch Linux ARM yet (the arm-none-eabi toolchain for GBA development)
+    "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "gba-dev",
+]
+
 [buildroot]
 packages = [
     "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",

@@ -7,7 +7,7 @@ import tomllib
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DISTRO = os.path.join(TOP, "distro.toml")
 LOCK = os.path.join(TOP, "distro.lock")
-SECTIONS = ["image", "buildroot", "providers", "mirrors", "sources"]
+SECTIONS = ["image", "image-aarch64", "buildroot", "providers", "mirrors", "sources"]
 FACTS = ("version", "a32", "nvchecker")
 THEME = ("name", "hat_color", "hat_highlight_color")
 
@@ -115,7 +115,7 @@ def write_lock(**changes):
     out = []
     if "libpkgs" in data:
         out.append("libpkgs = [\n" + "".join(f"    {value(n)},\n" for n in data["libpkgs"]) + "]\n")
-    for sect in ("buildroot", "recipes"):
+    for sect in ("buildroot", "image-aarch64", "recipes"):
         if data.get(sect):
             out.append(f"[{sect}]\n" + "".join(f"{key(n)} = {value(e)}\n" for n, e in sorted(data[sect].items())))
     write_if_changed(LOCK, "\n".join(out))

@@ -24,6 +24,15 @@ REPOS = ["core", "extra"]
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DBDIR = os.path.join(TOP, "vendor", "db")
 VENDORDIR = os.path.join(TOP, "vendor", "archlinux32")
+# Prebuilt packages for the other architectures. The x86 images use archlinux32 (above)
+ARCH_SOURCES = {
+    "aarch64": {
+        "mirrors": os.environ.get("ALARM_MIRRORS", "http://mirror.archlinuxarm.org/aarch64").split(),
+        "repos": ["core", "extra", "alarm"],
+        "dbdir": os.path.join(TOP, "vendor", "db", "aarch64"),
+        "vendordir": os.path.join(TOP, "vendor", "archlinuxarm"),
+    },
+}
 
 
 def die(msg):
@@ -81,31 +90,37 @@ def add_pkg(pkgs, provides, p, provs):
         provides.setdefault(strip_ver(pv), []).append(p["name"])
 
 
-def load_db(dbdir=DBDIR):
+def load_db(dbdir=DBDIR, repos=None):
     pkgs, provides = {}, {}
-    for repo in REPOS:
+    for repo in repos or REPOS:
         path = os.path.join(dbdir, f"{repo}.db")
         if not os.path.exists(path):
             die(f"missing {path}, run 'make lock'")
+        # Older databases (like Arch Linux ARM's) keep %DEPENDS% and %PROVIDES% in a separate "depends" file
+        entries = {}
         with tarfile.open(path) as t:
             for m in t:
-                if not m.name.endswith("/desc"):
+                d, _, kind = m.name.rpartition("/")
+                if kind not in ("desc", "depends") or not m.isfile():
                     continue
-                fields, key = {}, None
+                fields, key = entries.setdefault(d, {}), None
                 for line in t.extractfile(m).read().decode().splitlines():
                     if line.startswith("%") and line.endswith("%"):
                         key = line[1:-1]
                         fields[key] = []
                     elif line and key:
                         fields[key].append(line)
-                add_pkg(pkgs, provides, {
-                    "name": fields["NAME"][0],
-                    "repo": repo,
-                    "version": fields["VERSION"][0],
-                    "filename": fields["FILENAME"][0],
-                    "sha256": fields["SHA256SUM"][0],
-                    "depends": [strip_ver(d) for d in fields.get("DEPENDS", [])],
-                }, fields.get("PROVIDES", []))
+        for fields in entries.values():
+            if "NAME" not in fields:
+                continue
+            add_pkg(pkgs, provides, {
+                "name": fields["NAME"][0],
+                "repo": repo,
+                "version": fields["VERSION"][0],
+                "filename": fields["FILENAME"][0],
+                "sha256": fields["SHA256SUM"][0],
+                "depends": [strip_ver(d) for d in fields.get("DEPENDS", [])],
+            }, fields.get("PROVIDES", []))
     return pkgs, provides
 
 
@@ -233,6 +248,24 @@ def write_lock(sel, lockfile):
                 repo = "lib32" if p["name"] in native else "i686"
             f.write(f"{repo} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
     print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
+
+
+def arch_db(arch):
+    """The package databases for another architecture (see ARCH_SOURCES), downloaded if missing or REFRESH is set."""
+    src = ARCH_SOURCES[arch]
+    os.makedirs(src["dbdir"], exist_ok=True)
+    for repo in src["repos"]:
+        path = os.path.join(src["dbdir"], f"{repo}.db")
+        if os.environ.get("REFRESH") or not os.path.exists(path):
+            for i, m in enumerate(src["mirrors"]):
+                try:
+                    download(f"{m}/{repo}/{repo}.db", path, tries=2)
+                    break
+                except (urllib.error.URLError, OSError) as e:
+                    if i == len(src["mirrors"]) - 1:
+                        raise
+                    print(f"  {m}: {e}", file=sys.stderr)
+    return load_db(src["dbdir"], src["repos"])
 
 
 def cmd_lock(name, *extra):
