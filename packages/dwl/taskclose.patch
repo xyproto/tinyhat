@@ -1,0 +1,38 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -352,6 +352,7 @@
+ static void minimize(const Arg *arg);
+ static void showdesktop(const Arg *arg);
+ static void taskclick(const Arg *arg);
++static void taskclose(const Arg *arg);
+ static void taskhover(void);
+ static void togglelayout(const Arg *arg);
+ static void focusstack(const Arg *arg);
+@@ -2109,6 +2110,17 @@
+ 	drawbars();
+ }
+ 
++void
++taskclose(const Arg *arg)
++{
++	Client *c;
++	wl_list_for_each(c, &clients, link)
++		if (c == arg->v) {
++			killclient(arg);
++			return;
++		}
++}
++
+ void
+ taskhover(void)
+ {
+@@ -2447,7 +2459,7 @@
+ void
+ killclient(const Arg *arg)
+ {
+-	Client *sel = focustop(selmon);
++	Client *sel = arg->v ? (Client *)arg->v : focustop(selmon);
+ 	PendingKill *p;
+ 	pid_t pid = 0;
+ 
