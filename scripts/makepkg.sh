@@ -200,6 +200,8 @@ run() {
 		--setenv USER builder \
 		--setenv CCACHE_DIR /ccache \
 		--setenv CCACHE_MAXSIZE "${CCACHE_MAXSIZE:-2G}" \
+		--setenv TINYHAT_JOBS "${PKG_MAKE_JOBS:-$(nproc)}" \
+		--setenv CARGO_BUILD_JOBS "${PKG_MAKE_JOBS:-$(nproc)}" \
 		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
 		--chdir /startdir \
