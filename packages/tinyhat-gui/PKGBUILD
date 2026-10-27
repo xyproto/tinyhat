@@ -1,13 +1,13 @@
 pkgname=tinyhat-gui
 pkgver=1
-pkgrel=2
+pkgrel=3
 pkgdesc="Tiny Hat backup, restore, file picker and media player dialogs, and the GL level probe"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"
 license=(BSD-3-Clause)
 depends=(gtk3 curl libglvnd)
 makedepends=(fontconfig)
-_progs=(tinyhat-backup tinyhat-restore tinyhat-pick tinyhat-play)
+_progs=(tinyhat-backup tinyhat-restore tinyhat-pick)
 source=("${_progs[@]/%/.c}" tinyhat-glinfo.c)
 sha256sums=(SKIP SKIP SKIP SKIP SKIP)
 
