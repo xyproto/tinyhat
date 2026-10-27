@@ -1,0 +1,46 @@
+# Maintainer: Johannes Löthberg <johannes@kyriasis.com>
+# Maintainer: Robin Candau <antiz@archlinux.org>
+# Contributor: Daniel Wallace <danielwallace at gtmanfred dot com>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: ML <neldoreth>
+
+pkgname=zathura
+pkgver=2026.10.23
+pkgrel="2"
+pkgdesc="Minimalistic document viewer"
+url="https://pwmt.org/projects/zathura/"
+arch=(i686 x32)
+license=('Zlib')
+depends=('girara' 'sqlite' 'desktop-file-utils' 'file' 'libsynctex' 'libseccomp' 'gtk4' 'glib2' 'json-glib' 'xxhash')
+makedepends=('appstream' 'python-sphinx' 'texlive-bin' 'meson' 'ninja')
+checkdepends=('xorg-server-xvfb' 'weston' 'libdisplay-info')
+optdepends=('zathura-djvu: DjVu support'
+            'zathura-pdf-poppler: PDF support using Poppler'
+            'zathura-pdf-mupdf: PDF support using MuPDF'
+            'zathura-ps: PostScript support'
+            'zathura-cb: Comic book support')
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/pwmt/${pkgname}/archive/refs/tags/${pkgver}.tar.gz")
+sha512sums=('148750fc296a06ff3eb23a1f0229e255dd810ab80856ace0004b7ffca9a4e5429255c01c42656fb54183dd80dbb45e166583bea42dbe6812508a47b317106686')
+
+build() {
+	cd "${pkgname}-${pkgver}"
+	arch-meson build
+	ninja -C build
+}
+
+check() {
+	cd "${pkgname}-${pkgver}"
+	ninja -C build test
+}
+
+package() {
+	cd "${pkgname}-${pkgver}"
+	DESTDIR="${pkgdir}" ninja -C build install
+	install -Dm 664 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+depends=(${depends[@]/libsynctex/})
+makedepends=(${makedepends[@]/texlive-bin/})
+eval "$(declare -f build | sed 's/arch-meson build/& -Dsynctex=disabled -Dtests-x11=disabled -Dtests-wayland=disabled/')"
+
+unset -f pkgver

@@ -1,0 +1,23 @@
+pkgbase = girara
+	pkgdesc = User interface library focused on simplicity and minimalism
+	pkgver = 2026.07.18
+	pkgrel = 1
+	url = https://pwmt.org/projects/girara
+	arch = i686
+	arch = x32
+	license = Zlib
+	makedepends = meson
+	makedepends = ninja
+	makedepends = doxygen
+	depends = glib2
+	depends = glibc
+	provides = girara-gtk3
+	provides = girara-common
+	conflicts = girara-gtk3
+	conflicts = girara-common
+	replaces = girara-gtk3
+	replaces = girara-common
+	source = girara-2026.07.18.tar.gz::https://github.com/pwmt/girara/archive/refs/tags/2026.07.18.tar.gz
+	sha512sums = 28a9e0fd27fe8788a69a87dfd2609d0a56220a83dba9b18783a409f6bd0044e8404302a94089a06ef1a722c3e901380164a6ce1de76bfdf69fb8a5b467a1b729
+
+pkgname = girara

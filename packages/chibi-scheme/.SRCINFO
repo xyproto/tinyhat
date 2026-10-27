@@ -1,0 +1,13 @@
+pkgbase = chibi-scheme
+	pkgdesc = Minimal Scheme implementation for use as an extension language
+	pkgver = 0.12
+	pkgrel = 1
+	url = https://github.com/ashinn/chibi-scheme
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	depends = glibc
+	source = chibi-scheme-0.12.tar.gz::https://github.com/ashinn/chibi-scheme/archive/refs/tags/0.12.tar.gz
+	sha256sums = b70a1147bc70a0f90df3fb6081bc99808237fd17a9accf9ee7a2cc20d95a4df0
+
+pkgname = chibi-scheme

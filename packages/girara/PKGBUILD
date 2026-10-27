@@ -1,0 +1,39 @@
+# Maintainer: Johannes Löthberg <johannes@kyriasis.com>
+# Maintainer: Robin Candau <antiz@archlinux.org>
+# Contributor: Daniel Wallace <danielwallace at gtmanfred dot com>
+# Contributor: Sergej Pupykin <pupykin.s+arch@gmail.com>
+# Contributor: mlq <mlq@pwmt.org>
+
+pkgname=girara
+pkgver=2026.07.18
+pkgrel="1"
+pkgdesc="User interface library focused on simplicity and minimalism"
+url="https://pwmt.org/projects/girara"
+arch=(i686 x32)
+license=('Zlib')
+provides=('girara-gtk3' 'girara-common')
+replaces=('girara-gtk3' 'girara-common')
+conflicts=('girara-gtk3' 'girara-common')
+depends=('glib2' 'glibc')
+makedepends=('meson' 'ninja' 'doxygen')
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/pwmt/${pkgname}/archive/refs/tags/${pkgver}.tar.gz")
+sha512sums=('28a9e0fd27fe8788a69a87dfd2609d0a56220a83dba9b18783a409f6bd0044e8404302a94089a06ef1a722c3e901380164a6ce1de76bfdf69fb8a5b467a1b729')
+
+build() {
+        cd "${pkgname}-${pkgver}"
+        arch-meson build
+        ninja -C build
+}
+
+check() {
+        cd "${pkgname}-${pkgver}"
+        ninja -C build test
+}
+
+package() {
+        cd "${pkgname}-${pkgver}"
+        DESTDIR="${pkgdir}" ninja -C build install
+        install -Dm 664 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+unset -f pkgver

@@ -1,0 +1,25 @@
+pkgname=monkeyjumpgo
+_commit=7222c4240e5b73b0514d7f113ce66d7526e60bd1
+pkgver=1.0.0+7222c42
+pkgrel=1
+pkgdesc="Minimalistic GUI for playing Go against GNU Go (the Go port of Monkeyjump)"
+arch=(i686)
+url="https://github.com/xyproto/monkeyjump"
+license=(GPL-2.0-only)
+depends=(glibc gnugo sdl3 sdl3_image)
+makedepends=(go-tinyhat)
+options=(!buildflags)
+source=("monkeyjump-$_commit.tar.gz::https://github.com/xyproto/monkeyjump/archive/$_commit.tar.gz")
+sha256sums=('651b54a6a11c18ced22cd5e0047f944fa9739416fa891264a13b49e183bc6382')
+
+build() {
+  cd monkeyjump-$_commit/go
+  export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local CGO_ENABLED=1 GOARCH=386 GO386=softfloat
+  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o monkeyjump
+}
+
+package() {
+  cd monkeyjump-$_commit/go
+  make DESTDIR="$pkgdir" install
+  install -Dm644 ../COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+}

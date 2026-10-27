@@ -1,0 +1,3 @@
+depends=(${depends[@]/libsynctex/})
+makedepends=(${makedepends[@]/texlive-bin/})
+eval "$(declare -f build | sed 's/arch-meson build/& -Dsynctex=disabled -Dtests-x11=disabled -Dtests-wayland=disabled/')"
