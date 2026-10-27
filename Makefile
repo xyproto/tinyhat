@@ -30,7 +30,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all iso autoupdate lock lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all iso autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
 
 all: tinyhat32.img
 
@@ -39,7 +39,7 @@ iso: tinyhat32.iso
 both: tinyhat32.img tinyhat64x32.img
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
-ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check import srcinfo autoupdate,$(or $(MAKECMDGOALS),all)))
+ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate,$(or $(MAKECMDGOALS),all)))
 include $(B)/pkgs.mk
 endif
 
@@ -72,6 +72,10 @@ lock:
 	python3 scripts/mkpkgs.py seed >$(B)/seed.txt
 	python3 scripts/mkpkgs.py libs
 	python3 scripts/pkg.py lock buildroot $(B)/seed.txt
+
+# Lock the prebuilt Arch Linux ARM packages for the aarch64 (Raspberry Pi 4) image
+lock-aarch64:
+	python3 scripts/mkpkgs.py lock-arch aarch64
 
 lock-check:
 	@mkdir -p $(B)
