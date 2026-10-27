@@ -921,6 +921,82 @@ static int is_archive(const char *path)
 	       !memcmp(b, "\x1f\x8b", 2) || !memcmp(b, "BZh", 3) || !memcmp(b, "\xfd" "7zXZ", 5);
 }
 
+static int tic_script_ok(const unsigned char *code, size_t n)
+{
+	/* Tiny Hat's TIC-80 builds only the Lua and Fennel runtimes. Mirror TIC-80's
+	   language autodetection (the "<comment> script:" metatag parsed by
+	   tic_tool_metatag and used by tic_get_script) and reject carts written for
+	   any other runtime, which TIC-80 would otherwise feed to Lua, failing with
+	   a confusing "unexpected symbol" parse error. */
+	static const char *comments[] = { "--", ";", "#", "//" };
+	char buf[4096], needle[16];
+	size_t len = MIN(n, sizeof buf - 1);
+	memcpy(buf, code, len);
+	buf[len] = '\0';
+	for (size_t i = 0; i < len; i++)
+		if (!code[i]) { /* the code chunk is zero padded */
+			buf[i] = '\0';
+			break;
+		}
+	for (size_t t = 0; t < G_N_ELEMENTS(comments); t++) {
+		snprintf(needle, sizeof needle, "%.2s script:", comments[t]);
+		const char *hit = strstr(buf, needle);
+		if (!hit)
+			continue;
+		hit += strlen(needle);
+		while (*hit == ' ' || *hit == '\t')
+			hit++;
+		int lua = !strncmp(hit, "lua", 3) && !isalnum((unsigned char)hit[3]);
+		int fennel = !strncmp(hit, "fennel", 6) && !isalnum((unsigned char)hit[6]);
+		return lua || fennel; /* janet, mruby, python (#) and js, wren (//) never run on Tiny Hat */
+	}
+	return 1;
+}
+
+static int tic_cart_ok(const unsigned char *d, size_t n)
+{
+	/* Mirror the chunk stream walk of TIC-80's tic_cart_load (src/cart.c): a
+	   valid raw cartridge is a run of 4-byte chunk headers whose payloads cover
+	   the file exactly and end with a code chunk, so plain text and other
+	   non-cart files are rejected. Chunk types above CHUNK_LANG (20) are
+	   rejected, as is a lang byte for an unsupported runtime. */
+	size_t ptr = 0;
+	long lang = -1;
+	int has_code = 0;
+	while (ptr + 4 <= n) {
+		unsigned type = d[ptr] & 0x1f;
+		unsigned size = d[ptr + 1] | (d[ptr + 2] << 8);
+		size_t payload = !size && (type == 5 || type == 19) ? 0x10000 : size; /* TIC_BANK_SIZE */
+		if (type > 20 || ptr + 4 + payload > n)
+			return 0;
+		if (type == 20) {
+			if (size == 1)
+				lang = d[ptr + 4];
+			else
+				lang = -1;
+		} else if (type == 5)
+			has_code = 1;
+		ptr += 4 + payload;
+	}
+	if (ptr != n || !has_code)
+		return 0;
+	if (lang >= 0 && lang != 10 && lang != 14) /* 10 = lua, 14 = fennel */
+		return 0;
+	/* find the first code chunk again to scan its script metatag */
+	ptr = 0;
+	while (ptr + 4 <= n) {
+		unsigned type = d[ptr] & 0x1f;
+		unsigned size = d[ptr + 1] | (d[ptr + 2] << 8);
+		size_t payload = !size && (type == 5 || type == 19) ? 0x10000 : size;
+		if (type == 5) {
+			size_t left = n - (ptr + 4);
+			return tic_script_ok(d + ptr + 4, MIN(payload, left));
+		}
+		ptr += 4 + payload;
+	}
+	return 0;
+}
+
 static int rom_ok(const char *path)
 {
 	unsigned char b[0x110];
@@ -933,6 +1009,24 @@ static int rom_ok(const char *path)
 	if (n < sizeof(b) || !memcmp(b, "\xff\xd8\xff", 3) || !memcmp(b, "\x89PNG", 4) || !memcmp(b, "GIF8", 4) ||
 	    !memcmp(b, "%PDF", 4))
 		return 0;
+	if (!strcmp(plat->dir, "tic80")) {
+		/* zip carts are extracted by install(), and the inner cart is
+		   validated here, so a zip file is accepted as a cartridge */
+		if (!memcmp(b, "PK\x03\x04", 4))
+			return 1;
+		size_t full;
+		if (!(f = fopen(path, "rb")))
+			return 0;
+		fseek(f, 0, SEEK_END);
+		full = ftell(f);
+		rewind(f);
+		unsigned char *all = full && full <= (gsize)plat->max ? g_malloc(full) : NULL;
+		size_t got = all ? fread(all, 1, full, f) : 0;
+		fclose(f);
+		int ok = all && got == full && tic_cart_ok(all, got);
+		g_free(all);
+		return ok;
+	}
 	if (!strcmp(plat->dir, "gba"))
 		return b[0xb2] == 0x96;
 	if (!strcmp(plat->dir, "nes") && ext_in(path, " nes "))
