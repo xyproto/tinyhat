@@ -36,3 +36,8 @@ install -Dm644 "$top/build/xpadneo-$arch/hid-xpadneo/etc-udev-rules.d/70-xpadneo
 install -Dm644 "$top/build/xpadneo-$arch/hid-xpadneo/etc-modprobe.d/xpadneo.conf" "$modules/usr/lib/modprobe.d/xpadneo.conf"
 rm -f "$modules"/usr/lib/modules/*/build
 cp arch/x86/boot/bzImage "$top/$out"
+# The build tree is only needed to rebuild the kernel, and takes a lot of space
+if [ "${KEEP_SOURCES:-0}" != 1 ]; then
+	cd "$top"
+	rm -rf "$src" "$top/build/xpadneo-$arch"
+fi

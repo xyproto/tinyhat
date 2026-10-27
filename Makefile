@@ -8,6 +8,11 @@ SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
+# Disk space while building: how many packages build at once, the ccache size, and whether
+# downloaded package sources and the kernel build tree are kept after building (KEEP_SOURCES=1)
+export PKG_JOBS ?= 2
+export CCACHE_MAXSIZE ?= 2G
+export KEEP_SOURCES ?= 0
 SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
 BOOT_PKGS := $(B)/pkg/i686/grub $(B)/pkg/i686/linux-firmware $(B)/pkg/i686/intel-ucode $(B)/pkg/i686/memtest86+ $(B)/pkg/i686/kbd
 IMG_DEPS := $(B)/theme.toml config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py $(BOOT_PKGS)

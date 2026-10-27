@@ -274,6 +274,14 @@ def read_lock(lockfile):
     return out
 
 
+def link(src, dest):
+    """Point dest at src with a relative symlink instead of storing a second copy. The sandboxes in
+    makepkg.sh mount vendor/ at /vendor, so links from build/repo resolve inside them too."""
+    if os.path.lexists(dest):
+        os.unlink(dest)
+    os.symlink(os.path.relpath(os.path.realpath(src), os.path.dirname(os.path.abspath(dest))), dest)
+
+
 def fetch_pkg(p, pkgdir):
     dest = os.path.join(pkgdir, p["filename"])
     if os.path.exists(dest) and sha256(dest) == p["sha256"]:
@@ -284,7 +292,7 @@ def fetch_pkg(p, pkgdir):
         if os.path.abspath(pkgdir) == os.path.dirname(os.path.abspath(src)):
             continue
         if os.path.exists(src) and sha256(src) == p["sha256"]:
-            shutil.copyfile(src, dest)
+            link(src, dest)
             return
     if not os.path.exists(vendored) or sha256(vendored) != p["sha256"]:
         os.makedirs(os.path.dirname(vendored), exist_ok=True)
@@ -302,7 +310,42 @@ def fetch_pkg(p, pkgdir):
         if sha256(vendored) != p["sha256"]:
             os.unlink(vendored)
             die(f"checksum mismatch for {p['filename']}")
-    shutil.copyfile(vendored, dest)
+    link(vendored, dest)
+
+
+def srcdest_names(srcinfo):
+    """The names that downloaded sources get in SRCDEST, as makepkg's get_filename() names them."""
+    out = set()
+    with open(srcinfo) as f:
+        for line in f:
+            k, _, v = line.strip().partition(" = ")
+            if not re.fullmatch(r"source(_\w+)?", k) or "://" not in v:
+                continue
+            if "::" in v:
+                out.add(v.split("::", 1)[0])
+                continue
+            proto = v.split("://", 1)[0].split("+", 1)[0]
+            name = v.split("#", 1)[0].split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
+            if proto == "git":
+                name = name.split(".git", 1)[0]
+            elif proto == "fossil":
+                name += ".fossil"
+            out.add(name)
+    return out
+
+
+def cmd_prunable(pkgdir):
+    """Print the downloaded sources of one package that no other package or distro.toml [sources] uses."""
+    pkgdir = os.path.abspath(pkgdir)
+    mine = srcdest_names(os.path.join(pkgdir, ".SRCINFO"))
+    others = set(distro.section("sources"))
+    for d in os.listdir(os.path.join(TOP, "packages")):
+        info = os.path.join(TOP, "packages", d, ".SRCINFO")
+        if os.path.join(TOP, "packages", d) != pkgdir and os.path.exists(info):
+            others |= srcdest_names(info)
+    for name in sorted(mine - others):
+        if name and "/" not in name and name not in (".", ".."):
+            print(name)
 
 
 def cmd_fetch(lockfile, pkgdir):
@@ -423,7 +466,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
-            "fetch LOCK DIR | prebuilt REPODIR NAME... | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...]")
+            "fetch LOCK DIR | prebuilt REPODIR NAME... | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
@@ -437,6 +480,8 @@ def main():
         cmd_prebuilt(*args)
     elif cmd == "source":
         cmd_source(*args)
+    elif cmd == "prunable":
+        cmd_prunable(*args)
     elif cmd == "extract":
         ex = distro.section(args[3]).get("exclude", []) if len(args) > 3 else []
         cmd_extract(args[0], args[1], args[2], ex)
