@@ -182,6 +182,8 @@ finalize)
 	ln -sf drill "$root/usr/bin/dig"
 	ln -sf tinyhat-firewall "$root/usr/bin/ufw"
 	grep -qx /usr/bin/fish "$root/etc/shells" || printf '/bin/fish\n/usr/bin/fish\n' >>"$root/etc/shells"
+	term=$(sed -n 's/^term=//p' "$root/etc/xdg/foot/foot.ini")
+	[ -f "$root/usr/share/terminfo/${term%"${term#?}"}/$term" ]
 	chmod 4755 "$root/usr/bin/doas"
 	chmod 0400 "$root/etc/doas.conf"
 
