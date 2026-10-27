@@ -168,6 +168,7 @@ finalize)
 			chmod 644 "$root/$p"
 		fi
 	done
+	install -m644 -t "$root/etc/skel/cprojects/bootanim" packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h
 	for c in hat_color:HAT_COLOR hat_highlight_color:HAT_HIGHLIGHT_COLOR; do
 		v=$(sed -n "s/^${c%%:*} = \"#\([0-9a-fA-F]\{6\}\)\"$/\1/p" build/theme.toml)
 		sed -i "s/^#define ${c#*:} 0x.*/#define ${c#*:} 0x$v/" "$root/etc/skel/cprojects/bootanim/hat.h"
@@ -181,6 +182,11 @@ finalize)
 	ln -sf dbclient "$root/usr/bin/ssh"
 	ln -sf drill "$root/usr/bin/dig"
 	ln -sf tinyhat-firewall "$root/usr/bin/ufw"
+	ln -sf cowsay "$root/usr/bin/cowthink"
+	ln -sf poweroff "$root/usr/bin/natta"
+	ln -sf poweroff "$root/usr/bin/nightynight"
+	ln -sf sleepmode "$root/usr/bin/sov"
+	ln -sf sleepmode "$root/usr/bin/suspend"
 	grep -qx /usr/bin/fish "$root/etc/shells" || printf '/bin/fish\n/usr/bin/fish\n' >>"$root/etc/shells"
 	term=$(sed -n 's/^term=//p' "$root/etc/xdg/foot/foot.ini")
 	[ -f "$root/usr/share/terminfo/${term%"${term#?}"}/$term" ]

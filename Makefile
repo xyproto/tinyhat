@@ -173,7 +173,7 @@ $(B)/.licenses-x32: $(B)/rootfs-x32.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi6
 	@touch $@
 
 ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
-ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) scripts/elfcheck.py scripts/symcheck.sh
+ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
