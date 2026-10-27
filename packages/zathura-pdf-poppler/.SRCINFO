@@ -1,0 +1,18 @@
+pkgbase = zathura-pdf-poppler
+	pkgdesc = Adds pdf support to zathura by using the poppler engine
+	pkgver = 2026.07.18
+	pkgrel = 3
+	url = https://pwmt.org/projects/zathura-pdf-poppler/
+	arch = i686
+	arch = x32
+	license = Zlib
+	makedepends = meson
+	makedepends = ninja
+	makedepends = appstream
+	makedepends = desktop-file-utils
+	depends = poppler-glib
+	depends = zathura
+	source = zathura-pdf-poppler-2026.07.18.tar.gz::https://github.com/pwmt/zathura-pdf-poppler/archive/refs/tags/2026.07.18.tar.gz
+	sha512sums = 6a1ca54a3041f1bcc591cd26c496d6e8868bd0f25336d78268724e4b65fa1fb4839660aca6fb93e5b8a0367da656185868186d1f7d033a3cd90075f197409c2e
+
+pkgname = zathura-pdf-poppler

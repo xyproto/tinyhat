@@ -1,0 +1,38 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+# Contributor: Harry Jeffery <harry@exec64.co.uk>
+# Contributor: Aleksei Bavshin <alebastr89@gmail.com>
+
+pkgname=imv
+pkgver=5.0.1
+pkgrel="2"
+pkgdesc='Image viewer for Wayland and X11'
+url='https://sr.ht/~exec64/imv/'
+arch=(i686 x32)
+license=(MIT)
+depends=(glu libheif libinih libjxl libnsbmp libnsgif librsvg libxkbcommon libxkbcommon-x11 pango qoi)
+makedepends=(asciidoc cmake cmocka meson wayland-protocols tinyxxd)
+conflicts=(renameutils)
+source=("$pkgname-$pkgver.tar.gz::https://git.sr.ht/~exec64/$pkgname/archive/v$pkgver.tar.gz")
+b2sums=('8fc7fd566b24decb4cc06e95223d4ec42fed62e1fdca879437f5e5319652479cc2e6e6ab3d804fb5848cbacd33bcc6e4f30076940f5a7b4ead5fd3dc44b03992')
+
+prepare() {
+  sed -i 's/icu-io/icu-uc/g' $pkgname-v$pkgver/meson.build
+}
+
+build() {
+  export CFLAGS+=' -w'
+  arch-meson build $pkgname-v$pkgver
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$pkgdir" ninja -C build install
+  install -Dm644 $pkgname-v$pkgver/LICENSE \
+    "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
+
+depends=(libgrapheme libinih libjpeg-turbo libnsbmp libnsgif libpng librsvg libtiff libwebp libxkbcommon pango wayland libglvnd)
+makedepends=(${makedepends[@]//cmocka/})
+eval "$(declare -f build | sed 's/arch-meson build /arch-meson build -Dwindows=wayland -Dunicode=grapheme -Dlibheif=disabled -Dlibjxl=disabled -Dqoi=disabled -Dtest=disabled /')"
+
+unset -f pkgver

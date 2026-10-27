@@ -128,4 +128,15 @@ eval "$(
   '
 )"
 
+for _p in poppler-qt5 poppler-qt6; do
+  pkgname=(${pkgname[@]/$_p/})
+done
+for _p in qt5-base qt6-base gpgmepp nss; do
+  makedepends=(${makedepends[@]/$_p/})
+done
+makedepends_i686=()
+makedepends_pentium4=()
+eval "$(declare -f build | sed 's/-DENABLE_GTK_DOC=ON/& -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DENABLE_GPGME=OFF -DENABLE_NSS3=OFF/')"
+eval "$(declare -f package_poppler | sed "s/ 'nss'//; s/ 'gpgmepp'//; s/ 'nspr'//")"
+
 unset -f pkgver

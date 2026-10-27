@@ -1,0 +1,76 @@
+# Maintainer: Balló György <ballogyor+arch at gmail dot com>
+# Contributor: Alexander Fehr <pizzapunk gmail com>
+# Contributor: Andrew Simmons <andrew.simmons@gmail.com>
+
+pkgname=xarchiver
+pkgver=0.5.4.27
+pkgrel="1"
+pkgdesc='GTK frontend to various command line archivers'
+arch=(i686 x32)
+url='https://github.com/ib/xarchiver'
+license=(GPL-2.0-or-later)
+depends=(
+  gdk-pixbuf2
+  glib2
+  glibc
+  gtk3
+  hicolor-icon-theme
+)
+makedepends=(
+  docbook-xsl
+  git
+  intltool
+)
+optdepends=(
+  '7zip: 7z support'
+  'arj: ARJ support'
+  'binutils: deb support'
+  'bzip2: bzip2 support'
+  'cpio: RPM support'
+  'gzip: gzip support'
+  'lhasa: LHA support'
+  'lrzip: lrzip support'
+  'lz4: LZ4 support'
+  'lzip: lzip support'
+  'lzop: LZOP support'
+  'tar: tar support'
+  'unarj: ARJ support'
+  'unrar: RAR support'
+  'unzip: ZIP support'
+  'xdg-utils: recognize more file types to open'
+  'xz: xz support'
+  'zip: ZIP support'
+  'zstd: zstd support'
+)
+source=(
+  "git+https://github.com/ib/xarchiver.git#tag=$pkgver"
+  xarchiver.appdata.xml
+)
+b2sums=(
+  99bf957b6db5c9bcd2886e810b8f1cf7bd8d15f017fe1749933e5d31cbf807ec927645e02c898a793d9479d97816d843b1336a6435d5d4b93881000b0ddf240a
+  56293e379fe0663e3c76836d6c87710fcd6cec9f44de539a48b75e253b100ea46d29dc734e215f44e2955171e1ea0de7076e6129c96d4660ba46ebaff4ab2a8a
+)
+
+prepare() {
+  cd $pkgname
+  touch AUTHORS NEWS
+  autoreconf -fiv
+}
+
+build() {
+  cd $pkgname
+  ./configure \
+    --prefix=/usr \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --libexecdir=/usr/lib/xfce4
+  make
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+  install -Dm644 ../$pkgname.appdata.xml "$pkgdir/usr/share/metainfo/$pkgname.appdata.xml"
+}
+
+unset -f pkgver
