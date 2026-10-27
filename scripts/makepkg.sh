@@ -85,6 +85,21 @@ if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; 
 	fi
 fi
 
+# At most PKG_JOBS packages build at once, to limit the disk space used by build trees
+if [ "${PKG_JOBS:-0}" -gt 0 ]; then
+	mkdir -p "$top/build/chroot"
+	while :; do
+		i=1
+		while [ $i -le "$PKG_JOBS" ]; do
+			exec 7>"$top/build/chroot/.slot$i"
+			flock -n 7 && break 2
+			i=$((i + 1))
+		done
+		exec 7>&-
+		sleep 2
+	done
+fi
+
 cleanup() {
 	chmod -R u+w "$work" 2>/dev/null || true
 	rm -rf "$work"
@@ -115,6 +130,7 @@ sandbox() {
 bwrap_run() {
 	setarch "$personality" bwrap \
 		--overlay-src "$seed" --overlay "$work/upper" "$work/ovl" / \
+		--ro-bind "$top/vendor" /vendor \
 		--dev /dev --proc /proc --tmpfs /tmp \
 		--ro-bind /etc/resolv.conf /etc/resolv.conf \
 		--unshare-all --hostname tinyhat-build --clearenv \
@@ -183,6 +199,7 @@ run() {
 		--setenv HOME /build \
 		--setenv USER builder \
 		--setenv CCACHE_DIR /ccache \
+		--setenv CCACHE_MAXSIZE "${CCACHE_MAXSIZE:-2G}" \
 		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
 		--chdir /startdir \
@@ -201,5 +218,14 @@ if [ -z "$nobuild" ]; then
 		run --packagelist | sed 's|.*/||'
 	} >"$cache.tmp"
 	mv "$cache.tmp" "$cache"
+	# Remove the downloaded sources that only this package uses, unless another arch of it is building
+	if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "boot-$base" \) ! -path "$work")" ]; then
+		exec 8>"$top/vendor/src/.lock"
+		flock 8
+		python3 "$top/scripts/pkg.py" prunable "$dir" | while IFS= read -r f; do
+			rm -rf "$top/vendor/src/$f"
+		done
+		exec 8>&-
+	fi
 fi
 cleanup
