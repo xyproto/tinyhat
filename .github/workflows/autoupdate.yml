@@ -23,7 +23,7 @@ jobs:
     container: archlinux:base-devel
     steps:
       - name: Install tools
-        run: pacman -Syu --noconfirm --needed git make python nvchecker pacman-contrib curl
+        run: pacman -Syu --noconfirm --needed git make python nvchecker python-lxml python-jq pacman-contrib curl
 
       - uses: actions/checkout@v4
 

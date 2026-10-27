@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Update the distro configuration to newer package versions, without building anything.
 
-1. Imported Arch recipes move to the latest Arch packaging tag (unless the version is pinned in distro.toml).
+1. Imported Arch recipes whose upstream version is newer in the Arch Linux package databases (core and extra)
+   get their pkgver/pkgrel bumped to Arch's version, with checksums regenerated from the upstream sources.
+   Releases that only repackage the same upstream version are reported, not applied.
 2. Tiny Hat's own recipes that have an nvchecker entry in distro.toml move to the latest upstream release.
-3. Imported recipes where upstream is ahead of Arch are only reported.
+3. Imported recipes where upstream (nvchecker) is ahead of Arch are only reported.
 4. The archlinux32 package databases and the buildroot lock are refreshed (like "make lock").
 
-Every update is checked against [image] deny in distro.toml: if it makes the image depend on a denied
-package (X11, perl, SDL2, GTK2, Qt, ...), it is reverted and reported as held back.
+No requests are sent to gitlab.archlinux.org. Updates that would make the image depend on a package in
+[image] deny (X11, perl, SDL2, GTK2, Qt, ...) are reverted and reported as held back. Bumped recipes keep
+their previous Arch packaging (patches, dependencies); "importpkg.py BASE" brings in Arch's exact recipe.
 The report is written to build/autoupdate.md, for use as a pull request description.
 """
 import argparse
@@ -18,10 +21,10 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 import tempfile
+import time
 import tomllib
-import urllib.request
-from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import distro
@@ -31,6 +34,12 @@ import pkg
 
 TOP = distro.TOP
 REPORT = os.path.join(TOP, "build", "autoupdate.md")
+ARCH_MIRROR = os.environ.get("ARCH_MIRROR", "https://geo.mirror.pkgbuild.com")
+ARCH_REPOS = ("core", "extra")
+ARCH_DB = os.path.join(TOP, "build", "cache", "archdb")
+FORBIDDEN_HOST = "gitlab.archlinux.org"
+# Be gentle with github.com and the other upstream hosts
+NVCHECKER_CONCURRENCY = 4
 
 
 def log(msg):
@@ -57,6 +66,10 @@ def guard(before, after):
     hits = {n for n in after[0] - before[0] if denied(n)}
     hits |= {f"{a} → {b}" for a, b in after[1] - before[1] if denied(b)}
     return sorted(hits)
+
+
+class ManualUpdate(Exception):
+    """The recipe cannot be bumped automatically."""
 
 
 class Snapshot:
@@ -89,6 +102,10 @@ def apply(base, change, report, label):
     try:
         change()
         after = image_state()
+    except ManualUpdate as e:
+        snap.restore()
+        report["manual"].append((base, label, str(e)))
+        return False
     except (Exception, SystemExit) as e:
         snap.restore()
         report["failed"].append((base, label, str(e).strip() or type(e).__name__))
@@ -103,14 +120,27 @@ def apply(base, change, report, label):
     return True
 
 
-def latest_tag(base):
-    url = f"{importpkg.api_project(base)}/repository/tags?per_page=1"
-    try:
-        with urllib.request.urlopen(url, timeout=60) as r:
-            tags = json.load(r)
-        return base, tags[0]["name"] if tags else None
-    except (OSError, ValueError) as e:
-        return base, e
+def arch_versions():
+    """The current version of every source package in the Arch Linux package databases, by pkgbase."""
+    os.makedirs(ARCH_DB, exist_ok=True)
+    out = {}
+    for repo in ARCH_REPOS:
+        path = os.path.join(ARCH_DB, f"{repo}.db")
+        url = f"{ARCH_MIRROR}/{repo}/os/x86_64/{repo}.db"
+        subprocess.run(["curl", "-sSfL", "--retry", "3", "--connect-timeout", "30", "--max-time", "300",
+                        "-o", path, url], check=True)
+        with tarfile.open(path) as t:
+            for m in t:
+                if not m.name.endswith("/desc"):
+                    continue
+                fields, key = {}, None
+                for line in t.extractfile(m).read().decode().splitlines():
+                    if line.startswith("%") and line.endswith("%"):
+                        key = line[1:-1]
+                    elif line and key:
+                        fields.setdefault(key, line)
+                out[fields.get("BASE", fields["NAME"])] = fields["VERSION"]
+    return out
 
 
 def arch_updates(report, only):
@@ -120,29 +150,26 @@ def arch_updates(report, only):
              if (not only or b in only) and tables.get(b, {}).get("source", "arch") == "arch"
              and r.get("version") not in (None, "main", "latest") and "version" not in tables.get(b, {})
              and os.path.isdir(os.path.join(TOP, "packages", b))]
-    log(f"checking {len(bases)} imported recipes against Arch Linux")
-    with ThreadPoolExecutor(8) as ex:
-        tags = dict(ex.map(latest_tag, bases))
+    log(f"checking {len(bases)} imported recipes against the Arch Linux package databases")
+    try:
+        arch = arch_versions()
+    except (subprocess.CalledProcessError, OSError, tarfile.TarError) as e:
+        report["failed"].append(("Arch Linux", "package databases", str(e)))
+        return
     for base in bases:
-        tag = tags[base]
-        if isinstance(tag, Exception) or tag is None:
-            report["failed"].append((base, "Arch tag lookup", str(tag)))
+        old, new = recipes[base]["version"], arch.get(base)
+        if not new or vercmp(new, old) <= 0:
             continue
-        old = recipes[base]["version"]
-        if tag == importpkg.upstream_tag(old):
-            continue
-        try:
-            new = importpkg.latest_version(base)[0]
-        except SystemExit as e:
-            report["failed"].append((base, "Arch recipe download", str(e)))
-            continue
-        if vercmp(new, old) <= 0:
+        o, n = importpkg.split_version(old), importpkg.split_version(new)
+        if (o[0], o[1]) == (n[0], n[1]):
+            report["repackaged"].append((base, old, new))
             continue
 
-        def change(base=base, new=new):
-            importpkg.upsert(base, [("version", importpkg.fmt_value(new))])
-            pkgs = importpkg.packages()
-            importpkg.import_one(base, pkgs[base], "arch", importpkg.i686only(pkgs))
+        def change(base=base, new=new, n=n):
+            bump(base, n[1], n[2])
+            recipes = dict(distro.lock().get("recipes", {}))
+            recipes[base] = dict(recipes[base], version=new)
+            distro.write_lock(recipes=recipes)
 
         log(f"{base}: {old} → {new}")
         if apply(base, change, report, f"{old} → {new}"):
@@ -160,14 +187,28 @@ def nvchecker_entries():
             except tomllib.TOMLDecodeError:
                 continue
             conf = tables[0] if tables else None
-        if isinstance(conf, dict):
+        if isinstance(conf, dict) and FORBIDDEN_HOST not in json.dumps(conf):
             out[base] = conf
     return out
 
 
+def usable_sources(entries, report):
+    """Leave out entries whose nvchecker source plugin cannot be loaded (like htmlparser without python-lxml),
+    since one such entry makes nvchecker fail for all of them."""
+    ok = {}
+    for src in sorted({c["source"] for c in entries.values()}):
+        r = subprocess.run([sys.executable, "-c", f"import nvchecker_source.{src}"], capture_output=True, text=True)
+        ok[src] = r.returncode == 0
+        if not ok[src]:
+            names = sorted(b for b, c in entries.items() if c["source"] == src)
+            err = (r.stderr.strip().splitlines() or ["cannot be loaded"])[-1]
+            report["failed"].append((", ".join(names), f"nvchecker source {src}", err))
+    return {b: c for b, c in entries.items() if ok[c["source"]]}
+
+
 def run_nvchecker(entries):
     with tempfile.TemporaryDirectory() as tmp:
-        lines = ["[__config__]"]
+        lines = ["[__config__]", f"max_concurrency = {NVCHECKER_CONCURRENCY}"]
         token = os.environ.get("GITHUB_TOKEN")
         if token:
             with open(os.path.join(tmp, "keys.toml"), "w") as f:
@@ -192,13 +233,18 @@ def run_nvchecker(entries):
     return out
 
 
-def bump(base, new):
-    """Move one of Tiny Hat's own recipes to a new upstream version and regenerate its checksums."""
+def bump(base, new, pkgrel="1"):
+    """Move a recipe to a new upstream version and regenerate its checksums from the upstream sources."""
     d = os.path.join(TOP, "packages", base)
     path = os.path.join(d, "PKGBUILD")
     text = open(path).read()
+    if re.search(r"^_(commit|tag|rev)=", text, re.M):
+        raise ManualUpdate("the recipe pins a commit")
+    srcinfo = open(os.path.join(d, ".SRCINFO")).read()
+    if FORBIDDEN_HOST in srcinfo:
+        raise ManualUpdate(f"sources on {FORBIDDEN_HOST}")
     text = re.sub(r"^pkgver=.*$", f"pkgver={new}", text, count=1, flags=re.M)
-    text = re.sub(r"^pkgrel=.*$", "pkgrel=1", text, count=1, flags=re.M)
+    text = re.sub(r"^pkgrel=.*$", f'pkgrel="{pkgrel}"', text, count=1, flags=re.M)
     with open(path, "w") as f:
         f.write(text)
     with tempfile.TemporaryDirectory() as tmp:
@@ -209,14 +255,17 @@ def bump(base, new):
         if r.returncode != 0:
             raise RuntimeError(f"updpkgsums: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
     info = importpkg.srcinfo(d)
-    if not any(re.match(r"\s*source(_\w+)? = .*://", l) and new in l for l in info.splitlines()):
-        raise RuntimeError(f"no source URL contains {new}, so the recipe needs a manual update")
+    forms = {new, new.replace(".", "_"), new.replace(".", "-"), new.replace(".", "")}
+    if not any(re.match(r"\s*source(_\w+)? = .*://", l) and any(f in l for f in forms) for l in info.splitlines()):
+        raise ManualUpdate(f"no source URL contains {new}")
 
 
 def upstream_updates(report, only, apply_bumps):
-    entries = {b: c for b, c in nvchecker_entries().items() if not only or b in only}
+    pinned = {b for b, t in distro.tables().items() if "version" in t}
+    entries = {b: c for b, c in nvchecker_entries().items() if (not only or b in only) and b not in pinned}
     if not entries or not shutil.which("nvchecker"):
         return
+    entries = usable_sources(entries, report)
     upstream = run_nvchecker(entries)
     pkgs = distro.packages()
     for base in sorted(entries):
@@ -270,10 +319,12 @@ def table(rows, head):
 def write_report(report):
     parts = ["Automatic package updates. Nothing has been built: build and test before merging.\n"]
     sections = [
-        ("arch", "Updated to the latest Arch Linux recipe", ["Package", "Old", "New"]),
+        ("arch", "Updated to the version in Arch Linux (pkgver bumped, previous Arch packaging kept)", ["Package", "Old", "New"]),
         ("bumped", "Updated to the latest upstream release (Tiny Hat recipes)", ["Package", "Old", "New"]),
         ("held", "Held back by the [image] deny list", ["Package", "Update", "Would pull in"]),
+        ("manual", "Needs a manual update, left unchanged", ["Package", "Update", "Reason"]),
         ("failed", "Failed, left unchanged", ["Package", "Step", "Error"]),
+        ("repackaged", "Repackaged by Arch Linux with the same upstream version (not changed)", ["Package", "Current", "Arch"]),
         ("upstream", "Newer upstream releases, not packaged by Arch yet (not changed)", ["Package", "Current", "Upstream"]),
         ("lock", "archlinux32 buildroot lock", ["Package", "Old", "New"]),
     ]
@@ -291,13 +342,13 @@ def write_report(report):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("packages", nargs="*", help="only check these recipes")
-    ap.add_argument("--no-arch", action="store_true", help="do not update imported Arch recipes")
+    ap.add_argument("--no-arch", action="store_true", help="do not check the Arch Linux package databases")
     ap.add_argument("--no-upstream", action="store_true", help="do not run nvchecker")
     ap.add_argument("--no-bump", action="store_true", help="only report new upstream releases of Tiny Hat recipes")
     ap.add_argument("--no-lock", action="store_true", help="do not refresh the archlinux32 lock")
     args = ap.parse_args()
     only = set(args.packages)
-    report = {k: [] for k in ("arch", "bumped", "held", "failed", "upstream", "lock")}
+    report = {k: [] for k in ("arch", "bumped", "held", "manual", "failed", "repackaged", "upstream", "lock")}
     try:
         STATE.append(image_state())
     except SystemExit as e:
