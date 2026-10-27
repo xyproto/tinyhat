@@ -107,6 +107,7 @@ core iana-etc 20260617-1.0 iana-etc-20260617-1.0-any.pkg.tar.zst e9c97fc00667649
 extra impala 0.2.4-1.0 impala-0.2.4-1.0-i686.pkg.tar.zst 10087a51867005b5d00500c7808080db65f2d920133245e97958e4bc40f9105b
 extra intel-ucode 20260812-1.0 intel-ucode-20260812-1.0-any.pkg.tar.zst 67061e392534fc80f492fec457d5f64fca6176c9af2979c25bdefcb26eb942bf
 core iputils 20250605-1.4 iputils-20250605-1.4-i686.pkg.tar.zst f1dcb8f98da7aba95d48b900826b0c7c0c83ac6ca971306862897ffc3fa3ca10
+core iw 6.17-1.0 iw-6.17-1.0-i686.pkg.tar.zst 1194659408067f00f92133fcf91bf5d4aeac030dd71b69a835dbc802450120a6
 extra iwd 2.22-1.0 iwd-2.22-1.0-i686.pkg.tar.zst 261467a97ef39a54aa55b1ac71eafcbcb2654050417496a35cf527f97744ce31
 core jansson 2.15.1-1.0 jansson-2.15.1-1.0-i686.pkg.tar.zst 44f7505ddf0c2cc0b9be78fdfb5bb03eceee4f8b84bd57006862a30d1c109b3b
 extra joe 4.8-1.0 joe-4.8-1.0-i686.pkg.tar.zst 89c38a0a6f465d7bfe9cf302deeb0d3d083095535b13fa63b23c215bb92fdb25
@@ -328,6 +329,7 @@ core util-linux-libs 2.41.3-2.3 util-linux-libs-2.41.3-2.3-i686.pkg.tar.zst 86f5
 extra wayland 1.26.0-1.0 wayland-1.26.0-1.0-i686.pkg.tar.zst 9c818f117dc319475d85522ae121d82dc6611368d465fc0b4c054771eb9b18b9
 extra webrtc-audio-processing-0.3 0.3.1-6.0 webrtc-audio-processing-0.3-0.3.1-6.0-i686.pkg.tar.zst 6f6057a86ea6ec1eeb3483dc7d52a9b6c1f6fadb2290766253b7252a6687c15f
 core which 2.25-1.0 which-2.25-1.0-i686.pkg.tar.zst ca456224f39197c2d6194eeb295d48743698b3a3cbc0edf03c223b00c14385f7
+core wireless-regdb 2026.09.03-1.0 wireless-regdb-2026.09.03-1.0-any.pkg.tar.zst d83db6a252864e93af049829b75653e41afc393ad88bfcfca3073531a153bdf4
 extra wireplumber 0.4.14-1.1 wireplumber-0.4.14-1.1-i686.pkg.tar.zst 08c315c691d2f7bdae81fbb82afc7c8606c40687f1805758813f64115598cc45
 extra xcursor-vanilla-dmz 0.4.5.3-1.0 xcursor-vanilla-dmz-0.4.5.3-1.0-any.pkg.tar.zst 1945b8d0f616e932a16af5af6f9d6dfb7739d3231dc0c939c620a2c3b4370a58
 core xfsprogs 7.1.1-1.0 xfsprogs-7.1.1-1.0-i686.pkg.tar.zst 0fd132882620c288b8d1d57003e14d8d4f5cc3f76226a78c1f73998b23919407
