@@ -975,10 +975,12 @@ source = "sources"
 [zathura]
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.5.2-2"
+build = true
 
 [zathura-pdf-poppler]
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.3.1-2"
+build = true
 
 [zsnes]
 source = "sources"
