@@ -5,35 +5,44 @@
 # Contributor: mlq <mlq@pwmt.org>
 
 pkgname=girara
-pkgver=2026.07.18
+pkgver=0.4.2
 pkgrel="1"
 pkgdesc="User interface library focused on simplicity and minimalism"
 url="https://pwmt.org/projects/girara"
 arch=(i686 x32)
-license=('Zlib')
+license=('custom')
+
 provides=('girara-gtk3' 'girara-common')
 replaces=('girara-gtk3' 'girara-common')
 conflicts=('girara-gtk3' 'girara-common')
-depends=('glib2' 'glibc')
-makedepends=('meson' 'ninja' 'doxygen')
-source=("${pkgname}-${pkgver}.tar.gz::https://github.com/pwmt/${pkgname}/archive/refs/tags/${pkgver}.tar.gz")
-sha512sums=('28a9e0fd27fe8788a69a87dfd2609d0a56220a83dba9b18783a409f6bd0044e8404302a94089a06ef1a722c3e901380164a6ce1de76bfdf69fb8a5b467a1b729')
+
+depends=('gtk3' 'glib2' 'json-glib' 'pango')
+makedepends=('meson' 'ninja' 'doxygen' 'check')
+checkdepends=('xorg-server-xvfb')
+
+source=(girara-$pkgver.tar.gz::https://github.com/pwmt/girara/archive/$pkgver.tar.gz)
+
+sha512sums=('02dfe097aec9dd6c3ebbcbc0e4ca1ddcc6aeb3085a411b9cb1db81d441d85a7eadec7c07773b7d7a63da2e30a8bca45bd8417e7e5cb5efe7bde39059e53b5e34')
 
 build() {
-        cd "${pkgname}-${pkgver}"
-        arch-meson build
-        ninja -C build
+  cd girara-$pkgver
+  arch-meson build
+
+  cd build
+  ninja
 }
 
 check() {
-        cd "${pkgname}-${pkgver}"
-        ninja -C build test
+  cd girara-$pkgver/build
+
+  ninja test
 }
 
 package() {
-        cd "${pkgname}-${pkgver}"
-        DESTDIR="${pkgdir}" ninja -C build install
-        install -Dm 664 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  cd girara-$pkgver/build
+  DESTDIR="$pkgdir/" ninja install
+
+  install -D -m664 ../LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
 unset -f pkgver

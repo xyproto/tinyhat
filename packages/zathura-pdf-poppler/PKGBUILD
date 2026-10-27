@@ -5,32 +5,29 @@
 # Contributor: karnath <karnathtorjian@gmail.com>
 
 pkgname=zathura-pdf-poppler
-pkgver=2026.07.18
-pkgrel="3"
+pkgver=0.3.1
+pkgrel="2"
 pkgdesc="Adds pdf support to zathura by using the poppler engine"
 url="https://pwmt.org/projects/zathura-pdf-poppler/"
 arch=(i686 x32)
-license=('Zlib')
-depends=('poppler-glib' 'zathura')
-makedepends=('meson' 'ninja' 'appstream' 'desktop-file-utils')
-source=("${pkgname}-${pkgver}.tar.gz::https://github.com/pwmt/${pkgname}/archive/refs/tags/${pkgver}.tar.gz")
-sha512sums=('6a1ca54a3041f1bcc591cd26c496d6e8868bd0f25336d78268724e4b65fa1fb4839660aca6fb93e5b8a0367da656185868186d1f7d033a3cd90075f197409c2e')
+license=('custom')
+
+depends=('poppler-glib' 'zathura' 'desktop-file-utils')
+makedepends=('meson' 'ninja')
+
+source=(zathura-pdf-poppler-$pkgver.tar.gz::https://github.com/pwmt/zathura-pdf-poppler/archive/$pkgver.tar.gz)
+
+sha256sums=('dc7621dd213adc9618e6c1395ce6b1afece5fa0091930ecc2e9599c625a97439')
 
 build() {
-        cd "${pkgname}-${pkgver}"
-        arch-meson build
-        ninja -C build
+  cd zathura-pdf-poppler-$pkgver
+  arch-meson build
+  ninja -C build
 }
 
-check() {
-	cd "${pkgname}-${pkgver}"
-	meson test -C build --print-errorlogs
-}
-
-package() {
-        cd "${pkgname}-${pkgver}"
-        DESTDIR="${pkgdir}" ninja -C build install
-        install -Dm 664 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+package(){
+  DESTDIR="$pkgdir" ninja -C zathura-pdf-poppler-$pkgver/build install
+  install -Dm0644 zathura-pdf-poppler-$pkgver/LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
 unset -f pkgver

@@ -104,6 +104,9 @@ def write_if_changed(path, text):
     with open(tmp, "w") as f:
         f.write(text)
     os.replace(tmp, path)
+    # Writes in quick succession can keep the same mtime, so drop the cached copy explicitly
+    for k in [k for k in _cache if k[0] == path]:
+        del _cache[k]
 
 
 def write_lock(**changes):
