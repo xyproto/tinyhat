@@ -21,7 +21,7 @@ done <"$lock"
 rm -rf "$root/var/lib/tinyhat-install"
 
 inroot /usr/bin/update-ca-trust
-[ ! -x "$root/usr/bin/gdk-pixbuf-query-loaders" ] || inroot /usr/bin/gdk-pixbuf-query-loaders --update-cache
+[ ! -x "$root/usr/bin/gdk-pixbuf-query-loaders" ] || [ ! -d "$root/usr/lib/gdk-pixbuf-2.0/2.10.0" ] || inroot /usr/bin/gdk-pixbuf-query-loaders --update-cache
 [ ! -x "$root/usr/bin/glib-compile-schemas" ] || inroot /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas
 [ ! -x "$root/usr/bin/gio-querymodules" ] || inroot /usr/bin/gio-querymodules /usr/lib/gio/modules
 [ ! -x "$root/usr/bin/fc-cache" ] || inroot /usr/bin/fc-cache -s
