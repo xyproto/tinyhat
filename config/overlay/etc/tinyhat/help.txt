@@ -1,4 +1,4 @@
-Tiny Hat 1.0.3
+Tiny Hat 1.0.4
 
 Alt+Space	Application Menu
 Alt+Shift+W	Close window (Alt+F4 also works)
@@ -12,24 +12,25 @@ Ctrl+Alt+N	NetSurf web browser
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+B	Bluetooth devices
 Ctrl+Alt+W	Wi-Fi settings
-Ctrl+Alt+C	Example game in C (2x Ctrl+Space to run)
-Ctrl+Alt+F	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
-Ctrl+Alt+G	Example GBA program in C (2x Ctrl+Space to run)
-Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
-Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
-Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
-Ctrl+Alt+U	Example C64 program in C (2x Ctrl+Space to run)
-Ctrl+Alt+X	Example 256 byte demoscene intro (2x Ctrl+Space to run)
-Ctrl+Alt+L	Lock the screen (the default password is "tinyhat")
-Ctrl+Alt+H	Toggle sharing
 Ctrl+Alt+M	Download and run a homebrew game (NES, SNES, GBA, Genesis or Master System)
-Ctrl+Alt+A	Scan drives for ScummVM games
-Ctrl+Alt+S	ScummVM
-Ctrl+Alt+D	DOSBox-X
 Ctrl+Alt+T	TIC-80 fantasy console
+Ctrl+Alt+D	DOSBox-X
+Ctrl+Alt+S	ScummVM
+Ctrl+Alt+A	Scan drives for ScummVM games
 Ctrl+Alt+Z	ZSNES 2
 Ctrl+Alt+V	C64 (VICE)
 Ctrl+Alt+I	LibreSprite
+Ctrl+Alt+H	Toggle sharing
+Ctrl+Alt+L	Lock the screen (the default password is "tinyhat")
+
+Ctrl+Alt+C	Example game in C (2x Ctrl+Space to run)
+Ctrl+Alt+F	Example game in Fennel and LÖVE (2x Ctrl+Space to run)
+Ctrl+Alt+P	Example point-and-click game in Lua (2x Ctrl+Space to run)
+Ctrl+Alt+G	Example GBA program in C (2x Ctrl+Space to run)
+Ctrl+Alt+J	Example SNES program in C (2x Ctrl+Space to run)
+Ctrl+Alt+O	Example DOS program in C (2x Ctrl+Space to run)
+Ctrl+Alt+U	Example C64 program in C (2x Ctrl+Space to run)
+Ctrl+Alt+X	Example 256 byte demoscene intro (2x Ctrl+Space to run)
 
 Right click desktop	Toggle background
 Alt+Left drag	Move a window
