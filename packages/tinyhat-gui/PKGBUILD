@@ -9,7 +9,7 @@ depends=(gtk3 curl libglvnd)
 makedepends=(fontconfig)
 _progs=(tinyhat-backup tinyhat-restore tinyhat-pick)
 source=("${_progs[@]/%/.c}" tinyhat-glinfo.c)
-sha256sums=(SKIP SKIP SKIP SKIP SKIP)
+sha256sums=(SKIP SKIP SKIP SKIP)
 
 build() {
   mkdir -p pc
