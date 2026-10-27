@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=MonkeyJump Go
+Icon=applications-games
+Comment=Play the board game Go against GNU Go
+Exec=monkeyjump
+Terminal=false
+Categories=Game;BoardGame;
