@@ -15,14 +15,18 @@ depends=(curl gtk3 'libcss>=0.9.2' 'libdom>=0.4.2' 'libhubbub=0.3.8'
          'libsvgtiny>=0.1.8' 'libutf8proc>=2.9.0' 'libwapcaplet>=0.4.3' libwebp)
 makedepends=(check 'nsgenbind>=0.9' perl-html-parser setconf tinyxxd icu69)
 source=("https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$pkgver.tar.gz"
-        netsurf.sh)
+        netsurf.sh
+        download-open.patch)
 sha256sums=('4dea880ff3c2f698bfd62c982b259340f9abcd7f67e6c8eb2b32c61f71644b7b'
-            '7fe3ce6b7c7058ae5385614848154653840b83906b090fc90c4e70455d39affc')
+            '7fe3ce6b7c7058ae5385614848154653840b83906b090fc90c4e70455d39affc'
+            '80cf970517bfed24c1fe207b9a7ee8251294952938380f1c85768fa26fa6b463')
 b2sums=('a771d12de754a3cce6a38c79c11388c7d8ec26bda3e30c97eff3542e7b17bbfb3a369e3c99456d954878726a94b8052825ef3801bcd64eab4fabc26091e7b0b8'
-        'c12c85c42a9f4615199e61b97cf95edaad1f2f103a1dd6815876006c7a75793bca7afc595431e6147b7a5c7e0be23f33d97cc9dfce1d7d94c35b8b43dcf627d4')
+        'c12c85c42a9f4615199e61b97cf95edaad1f2f103a1dd6815876006c7a75793bca7afc595431e6147b7a5c7e0be23f33d97cc9dfce1d7d94c35b8b43dcf627d4'
+        'd28f6e00ea9cf0f27f6901c7af654ff723a0b8b4d0a62a38943da382967e664d8e29b421f66847f4f4d2978da167e9c8c7e946b9da0d453256c6ac30c4f2d907')
 
 prepare() {
   cd "$pkgname-all-$pkgver/$pkgname"
+  patch -Np1 -i "$srcdir/download-open.patch"
   sed -i 's:libutf8proc/::;s:UTF8PROC_CCC_VIRAMA:UTF8PROC_BIDI_CLASS_EN:' utils/idna.c
   setconf frontends/gtk/res/netsurf-gtk.desktop Exec '/usr/bin/netsurf %u'
   setconf frontends/gtk/res/netsurf-gtk.desktop Icon netsurf.xpm
