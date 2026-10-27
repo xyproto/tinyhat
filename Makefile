@@ -8,9 +8,17 @@ SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
-# Disk space while building: how many packages build at once, the ccache size, and whether
-# downloaded package sources and the kernel build tree are kept after building (KEEP_SOURCES=1)
-export PKG_JOBS ?= 2
+# Disk space and memory while building: how many packages build at once (one per 8 GB of memory, at least 1),
+# how many compile jobs each of them runs (the CPU cores shared between them), the ccache size, and whether
+# downloaded package sources and the kernel build tree are kept after building (KEEP_SOURCES=1).
+# With 16 GB of memory and 12 cores, that is 2 packages at once with 6 jobs each.
+ifeq ($(origin PKG_JOBS),undefined)
+PKG_JOBS := $(shell awk '/^MemTotal:/ { n = int($$2 / 1048576 / 8 + 0.25); print (n < 1 ? 1 : n) }' /proc/meminfo)
+endif
+ifeq ($(origin PKG_MAKE_JOBS),undefined)
+PKG_MAKE_JOBS := $(shell n=$$(( $$(nproc) / $(PKG_JOBS) )); echo $$(( n < 1 ? 1 : n )))
+endif
+export PKG_JOBS PKG_MAKE_JOBS
 export CCACHE_MAXSIZE ?= 2G
 export KEEP_SOURCES ?= 0
 SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
