@@ -39,6 +39,16 @@ packages = [
 skip = [
     "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
 ]
+# Package updates that would make the image depend on one of these are held back (scripts/autoupdate.py)
+deny = [
+    "perl", "perl-*",
+    "sdl2", "sdl2-*", "sdl2_*", "sdl12-compat",
+    "gtk2", "gtk2-*", "gtkmm", "libglade",
+    "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
+    "xorg-server*", "xorg-x*", "libx11", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
+    "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
+    "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice", "xcb-util*",
+]
 exclude = [
     "usr/include",
     "usr/share/man/[a-z][a-z]",
@@ -512,6 +522,7 @@ build = true
 [aquarium]
 source = "sources"
 arch = "i686"
+nvchecker = { source = "github", github = "xyproto/aquarium", prefix = "v", use_max_tag = true }
 
 [arm-none-eabi-gcc]
 prebuilt = true
@@ -549,6 +560,7 @@ source = "sources"
 
 [chibi-scheme]
 source = "sources"
+nvchecker = { source = "github", github = "ashinn/chibi-scheme", use_max_tag = true }
 
 [compose-tables]
 source = "sources"
@@ -560,6 +572,7 @@ build = true
 source = "sources"
 arch = "i686"
 localdeps = ["libglvnd"]
+nvchecker = { source = "github", github = "xyproto/dosbox-x", use_max_tag = true }
 
 [dwl]
 source = "sources"
@@ -573,6 +586,7 @@ arch = "i686"
 
 [fluidsynth]
 source = "sources"
+nvchecker = { source = "github", github = "FluidSynth/fluidsynth", prefix = "v", use_latest_release = true }
 
 [fontconfig]
 source = "sources"
@@ -587,10 +601,12 @@ build = true
 [furnace]
 source = "sources"
 localdeps = ["libglvnd"]
+nvchecker = { source = "github", github = "tildearrow/furnace", prefix = "v", use_latest_release = true }
 
 [fuzzel]
 source = "sources"
 localdeps = ["fcft", "libutf8proc"]
+nvchecker = { source = "gitea", gitea = "dnkl/fuzzel", host = "codeberg.org", use_max_tag = true }
 
 [gba-dev]
 source = "sources"
@@ -605,6 +621,10 @@ source = "sources"
 [gdk-pixbuf2]
 build = true
 localdeps = ["meson", "shared-mime-info"]
+
+[girara]
+# The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
+version = "0.4.2-1"
 
 [git]
 prebuilt = true
@@ -670,6 +690,7 @@ build = true
 
 [libdisplay-info]
 source = "sources"
+nvchecker = { source = "gitlab", gitlab = "emersion/libdisplay-info", host = "gitlab.freedesktop.org", use_max_tag = true }
 
 [libdom]
 source = "sources"
@@ -688,6 +709,7 @@ build = true
 
 [libgrapheme]
 source = "sources"
+nvchecker = { source = "regex", url = "https://dl.suckless.org/libgrapheme/", regex = "libgrapheme-([\\d.]+)\\.tar\\.gz" }
 
 [libhubbub]
 source = "sources"
@@ -769,6 +791,7 @@ build = true
 
 [mgba]
 source = "sources"
+nvchecker = { source = "github", github = "mgba-emu/mgba", use_latest_release = true }
 
 [monkeyjumpgo]
 source = "sources"
@@ -825,6 +848,7 @@ build = true
 
 [pure-fish]
 source = "sources"
+nvchecker = { source = "github", github = "pure-fish/pure", prefix = "v", use_latest_release = true }
 
 [pvsneslib]
 source = "sources"
@@ -837,27 +861,34 @@ arch = "i686"
 
 [raylib]
 source = "sources"
+nvchecker = { source = "github", github = "raysan5/raylib", use_latest_release = true }
 
 [rfxgen]
 source = "sources"
+nvchecker = { source = "github", github = "raysan5/rfxgen", use_max_tag = true }
 
 [ripgrep]
 arch = "i686"
 
 [scummvm]
 source = "sources"
+nvchecker = { source = "github", github = "scummvm/scummvm", prefix = "v", use_latest_release = true }
 
 [sdl3]
 source = "sources"
+nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [sdl3-man]
 source = "sources"
+nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [sdl3_image]
 source = "sources"
+nvchecker = { source = "github", github = "libsdl-org/SDL_image", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [sdl3_ttf]
 source = "sources"
+nvchecker = { source = "github", github = "libsdl-org/SDL_ttf", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [spirv-headers]
 build = true
@@ -871,9 +902,11 @@ prebuilt = true
 
 [swaybg]
 source = "sources"
+nvchecker = { source = "github", github = "swaywm/swaybg", prefix = "v", use_latest_release = true }
 
 [swaylock]
 source = "sources"
+nvchecker = { source = "github", github = "swaywm/swaylock", prefix = "v", use_latest_release = true }
 
 [syncthing]
 arch = "i686"
@@ -889,9 +922,11 @@ arch = "i686"
 
 [testcontroller]
 source = "sources"
+nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [tic-80]
 source = "sources"
+nvchecker = { source = "github", github = "nesbox/TIC-80", prefix = "v", use_latest_release = true }
 
 [tinyhat-gui]
 source = "sources"
@@ -910,6 +945,7 @@ prebuilt = true
 
 [tinyxxd]
 source = "sources"
+nvchecker = { source = "github", github = "xyproto/tinyxxd", prefix = "v", use_max_tag = true }
 
 [util-linux]
 prebuilt = true
@@ -919,6 +955,7 @@ source = "sources"
 
 ["wlroots0.20"]
 source = "sources"
+nvchecker = { source = "gitlab", gitlab = "wlroots/wlroots", host = "gitlab.freedesktop.org", use_max_tag = true, include_regex = "0\\.20\\.\\d+" }
 
 [x32-binutils]
 source = "sources"
@@ -935,7 +972,17 @@ arch = "i686"
 [x32-runtime]
 source = "sources"
 
+[zathura]
+# The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
+version = "0.5.2-2"
+
+[zathura-pdf-poppler]
+# The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
+version = "0.3.1-2"
+
 [zsnes]
 source = "sources"
 arch = "i686"
 localdeps = ["libglvnd"]
+
+nvchecker = { source = "github", github = "xyproto/zsnes", use_max_tag = true }
