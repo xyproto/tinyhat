@@ -640,8 +640,9 @@ build = true
 localdeps = ["meson", "shared-mime-info"]
 
 [girara]
-# The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
-version = "0.4.2-1"
+# built locally so it links against the wayland-only gtk3 (the archlinux32
+# prebuilt needs gtk_plug_new from an x11 gtk3)
+build = true
 
 [git]
 prebuilt = true
@@ -695,6 +696,8 @@ arch = "i686"
 
 [imv]
 build = true
+# librsvg-2.0.pc (the seed's librsvg is broken) needs dav1d >= 1.3.0
+localdeps = ["dav1d"]
 
 [krb5]
 prebuilt = true
@@ -717,6 +720,8 @@ build = true
 
 [libfm]
 build = true
+# configure checks libmenu-cache, and librsvg-2.0.pc needs dav1d >= 1.3.0
+localdeps = ["menu-cache", "dav1d"]
 
 [libfm-extra]
 source = "sources"
@@ -825,7 +830,8 @@ build = true
 
 [netsurf]
 source = "sources"
-localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "libsvgtiny", "libutf8proc", "libwapcaplet", "libxml2", "shared-mime-info"]
+# links the seed's broken librsvg-2.so, so ship the local one (and its dav1d)
+localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "librsvg", "libsvgtiny", "libutf8proc", "libwapcaplet", "libxml2", "dav1d", "shared-mime-info"]
 
 [nss]
 prebuilt = true
@@ -852,6 +858,8 @@ pin_reason = "archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fon
 
 [pcmanfm]
 build = true
+# fm-version.h lives in the split libfm-extra package; libfm.so needs libmenu-cache at link time
+localdeps = ["libfm-extra", "menu-cache"]
 
 [pipewire]
 prebuilt = true
@@ -993,12 +1001,17 @@ source = "sources"
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.5.2-2"
 build = true
-localdeps = ["girara"]
+# the chroot gets the local librsvg (whose rsvg-convert needs dav1d), the local
+# girara and the local wayland-only gtk3 (the seed's x11 gtk3 pulls gdk_x11
+# symbols into the built binary)
+localdeps = ["girara", "dav1d", "gtk3"]
 
 [zathura-pdf-poppler]
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.3.1-2"
 build = true
+# zathura.pc requires girara-gtk3, so the chroot needs the girara package
+localdeps = ["girara"]
 
 [zsnes]
 source = "sources"
