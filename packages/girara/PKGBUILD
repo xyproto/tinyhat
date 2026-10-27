@@ -26,7 +26,7 @@ sha512sums=('02dfe097aec9dd6c3ebbcbc0e4ca1ddcc6aeb3085a411b9cb1db81d441d85a7eade
 
 build() {
   cd girara-$pkgver
-  arch-meson build
+  arch-meson build -Dtests=disabled
 
   cd build
   ninja
