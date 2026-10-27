@@ -26,14 +26,14 @@ packages = [
     "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "cairo", "syncthing",
     "opendoas",
     "libmnl",
-    "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
+    "dropbear-scp", "zip", "unzip", "unrar", "7zip", "xarchiver", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "ldns", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "love", "mtpaint", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "pcmanfm", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "ldns", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "mtpaint", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "tinyhat-gui",
-    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "testcontroller",
+    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
@@ -535,6 +535,9 @@ localdeps = ["libglvnd"]
 [busybox]
 arch = "i686"
 
+[bwbasic]
+source = "sources"
+
 [cairo]
 build = true
 
@@ -542,6 +545,9 @@ build = true
 build = true
 
 [cc65]
+source = "sources"
+
+[chibi-scheme]
 source = "sources"
 
 [compose-tables]
@@ -650,6 +656,9 @@ prebuilt = true
 [impala]
 arch = "i686"
 
+[imv]
+build = true
+
 [krb5]
 prebuilt = true
 
@@ -668,8 +677,17 @@ source = "sources"
 [libepoxy]
 build = true
 
+[libfm]
+build = true
+
+[libfm-extra]
+source = "sources"
+
 [libglvnd]
 build = true
+
+[libgrapheme]
+source = "sources"
 
 [libhubbub]
 source = "sources"
@@ -752,6 +770,10 @@ build = true
 [mgba]
 source = "sources"
 
+[monkeyjumpgo]
+source = "sources"
+arch = "i686"
+
 [mpg123]
 build = true
 
@@ -787,6 +809,9 @@ version = "1:1.54.0-1"
 pin = "1:1.54.0-1.0"
 pin_sha256 = "69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef"
 pin_reason = "archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have"
+
+[pcmanfm]
+build = true
 
 [pipewire]
 prebuilt = true
