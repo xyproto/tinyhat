@@ -22,7 +22,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all iso lock lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all iso autoupdate lock lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
 
 all: tinyhat32.img
 
@@ -30,7 +30,8 @@ iso: tinyhat32.iso
 
 both: tinyhat32.img tinyhat64x32.img
 
-ifneq (,$(filter-out cleantest cleanchroot clean distclean status,$(or $(MAKECMDGOALS),all)))
+# Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
+ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check import srcinfo autoupdate,$(or $(MAKECMDGOALS),all)))
 include $(B)/pkgs.mk
 endif
 
@@ -87,6 +88,10 @@ $(B)/pkg/i686/tinyhat-splash: $(B)/theme.toml
 
 import:
 	python3 scripts/importpkg.py all
+
+# Update recipes and the lock to newer package versions, holding back updates that hit [image] deny
+autoupdate:
+	python3 scripts/autoupdate.py
 
 srcinfo:
 	python3 scripts/importpkg.py srcinfo packages/*/
