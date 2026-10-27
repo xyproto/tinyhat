@@ -48,6 +48,8 @@ deny = [
     "xorg-server*", "xorg-x*", "libx11", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
     "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
     "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice", "xcb-util*",
+    # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
+    "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
 ]
 exclude = [
     "usr/include",
@@ -474,6 +476,7 @@ dbus-units = "dbus-broker-units"
 "libwebrtc_audio_processing.so" = "webrtc-audio-processing-0.3"
 pipewire-session-manager = "wireplumber"
 glib2-devel = "glib2"
+libjpeg = "libjpeg-turbo"
 lv2-host = "jalv"
 xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 
