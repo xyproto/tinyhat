@@ -1,0 +1,4 @@
+#!/bin/sh
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+[ -p "$bar" ] || exit 0
+echo togglelayout >"$bar"

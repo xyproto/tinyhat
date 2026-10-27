@@ -4,4 +4,12 @@ case $1 in
 *://* | *.html | *.htm | *.md | *.xhtml) exec ${BROWSER:-/usr/bin/netsurf-gtk3} "$1" ;;
 esac
 [ -d "$1" ] && exec foot mc "$1"
+case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
+*.zip | *.jar | *.rar | *.7z | *.tar | *.tar.* | *.tgz | *.tbz | *.tbz2 | *.txz | *.tzst | *.gz | *.bz2 | *.xz | *.zst | *.lz | *.lz4 | *.lzma | *.lzo | *.lha | *.lzh | *.arj | *.cpio | *.deb | *.rpm)
+	exec xarchiver "$1" ;;
+*.png | *.jpg | *.jpeg | *.gif | *.bmp | *.webp | *.tif | *.tiff | *.svg | *.ff)
+	exec imv "$1" ;;
+*.pdf)
+	exec zathura "$1" ;;
+esac
 exec foot o "$1"
