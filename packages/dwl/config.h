@@ -29,6 +29,7 @@ static uint32_t colors[][3]                = {
 	[SchemeTaskSel]   = { 0xffffffff, 0x414868ff, 0x414868ff },
 	[SchemeTaskHover] = { 0xffffffff, 0x4a5275ff, 0x4a5275ff },
 	[SchemeTaskMin]   = { 0x737aa2ff, 0x2f344bff, 0x2f344bff },
+	[SchemeStatus]    = { 0x7dcfffff, 0x292e42ff, 0x414868ff },
 };
 
 /* tagging */
@@ -261,7 +262,7 @@ static const Key keys[] = {
 static const Button buttons[] = {
 	{ ClkLtSymbol, 0,      BTN_LEFT,   togglelayout,   {0} },
 	{ ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
-	{ ClkTitle,    0,      BTN_MIDDLE, zoom,           {0} },
+	{ ClkTitle,    0,      BTN_MIDDLE, taskclose,      {0} },
 	{ ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },
 	{ ClkRoot,     0,      BTN_RIGHT,  spawn,          {.v = cyclecmd} },
 	{ ClkMenu,     0,      BTN_LEFT,   spawn,          {.v = menucmd} },

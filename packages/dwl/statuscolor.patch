@@ -1,0 +1,21 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -92,7 +92,7 @@
+ #define TEXTW(mon, text)        (drwl_font_getwidth(mon->drw, text) + mon->lrpad)
+ 
+ /* enums */
+-enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeTask, SchemeTaskSel, SchemeTaskHover, SchemeTaskMin }; /* color schemes */
++enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeTask, SchemeTaskSel, SchemeTaskHover, SchemeTaskMin, SchemeStatus }; /* color schemes */
+ enum { CurNormal, CurPressed, CurMove, CurResize }; /* cursor */
+ enum { XDGShell, LayerShell, X11 }; /* client types */
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
+@@ -1757,7 +1757,7 @@
+ 
+ 	/* draw status first so it can be overdrawn by tags later */
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
+-		drwl_setscheme(m->drw, colors[SchemeNorm]);
++		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		tw = TEXTW(m, stext) - m->lrpad + 2; /* 2px right padding */
+ 		drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
+ 	}

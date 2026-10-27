@@ -1,0 +1,15 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -3615,7 +3615,10 @@
+ 			*next++ = '\0';
+ 		if (!strncmp(line, "notice", 6))
+ 			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
+-		else
++		else if (!strcmp(line, "togglelayout")) {
++			if (selmon)
++				togglelayout(NULL);
++		} else
+ 			snprintf(stext, sizeof(stext), "%s", line);
+ 	}
+ 	drawbars();
