@@ -1,0 +1,56 @@
+name: Package updates
+
+# Every day: move recipes and the lock to newer package versions (see scripts/autoupdate.py) and open or
+# update one pull request with the changes. Updates that would pull X11, perl, SDL2, GTK2, Qt etc. into the
+# image ([image] deny in distro.toml) are held back and listed in the pull request. Nothing is built here.
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: autoupdate
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    container: archlinux:base-devel
+    steps:
+      - name: Install tools
+        run: pacman -Syu --noconfirm --needed git make python nvchecker pacman-contrib curl
+
+      - uses: actions/checkout@v4
+
+      - name: Add a build user (makepkg refuses to run as root)
+        run: |
+          useradd -m builder
+          chown -R builder: "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: Update packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: sudo -u builder --preserve-env=GITHUB_TOKEN make autoupdate
+
+      - name: Show the report
+        run: cat build/autoupdate.md >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Open or update the pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: autoupdate
+          delete-branch: true
+          title: Package updates
+          commit-message: Update packages
+          body-path: build/autoupdate.md
+          add-paths: |
+            distro.toml
+            distro.lock
+            packages
+            vendor/db
