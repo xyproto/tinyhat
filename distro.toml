@@ -19,7 +19,7 @@ packages = [
     "xfsprogs", "dosfstools", "exfatprogs", "mtools", "ntfs-3g",
     "alsa-utils", "pipewire", "pipewire-alsa", "wireplumber",
     "bluez", "bluez-utils", "bluetui",
-    "iwd", "impala",
+    "iwd", "wireless-regdb", "impala",
     "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "archlinux-wallpaper", "xcursor-vanilla-dmz",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
@@ -44,7 +44,7 @@ deny = [
     "perl", "perl-*",
     "sdl2", "sdl2-*", "sdl2_*", "sdl12-compat",
     "gtk2", "gtk2-*", "gtkmm", "libglade",
-    "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
+    "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
     "xorg-server*", "xorg-x*", "libx11", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
     "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
     "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice", "xcb-util*",
@@ -825,7 +825,7 @@ build = true
 
 [netsurf]
 source = "sources"
-localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "libsvgtiny", "libutf8proc", "libwapcaplet", "shared-mime-info"]
+localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "libsvgtiny", "libutf8proc", "libwapcaplet", "libxml2", "shared-mime-info"]
 
 [nss]
 prebuilt = true
@@ -993,6 +993,7 @@ source = "sources"
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.5.2-2"
 build = true
+localdeps = ["girara"]
 
 [zathura-pdf-poppler]
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
