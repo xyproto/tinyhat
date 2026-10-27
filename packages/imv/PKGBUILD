@@ -21,7 +21,7 @@ prepare() {
 
 build() {
   export CFLAGS+=' -w'
-  arch-meson build $pkgname-v$pkgver
+  arch-meson $pkgname-v$pkgver build -Dwindows=wayland -Dunicode=grapheme -Dlibheif=disabled -Dlibjxl=disabled -Dqoi=disabled -Dtest=disabled
   ninja -C build
 }
 
@@ -33,6 +33,5 @@ package() {
 
 depends=(libgrapheme libinih libjpeg-turbo libnsbmp libnsgif libpng librsvg libtiff libwebp libxkbcommon pango wayland libglvnd)
 makedepends=(${makedepends[@]//cmocka/})
-eval "$(declare -f build | sed 's/arch-meson build /arch-meson build -Dwindows=wayland -Dunicode=grapheme -Dlibheif=disabled -Dlibjxl=disabled -Dqoi=disabled -Dtest=disabled /')"
 
 unset -f pkgver
