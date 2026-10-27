@@ -6,8 +6,8 @@ arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"
 license=(BSD-3-Clause)
 makedepends=(kbd python)
-source=(tinyhat-splash.c hat.c hat.h theme.toml)
-sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP')
+source=(tinyhat-splash.c hat.c hat.h)
+sha256sums=('SKIP' 'SKIP' 'SKIP')
 
 build() {
   python3 - /usr/share/kbd/consolefonts/default8x16.psfu.gz >font.h <<'PY'
@@ -22,7 +22,7 @@ for i in range(0, len(data), 16):
 print("};")
 PY
   local colors
-  colors=$(python3 -c 'import sys, tomllib; d = tomllib.load(open(sys.argv[1], "rb")); print("-DHAT_COLOR=0x" + d["hat_color"][1:], "-DHAT_HIGHLIGHT_COLOR=0x" + d["hat_highlight_color"][1:])' theme.toml)
+  colors=$(python3 -c 'import sys, tomllib; d = tomllib.load(open(sys.argv[1], "rb")); print("-DHAT_COLOR=0x" + d["hat_color"][1:], "-DHAT_HIGHLIGHT_COLOR=0x" + d["hat_highlight_color"][1:])' /tinyhat/build/theme.toml)
   cc $CFLAGS $colors -static -I. -o tinyhat-splash tinyhat-splash.c hat.c $LDFLAGS -lm
 }
 
