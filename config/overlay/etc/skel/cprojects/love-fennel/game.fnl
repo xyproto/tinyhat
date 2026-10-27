@@ -4,9 +4,15 @@
 (local stars [])
 (var hat-x 320)
 (var hat-y 200)
+(var font nil)
 
 (fn love.load []
   (love.mouse.setVisible false)
+  ;; DejaVu Sans reads much better than the tiny LÖVE built-in font.
+  (let [(ok f) (pcall love.graphics.newFont
+                "/usr/share/fonts/TTF/DejaVuSans.ttf" 16)]
+    (set font (if (and ok f) f (love.graphics.newFont 16))))
+  (love.graphics.setFont font)
   (for [_ 1 80]
     (table.insert stars {:x (love.math.random 0 (love.graphics.getWidth))
                          :y (love.math.random 0 (love.graphics.getHeight))
