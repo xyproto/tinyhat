@@ -86,6 +86,7 @@ core glib2 2.80.0-2.0 glib2-2.80.0-2.0-i686.pkg.tar.zst 4b45e426334c087747739259
 core glibc 2.44+r50+g1848099f063e-1.0 glibc-2.44+r50+g1848099f063e-1.0-i686.pkg.tar.zst 93c98cc6bce11e09a0fc6105ac605457f838a1122059aa37da73661078cdf0e3
 extra glu 9.0.3-3.0 glu-9.0.3-3.0-i686.pkg.tar.zst b095c7dcaf5f16d243bfe7f367f1c99e67f336bc92f21f7eedb5e767db9a0285
 core gmp 6.3.0-3.0 gmp-6.3.0-3.0-i686.pkg.tar.zst fecbd85899aa8d4f8ecba8fed33f35a7cfb700a80f5a2e4deeec868fee4a2fc6
+extra gnugo 3.8-8.0 gnugo-3.8-8.0-i686.pkg.tar.zst 3e68472efd4ee4dbb33d580d1df3522638f63c12e162a0f9fde399c9f4acb947
 core gnulib-l10n 20241231-1.0 gnulib-l10n-20241231-1.0-any.pkg.tar.zst f059ac916c482f387bfa0a6874b1f783ee0dccb814ef471c723a89e6c4c0afe6
 core gnutls 3.8.13-3.0 gnutls-3.8.13-3.0-i686.pkg.tar.zst a199d1fc09b2f9fbc464fe2fa8e2ac7f4de7b94abc19ccd8f058a1e0d37f0f7a
 extra goaccess 1.12-1.0 goaccess-1.12-1.0-i686.pkg.tar.zst be62ad2996ad260e688aaf870675e353ffd739e458a73399be261bda02178514
@@ -142,6 +143,7 @@ core libelf 0.188-1.0 libelf-0.188-1.0-i686.pkg.tar.zst 6f8d366217b039e9f349b7ba
 extra libepoxy 1.5.10-3.0 libepoxy-1.5.10-3.0-i686.pkg.tar.zst 17b3513bbb672fb39bd34d186b934717273148ec0b7b14db37245c214d8f1237
 extra libevdev 1.14.0-1.0 libevdev-1.14.0-1.0-i686.pkg.tar.zst a541e79807631d5807ad1afef74d32f512b07710fe94a9ab50ab3128263d1371
 core libevent 2.1.13-2.0 libevent-2.1.13-2.0-i686.pkg.tar.zst 918a545b4bf9ae51c2fbd62a9379d23f64b0b3424ab9da347a41e1dd5247da14
+extra libexif 0.6.26-1.0 libexif-0.6.26-1.0-i686.pkg.tar.zst 1096e36153c1fe50271c6c807384df4ea48dc5244c013b6fd9950dd2b7e769e9
 extra libfdk-aac 2.0.3-1.0 libfdk-aac-2.0.3-1.0-i686.pkg.tar.zst 367804137e406931a212d0365b97a2dbbaf9dc65b90e135eb7e2ca7b48af9576
 core libffi 3.8.0-1.0 libffi-3.8.0-1.0-i686.pkg.tar.zst 7331ceb6fab87ffab74bbd7bc7dc4193608bc981003df4c81def3f7b1c95635c
 extra libfreeaptx 0.2.2-1.0 libfreeaptx-0.2.2-1.0-i686.pkg.tar.zst e7344effc9cfe1f4f1ec563bf532beb66295a27b662a95685ac87ce33aad48c3
@@ -246,6 +248,7 @@ extra lua 5.4.7-1.0 lua-5.4.7-1.0-i686.pkg.tar.zst 15d8208018dfefc0f1d3ffda4b809
 extra lua54 5.4.9-1.0 lua54-5.4.9-1.0-i686.pkg.tar.zst 23389fbdbaff5ad1f1b511e1125beecab3ae740c8cf5b1f3210fa055f903b56b
 extra luajit 2.1.1753364724-1.0 luajit-2.1.1753364724-1.0-i686.pkg.tar.zst f9cf40cf0812680d55a6df5c567725b7a0823c45d128b5853b7730731af49478
 extra lv2 1.18.10-2.0 lv2-1.18.10-2.0-i686.pkg.tar.zst abb42326870ad90d7daa8977fed06b67b22bf6f05a9540bf1c0d75ed08ffc9ad
+extra lxmenu-data 0.1.7-1.0 lxmenu-data-0.1.7-1.0-any.pkg.tar.zst 8c8a505de06eee7fec6add1c522a5ef6a535ec59da4c78ce28c397458354e0a1
 core lz4 1:1.10.0-2.0 lz4-1:1.10.0-2.0-i686.pkg.tar.zst 1966d636e3c07845e57587a0e44d8b49a24ee3ef289557005c502848c863a683
 core lzo 2.10-5.1 lzo-2.10-5.1-i686.pkg.tar.zst 3fc2096a8e38544eafeb5a8282f13387184c4af624efc2b7f79113fd376d8955
 core man-pages 6.19-1.0 man-pages-6.19-1.0-any.pkg.tar.zst 1b5b4e00dab048c0ebbeb86c78dd1b0d25380da7c1143f2d18b2835e50fc6f28
@@ -254,6 +257,7 @@ extra mc 4.8.33-1.0 mc-4.8.33-1.0-i686.pkg.tar.zst 56977eae2abd8c2814164636ca63a
 extra memtest86+ 7.20-2.0 memtest86+-7.20-2.0-any.pkg.tar.zst 033e0ce32fe578912d7a19ce52dcfd5a47f2cdaaf155a8fa76c40a9eba7b0fe2
 extra memtest86+-efi 7.20-2.0 memtest86+-efi-7.20-2.0-any.pkg.tar.zst 49bdefded8241b15eae0d58e94091d8df128f587aa918fbf18b4baf81adc7622
 extra memtest86+-iso 7.20-2.0 memtest86+-iso-7.20-2.0-any.pkg.tar.zst 2f7dd3e0bb81177ec92abe8593e75c2a98a3d9423c804c869b36c2b9abb70bc3
+extra menu-cache 1.1.1-2.0 menu-cache-1.1.1-2.0-i686.pkg.tar.zst e21e217be78bc0bb740af878ec7b1a8f77a8c645a20b20e88b8428e774efc6c3
 extra mesa 1:24.0.4-2.0 mesa-1:24.0.4-2.0-i686.pkg.tar.zst b751c48b446e501fcda9195954aa7a61c4f6648fc51a978fb57e75b86806dcf9
 core mpfr 4.2.2-1.0 mpfr-4.2.2-1.0-i686.pkg.tar.zst bfe0ca7e0248456c1e73c75f0cc1b07238877721e312d478ce70633ae9cf2fd1
 extra mtdev 1.1.7-1.0 mtdev-1.1.7-1.0-i686.pkg.tar.zst eba3deb7207ff77d1578d72a04eee1d3805f216f4848463230d6301fbc4ea392
@@ -266,6 +270,8 @@ core ncurses 6.4_20230520-3.0 ncurses-6.4_20230520-3.0-i686.pkg.tar.zst 1686625a
 core nettle 4.0-1.0 nettle-4.0-1.0-i686.pkg.tar.zst b8594314b325679439285517b6602ae007f704a736782a6547c90a8ab561daea
 extra nftables 1:1.1.3-1.0 nftables-1:1.1.3-1.0-i686.pkg.tar.zst a4f8001d9acda346fb3e492ea6c8a231880ed160a1ee0298e676850253918772
 core npth 1.8-1.0 npth-1.8-1.0-i686.pkg.tar.zst 17888763d1526136f7f38a988d6612e8d803976b7de53415198c32f72612468c
+core nspr 4.40-1.0 nspr-4.40-1.0-i686.pkg.tar.zst 1665ed1526e348285ac41491e29b8b2942ddff215e4ce3b80d35d72312f29ec8
+core nss 3.107-1.0 nss-3.107-1.0-i686.pkg.tar.zst 9317996911829afeff679ee2253827b9828b09c9cc466b0aa9002f83f999a1ec
 extra ntfs-3g 2022.10.3-2.0 ntfs-3g-2022.10.3-2.0-i686.pkg.tar.zst dbb9d23806918b7539d6737cdfbc0bc6554181c68c7af3209913b690ec1f15b4
 extra opendoas 6.8.2-3.0 opendoas-6.8.2-3.0-i686.pkg.tar.zst 5ae12885761d7fe4fe1aa733d31bb1d4d5d1e135fdb48f629c41dd565c5d1c49
 extra openjpeg2 2.5.4-1.0 openjpeg2-2.5.4-1.0-i686.pkg.tar.zst 86664b0a8ac0404b5962a56b7aa1e4c0bf32d23902e0a4503b362c840204f138
@@ -285,6 +291,8 @@ extra pipewire-alsa 1:0.3.65-6.0 pipewire-alsa-1:0.3.65-6.0-i686.pkg.tar.zst a10
 extra pipewire-audio 1:0.3.65-6.0 pipewire-audio-1:0.3.65-6.0-i686.pkg.tar.zst c071dfa0abe4f49e7c26d1a837ad72f79825677e416c2d9a2197a58b2ca2d1ea
 extra pixman 0.46.4-1.0 pixman-0.46.4-1.0-i686.pkg.tar.zst 65f377ef24028435b9b15b2a26cb28782bfe728904355fb2d0b11cb07b8e8ef4
 core pkgconf 2.5.1-1.3 pkgconf-2.5.1-1.3-i686.pkg.tar.zst ee79dddfc2eb33c2a7983a6acf0017a3639dba7330aab4b6ab8f42114f8beaee
+extra poppler 23.03.0-1.0 poppler-23.03.0-1.0-i686.pkg.tar.zst 731c8b66f9507c7fdca580f928bbf882a0508d9517b27e0cbad94d3d1a173a62
+extra poppler-glib 23.03.0-1.0 poppler-glib-23.03.0-1.0-i686.pkg.tar.zst e71807e4dd565def0914ebc7a1d58e3afccbb4325f58097064dd49266a5fde14
 core popt 1.19-2.0 popt-1.19-2.0-i686.pkg.tar.zst d01d870c08eadc57e44ad9ca6e9aa58b5a6af36170bbca64b24f010df8e582e7
 core procps-ng 4.0.6-1.1 procps-ng-4.0.6-1.1-i686.pkg.tar.zst 9bd8573e783d1b2b1d865e892b80d1df6be3b40d62090095b4bcb1bfe9534105
 core psmisc 23.7-2.0 psmisc-23.7-2.0-i686.pkg.tar.zst 286dac7d31697fbfbe77e03373dba6aebc3c180421256174d31f85ad02986c7b
@@ -331,6 +339,7 @@ extra webrtc-audio-processing-0.3 0.3.1-6.0 webrtc-audio-processing-0.3-0.3.1-6.
 core which 2.25-1.0 which-2.25-1.0-i686.pkg.tar.zst ca456224f39197c2d6194eeb295d48743698b3a3cbc0edf03c223b00c14385f7
 core wireless-regdb 2026.09.03-1.0 wireless-regdb-2026.09.03-1.0-any.pkg.tar.zst d83db6a252864e93af049829b75653e41afc393ad88bfcfca3073531a153bdf4
 extra wireplumber 0.4.14-1.1 wireplumber-0.4.14-1.1-i686.pkg.tar.zst 08c315c691d2f7bdae81fbb82afc7c8606c40687f1805758813f64115598cc45
+extra xarchiver 0.5.4.25-1.0 xarchiver-0.5.4.25-1.0-i686.pkg.tar.zst ea97def8813541d63073d9977a0d5785d11f64eb98a7e63c6b6890c49e089c41
 extra xcursor-vanilla-dmz 0.4.5.3-1.0 xcursor-vanilla-dmz-0.4.5.3-1.0-any.pkg.tar.zst 1945b8d0f616e932a16af5af6f9d6dfb7739d3231dc0c939c620a2c3b4370a58
 core xfsprogs 7.1.1-1.0 xfsprogs-7.1.1-1.0-i686.pkg.tar.zst 0fd132882620c288b8d1d57003e14d8d4f5cc3f76226a78c1f73998b23919407
 extra xkeyboard-config 2.48-1.0 xkeyboard-config-2.48-1.0-any.pkg.tar.zst bfc6629670a1387e60a319a25119474eb4df7bcdb84983095601906b6ac10797

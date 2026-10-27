@@ -200,7 +200,7 @@ systemd-hwdb update --usr
 fc-cache -s -f
 update-ca-trust
 if command -v glib-compile-schemas >/dev/null; then glib-compile-schemas /usr/share/glib-2.0/schemas; fi
-if command -v gdk-pixbuf-query-loaders >/dev/null; then gdk-pixbuf-query-loaders --update-cache; fi
+if command -v gdk-pixbuf-query-loaders >/dev/null && [ -d /usr/lib/gdk-pixbuf-2.0/2.10.0 ]; then gdk-pixbuf-query-loaders --update-cache; fi
 if command -v gio-querymodules >/dev/null; then gio-querymodules /usr/lib/gio/modules; fi
 makewhatis /usr/share/man
 if command -v update-mime-database >/dev/null; then update-mime-database /usr/share/mime; fi

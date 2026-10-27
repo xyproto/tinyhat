@@ -714,6 +714,7 @@ nvchecker = { source = "gitlab", gitlab = "emersion/libdisplay-info", host = "gi
 
 [libdom]
 source = "sources"
+localdeps = ["libwapcaplet"]
 
 [libepoxy]
 build = true
