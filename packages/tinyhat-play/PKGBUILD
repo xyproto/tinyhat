@@ -1,0 +1,29 @@
+# Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
+
+pkgname=tinyhat-play
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Search for, download and launch homebrew games for classic gaming platforms"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat-play"
+license=(BSD-3-Clause)
+depends=(gtk3 curl libglvnd)
+makedepends=(fontconfig)
+source=("tinyhat-play-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('880a87c4fbe1fc2692c2b49b55438e8ae1ec9424248ed8c2561d4a648dd9f1eb')
+
+build() {
+  cd tinyhat-play-$pkgver
+  mkdir -p pc
+  for f in pango pangocairo pangoft2 pangoxft; do
+    [ -f /usr/lib/pkgconfig/$f.pc ] && sed 's/>= *[0-9][0-9.]*//g' /usr/lib/pkgconfig/$f.pc >pc/$f.pc
+  done
+  export PKG_CONFIG_PATH="$srcdir/pc"
+  cc $CFLAGS $(pkg-config --cflags gtk+-3.0 libcurl) -o tinyhat-play main.c $LDFLAGS $(pkg-config --libs gtk+-3.0 libcurl)
+}
+
+package() {
+  cd tinyhat-play-$pkgver
+  install -Dm755 tinyhat-play "$pkgdir/usr/bin/tinyhat-play"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
