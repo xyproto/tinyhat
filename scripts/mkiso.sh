@@ -24,8 +24,8 @@ mkdir -p "$isod/boot/grub/i386-pc" "$isod/efi/boot" "$isod/.disk" "$tools/grub" 
 cp -a "$work/root/." "$isod/"
 uuid=$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%d-%H-%M-%S-00)
 : >"$isod/.disk/$uuid.uuid"
-printf 'search --set=root --file /.disk/%s.uuid\nset prefix=($root)/boot/grub\n' "$uuid" >"$tools/eficfg"
-printf '# tinyhat\n' >"$tools/pccfg"
+printf 'search --set=root --file /.disk/%s.uuid\nset prefix=($root)/boot/grub\nset th_mode=none\n' "$uuid" >"$tools/eficfg"
+printf 'set th_mode=none\n# tinyhat\n' >"$tools/pccfg"
 bsdtar -xf "$(pkg grub)" -C "$tools/grub" usr/bin/grub-mkimage usr/lib/grub/i386-pc usr/lib/grub/i386-efi
 if [ "$(basename "$img" .img)" = tinyhat64x32 ]; then
 	bsdtar -xf "$(pkg grub-efi64)" -C "$tools/grub64" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
