@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=File manager
+Icon=system-file-manager
+Comment=Browse files and folders with PCManFM
+Exec=pcmanfm %U
+Terminal=false
+Categories=System;FileManager;

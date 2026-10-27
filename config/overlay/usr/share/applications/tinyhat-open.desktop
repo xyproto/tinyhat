@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Open
+Comment=Open a file with the Tiny Hat default program (see xdg-open)
+Exec=xdg-open %f
+Terminal=false
+NoDisplay=true
+MimeType=application/zip;application/java-archive;application/vnd.rar;application/x-rar;application/x-7z-compressed;application/x-tar;application/gzip;application/x-compressed-tar;application/x-bzip2;application/x-bzip-compressed-tar;application/x-xz;application/x-xz-compressed-tar;application/zstd;application/x-zstd-compressed-tar;application/x-lha;application/x-arj;application/x-cpio;application/vnd.debian.binary-package;application/x-rpm;image/png;image/jpeg;image/gif;image/bmp;image/webp;image/tiff;image/svg+xml;application/pdf;text/plain;text/markdown;text/html;text/x-csrc;text/x-chdr;text/x-c++src;text/x-makefile;text/x-python;text/x-script.python;application/x-shellscript;

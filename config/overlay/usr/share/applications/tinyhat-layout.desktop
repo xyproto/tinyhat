@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Toggle floating/tiled windows
+Icon=preferences-desktop
+Comment=Switch between floating and tiled windows, like clicking the layout symbol in the top bar
+Exec=tinyhat-layout
+Terminal=false
+Categories=System;
