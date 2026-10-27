@@ -14,7 +14,6 @@ their previous Arch packaging (patches, dependencies); "importpkg.py BASE" bring
 The report is written to build/autoupdate.md, for use as a pull request description.
 """
 import argparse
-import fnmatch
 import json
 import os
 import re
@@ -54,18 +53,23 @@ def image_state():
     """The packages in the image and their dependency edges, resolved from the recipes' .SRCINFO files.
     Edges to skipped packages (like perl) are kept, since the skip list hides them from the package set."""
     infos = mkpkgs.load()
+    versions = {n: i["version"] for i in infos for n in i["pkgnames"]}
     targets, prefs, skip = pkg.list_config("image")
     pkgs = pkg.resolve_targets(targets, mkpkgs.indexes(infos), "i686", prefs, skip)
-    return {p["name"] for p in pkgs}, {(p["name"], d) for p in pkgs for d in p["depends"]}
+    names = {p["name"] for p in pkgs}
+    return names, {(p["name"], d) for p in pkgs for d in p["depends"]}, {n: versions.get(n) for n in names}
 
 
 def guard(before, after):
     """Return what an update newly pulls into the image that matches [image] deny."""
-    deny = distro.section("image").get("deny", [])
-    denied = lambda n: any(fnmatch.fnmatchcase(n, p) for p in deny)
-    hits = {n for n in after[0] - before[0] if denied(n)}
-    hits |= {f"{a} → {b}" for a, b in after[1] - before[1] if denied(b)}
-    return sorted(hits)
+    rules = mkpkgs.deny_rules()
+
+    def found(state):
+        names, edges, versions = state
+        out = {f"{n} {versions[n] or ''}".strip() for n in names if mkpkgs.denied(n, versions[n], rules)}
+        return out | {f"{a} → {b}" for a, b in edges if mkpkgs.denied(b, None, rules)}
+
+    return sorted(found(after) - found(before))
 
 
 class ManualUpdate(Exception):

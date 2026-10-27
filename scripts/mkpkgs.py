@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import fnmatch
 import os
 import re
 import sys
@@ -158,6 +159,29 @@ def rpmvercmp(a, b):
     if (p1 >= len(a) and not b[p2].isalpha()) or (p1 < len(a) and a[p1].isalpha()):
         return -1
     return 1
+
+
+def deny_rules():
+    """[image] deny entries as (name pattern, operator, version): "perl*" or "llvm<23"."""
+    out = []
+    for e in distro.section("image").get("deny", []):
+        m = re.fullmatch(r"([^<>=]+)(<=|<)(.+)", e)
+        out.append((m.group(1), m.group(2), m.group(3)) if m else (e, None, None))
+    return out
+
+
+def denied(name, version=None, rules=None):
+    """Whether a package (with this version, if known) matches [image] deny. Version rules only match known versions."""
+    for pat, op, ver in deny_rules() if rules is None else rules:
+        if not fnmatch.fnmatchcase(name, pat):
+            continue
+        if op is None:
+            return True
+        if version is not None:
+            c = rpmvercmp(version.rpartition(":")[2].rsplit("-", 1)[0], ver)
+            if c < 0 or (op == "<=" and c == 0):
+                return True
+    return False
 
 
 def newer(local, seed):
@@ -367,6 +391,9 @@ def cmd_mk():
     idx = indexes(infos)
     seed = seed_index()
     broken = set(pkg.read_list(SEED_BROKEN))
+    # Prebuilt packages older than [image] deny allows (like "llvm<23") are treated as broken, so they get built
+    too_old = {n for n, p in seed[0].items() if denied(n, p["version"], [r for r in deny_rules() if r[1]])}
+    broken |= too_old
     closures = {}
     versions = {"local": {n: i["version"] for i in infos for n in i["pkgnames"]},
                 "seed": {p["name"]: p["version"] for p in distro.locked("buildroot")}}
@@ -376,6 +403,8 @@ def cmd_mk():
     targets, lprefs, skip = pkg.list_config("image")
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
+    for n in sorted(too_old & image):
+        print(f"mkpkgs.py: avoiding prebuilt {n} {seed[0][n]['version']} ([image] deny), building it", file=sys.stderr)
     listed = distro.prebuilt_listed()
     force_build = {b for b, e in PKGCONF.items() if e.get("build")}
     candidates = [b for b in listed if b not in force_build]
