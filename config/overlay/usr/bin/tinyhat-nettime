@@ -1,0 +1,71 @@
+#!/bin/sh
+# Tiny Hat: set the timezone automatically from the network, and make sure the
+# clock is right even without NTP. The persisted timezone always wins over the
+# network, so the automatic detection only runs on the first boot.
+synced=
+
+notify() {
+	for b in /run/user/*/tinyhat-bar; do
+		[ -p "$b" ] || continue
+		runuser -u "$(stat -c %U "$b")" -- env XDG_RUNTIME_DIR="${b%/*}" tinyhat-notice "$1" 4
+	done
+}
+
+wait_ntp() {
+	# systemd-timesyncd is normally quick; give it up to 2 minutes to sync
+	i=0
+	while [ "$(timedatectl show -p NTPSynchronized --value)" != yes ]; do
+		[ $i -lt 30 ] || return 1
+		sleep 4
+		i=$((i + 1))
+	done
+}
+
+http_time() {
+	# Fetch a Date header over plain HTTP, so that a clock that is years off can
+	# still be fixed (HTTPS would reject the certificate first)
+	for u in "$@"; do
+		h=$(curl -fsI --max-time 8 "$u" 2>/dev/null | grep -i '^date:' | head -n 1 | tr -d '\r' | cut -d ' ' -f2-)
+		[ -n "$h" ] || continue
+		t=$(date -u -d "$h" '+%Y-%m-%d %H:%M:%S' 2>/dev/null) || continue
+		date -u -s "$t" >/dev/null 2>&1 || continue
+		return 0
+	done
+	return 1
+}
+
+if wait_ntp; then
+	synced=1
+fi
+
+if mountpoint -q /persist && [ ! -f /persist/timezone ]; then
+	# Geolocation by IP, e.g. "Europe/Oslo"; the first one that matches a timezone here wins
+	for u in 'http://ip-api.com/line/?fields=timezone' 'https://ipapi.co/timezone'; do
+		tz=$(curl -fsS --max-time 8 "$u" 2>/dev/null | head -n 1 | tr -d '\r\n ')
+		[ -f "/usr/share/zoneinfo/$tz" ] && break
+		tz=
+	done
+	if [ -n "$tz" ]; then
+		if timedatectl set-timezone "$tz" && echo "$tz" > /persist/timezone; then
+			synced=1
+		fi
+	fi
+fi
+
+if [ -z "$synced" ]; then
+	http_time http://ip-api.com http://www.gnu.org && synced=1
+fi
+
+if [ -n "$synced" ]; then
+	# Store the current clock in the RTC, which the LOCAL adjtime policy
+	# interprets in the timezone set above
+	hwclock --systohc 2>/dev/null || true
+fi
+
+if [ -n "${tz-}" ]; then
+	notify "Timezone: $tz"
+elif [ -n "$synced" ] && ! mountpoint -q /persist; then
+	notify "The clock is now set from the network"
+elif [ -n "$synced" ] && [ ! -f /persist/timezone ]; then
+	notify "The clock is now set from the network"
+fi
