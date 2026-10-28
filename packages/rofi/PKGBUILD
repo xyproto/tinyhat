@@ -1,0 +1,67 @@
+# Maintainer: Morten Linderud <foxboron@archlinux.org>
+# Maintainer: Robin Candau <antiz@archlinux.org>
+# Contributor: Maxim Baz <$pkgname at maximbaz dot com>
+# Contributor: Anatol Pomozov
+# Contributor: Benjamin Chrétien <chretien + aur [at] lirmm [dot] fr>
+# Contributor: Eric Engestrom <aur [at] engestrom [dot] ch>
+# Contributor: Rasi <rasi@xssn.at>
+# Contributor: Sean Pringle <sean.pringle@gmail.com>
+# Contributor: SanskritFritz (gmail)
+
+pkgname=rofi
+pkgver=2.0.0
+pkgrel="1"
+pkgdesc="A window switcher, application launcher and dmenu replacement"
+url="https://davatorium.github.io/rofi"
+arch=(i686 x32)
+license=('MIT')
+depends=('bash' 'cairo' 'gdk-pixbuf2' 'glib2' 'glibc' 'hicolor-icon-theme' 'libxcb' 'libxkbcommon' 'libxkbcommon-x11'
+         'pango' 'startup-notification' 'wayland' 'xcb-imdkit' 'xcb-util' 'xcb-util-cursor' 'xcb-util-keysyms' 'xcb-util-wm')
+makedepends=('check' 'git' 'meson' 'pandoc' 'wayland-protocols')
+provides=('rofi-wayland')
+replaces=('rofi-wayland')
+source=("git+https://github.com/davatorium/rofi.git#tag=${pkgver}"
+        'git+https://github.com/sardemff7/libgwater.git'
+        'git+https://github.com/sardemff7/libnkutils.git'
+        'fix_xfce4-terminal_binary_name.patch')
+sha256sums=('3ad746f25b373bfa2e49db20c5009ffd4d959dd113e47281e98e7132f7314ac8'
+            'SKIP'
+            'SKIP'
+            '0cd6f1360580f49647ceb7d169ab015f4998e778fd750ce3ad2e861f333824e3')
+
+prepare() {
+	cd "${pkgname}"
+
+	git submodule init
+	git config submodule.subprojects/libgwater.url "${srcdir}/libgwater"
+	git config submodule.subprojects/libnkutils.url "${srcdir}/libnkutils"
+	git -c protocol.file.allow=always submodule update
+
+	# xfce4-terminal.wrapper is a Debian specific script that Arch does not provide
+	patch -Np1 -i "${srcdir}/fix_xfce4-terminal_binary_name.patch"
+}
+
+build() {
+	arch-meson "${pkgname}" build
+	meson compile -C build
+}
+
+check() {
+	meson test -C build --print-errorlogs
+}
+
+package() {
+	meson install -C build --destdir "${pkgdir}"
+
+	cd "${pkgname}"
+	install -Dm 644 COPYING "${pkgdir}/usr/share/licenses/${pkgname}/COPYING"
+	install -Dm 755 Examples/*.sh -t "${pkgdir}/usr/share/doc/${pkgname}/examples"
+}
+
+_d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(libxcb|libxkbcommon-x11|startup-notification|xcb-.*)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+makedepends=(${makedepends[@]//pandoc/})
+eval "$(
+  declare -f build | sed 's/arch-meson "${pkgname}" build/arch-meson "${pkgname}" build -Dwayland=enabled -Dxcb=disabled -Dimdkit=false -Dcheck=disabled/'
+)"
+
+unset -f pkgver
