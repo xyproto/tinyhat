@@ -123,6 +123,41 @@ create() {
 	step 100 "Persistent storage is ready"
 }
 
+grow() {
+	# Extend the persistent data partition with any free space at the end of the
+	# disk, and grow the XFS file system on it (for example after resizing a
+	# .vdi in VirtualBox, or after moving to a bigger USB stick)
+	[ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
+	count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
+	[ "$(cat "/sys/class/block/${part#/dev/}/partition" 2>/dev/null)" = "$count" ] || return 1
+	free=$(sfdisk -F -q "/dev/$disk" 2>/dev/null | awk 'END { print $3 }')
+	[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
+	table=$(sfdisk -d "/dev/$disk" 2>/dev/null) || return 1
+	name=${part##*/}
+	start=$(printf '%s\n' "$table" | awk -v name="$name" '$1 == name && $2 == ":" \
+		{ for (i = 1; i < NF; i++) if ($i ~ /^start=/) { sub(/^start=/, "", $i); print $i; exit } }')
+	size=$(printf '%s\n' "$table" | awk -v name="$name" '$1 == name && $2 == ":" \
+		{ for (i = 1; i < NF; i++) if ($i ~ /^size=/) { sub(/^size=/, "", $i); print $i; exit } }')
+	[ -n "$start" ] && [ -n "$size" ] || return 1
+	# Keep the end of the partition 4 KiB aligned, when it reaches the end of the disk
+	newsize=$(( ($(cat "/sys/block/$disk/size") / 8) * 8 - start ))
+	[ $((newsize - size)) -ge $((min_mib * 2048)) ] || return 1
+	msg "enlarging persistent storage (one time only)"
+	step 20 "Enlarging persistent storage (one time only)"
+	table=$(printf '%s\n' "$table" | awk -v name="$name" -v size="$newsize" \
+		'$1 == name && $2 == ":" {
+			for (i = 1; i < NF; i++) if ($i ~ /^size=/) { $i = "size=" size; }
+		}
+		{ print }')
+	sfdisk --force --no-reread -q "/dev/$disk" 2>/dev/null <<EOF || return 1
+$table
+EOF
+	partx -u "/dev/$disk" 2>/dev/null
+	udevadm settle -t 10
+	step 90 "Enlarging persistent storage (one time only)"
+	return 0
+}
+
 probeopts() {
 	case $(blkid -p -s TYPE -o value "$1") in
 	ext2 | ext3 | ext4) echo ro,noload ;;
@@ -262,7 +297,11 @@ else
 		say "msg"
 		[ "$created" = 1 ] || exit 0
 	fi
+	grow "$part"
 	mount -o noatime,lazytime "$part" /persist || exit 0
+	# Grow the file system into the enlarged partition (cheap and idempotent, also
+	# finishes a resize that was interrupted at the partition table step last boot)
+	xfs_growfs /persist 2>/dev/null
 	if [ -f /persist/.tinyhat-seed ]; then
 		copy_dirs /persist
 		rm -f /persist/.tinyhat-seed
