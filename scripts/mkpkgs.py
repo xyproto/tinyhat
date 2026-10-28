@@ -350,8 +350,8 @@ def mode_file(base, mode):
     return f"$(B)/pkg/mode/{base}"
 
 
-def rule(lines, target, info, prereqs, args, log):
-    lines.append(f"{target}: $(B)/.buildroot $(wildcard {info['dir']}/*) {' '.join(sorted(set(prereqs)))}".rstrip())
+def rule(lines, target, info, prereqs, args, log, buildroot="$(B)/.buildroot"):
+    lines.append(f"{target}: {buildroot} $(wildcard {info['dir']}/*) {' '.join(sorted(set(prereqs)))}".rstrip())
     lines.append("\t@mkdir -p $(B)/log $(@D)")
     lines.append(f"\tscripts/makepkg.sh {' '.join(args)} >$(B)/log/{log}.log 2>&1 || "
                  f"{{ tail -40 $(B)/log/{log}.log; exit 1; }}")
@@ -547,13 +547,46 @@ def cmd_mk():
                 pkg.add_pkg(kept, kept_provides, p, [pv for pv, names in idx["x32"][1].items() if n in names])
         x32_index = (kept, kept_provides)
     rootfs_x32 = pkg.resolve_targets(targets, {"i686": (as_built, local_provides), "x32": x32_index}, "x32", lprefs, skip)
+    aarch64_stamps = arch_rules(lines, "aarch64", by_base, prefs)
     print("I686_STAMPS := " + " ".join(i686_stamps))
+    print("AARCH64_STAMPS := " + " ".join(aarch64_stamps))
     print("X32_STAMPS := " + " ".join(x32_stamps))
     print("ROOTFS_I686_STAMPS := " + " ".join(stamps_for(rootfs_i686)))
     print("ROOTFS_X32_STAMPS := " + " ".join(stamps_for(rootfs_x32)))
     print("TINYHAT_PKGS := " + " ".join(sorted(tinyhat)))
     print()
     print("\n".join(lines))
+
+
+def arch_rules(lines, arch, by_base, prefs):
+    """Rules for the recipes that "make lock-ARCH" decided to build for another architecture ([build-ARCH] in
+    distro.lock). Each one gets the other recipes built for that architecture that it needs."""
+    built = [by_base[b] for b in sorted(distro.lock().get(f"build-{arch}", {})) if b in by_base]
+    names, provided = {}, {}
+    for info in built:
+        for name in info["pkgnames"]:
+            names[name] = info
+            for pv in info["provides"][name]:
+                provided.setdefault(pv, name)
+    plans = {}
+    for info in built:
+        own = set(info["pkgnames"])
+        plans[info["base"]] = (resolve_local(all_deps(info), names, provided, own),
+                               resolve_local(info["makedepends"], names, provided, own))
+    graph = {b: {names[d]["base"] for d in deps} - {b} for b, (deps, _) in plans.items()}
+    for comp in sccs(graph):
+        for b in comp if len(comp) > 1 else ():
+            deps, make = plans[b]
+            plans[b] = ([d for d in deps if names[d]["base"] not in comp or d in make], make)
+    stamps = []
+    for info in built:
+        deps = plans[info["base"]][0]
+        target = stamp(arch, info["base"])
+        stamps.append(target)
+        rule(lines, target, info, [stamp(arch, names[d]["base"]) for d in deps],
+             ["--arch", arch, info["dir"]] + [f"{arch}/{d}" for d in deps], f"{arch}-{info['base']}",
+             f"$(B)/.buildroot-{arch}")
+    return stamps
 
 
 def image_bases():
@@ -654,11 +687,7 @@ def cmd_lock_arch(arch):
     The versions and checksums of the prebuilt packages are written to [image-ARCH] in distro.lock."""
     section = f"image-{arch}"
     conf, base = distro.section(section), distro.section("image")
-    remove = set(conf.get("remove", []))
-    targets = [t for t in base.get("packages", []) if t not in remove]
-    targets += [t for t in conf.get("add", []) if t not in targets]
-    skip = set(base.get("skip", [])) | set(conf.get("skip", []))
-    prefs = distro.providers()
+    targets, prefs, skip = pkg.list_config(section)
     db, provides = pkg.arch_db(arch)
     infos = load()
     by_base = {i["base"]: i for i in infos}
@@ -707,18 +736,48 @@ def cmd_lock_arch(arch):
             break
         local |= more
 
-    built = sorted({p["base"] for p in sel if p.get("local")})
+    built = {b: [] for b in conf.get("build", [])}
+    for p in sel:
+        if p.get("local"):
+            built.setdefault(p["base"], []).append(p["name"])
+    built = {b: sorted(names) for b, names in sorted(built.items())}
     prebuilt = {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"], "sha256": p["sha256"]}
                 for p in sel if not p.get("local")}
-    distro.write_lock(**{section: prebuilt})
+    buildroot = arch_buildroot(arch, [by_base[b] for b in built], db, provides, prefs)
+    distro.write_lock(**{section: prebuilt, f"buildroot-{arch}": buildroot,
+                         f"build-{arch}": built})
     print(f"mkpkgs.py: {section}: {len(prebuilt)} prebuilt packages locked, {len(built)} recipes to build: "
           + " ".join(built), file=sys.stderr)
+    print(f"mkpkgs.py: buildroot-{arch}: {len(buildroot)} prebuilt packages locked", file=sys.stderr)
     for n in sorted(bad):
         print(f"mkpkgs.py: {section}: {n} ([image] deny) is still pulled in by "
               + " ".join(sorted(u["name"] for u in users.get(n, []))), file=sys.stderr)
     old = sorted(f"{n} {e['version']}" for n, e in prebuilt.items() if denied(n, e["version"], [r for r in rules if r[1]]))
     if old:
         sys.exit(f"mkpkgs.py: {section}: older than [image] deny allows: {', '.join(old)}")
+
+
+def arch_buildroot(arch, built, db, provides, prefs):
+    """The prebuilt packages of the build environment for another architecture: the [buildroot] packages,
+    makepkg and everything the recipes built for that architecture need, except what those recipes make."""
+    own = {n for info in built for n in info["pkgnames"]}
+    own |= {pv for info in built for n in info["pkgnames"] for pv in info["provides"][n]}
+    br = distro.section("buildroot")
+    skip = set(br.get("skip", []))
+    wanted = list(SEED_BASE) + list(br.get("packages", [])) + list(distro.section(f"image-{arch}").get("buildroot", []))
+    for info in built:
+        wanted += [d for d in all_deps(info) if d not in wanted]
+    targets = []
+    for dep in wanted:
+        if dep in own or dep in skip or dep.startswith("lib32-"):
+            continue
+        if pkg.lookup((db, provides), dep, prefs, set()) is None:
+            print(f"mkpkgs.py: buildroot-{arch}: {dep} is not available prebuilt, leaving it out", file=sys.stderr)
+            continue
+        targets.append(dep)
+    sel = pkg.resolve_targets(targets, {arch: (db, provides)}, arch, prefs, skip)
+    return {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"], "sha256": p["sha256"]}
+            for p in sel}
 
 
 def main():

@@ -83,22 +83,9 @@ truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	/bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI; mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat; for f in /img/efi/*.cer; do [ ! -f "$f" ] || mcopy -i /img/esp.img "$f" ::/; done'
 
-content=$(du -sm --apparent-size "$work/root" | cut -f1)
-part_mib=$((content + content / 32 + 64))
-truncate -s "${part_mib}M" "$work/part.img"
-TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -L TINYHAT \
-	-m crc=1,finobt=0,rmapbt=0,reflink=0,bigtime=1,inobtcount=0,metadir=0,uuid=7417a700-0000-4000-8000-000000007417 \
-	-i nrext64=0,exchange=0 -n parent=0 -l size=64m \
-	-p "$work/root" "$work/part.img"
-python3 "$top/scripts/xfsnormalize.py" "$work/part.img" "$SOURCE_DATE_EPOCH"
-
 rm -f "$out.tmp"
-truncate -s "$((part_mib + esp_mib + 1))M" "$out.tmp"
-printf 'label: dos\nlabel-id: 0x7417a700\nstart=2048, size=%d, type=ef\nstart=%d, type=83, bootable\n' \
-	"$((esp_mib * 2048))" "$((2048 + esp_mib * 2048))" | sfdisk -q "$out.tmp"
-dd if="$work/esp.img" of="$out.tmp" bs=1M seek=1 conv=notrunc status=none
-dd if="$work/part.img" of="$out.tmp" bs=1M seek="$((esp_mib + 1))" conv=notrunc status=none
+"$top/scripts/mkdisk.sh" "$out.tmp" "$work/root" "$work/esp.img" ef "$esp_mib"
 python3 "$top/scripts/mbr.py" "$out.tmp" "$work/boot.img" "$work/core.img"
 mv "$out.tmp" "$out"
-rm -f "$work/part.img" "$work/esp.img"
+rm -f "$work/esp.img"
 rm -rf "$work/efi"

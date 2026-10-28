@@ -18,7 +18,7 @@ MULTI = {"license": "LICENSE", "replaces": "REPLACES", "depend": "DEPENDS", "opt
 
 
 def main(lockfile, pkgdir, root, name):
-    explicit = set(distro.section(name).get("packages", []))
+    explicit = set(pkg.list_config(name)[0])
     local = os.path.join(root, "var/lib/pacman/local")
     os.makedirs(local, exist_ok=True)
     with open(os.path.join(local, "ALPM_DB_VERSION"), "w") as f:

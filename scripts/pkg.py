@@ -27,7 +27,8 @@ VENDORDIR = os.path.join(TOP, "vendor", "archlinux32")
 # Prebuilt packages for the other architectures. The x86 images use archlinux32 (above)
 ARCH_SOURCES = {
     "aarch64": {
-        "mirrors": os.environ.get("ALARM_MIRRORS", "http://mirror.archlinuxarm.org/aarch64").split(),
+        "mirrors": os.environ.get("ALARM_MIRRORS", "http://de.mirror.archlinuxarm.org/aarch64 "
+                                  "http://dk.mirror.archlinuxarm.org/aarch64").split(),
         "repos": ["core", "extra", "alarm"],
         "dbdir": os.path.join(TOP, "vendor", "db", "aarch64"),
         "vendordir": os.path.join(TOP, "vendor", "archlinuxarm"),
@@ -250,15 +251,22 @@ def resolve_targets(targets, indexes, arch, prefs, skip):
 def list_config(name, extra=()):
     s = distro.section(name)
     targets = list(s.get("packages", []))
+    skip = set(s.get("skip", []))
+    if name.startswith("image-"):
+        base = distro.section("image")
+        remove = set(s.get("remove", []))
+        targets = [t for t in base.get("packages", []) if t not in remove]
+        targets += [t for t in s.get("add", []) if t not in targets]
+        skip |= set(base.get("skip", []))
     for path in extra:
         targets += [t for t in read_list(path) if t not in targets]
-    return targets, distro.providers(), set(s.get("skip", []))
+    return targets, distro.providers(), skip
 
 
 def resolve(name, extra=(), repodir=None, arch="i686"):
     targets, prefs, skip = list_config(name, extra)
     if repodir:
-        indexes = {a: load_repo(repodir, a) for a in {"i686", arch}}
+        indexes = {a: load_repo(repodir, a) for a in ({"i686", arch} if arch == "x32" else {arch})}
     else:
         indexes = {"i686": load_db()}
     return resolve_targets(targets, indexes, arch, prefs, skip)
@@ -337,12 +345,13 @@ def link(src, dest):
     os.symlink(os.path.relpath(os.path.realpath(src), os.path.dirname(os.path.abspath(dest))), dest)
 
 
-def fetch_pkg(p, pkgdir):
+def fetch_pkg(p, pkgdir, arch=None):
     dest = os.path.join(pkgdir, p["filename"])
     if os.path.exists(dest) and sha256(dest) == p["sha256"]:
         return
     cached = os.path.join(TOP, "vendor", "pkg", p["filename"])
-    vendored = os.path.join(VENDORDIR, p["name"], p["filename"])
+    vendordir = ARCH_SOURCES[arch]["vendordir"] if arch in ARCH_SOURCES else VENDORDIR
+    vendored = os.path.join(vendordir, p["name"], p["filename"])
     for src in (cached, vendored):
         if os.path.abspath(pkgdir) == os.path.dirname(os.path.abspath(src)):
             continue
@@ -351,7 +360,11 @@ def fetch_pkg(p, pkgdir):
             return
     os.makedirs(os.path.dirname(vendored), exist_ok=True)
     fn = urllib.parse.quote(p["filename"])
-    download_any([f"{m}/{p['repo']}/{fn}" for m in MIRRORS] + [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"], vendored)
+    if arch in ARCH_SOURCES:
+        urls = [f"{m}/{p['repo']}/{fn}" for m in ARCH_SOURCES[arch]["mirrors"]]
+    else:
+        urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS] + [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"]
+    download_any(urls, vendored)
     if sha256(vendored) != p["sha256"]:
         os.unlink(vendored)
         die(f"checksum mismatch for {p['filename']}")
@@ -397,10 +410,10 @@ def cmd_prunable(pkgdir):
             print(name)
 
 
-def cmd_fetch(lockfile, pkgdir):
+def cmd_fetch(lockfile, pkgdir, arch=None):
     os.makedirs(pkgdir, exist_ok=True)
     for p in read_lock(lockfile):
-        fetch_pkg(p, pkgdir)
+        fetch_pkg(p, pkgdir, arch)
 
 
 def current_db(max_age=6 * 3600):
@@ -414,6 +427,27 @@ def current_db(max_age=6 * 3600):
                 continue
             download_any([f"{m}/{repo}/{repo}.db" for m in MIRRORS], path)
     return load_db(dbdir)
+
+
+def cmd_archrepo(arch, repodir, lockfile):
+    """Fill repodir with the prebuilt packages of [image-ARCH] and the packages built for ARCH that the image
+    uses ([build-ARCH] in distro.lock), and write the lock file for the root file system of that image."""
+    os.makedirs(repodir, exist_ok=True)
+    sel = []
+    for e in distro.locked(f"image-{arch}"):
+        p = {"repo": e["repo"], "name": e["name"], "version": e["version"], "filename": e["file"], "sha256": e["sha256"]}
+        fetch_pkg(p, repodir, arch)
+        sel.append(p)
+    built = arch_files(os.path.join(TOP, "build", "repo"), arch)
+    for names in distro.lock().get(f"build-{arch}", {}).values():
+        for name in names:
+            if name not in built:
+                die(f"{name} ({arch}) has not been built")
+            fn = os.path.basename(built[name])
+            link(built[name], os.path.join(repodir, fn))
+            sel.append({"repo": "tinyhat", "name": name, "version": pkginfo(built[name])["pkgver"][0],
+                        "filename": fn, "sha256": sha256(built[name])})
+    write_lock(sorted(sel, key=lambda p: p["name"]), lockfile)
 
 
 def cmd_prebuilt(repodir, lockfile, *names):
@@ -499,7 +533,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
-            "fetch LOCK DIR | prebuilt REPODIR LOCK NAME... | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
+            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
@@ -511,12 +545,18 @@ def main():
         cmd_fetch(*args)
     elif cmd == "prebuilt":
         cmd_prebuilt(*args)
+    elif cmd == "archrepo":
+        cmd_archrepo(*args)
     elif cmd == "source":
         cmd_source(*args)
     elif cmd == "prunable":
         cmd_prunable(*args)
     elif cmd == "extract":
-        ex = distro.section(args[3]).get("exclude", []) if len(args) > 3 else []
+        ex = []
+        if len(args) > 3:
+            ex = distro.section(args[3]).get("exclude", [])
+            if args[3].startswith("image-"):
+                ex = distro.section("image").get("exclude", []) + ex
         cmd_extract(args[0], args[1], args[2], ex)
     else:
         die(f"unknown command {cmd}")

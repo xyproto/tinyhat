@@ -10,6 +10,8 @@ mount --rbind /dev "$root/dev"
 mount -t proc proc "$root/proc"
 mount -t tmpfs tmpfs "$root/tmp"
 mount -t tmpfs tmpfs "$root/run"
+personality=i686
+[ ! -e "$root/usr/lib/ld-linux-aarch64.so.1" ] || personality=
 rc=0
-env -i PATH=/usr/bin HOME=/root LANG=C.UTF-8 setarch i686 chroot "$root" "$@" || rc=$?
+env -i PATH=/usr/bin HOME=/root LANG=C.UTF-8 ${personality:+setarch "$personality"} chroot "$root" "$@" || rc=$?
 exit $rc
