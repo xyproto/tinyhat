@@ -6,25 +6,30 @@ arch=(i686)
 url="https://github.com/xyproto/zsnes"
 license=(GPL-2.0-or-later)
 depends=(sdl3 libglvnd libpng pipewire zlib)
-makedepends=(nasm mesa)
+makedepends=(mesa)
 source=("zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/$pkgver.tar.gz")
 b2sums=('c44f6d169ff4051382cf3fc125d828edb510d78ea5b55fd6162519339e21944bd8867c3e17b75b2970591b2b0b2ca6a8d34673b8b5b7be6818a59e26e7f73f6c')
 
+_zsnes_flags() {
+  local flags=-O3
+  [ "$CARCH" != i686 ] || flags+=" -fno-pic"
+  CFLAGS+=" $flags"
+  CXXFLAGS+=" $flags"
+}
+
 build() {
   cd zsnes-$pkgver
-  CFLAGS="$CFLAGS -O3 -fno-pic"
-  CXXFLAGS="$CXXFLAGS -O3 -fno-pic"
+  _zsnes_flags
   export CFLAGS CXXFLAGS
   make all OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr
 }
 
 package() {
   cd zsnes-$pkgver
-  CFLAGS="$CFLAGS -O3 -fno-pic"
-  CXXFLAGS="$CXXFLAGS -O3 -fno-pic"
+  _zsnes_flags
   export CFLAGS CXXFLAGS
   make install DESTDIR="$pkgdir" OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr
-  readelf -h "$pkgdir/usr/bin/zsnes" | grep -q "Type:.*EXEC"
+  [ "$CARCH" != i686 ] || readelf -h "$pkgdir/usr/bin/zsnes" | grep -q "Type:.*EXEC"
   mv "$pkgdir/usr/bin/zsnes" "$pkgdir/usr/bin/zsnes-bin"
   printf '#!/bin/sh\nexec tinyhat-gpu /usr/bin/zsnes-bin "$@"\n' >"$pkgdir/usr/bin/zsnes"
   chmod 755 "$pkgdir/usr/bin/zsnes"
