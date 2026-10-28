@@ -21,15 +21,15 @@ static const float rootcolor[]             = COLOR(0x1a1b26ff);
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 static uint32_t colors[][3]                = {
-	/*               fg          bg          border    */
-	[SchemeNorm] = { 0xc0caf5ff, 0x292e42ff, 0x414868ff },
-	[SchemeSel]  = { 0x1a1b26ff, 0x1a9e96ff, 0x1a9e96ff },
-	[SchemeUrg]  = { 0x1a1b26ff, 0xf7768eff, 0xf7768eff },
-	[SchemeTask]      = { 0xc0caf5ff, 0x343b58ff, 0x343b58ff },
-	[SchemeTaskSel]   = { 0xffffffff, 0x414868ff, 0x414868ff },
-	[SchemeTaskHover] = { 0xffffffff, 0x4a5275ff, 0x4a5275ff },
-	[SchemeTaskMin]   = { 0x737aa2ff, 0x2f344bff, 0x2f344bff },
-	[SchemeStatus]    = { 0x7dcfffff, 0x292e42ff, 0x414868ff },
+    /*               fg          bg          border    */
+    [SchemeNorm] = { 0xc0caf5ff, 0x292e42ff, 0x414868ff },
+    [SchemeSel]  = { 0x1a1b26ff, 0x1a9e96ff, 0x1a9e96ff },
+    [SchemeUrg]  = { 0x1a1b26ff, 0xf7768eff, 0xf7768eff },
+    [SchemeTask]      = { 0xc0caf5ff, 0x343b58ff, 0x343b58ff },
+    [SchemeTaskSel]   = { 0xffffffff, 0x414868ff, 0x414868ff },
+    [SchemeTaskHover] = { 0xffffffff, 0x4a5275ff, 0x4a5275ff },
+    [SchemeTaskMin]   = { 0x737aa2ff, 0x2f344bff, 0x2f344bff },
+    [SchemeStatus]    = { 0x7dcfffff, 0x292e42ff, 0x414868ff },
 };
 
 /* tagging */
@@ -39,20 +39,20 @@ static char *tags[] = { "1", "2", "3", "4" };
 static int log_level = WLR_ERROR;
 
 static const Rule rules[] = {
-	/* app_id             title       tags mask     isfloating   monitor */
-	{ NULL,               "DOSBox-X", 0,            1,           -1 },
-	{ NULL,               "ScummVM",  0,            1,           -1 },
-	{ NULL,               "ZSNES",    0,            1,           -1 },
-	{ NULL,               "TIC-80",   0,            1,           -1 },
-	{ NULL,               "Tiny Hat", 0,            1,           -1 },
-	{ NULL,               "Fasttracker II", 0,      1,           -1 },
+    /* app_id             title       tags mask     isfloating   monitor */
+    { NULL,               "DOSBox-X", 0,            1,           -1 },
+    { NULL,               "ScummVM",  0,            1,           -1 },
+    { NULL,               "ZSNES",    0,            1,           -1 },
+    { NULL,               "TIC-80",   0,            1,           -1 },
+    { NULL,               "Tiny Hat", 0,            1,           -1 },
+    { NULL,               "Fasttracker II", 0,      1,           -1 },
 };
 
 /* layout(s) */
 static const Layout layouts[] = {
-	/* symbol     arrange function */
-	{ "><>",      NULL },    /* no layout function means floating behavior */
-	{ "[]=",      tile },
+    /* symbol     arrange function */
+    { "><>",      NULL },    /* no layout function means floating behavior */
+    { "[]=",      tile },
 };
 
 /* monitors */
@@ -63,17 +63,17 @@ static const MonitorRule monrules[] = {
    /* name        mfact  nmaster scale layout       rotate/reflect                x    y
     * example of a HiDPI laptop monitor:
     { "eDP-1",    0.5f,  1,      2,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 }, */
-	{ NULL,       0.55f, 1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
-	/* default monitor rule: can be changed but cannot be eliminated; at least one monitor rule must exist */
+    { NULL,       0.55f, 1,      1,    &layouts[0], WL_OUTPUT_TRANSFORM_NORMAL,   -1,  -1 },
+    /* default monitor rule: can be changed but cannot be eliminated; at least one monitor rule must exist */
 };
 
 /* keyboard */
 static const struct xkb_rule_names xkb_rules = {
-	/* can specify fields: rules, model, layout, variant, options */
-	/* example:
-	.options = "ctrl:nocaps",
-	*/
-	.options = NULL,
+    /* can specify fields: rules, model, layout, variant, options */
+    /* example:
+    .options = "ctrl:nocaps",
+    */
+    .options = NULL,
 };
 
 static const int repeat_rate = 25;
@@ -126,10 +126,10 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define MODKEY WLR_MODIFIER_LOGO
 
 #define TAGKEYS(KEY,SKEY,TAG) \
-	{ WLR_MODIFIER_ALT,          KEY,            view,            {.ui = 1 << TAG} }, \
-	{ MODKEY|WLR_MODIFIER_CTRL,  KEY,            toggleview,      {.ui = 1 << TAG} }, \
-	{ WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, SKEY, tag,             {.ui = 1 << TAG} }, \
-	{ MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT,SKEY,toggletag, {.ui = 1 << TAG} }
+    { MODKEY,                    KEY,            view,            {.ui = 1 << TAG} }, \
+    { MODKEY|WLR_MODIFIER_CTRL,  KEY,            toggleview,      {.ui = 1 << TAG} }, \
+    { WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, SKEY, tag,             {.ui = 1 << TAG} }, \
+    { MODKEY|WLR_MODIFIER_CTRL|WLR_MODIFIER_SHIFT,SKEY,toggletag, {.ui = 1 << TAG} }
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/bin/sh", "-c", cmd, NULL } }
@@ -172,112 +172,110 @@ static const char *brightup[] = { "tinyhat-brightness", "up", NULL };
 static const char *brightdown[] = { "tinyhat-brightness", "down", NULL };
 
 static const Key keys[] = {
-	/* Note that Shift changes certain key codes: 2 -> at, etc. */
-	/* modifier                  key                  function          argument */
-	{ MODKEY,                    XKB_KEY_p,           spawn,            {.v = menucmd} },
-	{ MODKEY,                    XKB_KEY_Return,      spawn,            {.v = termcmd} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_t,  spawn,            {.v = tic80cmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_r,  spawn,            {.v = termcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_c,  spawn,            {.v = codecmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_f,  spawn,            {.v = fennelcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_g,  spawn,            {.v = gbacmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_j,  spawn,            {.v = snesdevcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_u,  spawn,            {.v = c64devcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_m,  spawn,            {.v = playcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_i,  spawn,            {.v = librespritecmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_s,  spawn,            {.v = scummvmcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_h,  spawn,            {.v = sharecmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_b,  spawn,            {.v = bluetoothcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_d,  spawn,            {.v = dosboxcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_x,  spawn,            {.v = introcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_z,  spawn,            {.v = zsnescmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_n,  spawn,            {.v = browsercmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_a,  spawn,            {.v = scangamescmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_v,  spawn,            {.v = vicemd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_o,  spawn,            {.v = watcomcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_w,  spawn,            {.v = wificmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_p,  spawn,            {.v = adventurecmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_k,  spawn,            {.v = keyboardcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_l,  spawn,            {.v = lockcmd} },
-	{ MODKEY,                    XKB_KEY_l,           spawn,            {.v = lockcmd} },
-	{ WLR_MODIFIER_ALT,          XKB_KEY_space,       spawn,            {.v = menucmd} },
-	{ WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_W, killclient,       {0} },
-	{ WLR_MODIFIER_ALT,          XKB_KEY_F4,          killclient,       {0} },
-	{ WLR_MODIFIER_ALT,          XKB_KEY_F2,          spawn,            {.v = runcmd} },
-	{ MODKEY,                    XKB_KEY_q,           killclient,       {0} },
-	{ MODKEY,                    XKB_KEY_r,           spawn,            {.v = runcmd} },
-	{ WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_F, togglefullscreen, {0} },
-	{ 0,                         XKB_KEY_XF86AudioRaiseVolume, spawn,   {.v = volup} },
-	{ 0,                         XKB_KEY_XF86AudioLowerVolume, spawn,   {.v = voldown} },
-	{ 0,                         XKB_KEY_XF86AudioMute, spawn,          {.v = volmute} },
-	{ 0,                         XKB_KEY_XF86MonBrightnessUp, spawn,    {.v = brightup} },
-	{ 0,                         XKB_KEY_XF86MonBrightnessDown, spawn,  {.v = brightdown} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_Up, spawn,            {.v = volup} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_Down, spawn,          {.v = voldown} },
-	{ MODKEY,                    XKB_KEY_b,           togglebar,        {0} },
-	{ WLR_MODIFIER_ALT,          XKB_KEY_Tab,         altab,            {.i = +1} },
-	{ WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_ISO_Left_Tab, altab, {.i = -1} },
-	{ MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
-	{ MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
-	{ MODKEY,                    XKB_KEY_i,           incnmaster,       {.i = +1} },
-	{ MODKEY,                    XKB_KEY_d,           showdesktop,      {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_H,           setmfact,         {.f = -0.05f} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_L,           setmfact,         {.f = +0.05f} },
-	{ MODKEY,                    XKB_KEY_Tab,         view,             {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           killclient,       {0} },
-	{ MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[1]} },
-	{ MODKEY,                    XKB_KEY_f,           setlayout,        {.v = &layouts[0]} },
-	{ MODKEY,                    XKB_KEY_m,           minimize,         {0} },
-	{ MODKEY,                    XKB_KEY_space,       spawn,            {.v = menucmd} },
-	{ 0,                         XKB_KEY_Menu,        spawn,            {.v = menucmd} },
-	{ 0,                         XKB_KEY_Print,       spawn,            {.v = screenshotcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_Q, spawn, {.v = poweroffcmd} },
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_Delete, spawn,        {.v = rebootcmd} },
-	{ MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_space,       setlayout,        {0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       togglefloating,   {0} },
-	{ MODKEY,                    XKB_KEY_e,           togglefullscreen, {0} },
-	{ MODKEY,                    XKB_KEY_0,           view,             {.ui = ~0} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_0,           tag,              {.ui = ~0} },
-	{ MODKEY,                    XKB_KEY_comma,       focusmon,         {.i = WLR_DIRECTION_LEFT} },
-	{ MODKEY,                    XKB_KEY_period,      focusmon,         {.i = WLR_DIRECTION_RIGHT} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_less,        tagmon,           {.i = WLR_DIRECTION_LEFT} },
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_greater,     tagmon,           {.i = WLR_DIRECTION_RIGHT} },
-	TAGKEYS(          XKB_KEY_1, XKB_KEY_1,                             0),
-	TAGKEYS(          XKB_KEY_2, XKB_KEY_2,                             1),
-	TAGKEYS(          XKB_KEY_3, XKB_KEY_3,                             2),
-	TAGKEYS(          XKB_KEY_4, XKB_KEY_4,                             3),
-	{ MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_q,           quit,             {0} },
+    /* Note that Shift changes certain key codes: 2 -> at, etc. */
+    /* modifier                  key                  function          argument */
+    { MODKEY,                    XKB_KEY_p,           spawn,            {.v = menucmd} },
+    { MODKEY,                    XKB_KEY_Return,      spawn,            {.v = termcmd} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_Return,      zoom,             {0} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_t,  spawn,            {.v = tic80cmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_r,  spawn,            {.v = termcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_c,  spawn,            {.v = codecmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_f,  spawn,            {.v = fennelcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_g,  spawn,            {.v = gbacmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_j,  spawn,            {.v = snesdevcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_u,  spawn,            {.v = c64devcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_m,  spawn,            {.v = playcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_i,  spawn,            {.v = librespritecmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_s,  spawn,            {.v = scummvmcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_h,  spawn,            {.v = sharecmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_b,  spawn,            {.v = bluetoothcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_d,  spawn,            {.v = dosboxcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_x,  spawn,            {.v = introcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_z,  spawn,            {.v = zsnescmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_n,  spawn,            {.v = browsercmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_a,  spawn,            {.v = scangamescmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_v,  spawn,            {.v = vicemd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_o,  spawn,            {.v = watcomcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_w,  spawn,            {.v = wificmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_p,  spawn,            {.v = adventurecmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_k,  spawn,            {.v = keyboardcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_l,  spawn,            {.v = lockcmd} },
+    { MODKEY,                    XKB_KEY_l,           spawn,            {.v = lockcmd} },
+    { WLR_MODIFIER_ALT,          XKB_KEY_space,       spawn,            {.v = menucmd} },
+    { WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_W, killclient,       {0} },
+    { WLR_MODIFIER_ALT,          XKB_KEY_F4,          killclient,       {0} },
+    { WLR_MODIFIER_ALT,          XKB_KEY_F2,          spawn,            {.v = runcmd} },
+    { MODKEY,                    XKB_KEY_r,           spawn,            {.v = runcmd} },
+    { WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_F, togglefullscreen, {0} },
+    { 0,                         XKB_KEY_XF86AudioRaiseVolume, spawn,   {.v = volup} },
+    { 0,                         XKB_KEY_XF86AudioLowerVolume, spawn,   {.v = voldown} },
+    { 0,                         XKB_KEY_XF86AudioMute, spawn,          {.v = volmute} },
+    { 0,                         XKB_KEY_XF86MonBrightnessUp, spawn,    {.v = brightup} },
+    { 0,                         XKB_KEY_XF86MonBrightnessDown, spawn,  {.v = brightdown} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_Up, spawn,            {.v = volup} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_Down, spawn,          {.v = voldown} },
+    { WLR_MODIFIER_ALT,          XKB_KEY_Tab,         altab,            {.i = +1} },
+    { WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_ISO_Left_Tab, altab, {.i = -1} },
+    { MODKEY,                    XKB_KEY_j,           focusstack,       {.i = +1} },
+    { MODKEY,                    XKB_KEY_k,           focusstack,       {.i = -1} },
+    { MODKEY,                    XKB_KEY_i,           incnmaster,       {.i = +1} },
+    { MODKEY,                    XKB_KEY_d,           showdesktop,      {0} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_H,           setmfact,         {.f = -0.05f} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_L,           setmfact,         {.f = +0.05f} },
+    { MODKEY,                    XKB_KEY_Tab,         view,             {0} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_c,           killclient,       {0} },
+    { MODKEY,                    XKB_KEY_t,           setlayout,        {.v = &layouts[1]} },
+    { MODKEY,                    XKB_KEY_e,           setlayout,        {.v = &layouts[0]} },
+    { MODKEY,                    XKB_KEY_m,           minimize,         {0} },
+    { MODKEY,                    XKB_KEY_space,       spawn,            {.v = menucmd} },
+    { 0,                         XKB_KEY_Menu,        spawn,            {.v = menucmd} },
+    { 0,                         XKB_KEY_Print,       spawn,            {.v = screenshotcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT|WLR_MODIFIER_SHIFT, XKB_KEY_Q, spawn, {.v = poweroffcmd} },
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT, XKB_KEY_Delete, spawn,        {.v = rebootcmd} },
+    { MODKEY|WLR_MODIFIER_CTRL,  XKB_KEY_space,       setlayout,        {0} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_space,       togglefloating,   {0} },
+    { MODKEY,                    XKB_KEY_f,           togglefullscreen, {0} },
+    { MODKEY,                    XKB_KEY_0,           view,             {.ui = ~0} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_0,           tag,              {.ui = ~0} },
+    { MODKEY,                    XKB_KEY_comma,       focusmon,         {.i = WLR_DIRECTION_LEFT} },
+    { MODKEY,                    XKB_KEY_period,      focusmon,         {.i = WLR_DIRECTION_RIGHT} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_less,        tagmon,           {.i = WLR_DIRECTION_LEFT} },
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_greater,     tagmon,           {.i = WLR_DIRECTION_RIGHT} },
+    TAGKEYS(          XKB_KEY_1, XKB_KEY_1,                             0),
+    TAGKEYS(          XKB_KEY_2, XKB_KEY_2,                             1),
+    TAGKEYS(          XKB_KEY_3, XKB_KEY_3,                             2),
+    TAGKEYS(          XKB_KEY_4, XKB_KEY_4,                             3),
+    { MODKEY|WLR_MODIFIER_SHIFT, XKB_KEY_q,           quit,             {0} },
 
-	/* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
-	{ WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_BackSpace, quit, {0} },
-	/* Ctrl-Alt-Fx is used to switch to another VT, if you don't know what a VT is
-	 * do not remove them.
-	 */
+    /* Ctrl-Alt-Backspace and Ctrl-Alt-Fx used to be handled by X server */
+    { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_BackSpace, quit, {0} },
+    /* Ctrl-Alt-Fx is used to switch to another VT, if you don't know what a VT is
+     * do not remove them.
+     */
 #define CHVT(n) { WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT,XKB_KEY_F##n, chvt, {.ui = (n)} }
-	CHVT(1), CHVT(2), CHVT(3), CHVT(4), CHVT(5), CHVT(6),
-	CHVT(7), CHVT(8), CHVT(9), CHVT(10), CHVT(11), CHVT(12),
+    CHVT(1), CHVT(2), CHVT(3), CHVT(4), CHVT(5), CHVT(6),
+    CHVT(7), CHVT(8), CHVT(9), CHVT(10), CHVT(11), CHVT(12),
 };
 
 static const Button buttons[] = {
-	{ ClkLtSymbol, 0,      BTN_LEFT,   togglelayout,   {0} },
-	{ ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
-	{ ClkTitle,    0,      BTN_MIDDLE, taskclose,      {0} },
-	{ ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },
-	{ ClkRoot,     0,      BTN_RIGHT,  spawn,          {.v = cyclecmd} },
-	{ ClkMenu,     0,      BTN_LEFT,   spawn,          {.v = menucmd} },
-	{ ClkStatus,   0,      BTN_MIDDLE, spawn,          {.v = termcmd} },
-	{ ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
-	{ ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
-	{ ClkClient,   MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
-	{ ClkClient,   WLR_MODIFIER_ALT, BTN_LEFT,  moveresize, {.ui = CurMove} },
-	{ ClkClient,   WLR_MODIFIER_ALT, BTN_RIGHT, moveresize, {.ui = CurResize} },
-	{ ClkTagBar,   0,      BTN_LEFT,   view,           {0} },
-	{ ClkTagBar,   0,      BTN_RIGHT,  toggleview,     {0} },
-	{ ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
-	{ ClkTagBar,   MODKEY, BTN_RIGHT,  toggletag,      {0} },
+    { ClkLtSymbol, 0,      BTN_LEFT,   togglelayout,   {0} },
+    { ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
+    { ClkTitle,    0,      BTN_MIDDLE, taskclose,      {0} },
+    { ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },
+    { ClkRoot,     0,      BTN_RIGHT,  spawn,          {.v = cyclecmd} },
+    { ClkMenu,     0,      BTN_LEFT,   spawn,          {.v = menucmd} },
+    { ClkStatus,   0,      BTN_MIDDLE, spawn,          {.v = termcmd} },
+    { ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },
+    { ClkClient,   MODKEY, BTN_MIDDLE, togglefloating, {0} },
+    { ClkClient,   MODKEY, BTN_RIGHT,  moveresize,     {.ui = CurResize} },
+    { ClkClient,   WLR_MODIFIER_ALT, BTN_LEFT,  moveresize, {.ui = CurMove} },
+    { ClkClient,   WLR_MODIFIER_ALT, BTN_RIGHT, moveresize, {.ui = CurResize} },
+    { ClkTagBar,   0,      BTN_LEFT,   view,           {0} },
+    { ClkTagBar,   0,      BTN_RIGHT,  toggleview,     {0} },
+    { ClkTagBar,   MODKEY, BTN_LEFT,   tag,            {0} },
+    { ClkTagBar,   MODKEY, BTN_RIGHT,  toggletag,      {0} },
 };
 
 static const Axis axes[] = {
-	{0},
+    {0},
 };
