@@ -5,7 +5,6 @@ pkgbase = zsnes
 	url = https://github.com/xyproto/zsnes
 	arch = i686
 	license = GPL-2.0-or-later
-	makedepends = nasm
 	makedepends = mesa
 	depends = sdl3
 	depends = libglvnd

@@ -21,7 +21,8 @@ b2sums=('SKIP')
 prepare() {
   cd $pkgname
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local CGO_ENABLED=0 GOARCH=386 GO386=softfloat
-  /usr/lib/go-tinyhat/bin/go build -buildvcs=false -ldflags "-s -w" -mod=readonly -modcacherw -trimpath
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  "$GOROOT/bin/go" build -buildvcs=false -ldflags "-s -w" -mod=readonly -modcacherw -trimpath
 }
 
 package() {

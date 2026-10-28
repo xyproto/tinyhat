@@ -12,6 +12,7 @@ eval "$(
       s/-D html-docs=enabled/-D html-docs=disabled/
       s/microsoft-experimental,nouveau,/microsoft-experimental,/
       s/-D intel-rt=enabled/-D intel-rt=disabled/
+      s/-D gallium-drivers=all/-D gallium-drivers=r300,r600,radeonsi,crocus,v3d,vc4,freedreno,etnaviv,i915,nouveau,svga,tegra,virgl,lima,panfrost,llvmpipe,softpipe,iris,d3d12,asahi,rocket,ethosu/
     '
   declare -f package_mesa | \
     sed '

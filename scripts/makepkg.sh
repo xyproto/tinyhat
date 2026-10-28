@@ -98,13 +98,14 @@ if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; 
 fi
 
 # At most PKG_JOBS packages build at once, to limit the disk space used by build trees
+slot=0
 if [ "${PKG_JOBS:-0}" -gt 0 ]; then
 	mkdir -p "$top/build/chroot"
 	while :; do
 		i=1
 		while [ $i -le "$PKG_JOBS" ]; do
 			exec 7>"$top/build/chroot/.slot$i"
-			flock -n 7 && break 2
+			flock -n 7 && slot=$i && break 2
 			i=$((i + 1))
 		done
 		exec 7>&-
@@ -112,7 +113,9 @@ if [ "${PKG_JOBS:-0}" -gt 0 ]; then
 	done
 fi
 
+distccd_pid=
 cleanup() {
+	[ -z "$distccd_pid" ] || kill "$distccd_pid" 2>/dev/null || true
 	chmod -R u+w "$work" 2>/dev/null || true
 	rm -rf "$work"
 }
@@ -120,6 +123,26 @@ cleanup
 trap cleanup EXIT
 mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
 cp -rL "$dir" "$work/pkg/$base"
+
+# Compiling under emulation is slow, so aarch64 builds send the compiler runs to the host's cross compiler
+jobs=${PKG_MAKE_JOBS:-$(nproc)}
+echo "source $conf" >"$work/makepkg.conf"
+if [ "$arch" = aarch64 ] && command -v distccd >/dev/null && command -v aarch64-linux-gnu-gcc >/dev/null; then
+	mkdir -p "$top/build/distcc" "$top/build/log"
+	for c in cc gcc aarch64-unknown-linux-gnu-gcc; do
+		ln -sfn "$(command -v aarch64-linux-gnu-gcc)" "$top/build/distcc/$c"
+	done
+	for c in c++ g++ aarch64-unknown-linux-gnu-g++; do
+		ln -sfn "$(command -v aarch64-linux-gnu-g++)" "$top/build/distcc/$c"
+	done
+	port=$((36320 + slot))
+	jobs=$((jobs * 2))
+	DISTCCD_PATH=$top/build/distcc distccd --no-detach --daemon --listen 127.0.0.1 --port "$port" --allow 127.0.0.1 \
+		--enable-tcp-insecure --jobs "$jobs" --log-file "$top/build/log/aarch64-$base.distccd.log" &
+	distccd_pid=$!
+	printf '%s\n' "BUILDENV=(distcc color !ccache !check !sign)" "DISTCC_HOSTS=\"127.0.0.1:$port/$jobs\"" \
+		"MAKEFLAGS=\"-j$jobs\"" "NINJAFLAGS=\"-j$jobs\"" >>"$work/makepkg.conf"
+fi
 
 sandbox() {
 	tries=0
@@ -165,8 +188,10 @@ mkdir -p /var/lib/pacman/local /build /startdir /srcdest /tinyhat /ccache /repo
 [ -f /var/lib/pacman/local/ALPM_DB_VERSION ] || echo 9 >/var/lib/pacman/local/ALPM_DB_VERSION
 grep -q "^builder:" /etc/passwd || echo "builder:x:1000:1000:builder:/build:/bin/sh" >>/etc/passwd
 grep -q "^builder:" /etc/group || echo "builder:x:1000:" >>/etc/group
+pacargs="--arch i686"
+[ "$arch" != aarch64 ] || pacargs="--arch aarch64 --disable-sandbox"
 if [ -n "$i686deps" ]; then
-	pacman -Udd --arch "$(test "$arch" = aarch64 && echo aarch64 || echo i686)" --noconfirm --noscriptlet --overwrite "*" $i686deps
+	pacman -Udd $pacargs --noconfirm --noscriptlet --overwrite "*" $i686deps
 fi
 if [ -n "$sysdeps" ]; then
 	s=/usr/$tc/sysroot
@@ -208,16 +233,17 @@ run() {
 		--bind "$top/vendor/src" /srcdest \
 		--bind "$HOME/.ccache" /ccache \
 		--ro-bind "$top" /tinyhat \
+		--ro-bind "$work/makepkg.conf" /etc/makepkg-build.conf \
 		--setenv HOME /build \
 		--setenv USER builder \
 		--setenv CCACHE_DIR /ccache \
 		--setenv CCACHE_MAXSIZE "${CCACHE_MAXSIZE:-2G}" \
-		--setenv TINYHAT_JOBS "${PKG_MAKE_JOBS:-$(nproc)}" \
+		--setenv TINYHAT_JOBS "$jobs" \
 		--setenv CARGO_BUILD_JOBS "${PKG_MAKE_JOBS:-$(nproc)}" \
 		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
 		--chdir /startdir \
-		/bin/sh -c 'exec 2>&9 9>&-; exec makepkg "$@"' sh --config "$conf" -d --noconfirm --skippgpcheck --holdver $ignorearch "$@"
+		/bin/sh -c 'exec 2>&9 9>&-; exec makepkg "$@"' sh --config /etc/makepkg-build.conf -d --noconfirm --skippgpcheck --holdver $ignorearch "$@"
 }
 
 exec 8>"$top/vendor/src/.lock"

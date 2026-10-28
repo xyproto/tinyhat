@@ -689,6 +689,7 @@ def cmd_lock_arch(arch):
     conf, base = distro.section(section), distro.section("image")
     targets, prefs, skip = pkg.list_config(section)
     db, provides = pkg.arch_db(arch)
+    prefs = {k: v for k, v in prefs.items() if k not in db}
     infos = load()
     by_base = {i["base"]: i for i in infos}
     base_of = {n: i["base"] for i in infos for n in i["pkgnames"]}
@@ -731,7 +732,9 @@ def cmd_lock_arch(arch):
     while True:
         sel, users, bad = resolve()
         more = {base_of[u["name"]] for n in bad for u in users.get(n, [])
-                if not u.get("local") and u["name"] not in bad and u["name"] in base_of} - local
+                if not u.get("local") and u["name"] not in bad and u["name"] in base_of}
+        more |= {base_of[p["name"]] for p in sel if not p.get("local") and PKGCONF.get(base_of.get(p["name"]), {}).get("build")}
+        more -= local
         if not more:
             break
         local |= more
