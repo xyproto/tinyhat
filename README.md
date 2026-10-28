@@ -42,7 +42,7 @@ It also includes MemTest86+.
 
 For `make` to be able to create `tinyhat32.img`, these Arch Linux packages are needed:
 
-    base-devel bc bubblewrap cpio git python-numpy squashfs-tools vorbis-tools xfsprogs
+    base-devel bc bubblewrap cpio git libxml2-legacy python-numpy squashfs-tools vorbis-tools xfsprogs
 
 For `make vdi`, this package is also needed:
 
@@ -52,9 +52,9 @@ For `make iso`, this package is also needed:
 
     libisoburn
 
-For `make run`, `make qemutest` and `make qemutest64x32`, this package is also needed (`imagemagick` is optional, for converting the screenshots that `qemutest` takes):
+For `make run`, `make qemutest` and `make qemutest64x32`, these packages are also needed:
 
-    qemu-system-x86
+    imagemagick qemu-system-x86
 
 For `make both` and `tinyhat64x32.img`, this package is also needed (for creating the Secure Boot signing key):
 
