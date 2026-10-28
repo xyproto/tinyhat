@@ -123,6 +123,6 @@ EOF
 done
 rm -f "$out/win-res.o"
 
+rm -f SHA256SUMS.asc
 sha256sum $files >SHA256SUMS
-gpg --batch --yes --armor --detach-sign ${GPG_KEY:+-u "$GPG_KEY"} -o "$out/SHA256SUMS.asc" "$out/SHA256SUMS"
-ls -l $files SHA256SUMS SHA256SUMS.asc
+ls -l $files SHA256SUMS
