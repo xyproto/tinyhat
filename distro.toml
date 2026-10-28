@@ -384,7 +384,7 @@ packages = [
     "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
     "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson", "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
     "wayland", "wayland-protocols", "libglvnd", "mesa", "gtk3", "vte3", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
-    "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile",
+    "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile", "libxml2-legacy",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo", "libmikmod",
     "grub",
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
@@ -788,7 +788,7 @@ arch = "i686"
 
 [librsvg]
 arch = "i686"
-prebuilt = true
+build = true
 
 [libsvgtiny]
 build = true
