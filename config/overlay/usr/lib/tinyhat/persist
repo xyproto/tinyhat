@@ -5,265 +5,266 @@ dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/
 
 mode=stick
 for arg in $(cat /proc/cmdline); do
-	case $arg in
-	tinyhat.nopersist) mode=none ;;
-	tinyhat.persist=?*) mode=${arg#*=} ;;
-	tinyhat.persistlog) dirs="$dirs journal:/var/log/journal" ;;
-	esac
+    case $arg in
+    tinyhat.nopersist) mode=none ;;
+    tinyhat.persist=?*) mode=${arg#*=} ;;
+    tinyhat.persistlog) dirs="$dirs journal:/var/log/journal" ;;
+    esac
 done
 
 if [ "$1" = stop ]; then
-	if mountpoint -q /persist; then
-		for d in journal:/var/log/journal $dirs; do
-			mountpoint -q "${d#*:}" && { umount "${d#*:}" 2>/dev/null || umount -l "${d#*:}"; }
-		done
-		umount /persist 2>/dev/null || umount -l /persist
-	fi
-	if [ ! -f /run/tinyhat/persistroot ]; then
-		mountpoint -q /run/tinyhat/data && umount /run/tinyhat/data
-		mountpoint -q /run/tinyhat/host && umount /run/tinyhat/host
-	fi
-	exit 0
+    if mountpoint -q /persist; then
+        for d in journal:/var/log/journal $dirs; do
+            mountpoint -q "${d#*:}" && { umount "${d#*:}" 2>/dev/null || umount -l "${d#*:}"; }
+        done
+        umount /persist 2>/dev/null || umount -l /persist
+    fi
+    if [ ! -f /run/tinyhat/persistroot ]; then
+        mountpoint -q /run/tinyhat/data && umount /run/tinyhat/data
+        mountpoint -q /run/tinyhat/host && umount /run/tinyhat/host
+    fi
+    exit 0
 fi
 
 msg() { echo "Tiny Hat: $*"; }
 
 say() {
-	[ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo "$1" >/run/tinyhat-splash' sh "$1" 2>/dev/null
+    [ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo "$1" >/run/tinyhat-splash' sh "$1" 2>/dev/null
 }
 
 step() {
-	if [ -p /run/tinyhat-splash ]; then
-		say "msg $2"
-		say "progress $1"
-	else
-		echo "Tiny Hat: $2 ($1%)" >/dev/console
-	fi
+    if [ -p /run/tinyhat-splash ]; then
+        say "msg $2"
+        say "progress $1"
+    else
+        echo "Tiny Hat: $2 ($1%)" >/dev/console
+    fi
 }
 
 partdev() {
-	for p in /sys/block/"$disk"/"$disk"*/partition; do
-		[ "$(cat "$p" 2>/dev/null)" = "$1" ] && p=${p%/partition} && echo "/dev/${p##*/}" && return 0
-	done
-	return 1
+    for p in /sys/block/"$disk"/"$disk"*/partition; do
+        [ "$(cat "$p" 2>/dev/null)" = "$1" ] && p=${p%/partition} && echo "/dev/${p##*/}" && return 0
+    done
+    return 1
 }
 
 removable() {
-	[ "$(cat "/sys/block/$1/removable" 2>/dev/null)" = 1 ] && return 0
-	case $(readlink -f "/sys/block/$1/device") in */usb*) return 0 ;; esac
-	[ "$(cat "/sys/block/$1/device/type" 2>/dev/null)" = SD ]
+    [ "$(cat "/sys/block/$1/removable" 2>/dev/null)" = 1 ] && return 0
+    case $(readlink -f "/sys/block/$1/device") in */usb*) return 0 ;; esac
+    [ "$(cat "/sys/block/$1/device/type" 2>/dev/null)" = SD ]
 }
 
 in_use() {
-	for p in /sys/block/"$disk"/"$disk"*/partition; do
-		p=${p%/partition}
-		p=/dev/${p##*/}
-		[ "$p" = "$boot" ] && continue
-		grep -q "^$p " /proc/mounts /proc/swaps && return 0
-		[ -n "$(ls -A "/sys/class/block/${p#/dev/}/holders" 2>/dev/null)" ] && return 0
-	done
-	return 1
+    for p in /sys/block/"$disk"/"$disk"*/partition; do
+        p=${p%/partition}
+        p=/dev/${p##*/}
+        [ "$p" = "$boot" ] && continue
+        grep -q "^$p " /proc/mounts /proc/swaps && return 0
+        [ -n "$(ls -A "/sys/class/block/${p#/dev/}/holders" 2>/dev/null)" ] && return 0
+    done
+    return 1
 }
 
 find_data() {
-	for p in /sys/block/"$disk"/"$disk"*/partition; do
-		p=${p%/partition}
-		p=/dev/${p##*/}
-		[ "$p" = "$boot" ] && continue
-		[ "$(blkid -p -s TYPE -o value "$p")" = xfs ] && [ "$(blkid -p -s LABEL -o value "$p")" = "$label" ] && echo "$p" && return 0
-	done
-	return 1
+    for p in /sys/block/"$disk"/"$disk"*/partition; do
+        p=${p%/partition}
+        p=/dev/${p##*/}
+        [ "$p" = "$boot" ] && continue
+        [ "$(blkid -p -s TYPE -o value "$p")" = xfs ] && [ "$(blkid -p -s LABEL -o value "$p")" = "$label" ] && echo "$p" && return 0
+    done
+    return 1
 }
 
 copy_dirs() {
-	for d in $dirs; do
-		mkdir -p "$1/${d%%:*}"
-		cp -a "${d#*:}/." "$1/${d%%:*}/" 2>/dev/null
-	done
-	chmod 700 "$1/iwd" "$1/bluetooth"
+    for d in $dirs; do
+        mkdir -p "$1/${d%%:*}"
+        cp -a "${d#*:}/." "$1/${d%%:*}/" 2>/dev/null
+    done
+    chmod 700 "$1/iwd" "$1/bluetooth"
 }
 
 create() {
-	[ "$(blkid -p -s LABEL -o value "$boot")" = TINYHAT ] || return 1
-	[ "$(cat "/sys/class/block/${boot#/dev/}/partition")" = 2 ] || return 1
-	[ "$(partdev 2)" = "$boot" ] || return 1
-	[ "$fixed" = 1 ] || removable "$disk" || return 1
-	[ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
-	[ "$(sfdisk --part-type "/dev/$disk" 1 2>/dev/null)" = ef ] || return 1
-	in_use && return 1
-	count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
-	if [ "$count" = 3 ]; then
-		part=$(partdev 3) || return 1
-		[ "$(sfdisk --part-type "/dev/$disk" 3 2>/dev/null)" = 83 ] || return 1
-		[ -z "$(wipefs -n "$part" 2>&1)" ] || return 1
-		msg "creating persistent storage on the rest of the drive (one time only)"
-		step 20 "Creating persistent storage (one time only)"
-	else
-		[ "$count" = 2 ] || return 1
-		free=$(sfdisk -F -q "/dev/$disk" 2>/dev/null | awk 'END { print $3 }')
-		[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
-		msg "creating persistent storage on the rest of the drive (one time only)"
-		step 5 "Creating persistent storage (one time only)"
-		echo ",,L" | sfdisk --append --no-reread -q "/dev/$disk" 2>/dev/null || return 1
-		step 20 "Creating persistent storage (one time only)"
-		partx -a "/dev/$disk" 2>/dev/null || partx -u "/dev/$disk"
-		udevadm settle -t 10
-		part=$(partdev 3) || return 1
-	fi
-	[ -b "$part" ] && [ "$part" != "$boot" ] || return 1
-	[ "$(readlink -f "/sys/class/block/${part#/dev/}/..")" = "$(readlink -f "/sys/block/$disk")" ] || return 1
-	{ [ "$fixed" = 1 ] || removable "$disk"; } && ! in_use || return 1
-	step 35 "Formatting persistent storage"
-	TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -K -l size=16m -L "$label" "$part" || return 1
-	step 70 "Setting up persistent storage"
-	mount -o noatime "$part" /persist || return 1
-	copy_dirs /persist
-	umount /persist
-	udevadm settle -t 10
-	step 100 "Persistent storage is ready"
+    [ "$(blkid -p -s LABEL -o value "$boot")" = TINYHAT ] || return 1
+    [ "$(cat "/sys/class/block/${boot#/dev/}/partition")" = 2 ] || return 1
+    [ "$(partdev 2)" = "$boot" ] || return 1
+    [ "$fixed" = 1 ] || removable "$disk" || return 1
+    [ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
+    [ "$(sfdisk --part-type "/dev/$disk" 1 2>/dev/null)" = ef ] || return 1
+    in_use && return 1
+    count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
+    if [ "$count" = 3 ]; then
+        part=$(partdev 3) || return 1
+        [ "$(sfdisk --part-type "/dev/$disk" 3 2>/dev/null)" = 83 ] || return 1
+        [ -z "$(wipefs -n "$part" 2>&1)" ] || return 1
+        msg "creating persistent storage on the rest of the drive (one time only)"
+        step 20 "Creating persistent storage (one time only)"
+    else
+        [ "$count" = 2 ] || return 1
+        free=$(sfdisk -F -q "/dev/$disk" 2>/dev/null | awk 'END { print $3 }')
+        [ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
+        msg "creating persistent storage on the rest of the drive (one time only)"
+        step 5 "Creating persistent storage (one time only)"
+        echo ",,L" | sfdisk --append --no-reread -q "/dev/$disk" 2>/dev/null || return 1
+        step 20 "Creating persistent storage (one time only)"
+        partx -a "/dev/$disk" 2>/dev/null || partx -u "/dev/$disk"
+        udevadm settle -t 10
+        part=$(partdev 3) || return 1
+    fi
+    [ -b "$part" ] && [ "$part" != "$boot" ] || return 1
+    [ "$(readlink -f "/sys/class/block/${part#/dev/}/..")" = "$(readlink -f "/sys/block/$disk")" ] || return 1
+    { [ "$fixed" = 1 ] || removable "$disk"; } && ! in_use || return 1
+    step 35 "Formatting persistent storage"
+    TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs mkfs.xfs -q -f -K -l size=16m -L "$label" "$part" || return 1
+    step 70 "Setting up persistent storage"
+    mount -o noatime "$part" /persist || return 1
+    copy_dirs /persist
+    umount /persist
+    udevadm settle -t 10
+    step 100 "Persistent storage is ready"
 }
 
 grow() {
-	# Extend the persistent data partition with any free space at the end of the
-	# disk, and grow the XFS file system on it (for example after resizing a
-	# .vdi in VirtualBox, or after moving to a bigger USB stick)
-	[ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
-	count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
-	[ "$(cat "/sys/class/block/${part#/dev/}/partition" 2>/dev/null)" = "$count" ] || return 1
-	free=$(sfdisk -F -q "/dev/$disk" 2>/dev/null | awk 'END { print $3 }')
-	[ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
-	table=$(sfdisk -d "/dev/$disk" 2>/dev/null) || return 1
-	name=${part##*/}
-	start=$(printf '%s\n' "$table" | awk -v name="$name" '$1 == name && $2 == ":" \
-		{ for (i = 1; i < NF; i++) if ($i ~ /^start=/) { sub(/^start=/, "", $i); print $i; exit } }')
-	size=$(printf '%s\n' "$table" | awk -v name="$name" '$1 == name && $2 == ":" \
-		{ for (i = 1; i < NF; i++) if ($i ~ /^size=/) { sub(/^size=/, "", $i); print $i; exit } }')
-	[ -n "$start" ] && [ -n "$size" ] || return 1
-	# Keep the end of the partition 4 KiB aligned, when it reaches the end of the disk
-	newsize=$(( ($(cat "/sys/block/$disk/size") / 8) * 8 - start ))
-	[ $((newsize - size)) -ge $((min_mib * 2048)) ] || return 1
-	msg "enlarging persistent storage (one time only)"
-	step 20 "Enlarging persistent storage (one time only)"
-	table=$(printf '%s\n' "$table" | awk -v name="$name" -v size="$newsize" \
-		'$1 == name && $2 == ":" {
-			for (i = 1; i < NF; i++) if ($i ~ /^size=/) { $i = "size=" size; }
-		}
-		{ print }')
-	sfdisk --force --no-reread -q "/dev/$disk" 2>/dev/null <<EOF || return 1
+    local part="$1"
+    # Extend the persistent data partition with any free space at the end of the
+    # disk, and grow the XFS file system on it (for example after resizing a
+    # .vdi in VirtualBox, or after moving to a bigger USB stick)
+    [ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
+    count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
+    [ "$(cat "/sys/class/block/${part#/dev/}/partition" 2>/dev/null)" = "$count" ] || return 1
+    free=$(sfdisk -F -q "/dev/$disk" 2>/dev/null | awk 'END { print $3 }')
+    [ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
+    table=$(sfdisk -d "/dev/$disk" 2>/dev/null) || return 1
+    name=${part##*/}
+    start=$(printf '%s\n' "$table" | awk -v name="$name" '$1 == name && $2 == ":" \
+        { for (i = 1; i < NF; i++) if ($i ~ /^start=/) { sub(/^start=/, "", $i); print $i; exit } }')
+    size=$(printf '%s\n' "$table" | awk -v name="$name" '$1 == name && $2 == ":" \
+        { for (i = 1; i < NF; i++) if ($i ~ /^size=/) { sub(/^size=/, "", $i); print $i; exit } }')
+    [ -n "$start" ] && [ -n "$size" ] || return 1
+    # Keep the end of the partition 4 KiB aligned, when it reaches the end of the disk
+    newsize=$(( ($(cat "/sys/block/$disk/size") / 8) * 8 - start ))
+    [ $((newsize - size)) -ge $((min_mib * 2048)) ] || return 1
+    msg "enlarging persistent storage (one time only)"
+    step 20 "Enlarging persistent storage (one time only)"
+    table=$(printf '%s\n' "$table" | awk -v name="$name" -v size="$newsize" \
+        '$1 == name && $2 == ":" {
+            for (i = 1; i < NF; i++) if ($i ~ /^size=/) { $i = "size=" size; }
+        }
+        { print }')
+    sfdisk --force --no-reread -q "/dev/$disk" 2>/dev/null <<EOF || return 1
 $table
 EOF
-	partx -u "/dev/$disk" 2>/dev/null
-	udevadm settle -t 10
-	step 90 "Enlarging persistent storage (one time only)"
-	return 0
+    partx -u "/dev/$disk" 2>/dev/null
+    udevadm settle -t 10
+    step 90 "Enlarging persistent storage (one time only)"
+    return 0
 }
 
 probeopts() {
-	case $(blkid -p -s TYPE -o value "$1") in
-	ext2 | ext3 | ext4) echo ro,noload ;;
-	xfs) echo ro,norecovery ;;
-	vfat | exfat | ntfs) echo ro ;;
-	*) return 1 ;;
-	esac
+    case $(blkid -p -s TYPE -o value "$1") in
+    ext2 | ext3 | ext4) echo ro,noload ;;
+    xfs) echo ro,norecovery ;;
+    vfat | exfat | ntfs) echo ro ;;
+    *) return 1 ;;
+    esac
 }
 
 hostmount() {
-	o=$2
-	m=$(findmnt -rno TARGET -S "$1" | head -n 1)
-	if [ -n "$m" ]; then
-		mount --bind "$m" /run/tinyhat/host
-		return
-	fi
-	case $(blkid -p -s TYPE -o value "$1") in
-	ext2 | ext3 | ext4) t=ext4 ;;
-	xfs) t=xfs ;;
-	vfat) t=vfat o=$o,flush ;;
-	exfat) t=exfat ;;
-	ntfs) t=ntfs3 ;;
-	*) return 1 ;;
-	esac
-	mount -t "$t" -o "$o" "$1" /run/tinyhat/host 2>/dev/null
+    o=$2
+    m=$(findmnt -rno TARGET -S "$1" | head -n 1)
+    if [ -n "$m" ]; then
+        mount --bind "$m" /run/tinyhat/host
+        return
+    fi
+    case $(blkid -p -s TYPE -o value "$1") in
+    ext2 | ext3 | ext4) t=ext4 ;;
+    xfs) t=xfs ;;
+    vfat) t=vfat o=$o,flush ;;
+    exfat) t=exfat ;;
+    ntfs) t=ntfs3 ;;
+    *) return 1 ;;
+    esac
+    mount -t "$t" -o "$o" "$1" /run/tinyhat/host 2>/dev/null
 }
 
 savefile() {
-	best=
-	bestfree=0
-	found=0
-	f=/run/tinyhat/host/tinyhat/config.img
-	mkdir -p /run/tinyhat/host /run/tinyhat/data
-	for b in /sys/block/*; do
-		n=${b##*/}
-		case $n in loop* | ram* | zram* | sr* | fd* | "$disk") continue ;; esac
-		removable "$n" && continue
-		for p in "$b/$n"*/partition; do
-			p=${p%/partition}
-			d=/dev/${p##*/}
-			[ -b "$d" ] || continue
-			[ -n "$(ls -A "$p/holders" 2>/dev/null)" ] && continue
-			grep -q "^$d " /proc/swaps && continue
-			o=$(probeopts "$d") || continue
-			hostmount "$d" "$o" || continue
-			if [ -f "$f" ]; then
-				umount /run/tinyhat/host
-				best=$d
-				found=1
-				break 2
-			fi
-			free=$(df -Pk /run/tinyhat/host | awk 'NR == 2 { print int($4 / 1024) }')
-			umount /run/tinyhat/host
-			[ "${free:-0}" -gt "$bestfree" ] && best=$d bestfree=$free
-		done
-	done
-	[ -n "$best" ] || return 1
-	if [ "$found" = 0 ]; then
-		if [ "$bestfree" -ge 40960 ]; then
-			size=4095
-		elif [ "$bestfree" -ge 12288 ]; then
-			size=2048
-		elif [ "$bestfree" -ge 4096 ]; then
-			size=1024
-		else
-			return 1
-		fi
-	fi
-	hostmount "$best" noatime || return 1
-	if ! grep -q "^$best /run/tinyhat/host [^ ]* rw[, ]" /proc/mounts; then
-		umount /run/tinyhat/host
-		return 1
-	fi
-	if [ "$found" = 0 ]; then
-		msg "creating a config file on $best (one time only)"
-		step 5 "Creating a config file on the hard disk (one time only)"
-		mkdir -p /run/tinyhat/host/tinyhat
-		if [ -e "$f.tmp" ] || ! fallocate -l "${size}M" "$f.tmp" 2>/dev/null; then
-			rm -f "$f.tmp"
-			i=0
-			while [ $i -lt $((size / 64)) ]; do
-				if ! dd if=/dev/zero of="$f.tmp" bs=1M count=64 seek=$((i * 64)) conv=notrunc 2>/dev/null; then
-					rm -f "$f.tmp"
-					umount /run/tinyhat/host
-					return 1
-				fi
-				i=$((i + 1))
-				step $((5 + i * 60 / (size / 64))) "Creating a config file on the hard disk (one time only)"
-			done
-		fi
-		step 70 "Formatting the config file"
-		if ! mkfs.xfs -q -l size=16m -L THCONFIG "$f.tmp" || ! mv "$f.tmp" "$f"; then
-			rm -f "$f.tmp"
-			umount /run/tinyhat/host
-			return 1
-		fi
-	fi
-	if ! mount -t xfs -o loop,noatime,lazytime "$f" /run/tinyhat/data; then
-		umount /run/tinyhat/host
-		return 1
-	fi
-	if [ "$found" = 0 ]; then
-		step 90 "Setting up the config file"
-		copy_dirs /run/tinyhat/data
-		step 100 "The config file is ready"
-	fi
+    best=
+    bestfree=0
+    found=0
+    f=/run/tinyhat/host/tinyhat/config.img
+    mkdir -p /run/tinyhat/host /run/tinyhat/data
+    for b in /sys/block/*; do
+        n=${b##*/}
+        case $n in loop* | ram* | zram* | sr* | fd* | "$disk") continue ;; esac
+        removable "$n" && continue
+        for p in "$b/$n"*/partition; do
+            p=${p%/partition}
+            d=/dev/${p##*/}
+            [ -b "$d" ] || continue
+            [ -n "$(ls -A "$p/holders" 2>/dev/null)" ] && continue
+            grep -q "^$d " /proc/swaps && continue
+            o=$(probeopts "$d") || continue
+            hostmount "$d" "$o" || continue
+            if [ -f "$f" ]; then
+                umount /run/tinyhat/host
+                best=$d
+                found=1
+                break 2
+            fi
+            free=$(df -Pk /run/tinyhat/host | awk 'NR == 2 { print int($4 / 1024) }')
+            umount /run/tinyhat/host
+            [ "${free:-0}" -gt "$bestfree" ] && best=$d bestfree=$free
+        done
+    done
+    [ -n "$best" ] || return 1
+    if [ "$found" = 0 ]; then
+        if [ "$bestfree" -ge 40960 ]; then
+            size=4095
+        elif [ "$bestfree" -ge 12288 ]; then
+            size=2048
+        elif [ "$bestfree" -ge 4096 ]; then
+            size=1024
+        else
+            return 1
+        fi
+    fi
+    hostmount "$best" noatime || return 1
+    if ! grep -q "^$best /run/tinyhat/host [^ ]* rw[, ]" /proc/mounts; then
+        umount /run/tinyhat/host
+        return 1
+    fi
+    if [ "$found" = 0 ]; then
+        msg "creating a config file on $best (one time only)"
+        step 5 "Creating a config file on the hard disk (one time only)"
+        mkdir -p /run/tinyhat/host/tinyhat
+        if [ -e "$f.tmp" ] || ! fallocate -l "${size}M" "$f.tmp" 2>/dev/null; then
+            rm -f "$f.tmp"
+            i=0
+            while [ $i -lt $((size / 64)) ]; do
+                if ! dd if=/dev/zero of="$f.tmp" bs=1M count=64 seek=$((i * 64)) conv=notrunc 2>/dev/null; then
+                    rm -f "$f.tmp"
+                    umount /run/tinyhat/host
+                    return 1
+                fi
+                i=$((i + 1))
+                step $((5 + i * 60 / (size / 64))) "Creating a config file on the hard disk (one time only)"
+            done
+        fi
+        step 70 "Formatting the config file"
+        if ! mkfs.xfs -q -l size=16m -L THCONFIG "$f.tmp" || ! mv "$f.tmp" "$f"; then
+            rm -f "$f.tmp"
+            umount /run/tinyhat/host
+            return 1
+        fi
+    fi
+    if ! mount -t xfs -o loop,noatime,lazytime "$f" /run/tinyhat/data; then
+        umount /run/tinyhat/host
+        return 1
+    fi
+    if [ "$found" = 0 ]; then
+        step 90 "Setting up the config file"
+        copy_dirs /run/tinyhat/data
+        step 100 "The config file is ready"
+    fi
 }
 
 boot=$(cat /run/tinyhat/bootdev 2>/dev/null)
@@ -281,45 +282,45 @@ esac
 
 mkdir -p /persist
 if [ "$mode" = machine ] && [ "$fixed" = 0 ]; then
-	if ! mountpoint -q /run/tinyhat/data; then
-		ok=0
-		savefile && ok=1
-		say "progress -1"
-		say "msg"
-		[ "$ok" = 1 ] || exit 0
-	fi
-	mount --bind /run/tinyhat/data /persist || exit 0
+    if ! mountpoint -q /run/tinyhat/data; then
+        ok=0
+        savefile && ok=1
+        say "progress -1"
+        say "msg"
+        [ "$ok" = 1 ] || exit 0
+    fi
+    mount --bind /run/tinyhat/data /persist || exit 0
 else
-	if ! part=$(find_data); then
-		created=0
-		create && part=$(find_data) && created=1
-		say "progress -1"
-		say "msg"
-		[ "$created" = 1 ] || exit 0
-	fi
-	grow "$part"
-	mount -o noatime,lazytime "$part" /persist || exit 0
-	# Grow the file system into the enlarged partition (cheap and idempotent, also
-	# finishes a resize that was interrupted at the partition table step last boot)
-	xfs_growfs /persist 2>/dev/null
-	if [ -f /persist/.tinyhat-seed ]; then
-		copy_dirs /persist
-		rm -f /persist/.tinyhat-seed
-	fi
+    if ! part=$(find_data); then
+        created=0
+        create && part=$(find_data) && created=1
+        say "progress -1"
+        say "msg"
+        [ "$created" = 1 ] || exit 0
+    fi
+    grow "$part"
+    mount -o noatime,lazytime "$part" /persist || exit 0
+    # Grow the file system into the enlarged partition (cheap and idempotent, also
+    # finishes a resize that was interrupted at the partition table step last boot)
+    xfs_growfs /persist 2>/dev/null
+    if [ -f /persist/.tinyhat-seed ]; then
+        copy_dirs /persist
+        rm -f /persist/.tinyhat-seed
+    fi
 fi
 for d in $dirs; do
-	mkdir -p "/persist/${d%%:*}" "${d#*:}"
-	mount --bind "/persist/${d%%:*}" "${d#*:}"
+    mkdir -p "/persist/${d%%:*}" "${d#*:}"
+    mount --bind "/persist/${d%%:*}" "${d#*:}"
 done
 if [ -d /persist/journal ]; then journalctl --flush 2>/dev/null; fi
 if [ -f /persist/timezone ] && tz=$(cat /persist/timezone) && [ -f "/usr/share/zoneinfo/$tz" ]; then
-	ln -sf "../usr/share/zoneinfo/$tz" /etc/localtime
-	grep -qx LOCAL /etc/adjtime && hwclock --hctosys
+    ln -sf "../usr/share/zoneinfo/$tz" /etc/localtime
+    grep -qx LOCAL /etc/adjtime && hwclock --hctosys
 fi
 if [ -f /persist/vconsole.conf ]; then
-	cp /persist/vconsole.conf /etc/vconsole.conf
-	systemctl --no-block restart systemd-vconsole-setup.service
+    cp /persist/vconsole.conf /etc/vconsole.conf
+    systemctl --no-block restart systemd-vconsole-setup.service
 fi
 if [ -f /persist/shadow ]; then
-	cp /persist/shadow /etc/shadow
+    cp /persist/shadow /etc/shadow
 fi
