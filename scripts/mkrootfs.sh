@@ -9,9 +9,20 @@ sfs=${4:?}
 lock=$(readlink -f "$5")
 licdir=$(readlink -f "$6")
 repo=$top/build/repo
+section=image
 arch=i686
+triplet=i686-pc-linux-gnu
+strip=strip
+bcj=x86
 if grep -q -- '-x32\.pkg\.tar' "$lock"; then
 	arch=x32
+elif grep -q -- '-aarch64\.pkg\.tar' "$lock"; then
+	arch=aarch64
+	repo=$top/build/repo-aarch64
+	section=image-aarch64
+	triplet=aarch64-unknown-linux-gnu
+	strip=aarch64-linux-gnu-strip
+	bcj=arm64
 fi
 cd "$top"
 
@@ -27,14 +38,16 @@ case $mode in
 base)
 	rm -rf "$root"
 	mkdir -p "$root"
-	python3 scripts/pkg.py extract "$lock" "$repo" "$root" image
+	python3 scripts/pkg.py extract "$lock" "$repo" "$root" "$section"
 	pkgfile() { echo "$repo/$(awk -v p="$1" '$2 == p && $1 != "lib32" { print $4 }' "$lock")"; }
 	bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/include/*' 'usr/lib/*.o' usr/lib/libc_nonshared.a
 	bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
-	bsdtar -xpf "$(pkgfile gcc)" -C "$root" 'usr/lib/gcc/i686-pc-linux-gnu/*/crt*.o' 'usr/lib/gcc/i686-pc-linux-gnu/*/libgcc*.a'
-	a=usr/lib/gcc/arm-none-eabi/16.2.0
-	bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
-		"$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
+	bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/crt*.o" "usr/lib/gcc/$triplet/*/libgcc*.a"
+	if [ "$arch" != aarch64 ]; then
+		a=usr/lib/gcc/arm-none-eabi/16.2.0
+		bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
+			"$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
+	fi
 	ln -sf clang "$root/usr/bin/cc"
 	bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
 	mkdir -p "$root/usr/share/backgrounds/tinyhat"
@@ -49,7 +62,7 @@ base)
 	for p in libglvnd glu glew glfw; do
 		bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/lib/pkgconfig/*'
 	done
-	python3 scripts/mklocaldb.py "$lock" "$repo" "$root" image
+	python3 scripts/mklocaldb.py "$lock" "$repo" "$root" "$section"
 	for p in $localpkgs; do
 		bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
 			--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG
@@ -72,9 +85,11 @@ base)
 	rm -rf "$root"/usr/share/aclocal
 	rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
 	find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
-	sstrip "$root/usr/bin/zsnes-bin" "$root/usr/bin/dosbox-x" "$root/usr/bin/scummvm" "$root/usr/bin/dwl" "$root/usr/bin/fuzzel" "$root/usr/bin/grafx2-sdl3" "$root/usr/bin/algernon" "$root/usr/bin/syncthing"
+	for f in zsnes-bin dosbox-x scummvm dwl fuzzel grafx2-sdl3 algernon syncthing; do
+		[ "$arch" = aarch64 ] && [ "$f" = zsnes-bin ] || sstrip "$root/usr/bin/$f"
+	done
 	sstrip "$root"/usr/lib/libgallium-*.so
-	strip --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
+	"$strip" --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
 
 	for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do
 		case ${f##*/} in 10-sub-pixel-rgb.conf) continue ;; esac
@@ -84,6 +99,7 @@ base)
 
 	cp -a "$modules/." "$root/"
 	for k in "$modules"/usr/lib/modules/*/; do
+		[ -d "$k" ] || continue
 		k=${k%/}
 		k=${k##*/}
 		db=$root/var/lib/pacman/local/linux-tinyhat-${k%-tinyhat}-1
@@ -104,15 +120,15 @@ base)
 	done
 	chmod 755 "$root"/usr/share/games/lure "$root"/usr/share/games/soltys
 	chmod 644 "$root"/usr/share/games/lure/* "$root"/usr/share/games/soltys/*
-	mkdir -p "$root/usr/lib/watcom"
-	bsdtar -xf vendor/src/open-watcom-2026-10-01.tar.xz -C "$root/usr/lib/watcom" \
+	[ "$arch" = aarch64 ] || mkdir -p "$root/usr/lib/watcom"
+	[ "$arch" = aarch64 ] || bsdtar -xf vendor/src/open-watcom-2026-10-01.tar.xz -C "$root/usr/lib/watcom" \
 		--exclude './binl/*.sym' --exclude './binl/vi' --exclude './binl/w??axp' --exclude './binl/wccppc' --exclude './binl/wccmps' \
 		--exclude './binl/wfc*' --exclude './binl/wipfc' --exclude './h/nt' --exclude './h/os2' --exclude './h/os21x' --exclude './h/win' \
 		--exclude './lib286/os2' --exclude './lib286/win' --exclude './lib386/nt' --exclude './lib386/os2' --exclude './lib386/win' \
 		--exclude './lib386/linux' --exclude './lib386/netware' --exclude './lib386/rdos*' \
 		./binl ./h ./lib286 ./lib386 ./binw/dos4gw.exe ./binw/dos32a.exe \
 		./binw/pmodew.exe ./binw/wstub.exe ./binw/wstubq.exe ./binw/stub32a.exe ./binw/stub32c.exe ./license.txt
-	chmod -R u=rwX,go=rX "$root/usr/lib/watcom"
+	[ "$arch" = aarch64 ] || chmod -R u=rwX,go=rX "$root/usr/lib/watcom"
 	mkdir -p "$root/usr/share/tinyhat/c-guide"
 	python3 -m zipfile -e vendor/src/beej-bgc.zip "$root/usr/share/tinyhat/c-guide"
 	python3 -m zipfile -e vendor/src/beej-bgclr.zip "$root/usr/share/tinyhat/c-guide"
@@ -125,7 +141,7 @@ assert d.count(old) == 1, "systemd OK colour not found"
 open(sys.argv[1], "wb").write(d.replace(old, b"\0\x1b[0;36m\0  OK  \0"))
 EOF
 
-	sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu)/)@\1@' "$root/etc/pacman.d/mirrorlist"
+	[ "$arch" = aarch64 ] || sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu)/)@\1@' "$root/etc/pacman.d/mirrorlist"
 	grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 	sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 	grep -q '^NoExtract' "$root/etc/pacman.conf"
@@ -164,6 +180,8 @@ finalize)
 			chmod 644 "$root/$p"
 		fi
 	done
+	[ ! -x "$root/usr/bin/rofi" ] || install -Dm644 config/rofi/config.rasi "$root/etc/xdg/rofi/config.rasi"
+	[ "$arch" != aarch64 ] || rm -f "$root/usr/bin/tinyhat-watcom" "$root/usr/share/applications/tinyhat-watcom.desktop" "$root/etc/profile.d/watcom.sh"
 	install -m644 -t "$root/etc/skel/cprojects/bootanim" packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h
 	for c in hat_color:HAT_COLOR hat_highlight_color:HAT_HIGHLIGHT_COLOR; do
 		v=$(sed -n "s/^${c%%:*} = \"#\([0-9a-fA-F]\{6\}\)\"$/\1/p" build/theme.toml)
@@ -176,7 +194,6 @@ finalize)
 	touch -d 2026-10-05T00:00:00Z "$root/usr/lib/clock-epoch"
 	ln -sf doas "$root/usr/bin/sudo"
 	ln -sf dbclient "$root/usr/bin/ssh"
-	ln -sf drill "$root/usr/bin/dig"
 	ln -sf tinyhat-firewall "$root/usr/bin/ufw"
 	ln -sf cowsay "$root/usr/bin/cowthink"
 	ln -sf poweroff "$root/usr/bin/natta"
@@ -191,6 +208,9 @@ finalize)
 
 	scripts/inroot.sh "$root" /bin/sh -eu -c '
 ldconfig
+for d in /usr/lib/modules/*/; do
+	[ ! -d "$d" ] || [ -f "${d}modules.dep" ] || depmod "$(basename "$d")"
+done
 systemd-sysusers >/dev/null
 systemd-hwdb update --usr
 fc-cache -s -f
@@ -241,7 +261,7 @@ systemctl set-default multi-user.target
 	find "$root/usr/share/man" -name "*.gz" -type f -exec gunzip -f {} +
 
 	rm -f "$sfs"
-	mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 256K -noappend -quiet -no-progress -no-xattrs \
+	mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 256K -noappend -quiet -no-progress -no-xattrs \
 		-wildcards -e 'dev/*' 'proc/*' 'sys/*' 'run/*' 'tmp/*'
 	;;
 *)

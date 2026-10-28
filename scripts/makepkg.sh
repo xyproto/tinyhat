@@ -35,11 +35,20 @@ tc=x86_64-pc-linux-gnux32
 path=/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 libpath=
 personality=i686
-if [ "$arch" = x32 ]; then
+ignorearch=
+case $arch in
+x32)
 	path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 	libpath=/usr/lib32
 	personality=x86_64
-fi
+	;;
+aarch64)
+	seed=$top/build/buildroot-aarch64
+	conf=${conf%.conf}-aarch64.conf
+	personality=
+	ignorearch=--ignorearch
+	;;
+esac
 mkdir -p "$repo" "$boot" "$dest/.cache" "$top/vendor/src" "$HOME/.ccache"
 
 lookup() {
@@ -49,21 +58,23 @@ lookup() {
 	case $kind in
 	i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
 	x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
+	aarch64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" aarch64 "$@") ;;
 	boot) out=$(python3 "$top/scripts/pkg.py" repofiles "$boot" x32 "$@") ;;
 	esac
 	printf '%s\n' "$out" | sed "s|^$repo/|/repo/|; s|^$boot/|/bootstrap/|"
 }
-want_i686= want_x32= want_boot= want_sysroot=
+want_i686= want_x32= want_boot= want_sysroot= want_aarch64=
 for d in "$@"; do
 	case $d in
 	i686/*) want_i686="$want_i686 ${d#*/}" ;;
 	x32/*) want_x32="$want_x32 ${d#*/}" ;;
 	boot/*) want_boot="$want_boot ${d#*/}" ;;
 	sysroot/*) want_sysroot="$want_sysroot ${d#*/}" ;;
+	aarch64/*) want_aarch64="$want_aarch64 ${d#*/}" ;;
 	*) echo "makepkg.sh: bad dependency $d" >&2; exit 1 ;;
 	esac
 done
-i686deps=$(lookup i686 $want_i686)
+i686deps=$(lookup i686 $want_i686; lookup aarch64 $want_aarch64)
 x32deps="$(lookup x32 $want_x32) $(lookup boot $want_boot)"
 sysdeps=$(lookup sysroot $want_sysroot)
 
@@ -71,6 +82,7 @@ key=$({
 	echo "$arch $bootstrap $nobuild"
 	(cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
 	cat "$top/config/makepkg.conf" "$top/config/makepkg-tinyhat.conf"
+	[ "$arch" != aarch64 ] || cat "$top/config/makepkg-aarch64.conf" "$top/config/makepkg-tinyhat-aarch64.conf"
 	for f in $i686deps $x32deps $sysdeps; do echo "${f##*/}"; done
 } | sha256sum | cut -d' ' -f1)
 cache=$dest/.cache/$arch-$base
@@ -128,7 +140,7 @@ sandbox() {
 }
 
 bwrap_run() {
-	setarch "$personality" bwrap \
+	${personality:+setarch "$personality"} bwrap \
 		--overlay-src "$seed" --overlay "$work/upper" "$work/ovl" / \
 		--ro-bind "$top/vendor" /vendor \
 		--dev /dev --proc /proc --tmpfs /tmp \
@@ -154,7 +166,7 @@ mkdir -p /var/lib/pacman/local /build /startdir /srcdest /tinyhat /ccache /repo
 grep -q "^builder:" /etc/passwd || echo "builder:x:1000:1000:builder:/build:/bin/sh" >>/etc/passwd
 grep -q "^builder:" /etc/group || echo "builder:x:1000:" >>/etc/group
 if [ -n "$i686deps" ]; then
-	pacman -Udd --arch i686 --noconfirm --noscriptlet --overwrite "*" $i686deps
+	pacman -Udd --arch "$(test "$arch" = aarch64 && echo aarch64 || echo i686)" --noconfirm --noscriptlet --overwrite "*" $i686deps
 fi
 if [ -n "$sysdeps" ]; then
 	s=/usr/$tc/sysroot
@@ -205,7 +217,7 @@ run() {
 		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
 		--chdir /startdir \
-		/bin/sh -c 'exec 2>&9 9>&-; exec makepkg "$@"' sh --config "$conf" -d --noconfirm --skippgpcheck --holdver "$@"
+		/bin/sh -c 'exec 2>&9 9>&-; exec makepkg "$@"' sh --config "$conf" -d --noconfirm --skippgpcheck --holdver $ignorearch "$@"
 }
 
 exec 8>"$top/vendor/src/.lock"
@@ -221,7 +233,7 @@ if [ -z "$nobuild" ]; then
 	} >"$cache.tmp"
 	mv "$cache.tmp" "$cache"
 	# Remove the downloaded sources that only this package uses, unless another arch of it is building
-	if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "boot-$base" \) ! -path "$work")" ]; then
+	if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "aarch64-$base" -o -name "boot-$base" \) ! -path "$work")" ]; then
 		exec 8>"$top/vendor/src/.lock"
 		flock 8
 		python3 "$top/scripts/pkg.py" prunable "$dir" | while IFS= read -r f; do

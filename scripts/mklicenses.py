@@ -14,9 +14,12 @@ os.umask(0o022)
 TOP = pkg.TOP
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(TOP, "build", "licenses")
 LOCK = sys.argv[1] if len(sys.argv) > 1 else os.path.join(TOP, "build", "rootfs.lock")
-PKGDIR = os.path.join(TOP, "build", "repo")
+ARCH = sys.argv[3] if len(sys.argv) > 3 else "i686"
+REPO = os.path.join(TOP, "build", "repo")
+PKGDIR = os.path.join(TOP, "build", "repo-aarch64") if ARCH == "aarch64" else REPO
 SRC = os.path.join(TOP, "vendor", "src")
 
+X86_ONLY = {"linux", "xpadneo", "open-watcom"}
 SOURCES = [
     ("linux", "7.3", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
      "linux-7.3.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
@@ -41,8 +44,8 @@ def spdx_ids(expr):
 
 def main():
     spdx = {}
-    files = pkg.arch_files(PKGDIR, "i686")
-    with tarfile.open(files["licenses"]) as t:
+    files = pkg.arch_files(REPO, ARCH)
+    with tarfile.open(pkg.arch_files(REPO, "i686")["licenses"]) as t:
         for m in t:
             if m.isfile() and m.name.startswith("usr/share/licenses/spdx/") and m.name.endswith(".txt"):
                 spdx[os.path.basename(m.name)[:-4]] = t.extractfile(m).read()
@@ -54,13 +57,12 @@ def main():
     entries = [p for p in pkg.read_lock(LOCK) if p["repo"] != "lib32"]
     for name in BOOT:
         if name in files and name not in {p["name"] for p in entries}:
-            entries.append({"name": name, "version": pkg.pkginfo(files[name])["pkgver"][0],
-                            "filename": os.path.basename(files[name])})
+            entries.append({"name": name, "version": pkg.pkginfo(files[name])["pkgver"][0], "path": files[name]})
     for p in entries:
         path = os.path.join(OUT, p["name"])
         os.makedirs(path)
         url, lic = "", ""
-        with tarfile.open(os.path.join(PKGDIR, p["filename"])) as t:
+        with tarfile.open(p.get("path") or os.path.join(PKGDIR, p["filename"])) as t:
             for m in t:
                 if m.isfile() and m.name.startswith("usr/share/licenses/"):
                     with open(os.path.join(path, os.path.basename(m.name)), "wb") as f:
@@ -73,6 +75,8 @@ def main():
         used.update(spdx_ids(lic))
 
     for name, version, url, lic, tarball, members in SOURCES:
+        if ARCH == "aarch64" and name in X86_ONLY:
+            continue
         path = os.path.join(OUT, name)
         os.makedirs(path)
         with tarfile.open(os.path.join(SRC, tarball)) as t:
@@ -84,11 +88,12 @@ def main():
         info(path, name, version, url, lic)
         used.update(spdx_ids(lic))
 
-    path = os.path.join(OUT, "shim")
-    os.makedirs(path)
-    info(path, "shim and MokManager (signed by Microsoft and Fedora)", "16.1-10", "https://github.com/rhboot/shim",
-         "BSD-2-Clause AND BSD-2-Clause-Patent AND OpenSSL")
-    used.update(["BSD-2-Clause", "BSD-2-Clause-Patent", "OpenSSL"])
+    if ARCH != "aarch64":
+        path = os.path.join(OUT, "shim")
+        os.makedirs(path)
+        info(path, "shim and MokManager (signed by Microsoft and Fedora)", "16.1-10", "https://github.com/rhboot/shim",
+             "BSD-2-Clause AND BSD-2-Clause-Patent AND OpenSSL")
+        used.update(["BSD-2-Clause", "BSD-2-Clause-Patent", "OpenSSL"])
 
     path = os.path.join(OUT, "generaluser-gs")
     os.makedirs(path)

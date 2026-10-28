@@ -9,6 +9,7 @@ inroot() {
 		--setenv PATH /usr/bin --setenv LANG C.UTF-8 "$@"
 }
 
+[ -f "$root/etc/ld.so.cache" ] || inroot /usr/bin/ldconfig
 mkdir -p "$root/var/lib/tinyhat-install"
 while read -r _ name ver file _; do
 	bsdtar -xOf "$pkgdir/$file" .INSTALL >"$root/var/lib/tinyhat-install/$name" 2>/dev/null || {
