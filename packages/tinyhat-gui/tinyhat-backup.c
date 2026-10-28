@@ -22,11 +22,12 @@ static int run_tar(const char *dest)
 {
 	pid_t pid = fork();
 	if (pid == 0) {
-		execlp("tar", "tar", "-cPzf", dest, "-C", "/home", "tinyhat", (char *)NULL);
+		execlp("tar", "tar", "-czf", dest, "-C", "/home", "tinyhat", (char *)NULL);
 		_exit(127);
 	}
-	int status = 1;
-	waitpid(pid, &status, 0);
+	int status;
+	if (pid < 0 || waitpid(pid, &status, 0) < 0)
+		return 1;
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
@@ -53,6 +54,8 @@ static void on_backup(GtkWidget *b, gpointer data)
 	}
 	char *dest = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 	gtk_widget_destroy(chooser);
+	if (!dest)
+		return;
 	char question[512];
 	snprintf(question, sizeof(question), "Back up %s to\n%s?",
 		home ? home : "/home/tinyhat", dest);

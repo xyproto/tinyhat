@@ -16,7 +16,7 @@ while read -r _ name ver file _; do
 		continue
 	}
 	inroot /bin/sh -c '. "$1"; if command -v post_install >/dev/null; then post_install "$2"; fi' \
-		sh "/var/lib/tinyhat-install/$name" "$ver" >/dev/null 2>&1 || echo "postinstall.sh: $name post_install failed" >&2
+		sh "/var/lib/tinyhat-install/$name" "$ver" </dev/null >/dev/null 2>&1 || echo "postinstall.sh: $name post_install failed" >&2
 done <"$lock"
 rm -rf "$root/var/lib/tinyhat-install"
 

@@ -19,10 +19,6 @@ SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "
              "llvm", "llvm-libs", "clang", "compiler-rt", "rust", "go"}
 
 
-def strip_ver(dep):
-    return re.split(r"[<>=]", dep, maxsplit=1)[0]
-
-
 def parse(path):
     base, pkgs, cur = {}, {}, None
     with open(path) as f:
@@ -41,7 +37,7 @@ def parse(path):
             target = base if cur is None else cur
             target.setdefault(k, [])
             if v:
-                target[k].append(strip_ver(v))
+                target[k].append(pkg.strip_ver(v))
 
     def get(fields, key):
         return fields.get(key, base.get(key, [])) + fields.get(key + "_i686", base.get(key + "_i686", []))
@@ -58,23 +54,18 @@ def parse(path):
 
 
 def load():
-    out, seen = [], set()
+    out = []
     root = os.path.join(TOP, "packages")
     for base in sorted(os.listdir(root)):
         path = os.path.join(root, base, ".SRCINFO")
-        if not os.path.exists(path) or base in seen:
+        if not os.path.exists(path):
             continue
         info = parse(path)
         info["dir"] = f"packages/{base}"
         info["base"] = base
         info["sub"] = "tinyhat" if PKGCONF.get(base, {}).get("source") == "sources" else "arch"
-        seen.add(base)
         out.append(info)
     return out
-
-
-def read_localdeps():
-    return distro.localdeps()
 
 
 def local_index(infos, subs=("tinyhat",)):
@@ -355,10 +346,7 @@ MODES = os.path.join(TOP, "build", "pkg", "mode")
 
 def mode_file(base, mode):
     os.makedirs(MODES, exist_ok=True)
-    path = os.path.join(MODES, base)
-    if not os.path.exists(path) or open(path).read() != mode:
-        with open(path, "w") as f:
-            f.write(mode)
+    distro.write_if_changed(os.path.join(MODES, base), mode)
     return f"$(B)/pkg/mode/{base}"
 
 
@@ -385,7 +373,7 @@ def cmd_mk():
     names, provided, _ = local
     full = local_index(infos, ("arch", "tinyhat"))
     base_of = full[2]
-    localdeps = read_localdeps()
+    localdeps = distro.localdeps()
     prefs = distro.providers()
     libs = read_libs()
     idx = indexes(infos)
@@ -425,23 +413,25 @@ def cmd_mk():
         chosen, notes = set(), []
         for base in candidates:
             info = by_base.get(base)
-            quiet = base not in listed
             own = [n for n in info["pkgnames"] if set(info["arch"][n]) & {"i686", "any"}] if info else []
             needed = [n for n in own if n in image and (n in roots or wanted_by.get(n, set()) - set(own))] or own
-            if quiet:
-                available = needed and all(pkg.lookup(seed, n, prefs, set()) is not None for n in needed)
-            else:
+            if base in listed:
                 available = set(own) & set(seed[0])
+            else:
+                available = needed and all(pkg.lookup(seed, n, prefs, set()) is not None for n in needed)
             deps = {pkg.lookup(seed, d, prefs, set()) for n in needed if n in seed[0] for d in seed[0][n]["depends"]}
             if not available:
-                notes.append(f"{base} is not available prebuilt, building it")
+                note = f"{base} is not available prebuilt, building it"
             elif set(info["pkgnames"]) & broken:
-                notes.append(f"prebuilt {base} is broken in the seed, building it")
+                note = f"prebuilt {base} is broken in the seed, building it"
             elif deps & broken:
-                notes.append(f"prebuilt {base} needs {' '.join(sorted(deps & broken))}, which is broken in the seed, building it")
+                note = f"prebuilt {base} needs {' '.join(sorted(deps & broken))}, which is broken in the seed, building it"
             else:
                 chosen.add(base)
-        return chosen, [n for n in notes if n.split()[0] in listed or n.split()[1] in listed]
+                continue
+            if base in listed:
+                notes.append(note)
+        return chosen, notes
 
     metadata = local_pkgs
     for _ in range(10):
@@ -571,7 +561,8 @@ def image_bases():
     if not os.path.exists(path):
         return None
     deps, cur = {}, None
-    text = open(path).read()
+    with open(path) as f:
+        text = f.read()
     for line in text.splitlines():
         m = re.match(r"^\$\(B\)/pkg/(?:i686|x32)/([^:\s]+):(.*)$", line)
         if m:
@@ -599,7 +590,7 @@ def cmd_seed():
     infos = load()
     used = image_bases()
     names, provided, _ = local_index(infos)
-    localdeps = read_localdeps()
+    localdeps = distro.localdeps()
     db = seed_index()
     idx = indexes(infos)
     prefs = distro.providers()
@@ -611,9 +602,10 @@ def cmd_seed():
         for dep in all_deps(info):
             if info["sub"] == "tinyhat" and (dep in names or dep in provided):
                 continue
-            if local_first(idx, pkg.lookup(idx["i686"], dep, prefs, set())):
+            localname = pkg.lookup(idx["i686"], dep, prefs, set())
+            if local_first(idx, localname):
                 continue
-            if pkg.lookup(db, dep, prefs, set()) is None and pkg.lookup(idx["i686"], dep, prefs, set()) is not None:
+            if localname is not None and pkg.lookup(db, dep, prefs, set()) is None:
                 continue
             if dep in skip or dep in seed or dep.startswith("lib32-"):
                 continue
@@ -633,11 +625,13 @@ def cmd_libs():
             for m in t:
                 d, _, kind = m.name.partition("/")
                 if kind in ("desc", "files"):
-                    entries.setdefault(d, {})[kind] = t.extractfile(m).read().decode()
+                    entries.setdefault(d, {}).update(pkg.parse_desc(t.extractfile(m).read().decode()))
             for e in entries.values():
-                name = re.search(r"%NAME%\n(.*)\n", e.get("desc", "")).group(1)
+                if "NAME" not in e:
+                    continue
+                name = e["NAME"][0]
                 dbnames.add(name)
-                if re.search(r"^usr/lib/[^/]+\.(so[.0-9]*|a)$|^usr/lib/pkgconfig/[^/]+\.pc$", e.get("files", ""), re.M):
+                if any(re.fullmatch(r"usr/lib/[^/]+\.(so[.0-9]*|a)|usr/lib/pkgconfig/[^/]+\.pc", f) for f in e.get("FILES", [])):
                     libnames.add(name)
     out = []
     for info in load():
@@ -692,7 +686,10 @@ def cmd_lock_arch(arch):
         for name, p in db.items():
             pkg.add_pkg(pkgs, provs, p, [])
         for pv, names in provides.items():
-            provs.setdefault(pv, []).extend(n for n in names if n not in provs.get(pv, []))
+            have = provs.setdefault(pv, [])
+            for n in names:
+                if n not in have:
+                    have.append(n)
         sel = pkg.resolve_targets(targets, {arch: (pkgs, provs)}, arch, prefs, skip)
         names = {p["name"] for p in sel}
         users = {}

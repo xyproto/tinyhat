@@ -10,6 +10,7 @@ import tarfile
 import tempfile
 import tomllib
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import distro
@@ -133,11 +134,14 @@ fmt_value = distro.value
 
 
 def fields_for(e):
-    out = [("source", f'"{e["source"]}"')]
+    out = [("source", fmt_value(e["source"]))]
     for k, v in e.items():
         if k != "source":
             out.append((k, fmt_value(v)))
     return out
+
+
+key_motif = r"(?:\"([^\"]+)\"|([^\][ \n]+))"
 
 
 def split_blocks(text):
@@ -148,9 +152,6 @@ def split_blocks(text):
         names.append(m.group(1) or m.group(2))
         blocks.append(m.group(0).rstrip("\n") + "\n")
     return pre, names, blocks
-
-
-key_motif = r"(?:\"([^\"]+)\"|([^\][ \n]+))"
 
 
 def write_blocks(pre, kept):
@@ -275,17 +276,15 @@ def check_version(base, version, info):
         print(f"  warning: {base}: PKGBUILD gives {got}, wanted {version}", file=sys.stderr)
 
 
-def pkbuild_version(text):
-    def get(k):
+def pkgbuild_version(text):
+    def get(k, required=True):
         m = re.search(rf"^{k}=([^\s#]+)", text, re.M)
-        if not m:
+        if not m and required:
             die(f"cannot determine {k} from PKGBUILD")
-        return m.group(1).strip("'\"")
+        return m and m.group(1).strip("'\"")
 
-    m = re.search(r"^epoch=([^\s#]+)", text, re.M)
-    if m:
-        return f"{m.group(1).strip(chr(39) + chr(34))}:{get('pkgver')}-{get('pkgrel')}"
-    return f"{get('pkgver')}-{get('pkgrel')}"
+    epoch = get("epoch", False)
+    return f"{epoch + ':' if epoch else ''}{get('pkgver')}-{get('pkgrel')}"
 
 
 def latest_version(base):
@@ -303,7 +302,7 @@ def latest_version(base):
     upstream = fetch_upstream(base, "", tags[0]["name"])
     if upstream is None or "PKGBUILD" not in upstream:
         die(f"{base}: no archive for upstream tag {tags[0]['name']}")
-    return pkbuild_version(upstream["PKGBUILD"][0].decode()), upstream, tags[0]["name"]
+    return pkgbuild_version(upstream["PKGBUILD"][0].decode()), upstream, tags[0]["name"]
 
 
 def import_one(base, entry, src, restrict):
@@ -329,8 +328,7 @@ def import_one(base, entry, src, restrict):
     files = dict(upstream or {})
     pkgbuild = b""
     if upstream is not None:
-        pkgbuild = upstream.pop("PKGBUILD")[0] + b"\n"
-        files.pop("PKGBUILD", None)
+        pkgbuild = files.pop("PKGBUILD")[0] + b"\n"
         if "LICENSE" in files and b"LICENSE" not in pkgbuild:
             del files["LICENSE"]
     if "PKGBUILD" in overlay:
@@ -368,7 +366,6 @@ def entries():
 
 
 def backfill_nvcheckers():
-    from concurrent.futures import ThreadPoolExecutor
     jobs = [(base, e) for base, e in sorted(packages().items())
             if e.get("source") == "arch" and e.get("version")
             and e.get("version") not in ("main", "latest") and "nvchecker" not in e]
@@ -381,7 +378,7 @@ def backfill_nvcheckers():
                            capture_output=True, text=True)
         return base, r.stdout if r.returncode == 0 and r.stdout.strip() else None
 
-    found, deadline = {}, 0
+    found = {}
     with ThreadPoolExecutor(8) as ex:
         for base, text in ex.map(get, jobs):
             if text:
@@ -407,10 +404,10 @@ def main():
         builddate = args[3] if len(args) > 3 else None
         if os.path.isdir(os.path.join(TOP, "packages", base)):
             die(f"packages/{base} already exists")
-        fields = [("source", '"arch"'), ("version", f'"{version}"')]
+        fields = [("source", fmt_value("arch")), ("version", fmt_value(version))]
         if builddate is not None:
             git("fetch", "-q", "origin")
-            fields.append(("a32", f'"{a32_commit(f"@{builddate}")}"'))
+            fields.append(("a32", fmt_value(a32_commit(f"@{builddate}"))))
         upsert(base, fields)
         pkgs = packages()
         import_one(base, pkgs[base], pkgs[base].get("source", "arch"), i686only(pkgs))
@@ -433,8 +430,8 @@ def main():
         if wanted is None or base in wanted:
             try:
                 import_one(base, e, src, restrict)
-            except (subprocess.CalledProcessError, SystemExit, ValueError, KeyError) as e:
-                print(f"  error: {base}: {e}", file=sys.stderr)
+            except (subprocess.CalledProcessError, SystemExit, ValueError, KeyError) as err:
+                print(f"  error: {base}: {err}", file=sys.stderr)
                 failed.append(base)
     if failed:
         die("failed: " + " ".join(failed))

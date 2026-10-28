@@ -1,11 +1,14 @@
 #!/bin/sh
+emu=
+core=
+pattern=
 case $1 in
 nes) core=nestopia name="NES" pattern='\.(nes|fds|unf|unif)$' ;;
 snes) emu=zsnes name="Super Nintendo" pattern='\.(sfc|smc|fig|swc)$' ;;
 genesis) core=blastem name="Genesis" ;;
 sms) core=blastem name="Master System" pattern='\.(sms|gg)$' ;;
 gba) emu=mgba name="Game Boy Advance" pattern='\.(gba|gb|gbc)$' ;;
-c64) core= name="C64" pattern='\.(d64|d71|d81|g64|prg|t64|tap|crt|p00)$' ;;
+c64) name="C64" pattern='\.(d64|d71|d81|g64|prg|t64|tap|crt|p00)$' ;;
 *)
 	echo "usage: tinyhat-emulate nes|snes|genesis|sms|gba|c64 [game]" >&2
 	exit 1

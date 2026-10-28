@@ -6,5 +6,4 @@ import mkgrubtheme
 
 SCALE = 8
 out = sys.argv[1]
-mkgrubtheme.HAT_SCALE = SCALE
-mkgrubtheme.png(out, mkgrubtheme.LOW * SCALE, mkgrubtheme.LOW * SCALE, mkgrubtheme.hat(0.45))
+mkgrubtheme.png(out, mkgrubtheme.LOW * SCALE, mkgrubtheme.LOW * SCALE, mkgrubtheme.hat(0.45, SCALE))

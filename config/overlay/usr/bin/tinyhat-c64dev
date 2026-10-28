@@ -1,7 +1,2 @@
 #!/bin/sh
-dir=$HOME/cprojects/c64-hello
-mkdir -p "$dir"
-for f in hello.c; do
-	[ -e "$dir/$f" ] || cp "/etc/skel/cprojects/c64-hello/$f" "$dir/$f"
-done
-cd "$dir" && exec foot -T "C64 programming" o hello.c
+exec /usr/lib/tinyhat/cproject c64-hello "C64 programming" hello.c

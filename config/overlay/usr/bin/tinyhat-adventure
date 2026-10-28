@@ -1,7 +1,2 @@
 #!/bin/sh
-dir=$HOME/cprojects/adventure
-mkdir -p "$dir"
-for f in conf.lua main.lua adventure.lua Makefile; do
-	[ -e "$dir/$f" ] || cp "/etc/skel/cprojects/adventure/$f" "$dir/$f"
-done
-cd "$dir" && exec foot -T "Point-and-click adventure" o main.lua
+exec /usr/lib/tinyhat/cproject adventure "Point-and-click adventure" main.lua

@@ -6,17 +6,17 @@ out=$1
 work=$top/build/initramfs
 rm -rf "$work"
 mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/newroot"
-bsdtar -xf "$(python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 busybox)" -C "$work" usr/bin/busybox
-bsdtar -xf "$(python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 tinyhat-splash)" -C "$work" usr/bin/tinyhat-splash
-mv "$work/usr/bin/busybox" "$work/bin/busybox"
-mv "$work/usr/bin/tinyhat-splash" "$work/bin/tinyhat-splash"
-chmod 755 "$work/bin/busybox" "$work/bin/tinyhat-splash"
-rm -rf "$work/usr"
 x() {
 	p=$1
 	shift
 	bsdtar -xf "$(python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 "$p")" -C "$work" "$@"
 }
+x busybox usr/bin/busybox
+x tinyhat-splash usr/bin/tinyhat-splash
+mv "$work/usr/bin/busybox" "$work/bin/busybox"
+mv "$work/usr/bin/tinyhat-splash" "$work/bin/tinyhat-splash"
+chmod 755 "$work/bin/busybox" "$work/bin/tinyhat-splash"
+rm -rf "$work/usr"
 x util-linux usr/bin/sfdisk usr/bin/partx
 x util-linux-libs 'usr/lib/libblkid.so.1*' 'usr/lib/libfdisk.so.1*' 'usr/lib/libsmartcols.so.1*' 'usr/lib/libuuid.so.1*'
 x xfsprogs usr/bin/mkfs.xfs

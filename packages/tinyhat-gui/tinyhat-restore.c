@@ -21,11 +21,12 @@ static int run_tar(const char *archive)
 {
 	pid_t pid = fork();
 	if (pid == 0) {
-		execlp("tar", "tar", "-xPzf", archive, "-C", "/home", (char *)NULL);
+		execlp("tar", "tar", "-xzf", archive, "-C", "/home", (char *)NULL);
 		_exit(127);
 	}
-	int status = 1;
-	waitpid(pid, &status, 0);
+	int status;
+	if (pid < 0 || waitpid(pid, &status, 0) < 0)
+		return 1;
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
@@ -47,6 +48,8 @@ static void on_restore(GtkWidget *b, gpointer data)
 	}
 	char *archive = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
 	gtk_widget_destroy(chooser);
+	if (!archive)
+		return;
 	char question[512];
 	snprintf(question, sizeof(question),
 		"This will replace files in /home/tinyhat with the contents of\n%s. Continue?", archive);

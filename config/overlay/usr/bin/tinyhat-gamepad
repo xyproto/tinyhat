@@ -12,7 +12,10 @@ case $choice in
 	(cd "$dir" && SDL_RENDER_DRIVER=${TINYHAT_SDL_RENDER:-opengles2} testcontroller >"$log" 2>&1)
 	awk '/Mapping complete:/ { getline; sub(/^INFO: /, ""); print }' "$log" | while IFS= read -r mapping; do
 		guid=${mapping%%,*}
-		[ -f "$db" ] && grep -v "^$guid," "$db" >"$db.tmp" && mv -f "$db.tmp" "$db"
+		if [ -f "$db" ]; then
+			grep -v "^$guid," "$db" >"$db.tmp"
+			mv -f "$db.tmp" "$db"
+		fi
 		printf '%s\n' "$mapping" >>"$db"
 		tinyhat-notice "Saved the gamepad setup, games started from now on will use it" 6
 	done

@@ -39,7 +39,7 @@ for f in "$@"; do
 		dest=$HOME/DOS/$name
 		mkdir -p "$dest"
 		cp -f "$f" "$dest/"
-		awk '/^[Ff][Ii][Ll][Ee]/ { gsub(/"/, "", $2); print $2 }' "$f" | while IFS= read -r track; do
+		awk '{ sub(/\r$/, "") } sub(/^[ \t]*[Ff][Ii][Ll][Ee][ \t]+/, "") { if (sub(/^"/, "")) sub(/".*/, ""); else sub(/[ \t].*/, ""); print }' "$f" | while IFS= read -r track; do
 			[ -f "${f%/*}/$track" ] && cp -f "${f%/*}/$track" "$dest/"
 		done
 		notice "Imported $name to ~/DOS/$name"

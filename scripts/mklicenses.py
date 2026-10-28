@@ -29,6 +29,7 @@ SOURCES = [
 ]
 BOOT = ["busybox", "memtest86+", "tinyhat-splash", "grub", "amd-ucode", "intel-ucode", "grub-efi64"]
 
+
 def info(path, name, version, url, lic):
     with open(os.path.join(path, "LICENSE-INFO"), "w") as f:
         f.write(f"name: {name}\nversion: {version}\nurl: {url}\nlicense: {lic}\n")
@@ -58,6 +59,7 @@ def main():
     for p in entries:
         path = os.path.join(OUT, p["name"])
         os.makedirs(path)
+        url, lic = "", ""
         with tarfile.open(os.path.join(PKGDIR, p["filename"])) as t:
             for m in t:
                 if m.isfile() and m.name.startswith("usr/share/licenses/"):
@@ -70,13 +72,13 @@ def main():
         info(path, p["name"], p["version"], url, lic)
         used.update(spdx_ids(lic))
 
-    for name, version, url, lic, tarball, files in SOURCES:
+    for name, version, url, lic, tarball, members in SOURCES:
         path = os.path.join(OUT, name)
         os.makedirs(path)
         with tarfile.open(os.path.join(SRC, tarball)) as t:
             for m in t:
                 rel = m.name.split("/", 1)[-1]
-                if m.isfile() and (rel in files or any(f.endswith("/") and rel.startswith(f) for f in files)):
+                if m.isfile() and (rel in members or any(f.endswith("/") and rel.startswith(f) for f in members)):
                     with open(os.path.join(path, os.path.basename(rel)), "wb") as f:
                         f.write(t.extractfile(m).read())
         info(path, name, version, url, lic)
@@ -129,7 +131,7 @@ def main():
         if lid in spdx:
             with open(os.path.join(OUT, "spdx", lid + ".txt"), "wb") as f:
                 f.write(spdx[lid])
-    print(f"licenses: {len(entries) + len(SOURCES) + 1} projects", file=sys.stderr)
+    print(f"licenses: {len(os.listdir(OUT)) - 1} projects", file=sys.stderr)
 
 
 if __name__ == "__main__":

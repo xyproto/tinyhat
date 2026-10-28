@@ -30,7 +30,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all iso autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all iso both autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
 
 all: tinyhat32.img
 
@@ -80,7 +80,7 @@ lock-aarch64:
 lock-check:
 	@mkdir -p $(B)
 	@cp distro.lock $(B)/distro.lock.before
-	@$(MAKE) -s lock
+	@$(MAKE) -s lock || { cp $(B)/distro.lock.before distro.lock; exit 1; }
 	@if cmp -s distro.lock $(B)/distro.lock.before; then echo "distro.lock is up to date"; \
 	else cp $(B)/distro.lock.before distro.lock; echo "distro.lock is stale, run make lock" >&2; exit 1; fi
 
@@ -106,7 +106,7 @@ autoupdate:
 	python3 scripts/autoupdate.py
 
 srcinfo:
-	python3 scripts/importpkg.py srcinfo packages/*/
+	python3 scripts/srcinfo.py packages/*/
 
 patchcheck: $(B)/.buildroot
 	scripts/patchcheck.sh

@@ -1,6 +1,6 @@
 pkgname=tinyhat-midibench
 pkgver=1
-pkgrel=1
+pkgrel=2
 pkgdesc="Measures FluidSynth speed at boot and picks MIDI settings for DOSBox-X"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"

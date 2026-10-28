@@ -8,7 +8,7 @@ import subprocess
 import sys
 import tarfile
 import time
-import shutil
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -55,19 +55,34 @@ def download(url, dest, tries=4):
     tmp = f"{dest}.part.{os.getpid()}"
     print(f"  get {url}", file=sys.stderr)
     req = urllib.request.Request(url, headers={"User-Agent": "tinyhat-build/1.0"})
-    for attempt in range(tries):
-        try:
-            with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
-                while chunk := r.read(1 << 20):
-                    f.write(chunk)
-            break
-        except urllib.error.HTTPError:
-            raise
-        except (OSError, TimeoutError) as e:
-            if attempt == tries - 1:
+    try:
+        for attempt in range(tries):
+            try:
+                with urllib.request.urlopen(req, timeout=120) as r, open(tmp, "wb") as f:
+                    while chunk := r.read(1 << 20):
+                        f.write(chunk)
+                break
+            except urllib.error.HTTPError:
                 raise
-            print(f"  retrying {url}: {e}", file=sys.stderr)
-    os.replace(tmp, dest)
+            except OSError as e:
+                if attempt == tries - 1:
+                    raise
+                print(f"  retrying {url}: {e}", file=sys.stderr)
+        os.replace(tmp, dest)
+    finally:
+        if os.path.exists(tmp):
+            os.unlink(tmp)
+
+
+def download_any(urls, dest):
+    """Download from the first of urls that works."""
+    for i, url in enumerate(urls):
+        try:
+            return download(url, dest, tries=2)
+        except OSError as e:
+            if i == len(urls) - 1:
+                raise
+            print(f"  {url}: {e}", file=sys.stderr)
 
 
 def sha256(path):
@@ -80,6 +95,27 @@ def sha256(path):
 
 def strip_ver(dep):
     return re.split(r"[<>=]", dep, maxsplit=1)[0]
+
+
+def parse_desc(text):
+    """The fields of a repository database desc (or depends) file, as lists of lines."""
+    fields, key = {}, None
+    for line in text.splitlines():
+        if line.startswith("%") and line.endswith("%"):
+            key = line[1:-1]
+            fields[key] = []
+        elif line and key:
+            fields[key].append(line)
+    return fields
+
+
+def parse_pkginfo(text):
+    info = {}
+    for line in text.splitlines():
+        if " = " in line and not line.startswith("#"):
+            k, v = line.split(" = ", 1)
+            info.setdefault(k, []).append(v)
+    return info
 
 
 def add_pkg(pkgs, provides, p, provs):
@@ -103,13 +139,7 @@ def load_db(dbdir=DBDIR, repos=None):
                 d, _, kind = m.name.rpartition("/")
                 if kind not in ("desc", "depends") or not m.isfile():
                     continue
-                fields, key = entries.setdefault(d, {}), None
-                for line in t.extractfile(m).read().decode().splitlines():
-                    if line.startswith("%") and line.endswith("%"):
-                        key = line[1:-1]
-                        fields[key] = []
-                    elif line and key:
-                        fields[key].append(line)
+                entries.setdefault(d, {}).update(parse_desc(t.extractfile(m).read().decode()))
         for fields in entries.values():
             if "NAME" not in fields:
                 continue
@@ -128,12 +158,7 @@ def pkginfo(path):
     with tarfile.open(path) as t:
         for m in t:
             if m.name == ".PKGINFO":
-                info = {}
-                for line in t.extractfile(m).read().decode().splitlines():
-                    if " = " in line and not line.startswith("#"):
-                        k, v = line.split(" = ", 1)
-                        info.setdefault(k, []).append(v)
-                return info
+                return parse_pkginfo(t.extractfile(m).read().decode())
     die(f"no .PKGINFO in {path}")
 
 
@@ -239,6 +264,15 @@ def resolve(name, extra=(), repodir=None, arch="i686"):
     return resolve_targets(targets, indexes, arch, prefs, skip)
 
 
+def lock_line(p, repo=None):
+    return f"{repo or p['repo']} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n"
+
+
+def parse_lock_line(line):
+    repo, name, ver, fn, h = line.split()
+    return {"repo": repo, "name": name, "version": ver, "filename": fn, "sha256": h}
+
+
 def write_lock(sel, lockfile):
     native = {p["name"] for p in sel if p.get("arch") == "x32"}
     with open(lockfile, "w") as f:
@@ -246,7 +280,7 @@ def write_lock(sel, lockfile):
             repo = p["repo"]
             if native and p.get("arch") == "i686":
                 repo = "lib32" if p["name"] in native else "i686"
-            f.write(f"{repo} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
+            f.write(lock_line(p, repo))
     print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
 
 
@@ -257,14 +291,7 @@ def arch_db(arch):
     for repo in src["repos"]:
         path = os.path.join(src["dbdir"], f"{repo}.db")
         if os.environ.get("REFRESH") or not os.path.exists(path):
-            for i, m in enumerate(src["mirrors"]):
-                try:
-                    download(f"{m}/{repo}/{repo}.db", path, tries=2)
-                    break
-                except (urllib.error.URLError, OSError) as e:
-                    if i == len(src["mirrors"]) - 1:
-                        raise
-                    print(f"  {m}: {e}", file=sys.stderr)
+            download_any([f"{m}/{repo}/{repo}.db" for m in src["mirrors"]], path)
     return load_db(src["dbdir"], src["repos"])
 
 
@@ -298,13 +325,8 @@ def cmd_repofiles(repodir, arch, *names):
 
 
 def read_lock(lockfile):
-    out = []
     with open(lockfile) as f:
-        for line in f:
-            if line.strip():
-                repo, name, ver, fn, h = line.split()
-                out.append({"repo": repo, "name": name, "version": ver, "filename": fn, "sha256": h})
-    return out
+        return [parse_lock_line(line) for line in f if line.strip()]
 
 
 def link(src, dest):
@@ -327,22 +349,12 @@ def fetch_pkg(p, pkgdir):
         if os.path.exists(src) and sha256(src) == p["sha256"]:
             link(src, dest)
             return
-    if not os.path.exists(vendored) or sha256(vendored) != p["sha256"]:
-        os.makedirs(os.path.dirname(vendored), exist_ok=True)
-        fn = urllib.parse.quote(p["filename"])
-        urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS]
-        urls.append(f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}")
-        for i, url in enumerate(urls):
-            try:
-                download(url, vendored, tries=2)
-                break
-            except (urllib.error.URLError, OSError) as e:
-                if i == len(urls) - 1:
-                    raise
-                print(f"  {url}: {e}", file=sys.stderr)
-        if sha256(vendored) != p["sha256"]:
-            os.unlink(vendored)
-            die(f"checksum mismatch for {p['filename']}")
+    os.makedirs(os.path.dirname(vendored), exist_ok=True)
+    fn = urllib.parse.quote(p["filename"])
+    download_any([f"{m}/{p['repo']}/{fn}" for m in MIRRORS] + [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"], vendored)
+    if sha256(vendored) != p["sha256"]:
+        os.unlink(vendored)
+        die(f"checksum mismatch for {p['filename']}")
     link(vendored, dest)
 
 
@@ -358,11 +370,15 @@ def srcdest_names(srcinfo):
                 out.add(v.split("::", 1)[0])
                 continue
             proto = v.split("://", 1)[0].split("+", 1)[0]
-            name = v.split("#", 1)[0].split("?", 1)[0].rstrip("/").rsplit("/", 1)[-1]
-            if proto == "git":
-                name = name.split(".git", 1)[0]
-            elif proto == "fossil":
-                name += ".fossil"
+            name = v.rsplit("/", 1)[-1]
+            if proto in ("bzr", "fossil", "git", "hg", "svn"):
+                name = v.split("#", 1)[0].split("?", 1)[0].removesuffix("/").rsplit("/", 1)[-1]
+                if proto == "bzr":
+                    name = name.split("lp:", 1)[-1]
+                elif proto == "fossil":
+                    name += ".fossil"
+                elif proto == "git":
+                    name = name.split(".git", 1)[0]
             out.add(name)
     return out
 
@@ -396,14 +412,7 @@ def current_db(max_age=6 * 3600):
             path = os.path.join(dbdir, f"{repo}.db")
             if os.path.exists(path) and time.time() - os.path.getmtime(path) < max_age:
                 continue
-            for i, m in enumerate(MIRRORS):
-                try:
-                    download(f"{m}/{repo}/{repo}.db", path, tries=2)
-                    break
-                except (urllib.error.URLError, OSError) as e:
-                    if i == len(MIRRORS) - 1:
-                        raise
-                    print(f"  {m}: {e}", file=sys.stderr)
+            download_any([f"{m}/{repo}/{repo}.db" for m in MIRRORS], path)
     return load_db(dbdir)
 
 
@@ -415,31 +424,22 @@ def cmd_prebuilt(repodir, lockfile, *names):
     with open(lockfile, "a+") as lf:
         fcntl.flock(lf, fcntl.LOCK_EX)
         lf.seek(0)
-        locked = {}
-        for line in lf:
-            if line.strip():
-                repo, name, ver, fn, h = line.split()
-                locked[name] = {"repo": repo, "name": name, "version": ver, "filename": fn, "sha256": h}
-        fresh = []
+        locked = {p["name"]: p for p in (parse_lock_line(line) for line in lf if line.strip())}
+        entries = dict(locked)
         for name in names:
             if name in locked:
                 p = dict(locked[name])
             elif name in db:
-                p = dict(db[name])
-                fresh.append(p)
+                p = entries[name] = dict(db[name])
             else:
                 print(f"  prebuilt: {name}: not found", file=sys.stderr)
                 continue
             if name in pins:
                 p["version"], p["filename"], p["sha256"] = pins[name]
             fetch_pkg(p, repodir)
-        entries = locked
-        for p in fresh:
-            entries[p["name"]] = {k: p[k] for k in ("repo", "name", "version", "filename", "sha256")}
         lf.seek(0)
         lf.truncate()
-        for p in sorted(entries.values(), key=lambda p: p["name"]):
-            lf.write(f"{p['repo']} {p['name']} {p['version']} {p['filename']} {p['sha256']}\n")
+        lf.writelines(lock_line(entries[n]) for n in sorted(entries))
 
 
 def cmd_source(srcdir, *names):
@@ -499,7 +499,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
-            "fetch LOCK DIR | prebuilt REPODIR NAME... | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
+            "fetch LOCK DIR | prebuilt REPODIR LOCK NAME... | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)

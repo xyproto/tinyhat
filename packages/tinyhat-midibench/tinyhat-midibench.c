@@ -338,6 +338,10 @@ int main(int argc, char **argv)
 
 	size_t n = strlen(argv[1]) + 5;
 	char *tmp = malloc(n);
+	if (!tmp) {
+		perror("malloc");
+		return 1;
+	}
 	snprintf(tmp, n, "%s.tmp", argv[1]);
 	FILE *f = fopen(tmp, "w");
 	if (!f) {
