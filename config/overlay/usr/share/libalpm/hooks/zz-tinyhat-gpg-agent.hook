@@ -3,6 +3,7 @@ Operation = Install
 Operation = Upgrade
 Type = Package
 Target = archlinux32-keyring
+Target = archlinuxarm-keyring
 Target = archlinux-keyring
 
 [Action]

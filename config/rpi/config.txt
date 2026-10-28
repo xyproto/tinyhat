@@ -1,0 +1,14 @@
+arm_64bit=1
+kernel=kernel8.img
+initramfs initramfs.img followkernel
+dtoverlay=vc4-kms-v3d
+max_framebuffers=2
+disable_fw_kms_setup=1
+disable_overscan=1
+disable_splash=1
+arm_boost=1
+
+[cm4]
+otg_mode=1
+
+[all]

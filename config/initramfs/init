@@ -27,6 +27,7 @@ for arg in $(cat /proc/cmdline); do
 	tinyhat.nosplash) splash=0 ;;
 	esac
 done
+[ ! -f /modules/order ] || while read -r m; do insmod "/modules/$m.ko"; done </modules/order
 [ "$quiet" = 1 ] && printf '\033[?25l' >/dev/tty1 2>/dev/null
 [ "$quiet" = 1 ] && [ "$splash" = 1 ] && [ -c /dev/fb0 ] && /bin/tinyhat-splash
 if [ "$init" != /usr/lib/systemd/systemd ]; then
@@ -107,6 +108,14 @@ hostmount() {
 	mount -t "$3" -o "$4" "$1" "$2" 2>/dev/null
 }
 
+hibernated() {
+	case $(fstype "$1") in
+	ext3 | ext4) [ $(($(od -An -tu4 -j 1120 -N 4 "$1") & 4)) -ne 0 ] ;;
+	ntfs) case $(head -c 4 "$2/hiberfil.sys" 2>/dev/null) in hibr | HIBR | wake | WAKE) return 0 ;; esac; return 1 ;;
+	*) return 1 ;;
+	esac
+}
+
 find_savefile() {
 	for b in /sys/block/*; do
 		n=${b##*/}
@@ -124,7 +133,7 @@ find_savefile() {
 			esac
 			hostmount "$d" /run/tinyhat/host "$o" || continue
 			f=/run/tinyhat/host/tinyhat/config.img
-			if [ -f "$f" ] && xfs_label_is "$f" THCONFIG; then
+			if [ -f "$f" ] && xfs_label_is "$f" THCONFIG && ! hibernated "$d" /run/tinyhat/host; then
 				umount /run/tinyhat/host
 				hostmount "$d" /run/tinyhat/host noatime || return 1
 				if grep -q "^$d /run/tinyhat/host [^ ]* rw[, ]" /proc/mounts &&
@@ -182,7 +191,7 @@ partnum() {
 make_data() {
 	[ -x /usr/bin/mkfs.xfs ] && [ "$(partnum 2)" = "$dev" ] || return 1
 	tinyhat_disk "$disk" || return 1
-	[ "$(/usr/bin/sfdisk --part-type "/dev/$disk" 1 2>/dev/null)" = ef ] || return 1
+	case $(/usr/bin/sfdisk --part-type "/dev/$disk" 1 2>/dev/null) in ef | c) ;; *) return 1 ;; esac
 	count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
 	[ "$quiet" = 1 ] || echo "Tiny Hat: creating persistent storage on the rest of the drive (one time only)"
 	say "msg Creating persistent storage (one time only)"
@@ -201,7 +210,7 @@ make_data() {
 		sleep 0.1
 		i=$((i + 1))
 	done
-	[ "$(/usr/bin/sfdisk --part-type "/dev/$disk" 3 2>/dev/null)" = 83 ] && [ -z "$(blkid "$part")" ] || return 1
+	[ "$(/usr/bin/sfdisk --part-type "/dev/$disk" 3 2>/dev/null)" = 83 ] && [ -z "$(/usr/bin/wipefs -n "$part" 2>&1)" ] || return 1
 	say "progress 35"
 	say "msg Formatting persistent storage"
 	TEST_DIR=1 TEST_DEV=1 QA_CHECK_FS=xfs /usr/bin/mkfs.xfs -q -f -K -l size=16m -L THDATA "$part" >/dev/null 2>&1 || return 1
