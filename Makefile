@@ -30,7 +30,7 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all iso both rpi4 aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all iso both rpi4 aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign vdi
 
 all: tinyhat32.img
 
@@ -41,7 +41,7 @@ both: tinyhat32.img tinyhat64x32.img
 rpi4: tinyhat-rpi4.img
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
-ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate,$(or $(MAKECMDGOALS),all)))
+ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),all)))
 include $(B)/pkgs.mk
 endif
 
@@ -129,9 +129,17 @@ test: patchcheck sourcecheck fuzzelcheck
 	@scripts/chroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
 	@echo "grub.cfg: ok"
 
-dist: tinyhat32.img tinyhat64x32.img tinyhat32.iso tinyhat64x32.iso
+dist: distbuild
+	@$(MAKE) --no-print-directory sign
+
+distbuild: tinyhat32.img tinyhat64x32.img tinyhat32.iso tinyhat64x32.iso
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
 	@ls -l $(B)/dist
+
+sign:
+	@test -f $(B)/dist/SHA256SUMS || { echo "make sign: no $(B)/dist/SHA256SUMS, run make distbuild first" >&2; exit 1; }
+	gpg --batch --yes --armor --detach-sign $${GPG_KEY:+-u "$$GPG_KEY"} -o $(B)/dist/SHA256SUMS.asc $(B)/dist/SHA256SUMS
+	@ls -l $(B)/dist/SHA256SUMS.asc
 
 tinyhat32.iso: tinyhat32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
 	scripts/mkiso.sh $< $@
