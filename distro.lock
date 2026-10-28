@@ -14,6 +14,7 @@ libpkgs = [
     "audit",
     "avahi",
     "bash",
+    "bind",
     "binutils",
     "blas",
     "blas64",
@@ -21,6 +22,7 @@ libpkgs = [
     "boost",
     "boost-libs",
     "brotli",
+    "bwbasic",
     "bzip2",
     "cairo",
     "cblas",
@@ -124,6 +126,7 @@ libpkgs = [
     "imlib2",
     "jansson",
     "jbigkit",
+    "jemalloc",
     "json-c",
     "json-glib",
     "jsoncpp",
@@ -370,6 +373,7 @@ libpkgs = [
     "mesa",
     "mgba",
     "minizip",
+    "monkeyjumpgo",
     "mpdecimal",
     "mpfr",
     "mpg123",
@@ -415,8 +419,6 @@ libpkgs = [
     "polkit",
     "poppler",
     "poppler-glib",
-    "poppler-qt5",
-    "poppler-qt6",
     "popt",
     "portaudio",
     "procps-ng",
@@ -441,6 +443,7 @@ libpkgs = [
     "readline",
     "rfxgen",
     "roc-toolkit",
+    "rofi",
     "rubberband",
     "sane",
     "sbc",
@@ -475,6 +478,7 @@ libpkgs = [
     "tinycompress",
     "tinyhat-gui",
     "tinyhat-midibench",
+    "tinyhat-play",
     "tinyhat-retro",
     "tinyhat-splash",
     "tinysparql",
@@ -523,6 +527,7 @@ libpkgs = [
     "xxhash",
     "xz",
     "yyjson",
+    "zathura",
     "zeromq",
     "zimg",
     "zix",
@@ -623,6 +628,7 @@ alsa-ucm-conf = { repo = "extra", version = "1.2.16.1-1.0", file = "alsa-ucm-con
 aom = { repo = "extra", version = "3.15.2-1.0", file = "aom-3.15.2-1.0-i686.pkg.tar.zst", sha256 = "bdc9e15e6783247c440f4f5860e30b7faa2f0d5c46069f73b6cc3ef836eee114" }
 apparmor = { repo = "extra", version = "3.0.4-1.1", file = "apparmor-3.0.4-1.1-i686.pkg.tar.zst", sha256 = "ef48513085b02eae8c51ca823c73f20606bd6aac45e6714801a1b655ec3c4ebf" }
 appstream = { repo = "extra", version = "1.0.3-1.0", file = "appstream-1.0.3-1.0-i686.pkg.tar.zst", sha256 = "c8d1a0f815b163db0c573e7ab4a657974a04a990343dbc55922903e7f7bc1ad4" }
+appstream-glib = { repo = "extra", version = "0.8.4-1.0", file = "appstream-glib-0.8.4-1.0-i686.pkg.tar.zst", sha256 = "6cf5972a424b94582705e20d4e9c9033c0292e9d82331803d25d8ccd2fe113b1" }
 archlinux32-keyring = { repo = "core", version = "20251214-1.0", file = "archlinux32-keyring-20251214-1.0-any.pkg.tar.zst", sha256 = "7600cd9ddabbbbb5643b0235646670d070a4848030fbe10c77939ea3aeee29a0" }
 argon2 = { repo = "extra", version = "20190702-7.0", file = "argon2-20190702-7.0-i686.pkg.tar.zst", sha256 = "d6e6ec8bf0e9fad3d1d06fb545c0eeef00e9023b908e0dd02a1d6c5913ec1fd8" }
 argyllcms = { repo = "extra", version = "3.5.0-1.0", file = "argyllcms-3.5.0-1.0-i686.pkg.tar.zst", sha256 = "c6a0c63eb508c38e23a09f97d298c2a939c21e2453f3c41c63624ce64ebe1492" }
@@ -764,6 +770,7 @@ glibmm = { repo = "extra", version = "2.66.10-1.0", file = "glibmm-2.66.10-1.0-i
 glu = { repo = "extra", version = "9.0.3-3.0", file = "glu-9.0.3-3.0-i686.pkg.tar.zst", sha256 = "b095c7dcaf5f16d243bfe7f367f1c99e67f336bc92f21f7eedb5e767db9a0285" }
 gmp = { repo = "core", version = "6.3.0-3.0", file = "gmp-6.3.0-3.0-i686.pkg.tar.zst", sha256 = "fecbd85899aa8d4f8ecba8fed33f35a7cfb700a80f5a2e4deeec868fee4a2fc6" }
 gnu-efi = { repo = "extra", version = "3.0.18-2.0", file = "gnu-efi-3.0.18-2.0-i686.pkg.tar.zst", sha256 = "5c1797baf10fc079f44513d1484911e0bf8d621b17a13ab025778b035a9cd798" }
+gnugo = { repo = "extra", version = "3.8-8.0", file = "gnugo-3.8-8.0-i686.pkg.tar.zst", sha256 = "3e68472efd4ee4dbb33d580d1df3522638f63c12e162a0f9fde399c9f4acb947" }
 gnulib-l10n = { repo = "core", version = "20241231-1.0", file = "gnulib-l10n-20241231-1.0-any.pkg.tar.zst", sha256 = "f059ac916c482f387bfa0a6874b1f783ee0dccb814ef471c723a89e6c4c0afe6" }
 gnupg = { repo = "core", version = "2.4.8-1.0", file = "gnupg-2.4.8-1.0-i686.pkg.tar.zst", sha256 = "6a216ab4374fedb13699fcf410c1bac6471730f40eafae01b0e36c2df3755420" }
 gnutls = { repo = "core", version = "3.8.13-3.0", file = "gnutls-3.8.13-3.0-i686.pkg.tar.zst", sha256 = "a199d1fc09b2f9fbc464fe2fa8e2ac7f4de7b94abc19ccd8f058a1e0d37f0f7a" }
@@ -822,6 +829,7 @@ iptables = { repo = "core", version = "1:1.8.13-1.0", file = "iptables-1:1.8.13-
 iso-codes = { repo = "extra", version = "4.20.1-1.0", file = "iso-codes-4.20.1-1.0-any.pkg.tar.zst", sha256 = "dfbd07e3c4747b2a58e4e3fd881031f0d6db3344b489bfbb72ab0f11fe7aff05" }
 itstool = { repo = "extra", version = "1:2.0.7-3.0", file = "itstool-1:2.0.7-3.0-any.pkg.tar.zst", sha256 = "c29d7f94371e7c3da310673611c7995a290aa003d04d1a290515c3b5ce02f3e2" }
 iucode-tool = { repo = "extra", version = "2.3.1-6.0", file = "iucode-tool-2.3.1-6.0-i686.pkg.tar.zst", sha256 = "b04f815d565b8187d779313a95756f3750844b4143f68a2523e1a03468490a53" }
+iw = { repo = "core", version = "6.17-1.0", file = "iw-6.17-1.0-i686.pkg.tar.zst", sha256 = "1194659408067f00f92133fcf91bf5d4aeac030dd71b69a835dbc802450120a6" }
 iwd = { repo = "extra", version = "2.22-1.0", file = "iwd-2.22-1.0-i686.pkg.tar.zst", sha256 = "261467a97ef39a54aa55b1ac71eafcbcb2654050417496a35cf527f97744ce31" }
 jack2 = { repo = "extra", version = "1.9.21-3.0", file = "jack2-1.9.21-3.0-i686.pkg.tar.zst", sha256 = "3fb34ada0a02c6da571545f7e0b7ac226c4c02f7cc8f3f41759487ab51623fd8" }
 jalv = { repo = "extra", version = "1.6.8-2.0", file = "jalv-1.6.8-2.0-i686.pkg.tar.zst", sha256 = "8d25ab78bbf56472c6a172404f360364948d2776c126347a7a5f758af2016884" }
@@ -1033,6 +1041,7 @@ libxkbcommon-x11 = { repo = "extra", version = "1.13.2-1.0", file = "libxkbcommo
 libxkbfile = { repo = "extra", version = "1.2.0-1.0", file = "libxkbfile-1.2.0-1.0-i686.pkg.tar.zst", sha256 = "3b3893938fb6ed86a1d01ca324ba85db4acef5c6c80c396bc08a5f4d10ee06c2" }
 "libxml++" = { repo = "extra", version = "3.2.6-1.0", file = "libxml++-3.2.6-1.0-i686.pkg.tar.zst", sha256 = "73d5ede73eca73b021fa41bebcde8faf85273ef35763fd66a2d694a9d7358697" }
 libxml2 = { repo = "core", version = "2.15.1-4.0", file = "libxml2-2.15.1-4.0-i686.pkg.tar.zst", sha256 = "9c00fdc9d77d96ba613930be6af9d15446be4ef8397b8afab07c5627138158d6" }
+libxml2-legacy = { repo = "extra", version = "2.13.9-2.0", file = "libxml2-legacy-2.13.9-2.0-i686.pkg.tar.zst", sha256 = "b19ca8d2a927d1eef5a7d6c69776908fd122c3f1943336c03e70ccd25a8f3404" }
 libxmlb = { repo = "extra", version = "0.3.29-1.0", file = "libxmlb-0.3.29-1.0-i686.pkg.tar.zst", sha256 = "536627108b8e547d4498835edba35c32545396058030028314ebc43f29253300" }
 libxmu = { repo = "extra", version = "1.3.1-1.0", file = "libxmu-1.3.1-1.0-i686.pkg.tar.zst", sha256 = "c10cee2eb3577893b3b69cee95810d6af10fc168dcb6d0c2303ffdd8cf84b60f" }
 libxpm = { repo = "extra", version = "3.5.19-1.0", file = "libxpm-3.5.19-1.0-i686.pkg.tar.zst", sha256 = "9af2067a4eaba492225087f2a2cf6db9af08f4d86f601dd315e5d57676e10e9f" }
@@ -1060,6 +1069,7 @@ lua52 = { repo = "extra", version = "5.2.4-8.0", file = "lua52-5.2.4-8.0-i686.pk
 lua54 = { repo = "extra", version = "5.4.9-1.0", file = "lua54-5.4.9-1.0-i686.pkg.tar.zst", sha256 = "23389fbdbaff5ad1f1b511e1125beecab3ae740c8cf5b1f3210fa055f903b56b" }
 luajit = { repo = "extra", version = "2.1.1753364724-1.0", file = "luajit-2.1.1753364724-1.0-i686.pkg.tar.zst", sha256 = "f9cf40cf0812680d55a6df5c567725b7a0823c45d128b5853b7730731af49478" }
 lv2 = { repo = "extra", version = "1.18.10-2.0", file = "lv2-1.18.10-2.0-i686.pkg.tar.zst", sha256 = "abb42326870ad90d7daa8977fed06b67b22bf6f05a9540bf1c0d75ed08ffc9ad" }
+lxmenu-data = { repo = "extra", version = "0.1.7-1.0", file = "lxmenu-data-0.1.7-1.0-any.pkg.tar.zst", sha256 = "8c8a505de06eee7fec6add1c522a5ef6a535ec59da4c78ce28c397458354e0a1" }
 lz4 = { repo = "core", version = "1:1.10.0-2.0", file = "lz4-1:1.10.0-2.0-i686.pkg.tar.zst", sha256 = "1966d636e3c07845e57587a0e44d8b49a24ee3ef289557005c502848c863a683" }
 lzo = { repo = "core", version = "2.10-5.1", file = "lzo-2.10-5.1-i686.pkg.tar.zst", sha256 = "3fc2096a8e38544eafeb5a8282f13387184c4af624efc2b7f79113fd376d8955" }
 m4 = { repo = "core", version = "1.4.21-2.0", file = "m4-1.4.21-2.0-i686.pkg.tar.zst", sha256 = "5459e531e07e37d94d77efb021b368246691dd0301e55a3c4701a8e13e2bd4d3" }
@@ -1392,11 +1402,13 @@ xorg-xcursorgen = { repo = "extra", version = "1.0.9-1.0", file = "xorg-xcursorg
 xorg-xkbcomp = { repo = "extra", version = "1.5.0-1.0", file = "xorg-xkbcomp-1.5.0-1.0-i686.pkg.tar.zst", sha256 = "fb3a491a8413b57cebcb210efef8714720ca05ca259197a406ec4fe87e531e35" }
 xorg-xprop = { repo = "extra", version = "1.2.8-1.0", file = "xorg-xprop-1.2.8-1.0-i686.pkg.tar.zst", sha256 = "3abdb9d066b5b6d732a4dbf212b03929ff3f79900ec683c8c8ef0e817679248e" }
 xorgproto = { repo = "extra", version = "2026.1-1.0", file = "xorgproto-2026.1-1.0-any.pkg.tar.zst", sha256 = "faab32e9dd4ef5976273155b729e8e5c39702b0f4fbf88b78104c5366ddcd51d" }
+xtrans = { repo = "extra", version = "1.6.0-1.0", file = "xtrans-1.6.0-1.0-any.pkg.tar.zst", sha256 = "4ea608137534dcc69e618aa316ce915e6fe1862a74b0972f951b32ed40d73cbd" }
 xxhash = { repo = "extra", version = "0.8.4-1.0", file = "xxhash-0.8.4-1.0-i686.pkg.tar.zst", sha256 = "7c7a8e14a31b6b5822846d04c79683a8d831e5f21380864892d4a0ba15011250" }
 xz = { repo = "core", version = "5.8.4-1.0", file = "xz-5.8.4-1.0-i686.pkg.tar.zst", sha256 = "7f6516c0d9a228b23198330ba34a7bb7c30227e9c20133bb9d7e4583a5d9a176" }
 yelp-tools = { repo = "extra", version = "42.1-2.0", file = "yelp-tools-42.1-2.0-any.pkg.tar.zst", sha256 = "b5642aef6cb065b612d54c1b55658a09ef096f6f9db9beb59e6da5985e018c3c" }
 yelp-xsl = { repo = "extra", version = "49.0-1.0", file = "yelp-xsl-49.0-1.0-any.pkg.tar.zst", sha256 = "698402ba45e379b145609d4c2ea2755ab7061494062d7481cda904807ca69964" }
 yyjson = { repo = "extra", version = "0.13.0-1.0", file = "yyjson-0.13.0-1.0-i686.pkg.tar.zst", sha256 = "080c7edcff188e3c915bf6e2cdfa3f3a83661c50eba4d0ed8644d26d1944ab56" }
+zip = { repo = "extra", version = "3.0-14.0", file = "zip-3.0-14.0-i686.pkg.tar.zst", sha256 = "1a8202418abf08ebc83438966c4da541c75f7420f66e04ef503e800fb2831e91" }
 zix = { repo = "extra", version = "0.8.2-1.0", file = "zix-0.8.2-1.0-i686.pkg.tar.zst", sha256 = "20b3b3ecff47cb3743324af80a843a2ab0266fd243ce416abdf8277956a98f09" }
 zlib = { repo = "core", version = "1:1.3.2-3.0", file = "zlib-1:1.3.2-3.0-i686.pkg.tar.zst", sha256 = "ddec6878082a45ecf5f88f43e961d73089c8ae525a1aa5612b1c90b89daa62a2" }
 zlib-ng = { repo = "extra", version = "2.3.3-1.0", file = "zlib-ng-2.3.3-1.0-i686.pkg.tar.zst", sha256 = "f683b290a1fe39277699fd42c7dada7c52b807eb70735e045b46a38fee1fe081" }
@@ -2584,7 +2596,7 @@ libpsl = { version = "0.21.5-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf
 libraqm = { version = "0.11.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libraqm]\nsource = 'github'\ngithub = 'HOST-Oman/libraqm'\nuse_max_tag = true\nprefix = 'v'\n" }
 libraw1394 = { version = "2.1.2-4", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 libretro-nestopia = { version = "1:20260925.192050.g8f00f500912a-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libretro-nestopia]\nsource = \"jq\"\nurl = \"https://api.github.com/repos/libretro/nestopia/commits/master\"\nfilter = '(.commit.committer.date | fromdateiso8601 | strftime(\"%Y%m%d.%H%M%S\")) + \".g\" + (.sha[0:12])'\n" }
-librsvg = { version = "2:2.63.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[librsvg]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/librsvg.git\"\ninclude_regex = '\\d+\\.\\d+\\.([1-8]\\d*)?\\d'\n# include_regex = '\\d+\\.\\d+\\.\\d+(\\.\\d+)?$' # Unstable\n" }
+librsvg = { version = "2:2.63.4-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[librsvg]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/librsvg.git\"\ninclude_regex = '\\d+\\.\\d+\\.([1-8]\\d*)?\\d'\n# include_regex = '\\d+\\.\\d+\\.\\d+(\\.\\d+)?$' # Unstable\n" }
 libsamplerate = { version = "0.2.2-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libsamplerate]\nsource = \"git\"\ngit = \"https://github.com/libsndfile/libsamplerate.git\"\n" }
 libsasl = { version = "2.1.28-5", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libsasl]\nsource = \"git\"\ngit = \"https://github.com/cyrusimap/cyrus-sasl\"\nprefix = \"cyrus-sasl-\"\n" }
 libseccomp = { version = "2.6.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libseccomp]\nsource = \"git\"\ngit = \"https://github.com/seccomp/libseccomp.git\"\nprefix = \"v\"\n" }
