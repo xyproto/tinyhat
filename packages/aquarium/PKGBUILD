@@ -14,7 +14,8 @@ sha256sums=('851f1df0017184470eddc49b36a7c20bd52112122200c89aa045cd93121ece8e')
 build() {
   cd aquarium-$pkgver
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
-  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/aquarium"
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  "$GOROOT/bin/go" build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/aquarium"
 }
 
 package() {

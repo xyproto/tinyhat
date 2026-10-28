@@ -15,7 +15,8 @@ sha256sums=('7d7a02a683b675875febd5ab67d3d4f067db3111bf8a31da86c36ced8bae16b3')
 build() {
   cd xpm-$_commit
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
-  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/png2xpm" ./cmd/png2xpm
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  "$GOROOT/bin/go" build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/png2xpm" ./cmd/png2xpm
 }
 
 package() {
