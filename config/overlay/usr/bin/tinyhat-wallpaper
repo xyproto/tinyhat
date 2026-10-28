@@ -1,45 +1,73 @@
-#!/bin/sh
-confdir=${XDG_CONFIG_HOME:-$HOME/.config}/tinyhat
-hide=$confdir/hide-help
-mode=$confdir/wallpaper
-pidfile=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-swaybg.pid
-if [ "${1-}" = --cycle ]; then
-	mkdir -p "$confdir"
-	case $(cat "$mode" 2>/dev/null) in
-	4) n=1 ;;
-	1) n=0 ;;
-	0) n=5 ;;
-	5) n=2 ;;
-	2) n=3 ;;
-	*) if [ -e "$hide" ]; then n=3; else n=4; fi ;;
-	esac
-	if [ "$n" = 3 ]; then
-		rm -f "$hide"
-	fi
-	echo "$n" >"$mode"
-elif [ "${1-}" = --toggle ]; then
-	mkdir -p "$confdir"
-	if [ -e "$hide" ]; then
-		rm -f "$hide"
+#!/usr/bin/fish
+
+# Pick, cycle and swap the Tiny Hat desktop backgrounds.
+# Backgrounds: 0 = plain teal, 1 = plain black, 2 = arch photo filled,
+# 3 = help screen, 4 = arch photo centered, 5 = arch photo tiled.
+# The numbering matches the old sh version, so a saved choice keeps working.
+
+set -l confdir (set -q XDG_CONFIG_HOME[1]; and echo $XDG_CONFIG_HOME; or echo $HOME/.config)/tinyhat
+set -l hidemark $confdir/hide-help
+set -l modefile $confdir/wallpaper
+set -l rundir (set -q XDG_RUNTIME_DIR[1]; and echo $XDG_RUNTIME_DIR; or echo /tmp)
+set -l pidfile $rundir/tinyhat-swaybg.pid
+
+# How the backgrounds cycle: help → centered image → black → teal → tiled → filled → back to help
+set -l cycle 3 4 1 0 5 2
+
+switch "$argv[1]"
+case "--cycle"
+	mkdir -p $confdir
+	# Pick the next background. With the help hidden, the cycle starts at the help screen.
+	set -l n (count $cycle)
+	set -l pos (contains -i -- (cat $modefile 2>/dev/null) $cycle)
+	if test -n "$pos"
+		set mode $cycle[(math "(($pos) % $n) + 1")]
+	else if test -e $hidemark
+		set mode $cycle[1]
 	else
-		: >"$hide"
-	fi
-fi
-old=$(cat "$pidfile" 2>/dev/null)
-case $(cat "$mode" 2>/dev/null) in
-0) set -- -c 008080 ;;
-1) set -- -c 000000 ;;
-2) set -- -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
-	;;
-4) set -- -m center -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png ;;
-5) set -- -m tile -c 1a1b26 -i /usr/share/backgrounds/tinyhat/hundetann.png ;;
-*) set -- -m left -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png
-	[ -e "$hide" ] || set -- "$@" -t /etc/tinyhat/help.txt
-	;;
-esac
-swaybg "$@" &
-echo $! >"$pidfile"
-if [ -n "$old" ] && [ "$(cat "/proc/$old/comm" 2>/dev/null)" = swaybg ]; then
+		set mode 4
+	end
+	if test $mode = 3
+		rm -f $hidemark
+	end
+	echo $mode > $modefile
+case "--toggle"
+	mkdir -p $confdir
+	# Show or hide the panel with key hints
+	if test -e $hidemark
+		rm -f $hidemark
+	else
+		touch $hidemark
+	end
+end
+
+set -l args
+set -l mode (cat $modefile 2>/dev/null)
+switch "$mode"
+case 0
+	set args -c 008080
+case 1
+	set args -c 000000
+case 2
+	set args -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
+case 4
+	set args -m center -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png
+case 5
+	set args -m tile -c 1a1b26 -i /usr/share/backgrounds/tinyhat/hundetann.png
+case '*'
+	# The help screen, with the sorting-key hints on top, unless they were hidden
+	set args -m left -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png
+	if not test -e $hidemark
+		set args $args -t /etc/tinyhat/help.txt
+	end
+end
+
+# Start the new wallpaper bottom layer, then stop the one it replaced
+set -l old (cat $pidfile 2>/dev/null)
+swaybg $args &
+echo $last_pid > $pidfile
+set -l comm (cat /proc/$old/comm 2>/dev/null)
+if test -n "$old"; and test "$comm" = swaybg
 	sleep 0.3
-	kill "$old"
-fi
+	kill $old
+end
