@@ -5,5 +5,4 @@ stamp=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-notice
 echo $$ >"$stamp"
 printf 'notice %s\n' "$1" >"$bar"
 [ -n "${2:-}" ] || exit 0
-id=$$
-(sleep "$2"; [ "$(cat "$stamp" 2>/dev/null)" = "$id" ] && printf 'notice \n' >"$bar") &
+(sleep "$2"; [ "$(cat "$stamp" 2>/dev/null)" = $$ ] && printf 'notice \n' >"$bar") &

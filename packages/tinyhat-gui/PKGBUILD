@@ -1,6 +1,6 @@
 pkgname=tinyhat-gui
 pkgver=1
-pkgrel=3
+pkgrel=4
 pkgdesc="Tiny Hat backup, restore, file picker and media player dialogs, and the GL level probe"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"

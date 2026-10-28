@@ -39,14 +39,9 @@ def tables():
 
 
 def packages():
-    recipes = lock().get("recipes", {})
-    out = {}
-    for base in sorted(set(tables()) | set(recipes)):
-        e = {"source": "arch"}
-        e.update(recipes.get(base, {}))
-        e.update(tables().get(base, {}))
-        out[base] = e
-    return out
+    recipes, tabs = lock().get("recipes", {}), tables()
+    return {base: {"source": "arch", **recipes.get(base, {}), **tabs.get(base, {})}
+            for base in sorted(set(tabs) | set(recipes))}
 
 
 def section(name):
@@ -110,13 +105,12 @@ def write_if_changed(path, text):
 
 
 def write_lock(**changes):
-    data = {k: v for k, v in lock().items()}
-    data.update(changes)
+    data = {**lock(), **changes}
     out = []
     if "libpkgs" in data:
         out.append("libpkgs = [\n" + "".join(f"    {value(n)},\n" for n in data["libpkgs"]) + "]\n")
-    for sect in ("buildroot", "image-aarch64", "recipes"):
-        if data.get(sect):
+    for sect in sorted(k for k, v in data.items() if isinstance(v, dict)):
+        if data[sect]:
             out.append(f"[{sect}]\n" + "".join(f"{key(n)} = {value(e)}\n" for n, e in sorted(data[sect].items())))
     write_if_changed(LOCK, "\n".join(out))
 

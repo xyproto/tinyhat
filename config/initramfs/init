@@ -54,12 +54,20 @@ rescue() {
 	setsid cttyhack sh
 }
 
+xfs_label_is() {
+	[ "$(dd if="$1" bs=4 count=1 2>/dev/null)" = XFSB ] &&
+		[ "$(dd if="$1" bs=1 skip=108 count=12 2>/dev/null | tr -d '\0')" = "$2" ]
+}
+
+tinyhat_disk() {
+	[ "$(/usr/bin/sfdisk --disk-id "/dev/$1" 2>/dev/null)" = 0x7417a700 ]
+}
+
 find_label() {
 	for b in ${2:-/sys/class/block/*}; do
 		d=/dev/${b##*/}
 		[ -b "$d" ] || continue
-		[ "$(dd if="$d" bs=4 count=1 2>/dev/null)" = XFSB ] || continue
-		[ "$(dd if="$d" bs=1 skip=108 count=12 2>/dev/null | tr -d '\0')" = "$1" ] && echo "$d" && return 0
+		xfs_label_is "$d" "$1" && echo "$d" && return 0
 	done
 	return 1
 }
@@ -116,8 +124,7 @@ find_savefile() {
 			esac
 			hostmount "$d" /run/tinyhat/host "$o" || continue
 			f=/run/tinyhat/host/tinyhat/config.img
-			if [ -f "$f" ] && [ "$(dd if="$f" bs=4 count=1 2>/dev/null)" = XFSB ] &&
-				[ "$(dd if="$f" bs=1 skip=108 count=12 2>/dev/null | tr -d '\0')" = THCONFIG ]; then
+			if [ -f "$f" ] && xfs_label_is "$f" THCONFIG; then
 				umount /run/tinyhat/host
 				hostmount "$d" /run/tinyhat/host noatime || return 1
 				if grep -q "^$d /run/tinyhat/host [^ ]* rw[, ]" /proc/mounts &&
@@ -174,7 +181,7 @@ partnum() {
 
 make_data() {
 	[ -x /usr/bin/mkfs.xfs ] && [ "$(partnum 2)" = "$dev" ] || return 1
-	[ "$(/usr/bin/sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
+	tinyhat_disk "$disk" || return 1
 	[ "$(/usr/bin/sfdisk --part-type "/dev/$disk" 1 2>/dev/null)" = ef ] || return 1
 	count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
 	[ "$quiet" = 1 ] || echo "Tiny Hat: creating persistent storage on the rest of the drive (one time only)"
@@ -217,7 +224,7 @@ done
 
 mkdir -p /run/tinyhat/boot /run/tinyhat/lower /run/tinyhat/rw /newroot
 case $dev in
-/dev/sr*) mount -t iso9660 -o ro "$dev" /run/tinyhat/boot 2>/dev/null || true ;;
+/dev/sr*) ;;
 *) mount -t xfs -o ro,noatime "$dev" /run/tinyhat/boot || rescue "could not mount $dev" ;;
 esac
 sfs=/run/tinyhat/boot/tinyhat/root.sfs
@@ -247,7 +254,7 @@ disk=$(readlink -f "/sys/class/block/${dev#/dev/}/..")
 disk=${disk##*/}
 [ -f "/sys/class/block/${dev#/dev/}/partition" ] && [ -d "/sys/block/$disk" ] || persist=0
 case $mode in
-"" | stick) { removable "$disk" || [ "$(/usr/bin/sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ]; } && where=disk || where= ;;
+"" | stick) { removable "$disk" || tinyhat_disk "$disk"; } && where=disk || where= ;;
 machine) removable "$disk" && where=file || where=disk ;;
 *) where= ;;
 esac

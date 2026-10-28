@@ -22,7 +22,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import time
 import tomllib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -137,13 +136,8 @@ def arch_versions():
             for m in t:
                 if not m.name.endswith("/desc"):
                     continue
-                fields, key = {}, None
-                for line in t.extractfile(m).read().decode().splitlines():
-                    if line.startswith("%") and line.endswith("%"):
-                        key = line[1:-1]
-                    elif line and key:
-                        fields.setdefault(key, line)
-                out[fields.get("BASE", fields["NAME"])] = fields["VERSION"]
+                fields = pkg.parse_desc(t.extractfile(m).read().decode())
+                out[fields.get("BASE", fields["NAME"])[0]] = fields["VERSION"][0]
     return out
 
 
@@ -257,7 +251,7 @@ def bump(base, new, pkgrel="1"):
             f.write(open("/etc/makepkg.conf").read() + f'\nCARCH="i686"\nCHOST="i686-pc-linux-gnu"\nSRCDEST="{tmp}"\n')
         r = subprocess.run(["updpkgsums"], cwd=d, capture_output=True, text=True, env=dict(os.environ, MAKEPKG_CONF=conf))
         if r.returncode != 0:
-            raise RuntimeError(f"updpkgsums: {(r.stderr or r.stdout).strip().splitlines()[-1:]}")
+            raise RuntimeError(f"updpkgsums: {((r.stderr or r.stdout).strip().splitlines() or ['failed'])[-1]}")
     info = importpkg.srcinfo(d)
     forms = {new, new.replace(".", "_"), new.replace(".", "-"), new.replace(".", "")}
     if not any(re.match(r"\s*source(_\w+)? = .*://", l) and any(f in l for f in forms) for l in info.splitlines()):
@@ -270,7 +264,11 @@ def upstream_updates(report, only, apply_bumps):
     if not entries or not shutil.which("nvchecker"):
         return
     entries = usable_sources(entries, report)
-    upstream = run_nvchecker(entries)
+    try:
+        upstream = run_nvchecker(entries)
+    except subprocess.TimeoutExpired as e:
+        report["failed"].append(("nvchecker", "upstream versions", str(e)))
+        return
     pkgs = distro.packages()
     for base in sorted(entries):
         new, e = upstream.get(base), pkgs.get(base, {})

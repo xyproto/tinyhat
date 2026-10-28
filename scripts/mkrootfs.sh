@@ -3,9 +3,9 @@ set -eu
 umask 022
 mode=$1
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
-root=$2
+root=${2:?}
 modules=$3
-sfs=$4
+sfs=${4:?}
 lock=$(readlink -f "$5")
 licdir=$(readlink -f "$6")
 repo=$top/build/repo
@@ -50,11 +50,9 @@ base)
 		bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/lib/pkgconfig/*'
 	done
 	python3 scripts/mklocaldb.py "$lock" "$repo" "$root" image
-	for p in ${TINYHAT_PKGS-}; do
-		if inlock "$p"; then
-			bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
-				--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG
-		fi
+	for p in $localpkgs; do
+		bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
+			--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG
 	done
 
 	chmod -R u=rwX,go=rX "$modules"
@@ -150,18 +148,16 @@ EOF
 	grep -q "^Architecture = $arch$" "$root/etc/pacman.conf"
 	;;
 finalize)
-	manifest="$root.overlay.list"
-	newmani=$(mktemp)
-	(cd config/overlay && find . -mindepth 1 ! -type d | LC_ALL=C sort) >"$newmani"
+	manifest=$root.overlay.list
+	(cd config/overlay && find . -mindepth 1 ! -type d | LC_ALL=C sort) >"$manifest.new"
 	if [ -f "$manifest" ]; then
-		comm -23 "$manifest" "$newmani" | while IFS= read -r p; do
+		comm -23 "$manifest" "$manifest.new" | while IFS= read -r p; do
 			rm -rf "$root/$p"
 		done
 	fi
-	cp "$newmani" "$manifest"
-	rm -f "$newmani"
+	mv "$manifest.new" "$manifest"
 	cp -a config/overlay/. "$root/"
-	(cd config/overlay && find . -mindepth 1) | while read -r p; do
+	(cd config/overlay && find . -mindepth 1) | while IFS= read -r p; do
 		if [ -d "config/overlay/$p" ] || [ -x "config/overlay/$p" ]; then
 			chmod 755 "$root/$p"
 		else
@@ -243,15 +239,13 @@ systemctl set-default multi-user.target
 		rm -f "$l"
 	done
 	find "$root/usr/share/man" -name "*.gz" -type f -exec gunzip -f {} +
+
+	rm -f "$sfs"
+	mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 256K -noappend -quiet -no-progress -no-xattrs \
+		-wildcards -e 'dev/*' 'proc/*' 'sys/*' 'run/*' 'tmp/*'
 	;;
 *)
 	echo "usage: $0 base|finalize root modules sfs lock licdir" >&2
 	exit 2
 	;;
 esac
-
-if [ "$mode" = finalize ]; then
-	rm -f "$sfs"
-	mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 256K -noappend -quiet -no-progress -no-xattrs \
-		-wildcards -e 'dev/*' 'proc/*' 'sys/*' 'run/*' 'tmp/*'
-fi

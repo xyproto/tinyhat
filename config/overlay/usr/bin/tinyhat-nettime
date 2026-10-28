@@ -64,8 +64,6 @@ fi
 
 if [ -n "${tz-}" ]; then
 	notify "Timezone: $tz"
-elif [ -n "$synced" ] && ! mountpoint -q /persist; then
-	notify "The clock is now set from the network"
 elif [ -n "$synced" ] && [ ! -f /persist/timezone ]; then
 	notify "The clock is now set from the network"
 fi

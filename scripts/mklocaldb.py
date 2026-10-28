@@ -11,7 +11,7 @@ import pkg
 
 os.umask(0o022)
 
-LISTS = {"pkgname": "NAME", "pkgver": "VERSION", "pkgbase": "BASE", "pkgdesc": "DESC", "url": "URL",
+SINGLE = {"pkgname": "NAME", "pkgver": "VERSION", "pkgbase": "BASE", "pkgdesc": "DESC", "url": "URL",
          "arch": "ARCH", "builddate": "BUILDDATE", "packager": "PACKAGER", "size": "SIZE"}
 MULTI = {"license": "LICENSE", "replaces": "REPLACES", "depend": "DEPENDS", "optdepend": "OPTDEPENDS",
          "conflict": "CONFLICTS", "provides": "PROVIDES", "group": "GROUPS"}
@@ -23,7 +23,7 @@ def main(lockfile, pkgdir, root, name):
     os.makedirs(local, exist_ok=True)
     with open(os.path.join(local, "ALPM_DB_VERSION"), "w") as f:
         f.write("9\n")
-    now = str(int(time.time()))
+    now = os.environ.get("SOURCE_DATE_EPOCH") or str(int(time.time()))
     for p in pkg.read_lock(lockfile):
         if p["repo"] == "lib32":
             continue
@@ -31,16 +31,10 @@ def main(lockfile, pkgdir, root, name):
         with tarfile.open(os.path.join(pkgdir, p["filename"])) as t:
             for m in t:
                 if m.name == ".PKGINFO":
-                    for line in t.extractfile(m).read().decode().splitlines():
-                        if " = " not in line or line.startswith("#"):
-                            continue
-                        k, v = line.split(" = ", 1)
-                        if k in LISTS:
-                            single[LISTS[k]] = v
-                        elif k in MULTI:
-                            multi.setdefault(MULTI[k], []).append(v)
-                        elif k == "backup":
-                            backup.append(v)
+                    info = pkg.parse_pkginfo(t.extractfile(m).read().decode())
+                    single = {SINGLE[k]: v[-1] for k, v in info.items() if k in SINGLE}
+                    multi = {MULTI[k]: v for k, v in info.items() if k in MULTI}
+                    backup = info.get("backup", [])
                 elif not m.name.startswith("."):
                     if m.isfile() and m.name.startswith("etc/"):
                         md5[m.name] = hashlib.md5(t.extractfile(m).read()).hexdigest()

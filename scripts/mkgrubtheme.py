@@ -74,7 +74,7 @@ def project(angle, tilt, x, y, z):
     return round(LOW / 2 + x1 * f * 25), round(LOW / 2 - y2 * f * 25), z2
 
 
-def hat(angle):
+def hat(angle, scale=HAT_SCALE):
     low = [[0] * LOW for _ in range(LOW)]
     tilt = 0.36 + 0.1 * math.sin(2 * angle)
 
@@ -133,7 +133,7 @@ def hat(angle):
         for k in range(1, 6):
             for side in (-1, 1):
                 edge(front_pass, quill(k / 6, 0), quill(k / 6, side * 0.17), 5, 6)
-    return [[INK[low[y // HAT_SCALE][x // HAT_SCALE]] for x in range(LOW * HAT_SCALE)] for y in range(LOW * HAT_SCALE)]
+    return [[INK[low[y // scale][x // scale]] for x in range(LOW * scale)] for y in range(LOW * scale)]
 
 
 def starfield(path, w=1280, h=800):

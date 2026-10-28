@@ -4,6 +4,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = os.path.join(TOP, "build")
@@ -19,7 +20,8 @@ def graph(target):
     path = os.path.join(B, "pkgs.mk")
     if not os.path.exists(path):
         sys.exit("buildstatus.py: build/pkgs.mk is missing, run make first")
-    lines = open(path).read().splitlines()
+    with open(path) as f:
+        lines = f.read().splitlines()
     var = "ROOTFS_X32_STAMPS" if "64x32" in target else "ROOTFS_I686_STAMPS"
     for i, line in enumerate(lines):
         m = re.match(r"^\$\(B\)/pkg/(\w+)/([^:]+):(.*)", line)
@@ -30,7 +32,8 @@ def graph(target):
                 prebuilt.add(key)
         elif line.startswith(var + " :="):
             roots = re.findall(r"pkg/(\w+/[^ ]+)", line)
-    mk = open(os.path.join(TOP, "Makefile")).read()
+    with open(os.path.join(TOP, "Makefile")) as f:
+        mk = f.read()
     boot = re.search(r"BOOT_PKGS := (.*)", mk)
     if boot:
         roots += ["i686/" + n for n in re.findall(r"\$\(B\)/pkg/i686/([^ \n]+)", boot.group(1))]
@@ -50,7 +53,7 @@ def running():
         parts = line.split()
         if len(parts) >= 4 and parts[1] == "/bin/sh" and parts[2] == "scripts/makepkg.sh":
             args = [a for a in parts[3:] if not a.startswith("--") and a not in ("x32",)]
-            arch = "x32" if "--arch" in parts and "x32" in parts else "i686"
+            arch = "boot" if "--bootstrap" in parts else "x32" if "--arch" in parts and "x32" in parts else "i686"
             jobs.append((int(parts[0]), arch, os.path.basename(args[0]) if args else "?"))
     return sorted(jobs, reverse=True)
 
@@ -71,7 +74,8 @@ def progress(log):
 
 def first_error(log):
     try:
-        lines = open(log, errors="replace").read().splitlines()
+        with open(log, errors="replace") as f:
+            lines = f.read().splitlines()
     except OSError:
         return "(no log)"
     hits = [l.strip() for l in lines if ERROR.search(l) and not NOISE.search(l)]
@@ -92,7 +96,7 @@ def main():
     img = os.path.join(TOP, target)
     if os.path.exists(img):
         print(f"  image: {os.path.getsize(img) // 1048576} MiB, "
-              f"{subprocess.run(['date', '-r', img, '+%F %H:%M'], capture_output=True, text=True).stdout.strip()}")
+              f"{time.strftime('%F %H:%M', time.localtime(os.path.getmtime(img)))}")
     jobs = running()
     if jobs:
         print("running:")
@@ -101,7 +105,8 @@ def main():
             print(f"  {minutes(secs):>8}  {arch}/{base}  {p}")
     full = os.path.join(B, "full.log")
     if os.path.exists(full):
-        text = open(full, errors="replace").read()
+        with open(full, errors="replace") as f:
+            text = f.read()
         failed = sorted(set(re.findall(r"build/pkgs.mk:\d+: build/pkg/(\w+/[^\]]+)\] Error", text)))
         if failed:
             print(f"failed in the last pass ({len(failed)}):")

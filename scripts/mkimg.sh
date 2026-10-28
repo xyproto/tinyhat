@@ -13,6 +13,7 @@ sbkeys=${6-}
 work=$top/build/img/$(basename "$out" .img)
 br=$top/build/buildroot
 esp_mib=16
+efi_modules="fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp"
 pkg() { python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 "$1"; }
 rm -rf "$work"
 mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/grub" "$work/kbd"
@@ -42,15 +43,13 @@ done
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	/img/grub/usr/bin/grub-mkimage -d /img/grub/usr/lib/grub/i386-pc -O i386-pc -o /img/core.img -c /img/early.cfg -p /boot/grub \
 	biosdisk part_msdos xfs search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png fat loadenv smbios regexp
-mkdir -p "$work/efi/EFI/BOOT"
-mkdir -p "$work/efi/tinyhat"
+mkdir -p "$work/efi/EFI/BOOT" "$work/efi/tinyhat"
 {
 	echo "# GRUB Environment Block"
 	head -c $((1024 - 25)) /dev/zero | tr '\0' '#'
 } >"$work/efi/tinyhat/grubenv"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	/img/grub/usr/bin/grub-mkimage -d /img/grub/usr/lib/grub/i386-efi -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub \
-	fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
+	/img/grub/usr/bin/grub-mkimage -d /img/grub/usr/lib/grub/i386-efi -O i386-efi -o /img/efi/EFI/BOOT/BOOTIA32.EFI -c /img/early.cfg -p /boot/grub $efi_modules
 if [ -n "$efi64" ]; then
 	printf '%s\n' \
 		"sbat,1,SBAT Version,sbat,1,https://github.com/rhboot/shim/blob/main/SBAT.md" \
@@ -59,8 +58,7 @@ if [ -n "$efi64" ]; then
 	mkdir -p "$work/grub64"
 	bsdtar -xf "$(pkg grub-efi64)" -C "$work/grub64" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-		/img/grub64/opt/grub-efi64/usr/bin/grub-mkimage -d /img/grub64/opt/grub-efi64/usr/lib/grub/x86_64-efi -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub \
-		fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp
+		/img/grub64/opt/grub-efi64/usr/bin/grub-mkimage -d /img/grub64/opt/grub-efi64/usr/lib/grub/x86_64-efi -O x86_64-efi --sbat /img/sbat.csv -o /img/grubx64.efi -c /img/early.cfg -p /boot/grub $efi_modules
 	shim=usr/lib/efi/shim/16.1-10/EFI
 	mkdir -p "$work/shim" "$work/sbs"
 	bsdtar -xf "$top/vendor/src/shim-x64-16.1-10.x86_64.rpm" -C "$work/shim" "./$shim"
@@ -83,7 +81,7 @@ rm -rf "$work/grub" "$work/kbd"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
-	/bin/sh -c 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null && mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI && mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat && for f in /img/efi/*.cer; do [ -f "$f" ] && mcopy -i /img/esp.img "$f" ::/; done; true'
+	/bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI; mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat; for f in /img/efi/*.cer; do [ ! -f "$f" ] || mcopy -i /img/esp.img "$f" ::/; done'
 
 content=$(du -sm --apparent-size "$work/root" | cut -f1)
 part_mib=$((content + content / 32 + 64))

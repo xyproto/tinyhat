@@ -20,7 +20,11 @@ def stale(d):
 
 
 def refresh(d):
-    old = open(os.path.join(d, ".SRCINFO")).read() if os.path.exists(os.path.join(d, ".SRCINFO")) else None
+    try:
+        with open(os.path.join(d, ".SRCINFO")) as f:
+            old = f.read()
+    except FileNotFoundError:
+        old = None
     try:
         new = importpkg.srcinfo(d)
     except subprocess.CalledProcessError as e:

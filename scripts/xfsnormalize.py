@@ -27,14 +27,17 @@ def crc32c(data):
 
 
 def normalize(img, epoch):
+    def inode_crc(chunk, base):
+        buf = bytearray(chunk[base:base + inodesize])
+        buf[100:104] = b"\0\0\0\0"
+        return crc32c(buf)
+
     def is_inode(chunk, base):
         if chunk[base:base + 2] != b"\x49\x4e" or chunk[base + 4] not in (2, 3):
             return False
         if chunk[base + 4] == 2:
             return chunk[base + 160:base + 176] == uuid
-        buf = bytearray(chunk[base:base + inodesize])
-        buf[100:104] = b"\0\0\0\0"
-        return struct.pack("<I", crc32c(buf)) == chunk[base + 100:base + 104]
+        return struct.pack("<I", inode_crc(chunk, base)) == chunk[base + 100:base + 104]
 
     with open(img, "r+b") as f:
         data = bytearray(f.read())
@@ -53,29 +56,19 @@ def normalize(img, epoch):
             agoff = agno * agsize
             for cbase in range(agoff, min(agoff + agsize, len(data)), chunk):
                 slots = min(CHUNK_INODES, (len(data) - cbase) // inodesize)
-                valid = False
-                for s in range(slots):
-                    if is_inode(data, cbase + s * inodesize):
-                        valid = True
-                        break
-                if not valid:
-                    continue
                 for s in range(slots):
                     off = cbase + s * inodesize
                     if not is_inode(data, off):
                         continue
-                    if data[off + 32:off + 56] == stamp * 2 + stamp and data[off + 144:off + 152] == stamp:
-                        if data[off + 4] != 3:
-                            continue
+                    if data[off + 4] == 2 and data[off + 32:off + 56] == stamp * 3 and data[off + 144:off + 152] == stamp:
+                        continue
                     data[off + 32:off + 40] = stamp
                     data[off + 40:off + 48] = stamp
                     data[off + 48:off + 56] = stamp
                     data[off + 92:off + 96] = b"\0\0\0\0"
                     data[off + 144:off + 152] = stamp
                     if data[off + 4] == 3:
-                        buf = bytearray(data[off:off + inodesize])
-                        buf[100:104] = b"\0\0\0\0"
-                        struct.pack_into("<I", data, off + 100, crc32c(buf))
+                        struct.pack_into("<I", data, off + 100, inode_crc(data, off))
                     n += 1
         f.seek(0)
         f.write(data)

@@ -11,22 +11,23 @@ base=${DIST_URL:-$home/releases/download}
 out=$top/build/dist
 system=$top/build/system
 stage=$out/src/tinyhat-write-$ver
+tgz() {
+	tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
+		-cf - "$1" | gzip -n -9 >"$out/$1.tar.gz"
+	rm -rf "$out/src"
+}
 mkdir -p "$out" "$system"
 rm -rf "$out/src"
 mkdir -p "$stage"
 cp "$top/programs/tinyhat-write.c" "$top/programs/tinyhat-write-core.h" "$top/programs/tinyhat-write-mac.m" "$stage/"
-tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
-	-cf - "tinyhat-write-$ver" | gzip -n -9 >"$out/tinyhat-write-$ver.tar.gz"
-rm -rf "$out/src"
+tgz "tinyhat-write-$ver"
 sha=$(sha256sum "$out/tinyhat-write-$ver.tar.gz" | awk '{ print $1 }')
 files="tinyhat-write-$ver.tar.gz"
 lic=$out/src/tinyhat-licenses-$ver
 mkdir -p "$lic"
 cp -a "$top/build/licenses" "$lic/tinyhat32"
 [ -d "$top/build/licenses-x32" ] && cp -a "$top/build/licenses-x32" "$lic/tinyhat64x32"
-tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
-	-cf - "tinyhat-licenses-$ver" | gzip -n -9 >"$out/tinyhat-licenses-$ver.tar.gz"
-rm -rf "$out/src"
+tgz "tinyhat-licenses-$ver"
 files="$files tinyhat-licenses-$ver.tar.gz"
 x86_64-w64-mingw32-windres "$top/programs/tinyhat-write-win32.rc" -o "$out/win-res.o"
 cd "$out"

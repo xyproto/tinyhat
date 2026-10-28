@@ -25,10 +25,12 @@ find /usr/lib /usr/bin -maxdepth 1 -type f ! -name "libthread_db.so*" ! -name "l
 
 
 def broken_files(root):
-    out = subprocess.run(["bwrap", "--ro-bind", root, "/", "--dev", "/dev", "--proc", "/proc", "--unshare-all",
-                          "--clearenv", "--setenv", "PATH", "/usr/bin", "/bin/sh", "-c", SCAN, SCAN],
-                         capture_output=True, text=True).stdout
-    return {line.split("\t", 1)[0].lstrip("/") for line in out.splitlines() if "\t" in line}
+    r = subprocess.run(["bwrap", "--ro-bind", root, "/", "--dev", "/dev", "--proc", "/proc", "--unshare-all",
+                        "--clearenv", "--setenv", "PATH", "/usr/bin", "/bin/sh", "-c", SCAN, SCAN],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        sys.exit(f"seedcheck.py: scanning {root} failed: {r.stderr.strip()}")
+    return {line.split("\t", 1)[0].lstrip("/") for line in r.stdout.splitlines() if "\t" in line}
 
 
 def files_of(path):

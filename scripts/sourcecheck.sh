@@ -5,6 +5,7 @@ top=$(dirname "$(dirname "$(readlink -f "$0")")")
 rc=0
 checked=0
 missing=0
+sources=$(python3 "$top/scripts/distro.py" sources)
 while read -r file sum url; do
 	case $file in ''|\#*) continue ;; esac
 	checked=$((checked + 1))
@@ -33,7 +34,7 @@ while read -r file sum url; do
 		rc=1
 	fi
 done <<EOF
-$(python3 "$top/scripts/distro.py" sources)
+$sources
 EOF
 if [ "$rc" = 0 ]; then
 	echo "sources: ok ($checked entries, $missing missing locally)"
