@@ -1,5 +1,7 @@
 [Unit]
 Description=Shorter PCI latency timers for steadier frame times
+ConditionArchitecture=|x86
+ConditionArchitecture=|x86-64
 
 [Service]
 Type=oneshot

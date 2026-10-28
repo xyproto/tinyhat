@@ -1,0 +1,1 @@
+console=serial0,115200 console=tty1 quiet loglevel=3 systemd.show_status=error rd.udev.log_level=3 tinyhat.label=TINYHAT tinyhat.persist=stick

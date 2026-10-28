@@ -30,13 +30,15 @@ MAKEFLAGS += -j$(shell nproc)
 endif
 
 .DELETE_ON_ERROR:
-.PHONY: all iso both autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
+.PHONY: all iso both rpi4 aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist vdi
 
 all: tinyhat32.img
 
 iso: tinyhat32.iso
 
 both: tinyhat32.img tinyhat64x32.img
+
+rpi4: tinyhat-rpi4.img
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
 ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate,$(or $(MAKECMDGOALS),all)))
@@ -50,6 +52,10 @@ $(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/dist
 
 tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
+	@ls -l $@
+
+tinyhat-rpi4.img: $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
+	scripts/mkimg-rpi.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs
 	@ls -l $@
 
 vdi: tinyhat32.vdi
@@ -154,6 +160,21 @@ $(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh 
 	scripts/rust.sh $(B)/buildroot vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 	@touch $@
 
+$(B)/buildroot-aarch64.lock: distro.lock scripts/distro.py
+	@mkdir -p $(B)
+	python3 scripts/distro.py lockfile buildroot-aarch64 $@
+
+$(B)/.fetched-buildroot-aarch64: $(B)/buildroot-aarch64.lock
+	python3 scripts/pkg.py fetch $< vendor/pkg-aarch64 aarch64
+	@touch $@
+
+$(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64 scripts/postinstall.sh
+	chmod -R u+w $(B)/buildroot-aarch64 2>/dev/null || true
+	rm -rf $(B)/buildroot-aarch64
+	python3 scripts/pkg.py extract $(B)/buildroot-aarch64.lock vendor/pkg-aarch64 $(B)/buildroot-aarch64
+	scripts/postinstall.sh $(B)/buildroot-aarch64 $(B)/buildroot-aarch64.lock vendor/pkg-aarch64
+	@touch $@
+
 $(B)/seed-broken.txt: $(B)/.buildroot scripts/seedcheck.py
 	python3 scripts/seedcheck.py $(B)/buildroot $(B)/buildroot.lock vendor/pkg $@
 
@@ -161,11 +182,16 @@ packages: $(I686_STAMPS)
 
 x32packages: $(ROOTFS_X32_STAMPS)
 
+aarch64packages: $(AARCH64_STAMPS)
+
 $(B)/rootfs.lock: $(ROOTFS_I686_STAMPS) $(B)/image.toml
 	python3 scripts/pkg.py local image $@ $(REPO)
 
 $(B)/rootfs-x32.lock: $(ROOTFS_X32_STAMPS) $(B)/image.toml
 	python3 scripts/pkg.py local image $@ $(REPO) x32
+
+$(B)/rootfs-aarch64.lock: $(AARCH64_STAMPS) distro.lock
+	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@
 
 $(B)/vmlinuz: config/kernel-i686.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
 	@mkdir -p $(B)
@@ -177,6 +203,9 @@ $(B)/vmlinuz-x32: config/kernel-i686.fragment config/kernel-x32.fragment vendor/
 
 $(B)/initramfs.img: $(B)/pkg/i686/busybox $(B)/pkg/i686/tinyhat-splash $(B)/rootfs.lock config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
+
+$(B)/initramfs-aarch64.img: $(B)/rootfs-aarch64.lock config/initramfs/init scripts/mkinitramfs.sh
+	scripts/mkinitramfs.sh $@ aarch64
 
 $(SOUNDFONT_GU): | vendor/src/GeneralUser-GS-2.0.3.sf2
 	@mkdir -p $(dir $@)
@@ -194,8 +223,12 @@ $(B)/.licenses-x32: $(B)/rootfs-x32.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi6
 	python3 scripts/mklicenses.py $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@touch $@
 
+$(B)/.licenses-aarch64: $(B)/rootfs-aarch64.lock $(B)/pkg/i686/licenses $(SOURCES) scripts/mklicenses.py
+	python3 scripts/mklicenses.py $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64 aarch64
+	@touch $@
+
 ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
-ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
+ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) config/rofi/config.rasi packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
@@ -205,12 +238,21 @@ $(B)/rootfs-x32.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x32.lock $(B)/vmlinu
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs64 $(B)/modules-x86_64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
 	touch $@
 
+$(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock
+	@mkdir -p $(B)/modules-aarch64
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs-aarch64 $(B)/modules-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+	touch $@
+
 $(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-i686
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock $(B)/licenses
 	@ls -l $@
 
 $(B)/root64.sfs: $(B)/rootfs-x32.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x32
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
+	@ls -l $@
+
+$(B)/root-aarch64.sfs: $(B)/rootfs-aarch64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-aarch64
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs-aarch64 $(B)/modules-aarch64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	@ls -l $@
 
 $(B)/test-usb.img: tinyhat32.img
@@ -243,7 +285,7 @@ status:
 
 clean:
 	scripts/userns.sh rm -rf $(B)
-	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat32.vdi tinyhat32.vdi.tmp tinyhat64x32.img tinyhat64x32.img.tmp tinyhat32.iso tinyhat64x32.iso
+	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat32.vdi tinyhat32.vdi.tmp tinyhat64x32.img tinyhat64x32.img.tmp tinyhat-rpi4.img tinyhat-rpi4.img.tmp tinyhat32.iso tinyhat64x32.iso
 
 distclean: clean
-	rm -rf vendor/pkg
+	rm -rf vendor/pkg vendor/pkg-aarch64

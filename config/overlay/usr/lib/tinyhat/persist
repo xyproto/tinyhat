@@ -89,7 +89,7 @@ create() {
     [ "$(partdev 2)" = "$boot" ] || return 1
     [ "$fixed" = 1 ] || removable "$disk" || return 1
     [ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
-    [ "$(sfdisk --part-type "/dev/$disk" 1 2>/dev/null)" = ef ] || return 1
+    case $(sfdisk --part-type "/dev/$disk" 1 2>/dev/null) in ef | c) ;; *) return 1 ;; esac
     in_use && return 1
     count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
     if [ "$count" = 3 ]; then
@@ -143,6 +143,14 @@ grow() {
     return 0
 }
 
+hibernated() {
+    case $(blkid -p -s TYPE -o value "$1") in
+    ext3 | ext4) [ $(($(od -An -tu4 -j 1120 -N 4 "$1") & 4)) -ne 0 ] ;;
+    ntfs) case $(head -c 4 /run/tinyhat/host/hiberfil.sys 2>/dev/null) in hibr | HIBR | wake | WAKE) return 0 ;; esac; return 1 ;;
+    *) return 1 ;;
+    esac
+}
+
 probeopts() {
     case $(blkid -p -s TYPE -o value "$1") in
     ext2 | ext3 | ext4) echo ro,noload ;;
@@ -188,6 +196,10 @@ savefile() {
             grep -q "^$d " /proc/swaps && continue
             o=$(probeopts "$d") || continue
             hostmount "$d" "$o" || continue
+            if hibernated "$d"; then
+                umount /run/tinyhat/host
+                continue
+            fi
             if [ -f "$f" ]; then
                 umount /run/tinyhat/host
                 best=$d
