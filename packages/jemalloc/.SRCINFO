@@ -1,0 +1,20 @@
+pkgbase = jemalloc
+	pkgdesc = General-purpose scalable concurrent malloc implementation
+	pkgver = 5.4.0
+	pkgrel = 1
+	epoch = 1
+	url = https://jemalloc.net/
+	arch = i686
+	arch = x32
+	license = BSD-2-Clause
+	makedepends = git
+	depends = glibc
+	depends = libgcc
+	depends = libgcc_s.so
+	depends = libstdc++
+	depends = libstdc++.so
+	provides = libjemalloc.so
+	source = git+https://github.com/jemalloc/jemalloc.git#tag=5.4.0
+	sha256sums = 1013d73abb1820cd7c7a24b2270414c09f663474bdeb1c86c36a200f4f950ad6
+
+pkgname = jemalloc

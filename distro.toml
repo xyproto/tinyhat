@@ -567,6 +567,9 @@ prebuilt = true
 [at-spi2-core]
 build = true
 
+[bind]
+build = true
+
 [binutils]
 prebuilt = true
 
@@ -715,6 +718,9 @@ arch = "i686"
 build = true
 # librsvg-2.0.pc (the seed's librsvg is broken) needs dav1d >= 1.3.0
 localdeps = ["dav1d"]
+
+[jemalloc]
+build = true
 
 [krb5]
 prebuilt = true

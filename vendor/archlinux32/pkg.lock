@@ -177,6 +177,7 @@ core libnghttp2 1.70.0-1.0 libnghttp2-1.70.0-1.0-i686.pkg.tar.zst 3ad04bd1989936
 core libnghttp3 1.18.0-1.0 libnghttp3-1.18.0-1.0-i686.pkg.tar.zst 2db1ca7031dc68957b1e6d5e9d4f69d62e968833643519355b15924fc354a2a6
 core libngtcp2 1.25.0-1.0 libngtcp2-1.25.0-1.0-i686.pkg.tar.zst 0eea0d5a418bcb377a5f8389bc425672cc7e871c906e1fcf23bdd6c80b3f2f9c
 core libnl 3.12.0-1.0 libnl-3.12.0-1.0-i686.pkg.tar.zst 082a2eb1c5d9be065ce668aea868bd32f675a394948fe765cd5e9f1ea20f71dc
+core libnsl 2.0.1-2.0 libnsl-2.0.1-2.0-i686.pkg.tar.zst 2e908ff57ff2b5c8b9688255fbadbe4b01fb9595b911a7fe8397b0286b9bede6
 extra libogg 1.3.6-1.0 libogg-1.3.6-1.0-i686.pkg.tar.zst 3c5bcdf73caa756da8d24d5247a12b0ca563fe9fe87e384f0dc133922663a4c7
 extra libomxil-bellagio 0.9.3-5.0 libomxil-bellagio-0.9.3-5.0-i686.pkg.tar.zst c74250634e7bbd40bc3fcbabef53d142c2330a7040d9bf7f6fc2c86bbc904a63
 core libp11-kit 0.26.5-1.0 libp11-kit-0.26.5-1.0-i686.pkg.tar.zst 270054cfd2b2ea96291bc00632db226e7a3080e5baca7bb7ee9ae2a0df56fe2f
@@ -207,6 +208,7 @@ core libunistring 1.4.2-1.0 libunistring-1.4.2-1.0-i686.pkg.tar.zst 7e05e0dfda37
 extra libunwind 1.8.1-3.2 libunwind-1.8.1-3.2-i686.pkg.tar.zst e6e252b4a87dcf4e86008d6695043b8ee7163a889f09d1d3b3dc0c30b558672e
 extra liburcu 0.15.7-1.0 liburcu-0.15.7-1.0-i686.pkg.tar.zst 0e947f01f8e75b75ae99daaad8fd2af39d385b61915c10656bc61a9553228d20
 core libusb 1.0.26-1.0 libusb-1.0.26-1.0-i686.pkg.tar.zst a644a40d618c6e9c4469a8152b0009274ff1b50b67decc4b371bab59d360f6cb
+extra libuv 1.52.1-2.0 libuv-1.52.1-2.0-i686.pkg.tar.zst c480ec13eab5bbddb8c51921291b91bd0b56c7bd6ad9433ec1de59d7f86ff11c
 core libverto 0.3.2-6.0 libverto-0.3.2-6.0-i686.pkg.tar.zst ccb59d51515fab965b1c31edc5e719c3e57e139b33dcf5a2105a4f082df1ede2
 extra libvorbis 1.3.7-4.0 libvorbis-1.3.7-4.0-i686.pkg.tar.zst 3c414579348342d7479308dccb044ab77fa995ef2cfa4a42e0113610d967321d
 extra libwacom 2.20.0-1.0 libwacom-2.20.0-1.0-i686.pkg.tar.zst fe06dc4bc3c20b333a0252533c035c08b32bbd6980f25fdaa8e2403fdac97d19

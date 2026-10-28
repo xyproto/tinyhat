@@ -247,7 +247,7 @@ disk=$(readlink -f "/sys/class/block/${dev#/dev/}/..")
 disk=${disk##*/}
 [ -f "/sys/class/block/${dev#/dev/}/partition" ] && [ -d "/sys/block/$disk" ] || persist=0
 case $mode in
-"" | stick) removable "$disk" && where=disk || where= ;;
+"" | stick) { removable "$disk" || [ "$(/usr/bin/sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ]; } && where=disk || where= ;;
 machine) removable "$disk" && where=file || where=disk ;;
 *) where= ;;
 esac

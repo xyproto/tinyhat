@@ -1,0 +1,5 @@
+_d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(icu|libmaxminddb|lmdb)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+makedepends=(${makedepends[@]//python-sphinx/})
+eval "$(
+  declare -f build | sed 's/--with-maxminddb/--disable-geoip --with-jemalloc/; s/--with-lmdb/--without-lmdb/'
+)"

@@ -1,0 +1,6 @@
+optdepends=()
+eval "$(
+  declare -f build | sed 's/--enable-prof/--disable-prof/'
+  declare -f package | sed 's/ install$/ install_lib install_include/; s/ install;/ install_lib install_include;/'
+)"
+check() { :; }
