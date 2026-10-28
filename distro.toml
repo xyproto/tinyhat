@@ -368,15 +368,13 @@ add = ["archlinuxarm-keyring", "linux-rpi", "raspberrypi-bootloader", "firmware-
 # Built for the initramfs
 build = ["busybox", "tinyhat-splash"]
 # Added to the build environment, which otherwise has what the built recipes need
-buildroot = ["go"]
+buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
 exclude = ["boot"]
 remove = [
     "archlinux32-keyring",
     # PC hardware
     "linux-firmware-radeon", "linux-firmware-intel",
-    # x86 assembly
-    "zsnes",
     # Not in Arch Linux ARM yet (the arm-none-eabi toolchain for GBA development)
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "gba-dev",
 ]
