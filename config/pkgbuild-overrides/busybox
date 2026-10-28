@@ -1,5 +1,5 @@
 if [ "$CARCH" = aarch64 ]; then
   eval "$(
-    declare -f build | sed 's|make CC=musl-gcc|mkdir -p "$srcdir/noatomic"; ar rc "$srcdir/noatomic/libatomic_asneeded.a"; LDFLAGS="$LDFLAGS -L$srcdir/noatomic" make CC=musl-gcc|'
+    declare -f build | sed 's|make CC=musl-gcc|sed -i "s/^CONFIG_TC=y/# CONFIG_TC is not set/" .config; mkdir -p "$srcdir/noatomic"; ar rc "$srcdir/noatomic/libatomic_asneeded.a"; LDFLAGS="$LDFLAGS -L$srcdir/noatomic" make CC=musl-gcc|'
   )"
 fi
