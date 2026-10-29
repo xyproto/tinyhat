@@ -61,8 +61,8 @@ def skipped():
     return {base for base, t in tables().items() if t.get("skip_for_now")}
 
 
-def localdeps():
-    return {base: t["localdeps"] for base, t in tables().items() if "localdeps" in t}
+def excluded():
+    return {base for base, t in tables().items() if t.get("excluded")}
 
 
 def prebuilt_listed():
