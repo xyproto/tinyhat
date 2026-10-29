@@ -357,9 +357,10 @@ def import_one(base, entry, src, restrict):
 
 def entries():
     out = []
+    skipped = distro.skipped()
     for base, e in sorted(packages().items()):
         src = e.get("source", "arch")
-        if src == "sources" or not e.get("version"):
+        if src == "sources" or not e.get("version") or base in skipped:
             continue
         out.append((base, e, src))
     return out

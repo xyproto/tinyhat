@@ -144,8 +144,9 @@ def arch_versions():
 def arch_updates(report, only):
     recipes = distro.lock().get("recipes", {})
     tables = distro.tables()
+    skipped = distro.skipped()
     bases = [b for b, r in sorted(recipes.items())
-             if (not only or b in only) and tables.get(b, {}).get("source", "arch") == "arch"
+             if (not only or b in only) and b not in skipped and tables.get(b, {}).get("source", "arch") == "arch"
              and r.get("version") not in (None, "main", "latest") and "version" not in tables.get(b, {})
              and os.path.isdir(os.path.join(TOP, "packages", b))]
     log(f"checking {len(bases)} imported recipes against the Arch Linux package databases")
@@ -259,7 +260,7 @@ def bump(base, new, pkgrel="1"):
 
 
 def upstream_updates(report, only, apply_bumps):
-    pinned = {b for b, t in distro.tables().items() if "version" in t}
+    pinned = {b for b, t in distro.tables().items() if "version" in t} | distro.skipped()
     entries = {b: c for b, c in nvchecker_entries().items() if (not only or b in only) and b not in pinned}
     if not entries or not shutil.which("nvchecker"):
         return

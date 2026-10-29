@@ -17,7 +17,6 @@ pkgbase = poppler
 	makedepends = cairo
 	makedepends = fontconfig
 	makedepends = openjpeg2
-	makedepends = gtk3
 	makedepends = pkgconfig
 	makedepends = lcms2
 	makedepends = gobject-introspection
