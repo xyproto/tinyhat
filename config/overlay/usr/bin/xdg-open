@@ -9,5 +9,7 @@ case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
 	exec foot mc "$1" ;;
 *.png | *.jpg | *.jpeg | *.gif | *.bmp | *.webp | *.tif | *.tiff | *.svg | *.ff)
 	exec imv "$1" ;;
+*.pdf)
+	exec zathura "$1" ;;
 esac
 exec foot o "$1"
