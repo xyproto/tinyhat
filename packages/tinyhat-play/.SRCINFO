@@ -1,16 +1,16 @@
 pkgbase = tinyhat-play
 	pkgdesc = Search for, download and launch homebrew games for classic gaming platforms
-	pkgver = 1.0.0
+	pkgver = 1.1.0
 	pkgrel = 1
 	url = https://github.com/xyproto/tinyhat-play
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause
 	makedepends = fontconfig
-	depends = gtk3
+	depends = gtk4
 	depends = curl
 	depends = libglvnd
-	source = tinyhat-play-1.0.0.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v1.0.0.tar.gz
-	sha256sums = 880a87c4fbe1fc2692c2b49b55438e8ae1ec9424248ed8c2561d4a648dd9f1eb
+	source = tinyhat-play-1.1.0.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v1.1.0.tar.gz
+	sha256sums = c9ab2952cd487577deb8df661cd7d2fabfc030d38d73225bc66c9c12355e489e
 
 pkgname = tinyhat-play

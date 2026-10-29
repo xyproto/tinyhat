@@ -1,8 +1,8 @@
 pkgbase = netsurf
 	pkgdesc = Lightweight and fast web browser
-	pkgver = 3.11
-	pkgrel = 12
-	url = https://www.netsurf-browser.org/
+	pkgver = 3.12.0
+	pkgrel = 1
+	url = https://github.com/xyproto/netsurf
 	arch = i686
 	arch = x32
 	license = GPL-2.0-only
@@ -14,8 +14,8 @@ pkgbase = netsurf
 	makedepends = tinyxxd
 	makedepends = icu69
 	depends = curl
-	depends = gtk3
-	depends = libcss>=0.9.2
+	depends = gtk4
+	depends = libcss>=0.9.2.r116
 	depends = libdom>=0.4.2
 	depends = libhubbub=0.3.8
 	depends = libjpeg-turbo
@@ -26,17 +26,11 @@ pkgbase = netsurf
 	depends = libutf8proc>=2.9.0
 	depends = libwapcaplet>=0.4.3
 	depends = libwebp
-	source = https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-3.11.tar.gz
+	source = netsurf-3.12.0.tar.gz::https://github.com/xyproto/netsurf/archive/refs/tags/v3.12.0.tar.gz
 	source = netsurf.sh
-	source = download-open.patch
-	source = autofocus.patch
-	sha256sums = 4dea880ff3c2f698bfd62c982b259340f9abcd7f67e6c8eb2b32c61f71644b7b
-	sha256sums = 7fe3ce6b7c7058ae5385614848154653840b83906b090fc90c4e70455d39affc
-	sha256sums = 80cf970517bfed24c1fe207b9a7ee8251294952938380f1c85768fa26fa6b463
-	sha256sums = 7f5c9844ee4e123a3926b5659c42f26b533ac6fc13d63f738b1d54133c8f46d0
-	b2sums = a771d12de754a3cce6a38c79c11388c7d8ec26bda3e30c97eff3542e7b17bbfb3a369e3c99456d954878726a94b8052825ef3801bcd64eab4fabc26091e7b0b8
-	b2sums = c12c85c42a9f4615199e61b97cf95edaad1f2f103a1dd6815876006c7a75793bca7afc595431e6147b7a5c7e0be23f33d97cc9dfce1d7d94c35b8b43dcf627d4
-	b2sums = d28f6e00ea9cf0f27f6901c7af654ff723a0b8b4d0a62a38943da382967e664d8e29b421f66847f4f4d2978da167e9c8c7e946b9da0d453256c6ac30c4f2d907
-	b2sums = 8bea05a15c9ae32ebd208a32689902c8cd3a66b98037c386d42dccc826d351237a5d6de4e3e30bbf46d50a4c0e4508406e8dd324e40fd0f1e4abf7c0b06ca223
+	sha256sums = 5672908921f64d0e214273d57c280d0c8a6971acf4a9c617cc979ac1abd78ce5
+	sha256sums = ad5090704ecfb8e396f76d0c59c821edde4dac8005a1478cff7a70d96b1646b6
+	b2sums = d06b28078c96c3eea0faee96fe0c749644c83e1e7520421223f7d025b77cb778ead2ff75168f862594016b9f84555cac49b60262889efbd8bf10df34247d301a
+	b2sums = ca468901b0bb70c86341e7f627b64a40729f995bd485d46f55a74f7efc214fb99558dfe79016e67eeddfdf5ebb10d871d52b36641d193f190a9a82773e2e1079
 
 pkgname = netsurf

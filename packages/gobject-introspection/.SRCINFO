@@ -1,0 +1,54 @@
+pkgbase = gobject-introspection
+	pkgdesc = Introspection system for GObject-based libraries
+	pkgver = 1.86.0
+	pkgrel = 1
+	url = https://wiki.gnome.org/Projects/GObjectIntrospection
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	license = LGPL-2.0-or-later
+	makedepends = glib2=2.90.1
+	makedepends = cairo
+	makedepends = git
+	makedepends = glibc
+	makedepends = libffi
+	makedepends = libffi
+	makedepends = meson
+	makedepends = python
+	makedepends = python-mako
+	makedepends = python-markdown
+	makedepends = python-setuptools
+	source = git+https://gitlab.gnome.org/GNOME/gobject-introspection.git#tag=1.86.0
+	source = git+https://gitlab.gnome.org/GNOME/glib.git?signed#tag=2.90.1
+	source = git+https://gitlab.gnome.org/GNOME/gobject-introspection-tests.git
+	validpgpkeys = 923B7025EE03C1C59F42684CF0942E894B2EAFA0
+	validpgpkeys = D4C501DA48EB797A081750939449C2F50996635F
+	b2sums = 46007e1c426ebfde0d94b84398a1d99e0fc516f1b5a78590d0d1ddec76b90d19a9c6f4f9959a6d243cbb3601390763bbdd7d05d1d1c3d4fb9746f453b40ea849
+	b2sums = d2a3b7c9745b4473621bc77d1fa690c062510cb53dd24555abceb0216ddb9c3f18214774a6c4a948daf0edcf4738db9ed1cba47ec92481d4eee18906bc0e78a3
+	b2sums = SKIP
+
+pkgname = gobject-introspection
+	depends = gobject-introspection-runtime=1.86.0
+	depends = libgirepository=1.86.0
+	depends = glib2
+	depends = glibc
+	depends = libffi
+	depends = python
+	depends = python-mako
+	depends = python-markdown
+	depends = python-setuptools
+
+pkgname = gobject-introspection-runtime
+	pkgdesc = Introspection system for GObject-based libraries - runtime
+	depends = libgirepository=1.86.0
+
+pkgname = libgirepository
+	pkgdesc = Introspection system for GObject-based libraries - runtime library
+	depends = glib2
+	depends = glibc
+	depends = libffi
+	depends = libffi.so
+	depends = libglib-2.0.so
+	depends = libgobject-2.0.so
+	depends = libgmodule-2.0.so
+	provides = libgirepository-1.0.so

@@ -6,7 +6,6 @@ pkgbase=avahi
 pkgname=(
   avahi
   avahi-bookmarks
-  avahi-gtk
 )
 pkgver=0.9rc5
 pkgrel="2"
@@ -32,7 +31,6 @@ makedepends=(
   glib2-devel
   gobject-introspection
   graphviz
-  gtk3
   python-dbus
   python-gobject
   python-twisted
@@ -62,6 +60,8 @@ build() {
     --localstatedir=/var
     --sbindir=/usr/bin
     --runstatedir=/run
+    --disable-gtk
+    --disable-gtk3
     --disable-libevent
     --disable-mono
     --disable-qt5
@@ -95,7 +95,6 @@ package_avahi() {
   depends+=(libdbus-1.so)
   optdepends=(
     'avahi-bookmarks: avahi-bookmarks'
-    'avahi-gtk: avahi-discover, avahi-discover-standalone, bshell, bssh, bvnc'
     'nss-mdns: NSS support for mDNS'
     'python-dbus: Python bindings'
   )
@@ -120,14 +119,10 @@ package_avahi() {
     _pick a-bm usr/bin/avahi-bookmarks
     _pick a-bm usr/share/man/man1/avahi-bookmarks.1*
 
-    _pick a-gtk usr/bin/{avahi-discover{,-standalone},bshell,bssh,bvnc}
-    _pick a-gtk usr/include/avahi-ui
-    _pick a-gtk usr/lib/libavahi-ui-gtk3.*
-    _pick a-gtk usr/lib/pkgconfig/avahi-ui-gtk3.pc
-    _pick a-gtk usr/lib/python*/site-packages/avahi/ServiceTypeDatabase.py
-    _pick a-gtk usr/share/applications
-    _pick a-gtk usr/share/avahi/interfaces
-    _pick a-gtk usr/share/man/man1/{avahi-discover,bshell,bssh,bvnc}.1*
+    rm -rf usr/bin/{avahi-discover{,-standalone},bshell,bssh,bvnc} usr/share/applications \
+      usr/share/avahi/interfaces usr/share/man/man1/{avahi-discover,bshell,bssh,bvnc}.1* \
+      usr/lib/python*/site-packages/avahi/ServiceTypeDatabase.py
+
   )
 }
 
@@ -143,23 +138,6 @@ package_avahi-bookmarks() {
   optdepends=('python-twisted: built-in web server (default mode, not -c)')
 
   mv a-bm/* "$pkgdir"
-}
-
-package_avahi-gtk() {
-  pkgdesc+=" - GTK tools and UI library"
-  depends=(
-    "avahi=$epoch:$pkgver"
-    gdbm
-    glib2
-    glibc
-    gtk3
-    python
-    python-dbus
-    python-gobject
-  )
-  provides=(libavahi-ui-gtk3.so)
-
-  mv a-gtk/* "$pkgdir"
 }
 
 # vim:set sw=2 sts=-1 et:
