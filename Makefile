@@ -160,7 +160,7 @@ $(B)/.fetched-buildroot: $(B)/buildroot.lock
 	@touch $@
 
 $(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
-	chmod -R u+w $(B)/buildroot 2>/dev/null || true
+	chmod -R u+rwX $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
 	python3 scripts/pkg.py extract $(B)/buildroot.lock vendor/pkg $(B)/buildroot
 	ldconfig -r $(B)/buildroot
@@ -177,7 +177,7 @@ $(B)/.fetched-buildroot-aarch64: $(B)/buildroot-aarch64.lock
 	@touch $@
 
 $(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64 scripts/postinstall.sh
-	chmod -R u+w $(B)/buildroot-aarch64 2>/dev/null || true
+	chmod -R u+rwX $(B)/buildroot-aarch64 2>/dev/null || true
 	rm -rf $(B)/buildroot-aarch64
 	python3 scripts/pkg.py extract $(B)/buildroot-aarch64.lock vendor/pkg-aarch64 $(B)/buildroot-aarch64
 	scripts/postinstall.sh $(B)/buildroot-aarch64 $(B)/buildroot-aarch64.lock vendor/pkg-aarch64
