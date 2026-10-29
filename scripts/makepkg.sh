@@ -116,7 +116,7 @@ fi
 distccd_pid=
 cleanup() {
 	[ -z "$distccd_pid" ] || kill "$distccd_pid" 2>/dev/null || true
-	chmod -R u+w "$work" 2>/dev/null || true
+	chmod -R u+rwX "$work" 2>/dev/null || true
 	rm -rf "$work"
 }
 cleanup
