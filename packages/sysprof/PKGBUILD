@@ -107,4 +107,7 @@ if [ "$CARCH" = 'i486' ]; then
   makedepends+=(icu69)
 fi
 
+depends=($(printf '%s\n' "${depends[@]}" | grep -v -x -E 'gtk4|libadwaita|libpanel|graphene|hicolor-icon-theme'))
+eval "$(declare -f build | sed 's/arch-meson sysprof build/& -Dgtk=false/')"
+
 unset -f pkgver

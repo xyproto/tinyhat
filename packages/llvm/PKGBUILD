@@ -24,8 +24,9 @@ build() {
     -DLLVM_INCLUDE_TESTS=OFF \
     -DLLVM_INCLUDE_EXAMPLES=OFF \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
-    -DLLVM_INCLUDE_DOCS=OFF
-  ninja -C build
+    -DLLVM_INCLUDE_DOCS=OFF \
+    -DLLVM_PARALLEL_LINK_JOBS=2
+  ninja $NINJAFLAGS -C build
 }
 
 package_llvm-libs() {

@@ -71,4 +71,6 @@ package() {
 	DESTDIR="${pkgdir}" cmake --install build
 }
 
+makedepends=(${makedepends[@]/efl/})
+
 unset -f pkgver

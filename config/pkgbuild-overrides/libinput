@@ -1,0 +1,5 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gtk4|libx11'))
+eval "$(
+  declare -f build | sed 's/arch-meson /arch-meson -Ddebug-gui=false /g'
+  declare -f package_libinput-tools | sed 's/ gtk4\b//; s/ libx11\b//'
+)"
