@@ -20,7 +20,7 @@ SEED_ONLY = {"python", "perl", "ruby", "nodejs", "lua", "tcl", "glibc", "gcc", "
 
 
 def parse(path):
-    base, pkgs, cur = {}, {}, None
+    base, pkgs, cur, constraints = {}, {}, None, {}
     with open(path) as f:
         for line in f:
             line = line.rstrip("\n")
@@ -38,13 +38,16 @@ def parse(path):
             target.setdefault(k, [])
             if v:
                 target[k].append(pkg.strip_ver(v))
+                m = re.fullmatch(r"([^<>=]+)(>=|<=|=|>|<)(.+)", v)
+                if m and k.partition("_")[0] in ("depends", "makedepends"):
+                    constraints.setdefault(m.group(1), []).append((m.group(2), m.group(3)))
 
     def get(fields, key):
         return fields.get(key, base.get(key, [])) + fields.get(key + "_i686", base.get(key + "_i686", []))
 
     epoch = base.get("epoch", ["0"])
     info = {"pkgbase": base.get("pkgbase"), "pkgnames": list(pkgs), "depends": {}, "provides": {}, "arch": {},
-            "makedepends": get({}, "makedepends"),
+            "makedepends": get({}, "makedepends"), "constraints": constraints,
             "version": f"{epoch[0] if epoch else '0'}:{base.get('pkgver', [''])[0]}"}
     for name, fields in pkgs.items():
         info["depends"][name] = get(fields, "depends")
@@ -56,7 +59,7 @@ def parse(path):
 def load():
     out = []
     root = os.path.join(TOP, "packages")
-    skipped = distro.skipped()
+    skipped = distro.skipped() | distro.excluded()
     for base in sorted(os.listdir(root)):
         path = os.path.join(root, base, ".SRCINFO")
         if base in skipped or not os.path.exists(path):
@@ -153,13 +156,30 @@ def rpmvercmp(a, b):
     return 1
 
 
+def vercmp(a, b):
+    """Compare two pacman versions [epoch:]version[-release]; the release only counts when both have one."""
+    def split(v):
+        epoch, _, rest = v.rpartition(":")
+        version, _, release = rest.partition("-")
+        return int(epoch or 0), version, release
+    (e1, v1, r1), (e2, v2, r2) = split(a), split(b)
+    if e1 != e2:
+        return -1 if e1 < e2 else 1
+    return rpmvercmp(v1, v2) or (rpmvercmp(r1, r2) if r1 and r2 else 0)
+
+
+def satisfies(version, constraints):
+    ops = {">=": lambda c: c >= 0, "<=": lambda c: c <= 0, "=": lambda c: c == 0, ">": lambda c: c > 0, "<": lambda c: c < 0}
+    return all(ops[op](vercmp(version, req)) for op, req in constraints)
+
+
 def deny_rules():
     """[image] deny entries as (name pattern, operator, version): "perl*" or "llvm<23"."""
     out = []
     for e in distro.section("image").get("deny", []):
         m = re.fullmatch(r"([^<>=]+)(<=|<)(.+)", e)
         out.append((m.group(1), m.group(2), m.group(3)) if m else (e, None, None))
-    return out
+    return out + [(name, None, None) for name in sorted(distro.excluded())]
 
 
 def denied(name, version=None, rules=None):
@@ -207,9 +227,12 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
     for dep in all_deps(info):
         seedname = pkg.lookup(seed, dep, prefs, set())
         localname = pkg.lookup(idx["i686"], dep, prefs, set())
-        if localname in prebuilt and seedname is not None:
+        wants = info["constraints"].get(dep)
+        too_old = bool(wants and seedname in seed[0] and localname is not None
+                       and not satisfies(seed[0][seedname]["version"], wants))
+        if localname in prebuilt and seedname is not None and not too_old:
             continue
-        if seedname is None or local_first(idx, localname):
+        if seedname is None or local_first(idx, localname) or too_old:
             wanted, out = [localname], hard
         else:
             wanted, out = sorted(seed_closure(seed, seedname, prefs, cache) & broken), hard
@@ -374,7 +397,6 @@ def cmd_mk():
     names, provided, _ = local
     full = local_index(infos, ("arch", "tinyhat"))
     base_of = full[2]
-    localdeps = distro.localdeps()
     prefs = distro.providers()
     libs = read_libs()
     idx = indexes(infos)
@@ -467,13 +489,10 @@ def cmd_mk():
             lines.append("")
             continue
         if info["sub"] == "tinyhat":
-            wanted = all_deps(info)
             tinyhat += info["pkgnames"]
-            deps = [d for d in exact_local(localdeps.get(info["base"], []) + resolve_local(wanted, names, provided, own), full, local) if d not in own]
-        else:
-            hard, soft = auto_local(info, seed, idx, prefs, broken, closures, versions, prebuilt_names, image)
-            deps = [d for d in exact_local(localdeps.get(info["base"], []) + hard, full, local) if d not in own]
-            soft = [d for d in exact_local(soft, full, local) if d not in own and d not in deps]
+        hard, soft = auto_local(info, seed, idx, prefs, broken, closures, versions, prebuilt_names, image)
+        deps = [d for d in exact_local(hard, full, local) if d not in own]
+        soft = [d for d in exact_local(soft, full, local) if d not in own and d not in deps]
         i686_plans[info["base"]] = (info, deps, soft)
     for comp in prune_soft(i686_plans, base_of):
         print(f"mkpkgs.py: dependency cycle: {' '.join(sorted(comp))}", file=sys.stderr)
@@ -507,7 +526,7 @@ def cmd_mk():
             x32 = [n for n in ("glibc", "x32-runtime") if n not in x32] + x32
             chain = ["x32-binutils", "x32-gcc"]
             if info["sub"] == "arch":
-                wanted = localdeps.get(base, []) + auto_local(info, seed, idx, prefs, broken, closures, versions)[0]
+                wanted = auto_local(info, seed, idx, prefs, broken, closures, versions, prebuilt_names)[0]
                 tools += [d for d in exact_local(wanted, full, local) if d not in tools and d not in info["pkgnames"]]
         if x32_only is not None:
             x32 = [n for n in x32 if x32_base.get(n) in x32_only]
@@ -624,15 +643,15 @@ def cmd_seed():
     infos = load()
     used = image_bases()
     names, provided, _ = local_index(infos)
-    localdeps = distro.localdeps()
     db = seed_index()
     idx = indexes(infos)
     prefs = distro.providers()
     seed = list(SEED_BASE)
+    excluded, wanted_by = distro.excluded(), {}
     for info in infos:
         if used is not None and info["base"] not in used:
             continue
-        skip = set(info["pkgnames"]) | set(localdeps.get(info["base"], []))
+        skip = set(info["pkgnames"])
         for dep in all_deps(info):
             if info["sub"] == "tinyhat" and (dep in names or dep in provided):
                 continue
@@ -643,7 +662,13 @@ def cmd_seed():
                 continue
             if dep in skip or dep in seed or dep.startswith("lib32-"):
                 continue
+            if dep in excluded:
+                wanted_by.setdefault(dep, []).append(info["base"])
+                continue
             seed.append(dep)
+    if wanted_by:
+        sys.exit("mkpkgs.py: recipes need excluded packages in the build environment:\n" +
+                 "\n".join(f"  {d}: needed by {', '.join(sorted(b))}" for d, b in sorted(wanted_by.items())))
     print("\n".join(seed))
 
 

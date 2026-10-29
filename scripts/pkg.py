@@ -261,9 +261,10 @@ def list_config(name, extra=()):
     for path in extra:
         targets += [t for t in read_list(path) if t not in targets]
     skipped = distro.skipped()
-    listed = sorted(set(targets) & skipped)
-    if listed:
-        die(f"[{name}] lists {' '.join(listed)}, which distro.toml marks skip_for_now")
+    for mark, names in (("skip_for_now", skipped), ("excluded", distro.excluded())):
+        listed = sorted(set(targets) & names)
+        if listed:
+            die(f"[{name}] lists {' '.join(listed)}, which distro.toml marks {mark}")
     return targets, distro.providers(), skip | skipped
 
 
@@ -273,7 +274,26 @@ def resolve(name, extra=(), repodir=None, arch="i686"):
         indexes = {a: load_repo(repodir, a) for a in ({"i686", arch} if arch == "x32" else {arch})}
     else:
         indexes = {"i686": load_db()}
-    return resolve_targets(targets, indexes, arch, prefs, skip)
+    sel = resolve_targets(targets, indexes, arch, prefs, skip)
+    check_excluded(name, sel, extra)
+    return sel
+
+
+def check_excluded(name, sel, extra=()):
+    """Stop if an excluded package (distro.toml excluded = true) got into the selection, naming what pulled it in."""
+    bad = {p["name"] for p in sel} & distro.excluded()
+    if not bad:
+        return
+    by = {}
+    for p in sel:
+        for d in p.get("depends", []):
+            by.setdefault(strip_ver(d), []).append(p["name"])
+    lines = []
+    for n in sorted(bad):
+        users = sorted(set(by.get(n, [])))
+        lines.append(f"  {n}: needed by {', '.join(users)}" if users else f"  {n}: listed for [{name}]" +
+                     (f" (from {', '.join(extra)})" if extra else ""))
+    die(f"[{name}] would contain excluded packages:\n" + "\n".join(lines))
 
 
 def lock_line(p, repo=None):

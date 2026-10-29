@@ -42,9 +42,9 @@ skip = [
 # Package updates that would make the image depend on one of these are held back (scripts/autoupdate.py)
 deny = [
     "perl", "perl-*",
-    "sdl2", "sdl2-*", "sdl2_*", "sdl12-compat",
-    "gtk2", "gtk2-*", "gtkmm", "libglade",
-    "gtk3", "gtk3-*", "vte3",
+    "sdl2-*", "sdl2_*",
+    "gtk2-*",
+    "gtk3-*",
     "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
     "xorg-server*", "xorg-x*", "libx11", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
     "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
@@ -550,20 +550,21 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 # Arch Linux packaging repos at the version recorded in distro.lock; "sources" means
 # packages/<name>/PKGBUILD is Tiny Hat's own. A version here pins the import; a recipe
 # with no version anywhere is maintained by hand and never re-imported.
-# build = true builds even if a prebuilt package exists; arch = "i686" means no x32 build;
-# localdeps lists locally built packages the build needs; pin* picks the archlinux32
-# package used in the build environment.
+# build_from_source = true builds even if a prebuilt package exists; build_for lists the
+# targets an imported recipe is built for (default ["i686", "x32"]); skip_for_now = true
+# leaves the recipe out of everything; pin* picks the archlinux32 package used in the
+# build environment. Dependencies belong in the PKGBUILD: a build gets the local version
+# of each dependency that is built from source or that the seed lacks or has broken.
 
 [abcmidi]
 build_from_source = true
 
 [algernon]
-arch = "i686"
+build_for = ["i686"]
 build_from_source = true
 
 [aquarium]
 source = "sources"
-arch = "i686"
 nvchecker = { source = "github", github = "xyproto/aquarium", prefix = "v", use_max_tag = true }
 
 [arm-none-eabi-gcc]
@@ -582,14 +583,13 @@ build_from_source = true
 prebuilt = true
 
 [bluetui]
-arch = "i686"
+build_for = ["i686"]
 
 [bonzomatic]
 build_from_source = true
-localdeps = ["libglvnd"]
 
 [busybox]
-arch = "i686"
+build_for = ["i686"]
 
 [bwbasic]
 source = "sources"
@@ -615,8 +615,6 @@ build_from_source = true
 
 [dosbox-x]
 source = "sources"
-arch = "i686"
-localdeps = ["libglvnd"]
 nvchecker = { source = "github", github = "xyproto/dosbox-x", use_max_tag = true }
 
 [dwl]
@@ -624,10 +622,12 @@ source = "sources"
 
 [fcft]
 build_from_source = true
-localdeps = ["libutf8proc"]
+
+[ffmpeg]
+excluded = true
 
 [fish]
-arch = "i686"
+build_for = ["i686"]
 
 [fluidsynth]
 source = "sources"
@@ -638,26 +638,23 @@ source = "sources"
 
 [foot]
 build_from_source = true
-localdeps = ["fcft", "libutf8proc"]
 
 [ft2-clone]
 build_from_source = true
 
 [furnace]
 source = "sources"
-localdeps = ["libglvnd"]
 nvchecker = { source = "github", github = "tildearrow/furnace", prefix = "v", use_latest_release = true }
 
 [fuzzel]
 source = "sources"
-localdeps = ["fcft", "libutf8proc"]
 nvchecker = { source = "gitea", gitea = "dnkl/fuzzel", host = "codeberg.org", use_max_tag = true }
 
 [gba-dev]
 source = "sources"
 
 [gcc]
-arch = "i686"
+build_for = ["i686"]
 prebuilt = true
 
 [gdb]
@@ -665,7 +662,6 @@ source = "sources"
 
 [gdk-pixbuf2]
 build_from_source = true
-localdeps = ["meson", "shared-mime-info"]
 
 [girara]
 build_from_source = true
@@ -689,7 +685,7 @@ build_from_source = true
 build_from_source = true
 
 [glycin]
-arch = "i686"
+build_for = ["i686"]
 
 [gnupg]
 prebuilt = true
@@ -699,7 +695,6 @@ prebuilt = true
 
 [go-tinyhat]
 source = "sources"
-arch = "i686"
 
 [gobject-introspection]
 build_from_source = true
@@ -708,25 +703,34 @@ build_from_source = true
 source = "sources"
 
 [grub]
-arch = "i686"
+build_for = ["i686"]
 
 [grub-efi64]
 source = "sources"
-arch = "i686"
+
+[gstreamer]
+excluded = true
+
+[gtk2]
+excluded = true
+
+[gtk3]
+excluded = true
 
 [gtk4]
 build_from_source = true
+
+[gtkmm]
+excluded = true
 
 [highway]
 prebuilt = true
 
 [impala]
-arch = "i686"
+build_for = ["i686"]
 
 [imv]
 build_from_source = true
-# librsvg-2.0.pc (the seed's librsvg is broken) needs dav1d >= 1.3.0
-localdeps = ["dav1d"]
 
 [jemalloc]
 build_from_source = true
@@ -735,7 +739,7 @@ build_from_source = true
 prebuilt = true
 
 [libclc]
-localdeps = ["llvm-libs", "llvm", "clang", "spirv-llvm-translator"]
+build_from_source = true
 
 [libcss]
 build_from_source = true
@@ -746,10 +750,12 @@ nvchecker = { source = "gitlab", gitlab = "emersion/libdisplay-info", host = "gi
 
 [libdom]
 source = "sources"
-localdeps = ["libwapcaplet"]
 
 [libepoxy]
 build_from_source = true
+
+[libglade]
+excluded = true
 
 [libglvnd]
 build_from_source = true
@@ -781,17 +787,16 @@ build_from_source = true
 
 [libretro-blastem]
 source = "sources"
-arch = "i686"
 
 [librsvg]
-arch = "i686"
+build_for = ["i686"]
 build_from_source = true
 
 [libsvgtiny]
 build_from_source = true
 
 [libunwind]
-arch = "i686"
+build_for = ["i686"]
 
 [libutf8proc]
 build_from_source = true
@@ -817,21 +822,20 @@ prebuilt = true
 prebuilt_reason = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23"
 
 [love]
-arch = "i686"
+build_for = ["i686"]
 build_from_source = true
 
 [lsd]
-arch = "i686"
+build_for = ["i686"]
 
 [luajit]
-arch = "i686"
+build_for = ["i686"]
 
 [make]
 source = "sources"
 
 [mesa]
 prebuilt = true
-localdeps = ["llvm-libs", "llvm", "clang", "libclc", "spirv-llvm-translator"]
 
 [meson]
 build_from_source = true
@@ -842,7 +846,6 @@ nvchecker = { source = "github", github = "mgba-emu/mgba", use_latest_release = 
 
 [monkeyjumpgo]
 source = "sources"
-arch = "i686"
 
 [mpg123]
 build_from_source = true
@@ -855,7 +858,9 @@ skip_for_now = true
 
 [netsurf]
 source = "sources"
-localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "libsvgtiny", "libutf8proc", "libwapcaplet", "libxml2", "shared-mime-info"]
+
+[npm]
+excluded = true
 
 [nss]
 prebuilt = true
@@ -866,23 +871,23 @@ source = "sources"
 [onetbb]
 prebuilt = true
 
+[opencv]
+excluded = true
+
 [openssl]
 prebuilt = true
 
 [orbiton]
 source = "sources"
-arch = "i686"
 
 [pango]
 build_from_source = true
-localdeps = ["harfbuzz"]
 
 [pipewire]
 prebuilt = true
 
 [png2xpm]
 source = "sources"
-arch = "i686"
 
 [pt2-clone]
 build_from_source = true
@@ -894,11 +899,32 @@ nvchecker = { source = "github", github = "pure-fish/pure", prefix = "v", use_la
 [pvsneslib]
 source = "sources"
 
+[python2]
+excluded = true
+
 [qemacs]
 source = "sources"
 
+[qt5-base]
+excluded = true
+
+[qt5-declarative]
+excluded = true
+
+[qt5-wayland]
+excluded = true
+
+[qt5-x11extras]
+excluded = true
+
+[qt6-base]
+excluded = true
+
+[qt6-declarative]
+excluded = true
+
 [rav1e]
-arch = "i686"
+build_for = ["i686"]
 
 [raylib]
 source = "sources"
@@ -912,11 +938,17 @@ source = "sources"
 nvchecker = { source = "github", github = "raysan5/rfxgen", use_max_tag = true }
 
 [ripgrep]
-arch = "i686"
+build_for = ["i686"]
 
 [scummvm]
 source = "sources"
 nvchecker = { source = "github", github = "scummvm/scummvm", prefix = "v", use_latest_release = true }
+
+[sdl12-compat]
+excluded = true
+
+[sdl2]
+excluded = true
 
 [sdl3]
 source = "sources"
@@ -938,7 +970,7 @@ nvchecker = { source = "github", github = "libsdl-org/SDL_ttf", prefix = "releas
 build_from_source = true
 
 [spirv-llvm-translator]
-localdeps = ["llvm-libs", "llvm"]
+build_from_source = true
 
 [spirv-tools]
 build_from_source = true
@@ -953,7 +985,7 @@ source = "sources"
 nvchecker = { source = "github", github = "swaywm/swaylock", prefix = "v", use_latest_release = true }
 
 [syncthing]
-arch = "i686"
+build_for = ["i686"]
 
 [sysprof]
 prebuilt = true
@@ -962,7 +994,7 @@ prebuilt = true
 prebuilt = true
 
 [tcc]
-arch = "i686"
+build_for = ["i686"]
 
 [testcontroller]
 source = "sources"
@@ -1008,17 +1040,20 @@ source = "sources"
 source = "sources"
 nvchecker = { source = "gitlab", gitlab = "wlroots/wlroots", host = "gitlab.freedesktop.org", use_max_tag = true, include_regex = "0\\.20\\.\\d+" }
 
+[vte3]
+excluded = true
+
+[wpewebkit]
+excluded = true
+
 [x32-binutils]
 source = "sources"
-arch = "i686"
 
 [x32-gcc]
 source = "sources"
-arch = "i686"
 
 [x32-gcc-stage1]
 source = "sources"
-arch = "i686"
 
 [x32-runtime]
 source = "sources"
@@ -1028,15 +1063,10 @@ skip_for_now = true
 
 [zathura]
 build_from_source = true
-localdeps = ["girara"]
 
 [zathura-pdf-poppler]
 build_from_source = true
-localdeps = ["girara"]
 
 [zsnes]
 source = "sources"
-arch = "i686"
-localdeps = ["libglvnd"]
-
 nvchecker = { source = "github", github = "xyproto/zsnes", use_max_tag = true }

@@ -125,8 +125,11 @@ def packages():
     return distro.packages()
 
 
-def i686only(pkgs):
-    return {name for name, e in pkgs.items() if e.get("arch") == "i686"}
+DEFAULT_BUILD_FOR = ["i686", "x32"]
+
+
+def build_for(pkgs):
+    return {name: e["build_for"] for name, e in pkgs.items() if "build_for" in e}
 
 
 key = distro.key
@@ -188,12 +191,12 @@ def assign_nvcheckers(map):
     distro.write_lock(recipes=recipes)
 
 
-def mangle(text, pkgrel, base, restrict):
+def mangle(text, pkgrel, base, targets):
     def arch(m):
         items = m.group(2).replace("'", " ").replace('"', " ").split()
         if "any" in items:
             return f"{m.group(1)}arch=(any)"
-        return f"{m.group(1)}arch=(i686)" if base in restrict else f"{m.group(1)}arch=(i686 x32)"
+        return f"{m.group(1)}arch=({' '.join(targets.get(base, DEFAULT_BUILD_FOR))})"
 
     text = re.sub(r"^(\s*)arch=\(([^)\n]*)\)[^\n]*", arch, text, flags=re.M)
     text = mangle_depends(text)
@@ -305,7 +308,7 @@ def latest_version(base):
     return pkgbuild_version(upstream["PKGBUILD"][0].decode()), upstream, tags[0]["name"]
 
 
-def import_one(base, entry, src, restrict):
+def import_one(base, entry, src, targets):
     if src != "arch":
         die(f"{base}: importing packages from source '{src}' is not implemented yet")
     version = entry.get("version", "latest")
@@ -341,7 +344,7 @@ def import_one(base, entry, src, restrict):
     files.update(overlay)
     nvc = files.pop(NV_CHECKER, None)
     rel = None if version == "main" else split_version(version)[2]
-    files["PKGBUILD"] = (mangle(pkgbuild.decode(), rel, base, restrict).encode(), 0)
+    files["PKGBUILD"] = (mangle(pkgbuild.decode(), rel, base, targets).encode(), 0)
     dest = os.path.join(TOP, "packages", base)
     write_tree(dest, files)
     info = srcinfo(dest)
@@ -411,7 +414,7 @@ def main():
             fields.append(("a32", fmt_value(a32_commit(f"@{builddate}"))))
         upsert(base, fields)
         pkgs = packages()
-        import_one(base, pkgs[base], pkgs[base].get("source", "arch"), i686only(pkgs))
+        import_one(base, pkgs[base], pkgs[base].get("source", "arch"), build_for(pkgs))
         return
     if args[0] == "update":
         for base in args[1:]:
@@ -422,15 +425,15 @@ def main():
                 print(f"{base}: version is pinned in distro.toml", file=sys.stderr)
                 continue
             upsert(base, [("version", fmt_value(latest_version(base)[0]))])
-            import_one(base, packages()[base], "arch", i686only(packages()))
+            import_one(base, packages()[base], "arch", build_for(packages()))
         return
-    restrict = i686only(packages())
+    targets = build_for(packages())
     wanted = None if args == ["all"] else set(args)
     failed = []
     for base, e, src in entries():
         if wanted is None or base in wanted:
             try:
-                import_one(base, e, src, restrict)
+                import_one(base, e, src, targets)
             except (subprocess.CalledProcessError, SystemExit, ValueError, KeyError) as err:
                 print(f"  error: {base}: {err}", file=sys.stderr)
                 failed.append(base)
