@@ -102,6 +102,7 @@ extra gsettings-system-schemas 50.1-1.0 gsettings-system-schemas-50.1-1.0-any.pk
 extra gtk-update-icon-cache 1:4.16.7-1.0 gtk-update-icon-cache-1:4.16.7-1.0-i686.pkg.tar.zst 72d7a01948ef5a958ea4564024c6ad296d6989bbb6e33a7294700b3e7a30368c
 extra gtk3 1:3.24.43-2.0 gtk3-1:3.24.43-2.0-i686.pkg.tar.zst 5c140b65a2fcc4e62c04d77d4b1a91e82f8f9d943ef2790a438c35450519ddf3
 core gzip 1.15-1.0 gzip-1.15-1.0-i686.pkg.tar.zst 66e36d2990d014fc13eb895963c39cd8c0f47b03446a1b8e78909e96696bef43
+extra harfbuzz 7.1.0-1.0 harfbuzz-7.1.0-1.0-i686.pkg.tar.zst ceed36aaa81fe27577c52ea70f672860e56db5ceaeaefa6f2151b9e4c103547f
 extra hiredis 1.2.0-3.0 hiredis-1.2.0-3.0-i686.pkg.tar.zst 0a688fb4d1d97d6465efa2c1f3a94b761338e67fc484b2518dfe67864898a948
 extra htop 3.2.1-1.0 htop-3.2.1-1.0-i686.pkg.tar.zst dc4185e32658d57630106fa1eca0bb08f421b162c3c5e28c8065435672cd7ac1
 core hwdata 0.412-1.0 hwdata-0.412-1.0-any.pkg.tar.zst 1e5297fc7c46c98757867f5b21b77a132884ae3434a36690627f7c9109db8632
