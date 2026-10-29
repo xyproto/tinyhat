@@ -4,65 +4,56 @@
 # Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
 
 pkgname=netsurf
-pkgver=3.11
-pkgrel=12
+pkgver=3.12.0
+pkgrel=1
 pkgdesc='Lightweight and fast web browser'
 arch=(i686 x32)
-url='https://www.netsurf-browser.org/'
+url='https://github.com/xyproto/netsurf'
 license=(GPL-2.0-only MIT)
-depends=(curl gtk3 'libcss>=0.9.2' 'libdom>=0.4.2' 'libhubbub=0.3.8'
+depends=(curl gtk4 'libcss>=0.9.2.r116' 'libdom>=0.4.2' 'libhubbub=0.3.8'
          libjpeg-turbo 'libnsbmp>=0.1.7' 'libnsgif>=1.0.0' 'libnsutils=0.1.1'
          'libsvgtiny>=0.1.8' 'libutf8proc>=2.9.0' 'libwapcaplet>=0.4.3' libwebp)
 makedepends=(check 'nsgenbind>=0.9' perl-html-parser setconf tinyxxd icu69)
-source=("https://download.netsurf-browser.org/netsurf/releases/source-full/netsurf-all-$pkgver.tar.gz"
-        netsurf.sh
-        download-open.patch
-        autofocus.patch)
-sha256sums=('4dea880ff3c2f698bfd62c982b259340f9abcd7f67e6c8eb2b32c61f71644b7b'
-            '7fe3ce6b7c7058ae5385614848154653840b83906b090fc90c4e70455d39affc'
-            '80cf970517bfed24c1fe207b9a7ee8251294952938380f1c85768fa26fa6b463'
-            '7f5c9844ee4e123a3926b5659c42f26b533ac6fc13d63f738b1d54133c8f46d0')
-b2sums=('a771d12de754a3cce6a38c79c11388c7d8ec26bda3e30c97eff3542e7b17bbfb3a369e3c99456d954878726a94b8052825ef3801bcd64eab4fabc26091e7b0b8'
-        'c12c85c42a9f4615199e61b97cf95edaad1f2f103a1dd6815876006c7a75793bca7afc595431e6147b7a5c7e0be23f33d97cc9dfce1d7d94c35b8b43dcf627d4'
-        'd28f6e00ea9cf0f27f6901c7af654ff723a0b8b4d0a62a38943da382967e664d8e29b421f66847f4f4d2978da167e9c8c7e946b9da0d453256c6ac30c4f2d907'
-        '8bea05a15c9ae32ebd208a32689902c8cd3a66b98037c386d42dccc826d351237a5d6de4e3e30bbf46d50a4c0e4508406e8dd324e40fd0f1e4abf7c0b06ca223')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/xyproto/netsurf/archive/refs/tags/v$pkgver.tar.gz"
+        netsurf.sh)
+sha256sums=('5672908921f64d0e214273d57c280d0c8a6971acf4a9c617cc979ac1abd78ce5'
+            'ad5090704ecfb8e396f76d0c59c821edde4dac8005a1478cff7a70d96b1646b6')
+b2sums=('d06b28078c96c3eea0faee96fe0c749644c83e1e7520421223f7d025b77cb778ead2ff75168f862594016b9f84555cac49b60262889efbd8bf10df34247d301a'
+        'ca468901b0bb70c86341e7f627b64a40729f995bd485d46f55a74f7efc214fb99558dfe79016e67eeddfdf5ebb10d871d52b36641d193f190a9a82773e2e1079')
 
 prepare() {
-  cd "$pkgname-all-$pkgver/$pkgname"
-  patch -Np1 -i "$srcdir/download-open.patch"
-  patch -Np1 -i "$srcdir/autofocus.patch"
-  sed -i 's:libutf8proc/::;s:UTF8PROC_CCC_VIRAMA:UTF8PROC_BIDI_CLASS_EN:' utils/idna.c
+  cd $pkgname-$pkgver
   setconf frontends/gtk/res/netsurf-gtk.desktop Exec '/usr/bin/netsurf %u'
   setconf frontends/gtk/res/netsurf-gtk.desktop Icon netsurf.xpm
-  sed 's/(.*)(DuckDuckGo[^\n]*\n)(.*)/\2\1\3/' -i resources/SearchEngines -Ez
 }
 
 build() {
   make \
-    -C "$pkgname-all-$pkgver/$pkgname" \
+    -C $pkgname-$pkgver \
     HOSTNAME=archlinux \
     INCLUDEDIR=include \
     LIBDIR=lib \
     NETSURF_UA_FORMAT_STRING='"Mozilla/5.0 (Arch Linux; %s) NetSurf/%d.%d"' \
     NETSURF_USE_JPEGXL=NO \
+    NETSURF_USE_RSVG=NO \
     NETSURF_HOMEPAGE='"https://duckduckgo.com/"' \
     PREFIX=/usr \
-    TARGET=gtk3
+    TARGET=gtk4
 }
 
 package() {
   make \
-    -C "$pkgname-all-$pkgver/$pkgname" \
+    -C $pkgname-$pkgver \
     DESTDIR="$pkgdir" \
     INCLUDEDIR=include \
     LIBDIR=lib \
     PREFIX=/usr \
-    TARGET=gtk3 \
+    TARGET=gtk4 \
     install \
     HOSTNAME=archlinux
 
   install -Dm755 $pkgname.sh "$pkgdir/usr/bin/$pkgname"
-  cd "$pkgname-all-$pkgver/$pkgname"
+  cd $pkgname-$pkgver
   install -Dm644 frontends/gtk/res/$pkgname.xpm "$pkgdir/usr/share/pixmaps/$pkgname.xpm"
   install -Dm644 frontends/gtk/res/$pkgname-gtk.desktop "$pkgdir/usr/share/applications/$pkgname.desktop"
   install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"

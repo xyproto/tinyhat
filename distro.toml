@@ -26,11 +26,11 @@ packages = [
     "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "cairo", "syncthing",
     "opendoas",
     "libmnl",
-    "dropbear-scp", "zip", "unzip", "unrar", "7zip", "xarchiver", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
+    "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "mtpaint", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "tinyhat-gui", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
@@ -44,6 +44,7 @@ deny = [
     "perl", "perl-*",
     "sdl2", "sdl2-*", "sdl2_*", "sdl12-compat",
     "gtk2", "gtk2-*", "gtkmm", "libglade",
+    "gtk3", "gtk3-*", "vte3",
     "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
     "xorg-server*", "xorg-x*", "libx11", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
     "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
@@ -383,7 +384,7 @@ remove = [
 packages = [
     "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
     "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson", "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
-    "wayland", "wayland-protocols", "libglvnd", "mesa", "gtk3", "vte3", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
+    "wayland", "wayland-protocols", "libglvnd", "mesa", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
     "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile", "libxml2-legacy",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo", "libmikmod",
     "grub",
@@ -669,7 +670,6 @@ localdeps = ["meson", "shared-mime-info"]
 [girara]
 # built locally so it links against the wayland-only gtk3 (the archlinux32
 # prebuilt needs gtk_plug_new from an x11 gtk3)
-build = true
 
 [git]
 prebuilt = true
@@ -702,6 +702,9 @@ prebuilt = true
 source = "sources"
 arch = "i686"
 
+[gobject-introspection]
+build = true
+
 [grafx2]
 source = "sources"
 
@@ -711,9 +714,6 @@ arch = "i686"
 [grub-efi64]
 source = "sources"
 arch = "i686"
-
-[gtk3]
-build = true
 
 [gtk4]
 build = true
@@ -852,12 +852,10 @@ build = true
 build = true
 
 [mtpaint]
-build = true
 
 [netsurf]
 source = "sources"
-# links the seed's broken librsvg-2.so, so ship the local one (and its dav1d)
-localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "librsvg", "libsvgtiny", "libutf8proc", "libwapcaplet", "libxml2", "dav1d", "shared-mime-info"]
+localdeps = ["libcss", "libdom", "libhubbub", "libnsgif", "libnsbmp", "libparserutils", "libnsutils", "libsvgtiny", "libutf8proc", "libwapcaplet", "libxml2", "shared-mime-info"]
 
 [nss]
 prebuilt = true
@@ -877,10 +875,7 @@ arch = "i686"
 
 [pango]
 build = true
-version = "1:1.54.0-1"
-pin = "1:1.54.0-1.0"
-pin_sha256 = "69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef"
-pin_reason = "archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have"
+localdeps = ["harfbuzz"]
 
 [pipewire]
 prebuilt = true
@@ -1031,7 +1026,6 @@ source = "sources"
 [zathura]
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.5.2-2"
-build = true
 # the chroot gets the local librsvg (whose rsvg-convert needs dav1d), the local
 # girara and the local wayland-only gtk3 (the seed's x11 gtk3 pulls gdk_x11
 # symbols into the built binary)
@@ -1040,7 +1034,6 @@ localdeps = ["girara", "dav1d", "gtk3"]
 [zathura-pdf-poppler]
 # The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
 version = "0.3.1-2"
-build = true
 # zathura.pc requires girara-gtk3, so the chroot needs the girara package
 localdeps = ["girara"]
 

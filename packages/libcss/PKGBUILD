@@ -3,31 +3,32 @@
 # Contributor: Daniel J Griffiths <ghost1227@archlinux.us>
 
 pkgname=libcss
-pkgver=0.9.2
-pkgrel="2"
+pkgver=0.9.2.r116.gbc6a32f
+_commit='bc6a32fe373954a67ea30e42f08a9f4f7d1db9af'
+pkgrel=1
 pkgdesc='CSS parser and selection engine'
 arch=(i686 x32)
 url='https://www.netsurf-browser.org/projects/libcss/'
 license=(MIT)
-makedepends=(netsurf-buildsystem)
+makedepends=(git netsurf-buildsystem)
 depends=('libparserutils>=0.2.5' 'libwapcaplet>=0.4.3')
-source=("https://download.netsurf-browser.org/libs/releases/libcss-$pkgver-src.tar.gz")
-b2sums=('4d5f2554e4ffa5cf8fef3046a244e27dba954e48770c28a2ea79b63826dc056e8fa47d006e7ab4ae2048cf706e7adc2a81053eea2cfbe8b0f0bd683610af9632')
+source=("git+https://github.com/netsurf-browser/libcss.git#commit=$_commit")
+b2sums=('ed41a9ab0bc58e5deae9be833b8415f5dc669650b6e818c628cceeb165fa079e4ab4a460e42bff8a981edadf2862e4be96d89195f3e6e3229d41c6f24aa5eea2')
 
 prepare() {
-  sed -i 's,_BSD_SOURCE,_DEFAULT_SOURCE,' $pkgname-$pkgver/Makefile
+  sed -i 's,_BSD_SOURCE,_DEFAULT_SOURCE,' $pkgname/Makefile
 }
 
 build() {
   export CFLAGS="$CFLAGS -shared -fPIC -w"
   export LDFLAGS="$LDFLAGS -shared -z,now"
-  make -C $pkgname-$pkgver COMPONENT_TYPE=lib-shared INCLUDEDIR=include LIBDIR=lib PREFIX=/usr
+  make -C $pkgname COMPONENT_TYPE=lib-shared INCLUDEDIR=include LIBDIR=lib PREFIX=/usr
 }
 
 package() {
-  make -C $pkgname-$pkgver COMPONENT_TYPE=lib-shared DESTDIR="$pkgdir" INCLUDEDIR=include \
+  make -C $pkgname COMPONENT_TYPE=lib-shared DESTDIR="$pkgdir" INCLUDEDIR=include \
     LIBDIR=lib PREFIX=/usr install
-  install -Dm644 $pkgname-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+  install -Dm644 $pkgname/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
 }
 
 unset -f pkgver

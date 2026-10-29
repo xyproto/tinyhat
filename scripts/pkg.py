@@ -324,11 +324,76 @@ def cmd_local(name, lockfile, repodir, arch="i686"):
     write_lock(resolve(name, repodir=repodir, arch=arch), lockfile)
 
 
+def pkgbase(path, name):
+    """The pkgbase of the package file, with the name as fallback."""
+    try:
+        return pkginfo(path).get("pkgbase", (name,))[0]
+    except (OSError, tarfile.TarError):
+        return name
+
+
+SEEDS = {"i686": "buildroot", "aarch64": "buildroot-aarch64"}
+
+
+def seed_versions(arch):
+    """The versions of the packages in the chroot seed of arch, as locked in distro.lock."""
+    return {n: e.get("version") for n, e in distro.lock().get(SEEDS.get(arch, ""), {}).items()
+            if isinstance(e, dict)}
+
+
+def base_files(files, *names, seed=None):
+    """The files of all packages with the same pkgbase as the requested names, plus the transitive closure
+    of their dependencies that exist in the repo, in sorted order.
+
+    Needed because makepkg.sh only installs the explicitly listed packages: without this, a package would
+    build against prebuilt versions of its dependencies even when locally built (newer) ones are in the
+    repo, breaking pkg-config chains like pango -> harfbuzz, or against stale sibling versions of split
+    packages whose shared files (like the gobject-introspection .pc files) moved to other subpackages."""
+    def needs(info):
+        """The dependency fields of a (7.x) pkginfo, so also 'depends' of makepkg <= 6."""
+        return [d for k in info for d in info[k] if k in ("depend", "depends")]
+    infos, provides, bybase = {}, {}, {}
+    for name, path in files.items():
+        info = repo_info(path)
+        infos[name] = info
+        bybase.setdefault(info.get("pkgbase", (name,))[0], []).append(name)
+        for pv in info.get("provides", []):
+            provides.setdefault(strip_ver(pv), []).append(name)
+    todo, seen = list(names), set()
+    while todo:
+        short = strip_ver(todo.pop())
+        depname = short.split("=", 1)[0]
+        if depname.startswith("/"):
+            continue  # a file dependency, not a package name (the chroot seed provides it)
+        if depname not in infos:
+            depname = next((n for n in provides.get(depname, []) if n in infos), None)  # maybe a provide
+            if depname is None:
+                continue  # not in the repo: the prebuilt version in the chroot seed is fine
+        if depname in seen:
+            continue
+        if seed and depname not in names and seed.get(depname) == repo_info(files[depname]).get("pkgver", ("",))[0]:
+            continue  # the same version is already in the chroot seed
+        seen.add(depname)
+        todo += [d for n in bybase.get(repo_info(files[depname]).get("pkgbase", (depname,))[0], [depname])
+                 for d in needs(infos[n])]
+    return sorted(seen)
+
+
+def repo_info(path):
+    """The pkginfo of a repo package file, or a stub if unreadable."""
+    try:
+        return pkginfo(path)
+    except (OSError, tarfile.TarError):
+        stub = os.path.basename(path).rsplit("-", 3)[0]
+        return {"pkgname": (stub,), "pkgbase": (stub,)}
+
+
 def cmd_repofiles(repodir, arch, *names):
     files = arch_files(repodir, arch)
     for name in names:
         if name not in files:
-            die(f"{name} ({arch}) has not been built into {repodir}")
+            die(f"package {name} ({arch}) was not found in {repodir}")
+    for name in base_files(files, *names, seed=seed_versions(arch)):
         print(files[name])
 
 
