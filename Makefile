@@ -9,17 +9,19 @@ OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
 # Disk space and memory while building: how many packages build at once (one per 8 GB of memory, at least 1),
-# how many compile jobs each of them runs (the CPU cores shared between them), the ccache size, and whether
-# downloaded package sources and the kernel build tree are kept after building (KEEP_SOURCES=1).
-# With 16 GB of memory and 12 cores, that is 2 packages at once with 6 jobs each.
+# how many compile jobs each of them may run (all cores, held back by the load limit PKG_LOAD so that packages
+# building at the same time share the cores), the ccache size, and whether downloaded package sources and the
+# kernel build tree are kept after building (KEEP_SOURCES=1).
 ifeq ($(origin PKG_JOBS),undefined)
 PKG_JOBS := $(shell awk '/^MemTotal:/ { n = int($$2 / 1048576 / 8 + 0.25); print (n < 1 ? 1 : n) }' /proc/meminfo)
 endif
 ifeq ($(origin PKG_MAKE_JOBS),undefined)
-PKG_MAKE_JOBS := $(shell n=$$(( $$(nproc) / $(PKG_JOBS) )); echo $$(( n < 1 ? 1 : n )))
+PKG_MAKE_JOBS := $(shell nproc)
 endif
-export PKG_JOBS PKG_MAKE_JOBS
-export CCACHE_MAXSIZE ?= 2G
+PKG_LOAD ?= $(shell nproc)
+PKG_CARGO_JOBS ?= $(shell n=$$(( $$(nproc) / $(PKG_JOBS) )); echo $$(( n < 1 ? 1 : n )))
+export PKG_JOBS PKG_MAKE_JOBS PKG_LOAD PKG_CARGO_JOBS
+export CCACHE_MAXSIZE ?= 20G
 export KEEP_SOURCES ?= 0
 SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
 BOOT_PKGS := $(B)/pkg/i686/grub $(B)/pkg/i686/linux-firmware $(B)/pkg/i686/intel-ucode $(B)/pkg/i686/memtest86+ $(B)/pkg/i686/kbd
