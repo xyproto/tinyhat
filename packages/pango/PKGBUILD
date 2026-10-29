@@ -87,4 +87,6 @@ eval "$(
   declare -f package_pango | sed 's/libpangoxft-1.0.so//'
 )"
 
+_d=(); for _p in "${depends[@]}"; do case $_p in harfbuzz) _p="harfbuzz>=11.0.0" ;; fontconfig) _p="fontconfig>=2:2.17.0" ;; glib2) _p="glib2>=2.88" ;; esac; _d+=("$_p"); done; depends=("${_d[@]}")
+
 unset -f pkgver

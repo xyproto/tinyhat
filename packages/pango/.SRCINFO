@@ -13,12 +13,12 @@ pkgbase = pango
 	makedepends = help2man
 	makedepends = meson
 	depends = cairo
-	depends = fontconfig
+	depends = fontconfig>=2:2.17.0
 	depends = freetype2
 	depends = fribidi
-	depends = glib2
+	depends = glib2>=2.88
 	depends = glibc
-	depends = harfbuzz
+	depends = harfbuzz>=11.0.0
 	depends = libsysprof-capture
 	depends = libthai
 	source = git+https://gitlab.gnome.org/GNOME/pango.git#tag=1.58.2

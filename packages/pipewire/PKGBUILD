@@ -645,4 +645,11 @@ eval "$(
   declare -f package_pipewire | sed '/_pick x11-bell /d; /pipewire-x11-bell: /d'
 )"
 
+pkgname=(${pkgname[@]/gst-plugin-pipewire/})
+makedepends=(${makedepends[@]/gst-plugins-base/})
+eval "$(
+  declare -f build | sed 's/-D selinux=disabled/-D selinux=disabled -D gstreamer=disabled -D gstreamer-device-provider=disabled/'
+  declare -f package_pipewire | sed '/_pick gst /d; /gst-plugin-pipewire: /d'
+)"
+
 unset -f pkgver
