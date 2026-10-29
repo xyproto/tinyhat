@@ -255,4 +255,57 @@ fi
 
 eval "$(declare -f build | sed '3i export CFLAGS="$CFLAGS -Wno-error=incompatible-pointer-types -Wno-error=int-conversion"')"
 
+pkgname=(gtk4)
+_d=()
+for _p in "${depends[@]}"; do
+  case $_p in
+    libgl|libx11|libxcursor|libxdamage|libxext|libxfixes|libxi|libxinerama|libxrandr|libxrender) ;;
+    gstreamer|gst-plugins-bad-libs|gst-plugins-base-libs|vulkan-icd-loader|xdg-desktop-portal-gtk) ;;
+    libcloudproviders|libcolord|libcups|tinysparql|gtk-update-icon-cache|adwaita-fonts) ;;
+    *) _d+=("$_p") ;;
+  esac
+done
+depends=("${_d[@]}")
+
+build() {
+  CFLAGS+=" -DG_DISABLE_CAST_CHECKS"
+  arch-meson gtk build \
+    -D x11-backend=false \
+    -D broadway-backend=false \
+    -D media-gstreamer=disabled \
+    -D print-cups=disabled \
+    -D print-cpdb=disabled \
+    -D vulkan=disabled \
+    -D cloudproviders=disabled \
+    -D sysprof=disabled \
+    -D tracker=disabled \
+    -D colord=disabled \
+    -D accesskit=disabled \
+    -D introspection=disabled \
+    -D documentation=false \
+    -D man-pages=false \
+    -D build-demos=false \
+    -D build-testsuite=false \
+    -D build-examples=false \
+    -D build-tests=false
+  meson compile -C build
+}
+
+package_gtk4() {
+  provides=(libgtk-4.so)
+
+  meson install -C build --no-rebuild --destdir "$pkgdir"
+
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/gtk-4.0/settings.ini" <<END
+[Settings]
+gtk-icon-theme-name = Adwaita
+gtk-theme-name = Adwaita
+END
+
+  install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 gtk4-querymodules.hook
+  install -D gtk4-querymodules.script "$pkgdir/usr/share/libalpm/scripts/gtk4-querymodules"
+
+  rm -f "$pkgdir"/usr/bin/gtk4-update-icon-cache "$pkgdir"/usr/share/man/man1/gtk4-update-icon-cache.1
+}
+
 unset -f pkgver

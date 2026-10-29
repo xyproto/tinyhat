@@ -92,6 +92,7 @@ core gnutls 3.8.13-3.0 gnutls-3.8.13-3.0-i686.pkg.tar.zst a199d1fc09b2f9fbc464fe
 extra goaccess 1.12-1.0 goaccess-1.12-1.0-i686.pkg.tar.zst be62ad2996ad260e688aaf870675e353ffd739e458a73399be261bda02178514
 core gpgme 2.0.1-1.0 gpgme-2.0.1-1.0-i686.pkg.tar.zst 33e39185274a1fa22f9123108b759fb7231e17b41e4f9f5c266a73c1f60e1a25
 core gpm 1.20.7.r38.ge82d1a6-7.0 gpm-1.20.7.r38.ge82d1a6-7.0-i686.pkg.tar.zst 1ce84b829c1824905300f63db8caa10f10130b51fe82f76cca818d83e84ff910
+extra graphene 1.10.8-2.0 graphene-1.10.8-2.0-i686.pkg.tar.zst 30f2ad1b083b738c9309663b74032df5b1b6bb54074e1088b3e10c86164e41e3
 extra graphite 1:1.3.14-4.0 graphite-1:1.3.14-4.0-i686.pkg.tar.zst d29f7878ae3274f08a2116b1d60e95f599db4cfad34cec8af34e55fc75c6b3cf
 core grep 3.12-2.1 grep-3.12-2.1-i686.pkg.tar.zst 954269701f522905697466fa333ea47e493e377f4e40b337c8c536a0c01efe1e
 extra grim 1.5.0-2.0 grim-1.5.0-2.0-i686.pkg.tar.zst f23fd8f0da58a1798984508d5a78aee5f5cc93e7d61dd6e51feb978230da469d

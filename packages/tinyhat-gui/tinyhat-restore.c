@@ -7,14 +7,12 @@
 
 static GtkWidget *win;
 
-static void dialog(const char *title, const char *text, GtkMessageType type)
+static void dialog(const char *title, const char *text)
 {
-	GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(win),
-		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-		type, GTK_BUTTONS_OK, "%s", text);
-	gtk_window_set_title(GTK_WINDOW(d), title);
-	gtk_dialog_run(GTK_DIALOG(d));
-	gtk_widget_destroy(d);
+	GtkAlertDialog *d = gtk_alert_dialog_new("%s", title);
+	gtk_alert_dialog_set_detail(d, text);
+	gtk_alert_dialog_show(d, GTK_WINDOW(win));
+	g_object_unref(d);
 }
 
 static int run_tar(const char *archive)
@@ -30,60 +28,89 @@ static int run_tar(const char *archive)
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
-static void on_restore(GtkWidget *b, gpointer data)
+static void on_answer(GObject *source, GAsyncResult *result, gpointer data)
 {
-	(void)b;
-	(void)data;
-	GtkWidget *chooser = gtk_file_chooser_dialog_new("Restore from...",
-		GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN,
-		"_Cancel", GTK_RESPONSE_CANCEL, "_Restore", GTK_RESPONSE_ACCEPT, NULL);
-	GtkFileFilter *filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "Back ups (*.tar.gz)");
-	gtk_file_filter_add_pattern(filter, "*.tar.gz");
-	gtk_file_filter_add_pattern(filter, "*.tgz");
-	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
-	if (gtk_dialog_run(GTK_DIALOG(chooser)) != GTK_RESPONSE_ACCEPT) {
-		gtk_widget_destroy(chooser);
-		return;
+	char *archive = data;
+	if (gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(source), result, NULL) == 1) {
+		if (run_tar(archive) == 0)
+			dialog("Restore", "The restore is complete.");
+		else
+			dialog("Restore", "The restore failed.");
 	}
-	char *archive = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
-	gtk_widget_destroy(chooser);
+	g_free(archive);
+}
+
+static void on_opened(GObject *source, GAsyncResult *result, gpointer data)
+{
+	(void)data;
+	GFile *file = gtk_file_dialog_open_finish(GTK_FILE_DIALOG(source), result, NULL);
+	if (!file)
+		return;
+	char *archive = g_file_get_path(file);
+	g_object_unref(file);
 	if (!archive)
 		return;
 	char question[512];
 	snprintf(question, sizeof(question),
 		"This will replace files in /home/tinyhat with the contents of\n%s. Continue?", archive);
-	GtkWidget *c = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL,
-		GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s", question);
-	int answer = gtk_dialog_run(GTK_DIALOG(c));
-	gtk_widget_destroy(c);
-	if (answer != GTK_RESPONSE_YES) {
-		g_free(archive);
-		return;
-	}
-	if (run_tar(archive) == 0)
-		dialog("Restore", "The restore is complete.", GTK_MESSAGE_INFO);
-	else
-		dialog("Restore", "The restore failed.", GTK_MESSAGE_ERROR);
-	g_free(archive);
+	GtkAlertDialog *c = gtk_alert_dialog_new("%s", question);
+	const char *buttons[] = { "_No", "_Yes", NULL };
+	gtk_alert_dialog_set_buttons(c, buttons);
+	gtk_alert_dialog_set_cancel_button(c, 0);
+	gtk_alert_dialog_set_default_button(c, 0);
+	gtk_alert_dialog_choose(c, GTK_WINDOW(win), NULL, on_answer, archive);
+	g_object_unref(c);
 }
 
-int main(int argc, char **argv)
+static void on_restore(GtkWidget *b, gpointer data)
 {
-	gtk_init(&argc, &argv);
-	win = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	(void)b;
+	(void)data;
+	GtkFileDialog *chooser = gtk_file_dialog_new();
+	gtk_file_dialog_set_title(chooser, "Restore from...");
+	gtk_file_dialog_set_accept_label(chooser, "_Restore");
+	GtkFileFilter *filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "Back ups (*.tar.gz)");
+	gtk_file_filter_add_pattern(filter, "*.tar.gz");
+	gtk_file_filter_add_pattern(filter, "*.tgz");
+	GListStore *filters = g_list_store_new(GTK_TYPE_FILE_FILTER);
+	g_list_store_append(filters, filter);
+	gtk_file_dialog_set_filters(chooser, G_LIST_MODEL(filters));
+	gtk_file_dialog_set_default_filter(chooser, filter);
+	g_object_unref(filters);
+	g_object_unref(filter);
+	gtk_file_dialog_open(chooser, GTK_WINDOW(win), NULL, on_opened, NULL);
+	g_object_unref(chooser);
+}
+
+static void on_destroy(GtkWidget *w, gpointer loop)
+{
+	(void)w;
+	g_main_loop_quit(loop);
+}
+
+int main(void)
+{
+	gtk_init();
+	GMainLoop *loop = g_main_loop_new(NULL, FALSE);
+	win = gtk_window_new();
 	gtk_window_set_title(GTK_WINDOW(win), "Restore my files");
 	gtk_window_set_default_size(GTK_WINDOW(win), 420, 150);
-	g_signal_connect(win, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect(win, "destroy", G_CALLBACK(on_destroy), loop);
 	GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-	gtk_container_set_border_width(GTK_CONTAINER(box), 16);
-	gtk_container_add(GTK_CONTAINER(win), box);
+	gtk_widget_set_margin_top(box, 16);
+	gtk_widget_set_margin_bottom(box, 16);
+	gtk_widget_set_margin_start(box, 16);
+	gtk_widget_set_margin_end(box, 16);
+	gtk_window_set_child(GTK_WINDOW(win), box);
 	GtkWidget *label = gtk_label_new("Bring back your files from\na back up archive.");
-	gtk_box_pack_start(GTK_BOX(box), label, TRUE, TRUE, 0);
+	gtk_widget_set_vexpand(label, TRUE);
+	gtk_box_append(GTK_BOX(box), label);
 	GtkWidget *button = gtk_button_new_with_label("Restore...");
 	g_signal_connect(button, "clicked", G_CALLBACK(on_restore), NULL);
-	gtk_box_pack_start(GTK_BOX(box), button, FALSE, FALSE, 0);
-	gtk_widget_show_all(win);
-	gtk_main();
+	gtk_box_append(GTK_BOX(box), button);
+	gtk_window_present(GTK_WINDOW(win));
+	g_main_loop_run(loop);
+	g_main_loop_unref(loop);
 	return 0;
 }

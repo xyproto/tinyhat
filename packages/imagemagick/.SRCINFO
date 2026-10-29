@@ -8,7 +8,6 @@ pkgbase = imagemagick
 	license = ImageMagick
 	checkdepends = gsfonts
 	checkdepends = ttf-dejavu
-	makedepends = chrpath
 	makedepends = djvulibre
 	makedepends = ghostscript
 	makedepends = git

@@ -19,8 +19,9 @@ typedef struct {
 } tw_drive;
 
 static GtkWidget *gwin;
-static GtkWidget *gview;
-static GtkListStore *gstore;
+static GtkStringList *gstore;
+static GtkSingleSelection *gsel;
+static GMainLoop *gloop;
 static GtkWidget *gwrite;
 static GtkWidget *grefresh;
 static GtkWidget *gprog;
@@ -146,18 +147,44 @@ static void tw_set_status(const char *s)
 
 static void tw_pump(void)
 {
-	while (gtk_events_pending())
-		gtk_main_iteration();
+	while (g_main_context_pending(NULL))
+		g_main_context_iteration(NULL, FALSE);
 }
 
 static void tw_error_dialog(const char *text)
 {
-	GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
-		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-		GTK_MESSAGE_ERROR, GTK_BUTTONS_OK, "%s", text);
-	gtk_window_set_title(GTK_WINDOW(d), "Tiny Hat USB writer");
-	gtk_dialog_run(GTK_DIALOG(d));
-	gtk_widget_destroy(d);
+	GtkAlertDialog *d = gtk_alert_dialog_new("%s", text);
+	gtk_alert_dialog_show(d, GTK_WINDOW(gwin));
+	g_object_unref(d);
+}
+
+typedef struct {
+	GMainLoop *loop;
+	int answer;
+} tw_wait;
+
+static void tw_on_choice(GObject *src, GAsyncResult *res, gpointer data)
+{
+	tw_wait *w = data;
+	w->answer = gtk_alert_dialog_choose_finish(GTK_ALERT_DIALOG(src), res, NULL);
+	g_main_loop_quit(w->loop);
+}
+
+static int tw_ask(const char *text)
+{
+	static const char *buttons[] = { "_No", "_Yes", NULL };
+	GtkAlertDialog *d = gtk_alert_dialog_new("%s", text);
+	tw_wait w;
+	gtk_alert_dialog_set_buttons(d, buttons);
+	gtk_alert_dialog_set_cancel_button(d, 0);
+	gtk_alert_dialog_set_default_button(d, 0);
+	w.loop = g_main_loop_new(NULL, FALSE);
+	w.answer = -1;
+	gtk_alert_dialog_choose(d, GTK_WINDOW(gwin), NULL, tw_on_choice, &w);
+	g_main_loop_run(w.loop);
+	g_main_loop_unref(w.loop);
+	g_object_unref(d);
+	return w.answer == 1;
 }
 
 static void tw_done_state(const char *msg);
@@ -167,15 +194,7 @@ static gboolean tw_on_watchdog(gpointer data)
 	(void)data;
 	gwatch = 0;
 	if (grunning && !gsawline && !gfinished) {
-		GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-			"No authentication prompt has appeared. Keep waiting?");
-		gint r;
-		gtk_window_set_title(GTK_WINDOW(d), "Waiting for authentication");
-		r = gtk_dialog_run(GTK_DIALOG(d));
-		gtk_widget_destroy(d);
-		if (r != GTK_RESPONSE_YES) {
+		if (!tw_ask("No authentication prompt has appeared. Keep waiting?")) {
 			if (gpid)
 				kill(gpid, SIGKILL);
 			tw_error_dialog("Canceled. To write without a password prompt, start this program with sudo.");
@@ -213,14 +232,12 @@ static void tw_done_state(const char *msg)
 static void tw_refresh(void)
 {
 	int i;
-	char sz[32];
-	GtkTreeIter iter;
-	gtk_list_store_clear(gstore);
+	char num[16];
+	gtk_string_list_splice(gstore, 0, g_list_model_get_n_items(G_LIST_MODEL(gstore)), NULL);
 	gndrives = tw_scan(gdrives, TW_MAX_DRIVES);
 	for (i = 0; i < gndrives; i++) {
-		gtk_list_store_append(gstore, &iter);
-		gtk_list_store_set(gstore, &iter, 0, gdrives[i].dev, 1, gdrives[i].name,
-				   2, tw_fmt_size(gdrives[i].size, sz, sizeof(sz)), -1);
+		snprintf(num, sizeof(num), "%d", i);
+		gtk_string_list_append(gstore, num);
 	}
 	gtk_widget_set_sensitive(gwrite, gndrives > 0);
 	tw_set_status(gndrives ? "Select a USB drive" : "No USB drives found");
@@ -228,18 +245,45 @@ static void tw_refresh(void)
 
 static int tw_selected(void)
 {
-	GtkTreeSelection *sel = gtk_tree_view_get_selection(GTK_TREE_VIEW(gview));
-	GtkTreeIter iter;
-	GtkTreePath *path;
-	int idx = -1;
-	if (!gtk_tree_selection_get_selected(sel, NULL, &iter))
-		return -1;
-	path = gtk_tree_model_get_path(GTK_TREE_MODEL(gstore), &iter);
-	if (path) {
-		idx = gtk_tree_path_get_indices(path)[0];
-		gtk_tree_path_free(path);
+	guint pos = gtk_single_selection_get_selected(gsel);
+	return pos == GTK_INVALID_LIST_POSITION ? -1 : (int)pos;
+}
+
+static void tw_on_setup(GtkSignalListItemFactory *f, GtkListItem *item, gpointer col)
+{
+	GtkWidget *label = gtk_label_new(NULL);
+	(void)f;
+	(void)col;
+	gtk_label_set_xalign(GTK_LABEL(label), 0);
+	gtk_list_item_set_child(item, label);
+}
+
+static void tw_on_bind(GtkSignalListItemFactory *f, GtkListItem *item, gpointer col)
+{
+	int i = atoi(gtk_string_object_get_string(GTK_STRING_OBJECT(gtk_list_item_get_item(item))));
+	char sz[32];
+	const char *text = "";
+	(void)f;
+	if (i >= 0 && i < gndrives) {
+		switch (GPOINTER_TO_INT(col)) {
+		case 0: text = gdrives[i].dev; break;
+		case 1: text = gdrives[i].name; break;
+		default: text = tw_fmt_size(gdrives[i].size, sz, sizeof(sz)); break;
+		}
 	}
-	return idx;
+	gtk_label_set_text(GTK_LABEL(gtk_list_item_get_child(item)), text);
+}
+
+static void tw_add_column(GtkWidget *view, const char *title, int col)
+{
+	GtkListItemFactory *f = gtk_signal_list_item_factory_new();
+	GtkColumnViewColumn *c;
+	g_signal_connect(f, "setup", G_CALLBACK(tw_on_setup), GINT_TO_POINTER(col));
+	g_signal_connect(f, "bind", G_CALLBACK(tw_on_bind), GINT_TO_POINTER(col));
+	c = gtk_column_view_column_new(title, f);
+	gtk_column_view_column_set_expand(c, TRUE);
+	gtk_column_view_append_column(GTK_COLUMN_VIEW(view), c);
+	g_object_unref(c);
 }
 
 static void tw_shell_quote(char *out, size_t cap, const char *s)
@@ -354,14 +398,7 @@ static gboolean tw_on_line(const char *line)
 			gtk_progress_bar_pulse(GTK_PROGRESS_BAR(gprog));
 		}
 	} else if (!strncmp(line, "CONFIRM ", 8)) {
-		GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
-			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-			GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s", line + 8);
-		gint r;
-		gtk_window_set_title(GTK_WINDOW(d), "Overwrite?");
-		r = gtk_dialog_run(GTK_DIALOG(d));
-		gtk_widget_destroy(d);
-		tw_answer(r == GTK_RESPONSE_YES ? "YES\n" : "NO\n");
+		tw_answer(tw_ask(line + 8) ? "YES\n" : "NO\n");
 	} else if (!strcmp(line, "DONE")) {
 		gfinished = 1;
 		gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(gprog), 1.0);
@@ -385,14 +422,8 @@ static void tw_on_child(GPid pid, gint status, gpointer data)
 
 static int tw_gui_ask(void *ud, const char *text)
 {
-	GtkWidget *d = gtk_message_dialog_new(GTK_WINDOW(gwin),
-		GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-		GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO, "%s", text);
-	gint r;
-	gtk_window_set_title(GTK_WINDOW(d), "Overwrite?");
-	r = gtk_dialog_run(GTK_DIALOG(d));
-	gtk_widget_destroy(d);
-	return r == GTK_RESPONSE_YES;
+	(void)ud;
+	return tw_ask(text);
 }
 
 static void tw_gui_note(void *ud, const char *line)
@@ -568,8 +599,7 @@ int main(int argc, char **argv)
 {
 	tw_image img;
 	tw_hooks hk;
-	GtkWidget *box, *scroll, *hbox;
-	GtkCellRenderer *rend;
+	GtkWidget *box, *scroll, *hbox, *view, *label;
 	if (argc >= 2 && !strcmp(argv[1], "--version")) {
 		printf("tinyhat-write %s\n", TW_VERSION);
 		return 0;
@@ -584,45 +614,50 @@ int main(int argc, char **argv)
 		}
 		return tw_do_write(&img, argv[2], &hk);
 	}
-	gtk_init(&argc, &argv);
-	gwin = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	gtk_init();
+	gloop = g_main_loop_new(NULL, FALSE);
+	gwin = gtk_window_new();
 	gtk_window_set_title(GTK_WINDOW(gwin), "Tiny Hat USB writer");
 	gtk_window_set_default_size(GTK_WINDOW(gwin), 540, 430);
-	gtk_container_set_border_width(GTK_CONTAINER(gwin), 10);
-	g_signal_connect(gwin, "destroy", G_CALLBACK(gtk_main_quit), NULL);
+	g_signal_connect_swapped(gwin, "destroy", G_CALLBACK(g_main_loop_quit), gloop);
 	box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 8);
-	gtk_container_add(GTK_CONTAINER(gwin), box);
-	gtk_box_pack_start(GTK_BOX(box),
-		gtk_label_new("Select the USB drive to write Tiny Hat " TW_VERSION " to. Everything on that drive gets erased."),
-		FALSE, FALSE, 0);
-	scroll = gtk_scrolled_window_new(NULL, NULL);
+	gtk_widget_set_margin_top(box, 10);
+	gtk_widget_set_margin_bottom(box, 10);
+	gtk_widget_set_margin_start(box, 10);
+	gtk_widget_set_margin_end(box, 10);
+	gtk_window_set_child(GTK_WINDOW(gwin), box);
+	label = gtk_label_new("Select the USB drive to write Tiny Hat " TW_VERSION " to. Everything on that drive gets erased.");
+	gtk_label_set_wrap(GTK_LABEL(label), TRUE);
+	gtk_box_append(GTK_BOX(box), label);
+	scroll = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-	gtk_box_pack_start(GTK_BOX(box), scroll, TRUE, TRUE, 0);
-	gstore = gtk_list_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-	gview = gtk_tree_view_new_with_model(GTK_TREE_MODEL(gstore));
-	rend = gtk_cell_renderer_text_new();
-	gtk_tree_view_append_column(GTK_TREE_VIEW(gview),
-		gtk_tree_view_column_new_with_attributes("Device", rend, "text", 0, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(gview),
-		gtk_tree_view_column_new_with_attributes("Drive", rend, "text", 1, NULL));
-	gtk_tree_view_append_column(GTK_TREE_VIEW(gview),
-		gtk_tree_view_column_new_with_attributes("Size", rend, "text", 2, NULL));
-	gtk_container_add(GTK_CONTAINER(scroll), gview);
+	gtk_widget_set_vexpand(scroll, TRUE);
+	gtk_box_append(GTK_BOX(box), scroll);
+	gstore = gtk_string_list_new(NULL);
+	gsel = gtk_single_selection_new(G_LIST_MODEL(gstore));
+	gtk_single_selection_set_autoselect(gsel, FALSE);
+	gtk_single_selection_set_can_unselect(gsel, TRUE);
+	view = gtk_column_view_new(GTK_SELECTION_MODEL(gsel));
+	tw_add_column(view, "Device", 0);
+	tw_add_column(view, "Drive", 1);
+	tw_add_column(view, "Size", 2);
+	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), view);
 	hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
-	gtk_box_pack_start(GTK_BOX(box), hbox, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(box), hbox);
 	gwrite = gtk_button_new_with_label("Write Tiny Hat to this drive");
 	grefresh = gtk_button_new_with_label("Refresh");
-	gtk_box_pack_start(GTK_BOX(hbox), gwrite, TRUE, TRUE, 0);
-	gtk_box_pack_start(GTK_BOX(hbox), grefresh, FALSE, FALSE, 0);
+	gtk_widget_set_hexpand(gwrite, TRUE);
+	gtk_box_append(GTK_BOX(hbox), gwrite);
+	gtk_box_append(GTK_BOX(hbox), grefresh);
 	g_signal_connect(gwrite, "clicked", G_CALLBACK(tw_on_write), NULL);
 	g_signal_connect(grefresh, "clicked", G_CALLBACK(tw_on_refresh), NULL);
 	gprog = gtk_progress_bar_new();
-	gtk_box_pack_start(GTK_BOX(box), gprog, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(box), gprog);
 	gstatus = gtk_label_new("");
 	gtk_widget_set_halign(gstatus, GTK_ALIGN_START);
-	gtk_box_pack_start(GTK_BOX(box), gstatus, FALSE, FALSE, 0);
+	gtk_box_append(GTK_BOX(box), gstatus);
 	tw_refresh();
-	gtk_widget_show_all(gwin);
-	gtk_main();
+	gtk_window_present(GTK_WINDOW(gwin));
+	g_main_loop_run(gloop);
 	return 0;
 }

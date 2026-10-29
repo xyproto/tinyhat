@@ -1,2 +1,0 @@
-# libfm-extra is built by packages/libfm-extra, so that menu-cache can be built before libfm
-pkgname=(${pkgname[@]/libfm-extra/})

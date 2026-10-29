@@ -30,10 +30,10 @@ packages = [
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "pcmanfm", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "mtpaint", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "mtpaint", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "tinyhat-gui", "tinyhat-play",
-    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "testcontroller", "gnugo", "monkeyjumpgo",
+    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
@@ -553,6 +553,9 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 # localdeps lists locally built packages the build needs; pin* picks the archlinux32
 # package used in the build environment.
 
+[abcmidi]
+build = true
+
 [algernon]
 arch = "i686"
 build = true
@@ -707,10 +710,10 @@ source = "sources"
 arch = "i686"
 
 [gtk3]
-prebuilt = true
+build = true
 
 [gtk4]
-prebuilt = true
+build = true
 
 [highway]
 prebuilt = true
@@ -745,14 +748,6 @@ localdeps = ["libwapcaplet"]
 
 [libepoxy]
 build = true
-
-[libfm]
-build = true
-# configure checks libmenu-cache, and librsvg-2.0.pc needs dav1d >= 1.3.0
-localdeps = ["menu-cache", "dav1d"]
-
-[libfm-extra]
-source = "sources"
 
 [libglvnd]
 build = true
@@ -884,11 +879,6 @@ pin = "1:1.54.0-1.0"
 pin_sha256 = "69682536a86f8aefcc7fe291a534c5874f78e8db86a02b83321fe3d968a08cef"
 pin_reason = "archlinux32 pango 1.58 needs glib2 >= 2.88, harfbuzz >= 11 and fontconfig >= 2.17, which archlinux32 does not have"
 
-[pcmanfm]
-build = true
-# fm-version.h lives in the split libfm-extra package; libfm.so needs libmenu-cache at link time
-localdeps = ["libfm-extra", "menu-cache"]
-
 [pipewire]
 prebuilt = true
 
@@ -983,6 +973,9 @@ nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-",
 [tic-80]
 source = "sources"
 nvchecker = { source = "github", github = "nesbox/TIC-80", prefix = "v", use_latest_release = true }
+
+[tinyhat-files]
+source = "sources"
 
 [tinyhat-gui]
 source = "sources"
