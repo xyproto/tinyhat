@@ -62,7 +62,7 @@ For `make both` and `tinyhat64x32.img`, this package is also needed (for creatin
 
 For `make dist`, these packages are also needed (`virtualbox` is optional, for also creating `.vdi` files):
 
-    gnupg gtk3 libisoburn mingw-w64-gcc openssl
+    gnupg gtk4 libisoburn mingw-w64-gcc openssl
 
 For `make autoupdate`, these packages are also needed:
 

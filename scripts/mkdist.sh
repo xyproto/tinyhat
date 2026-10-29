@@ -56,7 +56,7 @@ for img in "$@"; do
 		-o "$out/$prog-$ver.exe" "$top/programs/tinyhat-write-win32.c" "$out/win-res.o" -lcomctl32 -lshell32
 	cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
 		-o "$out/$prog-$ver-linux-x86_64" "$top/programs/tinyhat-write.c" \
-		$(pkg-config --cflags --libs gtk+-3.0)
+		$(pkg-config --cflags --libs gtk4)
 	rm -f "$out/img.gz"
 	imgsha=$(sha256sum "$gz" | awk '{ print $1 }')
 	cat >"$system/$formula.rb" <<EOF

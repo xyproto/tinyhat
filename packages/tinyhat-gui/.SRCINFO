@@ -1,14 +1,13 @@
 pkgbase = tinyhat-gui
 	pkgdesc = Tiny Hat backup, restore, file picker and media player dialogs, and the GL level probe
 	pkgver = 1
-	pkgrel = 4
+	pkgrel = 5
 	url = https://github.com/xyproto/tinyhat
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause
 	makedepends = fontconfig
-	depends = gtk3
-	depends = curl
+	depends = gtk4
 	depends = libglvnd
 	source = tinyhat-backup.c
 	source = tinyhat-restore.c

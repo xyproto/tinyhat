@@ -1,0 +1,15 @@
+pkgbase = abcmidi
+	pkgdesc = Tools for ABC and MIDI files
+	pkgver = 2026_10_09
+	pkgrel = 1
+	url = https://github.com/sshlien/abcmidi
+	arch = i686
+	arch = x32
+	groups = pro-audio
+	license = GPL-2.0-or-later
+	makedepends = git
+	depends = glibc
+	source = git+https://github.com/sshlien/abcmidi#tag=2026.10.09
+	b2sums = d7a74c9ecea1ad388e546a6f1a6e6b8d777b4ca5428dbf0581bacd7f4ce0d052b2c9fd2d753c00c7cae0e9aeff9bcd2312dc655ec2ea039bcf44ce6ffa42c662
+
+pkgname = abcmidi

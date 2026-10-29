@@ -1,0 +1,18 @@
+pkgname=tinyhat-files
+pkgver=1
+pkgrel=1
+pkgdesc="Tiny Hat file manager"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat"
+license=(BSD-3-Clause)
+depends=(gtk4)
+source=(tinyhat-files.c)
+sha256sums=(SKIP)
+
+build() {
+  cc $CFLAGS $(pkg-config --cflags gtk4) -o tinyhat-files tinyhat-files.c $LDFLAGS $(pkg-config --libs gtk4)
+}
+
+package() {
+  install -Dm755 tinyhat-files "$pkgdir/usr/bin/tinyhat-files"
+}
