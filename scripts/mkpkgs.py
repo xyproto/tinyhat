@@ -56,9 +56,10 @@ def parse(path):
 def load():
     out = []
     root = os.path.join(TOP, "packages")
+    skipped = distro.skipped()
     for base in sorted(os.listdir(root)):
         path = os.path.join(root, base, ".SRCINFO")
-        if not os.path.exists(path):
+        if base in skipped or not os.path.exists(path):
             continue
         info = parse(path)
         info["dir"] = f"packages/{base}"
@@ -198,7 +199,7 @@ def seed_closure(seed, name, prefs, cache):
 
 def local_first(idx, name):
     p = idx["i686"][0].get(name) if name else None
-    return p is not None and name not in SEED_ONLY and (p["sub"] == "tinyhat" or PKGCONF.get(p["base"], {}).get("build", False))
+    return p is not None and name not in SEED_ONLY and (p["sub"] == "tinyhat" or PKGCONF.get(p["base"], {}).get("build_from_source", False))
 
 
 def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozenset(), image=frozenset()):
@@ -394,7 +395,7 @@ def cmd_mk():
     for n in sorted(too_old & image):
         print(f"mkpkgs.py: avoiding prebuilt {n} {seed[0][n]['version']} ([image] deny), building it", file=sys.stderr)
     listed = distro.prebuilt_listed()
-    force_build = {b for b, e in PKGCONF.items() if e.get("build")}
+    force_build = {b for b, e in PKGCONF.items() if e.get("build_from_source")}
     candidates = [b for b in listed if b not in force_build]
     if distro.load().get("prebuilt_all"):
         all_arch = [i["base"] for i in infos if i["sub"] == "arch" and i["base"] not in candidates
@@ -697,7 +698,7 @@ def cmd_lock_arch(arch):
     name_rules = [r for r in rules if not r[1]]
     x86 = {p["name"] for p in pkg.resolve_targets(base.get("packages", []), indexes(infos), "i686", prefs, skip)}
 
-    local = set(conf.get("build", []))
+    local = set(conf.get("build_from_source", []))
     for info in infos:
         changed = set(os.listdir(os.path.join(TOP, info["dir"]))) - {"PKGBUILD", ".SRCINFO", "LICENSE"}
         if info["sub"] == "tinyhat" and (changed or any(n not in db for n in info["pkgnames"])):
@@ -733,13 +734,13 @@ def cmd_lock_arch(arch):
         sel, users, bad = resolve()
         more = {base_of[u["name"]] for n in bad for u in users.get(n, [])
                 if not u.get("local") and u["name"] not in bad and u["name"] in base_of}
-        more |= {base_of[p["name"]] for p in sel if not p.get("local") and PKGCONF.get(base_of.get(p["name"]), {}).get("build")}
+        more |= {base_of[p["name"]] for p in sel if not p.get("local") and PKGCONF.get(base_of.get(p["name"]), {}).get("build_from_source")}
         more -= local
         if not more:
             break
         local |= more
 
-    built = {b: [] for b in conf.get("build", [])}
+    built = {b: [] for b in conf.get("build_from_source", [])}
     for p in sel:
         if p.get("local"):
             built.setdefault(p["base"], []).append(p["name"])

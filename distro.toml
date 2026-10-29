@@ -367,7 +367,7 @@ exclude = [
 # prebuilt from Arch Linux ARM, except the recipes that "make lock-aarch64" decides to build
 add = ["archlinuxarm-keyring", "linux-rpi", "raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
-build = ["busybox", "tinyhat-splash"]
+build_from_source = ["busybox", "tinyhat-splash"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
@@ -555,11 +555,11 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 # package used in the build environment.
 
 [abcmidi]
-build = true
+build_from_source = true
 
 [algernon]
 arch = "i686"
-build = true
+build_from_source = true
 
 [aquarium]
 source = "sources"
@@ -573,10 +573,10 @@ prebuilt = true
 prebuilt = true
 
 [at-spi2-core]
-build = true
+build_from_source = true
 
 [bind]
-build = true
+build_from_source = true
 
 [binutils]
 prebuilt = true
@@ -585,7 +585,7 @@ prebuilt = true
 arch = "i686"
 
 [bonzomatic]
-build = true
+build_from_source = true
 localdeps = ["libglvnd"]
 
 [busybox]
@@ -595,10 +595,10 @@ arch = "i686"
 source = "sources"
 
 [cairo]
-build = true
+build_from_source = true
 
 [cargo-c]
-build = true
+build_from_source = true
 
 [cc65]
 source = "sources"
@@ -611,7 +611,7 @@ nvchecker = { source = "github", github = "ashinn/chibi-scheme", use_max_tag = t
 source = "sources"
 
 [dav1d]
-build = true
+build_from_source = true
 
 [dosbox-x]
 source = "sources"
@@ -623,7 +623,7 @@ nvchecker = { source = "github", github = "xyproto/dosbox-x", use_max_tag = true
 source = "sources"
 
 [fcft]
-build = true
+build_from_source = true
 localdeps = ["libutf8proc"]
 
 [fish]
@@ -637,11 +637,11 @@ nvchecker = { source = "github", github = "FluidSynth/fluidsynth", prefix = "v",
 source = "sources"
 
 [foot]
-build = true
+build_from_source = true
 localdeps = ["fcft", "libutf8proc"]
 
 [ft2-clone]
-build = true
+build_from_source = true
 
 [furnace]
 source = "sources"
@@ -664,29 +664,29 @@ prebuilt = true
 source = "sources"
 
 [gdk-pixbuf2]
-build = true
+build_from_source = true
 localdeps = ["meson", "shared-mime-info"]
 
 [girara]
-build = true
+build_from_source = true
 
 [git]
 prebuilt = true
 
 [glew]
-build = true
+build_from_source = true
 
 [glib2]
-build = true
+build_from_source = true
 
 [glibc]
 prebuilt = true
 
 [glslang]
-build = true
+build_from_source = true
 
 [glu]
-build = true
+build_from_source = true
 
 [glycin]
 arch = "i686"
@@ -702,7 +702,7 @@ source = "sources"
 arch = "i686"
 
 [gobject-introspection]
-build = true
+build_from_source = true
 
 [grafx2]
 source = "sources"
@@ -715,7 +715,7 @@ source = "sources"
 arch = "i686"
 
 [gtk4]
-build = true
+build_from_source = true
 
 [highway]
 prebuilt = true
@@ -724,12 +724,12 @@ prebuilt = true
 arch = "i686"
 
 [imv]
-build = true
+build_from_source = true
 # librsvg-2.0.pc (the seed's librsvg is broken) needs dav1d >= 1.3.0
 localdeps = ["dav1d"]
 
 [jemalloc]
-build = true
+build_from_source = true
 
 [krb5]
 prebuilt = true
@@ -738,7 +738,7 @@ prebuilt = true
 localdeps = ["llvm-libs", "llvm", "clang", "spirv-llvm-translator"]
 
 [libcss]
-build = true
+build_from_source = true
 
 [libdisplay-info]
 source = "sources"
@@ -749,10 +749,10 @@ source = "sources"
 localdeps = ["libwapcaplet"]
 
 [libepoxy]
-build = true
+build_from_source = true
 
 [libglvnd]
-build = true
+build_from_source = true
 
 [libgrapheme]
 source = "sources"
@@ -768,7 +768,7 @@ prebuilt = true
 source = "sources"
 
 [libnsgif]
-build = true
+build_from_source = true
 
 [libnsutils]
 source = "sources"
@@ -777,7 +777,7 @@ source = "sources"
 source = "sources"
 
 [libresprite]
-build = true
+build_from_source = true
 
 [libretro-blastem]
 source = "sources"
@@ -785,22 +785,22 @@ arch = "i686"
 
 [librsvg]
 arch = "i686"
-build = true
+build_from_source = true
 
 [libsvgtiny]
-build = true
+build_from_source = true
 
 [libunwind]
 arch = "i686"
 
 [libutf8proc]
-build = true
+build_from_source = true
 
 [libwapcaplet]
-build = true
+build_from_source = true
 
 [libxkbcommon]
-build = true
+build_from_source = true
 
 [libxml2]
 source = "sources"
@@ -818,7 +818,7 @@ prebuilt_reason = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is u
 
 [love]
 arch = "i686"
-build = true
+build_from_source = true
 
 [lsd]
 arch = "i686"
@@ -834,7 +834,7 @@ prebuilt = true
 localdeps = ["llvm-libs", "llvm", "clang", "libclc", "spirv-llvm-translator"]
 
 [meson]
-build = true
+build_from_source = true
 
 [mgba]
 source = "sources"
@@ -845,12 +845,13 @@ source = "sources"
 arch = "i686"
 
 [mpg123]
-build = true
+build_from_source = true
 
 [mtools]
-build = true
+build_from_source = true
 
 [mtpaint]
+skip_for_now = true
 
 [netsurf]
 source = "sources"
@@ -873,7 +874,7 @@ source = "sources"
 arch = "i686"
 
 [pango]
-build = true
+build_from_source = true
 localdeps = ["harfbuzz"]
 
 [pipewire]
@@ -884,7 +885,7 @@ source = "sources"
 arch = "i686"
 
 [pt2-clone]
-build = true
+build_from_source = true
 
 [pure-fish]
 source = "sources"
@@ -904,7 +905,7 @@ source = "sources"
 nvchecker = { source = "github", github = "raysan5/raylib", use_latest_release = true }
 
 [rofi]
-build = true
+build_from_source = true
 
 [rfxgen]
 source = "sources"
@@ -934,13 +935,13 @@ source = "sources"
 nvchecker = { source = "github", github = "libsdl-org/SDL_ttf", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [spirv-headers]
-build = true
+build_from_source = true
 
 [spirv-llvm-translator]
 localdeps = ["llvm-libs", "llvm"]
 
 [spirv-tools]
-build = true
+build_from_source = true
 prebuilt = true
 
 [swaybg]
@@ -1022,12 +1023,15 @@ arch = "i686"
 [x32-runtime]
 source = "sources"
 
+[xarchiver]
+skip_for_now = true
+
 [zathura]
-build = true
+build_from_source = true
 localdeps = ["girara"]
 
 [zathura-pdf-poppler]
-build = true
+build_from_source = true
 localdeps = ["girara"]
 
 [zsnes]

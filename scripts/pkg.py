@@ -260,7 +260,11 @@ def list_config(name, extra=()):
         skip |= set(base.get("skip", []))
     for path in extra:
         targets += [t for t in read_list(path) if t not in targets]
-    return targets, distro.providers(), skip
+    skipped = distro.skipped()
+    listed = sorted(set(targets) & skipped)
+    if listed:
+        die(f"[{name}] lists {' '.join(listed)}, which distro.toml marks skip_for_now")
+    return targets, distro.providers(), skip | skipped
 
 
 def resolve(name, extra=(), repodir=None, arch="i686"):
