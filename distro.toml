@@ -677,6 +677,9 @@ prebuilt = true
 [glew]
 build = true
 
+[glib2]
+build = true
+
 [glibc]
 prebuilt = true
 
