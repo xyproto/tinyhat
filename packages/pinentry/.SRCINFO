@@ -6,7 +6,6 @@ pkgbase = pinentry
 	arch = i686
 	arch = x32
 	license = GPL
-	makedepends = gtk2-compat
 	makedepends = libxml2-legacy
 	depends = glibc
 	depends = ncurses
@@ -26,7 +25,6 @@ pkgbase = pinentry
 	sha256sums = c2970f16d6afb66ecddfca767d743936c86239bff936eed7fd7597a678414b63
 	sha256sums = SKIP
 	sha256sums = b902d07c061e0cf6d661014516172f7a35f477362edb779f863935733d1c4dde
-	makedepends_i686 = gcr
 
 pkgname = pinentry
 	depends = glibc
