@@ -3,7 +3,7 @@
 # Contributor: Douglas Soares de Andrade <douglas@archlinux.org>
 
 pkgbase=mtr
-pkgname=('mtr' 'mtr-gtk')
+pkgname=('mtr')
 pkgver=0.96
 pkgrel="1"
 pkgdesc='Combines the functionality of traceroute and ping into one tool'
@@ -11,9 +11,7 @@ url='https://www.bitwizard.nl/mtr/'
 arch=(i686 x32)
 license=('GPL-2.0-only')
 makedepends=(
-  'gdk-pixbuf2'
   'glibc'
-  'gtk3'
   'jansson'
   'libcap'
   'ncurses'
@@ -28,20 +26,13 @@ prepare() {
     echo "${pkgver}" > .tarball-version
     autoreconf -fiv
   )
-  cp -ra ${pkgbase}-${pkgver}{,-cli}
 }
 
 build() {
-  (cd ${pkgbase}-${pkgver}-cli
-    ./configure \
-      --prefix=/usr \
-      --without-gtk \
-      --sbindir=/usr/bin
-    make
-  )
   (cd ${pkgbase}-${pkgver}
     ./configure \
       --prefix=/usr \
+      --without-gtk \
       --sbindir=/usr/bin
     make
   )
@@ -56,24 +47,6 @@ package_mtr() {
     'ncurses' libncursesw.so
   )
   optdepends=('bash-completion: bash completion support')
-  cd ${pkgbase}-${pkgver}-cli
-  make DESTDIR="${pkgdir}" install
-}
-
-package_mtr-gtk() {
-  pkgdesc='Combines the functionality of traceroute and ping into one tool (GTK version)'
-  depends=(
-    'gdk-pixbuf2' libgdk_pixbuf-2.0.so
-    'glib2' libglib-2.0.so libgobject-2.0.so
-    'glibc'
-    'gtk3' libgtk-3.so
-    'jansson'
-    'libcap'
-    'ncurses' libncursesw.so
-  )
-  optdepends=('bash-completion: bash completion support')
-  conflicts=('mtr')
-  provides=("mtr=${pkgver}")
   cd ${pkgbase}-${pkgver}
   make DESTDIR="${pkgdir}" install
 }
