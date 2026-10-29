@@ -1,3 +1,3 @@
 depends=(${depends[@]/libsynctex/})
-makedepends=(${makedepends[@]/texlive-bin/})
-eval "$(declare -f build | sed 's/arch-meson build/& -Dsynctex=disabled -Dtests=disabled/')"
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'texlive-bin|python-sphinx|appstream'))
+eval "$(declare -f build | sed 's/arch-meson build/& -Dsynctex=disabled -Dmanpages=disabled -Dconvert-icon=disabled/')"

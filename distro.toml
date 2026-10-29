@@ -30,7 +30,7 @@ packages = [
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "tinyhat-gui", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
@@ -668,8 +668,7 @@ build = true
 localdeps = ["meson", "shared-mime-info"]
 
 [girara]
-# built locally so it links against the wayland-only gtk3 (the archlinux32
-# prebuilt needs gtk_plug_new from an x11 gtk3)
+build = true
 
 [git]
 prebuilt = true
@@ -1024,17 +1023,11 @@ arch = "i686"
 source = "sources"
 
 [zathura]
-# The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
-version = "0.5.2-2"
-# the chroot gets the local librsvg (whose rsvg-convert needs dav1d), the local
-# girara and the local wayland-only gtk3 (the seed's x11 gtk3 pulls gdk_x11
-# symbols into the built binary)
-localdeps = ["girara", "dav1d", "gtk3"]
+build = true
+localdeps = ["girara"]
 
 [zathura-pdf-poppler]
-# The GTK3 version that archlinux32 ships; newer zathura uses GTK4, which needs xdg-desktop-portal-gtk
-version = "0.3.1-2"
-# zathura.pc requires girara-gtk3, so the chroot needs the girara package
+build = true
 localdeps = ["girara"]
 
 [zsnes]
