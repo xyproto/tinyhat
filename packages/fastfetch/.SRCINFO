@@ -10,7 +10,6 @@ pkgbase = fastfetch
 	makedepends = cmake
 	makedepends = dbus
 	makedepends = dconf
-	makedepends = efl
 	makedepends = imagemagick
 	makedepends = libglvnd
 	makedepends = libva

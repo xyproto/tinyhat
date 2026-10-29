@@ -20,7 +20,6 @@ pkgbase = pipewire
 	makedepends = glib2
 	makedepends = glib2-devel
 	makedepends = graphviz
-	makedepends = gst-plugins-base
 	makedepends = jack2
 	makedepends = libcamera
 	makedepends = libebur128
@@ -70,21 +69,6 @@ pkgname = pipewire
 pkgname = alsa-card-profiles
 	pkgdesc = Low-latency audio/video router and processor - ALSA card profiles
 	license = LGPL-2.1-or-later
-
-pkgname = gst-plugin-pipewire
-	pkgdesc = Multimedia graph framework - pipewire plugin
-	depends = libpipewire=1:1.6.9
-	depends = libpipewire-0.3.so
-	depends = pipewire-audio=1:1.6.9
-	depends = pipewire=1:1.6.9
-	depends = glib2
-	depends = libglib-2.0.so
-	depends = libgobject-2.0.so
-	depends = glibc
-	depends = gst-plugins-base-libs
-	depends = gstreamer
-	depends = libgcc
-	depends = pipewire-session-manager
 
 pkgname = libpipewire
 	pkgdesc = Low-latency audio/video router and processor - client library
