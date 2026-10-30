@@ -12,7 +12,7 @@ local adv = {
 }
 
 local unpack = table.unpack or unpack
-local canvas, font, bigFont, chime
+local font, bigFont, chime
 local scale, offsetX, offsetY = 1, 0, 0
 local mouseX, mouseY = 0, 0
 local room, held, label, speech, notice, ending
@@ -292,7 +292,6 @@ end
 
 function adv.init()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    canvas = love.graphics.newCanvas(adv.width, adv.height)
     font = love.graphics.newFont(14, "mono")
     bigFont = love.graphics.newFont(30, "mono")
     love.graphics.setFont(font)
@@ -513,8 +512,11 @@ local function drawEditor()
 end
 
 function adv.draw()
-    love.graphics.setCanvas(canvas)
     love.graphics.clear(0, 0, 0)
+    love.graphics.push()
+    love.graphics.setScissor(offsetX, offsetY, adv.width * scale, adv.height * scale)
+    love.graphics.translate(offsetX, offsetY)
+    love.graphics.scale(scale)
     love.graphics.setColor(1, 1, 1)
     room.draw()
     local p = adv.player
@@ -549,10 +551,8 @@ function adv.draw()
         outlined(ending, 20, (adv.height - #lines * bigFont:getHeight()) / 2, adv.width - 40, "center", { 1, 0.85, 0.4 })
         love.graphics.setFont(font)
     end
-    love.graphics.setCanvas()
-    love.graphics.clear(0, 0, 0)
-    love.graphics.setColor(1, 1, 1)
-    love.graphics.draw(canvas, offsetX, offsetY, 0, scale, scale)
+    love.graphics.setScissor()
+    love.graphics.pop()
 end
 
 return adv
