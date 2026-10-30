@@ -143,10 +143,11 @@ def arch_versions():
 
 def unneeded():
     """The recipes that no image needs (none until build/pkgs.mk exists), which are left as they are."""
-    need = mkpkgs.image_bases()
-    if need is None:
+    path = os.path.join(TOP, "build", "pkgs.mk")
+    if not os.path.exists(path):
         return set()
-    need |= set(distro.lock().get("build-aarch64", {}))
+    with open(path) as f:
+        need = mkpkgs.needed_recipes(mkpkgs.load(), f.read())
     return set(os.listdir(os.path.join(TOP, "packages"))) - need
 
 
