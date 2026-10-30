@@ -1,7 +1,7 @@
 pkgname=tinyhat-sounds
 pkgver=1
 pkgrel=1
-pkgdesc="Tiny Hat system sounds: startup and shutdown jingles, typewriter and fart sounds while typing"
+pkgdesc="Tiny Hat system sounds: startup and shutdown jingles, typewriter and fart sounds while typing, and beep"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"
 license=(BSD-3-Clause)
@@ -17,4 +17,5 @@ build() {
 package() {
   install -Dm755 tinyhat-sounds "$pkgdir/usr/bin/tinyhat-sounds"
   install -Dm755 tinyhat-soundd "$pkgdir/usr/bin/tinyhat-soundd"
+  ln -s tinyhat-soundd "$pkgdir/usr/bin/beep"
 }
