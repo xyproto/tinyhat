@@ -41,7 +41,7 @@ VDIS := $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi) $(IMG_AARCH64:.img=.vdi)
 
 .DELETE_ON_ERROR:
 .DEFAULT_GOAL := help
-.PHONY: help all img iso vdi i686 x32 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
+.PHONY: help all img iso vdi i686 x32 32 64 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
 
 C_HEAD := \033[1;35m
 C_GRP := \033[1;36m
@@ -55,8 +55,8 @@ endef
 help:
 	@printf '\n$(C_HEAD)Tiny Hat $(VERSION)$(C_OFF) - a tiny Linux distro for old and small computers\n\n'
 	@printf '$(C_GRP)Images$(C_OFF)\n'
-	$(call target,i686,"32-bit x86 image ($(IMG_I686))")
-	$(call target,x32,"64-bit x86 with 32-bit pointers image ($(IMG_X32))")
+	$(call target,i686,"32-bit x86 image ($(IMG_I686))$(comma) also make 32")
+	$(call target,x32,"64-bit x86 with 32-bit pointers image ($(IMG_X32))$(comma) also make 64")
 	$(call target,aarch64,"64-bit ARM UEFI image ($(IMG_AARCH64))")
 	$(call target,rpi4,"64-bit ARM Raspberry Pi 4 image ($(IMG_RPI4))")
 	@printf '\n$(C_GRP)CD/DVD/USB ISO images$(C_OFF)\n'
@@ -82,6 +82,10 @@ help:
 i686: $(IMG_I686)
 
 x32: $(IMG_X32)
+
+32: i686
+
+64: x32
 
 aarch64: $(IMG_AARCH64)
 
