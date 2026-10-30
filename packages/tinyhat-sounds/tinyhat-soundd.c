@@ -4,6 +4,7 @@
 #include <fcntl.h>
 #include <fluidsynth.h>
 #include <math.h>
+#include <mpg123.h>
 #include <signal.h>
 #include <spawn.h>
 #include <stdio.h>
@@ -14,7 +15,9 @@
 #include <time.h>
 #include <unistd.h>
 
-enum { RATE = 44100, VOICES = 6, EVENTS = 64, IDLE_MS = 2000 };
+#define SOUNDS "/usr/share/tinyhat/sounds"
+
+enum { RATE = 44100, VOICES = 6, EVENTS = 64, IDLE_MS = 2000, SAMPLES = 7, HISTORY = 3, THROTTLE_MS = 700 };
 
 typedef struct {
 	bool startup, typewriter, fart, shutdown;
@@ -26,9 +29,26 @@ typedef struct {
 } event;
 
 typedef struct {
-	bool on;
-	float t, dur, f0, f1, phase, wob, lp, seed;
+	float *data;
+	size_t frames;
+} sample;
+
+typedef struct {
+	const sample *s;
+	size_t pos;
 } fart;
+
+typedef struct {
+	const signed char *lead, *bass;
+	const unsigned char (*chords)[3];
+	int steps, step_ms;
+} tune;
+
+typedef struct {
+	int note;
+	bool gate;
+	float phase, env, age;
+} chip_voice;
 
 extern char **environ;
 
@@ -40,6 +60,40 @@ static Uint64 frame;
 static event events[EVENTS];
 static int nevents;
 static fart farts[VOICES];
+static sample samples[SAMPLES];
+static int nsamples, history[HISTORY] = { -1, -1, -1 };
+static Uint64 last_fart;
+static const tune *playing;
+static Uint64 tune_pos;
+static chip_voice lead, bass;
+static float arp_phase, lowpass[2];
+
+static const signed char up_lead[] = {
+	72, 0, 76, 79, 84, -1, 79, 76, 81, -1, 79, 76, 72, -1, 69, 72,
+	77, -1, 81, 84, 89, -1, 84, 81, 83, 79, 86, -1, 91, -1, -1, -1,
+	84, -1, -1, -1, -1, -1, -1, 0,
+};
+static const signed char up_bass[] = {
+	48, 0, 60, 0, 48, 0, 55, 0, 45, 0, 57, 0, 45, 0, 52, 0,
+	41, 0, 53, 0, 41, 0, 48, 0, 43, 0, 55, 0, 43, 0, 47, 0,
+	36, -1, -1, -1, -1, -1, -1, 0,
+};
+static const unsigned char up_chords[][3] = { { 60, 64, 67 }, { 57, 60, 64 }, { 53, 57, 60 }, { 55, 59, 62 }, { 60, 64, 67 } };
+static const signed char down_lead[] = {
+	84, -1, 81, 77, 72, -1, 77, -1, 80, -1, 77, 72, 68, -1, 65, -1,
+	76, -1, 72, 67, 64, -1, 67, 72, 71, 74, 67, -1, 65, -1, 62, -1,
+	60, -1, -1, -1, -1, -1, -1, 0,
+};
+static const signed char down_bass[] = {
+	41, 0, 53, 0, 41, 0, 48, 0, 41, 0, 53, 0, 41, 0, 44, 0,
+	36, 0, 48, 0, 36, 0, 43, 0, 43, 0, 55, 0, 43, 0, 50, 0,
+	36, -1, -1, -1, -1, -1, -1, 0,
+};
+static const unsigned char down_chords[][3] = { { 65, 69, 72 }, { 65, 68, 72 }, { 60, 64, 67 }, { 55, 59, 65 }, { 60, 64, 67 } };
+static const tune tunes[] = {
+	{ up_lead, up_bass, up_chords, (int)sizeof(up_lead), 110 },
+	{ down_lead, down_bass, down_chords, (int)sizeof(down_lead), 140 },
+};
 static volatile sig_atomic_t reload, quit;
 static char rundir[256], fifo[300], pidfile[300];
 
@@ -76,11 +130,6 @@ static config load(void)
 	return c;
 }
 
-static float rnd(float lo, float hi)
-{
-	return lo + (hi - lo) * (float)rand() / (float)RAND_MAX;
-}
-
 static void schedule(int ms, int chan, int note, int vel)
 {
 	SDL_LockMutex(lock);
@@ -89,46 +138,163 @@ static void schedule(int ms, int chan, int note, int vel)
 	SDL_UnlockMutex(lock);
 }
 
+static void load_samples(void)
+{
+	if (nsamples)
+		return;
+	mpg123_init();
+	auto mh = mpg123_new(nullptr, nullptr);
+	if (!mh)
+		return;
+	mpg123_param(mh, MPG123_FLAGS, MPG123_FORCE_STEREO | MPG123_QUIET, 0);
+	for (int i = 1; i <= SAMPLES; i++) {
+		char path[256];
+		unsigned char buf[16384];
+		float *data = nullptr;
+		size_t have = 0, cap = 0, got;
+		int r;
+		snprintf(path, sizeof path, SOUNDS "/fart%d.mp3", i);
+		mpg123_format_none(mh);
+		mpg123_format(mh, RATE, MPG123_STEREO, MPG123_ENC_FLOAT_32);
+		if (mpg123_open(mh, path) != MPG123_OK)
+			continue;
+		do {
+			r = mpg123_read(mh, buf, sizeof buf, &got);
+			size_t n = got / sizeof(float);
+			if (have + n > cap) {
+				cap = (have + n) * 2;
+				auto grown = (float *)realloc(data, cap * sizeof(float));
+				if (!grown)
+					break;
+				data = grown;
+			}
+			memcpy(data + have, buf, n * sizeof(float));
+			have += n;
+		} while (r == MPG123_OK || r == MPG123_NEW_FORMAT);
+		mpg123_close(mh);
+		if (have >= 2)
+			samples[nsamples++] = (sample){ data, have / 2 };
+		else
+			free(data);
+	}
+	mpg123_delete(mh);
+}
+
+static int pick(bool epic)
+{
+	if (epic) {
+		int a = 0, b = -1;
+		for (int i = 1; i < nsamples; i++)
+			if (samples[i].frames > samples[a].frames) {
+				b = a;
+				a = i;
+			} else if (b < 0 || samples[i].frames > samples[b].frames) {
+				b = i;
+			}
+		return b >= 0 && rand() % 2 ? b : a;
+	}
+	double weights[SAMPLES], total = 0;
+	for (int i = 0; i < nsamples; i++) {
+		weights[i] = 1.0 / (double)samples[i].frames;
+		for (int h = 0; h < HISTORY; h++)
+			if (history[h] == i)
+				weights[i] = 0;
+		total += weights[i];
+	}
+	if (total <= 0)
+		return rand() % nsamples;
+	double r = total * rand() / ((double)RAND_MAX + 1);
+	for (int i = 0; i < nsamples; i++)
+		if ((r -= weights[i]) < 0)
+			return i;
+	return nsamples - 1;
+}
+
 static void add_fart(bool epic)
 {
+	load_samples();
+	if (!nsamples || (!epic && last_fart && SDL_GetTicks() - last_fart < THROTTLE_MS))
+		return;
+	last_fart = SDL_GetTicks();
 	SDL_LockMutex(lock);
 	int slot = 0;
 	for (int i = 0; i < VOICES; i++) {
-		if (!farts[i].on) {
+		if (!farts[i].s) {
 			slot = i;
 			break;
 		}
-		if (farts[i].t > farts[slot].t)
+		if (farts[i].pos * farts[slot].s->frames > farts[slot].pos * farts[i].s->frames)
 			slot = i;
 	}
-	float f0 = rnd(70, 150);
-	farts[slot] = (fart){
-		.on = true,
-		.dur = epic ? rnd(1.0f, 1.8f) : rnd(0.15f, 0.55f),
-		.f0 = f0,
-		.f1 = f0 * rnd(0.55f, 1.25f),
-		.wob = rnd(14, 40),
-		.seed = rnd(0, 1000),
-	};
+	int i = pick(epic);
+	memmove(history + 1, history, (HISTORY - 1) * sizeof(int));
+	history[0] = i;
+	farts[slot] = (fart){ &samples[i], 0 };
 	SDL_UnlockMutex(lock);
 }
 
-static float fart_sample(fart *v)
+static float hz(int note)
 {
-	float p = v->t / v->dur;
-	float sputter = 0.75f + 0.25f * sinf(v->seed + v->t * 23.0f) * sinf(v->seed * 1.7f + v->t * 61.0f);
-	float freq = (v->f0 + (v->f1 - v->f0) * p) * (1.0f + 0.08f * sinf(v->t * v->wob * 6.2832f)) * sputter;
-	v->phase += freq / RATE;
-	v->phase -= floorf(v->phase);
-	float buzz = v->phase < 0.3f ? 1.0f : -0.45f;
-	float noise = rnd(-1, 1) * 0.35f;
-	float env = fminf(1.0f, v->t / 0.015f) * fminf(1.0f, (v->dur - v->t) / 0.08f);
-	float x = (buzz + noise) * env * (0.65f + 0.35f * sinf(v->t * v->wob * 6.2832f));
-	v->lp += 0.18f * (x - v->lp);
-	v->t += 1.0f / RATE;
-	if (v->t >= v->dur)
-		v->on = false;
-	return v->lp * 0.5f;
+	return 440.0f * exp2f((float)(note - 69) / 12.0f);
+}
+
+static void step_voice(chip_voice *v, signed char n)
+{
+	if (n > 0) {
+		v->note = n;
+		v->gate = true;
+		v->env = 0.0f;
+		v->age = 0.0f;
+	} else if (n == 0) {
+		v->gate = false;
+	}
+}
+
+static float envelope(chip_voice *v)
+{
+	if (v->gate)
+		v->env = v->age < 0.004f ? v->age / 0.004f : 0.55f + (v->env - 0.55f) * 0.9997f;
+	else
+		v->env *= 0.9992f;
+	v->age += 1.0f / RATE;
+	return v->env;
+}
+
+static void chip_render(float *buf, int n)
+{
+	if (!playing)
+		return;
+	Uint64 step_len = (Uint64)playing->step_ms * RATE / 1000;
+	for (int i = 0; i < n; i++, tune_pos++) {
+		Uint64 step = tune_pos / step_len;
+		if (tune_pos % step_len == 0 && step < (Uint64)playing->steps) {
+			step_voice(&lead, playing->lead[step]);
+			step_voice(&bass, playing->bass[step]);
+		}
+		if (step >= (Uint64)playing->steps && lead.env < 0.001f && bass.env < 0.001f) {
+			playing = nullptr;
+			return;
+		}
+		float t = (float)tune_pos / RATE, x = 0.0f;
+		float le = envelope(&lead), be = envelope(&bass);
+		float vib = lead.age > 0.15f ? 1.0f + 0.006f * sinf(6.2832f * 6.0f * t) : 1.0f;
+		lead.phase += hz(lead.note) * vib / RATE;
+		lead.phase -= floorf(lead.phase);
+		x += 0.22f * le * (lead.phase < 0.25f + 0.15f * sinf(6.2832f * 0.7f * t) ? 1.0f : -1.0f);
+		bass.phase += hz(bass.note) / RATE;
+		bass.phase -= floorf(bass.phase);
+		x += 0.30f * be * (bass.phase < 0.5f ? 4.0f * bass.phase - 1.0f : 3.0f - 4.0f * bass.phase);
+		Uint64 bar = step / 8 < 4 ? step / 8 : 4;
+		const unsigned char *chord = playing->chords[bar];
+		float arp_env = step < (Uint64)playing->steps ? 1.0f : fmaxf(0.0f, 1.0f - (float)(tune_pos - playing->steps * step_len) / (RATE * 0.4f));
+		arp_phase += hz(chord[(tune_pos / (RATE / 50)) % 3]) / RATE;
+		arp_phase -= floorf(arp_phase);
+		x += 0.10f * arp_env * (arp_phase < 0.5f ? 1.0f : -1.0f);
+		for (int c = 0; c < 2; c++) {
+			lowpass[c] += 0.45f * (x - lowpass[c]);
+			buf[2 * i + c] += lowpass[c];
+		}
+	}
 }
 
 static void SDLCALL feed(void *data, SDL_AudioStream *s, int additional, int total)
@@ -152,13 +318,16 @@ static void SDLCALL feed(void *data, SDL_AudioStream *s, int additional, int tot
 			}
 		}
 		fluid_synth_write_float(synth, n, buf, 0, 2, buf, 1, 2);
-		for (int i = 0; i < n; i++)
-			for (int j = 0; j < VOICES; j++)
-				if (farts[j].on) {
-					float x = fart_sample(&farts[j]);
-					buf[2 * i] += x;
-					buf[2 * i + 1] += x;
-				}
+		chip_render(buf, n);
+		for (int j = 0; j < VOICES; j++) {
+			auto v = &farts[j];
+			for (int i = 0; i < n && v->s; i++) {
+				buf[2 * i] += 2.2f * v->s->data[2 * v->pos];
+				buf[2 * i + 1] += 2.2f * v->s->data[2 * v->pos + 1];
+				if (++v->pos >= v->s->frames)
+					v->s = nullptr;
+			}
+		}
 		frame += n;
 		SDL_UnlockMutex(lock);
 		SDL_PutAudioStreamData(s, buf, n * 2 * (int)sizeof(float));
@@ -182,8 +351,6 @@ static bool audio_open(void)
 	synth = new_fluid_synth(settings);
 	if (fluid_synth_sfload(synth, "/usr/share/soundfonts/default.sf2", 1) == FLUID_FAILED)
 		return false;
-	fluid_synth_program_change(synth, 0, 11);
-	fluid_synth_program_change(synth, 1, 48);
 	stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, feed, NULL);
 	return stream != NULL;
 }
@@ -206,12 +373,14 @@ static void note(int ms, int len, int chan, int key, int vel)
 
 static int jingle(bool up)
 {
-	static const int melody[] = { 72, 76, 79, 84 };
-	for (int i = 0; i < 4; i++)
-		note(i * 130, i == 3 ? 900 : 260, 0, up ? melody[i] : melody[3 - i] - 5, 100);
-	for (int i = 0; i < 3; i++)
-		note(0, up ? 1400 : 1200, 1, (up ? 48 : 43) + (int[]){ 0, 4, 7 }[i], 55);
-	return 2000;
+	auto t = &tunes[up ? 0 : 1];
+	SDL_LockMutex(lock);
+	lead = bass = (chip_voice){ 0 };
+	arp_phase = lowpass[0] = lowpass[1] = 0.0f;
+	tune_pos = 0;
+	playing = t;
+	SDL_UnlockMutex(lock);
+	return t->steps * t->step_ms + 900;
 }
 
 static void typewriter(char c)

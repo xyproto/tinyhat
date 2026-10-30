@@ -5,17 +5,19 @@ pkgdesc="Tiny Hat system sounds: startup and shutdown jingles, typewriter and fa
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"
 license=(BSD-3-Clause)
-depends=(gtk4 sdl3 fluidsynth)
-source=(tinyhat-sounds.c tinyhat-soundd.c)
-sha256sums=(SKIP SKIP)
+depends=(gtk4 sdl3 fluidsynth mpg123)
+source=(tinyhat-sounds.c tinyhat-soundd.c fart{1..7}.mp3 fartkeyboard-LICENSE)
+sha256sums=(SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP)
 
 build() {
   cc -std=c23 $CFLAGS $(pkg-config --cflags gtk4) -o tinyhat-sounds tinyhat-sounds.c $LDFLAGS $(pkg-config --libs gtk4)
-  cc -std=c23 $CFLAGS $(pkg-config --cflags sdl3 fluidsynth) -o tinyhat-soundd tinyhat-soundd.c $LDFLAGS $(pkg-config --libs sdl3 fluidsynth) -lm
+  cc -std=c23 $CFLAGS $(pkg-config --cflags sdl3 fluidsynth libmpg123) -o tinyhat-soundd tinyhat-soundd.c $LDFLAGS $(pkg-config --libs sdl3 fluidsynth libmpg123) -lm
 }
 
 package() {
   install -Dm755 tinyhat-sounds "$pkgdir/usr/bin/tinyhat-sounds"
   install -Dm755 tinyhat-soundd "$pkgdir/usr/bin/tinyhat-soundd"
   ln -s tinyhat-soundd "$pkgdir/usr/bin/beep"
+  install -Dm644 -t "$pkgdir/usr/share/tinyhat/sounds" fart{1..7}.mp3
+  install -Dm644 fartkeyboard-LICENSE "$pkgdir/usr/share/licenses/$pkgname/fartkeyboard-CC0"
 }
