@@ -574,6 +574,9 @@ def cmd_mk():
     print("ROOTFS_I686_STAMPS := " + " ".join(stamps_for(rootfs_i686)))
     print("ROOTFS_X32_STAMPS := " + " ".join(stamps_for(rootfs_x32)))
     print("TINYHAT_PKGS := " + " ".join(sorted(tinyhat)))
+    roots = "\n".join([f"ROOTFS_I686_STAMPS := {' '.join(stamps_for(rootfs_i686))}",
+                       f"ROOTFS_X32_STAMPS := {' '.join(stamps_for(rootfs_x32))}"] + lines)
+    print("PACKAGES_STAMPS := " + " ".join(s for s in i686_stamps if s.rsplit("/", 1)[1] in needed_bases(roots)))
     print()
     print("\n".join(lines))
 
@@ -613,9 +616,14 @@ def image_bases():
     path = os.path.join(TOP, "build", "pkgs.mk")
     if not os.path.exists(path):
         return None
-    deps, cur = {}, None
     with open(path) as f:
-        text = f.read()
+        return needed_bases(f.read())
+
+
+def needed_bases(text):
+    """The recipes (i686 and x32) that the images and the Makefile need, with what it takes to build them,
+    from the text of build/pkgs.mk."""
+    deps, cur = {}, None
     for line in text.splitlines():
         m = re.match(r"^\$\(B\)/pkg/(?:i686|x32)/([^:\s]+):(.*)$", line)
         if m:

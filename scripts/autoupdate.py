@@ -141,10 +141,19 @@ def arch_versions():
     return out
 
 
+def unneeded():
+    """The recipes that no image needs (none until build/pkgs.mk exists), which are left as they are."""
+    need = mkpkgs.image_bases()
+    if need is None:
+        return set()
+    need |= set(distro.lock().get("build-aarch64", {}))
+    return set(os.listdir(os.path.join(TOP, "packages"))) - need
+
+
 def arch_updates(report, only):
     recipes = distro.lock().get("recipes", {})
     tables = distro.tables()
-    skipped = distro.skipped()
+    skipped = distro.skipped() | unneeded()
     bases = [b for b, r in sorted(recipes.items())
              if (not only or b in only) and b not in skipped and tables.get(b, {}).get("source", "arch") == "arch"
              and r.get("version") not in (None, "main", "latest") and "version" not in tables.get(b, {})
@@ -260,7 +269,7 @@ def bump(base, new, pkgrel="1"):
 
 
 def upstream_updates(report, only, apply_bumps):
-    pinned = {b for b, t in distro.tables().items() if "version" in t} | distro.skipped()
+    pinned = {b for b, t in distro.tables().items() if "version" in t} | distro.skipped() | unneeded()
     entries = {b: c for b, c in nvchecker_entries().items() if (not only or b in only) and b not in pinned}
     if not entries or not shutil.which("nvchecker"):
         return
