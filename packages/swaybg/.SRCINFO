@@ -10,6 +10,7 @@ pkgbase = swaybg
 	makedepends = ninja
 	makedepends = wayland-protocols
 	depends = cairo
+	depends = fontconfig
 	depends = wayland
 	source = swaybg-1.2.2.tar.gz::https://github.com/swaywm/swaybg/archive/refs/tags/v1.2.2.tar.gz
 	source = help-text.patch
