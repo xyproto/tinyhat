@@ -7,7 +7,7 @@ fail() {
 }
 doas systemctl start tinyhat-pacman-init.service
 doas pacman -Sy --noconfirm || fail "Could not update the package database."
-doas pacman -S --needed --noconfirm archlinux32-keyring || fail "Could not update the archlinux32 keyring."
+doas pacman -S --needed --noconfirm archlinux32-keyring archlinux-keyring || fail "Could not update the pacman keyrings."
 doas pacman -S --needed --noconfirm wine-staging winetricks || fail "Could not install Wine."
 doas modprobe binfmt_misc
 doas systemctl restart systemd-binfmt.service || fail "Could not register Windows programs with binfmt_misc."
