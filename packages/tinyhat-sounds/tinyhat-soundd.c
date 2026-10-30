@@ -358,8 +358,56 @@ static int start_daemon(void)
 	return err ? 1 : 0;
 }
 
+static int beep(int argc, char *argv[])
+{
+	double freq = 440, len = 200, delay = 100;
+	int reps = 1;
+	for (int c; (c = getopt(argc, argv, "f:l:r:d:D:")) != -1;) {
+		if (c == 'f')
+			freq = atof(optarg);
+		else if (c == 'l')
+			len = atof(optarg);
+		else if (c == 'r')
+			reps = atoi(optarg);
+		else if (c == 'd' || c == 'D')
+			delay = atof(optarg);
+		else
+			return 2;
+	}
+	if (freq <= 0 || len <= 0 || reps < 1)
+		return 2;
+	SDL_AudioSpec spec = { SDL_AUDIO_F32, 1, RATE };
+	if (!SDL_Init(SDL_INIT_AUDIO))
+		return 1;
+	auto s = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, nullptr, nullptr);
+	if (!s) {
+		SDL_Quit();
+		return 1;
+	}
+	int n = (int)(len * RATE / 1000), gap = (int)(delay * RATE / 1000), ramp = RATE / 200;
+	auto buf = (float *)calloc((size_t)(n + gap), sizeof(float));
+	for (int i = 0; i < n; i++) {
+		float env = fminf(1.0f, fminf((float)i, (float)(n - i)) / (float)ramp);
+		buf[i] = 0.25f * env * (sinf(6.2831853f * (float)freq * i / RATE) > 0 ? 1.0f : -1.0f) * 0.6f +
+			 0.15f * env * sinf(6.2831853f * (float)freq * i / RATE);
+	}
+	for (int r = 0; r < reps; r++)
+		SDL_PutAudioStreamData(s, buf, (int)((r + 1 < reps ? n + gap : n) * sizeof(float)));
+	SDL_ResumeAudioStreamDevice(s);
+	while (SDL_GetAudioStreamQueued(s) > 0)
+		SDL_Delay(10);
+	SDL_Delay(60);
+	free(buf);
+	SDL_DestroyAudioStream(s);
+	SDL_Quit();
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
+	auto name = strrchr(argv[0], '/');
+	if (!strcmp(name ? name + 1 : argv[0], "beep"))
+		return beep(argc, argv);
 	auto dir = getenv("XDG_RUNTIME_DIR");
 	snprintf(rundir, sizeof rundir, "%s", dir && *dir ? dir : "/tmp");
 	snprintf(fifo, sizeof fifo, "%s/tinyhat-keys", rundir);
