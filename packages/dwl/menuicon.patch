@@ -4,11 +4,19 @@
  #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
  #define LISTEN_STATIC(E, H)     do { struct wl_listener *_l = ecalloc(1, sizeof(*_l)); _l->notify = (H); wl_signal_add((E), _l); } while (0)
  #define TEXTW(mon, text)        (drwl_font_getwidth(mon->drw, text) + mon->lrpad)
-+#define MENUW(mon)              (TEXTW(mon, menulabel) + (mon)->b.height - (mon)->lrpad / 2)
++#define MENUW(mon)              ((mon)->b.height * 3 / 2)
  
  /* enums */
- enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeTask, SchemeTaskSel, SchemeTaskHover, SchemeTaskMin }; /* color schemes */
-@@ -492,6 +493,7 @@
+ enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeTask, SchemeTaskSel, SchemeTaskHover, SchemeTaskMin, SchemeStatus }; /* color schemes */
+@@ -345,6 +346,7 @@ static Monitor *dirtomon(enum wlr_direction dir);
+ static void drawbar(Monitor *m);
+ static void drawlayout(Monitor *m, int x, int w);
+ static void drawbars(void);
++static int statusw(Monitor *m);
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
+ static void altab(const Arg *arg);
+@@ -493,6 +495,7 @@ static int consumed[KEY_MAX + 1];
  
  static char stext[256];
  static char notice[128];
@@ -16,7 +24,7 @@
  static struct wl_event_source *status_event_source;
  
  static const struct wlr_buffer_impl buffer_impl = {
-@@ -876,11 +878,11 @@
+@@ -877,18 +880,18 @@ buttonpress(struct wl_listener *listener, void *data)
  			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
  			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
  			cx = (cursor->x - selmon->m.x) * selmon->wlr_output->scale;
@@ -30,7 +38,15 @@
  				click = ClkMenu;
  			} else if (i < LENGTH(tags)) {
  				click = ClkTagBar;
-@@ -1740,6 +1742,45 @@
+ 				arg.ui = 1 << i;
+ 			} else if (cx < x + selmon->b.height * 3 / 2)
+ 				click = ClkLtSymbol;
+-			else if (cx > selmon->b.width - (TEXTW(selmon, stext) - selmon->lrpad + 2)) {
++			else if (cx > selmon->b.width - statusw(selmon)) {
+ 				click = ClkStatus;
+ 			} else {
+ 				click = ClkTitle;
+@@ -1741,6 +1744,73 @@ dirtomon(enum wlr_direction dir)
  	return selmon;
  }
  
@@ -45,50 +61,103 @@
 +}
 +
 +static void
-+drawmenuicon(Monitor *m)
++drawlogo(Monitor *m)
++{
++	static const int hat[][5] = {
++		{ 0, 8, 6, 24, 17 }, { 1, 8, 17, 24, 19 }, { 0, 8, 19, 24, 25 }, { 0, 2, 22, 30, 25 },
++	};
++	int h = m->b.height, s = h * 5 / 8, ox = (MENUW(m) - 28 * s / 19) / 2, oy = (h - s) / 2;
++	for (int r = 0; r < 4; r++)
++		inkrect(m, hat[r][0] ? 0x494949ff : 0x922424ff, ox + (hat[r][1] - 2) * s / 19, oy + (hat[r][2] - 6) * s / 19,
++			ox + (hat[r][3] - 2) * s / 19, oy + (hat[r][4] - 6) * s / 19);
++}
++
++static void
++drawflame(Monitor *m, int x, int w)
 +{
 +	static const char *flame[] = {
 +		"...r...", "..rr...", "..rrr..", ".rror..", ".roorr.",
 +		"rroyorr", "royyyor", "royyyor", ".royor.", "..rrr..",
 +	};
-+	static const int hat[][5] = {
-+		{ 0, 8, 6, 24, 17 }, { 1, 8, 17, 24, 19 }, { 0, 8, 19, 24, 25 }, { 0, 2, 22, 30, 25 },
-+	};
-+	int h = m->b.height, s = h * 3 / 4, ox, oy, r, c;
-+	if (live) {
-+		int w = s * 7 / 10;
-+		ox = (h - w) / 2;
-+		oy = (h - s) / 2;
-+		for (r = 0; r < 10; r++)
-+			for (c = 0; c < 7; c++)
-+				if (flame[r][c] != '.')
-+					inkrect(m, flame[r][c] == 'r' ? 0xe0452aff : flame[r][c] == 'o' ? 0xff9e3bff : 0xffe066ff,
-+						ox + c * w / 7, oy + r * s / 10, ox + (c + 1) * w / 7, oy + (r + 1) * s / 10);
-+		return;
-+	}
-+	ox = (h - s) / 2;
-+	oy = (h - 19 * s / 28) / 2;
-+	for (r = 0; r < 4; r++)
-+		inkrect(m, hat[r][0] ? 0x494949ff : 0x922424ff, ox + (hat[r][1] - 2) * s / 28, oy + (hat[r][2] - 6) * s / 28,
-+			ox + (hat[r][3] - 2) * s / 28, oy + (hat[r][4] - 6) * s / 28);
++	int s = m->b.height * 5 / 8, fw = s * 7 / 10, ox = x + (w - fw) / 2, oy = (m->b.height - s) / 2;
++	for (int r = 0; r < 10; r++)
++		for (int c = 0; c < 7; c++)
++			if (flame[r][c] != '.')
++				inkrect(m, flame[r][c] == 'r' ? 0xe0452aff : flame[r][c] == 'o' ? 0xff9e3bff : 0xffe066ff,
++					ox + c * fw / 7, oy + r * s / 10, ox + (c + 1) * fw / 7, oy + (r + 1) * s / 10);
++}
++
++static char *
++flamesep(void)
++{
++	char *sep = NULL;
++	if (!live)
++		return NULL;
++	for (char *p = strstr(stext, " | "); p; p = strstr(p + 1, " | "))
++		sep = p;
++	return sep;
++}
++
++static int
++flamew(Monitor *m)
++{
++	return MAX((int)drwl_font_getwidth(m->drw, " | "), m->b.height * 5 / 8 * 7 / 10 + m->lrpad);
++}
++
++static int
++statusw(Monitor *m)
++{
++	char *sep = flamesep();
++	int w;
++	if (!sep)
++		return TEXTW(m, stext) - m->lrpad + 2;
++	*sep = '\0';
++	w = drwl_font_getwidth(m->drw, stext) + flamew(m) + drwl_font_getwidth(m->drw, sep + 3) + 2;
++	*sep = ' ';
++	return w;
 +}
 +
  void
  drawbar(Monitor *m)
  {
-@@ -1771,7 +1812,10 @@
+@@ -1758,9 +1828,21 @@ drawbar(Monitor *m)
+ 
+ 	/* draw status first so it can be overdrawn by tags later */
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
++		char *sep = flamesep();
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+-		tw = TEXTW(m, stext) - m->lrpad + 2; /* 2px right padding */
+-		drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
++		tw = statusw(m);
++		if (sep) {
++			int sx = m->b.width - tw, fw = flamew(m);
++			*sep = '\0';
++			sx = drwl_text(m->drw, sx, 0, drwl_font_getwidth(m->drw, stext), m->b.height, 0, stext, 0);
++			*sep = ' ';
++			drwl_rect(m->drw, sx, 0, fw, m->b.height, 1, 1);
++			drawflame(m, sx, fw);
++			drwl_setscheme(m->drw, colors[SchemeStatus]);
++			drwl_text(m->drw, sx + fw, 0, m->b.width - sx - fw, m->b.height, 0, sep + 3, 0);
++		} else {
++			drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
++		}
+ 	}
+ 
+ 	wl_list_for_each(c, &clients, link) {
+@@ -1771,8 +1853,10 @@ drawbar(Monitor *m)
+ 			urg |= c->tags;
  	}
  	c = focustop(m);
- 	drwl_setscheme(m->drw, colors[SchemeSel]);
+-	drwl_setscheme(m->drw, colors[SchemeSel]);
 -	x = drwl_text(m->drw, 0, 0, TEXTW(m, menulabel), m->b.height, m->lrpad / 2, menulabel, 0);
-+	drwl_rect(m->drw, 0, 0, m->b.height, m->b.height, 1, 1);
-+	drawmenuicon(m);
-+	drwl_setscheme(m->drw, colors[SchemeSel]);
-+	x = drwl_text(m->drw, m->b.height, 0, TEXTW(m, menulabel) - m->lrpad / 2, m->b.height, 0, menulabel, 0);
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, 0, 0, MENUW(m), m->b.height, 1, 1);
++	drawlogo(m);
++	x = MENUW(m);
  	drwl_setscheme(m->drw, colors[SchemeNorm]);
  	drwl_rect(m->drw, x, 0, m->lrpad / 2, m->b.height, 1, 1);
  	x += m->lrpad / 2;
-@@ -3601,7 +3645,9 @@
+@@ -3613,7 +3697,9 @@ statusin(int fd, unsigned int mask, void *data)
  	for (char *line = status, *next; line && *line; line = next) {
  		if ((next = strchr(line, '\n')))
  			*next++ = '\0';
@@ -97,5 +166,5 @@
 +			live = atoi(line + 5);
 +		else if (!strncmp(line, "notice", 6))
  			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
- 		else
- 			snprintf(stext, sizeof(stext), "%s", line);
+ 		else if (!strcmp(line, "togglelayout")) {
+ 			if (selmon)

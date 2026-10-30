@@ -7,11 +7,12 @@ url="https://codeberg.org/dwl/dwl"
 license=(GPL-3.0-only MIT CC0-1.0)
 depends=(wlroots0.20 fcft libinput libxkbcommon pixman wayland)
 makedepends=(wayland-protocols tllist)
-_patches=(bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd)
+_patches=(bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon)
 source=("dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz"
         "${_patches[@]/%/.patch}"
         config.h)
 sha256sums=('635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d'
+            'SKIP'
             'SKIP'
             'SKIP'
             'SKIP'
