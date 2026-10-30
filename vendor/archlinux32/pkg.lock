@@ -10,6 +10,7 @@ extra alsa-lib 1.2.16.1-1.0 alsa-lib-1.2.16.1-1.0-i686.pkg.tar.zst 89003b90f497d
 extra alsa-topology-conf 1.2.5.1-4.0 alsa-topology-conf-1.2.5.1-4.0-any.pkg.tar.zst 4c0031c48a6f8a4b3ddc626f24855201e5f881050ee44163274461c562a3fa91
 extra alsa-ucm-conf 1.2.16.1-1.0 alsa-ucm-conf-1.2.16.1-1.0-any.pkg.tar.zst 13024cd99f5c67f355968019f3c42264e9023e8a279be2660d14468555c40bdf
 extra alsa-utils 1.2.8-1.0 alsa-utils-1.2.8-1.0-i686.pkg.tar.zst 5d700e103171cd1e3369d9bb6b0427ede3d69339c9db2d8adbb6923110fb87c7
+core archlinux-keyring 20250807.1-1.0 archlinux-keyring-20250807.1-1.0-any.pkg.tar.zst 7c4b87d4c5587519ec7a128cd8fe7038a498b8da3dbfff233eb602d36ccaf278
 extra archlinux-wallpaper 1.6.1-7.0 archlinux-wallpaper-1.6.1-7.0-any.pkg.tar.zst 956acfa334c4b04a10c9d40b6ea5b01aba19d619d244dc10fd817a4e0cf76a69
 core archlinux32-keyring 20251214-1.0 archlinux32-keyring-20251214-1.0-any.pkg.tar.zst 7600cd9ddabbbbb5643b0235646670d070a4848030fbe10c77939ea3aeee29a0
 extra argon2 20190702-7.0 argon2-20190702-7.0-i686.pkg.tar.zst d6e6ec8bf0e9fad3d1d06fb545c0eeef00e9023b908e0dd02a1d6c5913ec1fd8

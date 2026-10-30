@@ -2079,6 +2079,7 @@ alsa-ucm-conf = { version = "1.2.16.1-1", a32 = "aee39c468775915b9a4b26602f00c7e
 alsa-utils = { version = "1.2.16-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[alsa-utils]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-utils\"\nprefix = \"v\"\n" }
 aom = { version = "3.15.2-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[aom]\nsource = \"git\"\ngit = \"https://aomedia.googlesource.com/aom\"\ninclude_regex = 'v\\d+(\\.\\d+)*'\nprefix = \"v\"\nfrom_pattern = '-([a-z])'\nto_pattern = '\\1'\n" }
 appstream = { version = "1.2.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[appstream]\nsource = 'github'\ngithub = 'ximion/appstream'\nuse_max_tag = true\nprefix = 'v'\n" }
+archlinux-keyring = { version = "20250807.1-1", nvchecker = "[archlinux-keyring]\nsource = \"gitlab\"\ngitlab = \"archlinux/archlinux-keyring\"\nhost = \"gitlab.archlinux.org\"\nuse_max_tag = true\nprefix = \"v\"\n" }
 archlinux-wallpaper = { version = "1.6.1-7", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 archlinux32-keyring = { version = "20261017-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 argon2 = { version = "20190702-7", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[argon2]\nsource = \"git\"\ngit = \"https://github.com/P-H-C/phc-winner-argon2.git\"\n" }
