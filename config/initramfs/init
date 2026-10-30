@@ -249,6 +249,7 @@ if [ "$toram" = 1 ]; then
 	say "msg Copying Tiny Hat to RAM"
 	if copy "$sfs" /run/tinyhat/rw/root.sfs; then
 		sfs=/run/tinyhat/rw/root.sfs
+		: >/run/tinyhat/toram
 	else
 		rm -f /run/tinyhat/rw/root.sfs
 	fi
