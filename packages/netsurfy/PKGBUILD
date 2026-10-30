@@ -1,7 +1,7 @@
 # Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
 
 pkgname=netsurfy
-pkgver=1.0.0
+pkgver=1.0.1
 pkgrel=1
 pkgdesc='Lightweight and fast web browser, forked from NetSurf'
 arch=(i686 x32)
@@ -15,8 +15,8 @@ provides=(netsurf)
 conflicts=(netsurf)
 replaces=(netsurf)
 source=("$pkgname-$pkgver.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('ed7389b10601f3d58051e1fc0eb79f8394faf9e519431de43ac41061141a4990')
-b2sums=('196ca327d11b125ac28fa243a4400c6fd7434e2ecaad224ad01344294e3ddc95a2cabe76ef0ba76be62938166bb460d408184629c5324d423cc3ca977196e1b1')
+sha256sums=('74a53b15c5a8b9c37ddf91c1cf61164eb9d2143ae500d9c23fa5fd0358d7522a')
+b2sums=('29f01fc2ba595f1cbab90412645ca48fc9f2f68a30972a53c9be9c65329cd2c29348d80426eba1ee367d226fc5f33edca670d3d1c4b7087efac41460dda08153')
 
 build() {
   make -C $pkgname-$pkgver
@@ -27,5 +27,5 @@ package() {
   cd $pkgname-$pkgver
   install -Dm644 frontends/gtk/res/$pkgname.xpm "$pkgdir/usr/share/pixmaps/$pkgname.xpm"
   install -Dm644 frontends/gtk/res/$pkgname.desktop "$pkgdir/usr/share/applications/$pkgname.desktop"
-  install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

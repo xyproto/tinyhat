@@ -1,5 +1,5 @@
 set -g fish_greeting
-set -q BROWSER; or set -gx BROWSER /usr/bin/netsurf-gtk3
+set -q BROWSER; or set -gx BROWSER /usr/bin/netsurfy
 set -q EDITOR; or set -gx EDITOR /usr/bin/o
 set -q MANPAGER; or set -gx MANPAGER /usr/bin/o
 if test (id -un) = tinyhat

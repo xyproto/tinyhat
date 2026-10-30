@@ -5,7 +5,7 @@ n=0
 refresh=
 trap 'refresh=1' USR1
 echo $$ >"${XDG_RUNTIME_DIR:-/tmp}/tinyhat-status.pid"
-mountpoint -q /persist || echo "live 1"
+[ -e /run/tinyhat/toram ] && ! mountpoint -q /persist && echo "live 1"
 while :; do
 	if [ $((n % 6)) -eq 0 ]; then
 		wifi=

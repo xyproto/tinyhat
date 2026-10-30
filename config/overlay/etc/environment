@@ -1,4 +1,4 @@
-BROWSER=/usr/bin/netsurf-gtk3
+BROWSER=/usr/bin/netsurfy
 EDITOR=/usr/bin/o
 MANPAGER=/usr/bin/o
 EGL_LOG_LEVEL=fatal

@@ -8,7 +8,7 @@ Ctrl+Alt+Up / Down	Audio volume
 Alt+F2	Run a command (Win+R also works)
 
 Ctrl+Alt+R	Terminal
-Ctrl+Alt+N	NetSurf web browser
+Ctrl+Alt+N	NetSurfy web browser
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+B	Bluetooth devices
 Ctrl+Alt+W	Wi-Fi settings
