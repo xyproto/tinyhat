@@ -124,41 +124,6 @@ static void put(int x, int y, uint32_t c)
 	}
 }
 
-static uint32_t get(int x, int y)
-{
-	unsigned char *p = back + ((size_t)y * W + x) * BPP;
-	uint32_t c = 0;
-	if (BPP == 4)
-		memcpy(&c, p, 4);
-	else if (BPP == 2) {
-		uint16_t s;
-		memcpy(&s, p, 2);
-		c = s;
-	} else {
-		c = (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16;
-	}
-	return c;
-}
-
-static Rgb unpack(uint32_t c)
-{
-	const struct fb_var_screeninfo *v = &fb.var;
-	return (Rgb){ (unsigned char)(((c >> v->red.offset) & ((1u << v->red.length) - 1)) << (8 - v->red.length)),
-		      (unsigned char)(((c >> v->green.offset) & ((1u << v->green.length) - 1)) << (8 - v->green.length)),
-		      (unsigned char)(((c >> v->blue.offset) & ((1u << v->blue.length) - 1)) << (8 - v->blue.length)) };
-}
-
-static void add(int x, int y, float r, float g, float b)
-{
-	if (x < 0 || y < 0 || x >= W || y >= H)
-		return;
-	Rgb c = unpack(get(x, y));
-	c.r = (unsigned char)fminf(255.0f, c.r + r);
-	c.g = (unsigned char)fminf(255.0f, c.g + g);
-	c.b = (unsigned char)fminf(255.0f, c.b + b);
-	put(x, y, pack(c));
-}
-
 static void clip(int *x0, int *y0, int *x1, int *y1)
 {
 	if (*x0 < 0)
@@ -455,15 +420,27 @@ static void draw_stars(int force)
 	}
 }
 
-static void glow(int cx, int cy, float radius, float power, Rgb tint)
+static const Rgb WARM[] = { { 0x3b, 0x34, 0x4a }, { 0x8a, 0x6e, 0x5a }, { 0xe8, 0xb8, 0x6a }, { 0xff, 0xe8, 0xb0 }, { 0xff, 0xff, 0xff } };
+static const Rgb TEALS[] = { { 0x1d, 0x4a, 0x52 }, { 0x2a, 0x8a, 0x86 }, { 0x7a, 0xe0, 0xc8 } };
+static const Rgb PINKS[] = { { 0x4a, 0x24, 0x44 }, { 0x9a, 0x3c, 0x7a }, { 0xf0, 0x80, 0xc0 } };
+
+static int dither(int cx, int cy, float v, int levels)
 {
-	int reach = (int)(radius * 3.0f) + 1;
-	for (int y = cy - reach; y <= cy + reach; y++)
-		for (int x = cx - reach; x <= cx + reach; x++) {
-			float d2 = (float)(sq(x - cx) + sq(y - cy)) / (radius * radius);
-			float i = power * expf(-d2);
-			if (i > 0.004f)
-				add(x, y, tint.r * i, tint.g * i, tint.b * i);
+	static const unsigned char bayer[4][4] = { { 0, 8, 2, 10 }, { 12, 4, 14, 6 }, { 3, 11, 1, 9 }, { 15, 7, 13, 5 } };
+	int l = (int)(v * levels + (bayer[cy & 3][cx & 3] + 0.5f) / 16.0f);
+	return l < 0 ? 0 : l > levels ? levels : l;
+}
+
+static void blob(int hx, int hy, int px, float radius, float power, const Rgb *ramp, int levels)
+{
+	int reach = (int)(radius * 2.2f) + 1;
+	int ccx = hx / px, ccy = hy / px;
+	for (int cy = ccy - reach; cy <= ccy + reach; cy++)
+		for (int cx = ccx - reach; cx <= ccx + reach; cx++) {
+			float d2 = (float)(sq(cx - ccx) + sq(cy - ccy)) / (radius * radius);
+			int l = dither(cx, cy, power * expf(-d2), levels);
+			if (l > 0)
+				fill(cx * px, cy * px, cx * px + px, cy * px + px, ramp[l - 1]);
 		}
 }
 
@@ -474,39 +451,41 @@ static void draw_shutdown(long now)
 	float fade = expf(-t / 2.5f), grow = 1.0f - expf(-t / 3.0f);
 	float dark = b < 0 ? 1.0f : fmaxf(0.0f, 1.0f - b);
 	float flash = b < 0 ? 0.0f : b < 0.2f ? b / 0.2f : fmaxf(0.0f, 1.0f - (b - 0.2f) / 0.8f);
-	int m = W < H ? W : H;
+	int px = hat_scale(), cells = (W < H ? W : H) / px;
 	Rgb bg = { (unsigned char)(BG.r * dark), (unsigned char)(BG.g * dark), (unsigned char)(BG.b * dark) };
 	fill(0, 0, W, H, bg);
 	for (int i = 0; i < nstars; i++) {
 		if (i == hero)
 			continue;
-		Rgb s = STAR[stars[i].base + 1];
-		float k = fade * dark;
-		Rgb c = { (unsigned char)(bg.r + (s.r - bg.r) * k), (unsigned char)(bg.g + (s.g - bg.g) * k),
-			  (unsigned char)(bg.b + (s.b - bg.b) * k) };
-		fill(stars[i].x, stars[i].y, stars[i].x + starsize, stars[i].y + starsize, c);
+		int level = dither(stars[i].x / px, stars[i].y / px, fade * dark * (stars[i].base + 1) / 3.0f, 3);
+		if (level > 0)
+			fill(stars[i].x, stars[i].y, stars[i].x + starsize, stars[i].y + starsize, STAR[level - 1]);
 	}
 	if (hero < 0)
 		return;
 	int hx = stars[hero].x + starsize / 2, hy = stars[hero].y + starsize / 2;
-	Rgb warm = { 255, 236, 200 }, blue = { 150, 200, 255 };
-	glow(hx, hy, starsize * (0.7f + 1.6f * grow), 0.6f + 0.6f * grow, warm);
-	glow(hx, hy, starsize * (2.0f + 5.0f * grow), 0.12f + 0.25f * grow, warm);
+	blob(hx, hy, px, 0.8f + 2.2f * grow, 0.5f + 0.5f * grow, WARM, 5);
 	if (b < 0)
 		return;
-	glow(hx, hy, m * 0.02f + m * 0.16f * sqrtf(fminf(b, 1.0f)), 1.6f * flash, warm);
-	for (int y = hy - 3; y <= hy + 3; y++)
-		for (int x = 0; x < W; x++) {
-			float i = flash * expf(-fabsf((float)(x - hx)) / (W * 0.22f)) * (1.0f - abs(y - hy) / 4.0f);
-			add(x, y, blue.r * i, blue.g * i, blue.b * i);
+	int row = hy / px;
+	for (int cx = 0; cx * px < W; cx++) {
+		float v = flash * expf(-fabsf((float)(cx * px - hx)) / (W * 0.22f));
+		int l = dither(cx, row, v, 5);
+		if (l > 0)
+			fill(cx * px, row * px, cx * px + px, row * px + px, WARM[l - 1]);
+		if (l > 2) {
+			fill(cx * px, (row - 1) * px, cx * px + px, row * px, WARM[l - 3]);
+			fill(cx * px, (row + 1) * px, cx * px + px, (row + 2) * px, WARM[l - 3]);
 		}
+	}
+	blob(hx, hy, px, 1.5f + cells * 0.12f * sqrtf(fminf(b, 1.0f)), 1.3f * flash, WARM, 5);
 	static const struct {
 		float along, size;
-		Rgb tint;
-	} ghosts[] = { { 0.6f, 0.035f, { 120, 255, 220 } }, { 1.3f, 0.06f, { 255, 120, 200 } }, { 1.8f, 0.025f, { 160, 180, 255 } } };
+		int pink;
+	} ghosts[] = { { 0.6f, 0.035f, 0 }, { 1.3f, 0.06f, 1 }, { 1.8f, 0.025f, 0 } };
 	for (size_t g = 0; g < sizeof(ghosts) / sizeof(ghosts[0]); g++)
-		glow(hx + (int)((W / 2 - hx) * ghosts[g].along), hy + (int)((H / 2 - hy) * ghosts[g].along),
-		     m * ghosts[g].size, 0.35f * flash, ghosts[g].tint);
+		blob(hx + (int)((W / 2 - hx) * ghosts[g].along), hy + (int)((H / 2 - hy) * ghosts[g].along), px,
+		     cells * ghosts[g].size, 0.9f * flash, ghosts[g].pink ? PINKS : TEALS, 3);
 }
 
 static void draw_all(void)
