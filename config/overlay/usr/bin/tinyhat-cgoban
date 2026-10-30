@@ -1,6 +1,7 @@
 #!/bin/sh
 mkdir -p "$HOME/sgf"
 cd "$HOME/sgf" || exit 1
+export _JAVA_AWT_WM_NONREPARENTING=1
 exec java \
 	-Dawt.useSystemAAFontSettings=on \
 	-Dswing.aatext=true \
