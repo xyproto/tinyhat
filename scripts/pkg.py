@@ -257,6 +257,7 @@ def list_config(name, extra=()):
         remove = set(s.get("remove", []))
         targets = [t for t in base.get("packages", []) if t not in remove]
         targets += [t for t in s.get("add", []) if t not in targets]
+        targets += [t for v in VARIANTS for t in s.get(v, []) if t not in targets]
         skip |= set(base.get("skip", []))
     for path in extra:
         targets += [t for t in read_list(path) if t not in targets]
@@ -357,6 +358,7 @@ def pkgbase(path, name):
 
 
 SEEDS = {"i686": "buildroot", "aarch64": "buildroot-aarch64"}
+VARIANTS = ("uefi", "rpi4")
 
 
 def seed_versions(arch):
@@ -518,11 +520,15 @@ def current_db(max_age=6 * 3600):
     return load_db(dbdir)
 
 
-def cmd_archrepo(arch, repodir, lockfile):
+def cmd_archrepo(arch, repodir, lockfile, variant=None):
     """Fill repodir with the prebuilt packages of [image-ARCH] and the packages built for ARCH that the image
-    uses ([build-ARCH] in distro.lock), and write the lock file for the root file system of that image."""
+    uses ([build-ARCH] in distro.lock), and write the lock file for the root file system of that image.
+
+    [image-ARCH] can list packages for one variant of the image under a variant key (VARIANTS). The lock holds
+    the packages of all variants; with a variant, the root file system lock keeps only the packages that the
+    shared packages and that variant's packages need."""
     os.makedirs(repodir, exist_ok=True)
-    sel = []
+    sel, built_names = [], []
     for e in distro.locked(f"image-{arch}"):
         p = {"repo": e["repo"], "name": e["name"], "version": e["version"], "filename": e["file"], "sha256": e["sha256"]}
         fetch_pkg(p, repodir, arch)
@@ -536,7 +542,34 @@ def cmd_archrepo(arch, repodir, lockfile):
             link(built[name], os.path.join(repodir, fn))
             sel.append({"repo": "tinyhat", "name": name, "version": pkginfo(built[name])["pkgver"][0],
                         "filename": fn, "sha256": sha256(built[name])})
+            built_names.append(name)
+    if variant is not None:
+        conf = distro.section(f"image-{arch}")
+        if variant not in VARIANTS:
+            die(f"unknown image variant {variant} (expected one of {' '.join(VARIANTS)})")
+        others = {t for v in VARIANTS if v != variant for t in conf.get(v, [])}
+        roots = [t for t in list_config(f"image-{arch}")[0] if t not in others] + built_names
+        sel = reachable(sel, repodir, roots)
     write_lock(sorted(sel, key=lambda p: p["name"]), lockfile)
+
+
+def reachable(sel, repodir, roots):
+    """The packages of sel that the roots need, following depends and provides."""
+    infos, provides = {}, {}
+    for p in sel:
+        info = repo_info(os.path.join(repodir, p["filename"]))
+        infos[p["name"]] = info
+        for pv in info.get("provides", []):
+            provides.setdefault(strip_ver(pv), p["name"])
+    keep, todo = set(), list(roots)
+    while todo:
+        dep = strip_ver(todo.pop())
+        name = dep if dep in infos else provides.get(dep)
+        if name is None or name in keep:
+            continue
+        keep.add(name)
+        todo += [d for k in ("depend", "depends") for d in infos[name].get(k, [])]
+    return [p for p in sel if p["name"] in keep]
 
 
 def cmd_prebuilt(repodir, lockfile, *names):
@@ -622,7 +655,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
-            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
+            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)

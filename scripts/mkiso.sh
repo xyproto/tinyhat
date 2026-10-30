@@ -15,6 +15,7 @@ esp_mib=16
 pkg() { python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 "$1"; }
 efi_modules="fat part_msdos part_gpt part_apple iso9660 efi_gop font gfxterm gfxmenu png search search_label normal linux echo test sleep reboot halt configfile cpuid loadenv smbios regexp"
 pc_modules="biosdisk iso9660 search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png loadenv smbios regexp"
+arm_modules="fat part_msdos part_gpt iso9660 efi_gop font gfxterm gfxmenu png search search_label normal linux echo test sleep reboot halt configfile loadenv smbios regexp"
 if ! command -v xorriso >/dev/null 2>&1; then
 	echo "xorriso not found in PATH (pacman -S libisoburn)" >&2
 	exit 1
@@ -28,6 +29,25 @@ uuid=$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%d-%H-%M-%S-00)
 printf 'search --set=root --file /.disk/%s.uuid\nset prefix=($root)/boot/grub\nset th_mode=none\n' "$uuid" >"$tools/eficfg"
 printf 'set th_mode=none\n# tinyhat\n' >"$tools/pccfg"
 bsdtar -xf "$(pkg grub)" -C "$tools/grub" usr/bin/grub-mkimage usr/lib/grub/i386-pc usr/lib/grub/i386-efi
+if [ "$name" = tinyhat-aarch64 ]; then
+	mkdir -p "$tools/grubarm/usr/lib/grub"
+	cp -a "$top/build/buildroot-aarch64/usr/lib/grub/arm64-efi" "$tools/grubarm/usr/lib/grub/"
+	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+		/img/isotools/grub/usr/bin/grub-mkimage -d /img/isotools/grubarm/usr/lib/grub/arm64-efi -O arm64-efi \
+		-o /img/iso/efi/boot/bootaa64.efi -c /img/isotools/eficfg -p /boot/grub $arm_modules
+	truncate -s "${esp_mib}M" "$isod/efi.img"
+	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+		/bin/sh -c 'mkfs.fat --invariant -F 16 /img/iso/efi.img >/dev/null && mcopy -s -i /img/iso/efi.img /img/iso/efi ::/'
+	find "$isod" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
+	xorriso -as mkisofs -rational-rock \
+		--modification-date="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)" \
+		-V TINYHAT -A TINYHAT \
+		--efi-boot efi.img -efi-boot-part --efi-boot-image \
+		-o "$out.tmp" "$isod"
+	mv "$out.tmp" "$out"
+	rm -rf "$isod" "$tools"
+	exit 0
+fi
 if [ "$name" = tinyhat64x32 ]; then
 	bsdtar -xf "$(pkg grub-efi64)" -C "$tools/grub64" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
 fi

@@ -4,6 +4,7 @@ umask 022
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
 out=$1
 arch=${2:-i686}
+kernel=${3:-linux-rpi}
 repo=$top/build/repo
 libs=$repo
 ld=usr/lib/ld-linux.so.2
@@ -11,7 +12,7 @@ work=$top/build/initramfs
 if [ "$arch" = aarch64 ]; then
 	libs=$top/build/repo-aarch64
 	ld=usr/lib/ld-linux-aarch64.so.1
-	work=$top/build/initramfs-aarch64
+	work=$top/build/$(basename "$out" .img)
 fi
 rm -rf "$work"
 mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/newroot"
@@ -37,26 +38,38 @@ x ncurses 'usr/lib/libncursesw.so.6*'
 x readline 'usr/lib/libreadline.so.8*'
 ln -s usr/lib "$work/lib"
 if [ "$arch" = aarch64 ]; then
-	kpkg=$(pkgfile "$libs" linux-rpi)
-	kdir=$top/build/initramfs-kmod
+	kpkg=$(pkgfile "$libs" "$kernel")
+	kdir=$work-kmod
 	rm -rf "$kdir"
 	mkdir -p "$kdir" "$work/modules"
-	mods=$(bsdtar -tf "$kpkg" | grep '/kernel/.*\.ko\.xz$')
+	mods=$(bsdtar -tf "$kpkg" | grep '/kernel/.*\.ko\.\(xz\|zst\)$')
 	order=
 	add() {
 		case " $order " in *" $1 "*) return ;; esac
-		set -- "$1" "$(printf '%s\n' "$mods" | grep "/$(printf '%s' "$1" | sed 's/[-_]/[-_]/g')\.ko\.xz$" | head -n 1)"
-		[ -n "$2" ] || { echo "mkinitramfs.sh: no kernel module $1 in $kpkg" >&2; exit 1; }
+		set -- "$1" "$(printf '%s\n' "$mods" | grep "/$(printf '%s' "$1" | sed 's/[-_]/[-_]/g')\.ko\.\(xz\|zst\)$" | head -n 1)" "${2-}"
+		if [ -z "$2" ]; then
+			[ -n "$3" ] && return
+			echo "mkinitramfs.sh: no kernel module $1 in $kpkg" >&2
+			exit 1
+		fi
 		bsdtar -xf "$kpkg" -C "$kdir" "$2"
 		for d in $(modinfo -F depends "$kdir/$2" | tr , ' '); do
 			add "$d"
 		done
-		xz -dc "$kdir/$2" >"$work/modules/$1.ko"
+		case $2 in
+		*.zst) zstd -q -dc "$kdir/$2" >"$work/modules/$1.ko" ;;
+		*) xz -dc "$kdir/$2" >"$work/modules/$1.ko" ;;
+		esac
 		order="$order $1"
 	}
 	for m in xfs squashfs overlay exfat ntfs3; do
 		add "$m"
 	done
+	if [ "$kernel" != linux-rpi ]; then
+		for m in virtio_pci virtio_blk virtio_scsi nvme ahci ahci_platform xhci_pci xhci_plat_hcd usb_storage uas sd_mod; do
+			add "$m" optional
+		done
+	fi
 	printf '%s\n' $order >"$work/modules/order"
 	rm -rf "$kdir"
 fi

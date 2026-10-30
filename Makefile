@@ -31,19 +31,78 @@ ifeq (,$(findstring -j,$(MAKEFLAGS)))
 MAKEFLAGS += -j$(shell nproc)
 endif
 
+IMG_I686 := tinyhat32.img
+IMG_X32 := tinyhat64x32.img
+IMG_AARCH64 := tinyhat-aarch64.img
+IMG_RPI4 := tinyhat-rpi4.img
+IMGS := $(IMG_I686) $(IMG_X32) $(IMG_AARCH64) $(IMG_RPI4)
+ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_AARCH64:.img=.iso)
+VDIS := $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi) $(IMG_AARCH64:.img=.vdi)
+
 .DELETE_ON_ERROR:
-.PHONY: all iso both rpi4 aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign vdi
+.DEFAULT_GOAL := help
+.PHONY: help all img iso vdi i686 x32 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
 
-all: tinyhat32.img
+C_HEAD := \033[1;35m
+C_GRP := \033[1;36m
+C_TGT := \033[1;33m
+C_OFF := \033[0m
+comma := ,
+define target
+	@printf '  $(C_TGT)%-14s$(C_OFF) %s\n' $(1) $(2)
+endef
 
-iso: tinyhat32.iso
+help:
+	@printf '\n$(C_HEAD)Tiny Hat $(VERSION)$(C_OFF) - a tiny Linux distro for old and small computers\n\n'
+	@printf '$(C_GRP)Images$(C_OFF)\n'
+	$(call target,i686,"32-bit x86 image ($(IMG_I686))")
+	$(call target,x32,"64-bit x86 with 32-bit pointers image ($(IMG_X32))")
+	$(call target,aarch64,"64-bit ARM UEFI image ($(IMG_AARCH64))")
+	$(call target,rpi4,"64-bit ARM Raspberry Pi 4 image ($(IMG_RPI4))")
+	@printf '\n$(C_GRP)CD/DVD/USB ISO images$(C_OFF)\n'
+	$(call target,i686_iso,"32-bit x86 ISO")
+	$(call target,x32_iso,"x32 ISO")
+	$(call target,aarch64_iso,"64-bit ARM UEFI ISO")
+	$(call target,iso,"all three ISO images")
+	@printf '\n$(C_GRP)Groups and releases$(C_OFF)\n'
+	$(call target,vdi,"VirtualBox disk images (i686$(comma) x32$(comma) aarch64)")
+	$(call target,all,"every .img$(comma) .iso and .vdi")
+	$(call target,dist,"release files in $(B)/dist$(comma) signed")
+	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
+	$(call target,packages,"build or fetch every package recipe")
+	$(call target,lock,"update distro.lock")
+	$(call target,lock-check,"check that distro.lock is up to date")
+	$(call target,autoupdate,"update recipes to newer versions")
+	$(call target,test,"run the checks")
+	$(call target,run,"boot the i686 image in QEMU")
+	$(call target,status,"show what still needs building")
+	$(call target,clean,"remove build output")
+	@printf '\n'
 
-both: tinyhat32.img tinyhat64x32.img
+i686: $(IMG_I686)
 
-rpi4: tinyhat-rpi4.img
+x32: $(IMG_X32)
+
+aarch64: $(IMG_AARCH64)
+
+rpi4: $(IMG_RPI4)
+
+i686_iso: $(IMG_I686:.img=.iso)
+
+x32_iso: $(IMG_X32:.img=.iso)
+
+aarch64_iso: $(IMG_AARCH64:.img=.iso)
+
+img: $(IMGS)
+
+iso: $(ISOS)
+
+vdi: $(VDIS)
+
+all: $(IMGS) $(ISOS) $(VDIS)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
-ifneq (,$(filter-out cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),all)))
+ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),help)))
 include $(B)/pkgs.mk
 endif
 
@@ -56,13 +115,15 @@ tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-tinyhat-rpi4.img: $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
-	scripts/mkimg-rpi.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs
+$(IMG_RPI4): $(B)/initramfs-rpi4.img $(B)/root-rpi4.sfs $(B)/.buildroot scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
+	scripts/mkimg-rpi.sh $@ $(B)/initramfs-rpi4.img $(B)/root-rpi4.sfs
 	@ls -l $@
 
-vdi: tinyhat32.vdi
+$(IMG_AARCH64): $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/pkg/i686/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
+	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs
+	@ls -l $@
 
-tinyhat32.vdi: tinyhat32.img
+%.vdi: %.img
 	rm -f $@.tmp
 	VBoxManage convertfromraw $< $@.tmp --format VDI
 	mv $@.tmp $@
@@ -81,7 +142,7 @@ lock:
 	python3 scripts/mkpkgs.py libs
 	python3 scripts/pkg.py lock buildroot $(B)/seed.txt
 
-# Lock the prebuilt Arch Linux ARM packages for the aarch64 (Raspberry Pi 4) image
+# Lock the prebuilt Arch Linux ARM packages for the aarch64 and Raspberry Pi 4 images
 lock-aarch64:
 	python3 scripts/mkpkgs.py lock-arch aarch64
 
@@ -134,7 +195,7 @@ test: patchcheck sourcecheck fuzzelcheck
 dist: distbuild
 	@$(MAKE) --no-print-directory sign
 
-distbuild: tinyhat32.img tinyhat64x32.img tinyhat32.iso tinyhat64x32.iso
+distbuild: $(IMGS) $(ISOS) $(VDIS)
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
 	@ls -l $(B)/dist
 
@@ -143,10 +204,7 @@ sign:
 	gpg --batch --yes --armor --detach-sign $${GPG_KEY:+-u "$$GPG_KEY"} -o $(B)/dist/SHA256SUMS.asc $(B)/dist/SHA256SUMS
 	@ls -l $(B)/dist/SHA256SUMS.asc
 
-tinyhat32.iso: tinyhat32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
-	scripts/mkiso.sh $< $@
-
-tinyhat64x32.iso: tinyhat64x32.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+$(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_AARCH64:.img=.iso): %.iso: %.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
 	scripts/mkiso.sh $< $@
 
 fetch: $(B)/.fetched-buildroot sources
@@ -201,7 +259,10 @@ $(B)/rootfs-x32.lock: $(ROOTFS_X32_STAMPS) $(B)/image.toml
 	python3 scripts/pkg.py local image $@ $(REPO) x32
 
 $(B)/rootfs-aarch64.lock: $(AARCH64_STAMPS) distro.lock
-	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@
+	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ uefi
+
+$(B)/rootfs-rpi4.lock: $(AARCH64_STAMPS) distro.lock
+	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ rpi4
 
 $(B)/vmlinuz: config/kernel-i686.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
 	@mkdir -p $(B)
@@ -215,7 +276,10 @@ $(B)/initramfs.img: $(B)/pkg/i686/busybox $(B)/pkg/i686/tinyhat-splash $(B)/root
 	scripts/mkinitramfs.sh $@
 
 $(B)/initramfs-aarch64.img: $(B)/rootfs-aarch64.lock config/initramfs/init scripts/mkinitramfs.sh
-	scripts/mkinitramfs.sh $@ aarch64
+	scripts/mkinitramfs.sh $@ aarch64 linux-aarch64
+
+$(B)/initramfs-rpi4.img: $(B)/rootfs-rpi4.lock config/initramfs/init scripts/mkinitramfs.sh
+	scripts/mkinitramfs.sh $@ aarch64 linux-rpi
 
 $(SOUNDFONT_GU): | vendor/src/GeneralUser-GS-2.0.3.sf2
 	@mkdir -p $(dir $@)
@@ -237,6 +301,10 @@ $(B)/.licenses-aarch64: $(B)/rootfs-aarch64.lock $(B)/pkg/i686/licenses $(SOURCE
 	python3 scripts/mklicenses.py $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64 aarch64
 	@touch $@
 
+$(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scripts/mklicenses.py
+	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64
+	@touch $@
+
 ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
 ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) config/rofi/config.rasi packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
 
@@ -253,6 +321,11 @@ $(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs-aarch64 $(B)/modules-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	touch $@
 
+$(B)/rootfs-rpi4.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-rpi4.lock
+	@mkdir -p $(B)/modules-rpi4
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs-rpi4 $(B)/modules-rpi4 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+	touch $@
+
 $(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-i686
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock $(B)/licenses
 	@ls -l $@
@@ -263,6 +336,10 @@ $(B)/root64.sfs: $(B)/rootfs-x32.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-
 
 $(B)/root-aarch64.sfs: $(B)/rootfs-aarch64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-aarch64
 	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs-aarch64 $(B)/modules-aarch64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+	@ls -l $@
+
+$(B)/root-rpi4.sfs: $(B)/rootfs-rpi4.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-rpi4
+	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs-rpi4 $(B)/modules-rpi4 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	@ls -l $@
 
 $(B)/test-usb.img: tinyhat32.img
@@ -290,12 +367,12 @@ cleanchroot:
 	scripts/userns.sh rm -rf $(B)/chroot
 
 status:
-	@python3 scripts/buildstatus.py tinyhat32.img
-	@python3 scripts/buildstatus.py tinyhat64x32.img
+	@python3 scripts/buildstatus.py $(IMG_I686)
+	@python3 scripts/buildstatus.py $(IMG_X32)
 
 clean:
 	scripts/userns.sh rm -rf $(B)
-	rm -f tinyhat32.img tinyhat32.img.tmp tinyhat32.vdi tinyhat32.vdi.tmp tinyhat64x32.img tinyhat64x32.img.tmp tinyhat-rpi4.img tinyhat-rpi4.img.tmp tinyhat32.iso tinyhat64x32.iso
+	rm -f $(IMGS) $(IMGS:=.tmp) $(ISOS) $(VDIS) $(VDIS:=.tmp)
 
 distclean: clean
 	rm -rf vendor/pkg vendor/pkg-aarch64
