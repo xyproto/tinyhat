@@ -8,6 +8,7 @@ SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
+VDI_SIZE ?= 20G
 # Disk space and memory while building: how many packages build at once (one per 8 GB of memory, at least 1),
 # how many compile jobs each of them may run (all cores, held back by the load limit PKG_LOAD so that packages
 # building at the same time share the cores), the ccache size, and whether downloaded package sources and the
@@ -133,8 +134,11 @@ $(IMG_AARCH64): $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot
 	@ls -l $@
 
 %.vdi: %.img
-	rm -f $@.tmp
-	VBoxManage convertfromraw $< $@.tmp --format VDI
+	rm -f $@.tmp $@.raw
+	cp --sparse=always $< $@.raw
+	truncate -s $(VDI_SIZE) $@.raw
+	VBoxManage convertfromraw $@.raw $@.tmp --format VDI
+	rm -f $@.raw
 	mv $@.tmp $@
 	@ls -l $@
 
@@ -314,7 +318,7 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
+ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
 ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) config/rofi/config.rasi packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
