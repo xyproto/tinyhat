@@ -1,0 +1,24 @@
+pkgname=libglvnd-glx
+pkgver=1.7.0
+pkgrel=1
+pkgdesc="The GLX part of libglvnd (libGL.so.1 and libGLX.so.0), for Xwayland and other X11 programs"
+arch=(i686 x32)
+url="https://gitlab.freedesktop.org/glvnd/libglvnd"
+license=('custom:BSD-like')
+depends=("libglvnd=$pkgver")
+makedepends=('libxext' 'libx11' 'xorgproto' 'python' 'meson')
+provides=(libGLX.so)
+source=("https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v$pkgver/libglvnd-v$pkgver.tar.gz")
+sha512sums=('7b6eb8e075b48f1d915b892044adc3260547d74ed61d1e2fa6c5f0f8c3527754abea314181e088626d4fd58bb221085e5288c4758d828e171c7dcb0e4991745c')
+
+build() {
+  arch-meson libglvnd-v$pkgver build -D gles1=false -D egl=false -D gles2=false
+  meson compile -C build
+}
+
+package() {
+  meson install -C build --destdir "$srcdir/root"
+  install -d "$pkgdir/usr/lib"
+  cp -a "$srcdir"/root/usr/lib/libGL.so.1* "$srcdir"/root/usr/lib/libGLX.so.0* "$pkgdir/usr/lib/"
+  install -Dm644 libglvnd-v$pkgver/README.md "$pkgdir/usr/share/licenses/$pkgname/README.md"
+}
