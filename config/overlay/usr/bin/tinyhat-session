@@ -4,7 +4,7 @@ mkdir -p "$HOME/downloads"
 : "${EDITOR:=/usr/bin/o}"
 : "${MANPAGER:=/usr/bin/o}"
 export BROWSER EDITOR MANPAGER
-export DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf EGL_LOG_LEVEL=fatal XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
+export GTK_A11Y=none WLR_XWAYLAND=/usr/bin/Xwayland DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf EGL_LOG_LEVEL=fatal XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
 eval "$(MESA_SHADER_CACHE_DISABLE=true tinyhat-glinfo 2>/dev/null)"
 TINYHAT_SDL_RENDER=software
 if [ "${TINYHAT_GLES_VERSION:-0.0}" != 0.0 ]; then
