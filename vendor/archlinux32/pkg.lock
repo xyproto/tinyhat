@@ -344,6 +344,7 @@ core which 2.25-1.0 which-2.25-1.0-i686.pkg.tar.zst ca456224f39197c2d6194eeb295d
 core wireless-regdb 2026.09.03-1.0 wireless-regdb-2026.09.03-1.0-any.pkg.tar.zst d83db6a252864e93af049829b75653e41afc393ad88bfcfca3073531a153bdf4
 extra wireplumber 0.4.14-1.1 wireplumber-0.4.14-1.1-i686.pkg.tar.zst 08c315c691d2f7bdae81fbb82afc7c8606c40687f1805758813f64115598cc45
 extra xarchiver 0.5.4.25-1.0 xarchiver-0.5.4.25-1.0-i686.pkg.tar.zst ea97def8813541d63073d9977a0d5785d11f64eb98a7e63c6b6890c49e089c41
+extra xcb-util-wm 0.4.2-2.0 xcb-util-wm-0.4.2-2.0-i686.pkg.tar.zst d89bb6a58546b34f7c379ab8dd165c1c7a2142f55692d33655c41c973aa15c2b
 extra xcursor-vanilla-dmz 0.4.5.3-1.0 xcursor-vanilla-dmz-0.4.5.3-1.0-any.pkg.tar.zst 1945b8d0f616e932a16af5af6f9d6dfb7739d3231dc0c939c620a2c3b4370a58
 core xfsprogs 7.1.1-1.0 xfsprogs-7.1.1-1.0-i686.pkg.tar.zst 0fd132882620c288b8d1d57003e14d8d4f5cc3f76226a78c1f73998b23919407
 extra xkeyboard-config 2.48-1.0 xkeyboard-config-2.48-1.0-any.pkg.tar.zst bfc6629670a1387e60a319a25119474eb4df7bcdb84983095601906b6ac10797
