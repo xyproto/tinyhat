@@ -58,4 +58,7 @@ package_libical-docs() {
   mv doc/* "$pkgdir"
 }
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed 's/-DLIBICAL_GOBJECT_INTROSPECTION=true/-DLIBICAL_GOBJECT_INTROSPECTION=false/; s/-DLIBICAL_GLIB_VAPI=true/-DLIBICAL_GLIB_VAPI=false/')"
+
 unset -f pkgver

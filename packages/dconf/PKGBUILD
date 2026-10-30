@@ -66,4 +66,7 @@ package() {
 
 # vim:set sw=2 sts=-1 et:
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'vala'))
+eval "$(declare -f build | sed -E 's/ -D ?vapi=[a-z]+//g; s/arch-meson /arch-meson -D vapi=false /')"
+
 unset -f pkgver

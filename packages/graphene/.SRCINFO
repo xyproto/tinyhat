@@ -9,7 +9,6 @@ pkgbase = graphene
 	checkdepends = python-gobject
 	checkdepends = python-tappy
 	makedepends = git
-	makedepends = gobject-introspection
 	makedepends = gtk-doc
 	makedepends = meson
 	depends = glib2

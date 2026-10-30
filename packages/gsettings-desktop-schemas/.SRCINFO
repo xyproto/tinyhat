@@ -9,7 +9,6 @@ pkgbase = gsettings-desktop-schemas
 	makedepends = dconf
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gobject-introspection
 	makedepends = meson
 	source = git+https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git#tag=51.0
 	b2sums = 1615914f9d1b49d34fefff0cecfa5c58bf4c1f171a94c0afb321b9ee838ab8ad0b18c6a4dc01e4cee7b70b2d522de48ae6293d6c8ee7a6b6e8bbe39fb6cff473

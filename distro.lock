@@ -5,8 +5,6 @@ libpkgs = [
     "acl",
     "alsa-lib",
     "aom",
-    "appstream",
-    "appstream-qt",
     "aquarium",
     "argon2",
     "at-spi2-core",
@@ -1274,7 +1272,6 @@ unzip = { repo = "extra", version = "6.0-23.0", file = "unzip-6.0-23.0-i686.pkg.
 uthash = { repo = "extra", version = "2.3.0-2.0", file = "uthash-2.3.0-2.0-any.pkg.tar.zst", sha256 = "536fda530415d57c25d7f60f2624137369826140592674d517340cb4a01c73f0" }
 util-linux = { repo = "core", version = "2.41.3-2.3", file = "util-linux-2.41.3-2.3-i686.pkg.tar.zst", sha256 = "194dd93b9d4461b994e818189809bc7a3b1c3c0c9f5734e65164f59b571afba0" }
 util-linux-libs = { repo = "core", version = "2.41.3-2.3", file = "util-linux-libs-2.41.3-2.3-i686.pkg.tar.zst", sha256 = "86f568813a382757786a51aeb37baa25790c87d1031701ece07f7379c53f7eaa" }
-vala = { repo = "extra", version = "0.56.18-5.3", file = "vala-0.56.18-5.3-i686.pkg.tar.zst", sha256 = "89c251bfb283640cc35cc1219f19d2123a7b142300c93d88ffb99f312ffc2f30" }
 valgrind = { repo = "extra", version = "3.25.1-9.0", file = "valgrind-3.25.1-9.0-i686.pkg.tar.zst", sha256 = "eadef877e5df6e191fd1835cb46adf5449fec6cc5ef56ff4983bea51e51154b4" }
 vulkan-headers = { repo = "extra", version = "1:1.4.357.0-1.0", file = "vulkan-headers-1:1.4.357.0-1.0-any.pkg.tar.zst", sha256 = "58266b6b1c6401ee110c431a240609d1c58c357f940c5cf05fb6fda69af047f4" }
 vulkan-icd-loader = { repo = "extra", version = "1.4.363.0-1.0", file = "vulkan-icd-loader-1.4.363.0-1.0-i686.pkg.tar.zst", sha256 = "8e822ad00e0455a91417b079b4fc68bb7a08b0660910497722a2de7948594873" }

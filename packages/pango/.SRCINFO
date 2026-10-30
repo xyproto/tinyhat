@@ -9,7 +9,6 @@ pkgbase = pango
 	license = LGPL-2.1-or-later
 	makedepends = gi-docgen
 	makedepends = git
-	makedepends = gobject-introspection
 	makedepends = help2man
 	makedepends = meson
 	depends = cairo

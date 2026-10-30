@@ -8,7 +8,6 @@ pkgbase = libxmlb
 	license = LGPL-2.1-only
 	checkdepends = shared-mime-info
 	makedepends = git
-	makedepends = gobject-introspection
 	makedepends = gtk-doc
 	makedepends = meson
 	depends = glib2

@@ -138,4 +138,11 @@ package_glycin-docs() {
 }
 # vim:set sw=2 sts=-1 et:
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=false -D vapi=false /')"
+
+for _f in $(declare -F | awk '$3 ~ /^package/ { print $3 }'); do
+  eval "$(declare -f "$_f" | sed -E 's#_pick [^ ]+ usr/(lib/girepository-1\.0|share/gir-1\.0|share/vala)[^;)]*#:#')"
+done
+
 unset -f pkgver

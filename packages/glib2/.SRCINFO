@@ -12,7 +12,6 @@ pkgbase = glib2
 	makedepends = dconf
 	makedepends = gettext
 	makedepends = git
-	makedepends = gobject-introspection
 	makedepends = libelf
 	makedepends = meson
 	makedepends = python

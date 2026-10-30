@@ -9,7 +9,6 @@ pkgbase = libnice
 	checkdepends = gst-plugins-base-libs
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gobject-introspection
 	makedepends = graphviz
 	makedepends = gstreamer
 	makedepends = gtk-doc

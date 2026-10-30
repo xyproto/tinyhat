@@ -8,7 +8,6 @@ pkgbase = ministream
 	license = LGPL-2.1-only
 	makedepends = appstream
 	makedepends = git
-	makedepends = gobject-introspection
 	makedepends = meson
 	depends = glibc
 	depends = glib2

@@ -78,4 +78,11 @@ package_appstream-qt() {
   rm -r "$pkgdir"/usr/{bin,include/appstream{,-compose},lib/{appstreamcli-compose,ascompose,girepository-1.0,libappstream*,pkgconfig},share}
 }
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/meson build appstream /meson build appstream -Dgir=false -Dvapi=false /')"
+
+for _f in $(declare -F | awk '$3 ~ /^package/ { print $3 }'); do
+  eval "$(declare -f "$_f" | sed 's/girepository-1\.0,//')"
+done
+
 unset -f pkgver

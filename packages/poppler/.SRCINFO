@@ -19,7 +19,6 @@ pkgbase = poppler
 	makedepends = openjpeg2
 	makedepends = pkgconfig
 	makedepends = lcms2
-	makedepends = gobject-introspection
 	makedepends = icu
 	makedepends = git
 	makedepends = gtk-doc

@@ -1,0 +1,11 @@
+pkgname=(${pkgname[@]/avahi-gtk/})
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gtk3|doxygen|graphviz'))
+eval "$(
+  declare -f build | sed 's/--disable-libevent/--disable-gtk --disable-gtk3 --disable-doxygen-doc --disable-libevent/'
+  declare -f package_avahi | sed '
+    s/_pick a-gtk [^;)]*/:/
+    /avahi-gtk: /d
+    s|_pick a-bm usr/share/man/man1/avahi-bookmarks.1\*;|&\n    rm -rf usr/bin/avahi-discover usr/bin/avahi-discover-standalone usr/bin/bshell usr/bin/bssh usr/bin/bvnc usr/share/applications usr/share/avahi/interfaces usr/share/man/man1/avahi-discover.1* usr/share/man/man1/bshell.1* usr/share/man/man1/bssh.1* usr/share/man/man1/bvnc.1* usr/lib/python*/site-packages/avahi/ServiceTypeDatabase.py;|
+  '
+)"
+unset -f package_avahi-gtk

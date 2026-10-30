@@ -11,7 +11,6 @@ pkgbase = polkit
 	makedepends = dbus
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gobject-introspection
 	makedepends = gtk-doc
 	makedepends = meson
 	depends = duktape

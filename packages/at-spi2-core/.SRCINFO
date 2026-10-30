@@ -11,7 +11,6 @@ pkgbase = at-spi2-core
 	makedepends = gi-docgen
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gobject-introspection
 	makedepends = libxml2
 	makedepends = meson
 	makedepends = python-sphinx
