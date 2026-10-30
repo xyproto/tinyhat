@@ -71,7 +71,7 @@ help:
 	$(call target,all,"every .img$(comma) .iso and .vdi")
 	$(call target,dist,"release files in $(B)/dist$(comma) signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
-	$(call target,packages,"build or fetch every package recipe")
+	$(call target,packages,"build or fetch every package the images need")
 	$(call target,lock,"update distro.lock")
 	$(call target,lock-check,"check that distro.lock is up to date")
 	$(call target,autoupdate,"update recipes to newer versions")
@@ -253,7 +253,7 @@ $(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64 scripts/postinstall.sh
 $(B)/seed-broken.txt: $(B)/.buildroot scripts/seedcheck.py
 	python3 scripts/seedcheck.py $(B)/buildroot $(B)/buildroot.lock vendor/pkg $@
 
-packages: $(I686_STAMPS)
+packages: $(PACKAGES_STAMPS)
 
 x32packages: $(ROOTFS_X32_STAMPS)
 
