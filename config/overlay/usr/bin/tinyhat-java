@@ -1,0 +1,25 @@
+#!/bin/sh
+[ "$1" = --run ] || exec foot -T "Install Java and CGoban 3" "$0" --run
+fail() {
+	printf '\n%s\nPress Enter to close.\n' "$1"
+	read -r _
+	exit 1
+}
+doas systemctl start tinyhat-pacman-init.service
+doas pacman -Sy --noconfirm || fail "Could not update the package database."
+doas pacman -S --needed --noconfirm archlinux32-keyring || fail "Could not update the archlinux32 keyring."
+doas pacman -S --needed --noconfirm jre-openjdk xorg-xwayland || fail "Could not install Java."
+doas mkdir -p /usr/share/java/cgoban3
+doas curl -fL -o /usr/share/java/cgoban3/cgoban.jar https://files.gokgs.com/javaBin/cgoban.jar || fail "Could not download CGoban 3."
+doas install -Dm644 /dev/stdin /usr/share/applications/tinyhat-cgoban.desktop <<'END' || fail "Could not add CGoban 3 to the menu."
+[Desktop Entry]
+Type=Application
+Name=CGoban 3
+Icon=applications-games
+Comment=Play Go on KGS and edit SGF files
+Exec=tinyhat-cgoban
+Terminal=false
+Categories=Game;
+END
+printf '\nJava and CGoban 3 are installed. Start CGoban 3 from the menu.\nPress Enter to close.\n'
+read -r _
