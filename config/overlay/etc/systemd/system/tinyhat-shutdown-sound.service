@@ -1,0 +1,14 @@
+[Unit]
+Description=Play the Tiny Hat shutdown sound
+DefaultDependencies=no
+After=getty@tty1.service user@1000.service
+Before=systemd-poweroff.service systemd-reboot.service systemd-halt.service
+
+[Service]
+Type=exec
+Environment=HOME=/home/tinyhat SDL_AUDIO_DRIVER=alsa SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE=sysdefault
+ExecStart=@/usr/bin/tinyhat-soundd @tinyhat-soundd --play shutdown
+ExecStartPost=/usr/bin/sleep 1
+
+[Install]
+WantedBy=poweroff.target reboot.target halt.target

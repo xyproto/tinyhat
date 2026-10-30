@@ -375,7 +375,7 @@ buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
 exclude = ["boot"]
 remove = [
-    "archlinux32-keyring", "archlinux-keyring", "libglvnd-glx",
+    "archlinux32-keyring", "archlinux-keyring",
     # PC hardware
     "linux-firmware-radeon", "linux-firmware-intel",
     # Not in Arch Linux ARM yet (the arm-none-eabi toolchain for GBA development)

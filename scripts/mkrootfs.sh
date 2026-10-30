@@ -183,7 +183,7 @@ finalize)
 		fi
 	done
 	[ ! -x "$root/usr/bin/rofi" ] || install -Dm644 config/rofi/config.rasi "$root/etc/xdg/rofi/config.rasi"
-	[ "$arch" != aarch64 ] || rm -f "$root/usr/bin/tinyhat-watcom" "$root/usr/share/applications/tinyhat-watcom.desktop" "$root/etc/profile.d/watcom.sh"
+	[ "$arch" != aarch64 ] || rm -f "$root/usr/bin/tinyhat-watcom" "$root/usr/share/applications/tinyhat-watcom.desktop" "$root/etc/profile.d/watcom.sh" "$root/usr/bin/tinyhat-wine" "$root/usr/share/applications/tinyhat-wine.desktop"
 	[ "$arch" = x32 ] || rm -f "$root/usr/bin/tinyhat-steam" "$root/usr/share/applications/tinyhat-steam.desktop" "$root/usr/lib/tinyhat/steam-install"
 	install -m644 -t "$root/etc/skel/cprojects/bootanim" packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h
 	for c in hat_color:HAT_COLOR hat_highlight_color:HAT_HIGHLIGHT_COLOR; do
@@ -238,7 +238,7 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable tinyhat-shutdown-splash.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service
+systemctl enable tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
