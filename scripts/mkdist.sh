@@ -10,7 +10,7 @@ home=${DIST_HOME:-https://github.com/xyproto/tinyhat}
 base=${DIST_URL:-$home/releases/download}
 out=$top/build/dist
 system=$top/build/system
-stage=$out/src/tinyhat-write-$ver
+stage=$out/src/tinyhat-write-macos-$ver
 tgz() {
 	tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
 		-cf - "$1" | gzip -n -9 >"$out/$1.tar.gz"
@@ -20,13 +20,15 @@ mkdir -p "$out" "$system"
 rm -rf "$out/src"
 mkdir -p "$stage"
 cp "$top/programs/tinyhat-write.c" "$top/programs/tinyhat-write-core.h" "$top/programs/tinyhat-write-mac.m" "$stage/"
-tgz "tinyhat-write-$ver"
-sha=$(sha256sum "$out/tinyhat-write-$ver.tar.gz" | awk '{ print $1 }')
-files="tinyhat-write-$ver.tar.gz"
+tgz "tinyhat-write-macos-$ver"
+sha=$(sha256sum "$out/tinyhat-write-macos-$ver.tar.gz" | awk '{ print $1 }')
+files="tinyhat-write-macos-$ver.tar.gz"
 lic=$out/src/tinyhat-licenses-$ver
 mkdir -p "$lic"
 cp -a "$top/build/licenses" "$lic/tinyhat32"
 [ -d "$top/build/licenses-x32" ] && cp -a "$top/build/licenses-x32" "$lic/tinyhat64x32"
+[ -d "$top/build/licenses-aarch64" ] && cp -a "$top/build/licenses-aarch64" "$lic/tinyhat-aarch64"
+[ -d "$top/build/licenses-rpi4" ] && cp -a "$top/build/licenses-rpi4" "$lic/tinyhat-rpi4"
 tgz "tinyhat-licenses-$ver"
 files="$files tinyhat-licenses-$ver.tar.gz"
 x86_64-w64-mingw32-windres "$top/programs/tinyhat-write-win32.rc" -o "$out/win-res.o"
@@ -41,7 +43,15 @@ for img in "$@"; do
 		files="$files $name-$ver.iso"
 		continue
 		;;
+	*.vdi)
+		name=${img##*/}; name=${name%.vdi}
+		cp "$img" "$name-$ver.vdi"
+		files="$files $name-$ver.vdi"
+		continue
+		;;
 	tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
+	tinyhat-aarch64*) name=tinyhat-aarch64 prog=tinyhat-aarch64 formula=tinyhat-aarch64-writer class=TinyhatAarch64Writer app="Tiny Hat ARM Writer" ;;
+	tinyhat-rpi4*) name=tinyhat-rpi4 prog=tinyhat-rpi4 formula=tinyhat-rpi4-writer class=TinyhatRpi4Writer app="Tiny Hat Raspberry Pi 4 Writer" ;;
 	*) name=tinyhat32 prog=tinyhat formula=tinyhat-writer class=TinyhatWriter app="Tiny Hat Writer" ;;
 	esac
 	cmd=$prog-write
@@ -63,7 +73,7 @@ for img in "$@"; do
 class $class < Formula
   desc "Write Tiny Hat images to USB sticks"
   homepage "$home"
-  url "$base/v$ver/tinyhat-write-$ver.tar.gz"
+  url "$base/v$ver/tinyhat-write-macos-$ver.tar.gz"
   sha256 "$sha"
 
   depends_on :macos
@@ -112,14 +122,6 @@ class $class < Formula
 end
 EOF
 	files="$files $name-$ver.img.gz $prog-$ver.exe $prog-$ver-linux-x86_64"
-	if command -v VBoxManage >/dev/null 2>&1; then
-		vdi=$name-$ver.vdi
-		if [ ! -f "$out/$vdi" ] || [ "$img" -nt "$out/$vdi" ]; then
-			VBoxManage convertfromraw "$img" "$out/$vdi.tmp" --format VDI
-			mv "$out/$vdi.tmp" "$out/$vdi"
-		fi
-		files="$files $vdi"
-	fi
 done
 rm -f "$out/win-res.o"
 
