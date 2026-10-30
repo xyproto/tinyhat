@@ -4,7 +4,7 @@
 
 #define HAT_W 24
 #define HAT_H 18
-#define SKY RGB15(2, 3, 8)
+#define SKY RGB15(3, 3, 5)
 
 static const int tune[][2] = {
     { NOTE_C, 0 }, { NOTE_E, 0 }, { NOTE_G, 0 }, { NOTE_C, 1 },
