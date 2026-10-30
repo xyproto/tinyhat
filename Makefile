@@ -57,9 +57,9 @@ help:
 	@printf '\n$(C_HEAD)Tiny Hat $(VERSION)$(C_OFF)\n'
 	@printf '$(C_HEAD2)A tiny Linux distro for retro gamedev on limited devices$(C_OFF)\n\n'
 	@printf '$(C_GRP)Images$(C_OFF)\n'
-	$(call target,i686,"32-bit x86 image ($(IMG_I686))$(comma) also make 32")
-	$(call target,x32,"64-bit x86 with 32-bit pointers image ($(IMG_X32))$(comma) also make 64")
-	$(call target,aarch64,"64-bit ARM UEFI image ($(IMG_AARCH64))")
+	$(call target,32,"32-bit x86 image ($(IMG_I686))$(comma) (make i686 also works)")
+	$(call target,64,"64-bit x86 with 32-bit pointers image ($(IMG_X32))$(comma) (make x32 also works)")
+	$(call target,arm64,"64-bit ARM UEFI image ($(IMG_AARCH64)) (make aarch64 also works)")
 	$(call target,rpi4,"64-bit ARM Raspberry Pi 4 image ($(IMG_RPI4))")
 	@printf '\n$(C_GRP)CD/DVD/USB ISO images$(C_OFF)\n'
 	$(call target,i686_iso,"32-bit x86 ISO")
@@ -89,6 +89,8 @@ x32: $(IMG_X32)
 32: i686
 
 64: x32
+
+arm64: aarch64
 
 aarch64: $(IMG_AARCH64)
 
