@@ -16,7 +16,7 @@ if [ "$arch" = aarch64 ]; then
 fi
 rm -rf "$work"
 mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/newroot"
-pkgfile() { python3 "$top/scripts/pkg.py" repofiles "$1" "$arch" "$2"; }
+pkgfile() { python3 "$top/scripts/pkg.py" repofile "$1" "$arch" "$2"; }
 x() {
 	p=$1
 	shift

@@ -7,7 +7,6 @@ pkgbase = pango
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = help2man
 	makedepends = meson
@@ -28,7 +27,3 @@ pkgname = pango
 	provides = libpangocairo-1.0.so
 	provides = libpangoft2-1.0.so
 	provides = libpangoxft-1.0.so
-
-pkgname = pango-docs
-	pkgdesc = A library for layout and rendering of text (documentation)
-	depends = 

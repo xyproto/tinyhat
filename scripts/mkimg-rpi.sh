@@ -9,7 +9,7 @@ initrd=$2
 sfs=$3
 work=$top/build/img/$(basename "$out" .img)
 boot_mib=128
-pkg() { python3 "$top/scripts/pkg.py" repofiles "$top/build/repo-aarch64" aarch64 "$1"; }
+pkg() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo-aarch64" aarch64 "$1"; }
 rm -rf "$work"
 mkdir -p "$work/root/tinyhat"
 bsdtar -xf "$(pkg raspberrypi-bootloader)" -C "$work" boot

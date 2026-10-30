@@ -12,7 +12,7 @@ br=$top/build/buildroot
 isod=$work/iso
 tools=$work/isotools
 esp_mib=16
-pkg() { python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 "$1"; }
+pkg() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 "$1"; }
 efi_modules="fat part_msdos part_gpt part_apple iso9660 efi_gop font gfxterm gfxmenu png search search_label normal linux echo test sleep reboot halt configfile cpuid loadenv smbios regexp"
 pc_modules="biosdisk iso9660 search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png loadenv smbios regexp"
 arm_modules="fat part_msdos part_gpt iso9660 efi_gop font gfxterm gfxmenu png search search_label normal linux echo test sleep reboot halt configfile loadenv smbios regexp"

@@ -14,7 +14,7 @@ work=$top/build/img/$(basename "$out" .img)
 br=$top/build/buildroot
 esp_mib=16
 efi_modules="fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp"
-pkg() { python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 "$1"; }
+pkg() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 "$1"; }
 rm -rf "$work"
 mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/grub" "$work/kbd"
 cp "$kernel" "$work/root/boot/vmlinuz"

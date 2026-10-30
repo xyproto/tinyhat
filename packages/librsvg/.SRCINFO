@@ -8,7 +8,6 @@ pkgbase = librsvg
 	license = LGPL-2.1-or-later
 	checkdepends = ttf-dejavu
 	makedepends = cargo-c
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = llvm
 	makedepends = meson
@@ -30,7 +29,3 @@ pkgbase = librsvg
 
 pkgname = librsvg
 	provides = librsvg-2.so
-
-pkgname = librsvg-docs
-	pkgdesc = SVG rendering library (documentation)
-	depends = 

@@ -6,7 +6,6 @@ pkgbase = gdk-pixbuf2
 	arch = i686
 	arch = x32
 	license = LGPL-2.0-or-later
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = glib2-devel
 	makedepends = meson
@@ -30,7 +29,3 @@ pkgname = gdk-pixbuf2
 	optdepends = libopenraw: Load .arw, .cr2, .crw, .dng, .erf, .mrw, .nef, .orf, .pef and .raf
 	optdepends = libwmf: Load .apm and .wmf
 	provides = libgdk_pixbuf-2.0.so
-
-pkgname = gdk-pixbuf2-docs
-	pkgdesc = An image loading library (documentation)
-	depends = 

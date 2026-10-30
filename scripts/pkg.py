@@ -423,6 +423,13 @@ def cmd_repofiles(repodir, arch, *names):
         print(files[name])
 
 
+def cmd_repofile(repodir, arch, name):
+    files = arch_files(repodir, arch)
+    if name not in files:
+        die(f"package {name} ({arch}) was not found in {repodir}")
+    print(files[name])
+
+
 def read_lock(lockfile):
     with open(lockfile) as f:
         return [parse_lock_line(line) for line in f if line.strip()]
@@ -654,7 +661,7 @@ def extract_lib32(path, root, libs_only, excludes):
 
 def main():
     if len(sys.argv) < 2:
-        die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | "
+        die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | repofile REPODIR ARCH NAME | "
             "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
@@ -663,6 +670,8 @@ def main():
         cmd_local(*args)
     elif cmd == "repofiles":
         cmd_repofiles(*args)
+    elif cmd == "repofile":
+        cmd_repofile(*args)
     elif cmd == "fetch":
         cmd_fetch(*args)
     elif cmd == "prebuilt":

@@ -41,6 +41,6 @@ package() {
 
 depends=(${depends[@]/libsynctex/})
 makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'texlive-bin|python-sphinx|appstream'))
-eval "$(declare -f build | sed 's/arch-meson build/& -Dsynctex=disabled -Dmanpages=disabled -Dconvert-icon=disabled/')"
+eval "$(declare -f build | sed 's/arch-meson build/& -Dsynctex=disabled -Dmanpages=disabled -Dconvert-icon=disabled -Dtests-x11=disabled -Dtests-wayland=disabled/')"
 
 unset -f pkgver
