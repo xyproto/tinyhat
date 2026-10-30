@@ -1,7 +1,8 @@
 [Unit]
 Description=Show the Tiny Hat shutdown splash
 DefaultDependencies=no
-After=getty@tty1.service
+After=getty@tty1.service tinyhat-shutdown-sound.service
+Before=systemd-poweroff.service systemd-reboot.service systemd-halt.service
 ConditionKernelCommandLine=quiet
 
 [Service]
