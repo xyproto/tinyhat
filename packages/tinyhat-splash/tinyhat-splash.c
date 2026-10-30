@@ -68,6 +68,8 @@ static struct {
 } stars[MAXSTARS];
 static int nstars, starsize;
 static int handoff;
+static int shutdown_mode, hero = -1;
+static long shutdown_t0, burst_t0 = -1;
 static struct {
 	pid_t pid;
 	int in, out, shown;
@@ -120,6 +122,41 @@ static void put(int x, int y, uint32_t c)
 		p[1] = (unsigned char)(c >> 8);
 		p[2] = (unsigned char)(c >> 16);
 	}
+}
+
+static uint32_t get(int x, int y)
+{
+	unsigned char *p = back + ((size_t)y * W + x) * BPP;
+	uint32_t c = 0;
+	if (BPP == 4)
+		memcpy(&c, p, 4);
+	else if (BPP == 2) {
+		uint16_t s;
+		memcpy(&s, p, 2);
+		c = s;
+	} else {
+		c = (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16;
+	}
+	return c;
+}
+
+static Rgb unpack(uint32_t c)
+{
+	const struct fb_var_screeninfo *v = &fb.var;
+	return (Rgb){ (unsigned char)(((c >> v->red.offset) & ((1u << v->red.length) - 1)) << (8 - v->red.length)),
+		      (unsigned char)(((c >> v->green.offset) & ((1u << v->green.length) - 1)) << (8 - v->green.length)),
+		      (unsigned char)(((c >> v->blue.offset) & ((1u << v->blue.length) - 1)) << (8 - v->blue.length)) };
+}
+
+static void add(int x, int y, float r, float g, float b)
+{
+	if (x < 0 || y < 0 || x >= W || y >= H)
+		return;
+	Rgb c = unpack(get(x, y));
+	c.r = (unsigned char)fminf(255.0f, c.r + r);
+	c.g = (unsigned char)fminf(255.0f, c.g + g);
+	c.b = (unsigned char)fminf(255.0f, c.b + b);
+	put(x, y, pack(c));
 }
 
 static void clip(int *x0, int *y0, int *x1, int *y1)
@@ -359,6 +396,8 @@ static void blit(int x0, int y0, int x1, int y1)
 
 static int star_ok(int x, int y)
 {
+	if (shutdown_mode)
+		return 1;
 	int m = 4 * starsize + 8, s = hat_scale(), ts = text_scale();
 	int bottom = title_y() + 32 * ts + 24 * ts + 40 * ts + 12 * ts + 2;
 	if (x >= hat_x() - m && x < hat_x() + LOW * s + m && y >= hat_y() - m && y < hat_y() + LOW * s + m)
@@ -416,8 +455,75 @@ static void draw_stars(int force)
 	}
 }
 
+static void glow(int cx, int cy, float radius, float power, Rgb tint)
+{
+	int reach = (int)(radius * 3.0f) + 1;
+	for (int y = cy - reach; y <= cy + reach; y++)
+		for (int x = cx - reach; x <= cx + reach; x++) {
+			float d2 = (float)(sq(x - cx) + sq(y - cy)) / (radius * radius);
+			float i = power * expf(-d2);
+			if (i > 0.004f)
+				add(x, y, tint.r * i, tint.g * i, tint.b * i);
+		}
+}
+
+static void draw_shutdown(long now)
+{
+	float t = (float)(now - shutdown_t0) / 1000.0f;
+	float b = burst_t0 < 0 ? -1.0f : (float)(now - burst_t0) / 700.0f;
+	float fade = expf(-t / 2.5f), grow = 1.0f - expf(-t / 3.0f);
+	float dark = b < 0 ? 1.0f : fmaxf(0.0f, 1.0f - b);
+	float flash = b < 0 ? 0.0f : b < 0.2f ? b / 0.2f : fmaxf(0.0f, 1.0f - (b - 0.2f) / 0.8f);
+	int m = W < H ? W : H;
+	Rgb bg = { (unsigned char)(BG.r * dark), (unsigned char)(BG.g * dark), (unsigned char)(BG.b * dark) };
+	fill(0, 0, W, H, bg);
+	for (int i = 0; i < nstars; i++) {
+		if (i == hero)
+			continue;
+		Rgb s = STAR[stars[i].base + 1];
+		float k = fade * dark;
+		Rgb c = { (unsigned char)(bg.r + (s.r - bg.r) * k), (unsigned char)(bg.g + (s.g - bg.g) * k),
+			  (unsigned char)(bg.b + (s.b - bg.b) * k) };
+		fill(stars[i].x, stars[i].y, stars[i].x + starsize, stars[i].y + starsize, c);
+	}
+	if (hero < 0)
+		return;
+	int hx = stars[hero].x + starsize / 2, hy = stars[hero].y + starsize / 2;
+	Rgb warm = { 255, 236, 200 }, blue = { 150, 200, 255 };
+	glow(hx, hy, starsize * (0.7f + 1.6f * grow), 0.6f + 0.6f * grow, warm);
+	glow(hx, hy, starsize * (2.0f + 5.0f * grow), 0.12f + 0.25f * grow, warm);
+	if (b < 0)
+		return;
+	glow(hx, hy, m * 0.02f + m * 0.16f * sqrtf(fminf(b, 1.0f)), 1.6f * flash, warm);
+	for (int y = hy - 3; y <= hy + 3; y++)
+		for (int x = 0; x < W; x++) {
+			float i = flash * expf(-fabsf((float)(x - hx)) / (W * 0.22f)) * (1.0f - abs(y - hy) / 4.0f);
+			add(x, y, blue.r * i, blue.g * i, blue.b * i);
+		}
+	static const struct {
+		float along, size;
+		Rgb tint;
+	} ghosts[] = { { 0.6f, 0.035f, { 120, 255, 220 } }, { 1.3f, 0.06f, { 255, 120, 200 } }, { 1.8f, 0.025f, { 160, 180, 255 } } };
+	for (size_t g = 0; g < sizeof(ghosts) / sizeof(ghosts[0]); g++)
+		glow(hx + (int)((W / 2 - hx) * ghosts[g].along), hy + (int)((H / 2 - hy) * ghosts[g].along),
+		     m * ghosts[g].size, 0.35f * flash, ghosts[g].tint);
+}
+
 static void draw_all(void)
 {
+	if (shutdown_mode) {
+		long best = -1;
+		setup_stars();
+		for (int i = 0; i < nstars; i++) {
+			long d = (long)sq(stars[i].x - W * 62 / 100) + sq(stars[i].y - H * 36 / 100);
+			if (best < 0 || d < best) {
+				best = d;
+				hero = i;
+			}
+		}
+		draw_shutdown(now_ms());
+		return;
+	}
 	fill(0, 0, W, H, BG);
 	setup_stars();
 	draw_stars(1);
@@ -520,8 +626,12 @@ static void command(char *line)
 	} else if (!strcmp(line, "handoff")) {
 		stop = 1;
 		handoff = 1;
+	} else if (!strcmp(line, "burst")) {
+		if (burst_t0 < 0)
+			burst_t0 = now_ms();
 	}
-	draw_status();
+	if (!shutdown_mode)
+		draw_status();
 }
 
 static void on_signal(int sig)
@@ -530,17 +640,19 @@ static void on_signal(int sig)
 	stop = 1;
 }
 
-int main(void)
+int main(int argc, char *argv[])
 {
 	char buf[512];
 	size_t have = 0;
 	long last_cmd, last_check = 0, last_full = 0;
 	int ff, tty;
+	shutdown_mode = argc > 1 && !strcmp(argv[1], "--shutdown");
+	shutdown_t0 = now_ms();
 	if (fork() > 0)
 		return 0;
 	setsid();
-	signal(SIGTERM, on_signal);
-	signal(SIGINT, on_signal);
+	signal(SIGTERM, shutdown_mode ? SIG_IGN : on_signal);
+	signal(SIGINT, shutdown_mode ? SIG_IGN : on_signal);
 	signal(SIGPIPE, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
 	unlink(FIFO);
@@ -559,7 +671,7 @@ int main(void)
 	while (!stop) {
 		struct pollfd p = { ff, POLLIN, 0 };
 		long t;
-		if (poll(&p, 1, FRAME_MS) > 0 && (p.revents & POLLIN)) {
+		if (poll(&p, 1, shutdown_mode ? 40 : FRAME_MS) > 0 && (p.revents & POLLIN)) {
 			ssize_t n = read(ff, buf + have, sizeof(buf) - 1 - have);
 			if (n > 0) {
 				char *nl;
@@ -580,17 +692,22 @@ int main(void)
 			break;
 		t = now_ms();
 		tick = t / FRAME_MS;
-		if (t - last_cmd > IDLE_TIMEOUT_MS)
+		if (!shutdown_mode && t - last_cmd > IDLE_TIMEOUT_MS)
 			break;
 		if (t - last_check >= 500) {
 			last_check = t;
 			if (fb_changed())
 				map();
 		}
-		draw_hat();
-		draw_stars(0);
-		if (progress < 0 && message[0])
-			draw_status();
+		if (shutdown_mode) {
+			if (burst_t0 < 0 || t - burst_t0 < 900)
+				draw_shutdown(t);
+		} else {
+			draw_hat();
+			draw_stars(0);
+			if (progress < 0 && message[0])
+				draw_status();
+		}
 		if (tty >= 0) {
 			int mode;
 			if (!ioctl(tty, KDGETMODE, &mode) && mode != KD_GRAPHICS) {
@@ -598,7 +715,7 @@ int main(void)
 				dirty(0, 0, W, H);
 			}
 		}
-		if (t - last_full >= 2000) {
+		if (!shutdown_mode && t - last_full >= 2000) {
 			last_full = t;
 			dirty(0, 0, W, H);
 		}
