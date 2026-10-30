@@ -28,6 +28,7 @@ for try in 1 2 3; do
 	kill "$status" 2>/dev/null
 	rm -f "$bar"
 	[ "$rc" = 0 ] && exit 0
+	[ "$(systemctl is-system-running 2>/dev/null)" = stopping ] && exit 0
 	[ $(($(cut -d. -f1 /proc/uptime) - start)) -ge 20 ] && break
 	grep -q 'Could not initialize renderer\|Failed to create renderer' "$log" && export WLR_RENDERER=pixman
 	sleep 3

@@ -3,6 +3,6 @@ Type=Application
 Name=Reboot
 Icon=view-refresh
 Comment=Restart the computer
-Exec=doas systemctl reboot
+Exec=sh -c "tinyhat-soundd --play shutdown 2>/dev/null; exec doas systemctl reboot --no-wall"
 Terminal=false
 Categories=System;
