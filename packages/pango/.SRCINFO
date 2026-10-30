@@ -8,6 +8,7 @@ pkgbase = pango
 	arch = x32
 	license = LGPL-2.1-or-later
 	makedepends = git
+	makedepends = glib2-devel
 	makedepends = help2man
 	makedepends = meson
 	depends = cairo

@@ -389,6 +389,7 @@ libpkgs = [
     "tinyhat-play",
     "tinyhat-retro",
     "tinyhat-splash",
+    "tinyhat-status",
     "tinyxml2",
     "tpm2-tss",
     "twolame",
@@ -507,7 +508,6 @@ a52dec = { repo = "extra", version = "0.8.0-3.0", file = "a52dec-0.8.0-3.0-i686.
 abseil-cpp = { repo = "extra", version = "20240116.2-2.0", file = "abseil-cpp-20240116.2-2.0-i686.pkg.tar.zst", sha256 = "17baca7dca79279ddcddf021042879938b57f92470d5273cbad8508e4505ffc8" }
 acl = { repo = "core", version = "2.4.0-1.0", file = "acl-2.4.0-1.0-i686.pkg.tar.zst", sha256 = "77155db4e9d3415eb6b63c2658fb9cea7aefe9183011e6cecc7814c912c1c603" }
 adwaita-cursors = { repo = "extra", version = "50.0-1.0", file = "adwaita-cursors-50.0-1.0-any.pkg.tar.zst", sha256 = "3ce33c91f5044aa0342b988477e5c850949102285b86bc69b22efff87a53015c" }
-adwaita-fonts = { repo = "extra", version = "51.0-2.0", file = "adwaita-fonts-51.0-2.0-any.pkg.tar.zst", sha256 = "1b42b7d2b0eab7274959aafe359ea3acf216fe9cd97bb897c143200639027477" }
 adwaita-icon-theme = { repo = "extra", version = "50.0-1.0", file = "adwaita-icon-theme-50.0-1.0-any.pkg.tar.zst", sha256 = "c5b4228e3261663ba213a6f521827dd6ceb6dc57cd36861e223a59e1b525b0a5" }
 adwaita-icon-theme-legacy = { repo = "extra", version = "46.2-3.0", file = "adwaita-icon-theme-legacy-46.2-3.0-any.pkg.tar.zst", sha256 = "8cf29ab7a8e11e98675a4ef310c40c78f5bfe487138df5c1807df4d22bbdb44f" }
 alsa-card-profiles = { repo = "extra", version = "1:0.3.65-6.0", file = "alsa-card-profiles-1:0.3.65-6.0-i686.pkg.tar.zst", sha256 = "45a8d40438d2eccfdeb86dcdbeb8733764c23134a5f9c1a708aeff1a50e69b49" }
