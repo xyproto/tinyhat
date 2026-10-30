@@ -5,7 +5,7 @@ pkgdesc="Wallpaper tool for Wayland, with the Tiny Hat help text patch"
 arch=(i686 x32)
 url="https://github.com/swaywm/swaybg"
 license=(MIT)
-depends=(cairo wayland)
+depends=(cairo fontconfig wayland)
 makedepends=(meson ninja wayland-protocols)
 source=("swaybg-$pkgver.tar.gz::https://github.com/swaywm/swaybg/archive/refs/tags/v$pkgver.tar.gz"
         help-text.patch

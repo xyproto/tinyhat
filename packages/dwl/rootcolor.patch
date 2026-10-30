@@ -1,0 +1,15 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -3699,7 +3699,11 @@ statusin(int fd, unsigned int mask, void *data)
+ 			*next++ = '\0';
+ 		if (!strncmp(line, "live ", 5))
+ 			live = atoi(line + 5);
+-		else if (!strncmp(line, "notice", 6))
++		else if (!strncmp(line, "rootcolor ", 10)) {
++			unsigned long rgb = strtoul(line + 10, NULL, 16);
++			float color[4] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f, 1.0f };
++			wlr_scene_rect_set_color(root_bg, color);
++		} else if (!strncmp(line, "notice", 6))
+ 			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
+ 		else if (!strcmp(line, "togglelayout")) {
+ 			if (selmon)
