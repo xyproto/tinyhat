@@ -1,0 +1,15 @@
+#!/bin/sh
+root=/var/lib/tinyhat/steam
+if [ ! -x "$root/usr/bin/steam" ]; then
+	foot -T "Install Steam" /usr/lib/tinyhat/steam-install
+	[ -x "$root/usr/bin/steam" ] || exit 1
+fi
+set --
+for d in /run/udev /run/dbus /etc/machine-id; do
+	[ -e "$d" ] && set -- "$@" --ro-bind "$d" "$d"
+done
+exec "$root/usr/lib/ld-linux-x86-64.so.2" --library-path "$root/usr/lib" "$root/usr/bin/bwrap" \
+	--bind "$root" / --dev-bind /dev /dev --proc /proc --ro-bind /sys /sys --bind /tmp /tmp \
+	--bind "$XDG_RUNTIME_DIR" "$XDG_RUNTIME_DIR" --bind "$HOME" "$HOME" \
+	--ro-bind /etc/passwd /etc/passwd --ro-bind /etc/group /etc/group --ro-bind /etc/resolv.conf /etc/resolv.conf \
+	"$@" --setenv SHELL /bin/sh -- /bin/sh -c 'pipewire-pulse & p=$!; steam -gamepadui; kill $p'
