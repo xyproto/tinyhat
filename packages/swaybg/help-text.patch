@@ -1,10 +1,20 @@
 --- a/main.c
 +++ b/main.c
-@@ -97,6 +98,88 @@
+@@ -1,6 +1,8 @@
+ #include <assert.h>
+ #include <ctype.h>
++#include <fontconfig/fontconfig.h>
+ #include <getopt.h>
++#include <malloc.h>
+ #include <stdbool.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+@@ -97,6 +99,90 @@
  };
-
+ 
  // Create a wl_buffer with the specified dimensions and content
 +static const char *text_path;
++static bool text_drawn;
 +
 +static void render_text(cairo_t *cairo, uint32_t width, uint32_t height) {
 +	char lines[48][160];
@@ -21,6 +31,7 @@
 +	if (n == 0) {
 +		return;
 +	}
++	text_drawn = true;
 +
 +	double size = height / 64.0 < 9 ? 9 : height / 64.0;
 +	cairo_select_font_face(cairo, "JetBrains Mono NL",
@@ -89,15 +100,15 @@
  static struct wl_buffer *draw_buffer(const struct swaybg_output *output,
  		cairo_surface_t *surface, uint32_t buffer_width, uint32_t buffer_height) {
  	uint32_t bg_color = output->config->color ? output->config->color : 0x000000ff;
-@@ -132,6 +215,7 @@
+@@ -132,6 +218,7 @@
  		render_background_image(cairo, surface,
  			output->config->mode, buffer_width, buffer_height);
  	}
 +	render_text(cairo, buffer_width, buffer_height);
-
+ 
  	// return wl_buffer for caller to use and destroy
  	struct wl_buffer *wl_buf = buffer.buffer;
-@@ -481,6 +565,7 @@
+@@ -481,6 +568,7 @@
  		{"image", required_argument, NULL, 'i'},
  		{"mode", required_argument, NULL, 'm'},
  		{"output", required_argument, NULL, 'o'},
@@ -105,7 +116,7 @@
  		{"version", no_argument, NULL, 'v'},
  		{0, 0, 0, 0}
  	};
-@@ -506,7 +591,7 @@
+@@ -506,7 +594,7 @@
  	int c;
  	while (1) {
  		int option_index = 0;
@@ -114,7 +125,7 @@
  		if (c == -1) {
  			break;
  		}
-@@ -518,6 +603,9 @@
+@@ -518,6 +606,9 @@
  				continue;
  			}
  			break;
@@ -124,3 +135,35 @@
  		case 'i':  // image
  			config->image_path = optarg;
  			break;
+@@ -684,6 +775,13 @@
+ 				render_frame(output, NULL);
+ 			}
+ 		}
++
++		if (text_drawn) {
++			text_drawn = false;
++			cairo_debug_reset_static_data();
++			FcFini();
++			malloc_trim(0);
++		}
+ 	}
+ 
+ 	struct swaybg_output *output, *tmp_output;
+--- a/meson.build
++++ b/meson.build
+@@ -33,6 +33,7 @@
+ wayland_protos = dependency('wayland-protocols', version: '>=1.31')
+ wayland_scanner = dependency('wayland-scanner', version: '>=1.14.91', native: true)
+ cairo = dependency('cairo')
++fontconfig = dependency('fontconfig')
+ gdk_pixbuf = dependency('gdk-pixbuf-2.0', required: get_option('gdk-pixbuf'))
+ 
+ git = find_program('git', required: false, native: true)
+@@ -100,6 +101,7 @@
+ 	include_directories: 'include',
+ 	dependencies: [
+ 		cairo,
++		fontconfig,
+ 		rt,
+ 		gdk_pixbuf,
+ 		wayland_client,

@@ -10,6 +10,7 @@ set -l hidemark $confdir/hide-help
 set -l modefile $confdir/wallpaper
 set -l rundir (set -q XDG_RUNTIME_DIR[1]; and echo $XDG_RUNTIME_DIR; or echo /tmp)
 set -l pidfile $rundir/tinyhat-swaybg.pid
+set -l bar $rundir/tinyhat-bar
 
 # How the backgrounds cycle: help → centered image → black → teal → tiled → filled → back to help
 set -l cycle 3 4 1 0 5 2
@@ -43,12 +44,13 @@ case "--toggle"
 end
 
 set -l args
+set -l color 1a1b26
 set -l mode (cat $modefile 2>/dev/null)
 switch "$mode"
 case 0
-	set args -c 008080
+	set color 008080
 case 1
-	set args -c 000000
+	set color 000000
 case 2
 	set args -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
 case 4
@@ -63,12 +65,21 @@ case '*'
 	end
 end
 
-# Start the new wallpaper bottom layer, then stop the one it replaced
+# Plain colors are drawn by dwl itself, images by a new swaybg bottom layer that replaces the old one
 set -l old (cat $pidfile 2>/dev/null)
-swaybg $args &
-echo $last_pid > $pidfile
+if test -p $bar
+	echo "rootcolor $color" > $bar
+else if not set -q args[1]
+	set args -c $color
+end
+if set -q args[1]
+	swaybg $args &
+	echo $last_pid > $pidfile
+else
+	rm -f $pidfile
+end
 set -l comm (cat /proc/$old/comm 2>/dev/null)
 if test -n "$old"; and test "$comm" = swaybg
-	sleep 0.3
+	set -q args[1]; and sleep 0.3
 	kill $old
 end
