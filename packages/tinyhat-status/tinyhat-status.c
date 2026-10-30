@@ -261,7 +261,13 @@ int main(int argc, char *argv[])
 		status(line, sizeof line, rundir);
 		if (printf("%s\n", line) < 0 || fflush(stdout))
 			break;
-		struct timespec wait = { .tv_sec = INTERVAL };
+		struct timespec now, wait = { .tv_sec = INTERVAL };
+		clock_gettime(CLOCK_REALTIME, &now);
+		long long left = (60 - now.tv_sec % 60) * 1000000000LL - now.tv_nsec;
+		if (left < INTERVAL * 1000000000LL) {
+			wait.tv_sec = left / 1000000000;
+			wait.tv_nsec = left % 1000000000;
+		}
 		int sig = sigtimedwait(&set, nullptr, &wait);
 		if (sig == SIGTERM || sig == SIGINT || sig == SIGHUP)
 			break;
