@@ -15,7 +15,6 @@ pkgbase = dconf
 	makedepends = meson
 	makedepends = python
 	makedepends = systemd
-	makedepends = vala
 	depends = bash
 	depends = glib2
 	depends = glibc

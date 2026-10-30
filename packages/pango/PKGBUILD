@@ -89,4 +89,7 @@ eval "$(
 
 _d=(); for _p in "${depends[@]}"; do case $_p in harfbuzz) _p="harfbuzz>=11.0.0" ;; fontconfig) _p="fontconfig>=2:2.17.0" ;; glib2) _p="glib2>=2.88" ;; esac; _d+=("$_p"); done; depends=("${_d[@]}")
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled /')"
+
 unset -f pkgver

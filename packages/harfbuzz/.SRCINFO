@@ -17,7 +17,6 @@ pkgbase = harfbuzz
 	makedepends = glib2
 	makedepends = glib2-devel
 	makedepends = glibc
-	makedepends = gobject-introspection
 	makedepends = graphite
 	makedepends = gtk-doc
 	makedepends = help2man

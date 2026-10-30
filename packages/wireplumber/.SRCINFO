@@ -12,7 +12,6 @@ pkgbase = wireplumber
 	makedepends = glib2
 	makedepends = glib2-devel
 	makedepends = glibc
-	makedepends = gobject-introspection
 	makedepends = graphviz
 	makedepends = libgcc
 	makedepends = libpipewire

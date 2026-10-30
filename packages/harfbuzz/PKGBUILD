@@ -183,4 +183,7 @@ package_harfbuzz-docs() {
 
 # vim:set sw=2 sts=-1 et:
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled /')"
+
 unset -f pkgver

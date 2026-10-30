@@ -8,7 +8,6 @@ pkgbase = gupnp-igd
 	license = LGPL-2.1-or-later
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gobject-introspection
 	makedepends = gtk-doc
 	makedepends = meson
 	depends = glibc

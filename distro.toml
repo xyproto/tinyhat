@@ -566,6 +566,9 @@ build_from_source = true
 build_for = ["i686"]
 build_from_source = true
 
+[appstream]
+excluded = true
+
 [aquarium]
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/aquarium", prefix = "v", use_max_tag = true }
@@ -1035,6 +1038,9 @@ nvchecker = { source = "github", github = "xyproto/tinyxxd", prefix = "v", use_m
 
 [util-linux]
 prebuilt = true
+
+[vala]
+excluded = true
 
 [vice]
 source = "sources"

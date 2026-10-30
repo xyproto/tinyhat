@@ -141,4 +141,7 @@ eval "$(declare -f package_poppler | sed "s/ 'nss'//; s/ 'gpgmepp'//; s/ 'nspr'/
 makedepends=(${makedepends[@]/gtk3/})
 eval "$(declare -f build | sed 's/-DENABLE_GTK_DOC=ON/& -DBUILD_GTK_TESTS=OFF/')"
 
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed 's/-DENABLE_GTK_DOC=ON/-DENABLE_GTK_DOC=ON -DENABLE_GOBJECT_INTROSPECTION=OFF/')"
+
 unset -f pkgver

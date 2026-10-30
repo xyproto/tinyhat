@@ -1,0 +1,2 @@
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
+eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled -D vala=disabled /')"
