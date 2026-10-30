@@ -102,11 +102,11 @@ def desktop_up(ppm):
         data = open(ppm, "rb").read()
         parts = data.split(b"\n", 3)
         w = int(parts[1].split()[0])
-        o = (12 * w + 3) * 3
+        o = (12 * w + 20) * 3
         r, g, b = parts[3][o], parts[3][o + 1], parts[3][o + 2]
     except (OSError, IndexError, ValueError):
         return False
-    return g > 120 and b > 110 and r < 80
+    return r > 120 and g < 80 and b < 80
 
 
 def main():
