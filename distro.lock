@@ -156,6 +156,7 @@ libpkgs = [
     "libgirepository",
     "libgit2",
     "libglvnd",
+    "libglvnd-glx",
     "libgm2",
     "libgo",
     "libgomp",
@@ -388,6 +389,7 @@ libpkgs = [
     "tinyhat-midibench",
     "tinyhat-play",
     "tinyhat-retro",
+    "tinyhat-sounds",
     "tinyhat-splash",
     "tinyhat-status",
     "tinyxml2",
@@ -1134,6 +1136,7 @@ sbc = { repo = "extra", version = "2.2-1.0", file = "sbc-2.2-1.0-i686.pkg.tar.zs
 scdoc = { repo = "extra", version = "1.11.5-1.0", file = "scdoc-1.11.5-1.0-i686.pkg.tar.zst", sha256 = "735384732d3879cbe27e8f0c14ef32384caf93caadc34cb898953003b2b32e36" }
 seatd = { repo = "extra", version = "0.9.3-1.0", file = "seatd-0.9.3-1.0-i686.pkg.tar.zst", sha256 = "f499c0e5da0b7dbd872de04f0ed2251b73001b5132008ff9b20eff60953a2eeb" }
 sed = { repo = "core", version = "4.10-2.0", file = "sed-4.10-2.0-i686.pkg.tar.zst", sha256 = "0ad25ab39a9a181fb77b79dfd7948dfad33dcd53c1deb7b90c8950e933cbc68e" }
+sequoia-sq = { repo = "extra", version = "0.27.0-1.0", file = "sequoia-sq-0.27.0-1.0-i686.pkg.tar.zst", sha256 = "b1f14beca18c3c74360b399cfc44aad7bd6eebe5bdab752765acda1b4fe2d14d" }
 serd = { repo = "extra", version = "0.32.10-1.0", file = "serd-0.32.10-1.0-i686.pkg.tar.zst", sha256 = "347203ab89f2dca047368f1e4a81ec38d1470ac152e37bffa6971d4682d7f7d3" }
 shaderc = { repo = "extra", version = "2023.2-1.0", file = "shaderc-2023.2-1.0-i686.pkg.tar.zst", sha256 = "de862bd38849a9bde4e52a75b79d1a873e3b38fc65089cfa2107c2be47e68b9e" }
 shadow = { repo = "core", version = "4.18.0-1.3", file = "shadow-4.18.0-1.3-i686.pkg.tar.zst", sha256 = "42af552e6921f07d74bd3eb006d08fded56e943f364a438dd2a1d68622df00bc" }
