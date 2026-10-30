@@ -3,6 +3,6 @@ Type=Application
 Name=Power off
 Icon=system-shutdown
 Comment=Turn the computer off
-Exec=doas systemctl poweroff
+Exec=poweroff
 Terminal=false
 Categories=System;

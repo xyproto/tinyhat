@@ -1,4 +1,7 @@
 #!/bin/sh
 sync
-[ "$(id -u)" = 0 ] || exec doas systemctl poweroff "$@"
-exec systemctl poweroff "$@"
+if [ "$(id -u)" != 0 ]; then
+	tinyhat-soundd --play shutdown 2>/dev/null
+	exec doas systemctl poweroff --no-wall "$@"
+fi
+exec systemctl poweroff --no-wall "$@"

@@ -5,6 +5,7 @@ dbus-update-activation-environment --systemd $vars 2>/dev/null
 tinyhat-wallpaper
 [ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo handoff >/run/tinyhat-splash' 2>/dev/null
 [ -e "$HOME/.config/mc/ini" ] || { mkdir -p "$HOME/.config/mc" && cp /etc/skel/.config/mc/ini "$HOME/.config/mc/ini"; }
+tinyhat-soundd &
 mkdir -p "$HOME/cprojects"
 for d in /etc/skel/cprojects/*/; do
 	d=${d%/}

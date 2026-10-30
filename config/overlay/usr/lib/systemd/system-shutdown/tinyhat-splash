@@ -1,0 +1,4 @@
+#!/bin/sh
+[ -p /run/tinyhat-splash ] || exit 0
+echo burst >/run/tinyhat-splash
+sleep 1

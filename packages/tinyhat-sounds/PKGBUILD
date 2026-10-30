@@ -1,0 +1,20 @@
+pkgname=tinyhat-sounds
+pkgver=1
+pkgrel=1
+pkgdesc="Tiny Hat system sounds: startup and shutdown jingles, typewriter and fart sounds while typing"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat"
+license=(BSD-3-Clause)
+depends=(gtk4 sdl3 fluidsynth)
+source=(tinyhat-sounds.c tinyhat-soundd.c)
+sha256sums=(SKIP SKIP)
+
+build() {
+  cc -std=c23 $CFLAGS $(pkg-config --cflags gtk4) -o tinyhat-sounds tinyhat-sounds.c $LDFLAGS $(pkg-config --libs gtk4)
+  cc -std=c23 $CFLAGS $(pkg-config --cflags sdl3 fluidsynth) -o tinyhat-soundd tinyhat-soundd.c $LDFLAGS $(pkg-config --libs sdl3 fluidsynth) -lm
+}
+
+package() {
+  install -Dm755 tinyhat-sounds "$pkgdir/usr/bin/tinyhat-sounds"
+  install -Dm755 tinyhat-soundd "$pkgdir/usr/bin/tinyhat-soundd"
+}

@@ -1,0 +1,12 @@
+[Unit]
+Description=Show the Tiny Hat shutdown splash
+DefaultDependencies=no
+After=getty@tty1.service
+ConditionKernelCommandLine=quiet
+
+[Service]
+Type=forking
+ExecStart=@/usr/bin/tinyhat-splash @tinyhat-splash --shutdown
+
+[Install]
+WantedBy=poweroff.target reboot.target halt.target
