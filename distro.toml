@@ -580,7 +580,7 @@ prebuilt = true
 prebuilt = true
 
 [at-spi2-core]
-build_from_source = true
+excluded = true
 
 [bind]
 build_from_source = true

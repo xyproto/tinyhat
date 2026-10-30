@@ -261,7 +261,7 @@ for _p in "${depends[@]}"; do
   case $_p in
     libgl|libx11|libxcursor|libxdamage|libxext|libxfixes|libxi|libxinerama|libxrandr|libxrender) ;;
     gstreamer|gst-plugins-bad-libs|gst-plugins-base-libs|vulkan-icd-loader|xdg-desktop-portal-gtk) ;;
-    libcloudproviders|libcolord|libcups|tinysparql|gtk-update-icon-cache|adwaita-fonts) ;;
+    libcloudproviders|libcolord|libcups|tinysparql|gtk-update-icon-cache|adwaita-fonts|at-spi2-core) ;;
     *) _d+=("$_p") ;;
   esac
 done
