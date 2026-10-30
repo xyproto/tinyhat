@@ -10,4 +10,4 @@ if pacman -Q archlinuxarm-keyring >/dev/null 2>&1; then
 	exec pacman -Sy --noconfirm --needed archlinuxarm-keyring
 fi
 pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160 >/dev/null 2>&1
-exec pacman -Sy --noconfirm --needed archlinux32-keyring
+exec pacman -Sy --noconfirm --needed archlinux32-keyring archlinux-keyring

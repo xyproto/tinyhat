@@ -7,7 +7,7 @@ fail() {
 }
 doas systemctl start tinyhat-pacman-init.service
 doas pacman -Sy --noconfirm || fail "Could not update the package database."
-doas pacman -S --needed --noconfirm archlinux32-keyring || fail "Could not update the archlinux32 keyring."
+doas pacman -S --needed --noconfirm archlinux32-keyring archlinux-keyring || fail "Could not update the pacman keyrings."
 doas pacman -S --needed --noconfirm pro-audio || fail "Could not install the pro-audio packages."
 printf '\nThe audio packages are installed.\nPress Enter to close.\n'
 read -r _
