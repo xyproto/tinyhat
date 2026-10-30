@@ -22,7 +22,6 @@ pkgbase = gtk4
 	makedepends = vulkan-headers
 	makedepends = wayland-protocols
 	depends = adwaita-icon-theme
-	depends = at-spi2-core
 	depends = bash
 	depends = cairo
 	depends = dconf
