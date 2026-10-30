@@ -7,6 +7,8 @@ pkgbase = tinyhat-files
 	arch = x32
 	license = BSD-3-Clause
 	depends = gtk4
+	depends = libarchive
+	optdepends = 7zip: extract archive types that bsdtar cannot read
 	source = tinyhat-files.c
 	sha256sums = SKIP
 
