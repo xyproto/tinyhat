@@ -5,7 +5,7 @@ pkgdesc="The GLX part of libglvnd (libGL.so.1 and libGLX.so.0), for Xwayland and
 arch=(i686 x32)
 url="https://gitlab.freedesktop.org/glvnd/libglvnd"
 license=('custom:BSD-like')
-depends=("libglvnd=$pkgver")
+depends=("libglvnd=$pkgver" libx11)
 makedepends=('libxext' 'libx11' 'xorgproto' 'python' 'meson')
 provides=(libGLX.so)
 source=("https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v$pkgver/libglvnd-v$pkgver.tar.gz")

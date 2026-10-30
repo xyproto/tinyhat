@@ -46,7 +46,7 @@ deny = [
     "gtk2-*",
     "gtk3-*",
     "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
-    "xorg-server*", "xorg-x*", "libx11", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
+    "xorg-server*", "xorg-x*", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
     "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
     "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice", "xcb-util*",
     # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
