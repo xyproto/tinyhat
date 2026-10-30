@@ -363,9 +363,12 @@ exclude = [
 ]
 
 [image-aarch64]
-# The Raspberry Pi 4 image (tinyhat-rpi4.img): [image] packages with these changes. Packages come
-# prebuilt from Arch Linux ARM, except the recipes that "make lock-aarch64" decides to build
-add = ["archlinuxarm-keyring", "linux-rpi", "raspberrypi-bootloader", "firmware-raspberrypi"]
+# The 64-bit ARM images: [image] packages with these changes, plus the uefi packages for the UEFI
+# image (tinyhat-aarch64.img) or the rpi4 packages for the Raspberry Pi 4 image (tinyhat-rpi4.img).
+# Packages come prebuilt from Arch Linux ARM, except the recipes that "make lock-aarch64" decides to build
+add = ["archlinuxarm-keyring"]
+uefi = ["linux-aarch64"]
+rpi4 = ["linux-rpi", "raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
 build_from_source = ["busybox", "tinyhat-splash"]
 # Added to the build environment, which otherwise has what the built recipes need
