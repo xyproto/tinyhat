@@ -576,7 +576,8 @@ def cmd_mk():
     print("TINYHAT_PKGS := " + " ".join(sorted(tinyhat)))
     roots = "\n".join([f"ROOTFS_I686_STAMPS := {' '.join(stamps_for(rootfs_i686))}",
                        f"ROOTFS_X32_STAMPS := {' '.join(stamps_for(rootfs_x32))}"] + lines)
-    print("PACKAGES_STAMPS := " + " ".join(s for s in i686_stamps if s.rsplit("/", 1)[1] in needed_bases(roots)))
+    need = needed_recipes(infos, roots)
+    print("PACKAGES_STAMPS := " + " ".join(s for s in i686_stamps if s.rsplit("/", 1)[1] in need))
     print()
     print("\n".join(lines))
 
@@ -644,6 +645,25 @@ def needed_bases(text):
         if b not in need:
             need.add(b)
             todo += deps.get(b, ())
+    return need
+
+
+def needed_recipes(infos, text):
+    """The recipes needed for the images: the ones the images and the Makefile use (from the text of
+    build/pkgs.mk) and the aarch64 builds, and everything their recipes depend on, at build time or at run
+    time, whether or not that ends up built here."""
+    names, provided, base_of = local_index(infos, ("arch", "tinyhat"))
+    by_base = {i["base"]: i for i in infos}
+    need = set(needed_bases(text)) | set(distro.lock().get("build-aarch64", {}))
+    todo = [b for b in need if b in by_base]
+    while todo:
+        info = by_base[todo.pop()]
+        for dep in all_deps(info):
+            name = dep if dep in names else provided.get(dep)
+            base = base_of.get(name)
+            if base is not None and base not in need:
+                need.add(base)
+                todo.append(base)
     return need
 
 
