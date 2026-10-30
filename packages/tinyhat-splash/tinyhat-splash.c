@@ -464,7 +464,7 @@ static void draw_shutdown(long now)
 	if (hero < 0)
 		return;
 	int hx = stars[hero].x + starsize / 2, hy = stars[hero].y + starsize / 2;
-	blob(hx, hy, px, 0.8f + 2.2f * grow, 0.5f + 0.5f * grow, WARM, 5);
+	blob(hx, hy, px, 0.8f + 2.2f * grow, (0.5f + 0.5f * grow) * dark, WARM, 5);
 	if (b < 0)
 		return;
 	int row = hy / px;
