@@ -74,7 +74,8 @@ find_label() {
 }
 
 find_cd() {
-	for b in /sys/class/block/sr*; do
+	for b in /sys/block/sr* /sys/block/*; do
+		case ${b##*/} in loop* | ram* | zram* | fd*) continue ;; esac
 		d=/dev/${b##*/}
 		[ -b "$d" ] || continue
 		[ "$(dd if="$d" bs=1 skip=32769 count=5 2>/dev/null)" = CD001 ] || continue
