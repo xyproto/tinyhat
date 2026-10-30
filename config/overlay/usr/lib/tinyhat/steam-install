@@ -1,0 +1,30 @@
+#!/bin/sh
+root=/var/lib/tinyhat/steam
+mirror=https://geo.mirror.pkgbuild.com
+fail() {
+	printf '\n%s\nPress Enter to close.\n' "$1"
+	read -r _
+	exit 1
+}
+free=$(df -Pm /var/lib | awk 'NR == 2 { print $4 }')
+[ "$free" -ge 6000 ] || fail "Steam needs about 6 GB of free space, but only $free MB is free. Boot with persistence on a larger drive."
+doas systemctl start tinyhat-pacman-init.service
+doas pacman -Sy --noconfirm || fail "Could not update the package database."
+doas pacman -S --needed --noconfirm archlinux32-keyring || fail "Could not update the archlinux32 keyring."
+doas pacman -S --needed --noconfirm xorg-xwayland || fail "Could not install Xwayland."
+printf 'Downloading an x86_64 Arch Linux root for Steam...\n'
+curl -fL -o /var/tmp/tinyhat-steam-bootstrap.tar.zst "$mirror/iso/latest/archlinux-bootstrap-x86_64.tar.zst" || fail "Could not download the Arch Linux bootstrap archive."
+sum=$(curl -fsSL "$mirror/iso/latest/sha256sums.txt" | awk '$2 == "archlinux-bootstrap-x86_64.tar.zst" { print $1 }')
+[ -n "$sum" ] && printf '%s  /var/tmp/tinyhat-steam-bootstrap.tar.zst\n' "$sum" | sha256sum -c - || fail "The Arch Linux bootstrap archive did not match its checksum."
+doas mkdir -p "$root"
+doas bsdtar -xpf /var/tmp/tinyhat-steam-bootstrap.tar.zst -C "$root" --strip-components 1 || fail "Could not unpack the Arch Linux bootstrap archive."
+rm -f /var/tmp/tinyhat-steam-bootstrap.tar.zst
+printf 'Server = %s/$repo/os/$arch\n' "$mirror" | doas tee "$root/etc/pacman.d/mirrorlist" >/dev/null
+doas sed -i '/^#\[multilib\]$/,/^#Include/ s/^#//' "$root/etc/pacman.conf"
+doas sed -i 's/^#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' "$root/etc/locale.gen"
+doas systemd-nspawn -q --register=no -D "$root" --pipe sh -c '
+	pacman-key --init && pacman-key --populate archlinux && locale-gen &&
+	pacman -Syu --noconfirm --needed steam bubblewrap pipewire-pulse mesa lib32-mesa \
+		vulkan-radeon lib32-vulkan-radeon vulkan-intel lib32-vulkan-intel ttf-liberation' || fail "Could not install Steam."
+printf '\nSteam is installed and will start now.\n'
+sleep 2
