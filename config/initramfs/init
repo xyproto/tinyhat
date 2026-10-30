@@ -233,10 +233,7 @@ while :; do
 done
 
 mkdir -p /run/tinyhat/boot /run/tinyhat/lower /run/tinyhat/rw /newroot
-case $dev in
-/dev/sr*) ;;
-*) mount -t xfs -o ro,noatime "$dev" /run/tinyhat/boot || rescue "could not mount $dev" ;;
-esac
+[ -f /run/tinyhat/boot/tinyhat/root.sfs ] || mount -t xfs -o ro,noatime "$dev" /run/tinyhat/boot || rescue "could not mount $dev"
 sfs=/run/tinyhat/boot/tinyhat/root.sfs
 if [ "$toram" = auto ]; then
 	toram=0
