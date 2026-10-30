@@ -50,6 +50,7 @@ base)
 	fi
 	ln -sf clang "$root/usr/bin/cc"
 	bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
+	python3 scripts/mkarchwallpaper.py "$root/usr/share/backgrounds/archlinux/small.png" "$root/usr/share/backgrounds/archlinux/small.png" 1920 1080
 	mkdir -p "$root/usr/share/backgrounds/tinyhat"
 	python3 scripts/mkwallpaper.py img/tinyhat.svg "$root/usr/share/backgrounds/tinyhat/tinyhat.png"
 	python3 scripts/mkhatwallpaper.py "$root/usr/share/backgrounds/tinyhat/wirehat.png"
@@ -182,6 +183,7 @@ finalize)
 	done
 	[ ! -x "$root/usr/bin/rofi" ] || install -Dm644 config/rofi/config.rasi "$root/etc/xdg/rofi/config.rasi"
 	[ "$arch" != aarch64 ] || rm -f "$root/usr/bin/tinyhat-watcom" "$root/usr/share/applications/tinyhat-watcom.desktop" "$root/etc/profile.d/watcom.sh"
+	[ "$arch" = x32 ] || rm -f "$root/usr/bin/tinyhat-steam" "$root/usr/share/applications/tinyhat-steam.desktop" "$root/usr/lib/tinyhat/steam-install"
 	install -m644 -t "$root/etc/skel/cprojects/bootanim" packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h
 	for c in hat_color:HAT_COLOR hat_highlight_color:HAT_HIGHLIGHT_COLOR; do
 		v=$(sed -n "s/^${c%%:*} = \"#\([0-9a-fA-F]\{6\}\)\"$/\1/p" build/theme.toml)
