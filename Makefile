@@ -41,7 +41,7 @@ VDIS := $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi) $(IMG_AARCH64:.img=.vdi)
 
 .DELETE_ON_ERROR:
 .DEFAULT_GOAL := help
-.PHONY: help all img iso vdi i686 x32 32 64 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run qemutest qemutest64x32 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
+.PHONY: help all img iso vdi i686 x32 32 64 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run boottest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
 
 C_HEAD := \033[1;31m
 C_HEAD2 := \033[1;34m
@@ -76,6 +76,7 @@ help:
 	$(call target,lock-check,"check that distro.lock is up to date")
 	$(call target,autoupdate,"update recipes to newer versions")
 	$(call target,test,"run the checks")
+	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
 	$(call target,run,"boot the i686 image in QEMU")
 	$(call target,status,"show what still needs building")
 	$(call target,clean,"remove build output")
@@ -360,11 +361,20 @@ run: $(B)/test-usb.img
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
 
-qemutest: tinyhat32.img
-	python3 scripts/qemutest.py tinyhat32.img
+boottest: boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4
 
-qemutest64x32: tinyhat64x32.img
-	python3 scripts/qemutest.py tinyhat64x32.img
+boottest-i686: $(IMG_I686)
+	python3 scripts/qemutest.py $<
+
+boottest-x32: $(IMG_X32)
+	python3 scripts/qemutest.py $<
+	python3 scripts/qemutest.py $< --uefi
+
+boottest-aarch64: $(IMG_AARCH64)
+	python3 scripts/qemutest.py $<
+
+boottest-rpi4: $(IMG_RPI4)
+	python3 scripts/qemutest.py $<
 
 cleantest:
 	rm -rf $(B)/qmt $(B)/test-usb.img
