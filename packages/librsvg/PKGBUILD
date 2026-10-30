@@ -123,3 +123,10 @@ makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-intros
 eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled -D vala=disabled /')"
 
 unset -f pkgver
+
+pkgname=(librsvg)
+makedepends=(${makedepends[@]/gi-docgen/})
+eval "$(
+  declare -f build | sed 's/arch-meson /arch-meson -D docs=disabled /'
+  declare -f package_librsvg | sed '/doc/d'
+)"

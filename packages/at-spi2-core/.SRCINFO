@@ -8,7 +8,6 @@ pkgbase = at-spi2-core
 	license = LGPL-2.1-or-later
 	checkdepends = at-spi2-core
 	makedepends = dbus-broker
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = glib2-devel
 	makedepends = libxml2
@@ -35,7 +34,3 @@ pkgname = at-spi2-core
 	conflicts = atk<=2.38.0-2
 	replaces = at-spi2-atk<=2.38.0-2
 	replaces = atk<=2.38.0-2
-
-pkgname = at-spi2-core-docs
-	pkgdesc = Protocol definitions and daemon for D-Bus at-spi (documentation)
-	depends = 

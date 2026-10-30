@@ -121,3 +121,10 @@ makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-intros
 eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled /')"
 
 unset -f pkgver
+
+pkgname=(gdk-pixbuf2)
+makedepends=(${makedepends[@]/gi-docgen/})
+eval "$(
+  declare -f build | sed 's/-D documentation=true/-D documentation=false/; s/-D gtk_doc=true/-D gtk_doc=false/'
+  declare -f package_gdk-pixbuf2 | sed '/doc/d'
+)"

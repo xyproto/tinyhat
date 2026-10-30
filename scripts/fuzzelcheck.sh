@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
-pkgfile=$(python3 "$top/scripts/pkg.py" repofiles "$top/build/repo" i686 fuzzel 2>/dev/null) || pkgfile=
+pkgfile=$(python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 fuzzel 2>/dev/null) || pkgfile=
 if [ -z "$pkgfile" ] || [ ! -d "$top/build/buildroot/usr" ]; then
 	echo "fuzzel: skipped (build fuzzel first to check the config)"
 	exit 0

@@ -105,3 +105,10 @@ makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-intros
 eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled /')"
 
 unset -f pkgver
+
+pkgname=(at-spi2-core)
+makedepends=(${makedepends[@]/gi-docgen/})
+eval "$(
+  declare -f build | sed 's/-D docs=true/-D docs=false/'
+  declare -f package_at-spi2-core | sed '/doc/d'
+)"
