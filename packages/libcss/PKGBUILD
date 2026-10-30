@@ -11,7 +11,7 @@ arch=(i686 x32)
 url='https://www.netsurf-browser.org/projects/libcss/'
 license=(MIT)
 makedepends=(git netsurf-buildsystem)
-depends=('libparserutils>=0.2.5' 'libwapcaplet>=0.4.3')
+depends=('libparserutils>=0.2.5' 'libwapcaplet>=0.4.3.r10')
 source=("git+https://github.com/netsurf-browser/libcss.git#commit=$_commit")
 b2sums=('ed41a9ab0bc58e5deae9be833b8415f5dc669650b6e818c628cceeb165fa079e4ab4a460e42bff8a981edadf2862e4be96d89195f3e6e3229d41c6f24aa5eea2')
 

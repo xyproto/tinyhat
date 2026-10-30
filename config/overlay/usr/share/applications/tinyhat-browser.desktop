@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=NetSurf web browser
+Name=NetSurfy web browser
 Icon=web-browser
-Comment=NetSurf web browser
-Exec=tinyhat-launch -n NetSurf netsurf-gtk3
+Comment=NetSurfy web browser
+Exec=tinyhat-launch -n NetSurfy netsurfy
 Terminal=false
 Categories=Network;WebBrowser;
