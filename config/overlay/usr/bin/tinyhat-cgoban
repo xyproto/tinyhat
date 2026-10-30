@@ -1,0 +1,16 @@
+#!/bin/sh
+mkdir -p "$HOME/sgf"
+cd "$HOME/sgf" || exit 1
+exec java \
+	-Dawt.useSystemAAFontSettings=on \
+	-Dswing.aatext=true \
+	-Dsun.java2d.xrender=true \
+	-Dsun.java2d.opengl=false \
+	-Dswing.defaultfont=JetBrainsMono-Regular \
+	-Dfile.encoding=UTF-8 \
+	-Xms32m \
+	-Xmx256m \
+	-XX:+UseG1GC \
+	-XX:MaxGCPauseMillis=100 \
+	-XX:+UseStringDeduplication \
+	-jar /usr/share/java/cgoban3/cgoban.jar "$@"

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install Java and CGoban 3
+Icon=applications-system
+Comment=Install the OpenJDK Java runtime and the CGoban 3 Go client
+Exec=tinyhat-java
+Terminal=false
+Categories=System;
