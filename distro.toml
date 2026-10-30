@@ -690,9 +690,6 @@ build_from_source = true
 [glu]
 build_from_source = true
 
-[glycin]
-build_for = ["i686"]
-
 [gnupg]
 prebuilt = true
 
@@ -1028,9 +1025,6 @@ source = "sources"
 
 [tinyhat-splash]
 source = "sources"
-
-[tinysparql]
-prebuilt = true
 
 [tinyxxd]
 source = "sources"
