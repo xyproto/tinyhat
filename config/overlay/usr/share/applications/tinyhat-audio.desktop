@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install audio packages
+Icon=applications-multimedia
+Comment=Install the pro-audio package group
+Exec=tinyhat-audio
+Terminal=false
+Categories=System;

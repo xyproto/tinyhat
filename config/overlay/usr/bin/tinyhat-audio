@@ -1,0 +1,13 @@
+#!/bin/sh
+[ "$1" = --run ] || exec foot -T "Install audio packages" "$0" --run
+fail() {
+	printf '\n%s\nPress Enter to close.\n' "$1"
+	read -r _
+	exit 1
+}
+doas systemctl start tinyhat-pacman-init.service
+doas pacman -Sy --noconfirm || fail "Could not update the package database."
+doas pacman -S --needed --noconfirm archlinux32-keyring || fail "Could not update the archlinux32 keyring."
+doas pacman -S --needed --noconfirm pro-audio || fail "Could not install the pro-audio packages."
+printf '\nThe audio packages are installed.\nPress Enter to close.\n'
+read -r _
