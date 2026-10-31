@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Enable system sounds
+Name=System sound settings
 Icon=audio-x-generic
 Comment=Startup and shutdown jingles, and typewriter or fart sounds while typing
 Exec=tinyhat-sounds

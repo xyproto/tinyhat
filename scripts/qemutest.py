@@ -15,9 +15,16 @@ def monitor(sock, cmd):
 
 KEYS = {" ": "spc", "\n": "ret", "-": "minus", "=": "equal", "/": "slash", ".": "dot", ",": "comma",
         ";": "semicolon", "'": "apostrophe", "\\": "backslash", "_": "shift-minus", "|": "shift-backslash",
-        ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon"}
+        ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon",
+        "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4"}
 REPORT = ("doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain; echo TH-MEMORY; free -m; "
           "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-END) >/dev/{tty} 2>&1'\n")
+SEARCH = "https://html.duckduckgo.com/html/?q=tiny+hat+linux"
+LOBSTERS = "https://lobste.rs"
+NETSURFY = ("sh -c 'netsurfy -v \"" + SEARCH + "\" 2>/tmp/th-ns1.log & sleep 30; kill $!; "
+            "netsurfy -v " + LOBSTERS + " 2>/tmp/th-ns2.log & sleep 30; kill $!; "
+            "doas sh -c \"(echo TH-NETSURFY; grep -c ip3/ /tmp/th-ns1.log; grep -c done.https://lobste.rs /tmp/th-ns2.log; "
+            "echo TH-NETSURFY-END) >/dev/ttyS0\"' &\n")
 OVMF_X64 = "/usr/share/edk2/x64/OVMF_CODE.4m.fd"
 OVMF_X64_VARS = "/usr/share/edk2/x64/OVMF_VARS.4m.fd"
 AAVMF = "/usr/share/edk2/aarch64/QEMU_EFI.fd"
@@ -97,6 +104,25 @@ def health(serial):
     return sections
 
 
+def netsurfy_report(serial):
+    text = open(serial, errors="replace").read().replace("\r", "") if os.path.exists(serial) else ""
+    m = text.rfind("TH-NETSURFY\n")
+    if m < 0 or "TH-NETSURFY-END" not in text[m:]:
+        return None
+    lines = text[m:text.index("TH-NETSURFY-END", m)].split()[1:]
+    return [int(n) if n.isdigit() else 0 for n in lines] + [0, 0]
+
+
+def link_pixels(ppm):
+    """How many pixels have the blue of unvisited links, which a page that failed to render lacks."""
+    try:
+        data = open(ppm, "rb").read()
+        pixels = data.split(b"\n", 3)[3]
+    except (OSError, IndexError):
+        return 0
+    return sum(1 for o in range(0, len(pixels) - 2, 3) if pixels[o + 2] > 120 and pixels[o + 2] - max(pixels[o], pixels[o + 1]) > 70)
+
+
 def desktop_up(ppm):
     try:
         data = open(ppm, "rb").read()
@@ -125,14 +151,16 @@ def main():
     sock = os.path.join(QMT, f"{tag}.mon")
     serial = os.path.join(QMT, f"{tag}.serial")
     shot = os.path.join(QMT, f"{tag}.ppm")
+    web = [os.path.join(QMT, f"{tag}-{name}.ppm") for name in ("search", "lobsters")]
     subprocess.run(["cp", "--sparse=always", "-f", img, disk], check=True)
     os.truncate(disk, 4 << 30)
-    for f in (sock, shot, serial):
+    for f in [sock, shot, serial] + web:
         if os.path.exists(f):
             os.remove(f)
     proc = subprocess.Popen(qemu_command(img, disk, uefi, serial, sock))
     ok = False
     report = None
+    web_report = None
     start = time.time()
     try:
         while time.time() - start < limit and proc.poll() is None:
@@ -155,6 +183,17 @@ def main():
                     report = health(serial)
                     if report:
                         break
+                if k in ("i686", "x32"):
+                    type_text(sock, NETSURFY)
+                    time.sleep(25)
+                    monitor(sock, f"screendump {web[0]}")
+                    time.sleep(30)
+                    monitor(sock, f"screendump {web[1]}")
+                    for _ in range(20):
+                        time.sleep(1)
+                        web_report = netsurfy_report(serial)
+                        if web_report:
+                            break
                 break
         if proc.poll() is None:
             monitor(sock, "quit")
@@ -164,8 +203,9 @@ def main():
         except subprocess.TimeoutExpired:
             proc.terminate()
             proc.wait()
-    if os.path.exists(shot) and shutil.which("magick"):
-        subprocess.run(["magick", shot, shot[:-4] + ".png"])
+    for f in [shot] + web:
+        if os.path.exists(f) and shutil.which("magick"):
+            subprocess.run(["magick", f, f[:-4] + ".png"])
     if ok:
         print(f"qemutest: {label} reached the desktop in {up} s (screenshot and serial log in build/qmt)")
         if k == "rpi4":
@@ -186,6 +226,18 @@ def main():
                 ok = False
             else:
                 print("qemutest: no failed units")
+        if k in ("i686", "x32"):
+            if web_report is None:
+                print("qemutest: no NetSurfy report on the serial port")
+                ok = False
+            else:
+                results, lobsters = web_report[0], web_report[1]
+                blue = [link_pixels(f) for f in web]
+                print(f"qemutest: NetSurfy found {results} DuckDuckGo results for \"tiny hat linux\" ({blue[0]} link pixels on screen)")
+                print(f"qemutest: NetSurfy {'loaded' if lobsters else 'did not load'} {LOBSTERS} ({blue[1]} link pixels on screen)")
+                if results < 3 or not lobsters or min(blue) < 300:
+                    print("qemutest: NetSurfy failed (screenshots in build/qmt)")
+                    ok = False
     else:
         print(f"qemutest: {label} did not reach the desktop within {limit} s (last screen in build/qmt)")
     sys.exit(0 if ok else 1)

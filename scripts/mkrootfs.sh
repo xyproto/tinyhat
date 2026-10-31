@@ -223,6 +223,7 @@ if command -v gdk-pixbuf-query-loaders >/dev/null && [ -d /usr/lib/gdk-pixbuf-2.
 if command -v gio-querymodules >/dev/null; then gio-querymodules /usr/lib/gio/modules; fi
 makewhatis /usr/share/man
 if command -v update-mime-database >/dev/null; then update-mime-database /usr/share/mime; fi
+if command -v update-desktop-database >/dev/null; then update-desktop-database -q /usr/share/applications; fi
 for t in /usr/share/icons/*/; do
 	[ -f "$t/index.theme" ] && gtk-update-icon-cache -q -f "$t" 2>/dev/null || true
 done

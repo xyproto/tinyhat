@@ -2456,7 +2456,7 @@ static const struct {
 	{ "F7", "win.mkdir" },
 	{ "Delete|F8|KP_Delete", "win.trash" },
 	{ "<Shift>Delete|<Shift>F8", "win.delete" },
-	{ "BackSpace", "win.back" },
+	{ "BackSpace", "win.up" },
 	{ "plus|KP_Add", "win.select" },
 	{ "backslash|KP_Subtract|minus", "win.unselect" },
 	{ "asterisk|KP_Multiply", "win.invert" },
@@ -2657,6 +2657,7 @@ static const GActionEntry actions[] = {
 	{ "delete", act_delete, NULL, NULL, NULL, { 0 } },
 	{ "restore", act_restore, NULL, NULL, NULL, { 0 } },
 	{ "emptytrash", act_emptytrash, NULL, NULL, NULL, { 0 } },
+	{ "sidetrash", act_emptytrash, NULL, NULL, NULL, { 0 } },
 	{ "mkdir", act_mkdir, NULL, NULL, NULL, { 0 } },
 	{ "newfile", act_newfile, NULL, NULL, NULL, { 0 } },
 	{ "terminal", act_terminal, NULL, NULL, NULL, { 0 } },
@@ -2768,6 +2769,26 @@ static GtkWidget *build_toolbar(void)
 	return bar;
 }
 
+static void on_side_menu(GtkGestureClick *g, int n, double x, double y, gpointer data)
+{
+	(void)n;
+	GtkWidget *scroll = data;
+	graphene_point_t pt;
+	if (!gtk_widget_compute_point(scroll, sidebar, &GRAPHENE_POINT_INIT((float)x, (float)y), &pt))
+		return;
+	auto row = gtk_list_box_get_row_at_y(GTK_LIST_BOX(sidebar), (int)pt.y);
+	GFile *file = row ? g_object_get_data(G_OBJECT(row), "file") : NULL;
+	auto trash = trash_dir();
+	gboolean is_trash = file && g_file_equal(file, trash);
+	g_object_unref(trash);
+	if (!is_trash)
+		return;
+	GtkWidget *menu = g_object_get_data(G_OBJECT(scroll), "menu");
+	gtk_popover_set_pointing_to(GTK_POPOVER(menu), &(GdkRectangle){ (int)x, (int)y, 1, 1 });
+	gtk_popover_popup(GTK_POPOVER(menu));
+	gtk_gesture_set_state(GTK_GESTURE(g), GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
 static GtkWidget *build_sidebar(void)
 {
 	sidebar = gtk_list_box_new();
@@ -2779,6 +2800,19 @@ static GtkWidget *build_sidebar(void)
 	auto scroll = gtk_scrolled_window_new();
 	gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
 	gtk_scrolled_window_set_child(GTK_SCROLLED_WINDOW(scroll), sidebar);
+	auto trashmenu = g_menu_new();
+	g_menu_append(trashmenu, "Empty trash", "win.sidetrash");
+	auto popover = gtk_popover_menu_new_from_model(G_MENU_MODEL(trashmenu));
+	g_object_unref(trashmenu);
+	gtk_widget_set_parent(popover, scroll);
+	gtk_popover_set_has_arrow(GTK_POPOVER(popover), FALSE);
+	gtk_widget_set_halign(popover, GTK_ALIGN_START);
+	g_object_set_data(G_OBJECT(scroll), "menu", popover);
+	auto click = gtk_gesture_click_new();
+	gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click), GDK_BUTTON_SECONDARY);
+	gtk_event_controller_set_propagation_phase(GTK_EVENT_CONTROLLER(click), GTK_PHASE_CAPTURE);
+	g_signal_connect(click, "pressed", G_CALLBACK(on_side_menu), scroll);
+	gtk_widget_add_controller(scroll, GTK_EVENT_CONTROLLER(click));
 
 	volumes = g_volume_monitor_get();
 	g_signal_connect_swapped(volumes, "mount-added", G_CALLBACK(schedule_sidebar), NULL);

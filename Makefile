@@ -39,10 +39,11 @@ IMG_RPI4 := tinyhat-rpi4.img
 IMGS := $(IMG_I686) $(IMG_X32) $(IMG_AARCH64) $(IMG_RPI4)
 ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_AARCH64:.img=.iso)
 VDIS := $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi) $(IMG_AARCH64:.img=.vdi)
+X86_FILES := $(IMG_I686) $(IMG_X32) $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi)
 
 .DELETE_ON_ERROR:
 .DEFAULT_GOAL := help
-.PHONY: help all img iso vdi i686 x32 32 64 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
+.PHONY: help all all_except_aarch64 dist_except_aarch64 distbuild_except_aarch64 img iso vdi i686 x32 32 64 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
 
 C_HEAD := \033[1;31m
 C_HEAD2 := \033[1;34m
@@ -70,7 +71,9 @@ help:
 	@printf '\n$(C_GRP)Groups and releases$(C_OFF)\n'
 	$(call target,vdi,"VirtualBox disk images (i686$(comma) x32$(comma) aarch64)")
 	$(call target,all,"every .img$(comma) .iso and .vdi")
+	$(call target,all_except_aarch64,"the i686 and x32 .img$(comma) .iso and .vdi files")
 	$(call target,dist,"release files in $(B)/dist$(comma) signed")
+	$(call target,dist_except_aarch64,"release files in $(B)/dist without the ARM images$(comma) signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
 	$(call target,packages,"build or fetch every package the images need")
 	$(call target,lock,"update distro.lock")
@@ -111,6 +114,8 @@ iso: $(ISOS)
 vdi: $(VDIS)
 
 all: $(IMGS) $(ISOS) $(VDIS)
+
+all_except_aarch64: $(X86_FILES)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
 ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),help)))
@@ -210,6 +215,13 @@ dist: distbuild
 	@$(MAKE) --no-print-directory sign
 
 distbuild: $(IMGS) $(ISOS) $(VDIS)
+	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
+	@ls -l $(B)/dist
+
+dist_except_aarch64: distbuild_except_aarch64
+	@$(MAKE) --no-print-directory sign
+
+distbuild_except_aarch64: $(X86_FILES)
 	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
 	@ls -l $(B)/dist
 

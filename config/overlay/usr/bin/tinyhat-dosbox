@@ -1,4 +1,18 @@
 #!/bin/sh
+windows_exe() {
+	[ "$(head -c 2 "$1" 2>/dev/null)" = MZ ] || return 1
+	off=$(od -An -tu4 -j 60 -N 4 "$1" 2>/dev/null | tr -d ' ')
+	[ -n "$off" ] || return 1
+	case $(od -An -c -j "$off" -N 2 "$1" 2>/dev/null | tr -d ' ') in PE | NE) return 0 ;; esac
+	return 1
+}
+if [ -f "${1-}" ] && windows_exe "$1"; then
+	for wine in wine-staging wine; do
+		command -v "$wine" >/dev/null && exec "$wine" "$@"
+	done
+	tinyhat-notice "This is a Windows program. Install Wine from the menu to run it." 6
+	exit 1
+fi
 mkdir -p "$HOME/DOS"
 dos=$(readlink -f "$HOME/DOS")
 prog=

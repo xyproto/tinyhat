@@ -6,13 +6,13 @@ notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
 if [ -f "$pidfile" ] && kill "$(cat "$pidfile")" 2>/dev/null; then
 	rm -f "$pidfile"
 	tinyhat-status --refresh
-	tinyhat-firewall close 3000
+	tinyhat-firewall close 80
 	notice "Stopped sharing ~/pub"
 	exit 0
 fi
 mkdir -p "$dir"
-tinyhat-firewall open 3000
-setsid -f sh -c 'echo $$ >"$1"; exec algernon -x -n -q --nolimit --addr=:3000 "$2"' sh "$pidfile" "$dir"
+tinyhat-firewall open 80
+setsid -f sh -c 'echo $$ >"$1"; exec algernon -x -n -q --nolimit --addr=:80 "$2"' sh "$pidfile" "$dir"
 tinyhat-status --refresh
 addr=$(tinyhat-addr)
-notice "Sharing ~/pub at http://${addr:-this-computer}:3000"
+notice "Sharing ~/pub at http://${addr:-this-computer}"

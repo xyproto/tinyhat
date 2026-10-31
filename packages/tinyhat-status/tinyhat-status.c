@@ -175,7 +175,7 @@ static void status(char *line, size_t size, const char *rundir)
 		char *argv[] = { "tinyhat-addr", nullptr };
 		run(text, sizeof text, argv);
 		trim(text);
-		snprintf(item, sizeof item, "S http://%s:3000", *text ? text : "this-computer");
+		snprintf(item, sizeof item, "S http://%s", *text ? text : "this-computer");
 		add(line, size, item);
 	}
 	if (running("dropbear"))
