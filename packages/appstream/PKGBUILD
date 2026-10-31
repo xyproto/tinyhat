@@ -5,7 +5,7 @@
 pkgbase=appstream
 pkgname=(appstream
          appstream-qt)
-pkgver=1.2.1
+pkgver=1.2.2
 pkgrel="1"
 pkgdesc='Provides a standard for creating app stores across distributions'
 arch=(i686 x32)
@@ -40,7 +40,7 @@ makedepends=(bash-completion
              xmlto)
 source=(git+https://github.com/ximion/appstream#tag=v$pkgver?signed
         update-appstream-cache.hook)
-sha256sums=('2429bf9e65957d69541394f7ab9c4512544e78fae1e14db658810f60becd5714'
+sha256sums=('fa63d85e6a6403d301c81a2480b1d266c1f5048c421018548b4e0490ca1abd3d'
             'edc632e4a76ebe5efc76a56fe5f797e5c981cca6f2f0111c7ce0170d1330c788')
 validpgpkeys=(D33A3F0CA16B0ACC51A60738494C8A5FBF4DECEB) # Matthias Klumpp <matthias@tenstral.net>
 

@@ -6,7 +6,7 @@ pkgname=(
   python-dbus
   python-dbus-docs
 )
-pkgver=1.5.0
+pkgver=1.5.1
 pkgrel="1"
 pkgdesc='Python bindings for D-Bus'
 arch=(i686 x32)
@@ -30,7 +30,7 @@ makedepends=(
 )
 optdepends=('python-gobject: D-Bus services via PyGI')
 source=("git+https://gitlab.freedesktop.org/dbus/$pkgbase.git?signed#tag=$pkgbase-$pkgver")
-b2sums=(e7afea40984b9fe56d751567c71d759353551803a8e08def27f80e061fde613e61cd697886debde0cfa295083a8a7640376fe9512879e3d9e3fa0c4fb01368b2)
+b2sums=('9f4d26d932cf169fd8368f4eb24b00862c4d093b0ab59815be71d074326aa3d44f48de866dd008ee4075be7c389377170351ef82c6eb3bbba947b2cbef21887f')
 validpgpkeys=(DA98F25C0871C49A59EAFF2C4DE8FF2A63C7CC90) # Simon McVittie <smcv@pseudorandom.co.uk>
 
 build() {

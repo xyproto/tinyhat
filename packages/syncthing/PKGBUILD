@@ -6,7 +6,7 @@
 # Contributor: korjjj <korjjj+aur@gmail.com>
 
 pkgname=(syncthing syncthing-discosrv syncthing-relaysrv)
-pkgver=2.1.6
+pkgver=2.1.7
 pkgrel="1"
 pkgdesc='Open Source Continuous Replication / Cluster Synchronization Thing'
 arch=(i686)
@@ -21,7 +21,7 @@ source=("https://github.com/syncthing/syncthing/releases/download/v$pkgver/synct
         gcc-pie-segfaults-race.patch)
 options=(!lto) # https://github.com/golang/go/pull/53528
 validpgpkeys=('37C84554E7E0A261E4F76E1ED26E6ED000654A3E') # Syncthing Release Management
-sha256sums=('4927b6b0f3a5c395486bad6accf128aa7c30bfd41b43ad0e423c4f85dd6677f2'
+sha256sums=('5b84abd0e8b187f618fb2c38c37fa37ce0b377a275d3e0b981bad94176a24afa'
             'SKIP'
             'f6e704dd7b10127b1642c889a29e95468daa75d895493b235ce1ed5e97155b70'
             '6ab96a5949e223d315d49663734ad27b70c72469c691a61ac198cb7794cb5eaa'

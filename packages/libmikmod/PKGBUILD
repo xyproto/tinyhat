@@ -4,7 +4,7 @@
 # Contributor: Tom Newsom <Jeepster@gmx.co.uk>
 
 pkgname=libmikmod
-pkgver=3.3.15
+pkgver=3.3.16
 pkgrel="1"
 pkgdesc="Module player library supporting many formats, including MOD, S3M, IT and XM"
 url="https://mikmod.sourceforge.net"
@@ -25,7 +25,7 @@ provides=(libmikmod.so)
 source=(
   "git+https://git.code.sf.net/p/mikmod/mikmod#tag=libmikmod-$pkgver"
 )
-b2sums=('2f1497fe944498ecad3e839c8fd9395916e92a3299ea99610ae5165d7388ec57e1beb64c2e9b3d65725ea4572cf571caf8a9e65d266d5e44348f59424bf73349')
+b2sums=('618583fb6e8b0ffbf1dab6a2a70a39c0160f65023873a8a0e296f5272f5f588223209d8a77869e3e95799b3bd2d81dfa02e707d2dae61242fbf84790c0e873f7')
 
 prepare() {
   cd mikmod
