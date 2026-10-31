@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Toggle sharing
+Name=Toggle sharing ~/pub over HTTP
 Icon=folder-publicshare
 Comment=Start or stop sharing the pub folder over HTTP, so other computers can download from it in a browser
 Exec=tinyhat-share

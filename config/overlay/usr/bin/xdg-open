@@ -1,7 +1,7 @@
 #!/bin/sh
 [ $# -eq 1 ] || { echo "usage: xdg-open FILE|URL" >&2; exit 1; }
 case $1 in
-*://* | *.html | *.htm | *.md | *.xhtml) exec ${BROWSER:-/usr/bin/netsurfy} "$1" ;;
+*://* | *.html | *.htm | *.xhtml) exec ${BROWSER:-/usr/bin/netsurfy} "$1" ;;
 esac
 [ -d "$1" ] && exec foot mc "$1"
 case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
@@ -11,5 +11,33 @@ case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
 	exec imv "$1" ;;
 *.pdf)
 	exec zathura "$1" ;;
+*.fur | *.dmf | *.ftm | *.0cc | *.dnm | *.eft)
+	exec furnace "$1" ;;
+*.xm | *.s3m | *.stm)
+	exec ft2-clone "$1" ;;
+*.mod)
+	exec pt2-clone "$1" ;;
+*.ase | *.aseprite)
+	exec tinyhat-gpu libresprite "$1" ;;
+*.pcx | *.lbm | *.iff | *.pkm)
+	exec tinyhat-gpu grafx2 "$1" ;;
+*.tic)
+	exec tic80 "$1" ;;
+*.love)
+	exec love "$1" ;;
+*.nes | *.fds | *.unf | *.unif)
+	exec tinyhat-emulate nes "$1" ;;
+*.sfc | *.smc | *.fig | *.swc)
+	exec tinyhat-emulate snes "$1" ;;
+*.gba | *.gb | *.gbc)
+	exec tinyhat-emulate gba "$1" ;;
+*.sms | *.gg)
+	exec tinyhat-emulate sms "$1" ;;
+*.gen | *.smd)
+	exec tinyhat-emulate genesis "$1" ;;
+*.d64 | *.d71 | *.d81 | *.g64 | *.prg | *.t64 | *.tap | *.crt | *.p00)
+	exec tinyhat-emulate c64 "$1" ;;
+*.exe | *.com | *.bat)
+	exec tinyhat-dosbox "$1" ;;
 esac
 exec foot o "$1"

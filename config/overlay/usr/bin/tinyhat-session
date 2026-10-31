@@ -13,6 +13,11 @@ elif [ "${TINYHAT_GL_VERSION%%.*}" -ge 3 ] 2>/dev/null || [ "${TINYHAT_GL_VERSIO
 	TINYHAT_SDL_RENDER=opengl,software
 fi
 export TINYHAT_GL_VERSION TINYHAT_GLES_VERSION TINYHAT_GL_RENDERER TINYHAT_GL_SOFTWARE TINYHAT_SDL_RENDER
+gtk_gl=
+case $TINYHAT_GL_VERSION in 3.[3-9] | 4.* | [5-9].*) gtk_gl=1 ;; esac
+case $TINYHAT_GLES_VERSION in 3.* | [4-9].*) gtk_gl=1 ;; esac
+[ "$TINYHAT_GL_SOFTWARE" = 1 ] && gtk_gl=
+[ -n "$gtk_gl" ] || export GSK_RENDERER="${GSK_RENDERER:-cairo}"
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
 printf '\033[?25l'
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
