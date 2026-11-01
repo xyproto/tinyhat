@@ -18,9 +18,9 @@ case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
 *.mod)
 	exec pt2-clone "$1" ;;
 *.ase | *.aseprite)
-	exec tinyhat-gpu libresprite "$1" ;;
+	exec tinyhat-run -g libresprite "$1" ;;
 *.pcx | *.lbm | *.iff | *.pkm)
-	exec tinyhat-gpu grafx2 "$1" ;;
+	exec tinyhat-run -g grafx2 "$1" ;;
 *.tic)
 	exec tic80 "$1" ;;
 *.love)

@@ -3,6 +3,6 @@ Type=Application
 Name=Reboot
 Icon=view-refresh
 Comment=Restart the computer
-Exec=doas systemctl reboot --no-wall
+Exec=reboot --no-wall
 Terminal=false
 Categories=System;

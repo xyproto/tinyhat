@@ -31,7 +31,7 @@ package() {
   make install DESTDIR="$pkgdir" OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr
   [ "$CARCH" != i686 ] || readelf -h "$pkgdir/usr/bin/zsnes" | grep -q "Type:.*EXEC"
   mv "$pkgdir/usr/bin/zsnes" "$pkgdir/usr/bin/zsnes-bin"
-  printf '#!/bin/sh\nexec tinyhat-gpu /usr/bin/zsnes-bin "$@"\n' >"$pkgdir/usr/bin/zsnes"
+  printf '#!/bin/sh\nexec tinyhat-run -g /usr/bin/zsnes-bin "$@"\n' >"$pkgdir/usr/bin/zsnes"
   chmod 755 "$pkgdir/usr/bin/zsnes"
   install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"
 }
