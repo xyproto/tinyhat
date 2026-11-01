@@ -3,6 +3,6 @@ Type=Application
 Name=Volume
 Icon=multimedia-volume-control
 Comment=Audio mixer
-Exec=tinyhat-term alsamixer
+Exec=tinyhat-term alsamixer -M
 Terminal=false
 Categories=AudioVideo;Audio;Mixer;
