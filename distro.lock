@@ -582,6 +582,7 @@ debuginfod = { repo = "core", version = "0.188-1.0", file = "debuginfod-0.188-1.
 default-cursors = { repo = "extra", version = "3-1.0", file = "default-cursors-3-1.0-any.pkg.tar.zst", sha256 = "d2795a1daee6f109c1f546dd895a39bd82ac38df1d3a3617432b649233555c10" }
 desktop-file-utils = { repo = "extra", version = "0.28-1.0", file = "desktop-file-utils-0.28-1.0-i686.pkg.tar.zst", sha256 = "aa84785588752d5b6e2e3f664d3ead0ebc72d70cf10cc80878801edf08a702bb" }
 device-mapper = { repo = "core", version = "2.03.39-1.0", file = "device-mapper-2.03.39-1.0-i686.pkg.tar.zst", sha256 = "5d84a44595edab45a54cc0cd0632bc664ec296a7d34081a432b1b6aeaf14fb5e" }
+dhcpcd = { repo = "extra", version = "10.5.2-1.0", file = "dhcpcd-10.5.2-1.0-i686.pkg.tar.zst", sha256 = "f9ade8f25e5039bf5c3960967f039377a3b50e6add845e0aef9ccd89e349bd6a" }
 diffutils = { repo = "core", version = "3.12-2.0", file = "diffutils-3.12-2.0-i686.pkg.tar.zst", sha256 = "391eee44335ddd8c08436c73935bd1d085533d030155a45486fa48120bbc4be9" }
 directx-headers = { repo = "extra", version = "1:1.619.5-1.0", file = "directx-headers-1:1.619.5-1.0-i686.pkg.tar.zst", sha256 = "d3a2ea0cced9d6dc881c2a9014c2abf7cd2229527dccb89dd4c389108e4002ff" }
 djvulibre = { repo = "extra", version = "3.5.30.1-1.0", file = "djvulibre-3.5.30.1-1.0-i686.pkg.tar.zst", sha256 = "377cd759d3eaa8c023749179b4f1f333f3f239d43845aeca9986dcf464ee1972" }
@@ -949,6 +950,7 @@ opencl-headers = { repo = "extra", version = "2:2026.05.29-1.0", file = "opencl-
 openexr = { repo = "extra", version = "3.1.9-1.0", file = "openexr-3.1.9-1.0-i686.pkg.tar.zst", sha256 = "10759aac03819adffa2315d15d617242b28e378e7b79dc88d5bdbe7b1597eea5" }
 openjpeg2 = { repo = "extra", version = "2.5.4-1.0", file = "openjpeg2-2.5.4-1.0-i686.pkg.tar.zst", sha256 = "86664b0a8ac0404b5962a56b7aa1e4c0bf32d23902e0a4503b362c840204f138" }
 openmpi = { repo = "extra", version = "4.0.5-2.0", file = "openmpi-4.0.5-2.0-i686.pkg.tar.zst", sha256 = "c3d8cb10d60cb714d420a120ca23ab16a78a4d20efb1d184d9e50c1eab49a8c9" }
+openresolv = { repo = "extra", version = "3.17.4-1.0", file = "openresolv-3.17.4-1.0-any.pkg.tar.zst", sha256 = "9cb1d3b8e39b4410f99af8745b33a51f8f4ff150925846a6adf59c3b40dbab75" }
 openssh = { repo = "core", version = "9.8p1-1.1", file = "openssh-9.8p1-1.1-i686.pkg.tar.zst", sha256 = "05c9d4a5c90db7bceb70fcd3cceb72518ea8c8bff5c525e9429339f8ba8975c1" }
 openssl = { repo = "core", version = "3.6.5-1.0", file = "openssl-3.6.5-1.0-i686.pkg.tar.zst", sha256 = "6d0989ddd2b175bfe883ed79c6f7630824b73ef571616af3d09da311f684915d" }
 opus = { repo = "extra", version = "1.6.1-1.0", file = "opus-1.6.1-1.0-i686.pkg.tar.zst", sha256 = "023d09f16bf3fdd97f4dcb156968ace549934f95af0c58f3b66fbdeb0ced7caf" }
@@ -1750,6 +1752,7 @@ dconf = { repo = "extra", version = "51.0-1", file = "dconf-51.0-1-aarch64.pkg.t
 default-cursors = { repo = "extra", version = "3-1", file = "default-cursors-3-1-any.pkg.tar.xz", sha256 = "19a87290af8829271e9670576096b08b9262d8fac1e3deb4167d7cd3d3ae1830" }
 desktop-file-utils = { repo = "extra", version = "0.28-1", file = "desktop-file-utils-0.28-1-aarch64.pkg.tar.xz", sha256 = "89d97b1e9e0c265da1bf9120f39fb78122f4eb221dd1e5956b8d64326cf72eca" }
 device-mapper = { repo = "core", version = "2.03.43-2", file = "device-mapper-2.03.43-2-aarch64.pkg.tar.xz", sha256 = "8f61e0fbd02a36f73380e1429fe1f33ef5090645ab2c85d16dfa17f0c084226f" }
+dhcpcd = { repo = "extra", version = "10.5.2-1", file = "dhcpcd-10.5.2-1-aarch64.pkg.tar.xz", sha256 = "8ebc266d7b3798d92fc4f0924384aa793baaa567178761d4229b4c42cdad34b2" }
 diffutils = { repo = "core", version = "3.12-2", file = "diffutils-3.12-2-aarch64.pkg.tar.xz", sha256 = "9ad7b66fac2b6094f14d924476fa4efadf81536efde06b29ef5a3e5737e22924" }
 dnssec-anchors = { repo = "core", version = "20250524-1", file = "dnssec-anchors-20250524-1-any.pkg.tar.xz", sha256 = "f887848c009f8d5864593eb61418abd2fc43ca62316337bafc80b64798352c6b" }
 dosfstools = { repo = "core", version = "4.2-5", file = "dosfstools-4.2-5-aarch64.pkg.tar.xz", sha256 = "c41120c6c89469f259d5248ea2ed0a7bea19f8a38d493682f7ff82037a862c21" }
@@ -1979,6 +1982,7 @@ onetbb = { repo = "extra", version = "2023.1.0-1", file = "onetbb-2023.1.0-1-aar
 openal = { repo = "extra", version = "1.25.2-2", file = "openal-1.25.2-2-aarch64.pkg.tar.xz", sha256 = "5346124d1da6b462b9b284a42d5cf018d93cf02737262167a27bd7c0f4ee8664" }
 opendoas = { repo = "extra", version = "6.8.2-3", file = "opendoas-6.8.2-3-aarch64.pkg.tar.xz", sha256 = "bba3e10dd27c83434ce382f868a3a3fa80482f8917d604a84791a4d37ebc58be" }
 openjpeg2 = { repo = "extra", version = "2.5.4-1", file = "openjpeg2-2.5.4-1-aarch64.pkg.tar.xz", sha256 = "aa64049214538bcb2830415891af2d494dfdbb1b930b0f251da4f99acf231f47" }
+openresolv = { repo = "extra", version = "3.17.4-1", file = "openresolv-3.17.4-1-any.pkg.tar.xz", sha256 = "a777e818703a361833dcfe7bd3fb51b3b4284ce0da2e9ec8f629523cf084f113" }
 openssl = { repo = "core", version = "3.6.5-1", file = "openssl-3.6.5-1-aarch64.pkg.tar.xz", sha256 = "f60b3c69329784d1218ba098a46b092bb42ecc68f0424f01ce2873353a667c20" }
 opus = { repo = "extra", version = "1.6.1-1", file = "opus-1.6.1-1-aarch64.pkg.tar.xz", sha256 = "a111defb532e8e7e12815cffa06f59be23e3d5b95539d5588289a467a2a11b1a" }
 orbiton = { repo = "extra", version = "2.74.6-1", file = "orbiton-2.74.6-1-aarch64.pkg.tar.xz", sha256 = "bcbf17e4491c94310c72f01a8ac2be096ec7d24cb583514dba1436d2d3aff67c" }
@@ -2126,6 +2130,7 @@ dbus-python = { version = "1.5.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab76
 dconf = { version = "51.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[dconf]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/dconf.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
 default-cursors = { version = "3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 desktop-file-utils = { version = "0.28-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[desktop-file-utils]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/xdg/desktop-file-utils.git\"\n" }
+dhcpcd = { version = "10.5.2-1", nvchecker = "[dhcpcd]\nsource = \"git\"\ngit = \"https://github.com/NetworkConfiguration/dhcpcd\"\nprefix = \"v\"\n" }
 dnssec-anchors = { version = "20250524-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 dosfstools = { version = "4.2-5", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[dosfstools]\nsource = \"git\"\ngit = \"https://github.com/dosfstools/dosfstools.git\"\nprefix = \"v\"\n" }
 dropbear = { version = "2026.94-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[dropbear]\nsource = \"github\"\ngithub = \"mkj/dropbear\"\nuse_latest_release = true\nprefix = \"DROPBEAR_\"\n" }
@@ -2424,6 +2429,7 @@ openjph = { version = "0.32.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761ea
 openldap = { version = "2.7.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[openldap]\nsource = 'regex'\nurl = 'https://www.openldap.org/software/download/OpenLDAP/openldap-release/'\nencoding = 'utf8'\nregex = 'openldap-([\\d.]+).tgz'\n" }
 openmpi = { version = "5.0.11-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[openmpi]\nsource = \"git\"\ngit = \"https://github.com/open-mpi/ompi\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
 openpmix = { version = "5.0.11-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[openpmix]\nsource = \"git\"\ngit = \"https://github.com/openpmix/openpmix\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
+openresolv = { version = "3.17.4-1", nvchecker = "[openresolv]\nsource = \"git\"\ngit = \"https://github.com/NetworkConfiguration/openresolv.git\"\nprefix = \"v\"\n" }
 openssl = { version = "3.6.5-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[openssl]\nsource = 'git'\ngit = 'https://github.com/openssl/openssl.git'\nprefix = 'openssl-'\ninclude_regex = 'openssl-[0-9]+\\.[0-9]+\\.[0-9]+'\n\n#source = \"regex\"\n#url = \"https://openssl-library.org/source/index.html\"\n#regex = \"openssl-(\\\\d+\\\\.\\\\d+\\\\.\\\\d+).tar.gz\"\n" }
 openucx = { version = "1.20.1-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[openucx]\nsource = \"git\"\ngit = \"https://github.com/openucx/ucx\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
 opus = { version = "1.6.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[opus]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/opus.git\"\nprefix = \"v\"\n" }
