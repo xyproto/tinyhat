@@ -1,0 +1,53 @@
+# Maintainer: Christian Hesse <mail@eworm.de>
+# Maintainer: Ronald van Haren <ronald.archlinux.org>
+# Contributor: Judd Vinet <jvinet@zeroflux.org>
+
+pkgname=iproute2
+pkgver=7.3.0
+pkgrel="1"
+pkgdesc='IP Routing Utilities'
+arch=(i686 x32)
+license=('GPL-2.0-or-later')
+url='https://git.kernel.org/pub/scm/network/iproute2/iproute2.git'
+depends=('glibc'
+         'libxtables.so' # from iptables or iptables-legacy
+         'libcap' 'libcap.so'
+         'libelf'
+         'libbpf' 'libbpf.so')
+makedepends=('git' 'db' 'linux-atm' 'iptables')
+optdepends=('db: userspace arp daemon'
+            'linux-atm: ATM support'
+            'python: for routel')
+provides=('iproute')
+options=('!emptydirs')
+validpgpkeys=('9F6FC345B05BE7E766B83C8F80A77F6095CDE47E') # Stephen Hemminger
+source=("git+https://git.kernel.org/pub/scm/network/${pkgname}/${pkgname}.git#tag=v${pkgver}"
+        '0001-make-iproute2-fhs-compliant.patch')
+sha256sums=('ad89c9e89cb74de7d26da8c15f835ab12f840d17e769f6273b0e4ef72a53004c'
+            '758b82bd61ed7512d215efafd5fab5ae7a28fbfa6161b85e2ce7373285e56a5d')
+
+prepare() {
+  cd "${srcdir}/${pkgname}"
+
+  # set correct fhs structure
+  patch -Np1 -i "${srcdir}"/0001-make-iproute2-fhs-compliant.patch
+}
+
+build() {
+  cd "${srcdir}/${pkgname}"
+
+  ./configure \
+    --color auto
+  make
+}
+
+package() {
+  cd "${srcdir}/${pkgname}"
+
+  make DESTDIR="${pkgdir}" SBINDIR="/usr/bin" install
+}
+
+_d=(); for _p in "${depends[@]}"; do [[ $_p == libxtables.so ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -e iptables))
+
+unset -f pkgver
