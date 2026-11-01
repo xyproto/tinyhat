@@ -23,7 +23,7 @@ packages = [
     "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "archlinux-wallpaper", "xcursor-vanilla-dmz",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
-    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "cairo", "syncthing",
+    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "cairo",
     "opendoas",
     "libmnl",
     "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
@@ -984,9 +984,6 @@ nvchecker = { source = "github", github = "swaywm/swaybg", prefix = "v", use_lat
 [swaylock]
 source = "sources"
 nvchecker = { source = "github", github = "swaywm/swaylock", prefix = "v", use_latest_release = true }
-
-[syncthing]
-build_for = ["i686"]
 
 [sysprof]
 prebuilt = true
