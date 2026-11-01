@@ -9,9 +9,9 @@ fail() {
 free=$(df -Pm /var/lib | awk 'NR == 2 { print $4 }')
 [ "$free" -ge 6000 ] || fail "Steam needs about 6 GB of free space, but only $free MB is free. Boot with persistence on a larger drive."
 doas systemctl start tinyhat-pacman-init.service
-doas pacman -Sy --noconfirm || fail "Could not update the package database."
-doas pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-doas pacman -S --needed --noconfirm xorg-xwayland || fail "Could not install Xwayland."
+doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "Could not update the package database."
+doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
+doas /usr/lib/tinyhat/pacman -S --needed --noconfirm xorg-xwayland || fail "Could not install Xwayland."
 printf 'Downloading an x86_64 Arch Linux root for Steam...\n'
 curl -fL -o /var/tmp/tinyhat-steam-bootstrap.tar.zst "$mirror/iso/latest/archlinux-bootstrap-x86_64.tar.zst" || fail "Could not download the Arch Linux bootstrap archive."
 sum=$(curl -fsSL "$mirror/iso/latest/sha256sums.txt" | awk '$2 == "archlinux-bootstrap-x86_64.tar.zst" { print $1 }')
