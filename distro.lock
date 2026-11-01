@@ -2031,7 +2031,6 @@ sqlite = { repo = "core", version = "3.54.0-1", file = "sqlite-3.54.0-1-aarch64.
 sratom = { repo = "extra", version = "0.6.22-1", file = "sratom-0.6.22-1-aarch64.pkg.tar.xz", sha256 = "f03d5ade48ac5e482b56a6f59333869fc2f4093c04972c3e8ab1d44daed9da86" }
 strace = { repo = "extra", version = "7.2-1", file = "strace-7.2-1-aarch64.pkg.tar.xz", sha256 = "91c4ac1483cc7c14e1603b80cecfe51528b4d574c501d0fcd9f0e481d3efeac4" }
 swaylock = { repo = "extra", version = "1.8.6-1", file = "swaylock-1.8.6-1-aarch64.pkg.tar.xz", sha256 = "ca12c9c3ba3e237f39b314f699f653383471151f1aa8013fbf287e062361062a" }
-syncthing = { repo = "extra", version = "2.1.7-1", file = "syncthing-2.1.7-1-aarch64.pkg.tar.xz", sha256 = "1dedfc2cb2b1c593dc77993bfa9f5f787ee44414078fbe82890e5afdaf40943a" }
 systemd = { repo = "core", version = "262.1-1", file = "systemd-262.1-1-aarch64.pkg.tar.xz", sha256 = "a43788abf4442a536ac41757360b00ac0f93c4db7fadec6aa8af7f8f5eb591b4" }
 systemd-libs = { repo = "core", version = "262.1-1", file = "systemd-libs-262.1-1-aarch64.pkg.tar.xz", sha256 = "d92981141d9ccc2fb50cd409f65441b4aeb24ce99abf7cddcf3b8d1e3410c3ec" }
 tar = { repo = "core", version = "1.35-5", file = "tar-1.35-5-aarch64.pkg.tar.xz", sha256 = "8a9a195736b5cdac96c0511b6a6ea8417477552cf1ad24d904bf6476539b0ad3" }
@@ -2492,7 +2491,6 @@ spirv-tools = { version = "1:1.4.363.0-1", a32 = "aee39c468775915b9a4b26602f00c7
 sqlite = { version = "3.54.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[sqlite]\nsource = \"regex\"\nregex = \"Version (\\\\d+.\\\\d+.\\\\d+)\"\nurl = \"https://www.sqlite.org/index.html\"\n" }
 sratom = { version = "0.6.22-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[sratom]\nsource = \"git\"\ngit = \"https://gitlab.com/lv2/sratom\"\nprefix = \"v\"\n" }
 strace = { version = "7.2-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[strace]\nsource = \"git\"\ngit = \"https://github.com/strace/strace.git\"\nprefix = \"v\"\n" }
-syncthing = { version = "2.1.6-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[syncthing]\nsource = \"github\"\ngithub = \"syncthing/syncthing\"\nprefix = \"v\"\nuse_max_tag = true\ninclude_regex = 'v\\d+\\.\\d+\\.\\d+'\n" }
 sysprof = { version = "51.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[sysprof]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/sysprof.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
 systemd = { version = "262.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[systemd]\nsource = \"git\"\ngit = \"https://github.com/systemd/systemd.git\"\nprefix = \"v\"\nexclude_regex = \".*rc.*\"\n" }
 tar = { version = "1.35-5", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[tar]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/tar.git\"\nprefix = \"v\"\n" }
