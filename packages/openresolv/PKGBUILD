@@ -1,0 +1,50 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+# Contributor: Ignacio Galmarino <igalmarino@gmail.com>
+
+pkgname=openresolv
+pkgver=3.17.4
+pkgrel="1"
+pkgdesc="resolv.conf management framework (resolvconf)"
+url="https://roy.marples.name/projects/openresolv"
+arch=(any)
+license=(BSD-2-Clause)
+provides=(resolvconf)
+conflicts=(resolvconf)
+depends=(bash)
+makedepends=(
+  git
+  systemd
+)
+backup=(etc/resolvconf.conf)
+source=("git+https://github.com/NetworkConfiguration/openresolv?signed#tag=v$pkgver")
+b2sums=('9fb1fea852b759011359bfe22c0c32357fa78a63ecdf259914080c16e256e3bf4de749bfcd496629d5af03e49e4db1ca7a6c5211dc900e4e5d5b3bfc85956338')
+validpgpkeys=(
+  A785ED2755955D9E93EA59F6597F97EA9AD45549 # Roy Marples <roy@marples.name>
+)
+
+prepare() {
+  cd $pkgname
+}
+
+build() {
+  local configure_options=(
+    --prefix=/usr
+    --sysconfdir=/etc
+    --libexecdir=/usr/lib/resolvconf
+    --sbindir=/usr/bin
+  )
+
+  cd $pkgname
+  ./configure "${configure_options[@]}"
+  make
+}
+
+package() {
+  cd $pkgname
+  make DESTDIR="$pkgdir" install
+  install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver
