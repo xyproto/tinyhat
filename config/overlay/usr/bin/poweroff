@@ -1,4 +1,5 @@
 #!/bin/sh
+/usr/lib/tinyhat/shutdown-sound
 sync
 if [ "$(id -u)" != 0 ]; then
 	exec doas systemctl poweroff --no-wall "$@"

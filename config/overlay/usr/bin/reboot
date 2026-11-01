@@ -1,4 +1,5 @@
 #!/bin/sh
+/usr/lib/tinyhat/shutdown-sound
 sync
 [ "$(id -u)" = 0 ] || exec doas systemctl reboot "$@"
 exec systemctl reboot "$@"
