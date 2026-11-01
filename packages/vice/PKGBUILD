@@ -1,7 +1,7 @@
 pkgname=vice
 pkgver=3.10
 pkgrel=2
-pkgdesc="Commodore 64 emulator (x64sc) with the SDL UI, ported to SDL3"
+pkgdesc="Commodore 64, C128 and VIC-20 emulators (x64sc, x128 and xvic) with the SDL UI, ported to SDL3"
 arch=(i686 x32)
 url="https://vice-emu.sourceforge.io/"
 license=(GPL-2.0-or-later)
@@ -34,26 +34,34 @@ build() {
   make
 }
 
+# Moves the given emulator to /usr/lib/vice and installs a wrapper that autostarts programs in warp mode,
+# with the given options, and with the given lighter settings on slow computers
+_wrap() {
+  install -Dm755 bin/$1 lib/vice/$1
+  rm bin/$1
+  install -Dm755 /dev/stdin bin/$1 <<EOF
+#!/bin/sh
+set -- -autostartprgmode 1 -autostart-warp $2 "\$@"
+if tinyhat-slow; then
+	set -- $3 "\$@"
+fi
+exec /usr/lib/vice/$1 "\$@"
+EOF
+}
+
 package() {
   cd vice-$pkgver
   make DESTDIR="$pkgdir" install
   cd "$pkgdir/usr"
-  find bin -type f ! -name x64sc ! -name x64 ! -name c1541 -delete
+  find bin -type f ! -name x64sc ! -name x128 ! -name xvic ! -name c1541 -delete
   find bin -type l -delete
-  install -Dm755 bin/x64sc lib/vice/x64sc
-  rm bin/x64sc
-  install -Dm755 /dev/stdin bin/x64sc <<'EOF'
-#!/bin/sh
-set -- -autostartprgmode 1 -autostart-warp "$@"
-if tinyhat-slow; then
-	set -- -sidengine 0 -soundrate 22050 -VICIIfilter 0 "$@"
-fi
-exec /usr/lib/vice/x64sc "$@"
-EOF
+  _wrap x64sc "" "-sidengine 0 -soundrate 22050 -VICIIfilter 0"
+  _wrap x128 "-40col" "-sidengine 0 -soundrate 22050 -VICIIfilter 0 -VDCfilter 0"
+  _wrap xvic "" "-soundrate 22050 -VICfilter 0"
   rm -rf share/doc share/man share/info share/applications share/icons share/metainfo
   cd share/vice
-  rm -rf C128 C64DTV CBM-II PET PLUS4 SCPU64 VIC20 GLSL
-  rm -f C64/gtk3_*.vkm common/*.svg common/*.ttf common/icon1024x1024.png common/Icon-128@2x.png
-  find common -name '*.png' ! -name 'C64_*' -delete
+  rm -rf C64DTV CBM-II PET PLUS4 SCPU64 GLSL
+  rm -f C64/gtk3_*.vkm C128/gtk3_*.vkm VIC20/gtk3_*.vkm common/*.svg common/*.ttf common/icon1024x1024.png common/Icon-128@2x.png
+  find common -name '*.png' ! -name 'C64_*' ! -name 'C128_*' ! -name 'VIC20_*' -delete
   install -Dm644 "$srcdir/vice-$pkgver/COPYING" "$srcdir/vice-$pkgver/README" -t "$pkgdir/usr/share/licenses/$pkgname/"
 }
