@@ -7,7 +7,9 @@ top=$(dirname "$(dirname "$(readlink -f "$0")")")
 epoch=${SOURCE_DATE_EPOCH:-$(git -C "$top" log -1 --format=%ct 2>/dev/null || echo 315532800)}
 cflags="-march=i686 -mtune=generic -Os -pipe -fno-plt -fno-asynchronous-unwind-tables"
 mkdir -p "$HOME/.ccache"
-exec setarch i686 bwrap \
+personality=i686
+case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
+exec ${personality:+setarch "$personality"} bwrap \
 	--bind "$root" / \
 	--dev /dev --proc /proc --tmpfs /tmp \
 	--bind "$HOME/.ccache" /ccache \

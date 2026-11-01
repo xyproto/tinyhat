@@ -1,3 +1,49 @@
+ifeq ($(shell uname -s),Darwin)
+PODMAN ?= podman
+BUILD_IMAGE ?= tinyhat-build
+BUILD_VOLUME ?= tinyhat-build
+HOME_VOLUME ?= tinyhat-home
+QEMU_MEM ?= 1024
+GOALS := $(filter-out run clean distclean,$(or $(MAKECMDGOALS),help))
+IN_CONTAINER = $(PODMAN) run --rm --privileged --security-opt label=disable --userns=keep-id \
+	-e HOME=/home/builder -v $(HOME_VOLUME):/home/builder \
+	-v $(CURDIR):/tinyhat -v $(BUILD_VOLUME):/tinyhat/build -w /tinyhat $(BUILD_IMAGE)
+
+.PHONY: $(GOALS) run clean distclean container
+
+container:
+	@$(PODMAN) machine start >/dev/null 2>&1 || true
+	$(PODMAN) build -q -t $(BUILD_IMAGE) - <Containerfile >/dev/null
+	@for v in $(BUILD_VOLUME) $(HOME_VOLUME); do \
+		$(PODMAN) volume exists $$v || { $(PODMAN) volume create $$v >/dev/null && \
+		$(PODMAN) run --rm -v $$v:/v $(BUILD_IMAGE) chown $$(id -u):$$(id -g) /v; }; \
+	done
+
+ifneq ($(GOALS),)
+$(firstword $(GOALS)): container
+	$(IN_CONTAINER) make $(GOALS) $(MAKEOVERRIDES)
+
+$(wordlist 2,$(words $(GOALS)),$(GOALS)): $(firstword $(GOALS))
+	@:
+endif
+
+clean distclean: container
+	$(PODMAN) run --rm --privileged --security-opt label=disable --userns=keep-id \
+		-v $(CURDIR):/tinyhat -w /tinyhat $(BUILD_IMAGE) make $@
+	$(PODMAN) volume rm -f $(BUILD_VOLUME) $(if $(filter distclean,$@),$(HOME_VOLUME)) >/dev/null
+
+run: container
+	$(IN_CONTAINER) make 32 $(MAKEOVERRIDES)
+	@mkdir -p build
+	cp -c tinyhat32.img build/test-usb.img
+	dd if=/dev/null of=build/test-usb.img bs=1m seek=4096 2>/dev/null
+	qemu-system-i386 -accel tcg,thread=multi -cpu max -smp 4 -m $(QEMU_MEM) \
+		-drive if=none,id=stick,file=build/test-usb.img,format=raw \
+		-device qemu-xhci -device usb-storage,drive=stick,bootindex=0 \
+		-device usb-tablet -vga std \
+		-audiodev coreaudio,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
+		-nic user,model=e1000 -display cocoa,zoom-to-fit=on
+else
 VERSION := 1.0.5
 KVER := 7.3
 export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
@@ -414,3 +460,4 @@ clean:
 
 distclean: clean
 	rm -rf vendor/pkg vendor/pkg-aarch64
+endif

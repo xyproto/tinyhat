@@ -49,6 +49,7 @@ aarch64)
 	ignorearch=--ignorearch
 	;;
 esac
+case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 mkdir -p "$repo" "$boot" "$dest/.cache" "$top/vendor/src" "$HOME/.ccache"
 
 lookup() {

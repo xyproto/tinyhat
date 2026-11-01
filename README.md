@@ -42,7 +42,7 @@ It also includes MemTest86+.
 
 For `make` to be able to create `tinyhat32.img`, these Arch Linux packages are needed:
 
-    base-devel bc bubblewrap cpio git libxml2-legacy python-numpy squashfs-tools vorbis-tools xfsprogs
+    base-devel bc bubblewrap cpio git libelf libxml2-legacy python-numpy qemu-user-static qemu-user-static-binfmt squashfs-tools vorbis-tools xfsprogs
 
 For `make vdi`, this package is also needed:
 
