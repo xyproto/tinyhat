@@ -1,0 +1,2 @@
+_d=(); for _p in "${depends[@]}"; do [[ $_p == libxtables.so ]] || _d+=("$_p"); done; depends=("${_d[@]}")
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -e iptables))
