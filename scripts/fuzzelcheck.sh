@@ -11,7 +11,9 @@ rm -rf "$stage"
 mkdir -p "$stage/fuzzel" "$stage/pkg"
 bsdtar -xf "$pkgfile" -C "$stage/pkg" usr/bin/fuzzel
 cp "$top/config/overlay/etc/xdg/fuzzel/fuzzel.ini" "$stage/fuzzel/fuzzel.ini"
-out=$(setarch i686 bwrap --bind "$top/build/buildroot" / --dev /dev --proc /proc --tmpfs /tmp \
+personality=i686
+case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
+out=$(${personality:+setarch "$personality"} bwrap --bind "$top/build/buildroot" / --dev /dev --proc /proc --tmpfs /tmp \
 	--unshare-all --uid 0 --gid 0 --clearenv \
 	--setenv PATH /usr/bin --setenv HOME /root --setenv LANG C.UTF-8 \
 	--setenv XDG_CONFIG_HOME /.fuzzelcheck \

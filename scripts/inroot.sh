@@ -12,6 +12,7 @@ mount -t tmpfs tmpfs "$root/tmp"
 mount -t tmpfs tmpfs "$root/run"
 personality=i686
 [ ! -e "$root/usr/lib/ld-linux-aarch64.so.1" ] || personality=
+case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 rc=0
 env -i PATH=/usr/bin HOME=/root LANG=C.UTF-8 ${personality:+setarch "$personality"} chroot "$root" "$@" || rc=$?
 exit $rc

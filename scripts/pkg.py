@@ -443,6 +443,19 @@ def link(src, dest):
     os.symlink(os.path.relpath(os.path.realpath(src), os.path.dirname(os.path.abspath(dest))), dest)
 
 
+_mirrored = None
+
+
+def on_mirrors(filename):
+    global _mirrored
+    if _mirrored is None:
+        try:
+            _mirrored = {q["filename"] for q in current_db(max_age=900)[0].values()}
+        except (OSError, tarfile.TarError, SystemExit):
+            _mirrored = False
+    return _mirrored is False or filename in _mirrored
+
+
 def fetch_pkg(p, pkgdir, arch=None):
     dest = os.path.join(pkgdir, p["filename"])
     if os.path.exists(dest) and sha256(dest) == p["sha256"]:
@@ -461,7 +474,9 @@ def fetch_pkg(p, pkgdir, arch=None):
     if arch in ARCH_SOURCES:
         urls = [f"{m}/{p['repo']}/{fn}" for m in ARCH_SOURCES[arch]["mirrors"]]
     else:
-        urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS] + [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"]
+        urls = [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"]
+        if on_mirrors(p["filename"]):
+            urls = [f"{m}/{p['repo']}/{fn}" for m in MIRRORS] + urls
     download_any(urls, vendored)
     if sha256(vendored) != p["sha256"]:
         os.unlink(vendored)

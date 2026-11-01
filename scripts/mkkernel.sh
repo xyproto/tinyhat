@@ -14,6 +14,10 @@ if [ "$arch" = i386 ]; then
 	src=$top/build/linux-$ver
 	modules=$top/build/modules
 fi
+case $(uname -m) in
+x86_64 | i?86) ;;
+*) export CROSS_COMPILE="${CROSS_COMPILE-x86_64-linux-gnu-}" ;;
+esac
 if [ ! -f "$src/Makefile" ] || [ ! -f "$src/scripts/Kbuild.include" ]; then
 	rm -rf "$src"
 	mkdir -p "$src"
