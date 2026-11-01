@@ -6,8 +6,15 @@ online() {
 until online; do
 	sleep 15
 done
+keyrings="archlinux32-keyring archlinux-keyring"
 if pacman -Q archlinuxarm-keyring >/dev/null 2>&1; then
-	exec pacman -Sy --noconfirm --needed archlinuxarm-keyring
+	keyrings=archlinuxarm-keyring
+else
+	pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160 >/dev/null 2>&1
 fi
-pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160 >/dev/null 2>&1
-exec pacman -Sy --noconfirm --needed archlinux32-keyring archlinux-keyring
+tries=1
+until /usr/lib/tinyhat/pacman -Sy --noconfirm --needed $keyrings; do
+	[ "$tries" -lt 20 ] || exit 1
+	tries=$((tries + 1))
+	sleep 15
+done

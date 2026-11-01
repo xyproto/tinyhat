@@ -6,8 +6,8 @@ fail() {
 	exit 1
 }
 doas systemctl start tinyhat-pacman-init.service
-doas pacman -Sy --noconfirm || fail "Could not update the package database."
-doas pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-doas pacman -S --needed --noconfirm pro-audio || fail "Could not install the pro-audio packages."
+doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "Could not update the package database."
+doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
+doas /usr/lib/tinyhat/pacman -S --needed --noconfirm pro-audio || fail "Could not install the pro-audio packages."
 printf '\nThe audio packages are installed.\nPress Enter to close.\n'
 read -r _
