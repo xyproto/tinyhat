@@ -17,7 +17,7 @@ KEYS = {" ": "spc", "\n": "ret", "-": "minus", "=": "equal", "/": "slash", ".": 
         ";": "semicolon", "'": "apostrophe", "\\": "backslash", "_": "shift-minus", "|": "shift-backslash",
         ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon",
         "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4"}
-REPORT = ("doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain; echo TH-MEMORY; free -m; "
+REPORT = ("doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain --no-pager; echo TH-MEMORY; free -m; "
           "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-END) >/dev/{tty} 2>&1'\n")
 SEARCH = "https://html.duckduckgo.com/html/?q=tiny+hat+linux"
 LOBSTERS = "https://lobste.rs"
