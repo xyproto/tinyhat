@@ -7,11 +7,14 @@
 #include <mpg123.h>
 #include <signal.h>
 #include <spawn.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/select.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/un.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -308,16 +311,19 @@ static void SDLCALL feed(void *data, SDL_AudioStream *s, int additional, int tot
 		SDL_LockMutex(lock);
 		for (int i = 0; i < nevents;) {
 			if (events[i].at <= frame) {
-				if (events[i].vel)
+				if (synth && events[i].vel)
 					fluid_synth_noteon(synth, events[i].chan, events[i].note, events[i].vel);
-				else
+				else if (synth)
 					fluid_synth_noteoff(synth, events[i].chan, events[i].note);
 				events[i] = events[--nevents];
 			} else {
 				i++;
 			}
 		}
-		fluid_synth_write_float(synth, n, buf, 0, 2, buf, 1, 2);
+		if (synth)
+			fluid_synth_write_float(synth, n, buf, 0, 2, buf, 1, 2);
+		else
+			memset(buf, 0, sizeof buf);
 		chip_render(buf, n);
 		for (int j = 0; j < VOICES; j++) {
 			auto v = &farts[j];
@@ -341,18 +347,50 @@ static bool audio_open(void)
 	if (!SDL_Init(SDL_INIT_AUDIO))
 		return false;
 	lock = SDL_CreateMutex();
-	settings = new_fluid_settings();
-	fluid_settings_setnum(settings, "synth.sample-rate", RATE);
-	fluid_settings_setnum(settings, "synth.gain", 0.6);
-	fluid_settings_setint(settings, "synth.dynamic-sample-loading", 1);
-	fluid_settings_setint(settings, "synth.polyphony", 32);
-	fluid_settings_setint(settings, "synth.reverb.active", 0);
-	fluid_settings_setint(settings, "synth.chorus.active", 0);
-	synth = new_fluid_synth(settings);
-	if (fluid_synth_sfload(synth, "/usr/share/soundfonts/default.sf2", 1) == FLUID_FAILED)
-		return false;
 	stream = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, feed, NULL);
 	return stream != NULL;
+}
+
+static void load_synth(void)
+{
+	if (synth)
+		return;
+	if (!settings) {
+		settings = new_fluid_settings();
+		fluid_settings_setnum(settings, "synth.sample-rate", RATE);
+		fluid_settings_setnum(settings, "synth.gain", 0.6);
+		fluid_settings_setint(settings, "synth.dynamic-sample-loading", 1);
+		fluid_settings_setint(settings, "synth.polyphony", 32);
+		fluid_settings_setint(settings, "synth.reverb.active", 0);
+		fluid_settings_setint(settings, "synth.chorus.active", 0);
+	}
+	auto s = new_fluid_synth(settings);
+	if (!s)
+		return;
+	if (fluid_synth_sfload(s, "/usr/share/soundfonts/default.sf2", 1) == FLUID_FAILED) {
+		delete_fluid_synth(s);
+		return;
+	}
+	SDL_LockMutex(lock);
+	synth = s;
+	SDL_UnlockMutex(lock);
+}
+
+static void ready(void)
+{
+	auto path = getenv("NOTIFY_SOCKET");
+	struct sockaddr_un sa = { .sun_family = AF_UNIX };
+	if (!path || (*path != '/' && *path != '@') || strlen(path) >= sizeof sa.sun_path)
+		return;
+	size_t n = strlen(path);
+	memcpy(sa.sun_path, path, n);
+	if (*path == '@')
+		sa.sun_path[0] = '\0';
+	int fd = socket(AF_UNIX, SOCK_DGRAM | SOCK_CLOEXEC, 0);
+	if (fd < 0)
+		return;
+	sendto(fd, "READY=1", 7, MSG_NOSIGNAL, (struct sockaddr *)&sa, (socklen_t)(offsetof(struct sockaddr_un, sun_path) + n));
+	close(fd);
 }
 
 static void audio_close(void)
@@ -421,11 +459,12 @@ static int preview(const char *what)
 	if (!strcmp(what, "startup") || !strcmp(what, "shutdown")) {
 		play_and_wait(jingle(!strcmp(what, "startup")));
 	} else if (!strcmp(what, "typewriter")) {
-		static const char text[] = "Hi uncle!r";
+		static const char pattern[] = "kkskkkkkkr";
+		load_synth();
 		SDL_ResumeAudioStreamDevice(stream);
-		for (const char *p = text; *p; p++) {
+		for (const char *p = pattern; *p; p++) {
 			config c = { .typewriter = true };
-			key(*p == ' ' ? 's' : p[1] ? 'k' : 'r', c);
+			key(*p, c);
 			SDL_Delay(p[1] ? 140 : 1200);
 		}
 	} else if (!strcmp(what, "fart")) {
@@ -497,6 +536,8 @@ static int keys_daemon(config cfg)
 			cfg = load();
 			if (!(cfg.typewriter || cfg.fart))
 				break;
+			if (cfg.typewriter)
+				load_synth();
 		}
 		if (r > 0) {
 			char buf[64];
@@ -593,9 +634,14 @@ int main(int argc, char *argv[])
 	}
 	if (!strcmp(mode, "--play") && argc > 2) {
 		bool up = !strcmp(argv[2], "startup");
-		if (!(up ? cfg.startup : cfg.shutdown) || !audio_open())
+		if (!(up ? cfg.startup : cfg.shutdown) || !audio_open()) {
+			ready();
 			return 0;
-		play_and_wait(jingle(up));
+		}
+		int ms = jingle(up);
+		SDL_ResumeAudioStreamDevice(stream);
+		ready();
+		SDL_Delay((Uint32)ms);
 		audio_close();
 		return 0;
 	}
@@ -609,6 +655,8 @@ int main(int argc, char *argv[])
 	if (!strcmp(mode, "--keys")) {
 		if (!(cfg.typewriter || cfg.fart) || running_pid() || !audio_open())
 			return 0;
+		if (cfg.typewriter)
+			load_synth();
 		int r = keys_daemon(cfg);
 		audio_close();
 		return r;
@@ -620,8 +668,16 @@ int main(int argc, char *argv[])
 	if (!(cfg.startup || cfg.typewriter || cfg.fart) || !audio_open())
 		return 0;
 	if (cfg.startup) {
+		Uint64 t0 = SDL_GetTicks();
+		int ms = jingle(true);
 		SDL_ResumeAudioStreamDevice(stream);
-		SDL_Delay((Uint32)jingle(true));
+		if (cfg.typewriter)
+			load_synth();
+		Uint64 spent = SDL_GetTicks() - t0;
+		if (spent < (Uint64)ms)
+			SDL_Delay((Uint32)((Uint64)ms - spent));
+	} else if (cfg.typewriter) {
+		load_synth();
 	}
 	int r = keys_daemon(cfg);
 	audio_close();
