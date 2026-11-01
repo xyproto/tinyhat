@@ -3,6 +3,6 @@ Type=Application
 Name=LibreSprite
 Icon=image-x-generic
 Comment=Animated sprite and pixel art editor
-Exec=tinyhat-gpu libresprite
+Exec=tinyhat-run -g -n LibreSprite libresprite
 Terminal=false
 Categories=Graphics;2DGraphics;RasterGraphics;

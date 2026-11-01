@@ -57,7 +57,7 @@ build() {
 package() {
   install -Dm755 build/bin/tic80 "$pkgdir/usr/lib/tic80/tic80"
   mkdir -p "$pkgdir/usr/bin"
-  printf '#!/bin/sh\nexec tinyhat-gpu /usr/lib/tic80/tic80 "$@"\n' >"$pkgdir/usr/bin/tic80"
+  printf '#!/bin/sh\nexec tinyhat-run -g /usr/lib/tic80/tic80 "$@"\n' >"$pkgdir/usr/bin/tic80"
   chmod 755 "$pkgdir/usr/bin/tic80"
   local l="$pkgdir/usr/share/licenses/$pkgname"
   install -Dm644 tic80/LICENSE "$l/LICENSE"

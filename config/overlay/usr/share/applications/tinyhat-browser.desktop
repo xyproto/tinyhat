@@ -3,6 +3,6 @@ Type=Application
 Name=NetSurfy web browser
 Icon=web-browser
 Comment=NetSurfy web browser
-Exec=tinyhat-launch -n NetSurfy netsurfy
+Exec=tinyhat-run -n NetSurfy netsurfy
 Terminal=false
 Categories=Network;WebBrowser;

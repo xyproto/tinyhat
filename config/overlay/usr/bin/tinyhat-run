@@ -1,5 +1,46 @@
 #!/bin/sh
-cmd=$(printf '' | fuzzel --dmenu --prompt "Run ❯ ") || exit 0
-[ -n "$cmd" ] || exit 0
-name=${cmd%% *}
-exec setsid -f tinyhat-launch -n "${name##*/}" sh -c "$cmd"
+usage() {
+	echo "usage: ${0##*/} [-l] [-g] [-n NAME] COMMAND [ARG]..." >&2
+	exit 2
+}
+if [ $# -eq 0 ]; then
+	cmd=$(printf '' | fuzzel --dmenu --prompt "Run ❯ ") || exit 0
+	[ -n "$cmd" ] || exit 0
+	name=${cmd%% *}
+	exec setsid -f "$0" -n "${name##*/}" sh -c "$cmd"
+fi
+orig=$*
+launch=
+gpu=
+name=
+while :; do
+	case ${1-} in
+	-l) launch=1; shift ;;
+	-g) gpu=1; shift ;;
+	-n) [ $# -ge 2 ] || usage; launch=1; name=$2; shift 2 ;;
+	--) shift; break ;;
+	-*) usage ;;
+	*) break ;;
+	esac
+done
+[ $# -gt 0 ] || usage
+if [ -n "$launch" ] && [ -z "$name" ]; then
+	for f in /usr/share/applications/*.desktop; do
+		if grep -qxF -e "Exec=$*" -e "Exec=tinyhat-run $orig" "$f"; then
+			name=$(sed -n 's/^Name=//p' "$f" | head -n 1)
+			break
+		fi
+	done
+	name=${name:-${1##*/}}
+fi
+if [ -n "$gpu" ]; then
+	export SDL_RENDER_DRIVER=${TINYHAT_SDL_RENDER:-opengles2,opengl,software}
+	set -- nice -n -5 "$@"
+fi
+[ -n "$launch" ] || exec "$@"
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+notice "Launching $name..."
+(sleep 30; notice "") &
+"$@"
+notice ""

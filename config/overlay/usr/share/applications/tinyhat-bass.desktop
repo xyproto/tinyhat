@@ -3,6 +3,6 @@ Type=Application
 Name=Beneath a Steel Sky
 Icon=applications-games
 Comment=Science fiction adventure game, played in ScummVM
-Exec=tinyhat-launch tinyhat-game bass
+Exec=tinyhat-run -l tinyhat-game bass
 Terminal=false
 Categories=Game;AdventureGame;
