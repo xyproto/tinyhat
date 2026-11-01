@@ -50,6 +50,7 @@ extra dconf 0.49.0-1.0 dconf-0.49.0-1.0-i686.pkg.tar.zst 02cda3d2b2535b35be1b6f3
 extra default-cursors 3-1.0 default-cursors-3-1.0-any.pkg.tar.zst d2795a1daee6f109c1f546dd895a39bd82ac38df1d3a3617432b649233555c10
 extra desktop-file-utils 0.28-1.0 desktop-file-utils-0.28-1.0-i686.pkg.tar.zst aa84785588752d5b6e2e3f664d3ead0ebc72d70cf10cc80878801edf08a702bb
 core device-mapper 2.03.39-1.0 device-mapper-2.03.39-1.0-i686.pkg.tar.zst 5d84a44595edab45a54cc0cd0632bc664ec296a7d34081a432b1b6aeaf14fb5e
+extra dhcpcd 10.5.2-1.0 dhcpcd-10.5.2-1.0-i686.pkg.tar.zst f9ade8f25e5039bf5c3960967f039377a3b50e6add845e0aef9ccd89e349bd6a
 core dnssec-anchors 20250524-1.0 dnssec-anchors-20250524-1.0-any.pkg.tar.zst 7876044596d013f5307a6b3cf08aef5e1fb445afebfd887135669ca2a2c4d3b0
 core dosfstools 4.2-5.0 dosfstools-4.2-5.0-i686.pkg.tar.zst 81752759b302f887d0452314cd2c695bae52e2b8b55ae2f284f0605b938eb629
 extra dropbear 2026.94-1.0 dropbear-2026.94-1.0-i686.pkg.tar.zst 79acbc4131aab73b3a6ba7c2f427d86356e367d2b22acb0e647595631aed4ffd
@@ -131,6 +132,7 @@ extra lhasa 0.6.0-1.0 lhasa-0.6.0-1.0-i686.pkg.tar.zst 724489651de0b5a684cf599ce
 core libarchive 3.8.1-1.1 libarchive-3.8.1-1.1-i686.pkg.tar.zst 0f2356241bea87104c88c8b8aed37e089e09c4494bd1754bfe7e04c4ea0436e8
 core libassuan 3.0.0-1.2 libassuan-3.0.0-1.2-i686.pkg.tar.zst f4ad5587e55eb339b1f1d7b3e43586b3ec22890cad19016982c72fd00c57c38e
 core libatomic 15.2.1+r604+g0b99615a8aef-1.1 libatomic-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst a9cc5949581276d83fd832c2ebc612aeb54b931408d4ffd281e3a4cb00a41e7b
+core libbpf 1.7.0-1.0 libbpf-1.7.0-1.0-i686.pkg.tar.zst c03ee0ada5034fbe08dca905e446fc70f933b9450e6e1a43ecf958bd3c544572
 extra libbsd 0.12.2-2.0 libbsd-0.12.2-2.0-i686.pkg.tar.zst 2e1d5aeeb10f4734d96a084d3b6a98b15c34a6313b6a8dedd6bac94237b5d47e
 extra libcamera 0.0.4-1.3 libcamera-0.0.4-1.3-i686.pkg.tar.zst 154a84c194b39676e60c969defe0c6054fd297ea6ed4ad4dea5f60ae1b9b9428
 core libcap 2.78-1.0 libcap-2.78-1.0-i686.pkg.tar.zst 5b80e8ead97bc0f2617d449d7303334131e9f03c588c1f80e2925cdc9fb97180
@@ -280,6 +282,7 @@ core nss 3.107-1.0 nss-3.107-1.0-i686.pkg.tar.zst 9317996911829afeff679ee2253827
 extra ntfs-3g 2022.10.3-2.0 ntfs-3g-2022.10.3-2.0-i686.pkg.tar.zst dbb9d23806918b7539d6737cdfbc0bc6554181c68c7af3209913b690ec1f15b4
 extra opendoas 6.8.2-3.0 opendoas-6.8.2-3.0-i686.pkg.tar.zst 5ae12885761d7fe4fe1aa733d31bb1d4d5d1e135fdb48f629c41dd565c5d1c49
 extra openjpeg2 2.5.4-1.0 openjpeg2-2.5.4-1.0-i686.pkg.tar.zst 86664b0a8ac0404b5962a56b7aa1e4c0bf32d23902e0a4503b362c840204f138
+extra openresolv 3.17.4-1.0 openresolv-3.17.4-1.0-any.pkg.tar.zst 9cb1d3b8e39b4410f99af8745b33a51f8f4ff150925846a6adf59c3b40dbab75
 core openssl 3.6.5-1.0 openssl-3.6.5-1.0-i686.pkg.tar.zst 6d0989ddd2b175bfe883ed79c6f7630824b73ef571616af3d09da311f684915d
 extra opus 1.6.1-1.0 opus-1.6.1-1.0-i686.pkg.tar.zst 023d09f16bf3fdd97f4dcb156968ace549934f95af0c58f3b66fbdeb0ced7caf
 core p11-kit 0.26.5-1.0 p11-kit-0.26.5-1.0-i686.pkg.tar.zst 7bd44e8abab7c44709bc6e5a29b9ba606cd2b496f7c4423e2616ae431d48b42e
