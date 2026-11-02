@@ -1,0 +1,26 @@
+pkgname=wallutils
+pkgver=5.14.4
+pkgrel=1
+pkgdesc="Utilities for handling monitors, resolutions and (timed) wallpapers"
+arch=(i686)
+url="https://github.com/xyproto/wallutils"
+license=(BSD-3-Clause)
+depends=(glibc)
+makedepends=(go-tinyhat)
+options=(!buildflags)
+source=("wallutils-$pkgver.tar.gz::https://github.com/xyproto/wallutils/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('b53fc7c6d681c8ce8552bda63523cad8268da063b267abc84a23c725d37bcf8a')
+
+# Without cgo, so no X11 or Wayland libraries: getdpi, heic2stw, lsmon, setcollection, wayinfo and xinfo
+# are left out, and "make install" skips them
+build() {
+  cd wallutils-$pkgver
+  export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOARCH=386 GO386=softfloat
+  PATH="/usr/lib/go-tinyhat/bin:$PATH" make static BUILDFLAGS="-mod=vendor -trimpath -buildvcs=false"
+}
+
+package() {
+  cd wallutils-$pkgver
+  make DESTDIR="$pkgdir" install
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

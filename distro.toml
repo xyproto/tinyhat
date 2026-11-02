@@ -23,16 +23,16 @@ packages = [
     "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "archlinux-wallpaper", "xcursor-vanilla-dmz",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
-    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "cairo",
+    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "lazygit", "aget", "cairo",
     "opendoas",
     "libmnl",
     "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "iproute2", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "ttf-jetbrains-mono", "iputils", "inetutils", "iproute2", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
-    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "tinyhat-gui", "tinyhat-play",
+    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "swaybg", "wallutils", "tinyhat-gui", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
@@ -58,6 +58,8 @@ exclude = [
     "usr/share/man/[a-z][a-z]_*",
     "usr/share/man/[a-z][a-z].*",
     "usr/share/doc",
+    # fish is the default shell, so new home folders get no bash files
+    "etc/skel/.bash*",
     "usr/share/info",
     "usr/share/gtk-doc",
     "usr/share/devhelp",
@@ -560,6 +562,10 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 [abcmidi]
 build_from_source = true
 
+[aget]
+source = "sources"
+arch = "i686"
+
 [algernon]
 build_for = ["i686"]
 build_from_source = true
@@ -738,6 +744,10 @@ build_from_source = true
 
 [krb5]
 prebuilt = true
+
+[lazygit]
+source = "sources"
+arch = "i686"
 
 [libclc]
 build_from_source = true
@@ -931,15 +941,15 @@ build_for = ["i686"]
 source = "sources"
 nvchecker = { source = "github", github = "raysan5/raylib", use_latest_release = true }
 
-[rofi]
-build_from_source = true
-
 [rfxgen]
 source = "sources"
 nvchecker = { source = "github", github = "raysan5/rfxgen", use_max_tag = true }
 
 [ripgrep]
 build_for = ["i686"]
+
+[rofi]
+build_from_source = true
 
 [scummvm]
 source = "sources"
@@ -1008,23 +1018,23 @@ source = "sources"
 [tinyhat-gui]
 source = "sources"
 
-[tinyhat-sounds]
-source = "sources"
-
-[tinyhat-status]
+[tinyhat-midibench]
 source = "sources"
 
 [tinyhat-play]
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/tinyhat-play", prefix = "v", use_max_tag = true }
 
-[tinyhat-midibench]
-source = "sources"
-
 [tinyhat-retro]
 source = "sources"
 
+[tinyhat-sounds]
+source = "sources"
+
 [tinyhat-splash]
+source = "sources"
+
+[tinyhat-status]
 source = "sources"
 
 [tinyxxd]
@@ -1040,12 +1050,16 @@ excluded = true
 [vice]
 source = "sources"
 
+[vte3]
+excluded = true
+
+[wallutils]
+source = "sources"
+arch = "i686"
+
 ["wlroots0.20"]
 source = "sources"
 nvchecker = { source = "gitlab", gitlab = "wlroots/wlroots", host = "gitlab.freedesktop.org", use_max_tag = true, include_regex = "0\\.20\\.\\d+" }
-
-[vte3]
-excluded = true
 
 [wpewebkit]
 excluded = true
