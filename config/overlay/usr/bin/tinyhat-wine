@@ -16,6 +16,8 @@ export WINEDEBUG=-all
 WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=d" wineboot -i >/dev/null 2>&1 || fail "Could not set up ~/.wine."
 wine reg add 'HKCU\Software\Wine\Drivers' /v Graphics /d wayland /f >/dev/null 2>&1
 wine reg add 'HKCU\Software\Wine\DllOverrides' /v winemenubuilder.exe /d '' /f >/dev/null 2>&1
+printf '\nInstalling the Microsoft core fonts and the Visual C++ 6 runtime...\n'
+winetricks -q corefonts vcrun6 || printf '\nCould not install the core fonts or the Visual C++ 6 runtime. Try again later with "winetricks corefonts vcrun6".\n'
 wineserver -w
 printf '\nWine is ready. Start Windows programs with "wine program.exe", or run .exe files directly.\nPress Enter to close.\n'
 read -r _
