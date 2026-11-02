@@ -1,0 +1,58 @@
+#!/bin/sh
+# Fetch the dwl recipe from the main branch of github.com/xyproto/tinyhat, build it here and install it.
+# It builds against the libraries installed on this system, so no new image or reboot is needed.
+set -eu
+repo=https://github.com/xyproto/tinyhat
+work=${XDG_CACHE_HOME:-$HOME/.cache}/tinyhat-install-dwl
+fail() {
+	printf 'tinyhat-install-dwl-from-main: %s\n' "$1" >&2
+	exit 1
+}
+[ "$(id -u)" != 0 ] || fail "run this as a normal user, not as root"
+case $(uname -m) in
+aarch64) arch=aarch64 conf=makepkg-tinyhat-aarch64.conf ignorearch=-A ;;
+*) arch=i686 conf=makepkg-tinyhat.conf ignorearch= ;;
+esac
+
+echo "Fetching the dwl recipe from $repo (main)..."
+rm -rf "$work/tinyhat" "$work/build" "$work/pkg"
+mkdir -p "$work/src" "$work/pkg"
+git clone -q --depth 1 --branch main --filter=blob:none --sparse "$repo" "$work/tinyhat" || fail "could not fetch $repo"
+git -C "$work/tinyhat" sparse-checkout set --no-cone /packages/dwl/ '/config/makepkg*.conf' || fail "could not fetch the dwl recipe"
+recipe=$work/tinyhat/packages/dwl
+[ -f "$recipe/PKGBUILD" ] || fail "$repo has no packages/dwl/PKGBUILD"
+echo "Recipe from commit $(git -C "$work/tinyhat" rev-parse --short HEAD)"
+
+# The build machine's configuration, with the paths and download tools of this system
+sed -i "s|/tinyhat/config/|$work/tinyhat/config/|" "$work"/tinyhat/config/makepkg*.conf
+cat >"$work/makepkg.conf" <<EOF
+TINYHAT_ARCH=$arch
+source $work/tinyhat/config/$conf
+DLAGENTS=('file::/usr/bin/curl -qgC - -o %o %u'
+          'ftp::/usr/bin/curl -qgfC - --ftp-pasv --retry 3 --retry-delay 3 -o %o %u'
+          'http::/usr/bin/curl -qgb "" -fLC - --retry 3 --retry-delay 3 -o %o %u'
+          'https::/usr/bin/curl -qgb "" -fLC - --retry 3 --retry-delay 3 -o %o %u')
+BUILDENV=(!distcc color !ccache !check !sign)
+MAKEFLAGS="-j$(nproc)"
+BUILDDIR=$work/build
+PKGDEST=$work/pkg
+SRCDEST=$work/src
+SRCPKGDEST=$work/build
+LOGDEST=$work/build
+EOF
+
+deps=$(sed -n 's/^\t*\(make\)\{0,1\}depends = //p' "$recipe/.SRCINFO")
+missing=$(pacman -T fakeroot patch make gcc binutils pkgconf $deps || true)
+if [ -n "$missing" ]; then
+	echo "Installing what the build needs:" $missing
+	doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "could not update the package database"
+	doas /usr/lib/tinyhat/pacman -S --needed --noconfirm --asdeps $missing || fail "could not install" $missing
+fi
+
+echo "Building dwl..."
+(cd "$recipe" && makepkg --config "$work/makepkg.conf" -f --noconfirm $ignorearch) || fail "the build failed"
+set -- "$work"/pkg/dwl-*.pkg.tar.*
+[ -f "$1" ] || fail "the build made no package"
+doas /usr/lib/tinyhat/pacman -U --noconfirm "$@" || fail "could not install $*"
+rm -rf "$work/build" "$work/pkg"
+echo "dwl is installed. Quit dwl (Win+Shift+Q) and type tinyhat-session to start the new build."
