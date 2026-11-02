@@ -1,3 +1,6 @@
+VERSION := 1.0.6
+KVER := 7.3
+
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
@@ -47,8 +50,6 @@ run: container
 		-audiodev coreaudio,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000 -display cocoa,zoom-to-fit=on
 else
-VERSION := 1.0.6
-KVER := 7.3
 export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
