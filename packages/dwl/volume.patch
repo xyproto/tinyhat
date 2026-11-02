@@ -1,0 +1,191 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -254,6 +254,7 @@
+ 	char ltsymbol[16];
+ 	Client *tasks[32];
+ 	int taskx[33], ntasks, taskhover;
++	int volx0, volx1;
+ 	int asleep;
+ 	Drwl *drw;
+ 	Buffer *pool[2];
+@@ -748,6 +749,8 @@
+ 	/* This event is forwarded by the cursor when a pointer emits an axis event,
+ 	 * for example when you move the scroll wheel. */
+ 	struct wlr_pointer_axis_event *event = data;
++	struct wlr_scene_node *node;
++	struct wlr_scene_buffer *buffer;
+ 	const Axis *a;
+ 	unsigned int adir;
+ 	struct wlr_keyboard *keyboard;
+@@ -759,6 +762,21 @@
+ 		adir = event->delta > 0 ? AxisDown : AxisUp;
+ 	else
+ 		adir = event->delta > 0 ? AxisRight : AxisLeft;
++	if (event->orientation == WL_POINTER_AXIS_VERTICAL_SCROLL && selmon && selmon->volx1 > selmon->volx0 &&
++			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
++			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
++		static double acc;
++		double cx = (cursor->x - selmon->m.x) * selmon->wlr_output->scale;
++		if (cx >= selmon->volx0 && cx < selmon->volx1) {
++			acc += event->delta;
++			if (fabs(acc) >= 10) {
++				Arg arg = {.v = (const char *[]){ "tinyhat-volume", acc < 0 ? "up" : "down", NULL }};
++				acc = 0;
++				spawn(&arg);
++			}
++			return;
++		}
++	}
+ 	keyboard = wlr_seat_get_keyboard(seat);
+ 	mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
+ 	for (a = axes; a < END(axes); a++) {
+@@ -1785,6 +1803,74 @@
+ 					ox + c * fw / 7, oy + r * s / 10, ox + (c + 1) * fw / 7, oy + (r + 1) * s / 10);
+ }
+ 
++static int
++speakerw(Monitor *m)
++{
++	return m->b.height * 5 / 8 * 11 / 10 + 2;
++}
++
++static void
++drawspeaker(Monitor *m, int x)
++{
++	static const char *speaker[] = {
++		"....#......", "...##....#.", "..###.#...#", "#####..#..#", "#####..#..#",
++		"#####..#..#", "#####..#..#", "..###.#...#", "...##....#.", "....#......",
++	};
++	int s = m->b.height * 5 / 8, oy = (m->b.height - s) / 2;
++	for (int r = 0; r < 10; r++)
++		for (int c = 0; c < 11; c++)
++			if (speaker[r][c] == '#')
++				inkrect(m, colors[SchemeStatus][0], x + c * s / 10, oy + r * s / 10, x + (c + 1) * s / 10, oy + (r + 1) * s / 10);
++}
++
++static int
++isvolume(const char *s, const char *p)
++{
++	return p[0] == 'V' && p[1] == ' ' && (p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3)));
++}
++
++static int
++stextw(Monitor *m, char *s)
++{
++	int w = 0;
++	char *seg = s;
++	for (char *p = s; *p; p++)
++		if (isvolume(s, p)) {
++			*p = '\0';
++			w += drwl_font_getwidth(m->drw, seg) + speakerw(m);
++			*p = 'V';
++			seg = p + 1;
++		}
++	return w + drwl_font_getwidth(m->drw, seg);
++}
++
++static int
++drawstext(Monitor *m, int x, char *s)
++{
++	char *seg = s;
++	for (char *p = s; *p; p++)
++		if (isvolume(s, p)) {
++			char *end = strstr(p, " | ");
++			*p = '\0';
++			if (*seg)
++				x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
++			*p = 'V';
++			m->volx0 = x;
++			drawspeaker(m, x);
++			drwl_setscheme(m->drw, colors[SchemeStatus]);
++			x += speakerw(m);
++			if (end)
++				*end = '\0';
++			m->volx1 = x + drwl_font_getwidth(m->drw, p + 1);
++			if (end)
++				*end = ' ';
++			seg = p + 1;
++		}
++	if (*seg)
++		x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
++	return x;
++}
++
+ static char *
+ flamesep(void)
+ {
+@@ -1808,9 +1894,9 @@
+ 	char *sep = flamesep();
+ 	int w;
+ 	if (!sep)
+-		return TEXTW(m, stext) - m->lrpad + 2;
++		return stextw(m, stext) + 2;
+ 	*sep = '\0';
+-	w = drwl_font_getwidth(m->drw, stext) + flamew(m) + drwl_font_getwidth(m->drw, sep + 3) + 2;
++	w = stextw(m, stext) + flamew(m) + stextw(m, sep + 3) + 2;
+ 	*sep = ' ';
+ 	return w;
+ }
+@@ -1835,17 +1921,19 @@
+ 		char *sep = flamesep();
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		tw = statusw(m);
++		m->volx0 = m->volx1 = 0;
++		drwl_rect(m->drw, m->b.width - tw, 0, tw, m->b.height, 1, 1);
+ 		if (sep) {
+ 			int sx = m->b.width - tw, fw = flamew(m);
+ 			*sep = '\0';
+-			sx = drwl_text(m->drw, sx, 0, drwl_font_getwidth(m->drw, stext), m->b.height, 0, stext, 0);
++			sx = drawstext(m, sx, stext);
+ 			*sep = ' ';
+ 			drwl_rect(m->drw, sx, 0, fw, m->b.height, 1, 1);
+ 			drawflame(m, sx, fw);
+ 			drwl_setscheme(m->drw, colors[SchemeStatus]);
+-			drwl_text(m->drw, sx + fw, 0, m->b.width - sx - fw, m->b.height, 0, sep + 3, 0);
++			drawstext(m, sx + fw, sep + 3);
+ 		} else {
+-			drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
++			drawstext(m, m->b.width - tw, stext);
+ 		}
+ 	}
+ 
+@@ -1930,7 +2018,7 @@
+ drawtasks(Monitor *m, int x, int w)
+ {
+ 	Client *t, *sel = focustop(m);
+-	int n = 0, bw, gap = 3, pad = m->b.height / 8 + 1, bh = m->b.height - 2 * pad - 1;
++	int n = 0, bw, total = 0, bws[32], gap = 3, pad = m->b.height / 8 + 1, bh = m->b.height - 2 * pad - 1;
+ 	int line = MAX(2, m->b.height / 12);
+ 
+ 	drwl_setscheme(m->drw, colors[SchemeNorm]);
+@@ -1941,12 +2029,19 @@
+ 	m->ntasks = n;
+ 	if (!n)
+ 		return;
+-	bw = MIN((w - gap) / n, m->b.height * 9);
++	for (int i = 0; i < n; i++)
++		total += bws[i] = MIN(m->b.height * 9, MAX(m->b.height * 2, TEXTW(m, client_get_title(m->tasks[i])) + gap));
++	if (total > w - gap)
++		for (int i = 0; i < n; i++)
++			bws[i] = MIN((w - gap) / n, m->b.height * 9);
++	m->taskx[0] = x + gap;
+ 	for (int i = 0; i < n; i++) {
+ 		int bx, active;
+ 		t = m->tasks[i];
+ 		active = t == sel && !t->isminimized;
+-		bx = m->taskx[i] = x + gap + i * bw;
++		bw = bws[i];
++		bx = m->taskx[i];
++		m->taskx[i + 1] = bx + bw;
+ 		drwl_setscheme(m->drw, colors[active ? SchemeTaskSel
+ 			: m->taskhover == i + 1 ? SchemeTaskHover
+ 			: t->isminimized ? SchemeTaskMin : SchemeTask]);
+@@ -1961,7 +2056,6 @@
+ 		drwl_rect(m->drw, bx, pad + bh - 1, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
+ 	}
+-	m->taskx[n] = x + gap + n * bw;
+ 	if (sel && !sel->isminimized && x + w - m->taskx[n] > m->b.height * 3) {
+ 		const char *title = client_get_title(sel);
+ 		int tw = TEXTW(m, title), aw = x + w - m->taskx[n];
