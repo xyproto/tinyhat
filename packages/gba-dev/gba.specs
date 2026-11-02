@@ -6,5 +6,7 @@
 *startfile:
 gba_crt0%O%s crti%O%s crtbegin%O%s
 
-*libgloss:
--lnosys
+%rename link_gcc_c_sequence gba_link_gcc_c_sequence
+
+*link_gcc_c_sequence:
+%(gba_link_gcc_c_sequence) --start-group %G %{!specs=nano.specs:-lc} %{specs=nano.specs:-lc_nano} -lgbasys --end-group
