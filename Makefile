@@ -1,4 +1,9 @@
-ifeq ($(shell uname -s),Darwin)
+UNAME := $(shell uname -s)
+
+# On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
+.PHONY: help all all_but_aarch64 img iso vdi i686 x32 32 64 arm64 aarch64 rpi4 i686_iso x32_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages fetch sources licenses lock lock-aarch64 lock-check autoupdate import srcinfo test patchcheck sourcecheck fuzzelcheck run push boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+
+ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
 BUILD_IMAGE ?= tinyhat-build
 BUILD_VOLUME ?= tinyhat-build
@@ -8,8 +13,6 @@ GOALS := $(filter-out run clean distclean,$(or $(MAKECMDGOALS),help))
 IN_CONTAINER = $(PODMAN) run --rm --privileged --security-opt label=disable --userns=keep-id \
 	-e HOME=/home/builder -v $(HOME_VOLUME):/home/builder \
 	-v $(CURDIR):/tinyhat -v $(BUILD_VOLUME):/tinyhat/build -w /tinyhat $(BUILD_IMAGE)
-
-.PHONY: $(GOALS) run clean distclean container
 
 container:
 	@$(PODMAN) machine start >/dev/null 2>&1 || true
@@ -55,6 +58,7 @@ OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
 VDI_SIZE ?= 20G
+
 # Disk space and memory while building: how many packages build at once (one per 8 GB of memory, at least 1),
 # how many compile jobs each of them may run (all cores, held back by the load limit PKG_LOAD so that packages
 # building at the same time share the cores), the ccache size, and whether downloaded package sources and the
@@ -62,9 +66,11 @@ VDI_SIZE ?= 20G
 ifeq ($(origin PKG_JOBS),undefined)
 PKG_JOBS := $(shell awk '/^MemTotal:/ { n = int($$2 / 1048576 / 8 + 0.25); print (n < 1 ? 1 : n) }' /proc/meminfo)
 endif
+
 ifeq ($(origin PKG_MAKE_JOBS),undefined)
 PKG_MAKE_JOBS := $(shell nproc)
 endif
+
 PKG_LOAD ?= $(shell nproc)
 PKG_CARGO_JOBS ?= $(shell n=$$(( $$(nproc) / $(PKG_JOBS) )); echo $$(( n < 1 ? 1 : n )))
 export PKG_JOBS PKG_MAKE_JOBS PKG_LOAD PKG_CARGO_JOBS
@@ -94,11 +100,6 @@ MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts
 
 .DELETE_ON_ERROR:
 .DEFAULT_GOAL := help
-.PHONY: help all all_but_aarch64 img iso vdi i686 x32 32 64 arm64 aarch64 rpi4 i686_iso x32_iso aarch64_iso \
-	dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign \
-	packages x32packages aarch64packages fetch sources licenses lock lock-aarch64 lock-check autoupdate import srcinfo \
-	test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 \
-	status cleantest cleanchroot clean distclean
 
 C_HEAD := \033[1;31m
 C_HEAD2 := \033[1;34m
@@ -106,6 +107,7 @@ C_GRP := \033[1;36m
 C_TGT := \033[1;33m
 C_OFF := \033[0m
 comma := ,
+
 define target
 	@printf '  $(C_TGT)%-14s$(C_OFF) %s\n' $(1) $(2)
 endef
@@ -138,6 +140,7 @@ help:
 	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
 	$(call target,qemutest,"boot the i686$(comma) x32 and aarch64 images in QEMU$(comma) one at a time")
 	$(call target,run,"boot the i686 image in QEMU")
+	$(call target,push,"build one package and install it on a running Tiny Hat over SSH (PKG=dwl HOST=ip$(comma) ARCH=x32 for the 64-bit image)")
 	$(call target,status,"show what still needs building")
 	$(call target,clean,"remove build output")
 	@printf '\n'
@@ -216,7 +219,7 @@ lock:
 	python3 scripts/mkpkgs.py libs
 	python3 scripts/pkg.py lock buildroot $(B)/seed.txt
 
-# Lock the prebuilt Arch Linux ARM packages for the aarch64 and Raspberry Pi 4 images
+# Lock the prebuilt Arch Linux ARM packages for the aarch64 and rpi4 images
 lock-aarch64:
 	python3 scripts/mkpkgs.py lock-arch aarch64
 
@@ -433,6 +436,11 @@ run: $(B)/test-usb.img
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
 
+PUSH_ARCH := $(or $(ARCH),i686)
+push: $(if $(PKG),$(B)/pkg/$(PUSH_ARCH)/$(PKG))
+	@[ -n "$(PKG)" ] && [ -n "$(HOST)" ] || { echo 'Usage: make push PKG=dwl HOST=192.168.1.20 [ARCH=x32]'; exit 1; }
+	scripts/push.sh $(if $(findstring @,$(HOST)),$(HOST),tinyhat@$(HOST)) $(REPO) $(PUSH_ARCH) $(PKG)
+
 boottest: boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4
 
 qemutest:
@@ -467,4 +475,5 @@ clean:
 
 distclean: clean
 	rm -rf vendor/pkg vendor/pkg-aarch64
+
 endif

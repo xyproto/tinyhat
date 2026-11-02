@@ -41,7 +41,7 @@ base)
 	mkdir -p "$root"
 	python3 scripts/pkg.py extract "$lock" "$repo" "$root" "$section"
 	pkgfile() { echo "$repo/$(awk -v p="$1" '$2 == p && $1 != "lib32" { print $4 }' "$lock")"; }
-	bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/include/*' 'usr/lib/*.o' usr/lib/libc_nonshared.a
+	bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/lib/*.o' usr/lib/libc_nonshared.a
 	bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
 	bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/crt*.o" "usr/lib/gcc/$triplet/*/libgcc*.a"
 	if [ "$arch" != aarch64 ]; then
@@ -58,12 +58,6 @@ base)
 	python3 scripts/mkhundetann.py "$root/usr/share/backgrounds/tinyhat/hundetann.png"
 	python3 scripts/mkpixelitos.py vendor/src/pixelitos-icon-theme-20260721.tar.gz "$root/usr/share/icons/pixelitos-dark"
 	bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
-	for p in linux-api-headers libxcrypt libglvnd glu glew glfw; do
-		bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/include/*'
-	done
-	for p in libglvnd glu glew glfw; do
-		bsdtar -xpf "$(pkgfile $p)" -C "$root" 'usr/lib/pkgconfig/*'
-	done
 	python3 scripts/mklocaldb.py "$lock" "$repo" "$root" "$section"
 	for p in $localpkgs; do
 		bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
@@ -78,13 +72,9 @@ base)
 		mkdir -p "$root/etc/ld.so.conf.d"
 		echo /usr/lib32 >"$root/etc/ld.so.conf.d/lib32.conf"
 	fi
-	rm -rf "$root/usr/lib/cmake" "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
+	rm -rf "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
 	rm -rf "$root/usr/share/icons/Adwaita" "$root/usr/share/icons/AdwaitaLegacy"
-	rm -rf "$root"/usr/include/libxml2 "$root"/usr/bin/xml2-config "$root"/usr/include/wlroots-* "$root"/usr/include/libdisplay-info "$root"/usr/share/wayland-sessions
-	find "$root/usr/lib/pkgconfig" -type f ! -name sdl3.pc ! -name sdl3-image.pc ! -name sdl3-ttf.pc ! -name raylib.pc ! -name fluidsynth.pc \
-		! -name gl.pc ! -name opengl.pc ! -name glx.pc ! -name egl.pc ! -name glesv2.pc ! -name libglvnd.pc ! -name glu.pc ! -name glew.pc ! -name glfw3.pc -delete
-	sed -i "/^Requires.private:/d" "$root/usr/lib/pkgconfig/fluidsynth.pc"
-	rm -rf "$root"/usr/share/aclocal
+	rm -rf "$root"/usr/share/wayland-sessions
 	rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
 	find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
 	for f in zsnes-bin dosbox-x scummvm dwl fuzzel grafx2-sdl3 algernon; do
