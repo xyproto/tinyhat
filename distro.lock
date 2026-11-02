@@ -2210,6 +2210,7 @@ imagemagick = { version = "7.1.2.34-2", a32 = "aee39c468775915b9a4b26602f00c7e3a
 imath = { version = "3.2.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[imath]\nsource = 'github'\ngithub = 'AcademySoftwareFoundation/Imath'\nuse_max_tag = true\nprefix = 'v'\nexclude_regex = '.*rc.*'\n" }
 impala = { version = "0.9.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[impala]\nsource = \"git\"\ngit = \"https://github.com/pythops/impala.git\"\nprefix = \"v\"\n" }
 imv = { version = "5.0.1-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[imv]\nsource = \"git\"\ngit = \"https://git.sr.ht/~exec64/imv\"\nprefix = \"v\"\n" }
+inetutils = { version = "2.8-1", nvchecker = "[inetutils]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/inetutils/\"\nregex = \"inetutils-([\\\\d\\\\.]+).tar\"\n" }
 innoextract = { version = "1.9-17", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[innoextract]\nsource = \"git\"\ngit = \"https://github.com/dscharrer/innoextract.git\"\nuse_latest_tag = true\n" }
 intel-ucode = { version = "20260925-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[intel-ucode]\nsource = \"git\"\ngit = \"https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files.git\"\nprefix = \"microcode-\"\n" }
 iproute2 = { version = "7.3.0-1", nvchecker = "[iproute2]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/network/iproute2/iproute2.git\"\nprefix = \"v\"\n" }
