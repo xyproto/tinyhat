@@ -10,7 +10,7 @@ makedepends=(flex xa autoconf automake)
 source=("vice-$pkgver.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-$pkgver.tar.gz/download"
         sdl3.patch)
 sha256sums=('8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1'
-            'c49f4647af7502d46d0e60aaa2ca044ee3b0190f2281bc2433cb20c756bfbbda')
+            '99915bc7dceea62935e54c731443ed7d81df2d17a8e5fd325eea36297141f64a')
 
 prepare() {
   cd vice-$pkgver
