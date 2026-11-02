@@ -12,6 +12,7 @@ Ctrl+Alt+N	NetSurfy web browser
 Ctrl+Alt+K	Keyboard layout selection
 Ctrl+Alt+B	Bluetooth devices
 Ctrl+Alt+W	Wi-Fi settings
+Ctrl+Alt+Y	System sound settings
 Ctrl+Alt+M	Download and run a homebrew game
 Ctrl+Alt+T	TIC-80 fantasy console
 Ctrl+Alt+D	DOSBox-X
