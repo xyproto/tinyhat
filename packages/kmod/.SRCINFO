@@ -14,7 +14,6 @@ pkgbase = kmod
 	makedepends = scdoc
 	depends = glibc
 	depends = zlib
-	depends = openssl
 	depends = xz
 	depends = zstd
 	provides = libkmod.so
