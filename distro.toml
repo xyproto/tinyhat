@@ -775,15 +775,9 @@ arch = "i686"
 [libclc]
 build_from_source = true
 
-[libcss]
-build_from_source = true
-
 [libdisplay-info]
 source = "sources"
 nvchecker = { source = "gitlab", gitlab = "emersion/libdisplay-info", host = "gitlab.freedesktop.org", use_max_tag = true }
-
-[libdom]
-source = "sources"
 
 [libepoxy]
 build_from_source = true
@@ -801,9 +795,6 @@ source = "sources"
 source = "sources"
 nvchecker = { source = "regex", url = "https://dl.suckless.org/libgrapheme/", regex = "libgrapheme-([\\d.]+)\\.tar\\.gz" }
 
-[libhubbub]
-source = "sources"
-
 [libjxl]
 prebuilt = true
 
@@ -812,12 +803,6 @@ source = "sources"
 
 [libnsgif]
 build_from_source = true
-
-[libnsutils]
-source = "sources"
-
-[libparserutils]
-source = "sources"
 
 [libresprite]
 build_from_source = true
@@ -829,16 +814,10 @@ source = "sources"
 build_for = ["i686"]
 build_from_source = true
 
-[libsvgtiny]
-build_from_source = true
-
 [libunwind]
 build_for = ["i686"]
 
 [libutf8proc]
-build_from_source = true
-
-[libwapcaplet]
 build_from_source = true
 
 [libxkbcommon]
