@@ -154,10 +154,7 @@ static void volume(char *out, size_t size)
 	*out = '\0';
 	if (!run(text, sizeof text, argv) || sscanf(text, "Volume: %lf", &v) != 1)
 		return;
-	if (strstr(text, "[MUTED]"))
-		snprintf(out, size, "muted");
-	else
-		snprintf(out, size, "%d%%", (int)(v * 100 + 0.5));
+	snprintf(out, size, "%c %d%%", strstr(text, "[MUTED]") ? 'M' : 'V', (int)(v * 100 + 0.5));
 }
 
 static void add(char *line, size_t size, const char *item)
@@ -185,11 +182,6 @@ static void status(char *line, size_t size, const char *rundir)
 		snprintf(item, sizeof item, "W %s", text);
 		add(line, size, item);
 	}
-	volume(text, sizeof text);
-	if (*text) {
-		snprintf(item, sizeof item, "V %s", text);
-		add(line, size, item);
-	}
 	glob_t g;
 	if (!glob("/sys/class/power_supply/BAT*/capacity", 0, nullptr, &g)) {
 		for (size_t i = 0; i < g.gl_pathc; i++) {
@@ -208,6 +200,9 @@ static void status(char *line, size_t size, const char *rundir)
 	struct tm tm;
 	strftime(text, sizeof text, "%Y-%m-%d %H:%M", localtime_r(&now, &tm));
 	add(line, size, text);
+	volume(text, sizeof text);
+	if (*text)
+		add(line, size, text);
 }
 
 static int refresh(void)

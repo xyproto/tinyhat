@@ -1,0 +1,80 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -920,6 +920,10 @@
+ 				click = ClkLtSymbol;
+ 			else if (cx > selmon->b.width - statusw(selmon)) {
+ 				click = ClkStatus;
++				if (event->button == BTN_LEFT && selmon->volx1 > selmon->volx0 && cx >= selmon->volx0 && cx < selmon->volx1) {
++					spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "mute", NULL }});
++					return;
++				}
+ 			} else {
+ 				click = ClkTitle;
+ 				for (i = 0; i < (unsigned int)selmon->ntasks; i++)
+@@ -1815,7 +1819,7 @@
+ }
+ 
+ static void
+-drawspeaker(Monitor *m, int x)
++drawspeaker(Monitor *m, int x, int muted)
+ {
+ 	static const char *speaker[] = {
+ 		"....#......", "...##....#.", "..###.#...#", "#####..#..#", "#####..#..#",
+@@ -1826,12 +1830,17 @@
+ 		for (int c = 0; c < 11; c++)
+ 			if (speaker[r][c] == '#')
+ 				inkrect(m, colors[SchemeStatus][0], x + c * s / 10, oy + r * s / 10, x + (c + 1) * s / 10, oy + (r + 1) * s / 10);
++	if (muted) {
++		int w = s * 11 / 10, t = MAX(2, s / 6);
++		for (int i = 0; i < w; i++)
++			inkrect(m, 0xf7768eff, x + i, oy + i * (s - t) / w, x + i + 1, oy + i * (s - t) / w + t);
++	}
+ }
+ 
+ static int
+ isvolume(const char *s, const char *p)
+ {
+-	return p[0] == 'V' && p[1] == ' ' && (p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3)));
++	return (p[0] == 'V' || p[0] == 'M') && p[1] == ' ' && (p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3)));
+ }
+ 
+ static int
+@@ -1841,9 +1850,10 @@
+ 	char *seg = s;
+ 	for (char *p = s; *p; p++)
+ 		if (isvolume(s, p)) {
++			char kind = *p;
+ 			*p = '\0';
+ 			w += drwl_font_getwidth(m->drw, seg) + speakerw(m);
+-			*p = 'V';
++			*p = kind;
+ 			seg = p + 1;
+ 		}
+ 	return w + drwl_font_getwidth(m->drw, seg);
+@@ -1856,12 +1866,13 @@
+ 	for (char *p = s; *p; p++)
+ 		if (isvolume(s, p)) {
+ 			char *end = strstr(p, " | ");
++			char kind = *p;
+ 			*p = '\0';
+ 			if (*seg)
+ 				x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+-			*p = 'V';
++			*p = kind;
+ 			m->volx0 = x;
+-			drawspeaker(m, x);
++			drawspeaker(m, x, kind == 'M');
+ 			drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 			x += speakerw(m);
+ 			if (end)
+@@ -2170,7 +2181,8 @@
+ 	if (!live)
+ 		return NULL;
+ 	for (char *p = strstr(stext, " | "); p; p = strstr(p + 1, " | "))
+-		sep = p;
++		if (!isvolume(stext, p + 3))
++			sep = p;
+ 	return sep;
+ }
+ 
