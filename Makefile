@@ -84,12 +84,21 @@ IMG_AARCH64 := tinyhat-aarch64.img
 IMG_RPI4 := tinyhat-rpi4.img
 IMGS := $(IMG_I686) $(IMG_X32) $(IMG_AARCH64) $(IMG_RPI4)
 ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_AARCH64:.img=.iso)
-VDIS := $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi) $(IMG_AARCH64:.img=.vdi)
-X86_FILES := $(IMG_I686) $(IMG_X32) $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_I686:.img=.vdi) $(IMG_X32:.img=.vdi)
+VDIS := $(ISOS:.iso=.vdi)
+X86_IMGS := $(IMG_I686) $(IMG_X32)
+X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(X86_IMGS:.img=.vdi)
+RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
+KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.4.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-i686.fragment
+MKROOTFS = TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh
+MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION)
 
 .DELETE_ON_ERROR:
 .DEFAULT_GOAL := help
-.PHONY: help all all_except_aarch64 dist_except_aarch64 distbuild_except_aarch64 img iso vdi i686 x32 32 64 aarch64 rpi4 i686_iso x32_iso aarch64_iso aarch64packages autoupdate lock lock-aarch64 lock-check fetch sources licenses packages x32packages srcinfo import run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 cleantest cleanchroot status clean distclean patchcheck sourcecheck fuzzelcheck test dist distbuild sign
+.PHONY: help all all_but_aarch64 img iso vdi i686 x32 32 64 arm64 aarch64 rpi4 i686_iso x32_iso aarch64_iso \
+	dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign \
+	packages x32packages aarch64packages fetch sources licenses lock lock-aarch64 lock-check autoupdate import srcinfo \
+	test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 \
+	status cleantest cleanchroot clean distclean
 
 C_HEAD := \033[1;31m
 C_HEAD2 := \033[1;34m
@@ -117,9 +126,9 @@ help:
 	@printf '\n$(C_GRP)Groups and releases$(C_OFF)\n'
 	$(call target,vdi,"VirtualBox disk images (i686$(comma) x32$(comma) aarch64)")
 	$(call target,all,"every .img$(comma) .iso and .vdi")
-	$(call target,all_except_aarch64,"the i686 and x32 .img$(comma) .iso and .vdi files")
+	$(call target,all_but_aarch64,"the i686 and x32 .img$(comma) .iso and .vdi files")
 	$(call target,dist,"release files in $(B)/dist$(comma) signed")
-	$(call target,dist_except_aarch64,"release files in $(B)/dist without the ARM images$(comma) signed")
+	$(call target,dist_but_aarch64,"release files in $(B)/dist without the ARM images$(comma) signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
 	$(call target,packages,"build or fetch every package the images need")
 	$(call target,lock,"update distro.lock")
@@ -161,7 +170,7 @@ vdi: $(VDIS)
 
 all: $(IMGS) $(ISOS) $(VDIS)
 
-all_except_aarch64: $(X86_FILES)
+all_but_aarch64: $(X86_FILES)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
 ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),help)))
@@ -173,7 +182,7 @@ $(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/dist
 	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py mk >$@
 
-tinyhat32.img: $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
+$(IMG_I686): $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
@@ -194,7 +203,7 @@ $(IMG_AARCH64): $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot
 	mv $@.tmp $@
 	@ls -l $@
 
-tinyhat64x32.img: $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(IMG_DEPS) $(B)/pkg/i686/grub-efi64 $(B)/pkg/i686/sbsigntools vendor/src/shim-x64-16.1-10.x86_64.rpm $(SB_KEYS)/tinyhat.cer
+$(IMG_X32): $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(IMG_DEPS) $(B)/pkg/i686/grub-efi64 $(B)/pkg/i686/sbsigntools vendor/src/shim-x64-16.1-10.x86_64.rpm $(SB_KEYS)/tinyhat.cer
 	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs efi64 $(SB_KEYS)
 	@ls -l $@
 
@@ -260,15 +269,13 @@ test: patchcheck sourcecheck fuzzelcheck
 dist: distbuild
 	@$(MAKE) --no-print-directory sign
 
-distbuild: $(IMGS) $(ISOS) $(VDIS)
-	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
-	@ls -l $(B)/dist
-
-dist_except_aarch64: distbuild_except_aarch64
+dist_but_aarch64: distbuild_but_aarch64
 	@$(MAKE) --no-print-directory sign
 
-distbuild_except_aarch64: $(X86_FILES)
-	DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION) $^
+distbuild: $(IMGS) $(ISOS) $(VDIS)
+distbuild_but_aarch64: $(X86_FILES)
+distbuild distbuild_but_aarch64:
+	$(MKDIST) $^
 	@ls -l $(B)/dist
 
 sign:
@@ -276,7 +283,7 @@ sign:
 	gpg --batch --yes --armor --detach-sign $${GPG_KEY:+-u "$$GPG_KEY"} -o $(B)/dist/SHA256SUMS.asc $(B)/dist/SHA256SUMS
 	@ls -l $(B)/dist/SHA256SUMS.asc
 
-$(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_AARCH64:.img=.iso): %.iso: %.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+$(ISOS): %.iso: %.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
 	scripts/mkiso.sh $< $@
 
 fetch: $(B)/.fetched-buildroot sources
@@ -291,13 +298,13 @@ $(B)/.fetched-buildroot: $(B)/buildroot.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg
 	@touch $@
 
-$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
+$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh $(RUST_DIST)
 	chmod -R u+rwX $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
 	python3 scripts/pkg.py extract $(B)/buildroot.lock vendor/pkg $(B)/buildroot
 	ldconfig -r $(B)/buildroot
 	scripts/postinstall.sh $(B)/buildroot $(B)/buildroot.lock vendor/pkg
-	scripts/rust.sh $(B)/buildroot vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
+	scripts/rust.sh $(B)/buildroot $(RUST_DIST)
 	@touch $@
 
 $(B)/buildroot-aarch64.lock: distro.lock scripts/distro.py
@@ -336,11 +343,11 @@ $(B)/rootfs-aarch64.lock: $(AARCH64_STAMPS) distro.lock
 $(B)/rootfs-rpi4.lock: $(AARCH64_STAMPS) distro.lock
 	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ rpi4
 
-$(B)/vmlinuz: config/kernel-i686.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
+$(B)/vmlinuz: $(KERNEL_DEPS)
 	@mkdir -p $(B)
 	scripts/mkkernel.sh $(KVER) i386 $(B)/vmlinuz $(CURDIR)/config/kernel-i686.fragment
 
-$(B)/vmlinuz-x32: config/kernel-i686.fragment config/kernel-x32.fragment vendor/src/linux-$(KVER).tar.xz scripts/mkkernel.sh scripts/kcheck.py vendor/src/xpadneo-0.10.4.tar.gz
+$(B)/vmlinuz-x32: $(KERNEL_DEPS) config/kernel-x32.fragment
 	@mkdir -p $(B)
 	scripts/mkkernel.sh $(KVER) x86_64 $(B)/vmlinuz-x32 $(CURDIR)/config/kernel-i686.fragment $(CURDIR)/config/kernel-x32.fragment
 
@@ -381,41 +388,41 @@ ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar
 ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) config/rofi/config.rasi packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
+	$(MKROOTFS) base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
 	touch $@
 
 $(B)/rootfs-x32.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x32.lock $(B)/vmlinuz-x32
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs64 $(B)/modules-x86_64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
+	$(MKROOTFS) base $(B)/rootfs64 $(B)/modules-x86_64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
 	touch $@
 
 $(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock
 	@mkdir -p $(B)/modules-aarch64
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs-aarch64 $(B)/modules-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+	$(MKROOTFS) base $(B)/rootfs-aarch64 $(B)/modules-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	touch $@
 
 $(B)/rootfs-rpi4.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-rpi4.lock
 	@mkdir -p $(B)/modules-rpi4
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh base $(B)/rootfs-rpi4 $(B)/modules-rpi4 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+	$(MKROOTFS) base $(B)/rootfs-rpi4 $(B)/modules-rpi4 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	touch $@
 
 $(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-i686
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock $(B)/licenses
+	$(MKROOTFS) finalize $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock $(B)/licenses
 	@ls -l $@
 
 $(B)/root64.sfs: $(B)/rootfs-x32.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x32
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
+	$(MKROOTFS) finalize $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@ls -l $@
 
 $(B)/root-aarch64.sfs: $(B)/rootfs-aarch64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-aarch64
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs-aarch64 $(B)/modules-aarch64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+	$(MKROOTFS) finalize $(B)/rootfs-aarch64 $(B)/modules-aarch64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	@ls -l $@
 
 $(B)/root-rpi4.sfs: $(B)/rootfs-rpi4.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-rpi4
-	TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh finalize $(B)/rootfs-rpi4 $(B)/modules-rpi4 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+	$(MKROOTFS) finalize $(B)/rootfs-rpi4 $(B)/modules-rpi4 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	@ls -l $@
 
-$(B)/test-usb.img: tinyhat32.img
-	cp --sparse=always tinyhat32.img $@
+$(B)/test-usb.img: $(IMG_I686)
+	cp --sparse=always $< $@
 	truncate -s 4G $@
 
 run: $(B)/test-usb.img
