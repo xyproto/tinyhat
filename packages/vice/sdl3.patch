@@ -796,10 +796,9 @@ index 410486a..97ea726 100644
              break;
  #ifdef HAVE_SDL_NUMJOYSTICKS
 diff --git a/src/arch/shared/sounddrv/soundsdl.c b/src/arch/shared/sounddrv/soundsdl.c
-index 412fe49..af965c3 100644
 --- a/src/arch/shared/sounddrv/soundsdl.c
 +++ b/src/arch/shared/sounddrv/soundsdl.c
-@@ -43,44 +43,9 @@
+@@ -43,44 +43,10 @@
  
  static log_t sdlaudio_log = LOG_DEFAULT;
  
@@ -842,11 +841,12 @@ index 412fe49..af965c3 100644
 -        }
 -    }
 -}
++static int sdl_priming = 1;
 +static int sdl_channels = 1;
  
  #ifdef USE_SDL2UI
  static void printdrivers(void)
-@@ -95,11 +60,16 @@ static void printdrivers(void)
+@@ -95,11 +61,16 @@
  }
  #endif
  
@@ -864,7 +864,7 @@ index 412fe49..af965c3 100644
  
      sdlaudio_log = log_open("SDLAudio");
  
-@@ -107,175 +77,64 @@ static int sdl_init(const char *param, int *speed,
+@@ -107,175 +78,81 @@
      printdrivers();
  #endif
  
@@ -924,7 +924,8 @@ index 412fe49..af965c3 100644
          return 1;
      }
 -    log_verbose(sdlaudio_log, "SDLAudio: got proper audio spec.");
--
+ 
++    log_message(sdlaudio_log, "SDLAudio: current driver: %s", SDL_GetCurrentAudioDriver());
  
 -    /* recalculate the number of fragments since the frag size might
 -     * have changed and we want to keep approximately the same
@@ -938,16 +939,17 @@ index 412fe49..af965c3 100644
 -    if (!sdl_buf) {
 -        SDL_CloseAudio();
 -        return 1;
--    }
-+    log_message(sdlaudio_log, "SDLAudio: current driver: %s", SDL_GetCurrentAudioDriver());
- 
++    sdl_channels = *channels;
++    if ((*fragsize) * (*fragnr) < *speed / 20) {
++        *fragnr = (*speed / 20 + *fragsize - 1) / *fragsize;
+     }
+-
 -    *speed = sdl_spec.freq;
 -    *fragsize = sdl_spec.samples;
 -    *fragnr = nr;
 -    SDL_PauseAudio(0);
-+    sdl_channels = *channels;
 +    sdl_len = (*fragsize) * (*fragnr);
-+    SDL_ResumeAudioStreamDevice(sdl_stream);
++    sdl_priming = 1;
      return 0;
  }
  
@@ -980,9 +982,7 @@ index 412fe49..af965c3 100644
 -    if (sdl_spec.format != AUDIO_S16MSB) {
 -        /* Swap bytes if we're on a big-endian machine, like the Macintosh */
 -        swab(pbuf, pbuf, sizeof(int16_t) * nr);
-+    while (sdl_queued() + (int)nr / sdl_channels > sdl_len) {
-+        SDL_Delay(1);
-     }
+-    }
 -#endif
 -
 -    while (total < (int)nr) {
@@ -1012,9 +1012,25 @@ index 412fe49..af965c3 100644
 -
 -    if (sdl_inptr == sdl_outptr) {
 -        sdl_full = 1;
--    }
--
++    int queued = sdl_queued();
++    if (!sdl_priming && queued == 0) {
++        sdl_priming = 1;
++        SDL_PauseAudioStreamDevice(sdl_stream);
++    }
++    while (queued + (int)nr / sdl_channels > sdl_len) {
++        if (sdl_priming) {
++            sdl_priming = 0;
++            SDL_ResumeAudioStreamDevice(sdl_stream);
++        }
++        SDL_Delay(1);
++        queued = sdl_queued();
++    }
 +    SDL_PutAudioStreamData(sdl_stream, pbuf, (int)(nr * sizeof(int16_t)));
++    if (sdl_priming && sdl_queued() >= sdl_len / 2) {
++        sdl_priming = 0;
++        SDL_ResumeAudioStreamDevice(sdl_stream);
+     }
+-
      return 0;
  }
  
@@ -1062,7 +1078,7 @@ index 412fe49..af965c3 100644
  static int sdl_resume(void)
  {
 -    SDL_PauseAudio(0);
-+    SDL_ResumeAudioStreamDevice(sdl_stream);
++    sdl_priming = 1;
      return 0;
  }
  
