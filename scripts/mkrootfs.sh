@@ -259,7 +259,7 @@ systemctl set-default multi-user.target
 	find "$root/usr/share/man" -name "*.gz" -type f -exec gunzip -f {} +
 
 	rm -f "$sfs"
-	mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 256K -noappend -quiet -no-progress -no-xattrs \
+	mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 128K -noappend -quiet -no-progress -no-xattrs \
 		-wildcards -e 'dev/*' 'proc/*' 'sys/*' 'run/*' 'tmp/*'
 	;;
 *)
