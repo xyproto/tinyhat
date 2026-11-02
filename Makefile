@@ -1,7 +1,7 @@
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
-.PHONY: help all all_but_aarch64 img iso vdi i686 x32 32 64 arm64 aarch64 rpi4 i686_iso x32_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages fetch sources licenses lock lock-aarch64 lock-check autoupdate import srcinfo test patchcheck sourcecheck fuzzelcheck run push boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all all_but_aarch64 img iso vdi i686 x32 32 64 arm64 aarch64 rpi4 i686_iso x32_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages fetch sources licenses lock lock-aarch64 lock-check autoupdate import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -140,7 +140,6 @@ help:
 	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
 	$(call target,qemutest,"boot the i686$(comma) x32 and aarch64 images in QEMU$(comma) one at a time")
 	$(call target,run,"boot the i686 image in QEMU")
-	$(call target,push,"build one package and install it on a running Tiny Hat over SSH (PKG=dwl HOST=ip$(comma) ARCH=x32 for the 64-bit image)")
 	$(call target,status,"show what still needs building")
 	$(call target,clean,"remove build output")
 	@printf '\n'
@@ -435,11 +434,6 @@ run: $(B)/test-usb.img
 		-device usb-tablet -vga std \
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
-
-PUSH_ARCH := $(or $(ARCH),i686)
-push: $(if $(PKG),$(B)/pkg/$(PUSH_ARCH)/$(PKG))
-	@[ -n "$(PKG)" ] && [ -n "$(HOST)" ] || { echo 'Usage: make push PKG=dwl HOST=192.168.1.20 [ARCH=x32]'; exit 1; }
-	scripts/push.sh $(if $(findstring @,$(HOST)),$(HOST),tinyhat@$(HOST)) $(REPO) $(PUSH_ARCH) $(PKG)
 
 boottest: boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4
 
