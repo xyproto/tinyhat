@@ -1,6 +1,6 @@
 pkgbase = orbiton
 	pkgdesc = Editor and IDE
-	pkgver = 2.74.6+f305bd1
+	pkgver = 2.74.6+b2ecdca
 	pkgrel = 1
 	url = https://github.com/xyproto/orbiton/
 	arch = i686
@@ -8,7 +8,7 @@ pkgbase = orbiton
 	makedepends = go-tinyhat
 	depends = glibc
 	options = !buildflags
-	source = orbiton-f305bd1d5cca6e2e6d953570d6b78c82e2826073.tar.gz::https://github.com/xyproto/orbiton/archive/f305bd1d5cca6e2e6d953570d6b78c82e2826073.tar.gz
-	sha256sums = 10f46d48fd5d7773525de77e1a98c26270edce09f2f15304310fd83a3f792e2f
+	source = orbiton-b2ecdca9ab884d566d465bb511b6c7575e09e8a1.tar.gz::https://github.com/xyproto/orbiton/archive/b2ecdca9ab884d566d465bb511b6c7575e09e8a1.tar.gz
+	sha256sums = edc160546a4a66fae37d17ba1e211c9f9dd1dbeabbc1e2088735e9bd013d062e
 
 pkgname = orbiton
