@@ -44,7 +44,7 @@ run: container
 		-audiodev coreaudio,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000 -display cocoa,zoom-to-fit=on
 else
-VERSION := 1.0.5
+VERSION := 1.0.6
 KVER := 7.3
 export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
 DIST_HOME ?= https://github.com/xyproto/tinyhat
