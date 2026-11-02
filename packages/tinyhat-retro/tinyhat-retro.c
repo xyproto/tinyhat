@@ -401,21 +401,18 @@ int main(int argc, char **argv)
         fprintf(stderr, "tinyhat-retro: %s\n", SDL_GetError());
         return 1;
     }
-    SDL_SetRenderVSync(renderer, 1);
     SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, (int)av.timing.sample_rate };
     audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
-    if (audio) {
-        SDL_ResumeAudioStreamDevice(audio);
-    }
+    SDL_SetRenderVSync(renderer, audio ? 0 : 1);
     load_memory();
     open_pads();
 
     const double fps = av.timing.fps > 0 ? av.timing.fps : 60.0;
     const Uint64 frame_ns = (Uint64)(1e9 / fps);
-    const int max_queued = (int)(av.timing.sample_rate * 4 / 10);
-    const int low_queued = (int)(av.timing.sample_rate * 4 / 25);
+    const int target_queued = (int)(av.timing.sample_rate * 4 / 20);
     Uint64 next = SDL_GetTicksNS();
     int skipped = 0;
+    bool priming = true;
     bool running = true;
     while (running) {
         SDL_Event e;
@@ -440,14 +437,35 @@ int main(int argc, char **argv)
             }
         }
         if (audio) {
-            if (SDL_GetAudioStreamQueued(audio) > max_queued) {
+            int queued = SDL_GetAudioStreamQueued(audio);
+            if (queued > target_queued) {
                 SDL_Delay(1);
                 continue;
             }
+            if (queued == 0 && !priming) {
+                priming = true;
+                SDL_PauseAudioStreamDevice(audio);
+            }
             core_run();
-            if (SDL_GetAudioStreamQueued(audio) >= low_queued || ++skipped > 3) {
+            int produced = SDL_GetAudioStreamQueued(audio) - queued;
+            if (priming && queued + produced >= target_queued) {
+                priming = false;
+                SDL_ResumeAudioStreamDevice(audio);
+            }
+            if (priming || queued + produced >= target_queued / 2 || ++skipped > 3) {
                 draw();
                 skipped = 0;
+            }
+            if (produced > 0) {
+                next = SDL_GetTicksNS();
+                continue;
+            }
+            next += frame_ns;
+            Uint64 now = SDL_GetTicksNS();
+            if (next > now) {
+                SDL_DelayPrecise(next - now);
+            } else if (now - next > frame_ns * 4) {
+                next = now;
             }
             continue;
         }

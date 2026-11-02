@@ -12,16 +12,19 @@ makedepends=(arm-none-eabi-binutils)
 options=(!strip)
 source=("libtonc-$_tonc.tar.gz::https://github.com/gbadev-org/libtonc/archive/$_tonc.tar.gz"
         "gba-tools-v$_tools.tar.gz::https://github.com/devkitPro/gba-tools/archive/refs/tags/v$_tools.tar.gz"
-        build-libtonc.sh gba_crt0.s gba_cart.ld gba.specs)
+        build-libtonc.sh gba_crt0.s gba_cart.ld gba.specs gba_syscalls.c)
 sha256sums=('5f5703d4c3188ddcdd770c2dc43cae7bea0780b348b1cd9eb473ba777c0aa396'
             '1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32'
-            'SKIP' 'SKIP' 'SKIP' 'SKIP')
+            'SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
 
 build() {
   rm -rf tonc-build
   mkdir tonc-build
   (cd tonc-build && sh ../build-libtonc.sh "$srcdir/libtonc-$_tonc" "$srcdir/libtonc.a")
   arm-none-eabi-gcc -mcpu=arm7tdmi -marm -c -o gba_crt0.o gba_crt0.s
+  arm-none-eabi-gcc -mcpu=arm7tdmi -mthumb -mthumb-interwork -O2 -Wall -Wextra -c -o gba_syscalls.o gba_syscalls.c
+  rm -f libgbasys.a
+  arm-none-eabi-ar rcs libgbasys.a gba_syscalls.o
   gcc $CFLAGS -o gbafix gba-tools-$_tools/src/gbafix.c $LDFLAGS
 }
 
@@ -31,6 +34,7 @@ package() {
     install -Dm644 gba_crt0.o gba_cart.ld gba.specs -t "$d/"
   done
   install -Dm644 libtonc.a "$lib/libtonc.a"
+  install -Dm644 libgbasys.a "$lib/libgbasys.a"
   install -Dm644 libtonc-$_tonc/include/*.h -t "$pkgdir/usr/arm-none-eabi/include/"
   install -Dm755 gbafix "$pkgdir/usr/bin/gbafix"
   strip --strip-unneeded "$pkgdir/usr/bin/gbafix"
