@@ -1,5 +1,5 @@
 pkgname=wallutils
-pkgver=5.14.4
+pkgver=5.14.5
 pkgrel=1
 pkgdesc="Utilities for handling monitors, resolutions and (timed) wallpapers"
 arch=(i686)
@@ -9,18 +9,21 @@ depends=(glibc)
 makedepends=(go-tinyhat)
 options=(!buildflags)
 source=("wallutils-$pkgver.tar.gz::https://github.com/xyproto/wallutils/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('b53fc7c6d681c8ce8552bda63523cad8268da063b267abc84a23c725d37bcf8a')
+sha256sums=('8b389e2ff134f331a1cbace92dbd4d6b5793005b5f5454afaad8ddeb4cded75f')
 
-# Without cgo, so no X11 or Wayland libraries: getdpi, heic2stw, lsmon, setcollection, wayinfo and xinfo
-# are left out, and "make install" skips them
 build() {
   cd wallutils-$pkgver
-  export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOARCH=386 GO386=softfloat
-  PATH="/usr/lib/go-tinyhat/bin:$PATH" make static BUILDFLAGS="-mod=vendor -trimpath -buildvcs=false"
+  export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
+  for cmd in lswallpaper setwallpaper vram; do
+    (cd cmd/$cmd && /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w")
+  done
 }
 
 package() {
   cd wallutils-$pkgver
-  make DESTDIR="$pkgdir" install
+  for cmd in lswallpaper setwallpaper vram; do
+    install -Dm755 cmd/$cmd/$cmd "$pkgdir/usr/bin/$cmd"
+    install -Dm644 cmd/$cmd/$cmd.1 "$pkgdir/usr/share/man/man1/$cmd.1"
+  done
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

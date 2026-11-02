@@ -1,6 +1,6 @@
 pkgbase = wallutils
 	pkgdesc = Utilities for handling monitors, resolutions and (timed) wallpapers
-	pkgver = 5.14.4
+	pkgver = 5.14.5
 	pkgrel = 1
 	url = https://github.com/xyproto/wallutils
 	arch = i686
@@ -8,7 +8,7 @@ pkgbase = wallutils
 	makedepends = go-tinyhat
 	depends = glibc
 	options = !buildflags
-	source = wallutils-5.14.4.tar.gz::https://github.com/xyproto/wallutils/archive/refs/tags/v5.14.4.tar.gz
-	sha256sums = b53fc7c6d681c8ce8552bda63523cad8268da063b267abc84a23c725d37bcf8a
+	source = wallutils-5.14.5.tar.gz::https://github.com/xyproto/wallutils/archive/refs/tags/v5.14.5.tar.gz
+	sha256sums = 8b389e2ff134f331a1cbace92dbd4d6b5793005b5f5454afaad8ddeb4cded75f
 
 pkgname = wallutils

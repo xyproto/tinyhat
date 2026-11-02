@@ -9,7 +9,6 @@ set -l confdir (set -q XDG_CONFIG_HOME[1]; and echo $XDG_CONFIG_HOME; or echo $H
 set -l hidemark $confdir/hide-help
 set -l modefile $confdir/wallpaper
 set -l rundir (set -q XDG_RUNTIME_DIR[1]; and echo $XDG_RUNTIME_DIR; or echo /tmp)
-set -l pidfile $rundir/tinyhat-swaybg.pid
 set -l bar $rundir/tinyhat-bar
 
 # How the backgrounds cycle: help → centered image → black → teal → tiled → filled → back to help
@@ -43,8 +42,9 @@ case "--toggle"
 	end
 end
 
-set -l args
 set -l color 1a1b26
+set -l wall none
+set -l help none
 set -l mode (cat $modefile 2>/dev/null)
 switch "$mode"
 case 0
@@ -52,34 +52,20 @@ case 0
 case 1
 	set color 000000
 case 2
-	set args -m fill -c 1a1b26 -i /usr/share/backgrounds/archlinux/small.png
+	set wall fill /usr/share/backgrounds/archlinux/small.png
 case 4
-	set args -m center -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png
+	set wall center /usr/share/backgrounds/tinyhat/wirehat.png
 case 5
-	set args -m tile -c 1a1b26 -i /usr/share/backgrounds/tinyhat/hundetann.png
+	set wall tile /usr/share/backgrounds/tinyhat/hundetann.png
 case '*'
 	# The help screen, with the sorting-key hints on top, unless they were hidden
-	set args -m left -c 1a1b26 -i /usr/share/backgrounds/tinyhat/wirehat.png
+	set wall left /usr/share/backgrounds/tinyhat/wirehat.png
 	if not test -e $hidemark
-		set args $args -t /etc/tinyhat/help.txt
+		set help /etc/tinyhat/help.txt
 	end
 end
 
-# Plain colors are drawn by dwl itself, images by a new swaybg bottom layer that replaces the old one
-set -l old (cat $pidfile 2>/dev/null)
+# dwl draws the color, the image and the help panel
 if test -p $bar
-	echo "rootcolor $color" > $bar
-else if not set -q args[1]
-	set args -c $color
-end
-if set -q args[1]
-	swaybg $args &
-	echo $last_pid > $pidfile
-else
-	rm -f $pidfile
-end
-set -l comm (cat /proc/$old/comm 2>/dev/null)
-if test -n "$old"; and test "$comm" = swaybg
-	set -q args[1]; and sleep 0.3
-	kill $old
+	printf 'rootcolor %s\nwallpaper %s\nhelptext %s\n' $color "$wall" $help >$bar
 end
