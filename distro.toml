@@ -53,7 +53,7 @@ deny = [
     "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
 ]
 exclude = [
-    "usr/include",
+    # Headers, pkg-config, CMake and aclocal files stay, so programs can be built on Tiny Hat
     "usr/share/man/[a-z][a-z]",
     "usr/share/man/[a-z][a-z]_*",
     "usr/share/man/[a-z][a-z].*",
@@ -66,11 +66,6 @@ exclude = [
     "usr/share/help",
     "usr/share/locale",
     "usr/share/i18n",
-    "usr/share/aclocal",
-    "usr/share/pkgconfig",
-    "usr/lib/pkgconfig",
-    "usr/lib/cmake",
-    "usr/share/cmake",
     "usr/share/gir-1.0",
     "usr/share/vala",
     "usr/share/bash-completion",
