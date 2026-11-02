@@ -1,0 +1,48 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -100,7 +100,7 @@
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
+ 	LyrIMPopup, LyrBlock, NUM_LAYERS }; /* scene layers */
+ enum { AxisUp, AxisRight, AxisDown, AxisLeft };
+-enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot, ClkMenu }; /* clicks */
++enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot, ClkMenu, ClkNone }; /* clicks */
+ 
+ typedef union {
+ 	int i;
+@@ -428,6 +428,7 @@
+ static void virtualkeyboard(struct wl_listener *listener, void *data);
+ static void virtualpointer(struct wl_listener *listener, void *data);
+ static Monitor *xytomon(double x, double y);
++static int ondesktop(double x, double y);
+ static void xytonode(double x, double y, struct wlr_surface **psurface,
+ 		Client **pc, LayerSurface **pl, double *nx, double *ny);
+ static void zoom(const Arg *arg);
+@@ -869,6 +870,8 @@
+ 	xytonode(cursor->x, cursor->y, NULL, &c, NULL, NULL, NULL);
+ 	if (c)
+ 		click = ClkClient;
++	else if (!ondesktop(cursor->x, cursor->y))
++		click = ClkNone; /* a border, a letterbox, a layer surface or the bar */
+ 
+ 	switch (event->state) {
+ 	case WL_POINTER_BUTTON_STATE_PRESSED:
+@@ -4155,6 +4158,18 @@
+ 	return o ? o->data : NULL;
+ }
+ 
++/* Whether there is nothing but the background under (x, y) */
++int
++ondesktop(double x, double y)
++{
++	int layer;
++
++	for (layer = NUM_LAYERS - 1; layer > LyrBg; layer--)
++		if (wlr_scene_node_at(&layers[layer]->node, x, y, NULL, NULL))
++			return 0;
++	return 1;
++}
++
+ void
+ xytonode(double x, double y, struct wlr_surface **psurface,
+ 		Client **pc, LayerSurface **pl, double *nx, double *ny)
