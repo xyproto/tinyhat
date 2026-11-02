@@ -31,7 +31,7 @@ index 5da2dc3..ec0030d 100644
  if(UNIX)
  	if(APPLE)
 diff --git a/src/ft2_audio.c b/src/ft2_audio.c
-index 9ffb2dc..d8335c1 100644
+index 5e1782d..9bdfc4e 100644
 --- a/src/ft2_audio.c
 +++ b/src/ft2_audio.c
 @@ -715,16 +715,16 @@ uint64_t getChQueueTimestamp(void)
@@ -225,7 +225,7 @@ index 9ffb2dc..d8335c1 100644
  
  	freeAudioBuffers();
 diff --git a/src/ft2_audio.h b/src/ft2_audio.h
-index c7e9447..8b164e4 100644
+index e486e53..3032380 100644
 --- a/src/ft2_audio.h
 +++ b/src/ft2_audio.h
 @@ -2,7 +2,7 @@
@@ -246,7 +246,7 @@ index c7e9447..8b164e4 100644
  	uint32_t wantFreq, haveFreq, wantSamples, haveSamples;
  } audio_t;
  
-@@ -129,6 +129,7 @@ void increaseMasterVol(void);
+@@ -130,6 +130,7 @@ void increaseMasterVol(void);
  
  void calcPanningTable(void);
  void setAudioAmp(int16_t amp, int16_t masterVol, bool bitDepth32Flag);
@@ -311,7 +311,7 @@ index 2f56f8d..3ae273b 100644
  	setScrollBarEnd(SB_AUDIO_OUTPUT_SCROLL, audio.outputDeviceNum);
  	setScrollBarPos(SB_AUDIO_OUTPUT_SCROLL, 0, DONT_TRIGGER_CALLBACK);
 diff --git a/src/ft2_config.c b/src/ft2_config.c
-index 39edd79..2f74715 100644
+index 75ef7e5..4b9c703 100644
 --- a/src/ft2_config.c
 +++ b/src/ft2_config.c
 @@ -177,7 +177,7 @@ static void loadConfigFromBuffer(bool defaults)
@@ -469,7 +469,7 @@ index e122079..52d0730 100644
  #include <stdbool.h>
  
 diff --git a/src/ft2_header.h b/src/ft2_header.h
-index 4851a23..8057846 100644
+index b8b39e2..2b282fb 100644
 --- a/src/ft2_header.h
 +++ b/src/ft2_header.h
 @@ -1,8 +1,12 @@
@@ -783,10 +783,10 @@ index d7c99c7..74376ec 100644
  #endif
  }
 diff --git a/src/ft2_sysreqs.c b/src/ft2_sysreqs.c
-index ef9bb82..6577299 100644
+index 2ccd08e..9deaf8c 100644
 --- a/src/ft2_sysreqs.c
 +++ b/src/ft2_sysreqs.c
-@@ -209,7 +209,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
+@@ -211,7 +211,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
  	if (ui.sysReqShown)
  		return 0;
  
@@ -795,7 +795,7 @@ index ef9bb82..6577299 100644
  
  	ui.sysReqShown = true;
  	mouseAnimOff();
-@@ -309,7 +309,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
+@@ -311,7 +311,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
  
  			if (inputEvent.type == SDL_KEYDOWN)
  			{
@@ -804,7 +804,7 @@ index ef9bb82..6577299 100644
  				{
  					if (!inputEvent.key.repeat) // don't let previously held-down ESC immediately close the box
  					{
-@@ -317,7 +317,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
+@@ -319,7 +319,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
  						ui.sysReqShown = false;
  					}
  				}
@@ -813,7 +813,7 @@ index ef9bb82..6577299 100644
  				{
  					returnVal = 1;
  					ui.sysReqShown = false;
-@@ -327,7 +327,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
+@@ -329,7 +329,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
  
  				for (uint16_t i = 0; i < numButtons; i++)
  				{
@@ -822,16 +822,16 @@ index ef9bb82..6577299 100644
  					{
  						returnVal = i + 1;
  						ui.sysReqShown = false;
-@@ -401,7 +401,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
+@@ -403,7 +403,7 @@ int16_t okBox(int16_t type, const char *headline, const char *text, void (*check
  
  	showBottomScreen();
  
 -	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 +	SDL_SetEventEnabled(SDL_DROPFILE, true);
- 	return returnVal;
- }
  
-@@ -454,7 +454,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+ 	if (wasBusy)
+ 		mouseAnimOn();
+@@ -462,7 +462,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  		return 0;
  	}
  
@@ -840,7 +840,7 @@ index ef9bb82..6577299 100644
  
  	ui.sysReqShown = true;
  	mouseAnimOff();
-@@ -507,7 +507,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+@@ -515,7 +515,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  
  	mouse.lastEditBox = 0;
  	editor.editTextFlag = true;
@@ -849,7 +849,7 @@ index ef9bb82..6577299 100644
  
  	mouse.lastUsedObjectType = OBJECT_NONE;
  	mouse.lastUsedObjectID = OBJECT_ID_NONE;
-@@ -545,7 +545,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+@@ -553,7 +553,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  						continue;
  					}
  
@@ -858,7 +858,7 @@ index ef9bb82..6577299 100644
  					if (inputText != NULL)
  					{
  						if (inputText[0] != '\0')
-@@ -557,12 +557,12 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+@@ -565,12 +565,12 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  			}
  			else if (inputEvent.type == SDL_KEYDOWN)
  			{
@@ -873,7 +873,7 @@ index ef9bb82..6577299 100644
  				{
  					returnVal = 1;
  					ui.sysReqShown = false;
-@@ -572,13 +572,13 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+@@ -580,13 +580,13 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  
  				if (editor.editTextFlag)
  				{
@@ -889,7 +889,7 @@ index ef9bb82..6577299 100644
  						{
  							if (type == 6 && returnVal == 2)
  							{
-@@ -658,7 +658,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+@@ -666,7 +666,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  	}
  
  	editor.editTextFlag = false;
@@ -898,15 +898,15 @@ index ef9bb82..6577299 100644
  
  	for (uint16_t i = 0; i < numButtons; i++)
  		hidePushButton(i);
-@@ -672,7 +672,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
+@@ -680,7 +680,7 @@ int16_t inputBox(int16_t type, const char *headline, char *edText, uint16_t maxS
  
  	showBottomScreen();
  
 -	SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 +	SDL_SetEventEnabled(SDL_DROPFILE, true);
- 	return returnVal;
- }
  
+ 	if (wasBusy)
+ 		mouseAnimOn();
 diff --git a/src/ft2_textboxes.c b/src/ft2_textboxes.c
 index 30e1096..6848c51 100644
 --- a/src/ft2_textboxes.c
@@ -943,7 +943,7 @@ index a46210f..b7d6533 100644
  enum // TEXTBOXES
  {
 diff --git a/src/ft2_video.c b/src/ft2_video.c
-index 267052c..b86e500 100644
+index 25227fc..025965e 100644
 --- a/src/ft2_video.c
 +++ b/src/ft2_video.c
 @@ -82,9 +82,7 @@ void beginFPSCounter(void)
@@ -1062,7 +1062,7 @@ index 267052c..b86e500 100644
 +	SDL_SetWindowFullscreen(video.window, false);
  	SDL_Delay(15); // fixes possible issues
  
- 	setWindowSizeFromConfig(false); // false = do not change actual window size, only update variables
+ 	setWindowSizeFromConfig(DONT_UPDATE_RENDERER);
 @@ -801,17 +812,14 @@ void setWindowSizeFromConfig(bool updateRenderer)
  	uint8_t oldUpscaleFactor = video.windowModeUpscaleFactor;
  	if (config.windowFlags & WINSIZE_AUTO)
@@ -1116,7 +1116,7 @@ index 267052c..b86e500 100644
  	windowFlags |= SDL_WINDOW_HIDDEN;
  #endif
  
- 	setWindowSizeFromConfig(false);
+ 	setWindowSizeFromConfig(DONT_UPDATE_RENDERER);
  
 -	int32_t di = SDL_GetWindowDisplayIndex(video.window);
 -	if (di < 0)
