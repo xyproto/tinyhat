@@ -11,5 +11,5 @@ else
 	tinyhat-status --refresh
 	tinyhat-firewall open 22
 	addr=$(tinyhat-addr)
-	notice "SSH server running: ssh tinyhat@${addr:-this-computer} (password: tinyhat)"
+	notice "SSH server running: ssh tinyhat@${addr:-this-computer}"
 fi
