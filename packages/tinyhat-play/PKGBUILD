@@ -1,7 +1,7 @@
 # Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
 
 pkgname=tinyhat-play
-pkgver=1.1.0
+pkgver=1.1.1
 pkgrel=1
 pkgdesc="Search for, download and launch homebrew games for classic gaming platforms"
 arch=(i686 x32)
@@ -10,7 +10,7 @@ license=(BSD-3-Clause)
 depends=(gtk4 curl libglvnd)
 makedepends=(fontconfig)
 source=("tinyhat-play-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('c9ab2952cd487577deb8df661cd7d2fabfc030d38d73225bc66c9c12355e489e')
+sha256sums=('5453a6909b8ad6f74cda2c560985453022b69756e84b8dedf26c1cd8792a239b')
 
 build() {
   cd tinyhat-play-$pkgver
