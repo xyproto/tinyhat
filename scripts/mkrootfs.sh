@@ -147,6 +147,8 @@ EOF
 	grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 	sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 	grep -q '^NoExtract' "$root/etc/pacman.conf"
+	sed -i 's|^SigLevel *= *Required DatabaseOptional$|& TrustAll|' "$root/etc/pacman.conf"
+	grep -q '^SigLevel *= *Required DatabaseOptional TrustAll$' "$root/etc/pacman.conf"
 	ignore=$(
 		for m in build/pkg/mode/*; do
 			[ "$(cat "$m")" = built ] && [ -f "packages/${m##*/}/.SRCINFO" ] && sed -n 's/^pkgname = //p' "packages/${m##*/}/.SRCINFO"
