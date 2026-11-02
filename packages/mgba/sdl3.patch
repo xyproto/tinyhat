@@ -78,7 +78,7 @@ diff --git a/src/platform/sdl/main.c b/src/platform/sdl/main.c
 diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
 --- a/src/platform/sdl/sdl-audio.c
 +++ b/src/platform/sdl/sdl-audio.c
-@@ -16,7 +16,82 @@
+@@ -16,7 +16,63 @@
  
  mLOG_DEFINE_CATEGORY(SDL_AUDIO, "SDL Audio", "platform.sdl.audio");
  
@@ -87,81 +87,62 @@ diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
 +#endif
 +
 +#if SDL_VERSION_ATLEAST(3, 0, 0)
-+#define TARGET_MS 40
-+#define MAX_WAIT_MS 200
++#define TARGET_MS 30
 +
-+static void _mSDLAudioDrain(struct mSDLAudio* audio) {
-+	blip_t* left = audio->core->getAudioChannel(audio->core, 0);
-+	blip_t* right = audio->core->getAudioChannel(audio->core, 1);
-+	int32_t clockRate = audio->core->frequency(audio->core);
-+	double fauxClock = 1;
-+	if (audio->sync && audio->sync->fpsTarget > 0) {
-+		fauxClock = GBAAudioCalculateRatio(1, audio->sync->fpsTarget, 1);
-+	}
-+	blip_set_rates(left, clockRate, audio->obtainedSpec.freq * fauxClock);
-+	blip_set_rates(right, clockRate, audio->obtainedSpec.freq * fauxClock);
++static int _mSDLAudioPump(void* context) {
++	struct mSDLAudio* audio = context;
++	short buffer[512 * 2];
++	while (SDL_GetAtomicInt(&audio->running)) {
++		if (SDL_GetAtomicInt(&audio->paused)) {
++			audio->priming = true;
++			SDL_Delay(5);
++			continue;
++		}
++		int queued = SDL_GetAudioStreamQueued(audio->stream);
++		if (queued == 0 && !audio->priming) {
++			audio->priming = true;
++			SDL_PauseAudioStreamDevice(audio->stream);
++		}
++		if (queued >= audio->targetBytes) {
++			if (audio->priming) {
++				audio->priming = false;
++				SDL_ResumeAudioStreamDevice(audio->stream);
++			}
++			SDL_Delay(1);
++			continue;
++		}
 +
-+	bool waiting = audio->sync && audio->sync->audioWait;
-+	int queued = SDL_GetAudioStreamQueued(audio->stream);
-+	if (waiting && queued == 0 && !audio->priming && !audio->paused) {
-+		audio->priming = true;
-+		SDL_PauseAudioStreamDevice(audio->stream);
-+	}
-+
-+	short buffer[1024 * 2];
-+	int available;
-+	while ((available = blip_samples_avail(left)) > 0) {
-+		if (available > 1024) {
-+			available = 1024;
++		blip_t* left = audio->core->getAudioChannel(audio->core, 0);
++		blip_t* right = audio->core->getAudioChannel(audio->core, 1);
++		int32_t clockRate = audio->core->frequency(audio->core);
++		double fauxClock = 1;
++		mCoreSyncLockAudio(audio->sync);
++		if (audio->sync->fpsTarget > 0) {
++			fauxClock = GBAAudioCalculateRatio(1, audio->sync->fpsTarget, 1);
++		}
++		blip_set_rates(left, clockRate, audio->obtainedSpec.freq * fauxClock);
++		blip_set_rates(right, clockRate, audio->obtainedSpec.freq * fauxClock);
++		int available = blip_samples_avail(left);
++		if (available > 512) {
++			available = 512;
 +		}
 +		blip_read_samples(left, buffer, available, 1);
 +		blip_read_samples(right, buffer + 1, available, 1);
-+		SDL_PutAudioStreamData(audio->stream, buffer, available * 4);
-+	}
++		mCoreSyncConsumeAudio(audio->sync);
 +
-+	queued = SDL_GetAudioStreamQueued(audio->stream);
-+	if (!waiting) {
-+		if (queued > audio->targetBytes * 4) {
-+			SDL_ClearAudioStream(audio->stream);
++		if (available > 0) {
++			SDL_PutAudioStreamData(audio->stream, buffer, available * 4);
++		} else {
++			SDL_Delay(1);
 +		}
-+		if (audio->priming && !audio->paused) {
-+			audio->priming = false;
-+			SDL_ResumeAudioStreamDevice(audio->stream);
-+		}
-+		return;
 +	}
-+	if (audio->priming) {
-+		if (queued >= audio->targetBytes && !audio->paused) {
-+			audio->priming = false;
-+			SDL_ResumeAudioStreamDevice(audio->stream);
-+		}
-+		return;
-+	}
-+	if (audio->paused) {
-+		return;
-+	}
-+	Uint64 start = SDL_GetTicks();
-+	while (SDL_GetAudioStreamQueued(audio->stream) > audio->targetBytes && SDL_GetTicks() - start < MAX_WAIT_MS) {
-+		SDL_Delay(1);
-+	}
-+}
-+
-+static void _mSDLPostAudioFrame(struct mAVStream* stream, int16_t left, int16_t right) {
-+	UNUSED(left);
-+	UNUSED(right);
-+	struct mSDLAudio* audio = (struct mSDLAudio*) ((char*) stream - offsetof(struct mSDLAudio, avStream));
-+	if (!audio->stream || !audio->core) {
-+		return;
-+	}
-+	if ((size_t) blip_samples_avail(audio->core->getAudioChannel(audio->core, 0)) * 2 >= audio->samples) {
-+		_mSDLAudioDrain(audio);
-+	}
++	return 0;
 +}
 +#endif
  
  bool mSDLInitAudio(struct mSDLAudio* context, struct mCoreThread* threadContext) {
  #if defined(_WIN32) && SDL_VERSION_ATLEAST(2, 0, 8)
-@@ -24,11 +99,31 @@
+@@ -24,11 +80,31 @@
  		_putenv_s("SDL_AUDIODRIVER", "directsound");
  	}
  #endif
@@ -186,14 +167,14 @@ diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
 +	context->obtainedSpec = context->desiredSpec;
 +	context->targetBytes = context->obtainedSpec.freq * TARGET_MS / 1000 * 4;
 +	context->priming = true;
-+	context->paused = false;
-+	memset(&context->avStream, 0, sizeof(context->avStream));
-+	context->avStream.postAudioFrame = _mSDLPostAudioFrame;
++	context->pump = NULL;
++	SDL_SetAtomicInt(&context->running, 0);
++	SDL_SetAtomicInt(&context->paused, 0);
 +#else
  	context->desiredSpec.freq = context->sampleRate;
  	context->desiredSpec.format = AUDIO_S16SYS;
  	context->desiredSpec.channels = 2;
-@@ -45,13 +140,18 @@
+@@ -45,13 +121,21 @@
  		mLOG(SDL_AUDIO, ERROR, "Could not open SDL sound system");
  		return false;
  	}
@@ -206,21 +187,26 @@ diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
  
 -#if SDL_VERSION_ATLEAST(2, 0, 0)
 +#if SDL_VERSION_ATLEAST(3, 0, 0)
-+		mCoreThreadInterrupt(threadContext);
-+		context->core->setAVStream(context->core, &context->avStream);
-+		mCoreThreadContinue(threadContext);
++		SDL_SetAtomicInt(&context->running, 1);
++		context->pump = SDL_CreateThread(_mSDLAudioPump, "mGBA audio", context);
++		if (!context->pump) {
++			mLOG(SDL_AUDIO, ERROR, "Could not start the SDL audio thread: %s", SDL_GetError());
++			return false;
++		}
 +#elif SDL_VERSION_ATLEAST(2, 0, 0)
  		SDL_PauseAudioDevice(context->deviceId, 0);
  #else
  		SDL_PauseAudio(0);
-@@ -63,7 +163,13 @@
+@@ -63,7 +147,15 @@
  
  void mSDLDeinitAudio(struct mSDLAudio* context) {
  	UNUSED(context);
 -#if SDL_VERSION_ATLEAST(2, 0, 0)
 +#if SDL_VERSION_ATLEAST(3, 0, 0)
-+	if (context->core) {
-+		context->core->setAVStream(context->core, NULL);
++	if (context->pump) {
++		SDL_SetAtomicInt(&context->running, 0);
++		SDL_WaitThread(context->pump, NULL);
++		context->pump = NULL;
 +	}
 +	SDL_DestroyAudioStream(context->stream);
 +	context->stream = NULL;
@@ -228,31 +214,30 @@ diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
  	SDL_PauseAudioDevice(context->deviceId, 1);
  	SDL_CloseAudioDevice(context->deviceId);
  #else
-@@ -74,7 +180,10 @@
+@@ -74,7 +166,10 @@
  }
  
  void mSDLPauseAudio(struct mSDLAudio* context) {
 -#if SDL_VERSION_ATLEAST(2, 0, 0)
 +#if SDL_VERSION_ATLEAST(3, 0, 0)
-+	context->paused = true;
++	SDL_SetAtomicInt(&context->paused, 1);
 +	SDL_PauseAudioStreamDevice(context->stream);
 +#elif SDL_VERSION_ATLEAST(2, 0, 0)
  	SDL_PauseAudioDevice(context->deviceId, 1);
  #else
  	UNUSED(context);
-@@ -83,7 +192,10 @@
+@@ -83,7 +178,9 @@
  }
  
  void mSDLResumeAudio(struct mSDLAudio* context) {
 -#if SDL_VERSION_ATLEAST(2, 0, 0)
 +#if SDL_VERSION_ATLEAST(3, 0, 0)
-+	context->paused = false;
-+	context->priming = true;
++	SDL_SetAtomicInt(&context->paused, 0);
 +#elif SDL_VERSION_ATLEAST(2, 0, 0)
  	SDL_PauseAudioDevice(context->deviceId, 0);
  #else
  	UNUSED(context);
-@@ -91,6 +203,7 @@
+@@ -91,6 +188,7 @@
  #endif
  }
  
@@ -260,7 +245,7 @@ diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
  static void _mSDLAudioCallback(void* context, Uint8* data, int len) {
  	struct mSDLAudio* audioContext = context;
  	if (!context || !audioContext->core) {
-@@ -131,3 +244,4 @@
+@@ -131,3 +229,4 @@
  		memset(((short*) data) + audioContext->obtainedSpec.channels * available, 0, (len - available) * audioContext->obtainedSpec.channels * sizeof(short));
  	}
  }
@@ -268,11 +253,8 @@ diff --git a/src/platform/sdl/sdl-audio.c b/src/platform/sdl/sdl-audio.c
 diff --git a/src/platform/sdl/sdl-audio.h b/src/platform/sdl/sdl-audio.h
 --- a/src/platform/sdl/sdl-audio.h
 +++ b/src/platform/sdl/sdl-audio.h
-@@ -10,9 +10,14 @@
+@@ -12,7 +12,11 @@
  
- CXX_GUARD_START
- 
-+#include <mgba/core/interface.h>
  #include <mgba/core/log.h>
  
 +#ifdef USE_SDL3
@@ -283,17 +265,18 @@ diff --git a/src/platform/sdl/sdl-audio.h b/src/platform/sdl/sdl-audio.h
  // Altivec sometimes defines this
  #ifdef vector
  #undef vector
-@@ -32,7 +37,13 @@
+@@ -32,7 +36,14 @@
  	// State
  	SDL_AudioSpec desiredSpec;
  	SDL_AudioSpec obtainedSpec;
 -#if SDL_VERSION_ATLEAST(2, 0, 0)
 +#if SDL_VERSION_ATLEAST(3, 0, 0)
 +	SDL_AudioStream* stream;
-+	struct mAVStream avStream;
++	SDL_Thread* pump;
++	SDL_AtomicInt running;
++	SDL_AtomicInt paused;
 +	int targetBytes;
 +	bool priming;
-+	bool paused;
 +#elif SDL_VERSION_ATLEAST(2, 0, 0)
  	SDL_AudioDeviceID deviceId;
  #endif
