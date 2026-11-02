@@ -1,0 +1,14 @@
+pkgbase = aget
+	pkgdesc = Minimalistic AUR helper
+	pkgver = 1.4.3
+	pkgrel = 1
+	url = https://github.com/xyproto/aget
+	arch = i686
+	license = BSD-3-Clause
+	makedepends = go-tinyhat
+	depends = git
+	options = !buildflags
+	source = aget-1.4.3.tar.gz::https://github.com/xyproto/aget/archive/refs/tags/v1.4.3.tar.gz
+	sha256sums = b3ddd6abd2f6d935d26aa8a3c1e14d417be2d0658e8014ea04ace6f3cf1ebeab
+
+pkgname = aget
