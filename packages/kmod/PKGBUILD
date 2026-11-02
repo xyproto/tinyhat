@@ -58,6 +58,7 @@ package() {
   install -Dm0755 "${srcdir}/depmod.script" "${pkgdir}/usr/share/libalpm/scripts/depmod"
 }
 
-eval "$(declare -f build | sed 's/-Dbuild-tests=true/-Dbuild-tests=false/')"
+depends=(${depends[@]/openssl/})
+eval "$(declare -f build | sed 's/-Dbuild-tests=true/-Dbuild-tests=false/; s/-Dopenssl=enabled/-Dopenssl=disabled/')"
 
 unset -f pkgver

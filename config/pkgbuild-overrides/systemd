@@ -1,0 +1,69 @@
+pkgname=(${pkgname[@]/systemd-tests/})
+pkgname=(${pkgname[@]/systemd-ukify/})
+unset -f package_systemd-tests package_systemd-ukify
+_keep=()
+for _d in "${makedepends[@]}"; do
+  case " apparmor bpf libbpf clang llvm linux-headers python-pefile python-pyelftools tpm2-tss libfido2 p11-kit qrencode libpwquality libmicrohttpd gnutls curl quota-tools kexec-tools iptables libarchive cryptsetup " in
+  *" $_d "*) ;;
+  *) _keep+=("$_d") ;;
+  esac
+done
+makedepends=("${_keep[@]}")
+unset _keep _d
+build() {
+  local _timeservers=({0..3}.arch.pool.ntp.org)
+  local _nameservers=('9.9.9.9#dns.quad9.net' '2620:fe::9#dns.quad9.net' '1.1.1.1#cloudflare-dns.com' '2606:4700:4700::1111#cloudflare-dns.com' '8.8.8.8#dns.google' '2001:4860:4860::8888#dns.google')
+  local _meson_options=(
+    -Dversion-tag="${_meson_version}-arch"
+    -Dvcs-tag=false
+    -Dshared-lib-tag="${_meson_version}"
+    -Dmode=release
+    -Dapparmor=disabled
+    -Dbootloader=disabled
+    -Dukify=disabled
+    -Dopenssl=disabled
+    -Dtests=false
+    -Dcoredump=false
+    -Dxenctrl=disabled
+    -Dbpf-framework=disabled
+    -Dima=false
+    -Dinstall-tests=false
+    -Dselinux=disabled
+    -Dsshdprivsepdir=/usr/share/empty.sshd
+    -Dsysupdated=disabled
+    -Dvmlinux-h=disabled
+    -Dcompat-sysv-interfaces=false
+    -Ddbuspolicydir=/usr/share/dbus-1/system.d
+    -Ddefault-dnssec=no
+    -Ddefault-kill-user-processes=false
+    -Ddefault-locale='C.UTF-8'
+    -Dlocalegen-path=/usr/bin/locale-gen
+    -Ddns-over-tls=false
+    -Dfallback-hostname='archlinux'
+    -Dnologin-path=/usr/bin/nologin
+    -Dntp-servers="${_timeservers[*]}"
+    -Ddns-servers="${_nameservers[*]}"
+    -Drpmmacrosdir=no
+    -Dsbat-distro='arch'
+    -Dsbat-distro-summary='Arch Linux'
+    -Dsbat-distro-pkgname="${pkgname}"
+    -Dsbat-distro-version="${pkgver}"
+    -Dsbat-distro-url="https://archlinux.org/packages/core/x86_64/${pkgname}/"
+  )
+  local _feature
+  for _feature in man seccomp polkit acl audit blkid kmod pam libcrypt libidn2 elfutils zlib bzip2 xz lz4 zstd xkbcommon pcre2 libmount; do
+    _meson_options+=(-D$_feature=enabled)
+  done
+  meson setup --prefix /usr --libexecdir lib --sbindir bin --buildtype plain --auto-features disabled \
+    --wrap-mode nodownload -D b_lto=true -D b_pie=true -D python.bytecompile=1 \
+    "${_systemd_src_dir}" build "${_meson_options[@]}" $MESON_EXTRA_CONFIGURE_OPTIONS
+  meson compile -C build
+}
+eval "$(
+  declare -f package_systemd | sed '
+    /systemd-ukify\//d
+    /systemd-tests\//d
+    s/ '"'"'openssl'"'"'//
+    s@etc/systemd/coredump.conf \?@@
+  '
+)"
