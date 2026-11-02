@@ -1,0 +1,18 @@
+pkgbase = wayland-protocols
+	pkgdesc = Specifications of extended Wayland protocols
+	pkgver = 1.50
+	pkgrel = 1
+	url = https://wayland.freedesktop.org/
+	arch = any
+	license = MIT
+	makedepends = wayland
+	makedepends = meson
+	source = https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.50/downloads/wayland-protocols-1.50.tar.xz
+	source = https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.50/downloads/wayland-protocols-1.50.tar.xz.sig
+	validpgpkeys = 8307C0A224BABDA1BABD0EB9A6EEEC9E0136164A
+	validpgpkeys = A66D805F7C9329B4C5D82767CCC4F07FAC641EFF
+	validpgpkeys = 34FF9526CFEF0E97A340E2E40FDE7BE0E88F5E48
+	sha256sums = 4460c20cfcf68b994a5ee206ed15fc19ad312f16c96075186e83b0e3f4aa48a5
+	sha256sums = SKIP
+
+pkgname = wayland-protocols
