@@ -20,6 +20,8 @@ case $TINYHAT_GL_VERSION in 3.[3-9] | 4.* | [5-9].*) gtk_gl=1 ;; esac
 case $TINYHAT_GLES_VERSION in 3.* | [4-9].*) gtk_gl=1 ;; esac
 [ "$TINYHAT_GL_SOFTWARE" = 1 ] && gtk_gl=
 [ -n "$gtk_gl" ] || export GSK_RENDERER="${GSK_RENDERER:-cairo}"
+# Without a GPU, OpenGL is llvmpipe, which loads LLVM into dwl (over 50 MB). The pixman renderer needs no GL
+[ "$TINYHAT_GL_SOFTWARE" = 1 ] && export WLR_RENDERER="${WLR_RENDERER:-pixman}"
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
 printf '\033[?25l'
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
