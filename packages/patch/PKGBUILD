@@ -1,0 +1,50 @@
+# Maintainer: Sébastien Luttringer <seblu@archlinux.org>
+# Contributor: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Contributor: Allan McRae <allan@archlinux.org>
+# Contributor: judd <jvinet@zeroflux.org>
+
+pkgname=patch
+pkgver=2.8.1
+pkgrel="1"
+pkgdesc='A utility to apply patch files to original sources'
+arch=(i686 x32)
+url='https://www.gnu.org/software/patch/'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'attr')
+makedepends=('ed' 'git' 'python')
+optdepends=('ed: for patch -e functionality')
+validpgpkeys=('259B3792B3D6D319212CC4DCD5BF9FEB0313653A') # Andreas Gruenbacher <andreas.gruenbacher@gmail.com>
+source=("git+https://git.savannah.gnu.org/git/patch.git?signed#tag=v${pkgver}"
+        "git+https://git.savannah.gnu.org/git/gnulib.git")
+sha256sums=('cb1143d906898c105ab8680054c82f8decc4c0b01e86dc25b23bf99d24af7175'
+            'SKIP')
+
+prepare() {
+  cd "${pkgname}"
+
+  git submodule init
+  git config submodule.gnulib.url "${srcdir}/gnulib"
+  git -c protocol.file.allow=always submodule update
+
+  ./bootstrap
+}
+
+build() {
+  cd "${pkgname}"
+  ./configure --prefix=/usr
+  make
+}
+
+check() {
+  cd "${pkgname}"
+  make check
+}
+
+package() {
+  cd "${pkgname}"
+  make DESTDIR="${pkgdir}" install
+}
+
+# vim:set ts=2 sw=2 et:
+
+unset -f pkgver

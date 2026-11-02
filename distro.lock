@@ -2141,6 +2141,7 @@ ell = { version = "0.83-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nv
 exfatprogs = { version = "1.4.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[exfatprogs]\nsource = \"git\"\ngit = \"https://github.com/exfatprogs/exfatprogs.git\"\n" }
 expat = { version = "2.9.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[expat]\nsource = \"git\"\ngit = \"https://github.com/libexpat/libexpat/\"\ninclude_regex = \"(R_)([\\\\d.*][_].*)\"\nfrom_pattern = 'R_(\\d)_(\\d)_(\\d)'\nto_pattern = '\\1.\\2.\\3'\n" }
 faad2 = { version = "2.11.4-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[faad2]\nsource = \"git\"\ngit = \"https://github.com/knik0/faad2.git\"\n" }
+fakeroot = { version = "1:2.1.4-1", nvchecker = "[fakeroot]\nsource = \"git\"\ngit = \"https://salsa.debian.org/clint/fakeroot\"\nprefix = \"upstream/\"\n" }
 fastfetch = { version = "2.70.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[fastfetch]\nsource = \"git\"\ngit = \"https://github.com/fastfetch-cli/fastfetch.git\"\nprefix = \"v\"\n" }
 fcft = { version = "3.3.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[fcft]\nsource = \"git\"\ngit = \"https://codeberg.org/dnkl/fcft.git\"\n" }
 fennel = { version = "1.6.1-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[fennel]\nsource = \"git\"\ngit = \"https://git.sr.ht/~technomancy/fennel\"\n" }
@@ -2441,6 +2442,7 @@ pacman-mirrorlist = { version = "20260322-1", a32 = "aee39c468775915b9a4b26602f0
 pam = { version = "1.7.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pam]\nsource = \"git\"\ngit = \"https://github.com/linux-pam/linux-pam.git\"\nprefix = \"v\"\n" }
 pambase = { version = "20260616-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pambase]\nsource = \"manual\"\n" }
 pango = { a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pango]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/pango.git\"\n# include_regex = '\\d+\\.\\d*[02468]\\.\\d+'\ninclude_regex = '\\d+\\.\\d+\\.\\d+'\n" }
+patch = { version = "2.8.1-1", nvchecker = "[patch]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/patch.git\"\nprefix = \"v\"\n" }
 pciutils = { version = "3.15.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pciutils]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git\"\nprefix = \"v\"\n" }
 pcmanfm = { version = "1.4.0-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pcmanfm]\nsource = \"git\"\ngit = \"https://github.com/lxde/pcmanfm.git\"\n" }
 pcre = { version = "8.45-5", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pcre]\nsource = 'regex'\nurl = 'https://sourceforge.net/projects/pcre/best_release.json'\nregex = 'pcre-([\\d.]+).tar'\n" }
@@ -2504,6 +2506,7 @@ tig = { version = "2.6.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", n
 tinycompress = { version = "1.2.16-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[tinycompress]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/tinycompress.git\"\nprefix = \"v\"\n" }
 tinyionice = { version = "1.0.4-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[tinyionice]\nsource = \"git\"\ngit = \"https://github.com/xyproto/tinyionice.git\"\nprefix = \"v\"\n" }
 tinyxml2 = { version = "11.0.0-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[tinyxml2]\nsource = \"git\"\ngit = \"https://github.com/leethomason/tinyxml2.git\"\n" }
+tllist = { version = "1.1.0-2", nvchecker = "[tllist]\nsource = \"git\"\ngit = \"https://codeberg.org/dnkl/tllist.git\"\n" }
 tpm2-tss = { version = "4.2.0-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[tpm2-tss]\nsource = \"git\"\ngit = \"https://github.com/tpm2-software/tpm2-tss.git\"\nexclude_regex = \".*(alpha|beta|rc).*\"\n" }
 ttf-dejavu = { version = "2.37+18+g9b5d1b2f-8", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[ttf-dejavu]\nsource = \"github\"\ngithub = \"dejavu-fonts/dejavu-fonts\"\nfrom_pattern = \"version_(\\\\d+)_(\\\\d+)\"\nto_pattern = \"\\\\1.\\\\2\"\nuse_max_tag = true\n" }
 ttf-jetbrains-mono = { version = "2.304-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[ttf-jetbrains-mono]\nsource = \"git\"\ngit = \"https://github.com/JetBrains/JetBrainsMono.git\"\nprefix = \"v\"\n" }
@@ -2518,6 +2521,7 @@ util-linux = { version = "2.42.4-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab76
 v4l-utils = { version = "1.32.0-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[v4l-utils]\nsource = \"git\"\ngit = \"https://git.linuxtv.org/v4l-utils.git\"\nprefix = \"v4l-utils-\"\n" }
 vulkan-icd-loader = { version = "1.4.363.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[vulkan-icd-loader]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/Vulkan-Loader.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
 wayland = { version = "1.26.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[wayland]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/wayland/wayland.git\"\nexclude_regex = '.*\\.9\\d'\n" }
+wayland-protocols = { version = "1.50-1", nvchecker = "[wayland-protocols]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/wayland/wayland-protocols.git\"\n" }
 "webrtc-audio-processing-0.3" = { version = "0.3.1-6", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[\"webrtc-audio-processing-0.3\"]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git\"\ninclude_regex = 'v0\\.3\\..*'\nprefix = \"v\"\n" }
 webrtc-audio-processing-1 = { version = "1.3-6", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[webrtc-audio-processing-1]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git\"\ninclude_regex = 'v1(\\.\\d+)*'\nprefix = \"v\"\n" }
 which = { version = "2.25-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[which]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/which/'\nregex = 'which-([\\d.]+).tar'\n" }
