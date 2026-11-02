@@ -77,6 +77,10 @@ alias update='doas pacman -Syu'
 alias cleanup='doas pacman -Rns (pacman -Qtdq)'
 alias jctl='journalctl -p 3 -xb'
 alias fixpacman='doas rm /var/lib/pacman/db.lck'
+alias lg='lazygit'
+alias s='git status'
+alias d='git diff'
+alias gd='git diff --cached'
 
 function __dos_args
     string match -rv '^/[A-Za-z?]$' -- $argv
