@@ -824,6 +824,9 @@ build_from_source = true
 [libretro-blastem]
 source = "sources"
 
+[libretro-nestopia]
+build_from_source = true
+
 [librsvg]
 build_for = ["i686"]
 build_from_source = true
