@@ -228,16 +228,19 @@ $(SB_KEYS)/tinyhat.cer:
 
 lock:
 	@mkdir -p $(B)
+	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py seed >$(B)/seed.txt
 	python3 scripts/mkpkgs.py libs
 	python3 scripts/pkg.py lock buildroot $(B)/seed.txt
 
 # Lock the prebuilt Arch Linux ARM packages for the aarch64 and rpi4 images
 lock-aarch64:
+	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py lock-arch aarch64
 
 # Lock the prebuilt Arch Linux packages for the x86_64 image
 lock-x86_64:
+	python3 scripts/srcinfo.py
 	python3 scripts/mkpkgs.py lock-arch x86_64
 
 lock-check:
@@ -269,7 +272,7 @@ autoupdate:
 	python3 scripts/autoupdate.py
 
 srcinfo:
-	python3 scripts/srcinfo.py packages/*/
+	python3 scripts/srcinfo.py $(if $(ALL),packages/*/)
 
 patchcheck: $(B)/.buildroot
 	scripts/patchcheck.sh
