@@ -1,5 +1,7 @@
 CONFIG_X86_X32_ABI=y
 CONFIG_IA32_EMULATION=y
+# Thermal zones and fan control of newer Intel laptops (64-bit only)
+CONFIG_INT340X_THERMAL=m
 CONFIG_LOCALVERSION="-tinyhat64"
 CONFIG_EFI=y
 CONFIG_EFI_STUB=y
