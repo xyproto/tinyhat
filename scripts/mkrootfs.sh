@@ -83,7 +83,7 @@ base)
 	rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
 	find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
 	for f in zsnes-bin dosbox-x scummvm dwl fuzzel grafx2-sdl3 algernon; do
-		[ "$arch" = aarch64 ] && [ "$f" = zsnes-bin ] || sstrip "$root/usr/bin/$f"
+		[ ! -e "$root/usr/bin/$f" ] || sstrip "$root/usr/bin/$f"
 	done
 	sstrip "$root"/usr/lib/libgallium-*.so
 	"$strip" --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
