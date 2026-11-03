@@ -4,7 +4,7 @@ KVER := 7.3
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
-.PHONY: help all all_but_aarch64 img iso vdi i686 x32 32 64 arm64 aarch64 rpi4 i686_iso x32_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages fetch sources licenses lock lock-aarch64 lock-check autoupdate import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all all_but_aarch64 img iso vdi i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -87,12 +87,13 @@ endif
 
 IMG_I686 := tinyhat32.img
 IMG_X32 := tinyhat64x32.img
+IMG_X86_64 := tinyhat64.img
 IMG_AARCH64 := tinyhat-aarch64.img
 IMG_RPI4 := tinyhat-rpi4.img
-IMGS := $(IMG_I686) $(IMG_X32) $(IMG_AARCH64) $(IMG_RPI4)
-ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_AARCH64:.img=.iso)
+IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64) $(IMG_AARCH64) $(IMG_RPI4)
+ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_X86_64:.img=.iso) $(IMG_AARCH64:.img=.iso)
 VDIS := $(ISOS:.iso=.vdi)
-X86_IMGS := $(IMG_I686) $(IMG_X32)
+X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
 X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(X86_IMGS:.img=.vdi)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.4.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-i686.fragment
@@ -119,27 +120,30 @@ help:
 	@printf '$(C_GRP)Images$(C_OFF)\n'
 	$(call target,32,"32-bit x86 image ($(IMG_I686))$(comma) (make i686 also works)")
 	$(call target,64,"64-bit x86 with 32-bit pointers image ($(IMG_X32))$(comma) (make x32 also works)")
+	$(call target,x86_64,"64-bit x86 image ($(IMG_X86_64))$(comma) with Arch Linux packages")
 	$(call target,arm64,"64-bit ARM UEFI image ($(IMG_AARCH64)) (make aarch64 also works)")
 	$(call target,rpi4,"64-bit ARM Raspberry Pi 4 image ($(IMG_RPI4))")
 	@printf '\n$(C_GRP)CD/DVD/USB ISO images$(C_OFF)\n'
 	$(call target,i686_iso,"32-bit x86 ISO")
 	$(call target,x32_iso,"x32 ISO")
+	$(call target,x86_64_iso,"64-bit x86 ISO")
 	$(call target,aarch64_iso,"64-bit ARM UEFI ISO")
-	$(call target,iso,"all three ISO images")
+	$(call target,iso,"all four ISO images")
 	@printf '\n$(C_GRP)Groups and releases$(C_OFF)\n'
-	$(call target,vdi,"VirtualBox disk images (i686$(comma) x32$(comma) aarch64)")
+	$(call target,vdi,"VirtualBox disk images (i686$(comma) x32$(comma) x86_64$(comma) aarch64)")
 	$(call target,all,"every .img$(comma) .iso and .vdi")
-	$(call target,all_but_aarch64,"the i686 and x32 .img$(comma) .iso and .vdi files")
+	$(call target,all_but_aarch64,"the i686$(comma) x32 and x86_64 .img$(comma) .iso and .vdi files")
 	$(call target,dist,"release files in $(B)/dist$(comma) signed")
 	$(call target,dist_but_aarch64,"release files in $(B)/dist without the ARM images$(comma) signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
 	$(call target,packages,"build or fetch every package the images need")
 	$(call target,lock,"update distro.lock")
 	$(call target,lock-check,"check that distro.lock is up to date")
+	$(call target,lock-x86_64,"lock the prebuilt Arch Linux packages for the x86_64 image")
 	$(call target,autoupdate,"update recipes to newer versions")
 	$(call target,test,"run the checks")
 	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
-	$(call target,qemutest,"boot the i686$(comma) x32 and aarch64 images in QEMU$(comma) one at a time")
+	$(call target,qemutest,"boot the i686$(comma) x32$(comma) x86_64 and aarch64 images in QEMU$(comma) one at a time")
 	$(call target,run,"boot the i686 image in QEMU")
 	$(call target,status,"show what still needs building")
 	$(call target,clean,"remove build output")
@@ -148,6 +152,8 @@ help:
 i686: $(IMG_I686)
 
 x32: $(IMG_X32)
+
+x86_64: $(IMG_X86_64)
 
 32: i686
 
@@ -163,6 +169,8 @@ i686_iso: $(IMG_I686:.img=.iso)
 
 x32_iso: $(IMG_X32:.img=.iso)
 
+x86_64_iso: $(IMG_X86_64:.img=.iso)
+
 aarch64_iso: $(IMG_AARCH64:.img=.iso)
 
 img: $(IMGS)
@@ -176,7 +184,7 @@ all: $(IMGS) $(ISOS) $(VDIS)
 all_but_aarch64: $(X86_FILES)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
-ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),help)))
+ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 lock-x86_64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),help)))
 include $(B)/pkgs.mk
 endif
 
@@ -210,6 +218,11 @@ $(IMG_X32): $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(IMG_DEPS) $(B)
 	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs efi64 $(SB_KEYS)
 	@ls -l $@
 
+# The 64-bit x86 image boots the kernel and initramfs of the x32 image, with packages from Arch Linux
+$(IMG_X86_64): $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root-x86_64.sfs $(IMG_DEPS) $(B)/pkg/i686/grub-efi64 $(B)/pkg/i686/sbsigntools vendor/src/shim-x64-16.1-10.x86_64.rpm $(SB_KEYS)/tinyhat.cer
+	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root-x86_64.sfs efi64 $(SB_KEYS)
+	@ls -l $@
+
 $(SB_KEYS)/tinyhat.cer:
 	scripts/mksbkey.sh $(SB_KEYS)
 
@@ -222,6 +235,10 @@ lock:
 # Lock the prebuilt Arch Linux ARM packages for the aarch64 and rpi4 images
 lock-aarch64:
 	python3 scripts/mkpkgs.py lock-arch aarch64
+
+# Lock the prebuilt Arch Linux packages for the x86_64 image
+lock-x86_64:
+	python3 scripts/mkpkgs.py lock-arch x86_64
 
 lock-check:
 	@mkdir -p $(B)
@@ -325,6 +342,21 @@ $(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64 scripts/postinstall.sh
 	scripts/postinstall.sh $(B)/buildroot-aarch64 $(B)/buildroot-aarch64.lock vendor/pkg-aarch64
 	@touch $@
 
+$(B)/buildroot-x86_64.lock: distro.lock scripts/distro.py
+	@mkdir -p $(B)
+	python3 scripts/distro.py lockfile buildroot-x86_64 $@
+
+$(B)/.fetched-buildroot-x86_64: $(B)/buildroot-x86_64.lock
+	python3 scripts/pkg.py fetch $< vendor/pkg-x86_64 x86_64
+	@touch $@
+
+$(B)/.buildroot-x86_64: $(B)/.fetched-buildroot-x86_64 scripts/postinstall.sh
+	chmod -R u+rwX $(B)/buildroot-x86_64 2>/dev/null || true
+	rm -rf $(B)/buildroot-x86_64
+	python3 scripts/pkg.py extract $(B)/buildroot-x86_64.lock vendor/pkg-x86_64 $(B)/buildroot-x86_64
+	scripts/postinstall.sh $(B)/buildroot-x86_64 $(B)/buildroot-x86_64.lock vendor/pkg-x86_64
+	@touch $@
+
 $(B)/seed-broken.txt: $(B)/.buildroot scripts/seedcheck.py
 	python3 scripts/seedcheck.py $(B)/buildroot $(B)/buildroot.lock vendor/pkg $@
 
@@ -334,6 +366,8 @@ x32packages: $(ROOTFS_X32_STAMPS)
 
 aarch64packages: $(AARCH64_STAMPS)
 
+x86_64packages: $(X86_64_STAMPS)
+
 $(B)/rootfs.lock: $(ROOTFS_I686_STAMPS) $(B)/image.toml
 	python3 scripts/pkg.py local image $@ $(REPO)
 
@@ -342,6 +376,9 @@ $(B)/rootfs-x32.lock: $(ROOTFS_X32_STAMPS) $(B)/image.toml
 
 $(B)/rootfs-aarch64.lock: $(AARCH64_STAMPS) distro.lock
 	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ uefi
+
+$(B)/rootfs-x86_64.lock: $(X86_64_STAMPS) distro.lock
+	python3 scripts/pkg.py archrepo x86_64 $(B)/repo-x86_64 $@
 
 $(B)/rootfs-rpi4.lock: $(AARCH64_STAMPS) distro.lock
 	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ rpi4
@@ -379,6 +416,10 @@ $(B)/.licenses-x32: $(B)/rootfs-x32.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi6
 	python3 scripts/mklicenses.py $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@touch $@
 
+$(B)/.licenses-x86_64: $(B)/rootfs-x86_64.lock $(LICENSE_DEPS) $(B)/pkg/i686/grub-efi64
+	python3 scripts/mklicenses.py $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64 x86_64
+	@touch $@
+
 $(B)/.licenses-aarch64: $(B)/rootfs-aarch64.lock $(B)/pkg/i686/licenses $(SOURCES) scripts/mklicenses.py
 	python3 scripts/mklicenses.py $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64 aarch64
 	@touch $@
@@ -398,6 +439,10 @@ $(B)/rootfs-x32.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x32.lock $(B)/vmlinu
 	$(MKROOTFS) base $(B)/rootfs64 $(B)/modules-x86_64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
 	touch $@
 
+$(B)/rootfs-x86_64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x86_64.lock $(B)/vmlinuz-x32
+	$(MKROOTFS) base $(B)/rootfs-x86_64 $(B)/modules-x86_64 $(B)/root-x86_64.sfs $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
+	touch $@
+
 $(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock
 	@mkdir -p $(B)/modules-aarch64
 	$(MKROOTFS) base $(B)/rootfs-aarch64 $(B)/modules-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
@@ -414,6 +459,10 @@ $(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-i686
 
 $(B)/root64.sfs: $(B)/rootfs-x32.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x32
 	$(MKROOTFS) finalize $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
+	@ls -l $@
+
+$(B)/root-x86_64.sfs: $(B)/rootfs-x86_64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x86_64
+	$(MKROOTFS) finalize $(B)/rootfs-x86_64 $(B)/modules-x86_64 $@ $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
 	@ls -l $@
 
 $(B)/root-aarch64.sfs: $(B)/rootfs-aarch64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-aarch64
@@ -436,15 +485,19 @@ run: $(B)/test-usb.img
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
 
-boottest: boottest-i686 boottest-x32 boottest-aarch64 boottest-rpi4
+boottest: boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4
 
 qemutest:
-	$(MAKE) -j1 boottest-i686 boottest-x32 boottest-aarch64
+	$(MAKE) -j1 boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64
 
 boottest-i686: $(IMG_I686)
 	python3 scripts/qemutest.py $<
 
 boottest-x32: $(IMG_X32)
+	python3 scripts/qemutest.py $<
+	python3 scripts/qemutest.py $< --uefi
+
+boottest-x86_64: $(IMG_X86_64)
 	python3 scripts/qemutest.py $<
 	python3 scripts/qemutest.py $< --uefi
 
@@ -469,6 +522,6 @@ clean:
 	rm -f $(IMGS) $(IMGS:=.tmp) $(ISOS) $(VDIS) $(VDIS:=.tmp)
 
 distclean: clean
-	rm -rf vendor/pkg vendor/pkg-aarch64
+	rm -rf vendor/pkg vendor/pkg-aarch64 vendor/pkg-x86_64
 
 endif
