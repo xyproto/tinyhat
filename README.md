@@ -62,7 +62,7 @@ For `make both` and `tinyhat64x32.img`, this package is also needed (for creatin
 
 For `make dist`, these packages are also needed (`virtualbox` is optional, for also creating `.vdi` files):
 
-    gnupg gtk4 libisoburn mingw-w64-gcc openssl
+    gnupg gtk4 libisoburn openssl
 
 For `make autoupdate`, these packages are also needed:
 
@@ -80,7 +80,9 @@ For `make autoupdate`, these packages are also needed:
 
 #### From Windows
 
-* Download and run the `.exe` from the [release page](https://github.com/xyproto/tinyhat/releases), which includes the image and a tiny GUI program for writing the image to a removable drive. (Experimental feature, needs testing).
+* Download the `.img.gz` file from the [release page](https://github.com/xyproto/tinyhat/releases).
+* Write it to a USB drive with [Rufus](https://rufus.ie/) or [Raspberry Pi Imager](https://www.raspberrypi.com/software/) (choose "Use custom"). Both are signed programs that most Windows systems, including company administered ones, allow.
+* Or skip the USB drive and run the `.vdi` file in [VirtualBox](https://www.virtualbox.org/).
 
 ### Booting
 
