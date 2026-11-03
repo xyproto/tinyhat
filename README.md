@@ -52,11 +52,11 @@ For `make iso`, this package is also needed:
 
     libisoburn
 
-For `make run`, `make qemutest` and `make qemutest64x32`, these packages are also needed:
+For `make run` and `make qemutest`, these packages are also needed:
 
     imagemagick qemu-system-x86
 
-For `make both` and `tinyhat64x32.img`, this package is also needed (for creating the Secure Boot signing key):
+For `make x32` and `make 64` (`tinyhat64x32.img` and `tinyhat64.img`), this package is also needed (for creating the Secure Boot signing key):
 
     openssl
 
