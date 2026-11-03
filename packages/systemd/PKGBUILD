@@ -469,7 +469,7 @@ pkgname=(${pkgname[@]/systemd-ukify/})
 unset -f package_systemd-tests package_systemd-ukify
 _keep=()
 for _d in "${makedepends[@]}"; do
-  case " apparmor bpf libbpf clang llvm linux-headers python-pefile python-pyelftools tpm2-tss libfido2 p11-kit qrencode libpwquality libmicrohttpd gnutls curl quota-tools kexec-tools iptables libarchive cryptsetup " in
+  case " apparmor bpf libbpf clang llvm linux-headers python-pefile python-pyelftools tpm2-tss libfido2 p11-kit qrencode libpwquality libmicrohttpd gnutls curl quota-tools kexec-tools iptables libarchive cryptsetup libxml2-legacy " in
   *" $_d "*) ;;
   *) _keep+=("$_d") ;;
   esac

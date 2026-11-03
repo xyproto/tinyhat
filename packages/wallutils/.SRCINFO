@@ -4,6 +4,7 @@ pkgbase = wallutils
 	pkgrel = 1
 	url = https://github.com/xyproto/wallutils
 	arch = i686
+	arch = x86_64
 	license = BSD-3-Clause
 	makedepends = go-tinyhat
 	depends = glibc

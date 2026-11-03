@@ -6,7 +6,6 @@ pkgbase = pinentry
 	arch = i686
 	arch = x32
 	license = GPL
-	makedepends = libxml2-legacy
 	depends = glibc
 	depends = ncurses
 	depends = libassuan
