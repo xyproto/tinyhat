@@ -157,6 +157,68 @@ static void volume(char *out, size_t size)
 	snprintf(out, size, "%c %d%%", strstr(text, "[MUTED]") ? 'M' : 'V', (int)(v * 100 + 0.5));
 }
 
+static bool readint(const char *path, int *out)
+{
+	auto f = fopen(path, "r");
+	if (!f)
+		return false;
+	bool ok = fscanf(f, "%d", out) == 1;
+	fclose(f);
+	return ok;
+}
+
+// True when a battery is charging or full, or a charger is connected
+static bool charging(void)
+{
+	glob_t g;
+	bool yes = false;
+	if (!glob("/sys/class/power_supply/BAT*/status", 0, nullptr, &g)) {
+		for (size_t i = 0; i < g.gl_pathc && !yes; i++) {
+			char text[32] = "";
+			auto f = fopen(g.gl_pathv[i], "r");
+			if (f && fgets(text, sizeof text, f))
+				yes = !strncmp(text, "Charging", 8) || !strncmp(text, "Full", 4);
+			if (f)
+				fclose(f);
+		}
+		globfree(&g);
+	}
+	if (!yes && !glob("/sys/class/power_supply/*/online", 0, nullptr, &g)) {
+		for (size_t i = 0; i < g.gl_pathc && !yes; i++) {
+			char type[512];
+			int online;
+			snprintf(type, sizeof type, "%.*stype", (int)(strrchr(g.gl_pathv[i], '/') + 1 - g.gl_pathv[i]), g.gl_pathv[i]);
+			auto f = fopen(type, "r");
+			char text[32] = "";
+			if (f && fgets(text, sizeof text, f))
+				yes = !strncmp(text, "Mains", 5) && readint(g.gl_pathv[i], &online) && online;
+			if (f)
+				fclose(f);
+		}
+		globfree(&g);
+	}
+	return yes;
+}
+
+// True when a temperature sensor is at 90 °C, or within 10 °C of its critical temperature
+static bool hot(void)
+{
+	glob_t g;
+	bool yes = false;
+	if (glob("/sys/class/hwmon/hwmon*/temp*_input", 0, nullptr, &g))
+		return false;
+	for (size_t i = 0; i < g.gl_pathc && !yes; i++) {
+		char crit[512];
+		int t, c;
+		if (!readint(g.gl_pathv[i], &t) || t <= 0 || t > 150000)
+			continue;
+		snprintf(crit, sizeof crit, "%.*s_crit", (int)(strlen(g.gl_pathv[i]) - strlen("_input")), g.gl_pathv[i]);
+		yes = t >= 90000 || (readint(crit, &c) && c > 20000 && c <= 150000 && t >= c - 10000);
+	}
+	globfree(&g);
+	return yes;
+}
+
 static void add(char *line, size_t size, const char *item)
 {
 	size_t len = strlen(line);
@@ -184,25 +246,25 @@ static void status(char *line, size_t size, const char *rundir)
 	}
 	glob_t g;
 	if (!glob("/sys/class/power_supply/BAT*/capacity", 0, nullptr, &g)) {
+		auto plugged = charging();
 		for (size_t i = 0; i < g.gl_pathc; i++) {
-			auto f = fopen(g.gl_pathv[i], "r");
 			int cap;
-			if (f && fscanf(f, "%d", &cap) == 1) {
-				snprintf(item, sizeof item, "B %d%%", cap);
+			if (readint(g.gl_pathv[i], &cap)) {
+				snprintf(item, sizeof item, "%c %d%%", plugged ? 'C' : 'B', cap);
 				add(line, size, item);
 			}
-			if (f)
-				fclose(f);
 		}
 		globfree(&g);
 	}
+	if (hot())
+		add(line, size, "H");
+	volume(text, sizeof text);
+	if (*text)
+		add(line, size, text);
 	auto now = time(nullptr);
 	struct tm tm;
 	strftime(text, sizeof text, "%Y-%m-%d %H:%M", localtime_r(&now, &tm));
 	add(line, size, text);
-	volume(text, sizeof text);
-	if (*text)
-		add(line, size, text);
 }
 
 static int refresh(void)
