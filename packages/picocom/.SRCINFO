@@ -1,0 +1,14 @@
+pkgbase = picocom
+	pkgdesc = Minimal dumb-terminal emulation program, very much like minicom
+	pkgver = 3.1
+	pkgrel = 3
+	url = https://github.com/npat-efault/picocom
+	arch = i686
+	arch = x32
+	license = GPL2
+	makedepends = git
+	depends = glibc
+	source = git+https://github.com/npat-efault/picocom.git#tag=3.1
+	md5sums = SKIP
+
+pkgname = picocom
