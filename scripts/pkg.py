@@ -33,7 +33,21 @@ ARCH_SOURCES = {
         "dbdir": os.path.join(TOP, "vendor", "db", "aarch64"),
         "vendordir": os.path.join(TOP, "vendor", "archlinuxarm"),
     },
+    "x86_64": {
+        "mirrors": os.environ.get("ARCH_MIRRORS", "https://geo.mirror.pkgbuild.com "
+                                  "https://mirrors.kernel.org/archlinux").split(),
+        "layout": "{repo}/os/x86_64",
+        "archive": "https://archive.archlinux.org/packages",
+        "repos": ["core", "extra"],
+        "dbdir": os.path.join(TOP, "vendor", "db", "x86_64"),
+        "vendordir": os.path.join(TOP, "vendor", "archlinux"),
+    },
 }
+
+
+def repo_url(arch, mirror, repo):
+    """The URL of a repository of another architecture on a mirror (Arch Linux and Arch Linux ARM differ)."""
+    return f"{mirror}/" + ARCH_SOURCES[arch].get("layout", "{repo}").format(repo=repo)
 
 
 def die(msg):
@@ -324,7 +338,7 @@ def arch_db(arch):
     for repo in src["repos"]:
         path = os.path.join(src["dbdir"], f"{repo}.db")
         if os.environ.get("REFRESH") or not os.path.exists(path):
-            download_any([f"{m}/{repo}/{repo}.db" for m in src["mirrors"]], path)
+            download_any([f"{repo_url(arch, m, repo)}/{repo}.db" for m in src["mirrors"]], path)
     return load_db(src["dbdir"], src["repos"])
 
 
@@ -357,7 +371,7 @@ def pkgbase(path, name):
         return name
 
 
-SEEDS = {"i686": "buildroot", "aarch64": "buildroot-aarch64"}
+SEEDS = {"i686": "buildroot", "aarch64": "buildroot-aarch64", "x86_64": "buildroot-x86_64"}
 VARIANTS = ("uefi", "rpi4")
 
 
@@ -472,7 +486,10 @@ def fetch_pkg(p, pkgdir, arch=None):
     os.makedirs(os.path.dirname(vendored), exist_ok=True)
     fn = urllib.parse.quote(p["filename"])
     if arch in ARCH_SOURCES:
-        urls = [f"{m}/{p['repo']}/{fn}" for m in ARCH_SOURCES[arch]["mirrors"]]
+        urls = [f"{repo_url(arch, m, p['repo'])}/{fn}" for m in ARCH_SOURCES[arch]["mirrors"]]
+        # Arch Linux mirrors only keep the newest version, the archive keeps them all
+        if "archive" in ARCH_SOURCES[arch]:
+            urls.append(f"{ARCH_SOURCES[arch]['archive']}/{p['name'][0]}/{p['name']}/{fn}")
     else:
         urls = [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"]
         if on_mirrors(p["filename"]):

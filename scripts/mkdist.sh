@@ -27,11 +27,11 @@ lic=$out/src/tinyhat-licenses-$ver
 mkdir -p "$lic"
 cp -a "$top/build/licenses" "$lic/tinyhat32"
 [ -d "$top/build/licenses-x32" ] && cp -a "$top/build/licenses-x32" "$lic/tinyhat64x32"
+[ -d "$top/build/licenses-x86_64" ] && cp -a "$top/build/licenses-x86_64" "$lic/tinyhat64"
 [ -d "$top/build/licenses-aarch64" ] && cp -a "$top/build/licenses-aarch64" "$lic/tinyhat-aarch64"
 [ -d "$top/build/licenses-rpi4" ] && cp -a "$top/build/licenses-rpi4" "$lic/tinyhat-rpi4"
 tgz "tinyhat-licenses-$ver"
 files="$files tinyhat-licenses-$ver.tar.gz"
-x86_64-w64-mingw32-windres "$top/programs/tinyhat-write-win32.rc" -o "$out/win-res.o"
 cd "$out"
 
 for img in "$@"; do
@@ -50,6 +50,7 @@ for img in "$@"; do
 		continue
 		;;
 	tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
+	tinyhat64*) name=tinyhat64 prog=tinyhat64 formula=tinyhat64-writer class=Tinyhat64Writer app="Tiny Hat 64 Writer" ;;
 	tinyhat-aarch64*) name=tinyhat-aarch64 prog=tinyhat-aarch64 formula=tinyhat-aarch64-writer class=TinyhatAarch64Writer app="Tiny Hat ARM Writer" ;;
 	tinyhat-rpi4*) name=tinyhat-rpi4 prog=tinyhat-rpi4 formula=tinyhat-rpi4-writer class=TinyhatRpi4Writer app="Tiny Hat Raspberry Pi 4 Writer" ;;
 	*) name=tinyhat32 prog=tinyhat formula=tinyhat-writer class=TinyhatWriter app="Tiny Hat Writer" ;;
@@ -61,9 +62,6 @@ for img in "$@"; do
 		mv "$gz.tmp" "$gz"
 	fi
 	ln -f "$gz" "$out/img.gz"
-	x86_64-w64-mingw32-gcc -Os -s -static -mwindows -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
-		-Wl,--no-insert-timestamp \
-		-o "$out/$prog-$ver.exe" "$top/programs/tinyhat-write-win32.c" "$out/win-res.o" -lcomctl32 -lshell32
 	cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
 		-o "$out/$prog-$ver-linux-x86_64" "$top/programs/tinyhat-write.c" \
 		$(pkg-config --cflags --libs gtk4)
@@ -121,9 +119,8 @@ class $class < Formula
   end
 end
 EOF
-	files="$files $name-$ver.img.gz $prog-$ver.exe $prog-$ver-linux-x86_64"
+	files="$files $name-$ver.img.gz $prog-$ver-linux-x86_64"
 done
-rm -f "$out/win-res.o"
 
 rm -f SHA256SUMS.asc
 sha256sum $files >SHA256SUMS

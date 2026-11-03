@@ -48,6 +48,12 @@ aarch64)
 	personality=
 	ignorearch=--ignorearch
 	;;
+x86_64)
+	seed=$top/build/buildroot-x86_64
+	conf=${conf%.conf}-x86_64.conf
+	personality=
+	ignorearch=--ignorearch
+	;;
 esac
 case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 mkdir -p "$repo" "$boot" "$dest/.cache" "$top/vendor/src" "$HOME/.ccache"
@@ -60,11 +66,12 @@ lookup() {
 	i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
 	x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
 	aarch64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" aarch64 "$@") ;;
+	x86_64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x86_64 "$@") ;;
 	boot) out=$(python3 "$top/scripts/pkg.py" repofiles "$boot" x32 "$@") ;;
 	esac
 	printf '%s\n' "$out" | sed "s|^$repo/|/repo/|; s|^$boot/|/bootstrap/|"
 }
-want_i686= want_x32= want_boot= want_sysroot= want_aarch64=
+want_i686= want_x32= want_boot= want_sysroot= want_aarch64= want_x86_64=
 for d in "$@"; do
 	case $d in
 	i686/*) want_i686="$want_i686 ${d#*/}" ;;
@@ -72,10 +79,11 @@ for d in "$@"; do
 	boot/*) want_boot="$want_boot ${d#*/}" ;;
 	sysroot/*) want_sysroot="$want_sysroot ${d#*/}" ;;
 	aarch64/*) want_aarch64="$want_aarch64 ${d#*/}" ;;
+	x86_64/*) want_x86_64="$want_x86_64 ${d#*/}" ;;
 	*) echo "makepkg.sh: bad dependency $d" >&2; exit 1 ;;
 	esac
 done
-i686deps=$(lookup i686 $want_i686; lookup aarch64 $want_aarch64)
+i686deps=$(lookup i686 $want_i686; lookup aarch64 $want_aarch64; lookup x86_64 $want_x86_64)
 x32deps="$(lookup x32 $want_x32) $(lookup boot $want_boot)"
 sysdeps=$(lookup sysroot $want_sysroot)
 
@@ -84,6 +92,7 @@ key=$({
 	(cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
 	cat "$top/config/makepkg.conf" "$top/config/makepkg-tinyhat.conf"
 	[ "$arch" != aarch64 ] || cat "$top/config/makepkg-aarch64.conf" "$top/config/makepkg-tinyhat-aarch64.conf"
+	[ "$arch" != x86_64 ] || cat "$top/config/makepkg-x86_64.conf" "$top/config/makepkg-tinyhat-x86_64.conf"
 	for f in $i686deps $x32deps $sysdeps; do echo "${f##*/}"; done
 } | sha256sum | cut -d' ' -f1)
 cache=$dest/.cache/$arch-$base
@@ -191,6 +200,7 @@ grep -q "^builder:" /etc/passwd || echo "builder:x:1000:1000:builder:/build:/bin
 grep -q "^builder:" /etc/group || echo "builder:x:1000:" >>/etc/group
 pacargs="--arch i686"
 [ "$arch" != aarch64 ] || pacargs="--arch aarch64 --disable-sandbox"
+[ "$arch" != x86_64 ] || pacargs="--arch x86_64"
 if [ -n "$i686deps" ]; then
 	pacman -Udd $pacargs --noconfirm --noscriptlet --overwrite "*" $i686deps
 fi
@@ -261,7 +271,7 @@ if [ -z "$nobuild" ]; then
 	} >"$cache.tmp"
 	mv "$cache.tmp" "$cache"
 	# Remove the downloaded sources that only this package uses, unless another arch of it is building
-	if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "aarch64-$base" -o -name "boot-$base" \) ! -path "$work")" ]; then
+	if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "aarch64-$base" -o -name "x86_64-$base" -o -name "boot-$base" \) ! -path "$work")" ]; then
 		exec 8>"$top/vendor/src/.lock"
 		flock 8
 		python3 "$top/scripts/pkg.py" prunable "$dir" | while IFS= read -r f; do

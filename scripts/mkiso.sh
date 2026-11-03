@@ -26,8 +26,8 @@ mkdir -p "$isod/boot/grub/i386-pc" "$isod/efi/boot" "$isod/.disk" "$tools/grub" 
 cp -a "$work/root/." "$isod/"
 uuid=$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y-%m-%d-%H-%M-%S-00)
 : >"$isod/.disk/$uuid.uuid"
-printf 'search --set=root --file /.disk/%s.uuid\nset prefix=($root)/boot/grub\nset th_mode=none\n' "$uuid" >"$tools/eficfg"
-printf 'set th_mode=none\n# tinyhat\n' >"$tools/pccfg"
+printf 'search --set=root --file /.disk/%s.uuid\nset prefix=($root)/boot/grub\nset th_mode=none\nset th_iso=1\n' "$uuid" >"$tools/eficfg"
+printf 'set th_mode=none\nset th_iso=1\n# tinyhat\n' >"$tools/pccfg"
 bsdtar -xf "$(pkg grub)" -C "$tools/grub" usr/bin/grub-mkimage usr/lib/grub/i386-pc usr/lib/grub/i386-efi
 if [ "$name" = tinyhat-aarch64 ]; then
 	mkdir -p "$tools/grubarm/usr/lib/grub"
@@ -48,7 +48,7 @@ if [ "$name" = tinyhat-aarch64 ]; then
 	rm -rf "$isod" "$tools"
 	exit 0
 fi
-if [ "$name" = tinyhat64x32 ]; then
+if [ "$name" = tinyhat64x32 ] || [ "$name" = tinyhat64 ]; then
 	bsdtar -xf "$(pkg grub-efi64)" -C "$tools/grub64" opt/grub-efi64/usr/bin/grub-mkimage opt/grub-efi64/usr/lib/grub/x86_64-efi
 fi
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
@@ -57,7 +57,7 @@ fi
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	/img/isotools/grub/usr/bin/grub-mkimage -d /img/isotools/grub/usr/lib/grub/i386-pc -O i386-pc-eltorito \
 	-o /img/iso/boot/grub/i386-pc/eltorito.img -c /img/isotools/pccfg -p /boot/grub $pc_modules
-if [ "$name" = tinyhat64x32 ]; then
+if [ "$name" = tinyhat64x32 ] || [ "$name" = tinyhat64 ]; then
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 		/img/isotools/grub64/opt/grub-efi64/usr/bin/grub-mkimage -d /img/isotools/grub64/opt/grub-efi64/usr/lib/grub/x86_64-efi -O x86_64-efi \
 		-o /img/iso/efi/boot/bootx64.efi -c /img/isotools/eficfg -p /boot/grub $efi_modules

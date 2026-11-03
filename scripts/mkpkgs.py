@@ -568,8 +568,10 @@ def cmd_mk():
         x32_index = (kept, kept_provides)
     rootfs_x32 = pkg.resolve_targets(targets, {"i686": (as_built, local_provides), "x32": x32_index}, "x32", lprefs, skip)
     aarch64_stamps = arch_rules(lines, "aarch64", by_base, prefs)
+    x86_64_stamps = arch_rules(lines, "x86_64", by_base, prefs)
     print("I686_STAMPS := " + " ".join(i686_stamps))
     print("AARCH64_STAMPS := " + " ".join(aarch64_stamps))
+    print("X86_64_STAMPS := " + " ".join(x86_64_stamps))
     print("X32_STAMPS := " + " ".join(x32_stamps))
     print("ROOTFS_I686_STAMPS := " + " ".join(stamps_for(rootfs_i686)))
     print("ROOTFS_X32_STAMPS := " + " ".join(stamps_for(rootfs_x32)))
@@ -650,11 +652,11 @@ def needed_bases(text):
 
 def needed_recipes(infos, text):
     """The recipes needed for the images: the ones the images and the Makefile use (from the text of
-    build/pkgs.mk) and the aarch64 builds, and everything their recipes depend on, at build time or at run
+    build/pkgs.mk) and the aarch64 and x86_64 builds, and everything their recipes depend on, at build time or at run
     time, whether or not that ends up built here."""
     names, provided, base_of = local_index(infos, ("arch", "tinyhat"))
     by_base = {i["base"]: i for i in infos}
-    need = set(needed_bases(text)) | set(distro.lock().get("build-aarch64", {}))
+    need = set(needed_bases(text)) | set(distro.lock().get("build-aarch64", {})) | set(distro.lock().get("build-x86_64", {}))
     todo = [b for b in need if b in by_base]
     while todo:
         info = by_base[todo.pop()]

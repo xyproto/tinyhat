@@ -7,7 +7,7 @@ import tomllib
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DISTRO = os.path.join(TOP, "distro.toml")
 LOCK = os.path.join(TOP, "distro.lock")
-SECTIONS = ["image", "image-aarch64", "buildroot", "providers", "mirrors", "sources"]
+SECTIONS = ["image", "image-aarch64", "image-x86_64", "buildroot", "providers", "mirrors", "sources"]
 FACTS = ("version", "a32", "nvchecker")
 THEME = ("name", "hat_color", "hat_highlight_color")
 

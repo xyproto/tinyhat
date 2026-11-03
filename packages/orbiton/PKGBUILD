@@ -15,7 +15,10 @@ sha256sums=('edc160546a4a66fae37d17ba1e211c9f9dd1dbeabbc1e2088735e9bd013d062e')
 build() {
   cd orbiton-$_commit/v2
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
-  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/o"
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  [ "$CARCH" != x86_64 ] || export GOROOT=/usr/lib/go GOARCH=amd64
+  export PATH="$GOROOT/bin:$PATH"
+  go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/o"
 }
 
 package() {

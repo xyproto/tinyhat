@@ -22,7 +22,9 @@ prepare() {
   cd $pkgname
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local CGO_ENABLED=0 GOARCH=386 GO386=softfloat
   [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
-  "$GOROOT/bin/go" build -buildvcs=false -ldflags "-s -w" -mod=readonly -modcacherw -trimpath
+  [ "$CARCH" != x86_64 ] || export GOROOT=/usr/lib/go GOARCH=amd64
+  export PATH="$GOROOT/bin:$PATH"
+  go build -buildvcs=false -ldflags "-s -w" -mod=readonly -modcacherw -trimpath
 }
 
 package() {

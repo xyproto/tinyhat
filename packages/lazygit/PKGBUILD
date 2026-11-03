@@ -14,7 +14,10 @@ sha256sums=('fcaad0909af765ef87bd873164a4de78435515ab4d8b04f58d6ad51e8ecd00e5')
 build() {
   cd lazygit-$pkgver
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
-  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false \
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  [ "$CARCH" != x86_64 ] || export GOROOT=/usr/lib/go GOARCH=amd64
+  export PATH="$GOROOT/bin:$PATH"
+  go build -trimpath -buildvcs=false \
     -ldflags "-s -w -X main.version=$pkgver -X main.buildSource=tinyhat" -o lazygit
 }
 
