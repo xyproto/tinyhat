@@ -1,11 +1,13 @@
 pkgbase = libretro-nestopia
 	pkgdesc = Nintendo Entertainment System core
-	pkgver = 20260925.192050.g8f00f500912a
+	pkgver = 20261031.005001.gf1e02d12664
 	pkgrel = 1
 	epoch = 1
 	url = https://github.com/libretro/nestopia
 	arch = i686
 	arch = x32
+	arch = x86_64
+	arch = aarch64
 	groups = libretro
 	license = GPL-2.0-only
 	makedepends = git
@@ -13,7 +15,9 @@ pkgbase = libretro-nestopia
 	depends = libgcc
 	depends = libretro-core-info
 	depends = libstdc++
-	source = libretro-nestopia::git+https://github.com/libretro/nestopia.git
+	source = libretro-nestopia::git+https://github.com/libretro/nestopia.git#commit=f1e02d12664834536edbf7352995a3d0cd1caef4
+	source = inline-peekbus.patch
+	b2sums = SKIP
 	b2sums = SKIP
 
 pkgname = libretro-nestopia
