@@ -8,6 +8,15 @@ tinyhat-soundd &
 export BROWSER EDITOR MANPAGER
 export GTK_A11Y=none WLR_XWAYLAND=/usr/bin/Xwayland DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf EGL_LOG_LEVEL=fatal XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
 eval "$(MESA_SHADER_CACHE_DISABLE=true tinyhat-glinfo 2>/dev/null)"
+virt=$(systemd-detect-virt 2>/dev/null)
+# With 3D acceleration on, VirtualBox has an SVGA3D GPU, but the buffers rendered with it fail to reach dwl
+# (drmCloseBufferHandle: Invalid argument), so GTK 4, SDL and other OpenGL programs quit. Render in software instead, like with 3D off
+case $virt:$TINYHAT_GL_RENDERER in
+oracle:*SVGA3D*)
+	export LIBGL_ALWAYS_SOFTWARE=1
+	eval "$(MESA_SHADER_CACHE_DISABLE=true tinyhat-glinfo 2>/dev/null)"
+	;;
+esac
 TINYHAT_SDL_RENDER=software
 if [ "${TINYHAT_GLES_VERSION:-0.0}" != 0.0 ]; then
 	TINYHAT_SDL_RENDER=opengles2,opengl,software
@@ -22,8 +31,14 @@ case $TINYHAT_GLES_VERSION in 3.* | [4-9].*) gtk_gl=1 ;; esac
 [ -n "$gtk_gl" ] || export GSK_RENDERER="${GSK_RENDERER:-cairo}"
 # Without a GPU, OpenGL is llvmpipe, which loads LLVM into dwl (over 50 MB). The pixman renderer needs no GL
 [ "$TINYHAT_GL_SOFTWARE" = 1 ] && export WLR_RENDERER="${WLR_RENDERER:-pixman}"
-# VirtualBox and VMware show the hardware cursor plane unreliably (it vanishes now and then), so draw the cursor in dwl
-case $(systemd-detect-virt 2>/dev/null) in oracle | vmware) export WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}" ;; esac
+# VirtualBox and VMware (vmwgfx) show the hardware cursor plane unreliably (it vanishes now and then), so draw the
+# cursor in dwl. GTK 4 draws with cairo there, in case GL buffers fail to reach dwl like on VirtualBox
+case $virt in
+oracle | vmware)
+	export WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}"
+	export GSK_RENDERER="${GSK_RENDERER:-cairo}"
+	;;
+esac
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
 printf '\033[?25l'
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
