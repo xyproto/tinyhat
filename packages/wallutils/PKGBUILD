@@ -14,8 +14,11 @@ sha256sums=('8b389e2ff134f331a1cbace92dbd4d6b5793005b5f5454afaad8ddeb4cded75f')
 build() {
   cd wallutils-$pkgver
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  [ "$CARCH" != x86_64 ] || export GOROOT=/usr/lib/go GOARCH=amd64
+  export PATH="$GOROOT/bin:$PATH"
   for cmd in lswallpaper setwallpaper vram; do
-    (cd cmd/$cmd && /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w")
+    (cd cmd/$cmd && go build -trimpath -buildvcs=false -ldflags "-s -w")
   done
 }
 

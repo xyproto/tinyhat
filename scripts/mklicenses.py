@@ -16,7 +16,7 @@ OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(TOP, "build", "licenses
 LOCK = sys.argv[1] if len(sys.argv) > 1 else os.path.join(TOP, "build", "rootfs.lock")
 ARCH = sys.argv[3] if len(sys.argv) > 3 else "i686"
 REPO = os.path.join(TOP, "build", "repo")
-PKGDIR = os.path.join(TOP, "build", "repo-aarch64") if ARCH == "aarch64" else REPO
+PKGDIR = os.path.join(TOP, "build", f"repo-{ARCH}") if ARCH in ("aarch64", "x86_64") else REPO
 SRC = os.path.join(TOP, "vendor", "src")
 
 X86_ONLY = {"linux", "xpadneo", "open-watcom"}

@@ -14,7 +14,10 @@ sha256sums=('b3ddd6abd2f6d935d26aa8a3c1e14d417be2d0658e8014ea04ace6f3cf1ebeab')
 build() {
   cd aget-$pkgver
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
-  /usr/lib/go-tinyhat/bin/go build -trimpath -buildvcs=false -ldflags "-s -w" -o aget
+  [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
+  [ "$CARCH" != x86_64 ] || export GOROOT=/usr/lib/go GOARCH=amd64
+  export PATH="$GOROOT/bin:$PATH"
+  go build -trimpath -buildvcs=false -ldflags "-s -w" -o aget
 }
 
 package() {

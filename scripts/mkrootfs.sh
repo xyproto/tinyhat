@@ -23,6 +23,11 @@ elif grep -q -- '-aarch64\.pkg\.tar' "$lock"; then
 	triplet=aarch64-unknown-linux-gnu
 	strip=aarch64-linux-gnu-strip
 	bcj=arm64
+elif grep -q -- '-x86_64\.pkg\.tar' "$lock"; then
+	arch=x86_64
+	repo=$top/build/repo-x86_64
+	section=image-x86_64
+	triplet=x86_64-pc-linux-gnu
 fi
 cd "$top"
 
@@ -45,7 +50,7 @@ base)
 	bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
 	bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/crt*.o" "usr/lib/gcc/$triplet/*/libgcc*.a"
 	if [ "$arch" != aarch64 ]; then
-		a=usr/lib/gcc/arm-none-eabi/16.2.0
+		a=$(bsdtar -tf "$(pkgfile arm-none-eabi-gcc)" | sed -n 's|^\(usr/lib/gcc/arm-none-eabi/[^/]*\)/$|\1|p' | head -n1)
 		bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
 			"$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
 	fi
@@ -133,7 +138,10 @@ assert d.count(old) == 1, "systemd OK colour not found"
 open(sys.argv[1], "wb").write(d.replace(old, b"\0\x1b[0;36m\0  OK  \0"))
 EOF
 
-	[ "$arch" = aarch64 ] || sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu)/)@\1@' "$root/etc/pacman.d/mirrorlist"
+	case $arch in
+	i686 | x32) sed -i -E 's@^#(Server = https://(mirror\.archlinux32\.org|de\.mirror\.archlinux32\.org|archlinux32\.andreasbaumann\.cc|mirror\.math\.princeton\.edu)/)@\1@' "$root/etc/pacman.d/mirrorlist" ;;
+	x86_64) sed -i -E 's@^#(Server = https://(geo\.mirror\.pkgbuild\.com|mirrors\.kernel\.org/archlinux)/)@\1@' "$root/etc/pacman.d/mirrorlist" ;;
+	esac
 	grep -q '^Server' "$root/etc/pacman.d/mirrorlist"
 	sed -i 's|^HoldPkg .*|&\nNoExtract = usr/share/man/[a-z][a-z]/* usr/share/man/[a-z][a-z]_*/* usr/share/doc/* usr/share/info/* usr/share/locale/* usr/share/gtk-doc/* usr/share/help/*|' "$root/etc/pacman.conf"
 	grep -q '^NoExtract' "$root/etc/pacman.conf"
@@ -221,7 +229,7 @@ for t in /usr/share/icons/*/; do
 done
 rm -rf /home/tinyhat
 if ! grep -q '^tinyhat:' /etc/passwd; then
-	useradd -m -u 1000 -U -G wheel,audio,video,input,games,lp,storage,optical -s /usr/bin/fish tinyhat
+	useradd -m -u 1000 -U -G wheel,audio,video,input,games,lp,storage,optical,uucp -s /usr/bin/fish tinyhat
 fi
 mkdir -p /home/tinyhat/downloads
 cp -a /etc/skel/. /home/tinyhat/
@@ -231,7 +239,7 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service dhcpcd.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service
+systemctl enable tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service dhcpcd.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service tinyhat-crashlogs.service fstrim.timer
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd.service systemd-networkd.socket systemd-networkd-wait-online.service systemd-resolved.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 rm -f /etc/resolv.conf

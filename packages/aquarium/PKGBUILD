@@ -15,7 +15,9 @@ build() {
   cd aquarium-$pkgver
   export GOROOT=/usr/lib/go-tinyhat GOPATH="$srcdir/gopath" GOCACHE="$srcdir/gocache" GOTOOLCHAIN=local GOFLAGS=-mod=vendor CGO_ENABLED=0 GOARCH=386 GO386=softfloat
   [ "$CARCH" != aarch64 ] || export GOROOT=/usr/lib/go GOARCH=arm64
-  "$GOROOT/bin/go" build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/aquarium"
+  [ "$CARCH" != x86_64 ] || export GOROOT=/usr/lib/go GOARCH=amd64
+  export PATH="$GOROOT/bin:$PATH"
+  go build -trimpath -buildvcs=false -ldflags "-s -w" -o "$srcdir/aquarium"
 }
 
 package() {
