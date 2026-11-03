@@ -3,15 +3,16 @@ mkdir -p "$HOME/sgf"
 cd "$HOME/sgf" || exit 1
 export _JAVA_AWT_WM_NONREPARENTING=1
 exec java \
-	-Dawt.useSystemAAFontSettings=on \
-	-Dswing.aatext=true \
-	-Dsun.java2d.xrender=true \
-	-Dsun.java2d.opengl=false \
-	-Dswing.defaultfont=JetBrainsMono-Regular \
-	-Dfile.encoding=UTF-8 \
-	-Xms32m \
-	-Xmx256m \
-	-XX:+UseG1GC \
-	-XX:MaxGCPauseMillis=100 \
-	-XX:+UseStringDeduplication \
-	-jar /usr/share/java/cgoban3/cgoban.jar "$@"
+    -Dawt.useSystemAAFontSettings=on \
+    -Dfile.encoding=UTF-8 \
+    -Dsun.java2d.xrender=false \
+    -Dsun.java2d.pmoffscreen=false \
+    -Dsun.java2d.opengl=false \
+    -Dswing.defaultfont=JetBrainsMono-Regular \
+    -Dswing.aatext=true \
+    -Xms32m \
+    -Xmx256m \
+    -XX:+UseG1GC \
+    -XX:+UseStringDeduplication \
+    -XX:MaxGCPauseMillis=100 \
+    -jar /usr/share/java/cgoban3/cgoban.jar "$@"
