@@ -1,5 +1,0 @@
-build() {
-  sed -i 's/-O2 -DNDEBUG/-O3 -flto=auto -DNDEBUG/' libretro-nestopia/libretro/Makefile
-  grep -q -- '-O3 -flto=auto -DNDEBUG' libretro-nestopia/libretro/Makefile
-  LDFLAGS="$LDFLAGS -O3 -flto=auto" make -C libretro-nestopia/libretro
-}

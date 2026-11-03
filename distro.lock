@@ -462,6 +462,7 @@ libglvnd-glx = ["libglvnd-glx"]
 libgrapheme = ["libgrapheme"]
 libnsgif = ["libnsgif"]
 libresprite = ["libresprite"]
+libretro-nestopia = ["libretro-nestopia"]
 librsvg = ["librsvg"]
 libutf8proc = ["libutf8proc"]
 libxkbcommon = ["libxkbcommon"]
@@ -530,6 +531,7 @@ glu = ["glu"]
 grafx2 = ["grafx2"]
 gtk4 = ["gtk4"]
 imv = ["imv"]
+iproute2 = ["iproute2"]
 jemalloc = ["jemalloc"]
 kmod = ["kmod"]
 libepoxy = ["libepoxy"]
@@ -538,6 +540,7 @@ libglvnd-glx = ["libglvnd-glx"]
 libgrapheme = ["libgrapheme"]
 libnsgif = ["libnsgif"]
 libresprite = ["libresprite"]
+libretro-nestopia = ["libretro-nestopia"]
 librsvg = ["librsvg"]
 libutf8proc = ["libutf8proc"]
 libxkbcommon = ["libxkbcommon"]
@@ -1536,6 +1539,7 @@ libpsl = { repo = "core", version = "0.21.5-2", file = "libpsl-0.21.5-2-aarch64.
 libpulse = { repo = "extra", version = "17.0+r134+g77d25a1e6-1", file = "libpulse-17.0+r134+g77d25a1e6-1-aarch64.pkg.tar.xz", sha256 = "a1c1915ad1b5035732a5104d9f19621fba297bee36b72cf591988377bc962156" }
 libquadmath = { repo = "core", version = "16.1.1+r12+g301eb08fa2c5-1", file = "libquadmath-16.1.1+r12+g301eb08fa2c5-1-aarch64.pkg.tar.xz", sha256 = "d97f0d43fe0212774d591a6d43b05da78590e4261af71b7a1b26097e63dc57eb" }
 libraqm = { repo = "extra", version = "0.11.0-1", file = "libraqm-0.11.0-1-aarch64.pkg.tar.xz", sha256 = "7350c5ea6a246b7fc4c5f7f464b086d237193ed8591505afc636a6a012ad705d" }
+libretro-core-info = { repo = "extra", version = "1.22.2-1", file = "libretro-core-info-1.22.2-1-any.pkg.tar.xz", sha256 = "2567c65f479ebce92086104dafcd81585babb84f532623b82132036a21c0716e" }
 librsvg = { repo = "extra", version = "2:2.63.4-1", file = "librsvg-2:2.63.4-1-aarch64.pkg.tar.xz", sha256 = "c58a784667137bf4dffdba44a9c4934ed48b90394c111d24fe460b5c56d13c0c" }
 libsasl = { repo = "core", version = "2.1.28-5", file = "libsasl-2.1.28-5-aarch64.pkg.tar.xz", sha256 = "5ec2f2ec119161f9e0f93a91f0f7001f9f401d5eb6dd1d7769988ee0308f92b2" }
 libsass = { repo = "extra", version = "3.6.6-1", file = "libsass-3.6.6-1-aarch64.pkg.tar.xz", sha256 = "4772c6baf0408cfc3df87c52c7516484873b8e07cb813c0a41412ff763ad4737" }
@@ -1824,6 +1828,7 @@ cppdap = { repo = "extra", version = "1.58.0-3", file = "cppdap-1.58.0-3-x86_64.
 cryptsetup = { repo = "core", version = "2.8.8-1", file = "cryptsetup-2.8.8-1-x86_64.pkg.tar.zst", sha256 = "322f0e79a7d659d5e645e96cad3d30966f7dd5476f984f96b50a4f4cea274640" }
 curl = { repo = "core", version = "8.23.0-1", file = "curl-8.23.0-1-x86_64.pkg.tar.zst", sha256 = "ed3e4e252073137ee6b1267f3476a13680ff6b3dbdc7ddc6a8d1497fa60cd6d0" }
 dav1d = { repo = "extra", version = "1.5.4-1", file = "dav1d-1.5.4-1-x86_64.pkg.tar.zst", sha256 = "cf991c63dc289cbe61f7f5d0fd395be2dd75ebda2bd2a4e886b2cd11b8f2795d" }
+db = { repo = "core", version = "6.2.32-4", file = "db-6.2.32-4-x86_64.pkg.tar.zst", sha256 = "6f1b9cdce6cfaf6cbd3121d7803a5a6623f87adb3a3abbfe7b4164bbdc0c177e" }
 "db5.3" = { repo = "core", version = "5.3.28-7", file = "db5.3-5.3.28-7-x86_64.pkg.tar.zst", sha256 = "abac3474e766fa8a36fcae945f5e8c8e818665fc41a56daff92db81cd176d389" }
 dbus = { repo = "core", version = "1.16.2-2", file = "dbus-1.16.2-2-x86_64.pkg.tar.zst", sha256 = "773bfb7020491b5f44e4cba11d096ac570b9b1e81c6cb1e437a5e7a68b68f974" }
 dbus-broker = { repo = "core", version = "37-3", file = "dbus-broker-37-3-x86_64.pkg.tar.zst", sha256 = "c3a915bb57188e6a43b9df25c0bf11f87528bc20ac50718b1772ce917c6d6117" }
@@ -1944,6 +1949,7 @@ libasyncns = { repo = "extra", version = "1:0.8+r3+g68cd5af-3", file = "libasync
 libatomic = { repo = "core", version = "16.2.1+r23+gd564253eb6c8-1", file = "libatomic-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst", sha256 = "920cfea3dcac82e3d7c8ebbf64dfe341821c1118277d55b6c1e96035cd943656" }
 libavif = { repo = "extra", version = "1.4.2-1", file = "libavif-1.4.2-1-x86_64.pkg.tar.zst", sha256 = "296986d8795009e86279608a311c580154d84b82d53365495d76cf28ef375441" }
 libblake3 = { repo = "extra", version = "1.8.7-1", file = "libblake3-1.8.7-1-x86_64.pkg.tar.zst", sha256 = "1092d411d22cdd2f2c6b611f73086e29732cb441abbe1a0235ebff422ab37a3b" }
+libbpf = { repo = "core", version = "1.7.0-1", file = "libbpf-1.7.0-1-x86_64.pkg.tar.zst", sha256 = "07ca39704fd534fcb4f520550cdddad5c113521f87035fb66f66a50a6d843257" }
 libbsd = { repo = "extra", version = "0.12.2-2", file = "libbsd-0.12.2-2-x86_64.pkg.tar.zst", sha256 = "e26194849786b0202828a348be3f4b90d410604cd7d48f113a4301584a49895a" }
 libcap = { repo = "core", version = "2.78-1", file = "libcap-2.78-1-x86_64.pkg.tar.zst", sha256 = "3e984fe1d323b1c5a5fc60fef005776a4882fbca913d6fe3c41ad11128929ed1" }
 libcap-ng = { repo = "core", version = "0.9.6-1", file = "libcap-ng-0.9.6-1-x86_64.pkg.tar.zst", sha256 = "05b0a8356f898e251845b2e5ffa5966be21ca85f3eaaf5aeb8a9e8df4148ba5c" }
@@ -2021,6 +2027,7 @@ libpsl = { repo = "core", version = "0.21.5-2", file = "libpsl-0.21.5-2-x86_64.p
 libpulse = { repo = "extra", version = "17.0+r134+g77d25a1e6-1", file = "libpulse-17.0+r134+g77d25a1e6-1-x86_64.pkg.tar.zst", sha256 = "c24a3b5ebacdae424c885c81770236f7f7d26a017cf7dfca84040e7354bea242" }
 libquadmath = { repo = "core", version = "16.2.1+r23+gd564253eb6c8-1", file = "libquadmath-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst", sha256 = "c6db8f6c787601f17fa812f2270f4e53fad1426fa9e372ab2e1a881c1368cee3" }
 libraqm = { repo = "extra", version = "0.11.0-1", file = "libraqm-0.11.0-1-x86_64.pkg.tar.zst", sha256 = "205027d2395411e46fa442673ff24b2bd21ae464ce3ee6bc72b71f9efda60082" }
+libretro-core-info = { repo = "extra", version = "1.22.2-1", file = "libretro-core-info-1.22.2-1-any.pkg.tar.zst", sha256 = "c3062d259ebc29258ce0ec587b04ba40c8917b781f0addf124cac05bc49d7e76" }
 librsvg = { repo = "extra", version = "2:2.63.4-1", file = "librsvg-2:2.63.4-1-x86_64.pkg.tar.zst", sha256 = "062352b0a55e34e610f2d1770993970fec3ea0ae5e77f805f064daec2f34da4c" }
 libsasl = { repo = "core", version = "2.1.28-5", file = "libsasl-2.1.28-5-x86_64.pkg.tar.zst", sha256 = "113e1676371544e5142a46ee046a6179ace201c4f0a0d56b618a984b5c764463" }
 libsass = { repo = "extra", version = "3.6.6-2", file = "libsass-3.6.6-2-x86_64.pkg.tar.zst", sha256 = "bf54ece7ffa74e4a18e1bd2f9e7c492d7091f1038c7a0dcf3722b8723efb7787" }
@@ -2077,6 +2084,7 @@ libyaml = { repo = "extra", version = "0.2.5-3", file = "libyaml-0.2.5-3-x86_64.
 libyuv = { repo = "extra", version = "r2921+644251f25-1", file = "libyuv-r2921+644251f25-1-x86_64.pkg.tar.zst", sha256 = "953c7ee536b35be829a3cc8c614f9a0b553830f5d4d030f35fc452d0199612ce" }
 lilv = { repo = "extra", version = "0.28.0-1", file = "lilv-0.28.0-1-x86_64.pkg.tar.zst", sha256 = "d8b6e7aea382261114d383eb0ea93249a1172e28a1bc25613c5cd2a737511c7c" }
 linux-api-headers = { repo = "core", version = "7.3-1", file = "linux-api-headers-7.3-1-x86_64.pkg.tar.zst", sha256 = "a5a6f5fc8922ef454c54e65e321906183e6606acaadaf416896dcbc44f2194ed" }
+linux-atm = { repo = "extra", version = "2.5.2-9", file = "linux-atm-2.5.2-9-x86_64.pkg.tar.zst", sha256 = "e4d2c0c8a0e41c09b2ce281e1e30684fb3cc9d78830c331dc59b44b63f85b9db" }
 lld = { repo = "extra", version = "23.1.4-1", file = "lld-23.1.4-1-x86_64.pkg.tar.zst", sha256 = "ee0d30ba61239e72c07176f936e16d77f65857d22d2b9d9a7c03c58e9d8a5a40" }
 llhttp = { repo = "extra", version = "9.3.1-1", file = "llhttp-9.3.1-1-x86_64.pkg.tar.zst", sha256 = "e93332a577aacebdef11d0626df9a4f45dd6468187309693ccaa8de1547dc71c" }
 llvm = { repo = "extra", version = "23.1.4-1", file = "llvm-23.1.4-1-x86_64.pkg.tar.zst", sha256 = "b5f894952b907a50dfc5000fb41f220ede3119703fce3e02f12214a20be31f7b" }
@@ -2462,7 +2470,6 @@ libpsl = { repo = "core", version = "0.21.5-2", file = "libpsl-0.21.5-2-aarch64.
 libpulse = { repo = "extra", version = "17.0+r134+g77d25a1e6-1", file = "libpulse-17.0+r134+g77d25a1e6-1-aarch64.pkg.tar.xz", sha256 = "a1c1915ad1b5035732a5104d9f19621fba297bee36b72cf591988377bc962156" }
 libquadmath = { repo = "core", version = "16.1.1+r12+g301eb08fa2c5-1", file = "libquadmath-16.1.1+r12+g301eb08fa2c5-1-aarch64.pkg.tar.xz", sha256 = "d97f0d43fe0212774d591a6d43b05da78590e4261af71b7a1b26097e63dc57eb" }
 libretro-blastem = { repo = "extra", version = "20261010.190722.gab743653ed11-1", file = "libretro-blastem-20261010.190722.gab743653ed11-1-aarch64.pkg.tar.xz", sha256 = "ec9185df40f6b516fae18191cb151d006757428419f8fd17cb9097190c566977" }
-libretro-nestopia = { repo = "extra", version = "1:20261023.192225.g2110d21b7174-1", file = "libretro-nestopia-1:20261023.192225.g2110d21b7174-1-aarch64.pkg.tar.xz", sha256 = "aff73554352aee92135cfac934de88afb2572189296fd22e2db41b5284e55a2b" }
 libsamplerate = { repo = "extra", version = "0.2.2-3", file = "libsamplerate-0.2.2-3-aarch64.pkg.tar.xz", sha256 = "9292168d3d836579fb1af20ede097470638332bb2691097ea760b7396a1ce6ca" }
 libsasl = { repo = "core", version = "2.1.28-5", file = "libsasl-2.1.28-5-aarch64.pkg.tar.xz", sha256 = "5ec2f2ec119161f9e0f93a91f0f7001f9f401d5eb6dd1d7769988ee0308f92b2" }
 libseccomp = { repo = "core", version = "2.6.0-1", file = "libseccomp-2.6.0-1-aarch64.pkg.tar.xz", sha256 = "ebb62cc156a605aa3f024a6d2c9dd99ba66db6f50d9aeb75b8bb336316f0a2f5" }
@@ -2750,7 +2757,6 @@ iana-etc = { repo = "core", version = "20260617-1", file = "iana-etc-20260617-1-
 impala = { repo = "extra", version = "0.9.0-1", file = "impala-0.9.0-1-x86_64.pkg.tar.zst", sha256 = "edf1bf1aa16770977e7505dbfdd5b2e07aa30805eab095eaf3916caea6c7fde7" }
 inetutils = { repo = "core", version = "2.8-1", file = "inetutils-2.8-1-x86_64.pkg.tar.zst", sha256 = "e758c204b7dcabbaf7ae55d51fb82d2e5f6b304ab460da4b6d81deddbb7c538b" }
 innoextract = { repo = "extra", version = "1.9-17", file = "innoextract-1.9-17-x86_64.pkg.tar.zst", sha256 = "c2694ccb22971eaf3ab7dd0a3e600aa1005fdcb6d9f0f3f0abcafaf50a005be0" }
-iproute2 = { repo = "core", version = "7.3.0-1", file = "iproute2-7.3.0-1-x86_64.pkg.tar.zst", sha256 = "e7afcf7bee5976e3c01053e46ebd396091a5341e5f267210eff251902aca65e9" }
 iputils = { repo = "core", version = "20250605-1", file = "iputils-20250605-1-x86_64.pkg.tar.zst", sha256 = "7b7ef18785a9fb7767ecf793a9c87b474eec64440a55258f5c127861100d3933" }
 iw = { repo = "core", version = "6.17-1", file = "iw-6.17-1-x86_64.pkg.tar.zst", sha256 = "8e1e2220b93c0bded37652e6332a64a7b3987e12022f300fae37eb5cd4eb9a27" }
 iwd = { repo = "extra", version = "3.12-2", file = "iwd-3.12-2-x86_64.pkg.tar.zst", sha256 = "934f8f861bad145def3429a25f913882f6054d6f50c63484204cd2bba2f4f8be" }
@@ -2837,7 +2843,6 @@ libpsl = { repo = "core", version = "0.21.5-2", file = "libpsl-0.21.5-2-x86_64.p
 libpulse = { repo = "extra", version = "17.0+r134+g77d25a1e6-1", file = "libpulse-17.0+r134+g77d25a1e6-1-x86_64.pkg.tar.zst", sha256 = "c24a3b5ebacdae424c885c81770236f7f7d26a017cf7dfca84040e7354bea242" }
 libquadmath = { repo = "core", version = "16.2.1+r23+gd564253eb6c8-1", file = "libquadmath-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst", sha256 = "c6db8f6c787601f17fa812f2270f4e53fad1426fa9e372ab2e1a881c1368cee3" }
 libretro-blastem = { repo = "extra", version = "20261010.190722.gab743653ed11-1", file = "libretro-blastem-20261010.190722.gab743653ed11-1-x86_64.pkg.tar.zst", sha256 = "a217f809de3497d7167d904e05c47ef9c51e7d75910f823f27fd6f55fd2094fb" }
-libretro-nestopia = { repo = "extra", version = "1:20261023.192225.g2110d21b7174-1", file = "libretro-nestopia-1:20261023.192225.g2110d21b7174-1-x86_64.pkg.tar.zst", sha256 = "f9deda160956680cbb39970db97570e4702b36f51afba132e833092793c59742" }
 libsamplerate = { repo = "extra", version = "0.2.2-3", file = "libsamplerate-0.2.2-3-x86_64.pkg.tar.zst", sha256 = "6641b016f15c73f90ee0741f0d14db1ea7ec988a2b8c74c5fce0182239bbbf00" }
 libsasl = { repo = "core", version = "2.1.28-5", file = "libsasl-2.1.28-5-x86_64.pkg.tar.zst", sha256 = "113e1676371544e5142a46ee046a6179ace201c4f0a0d56b618a984b5c764463" }
 libseccomp = { repo = "core", version = "2.6.0-1", file = "libseccomp-2.6.0-1-x86_64.pkg.tar.zst", sha256 = "3d3effb23898177d0faece196ac664859d29027b64cdeee3a09a2c3967b8401d" }
@@ -3252,7 +3257,6 @@ libproxy = { version = "0.5.12-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761e
 libpsl = { version = "0.21.5-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libpsl]\nsource = \"git\"\ngit = \"https://github.com/rockdaboot/libpsl.git\"\n" }
 libraqm = { version = "0.11.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libraqm]\nsource = 'github'\ngithub = 'HOST-Oman/libraqm'\nuse_max_tag = true\nprefix = 'v'\n" }
 libraw1394 = { version = "2.1.2-4", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
-libretro-nestopia = { version = "1:20260925.192050.g8f00f500912a-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libretro-nestopia]\nsource = \"jq\"\nurl = \"https://api.github.com/repos/libretro/nestopia/commits/master\"\nfilter = '(.commit.committer.date | fromdateiso8601 | strftime(\"%Y%m%d.%H%M%S\")) + \".g\" + (.sha[0:12])'\n" }
 librsvg = { version = "2:2.63.4-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[librsvg]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/librsvg.git\"\ninclude_regex = '\\d+\\.\\d+\\.([1-8]\\d*)?\\d'\n# include_regex = '\\d+\\.\\d+\\.\\d+(\\.\\d+)?$' # Unstable\n" }
 libsamplerate = { version = "0.2.2-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libsamplerate]\nsource = \"git\"\ngit = \"https://github.com/libsndfile/libsamplerate.git\"\n" }
 libsasl = { version = "2.1.28-5", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libsasl]\nsource = \"git\"\ngit = \"https://github.com/cyrusimap/cyrus-sasl\"\nprefix = \"cyrus-sasl-\"\n" }
