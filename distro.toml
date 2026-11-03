@@ -31,7 +31,7 @@ packages = [
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
     "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
-    "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2", "libxml2-legacy",
+    "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
@@ -169,7 +169,6 @@ exclude = [
     "usr/bin/sensord",
     "usr/bin/gcr-viewer-gtk4",
     "usr/bin/tc",
-    "usr/lib/libxml2-legacy",
     "usr/lib/gtk-3.0/3.0.0/printbackends/libprintbackend-cups.so",
     "usr/bin/pinentry-gnome3",
     "usr/bin/pinentry-qt",
@@ -208,6 +207,8 @@ exclude = [
     "usr/bin/i686-pc-linux-gnu-*",
     "usr/bin/x86_64-linux-gnu-*",
     "usr/bin/x86_64-pc-linux-gnu-*",
+    "usr/lib/libtbbmalloc*",
+    "usr/bin/lstopo*",
     "usr/bin/analyze-build",
     "usr/bin/c-index-test",
     "usr/bin/clang-apply-replacements",
@@ -409,7 +410,7 @@ remove = [
 # initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
 # "make lock-x86_64" decides to build
 remove = ["archlinux32-keyring"]
-build_from_source = ["libxml2"]
+build_from_source = ["libxml2", "wallutils"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go"]
 
@@ -418,7 +419,7 @@ packages = [
     "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
     "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson", "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
     "wayland", "wayland-protocols", "libglvnd", "mesa", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
-    "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile", "libxml2-legacy",
+    "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo", "libmikmod",
     "grub",
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
@@ -769,6 +770,9 @@ build_for = ["i686"]
 [imv]
 build_from_source = true
 
+[iproute2]
+build_from_source = true
+
 [jemalloc]
 build_from_source = true
 
@@ -834,9 +838,6 @@ build_from_source = true
 build_from_source = true
 
 [libxml2]
-source = "sources"
-
-[libxml2-legacy]
 source = "sources"
 
 [linux-firmware]
