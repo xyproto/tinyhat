@@ -1,0 +1,322 @@
+diff -Nur a/dwl.c b/dwl.c
+--- a/dwl.c
++++ b/dwl.c
+@@ -1795,52 +1795,159 @@
+ 	for (int r = 0; r < 4; r++)
+ 		inkrect(m, hat[r][0] ? 0x494949ff : 0x922424ff, ox + (hat[r][1] - 2) * s / 19, oy + (hat[r][2] - 6) * s / 19,
+ 			ox + (hat[r][3] - 2) * s / 19, oy + (hat[r][4] - 6) * s / 19);
++	/* Running from RAM: a small cyan feather next to the hat, for the lighter and faster system */
++	if (live) {
++		static const char *feather[] = { "..c", ".tc", "tc.", "c.." };
++		int px = MAX(1, s / 10), fx = ox + 28 * s / 19 + px, fy = oy + 16 * s / 19 - 4 * px;
++		for (int r = 0; r < 4; r++)
++			for (int c = 0; c < 3; c++)
++				if (feather[r][c] != '.')
++					inkrect(m, feather[r][c] == 'c' ? 0x7dcfffff : 0x1a9e96ff,
++						fx + c * px, fy + r * px, fx + (c + 1) * px, fy + (r + 1) * px);
++	}
+ }
+ 
+-static void
+-drawflame(Monitor *m, int x, int w)
++static int
++inpoly(const double (*pt)[2], int n, double x, double y)
+ {
+-	static const char *flame[] = {
+-		"...r...", "..rr...", "..rrr..", ".rror..", ".roorr.",
+-		"rroyorr", "royyyor", "royyyor", ".royor.", "..rrr..",
+-	};
+-	int s = m->b.height * 5 / 8, fw = s * 7 / 10, ox = x + (w - fw) / 2, oy = (m->b.height - s) / 2;
+-	for (int r = 0; r < 10; r++)
+-		for (int c = 0; c < 7; c++)
+-			if (flame[r][c] != '.')
+-				inkrect(m, flame[r][c] == 'r' ? 0xe0452aff : flame[r][c] == 'o' ? 0xff9e3bff : 0xffe066ff,
+-					ox + c * fw / 7, oy + r * s / 10, ox + (c + 1) * fw / 7, oy + (r + 1) * s / 10);
++	int in = 0;
++	for (int i = 0, j = n - 1; i < n; j = i++)
++		if ((pt[i][1] > y) != (pt[j][1] > y)
++				&& x < (pt[j][0] - pt[i][0]) * (y - pt[i][1]) / (pt[j][1] - pt[i][1]) + pt[i][0])
++			in = !in;
++	return in;
++}
++
++static double
++polydist(const double (*pt)[2], int n, double x, double y)
++{
++	double best = 1e9;
++	for (int i = 0, j = n - 1; i < n; j = i++) {
++		double ex = pt[i][0] - pt[j][0], ey = pt[i][1] - pt[j][1];
++		double t = ((x - pt[j][0]) * ex + (y - pt[j][1]) * ey) / (ex * ex + ey * ey);
++		t = t < 0 ? 0 : t > 1 ? 1 : t;
++		best = MIN(best, hypot(x - pt[j][0] - t * ex, y - pt[j][1] - t * ey));
++	}
++	return best;
+ }
+ 
+ static int
+-speakerw(Monitor *m)
++inflame(double x, double y, double cx, double base, double r, double tip)
+ {
+-	return m->b.height * 5 / 8 * 11 / 10 + 2;
++	double t;
++	if (hypot(x - cx, y - base) < r)
++		return 1;
++	if (y < tip || y > base)
++		return 0;
++	t = (base - y) / (base - tip);
++	return fabs(x - cx - r * 0.35 * t) < r * pow(1 - t, 1.1);
+ }
+ 
+-static void
+-drawspeaker(Monitor *m, int x, int muted)
++/* The color of the status icon at (x, y), in units of the icon height, or 0 where it is see-through */
++static uint32_t
++iconpixel(int kind, int arg, double x, double y)
+ {
+-	static const char *speaker[] = {
+-		"....#......", "...##....#.", "..###.#...#", "#####..#..#", "#####..#..#",
+-		"#####..#..#", "#####..#..#", "..###.#...#", "...##....#.", "....#......",
++	static const double bolt[][2] = {
++		{ 0.78, 0.04 }, { 0.46, 0.56 }, { 0.65, 0.56 }, { 0.56, 0.96 }, { 0.90, 0.42 }, { 0.71, 0.42 },
+ 	};
+-	int s = m->b.height * 5 / 8, oy = (m->b.height - s) / 2;
+-	for (int r = 0; r < 10; r++)
+-		for (int c = 0; c < 11; c++)
+-			if (speaker[r][c] == '#')
+-				inkrect(m, colors[SchemeStatus][0], x + c * s / 10, oy + r * s / 10, x + (c + 1) * s / 10, oy + (r + 1) * s / 10);
+-	if (muted) {
+-		int w = s * 11 / 10, t = MAX(2, s / 6);
+-		for (int i = 0; i < w; i++)
+-			inkrect(m, 0xf7768eff, x + i, oy + i * (s - t) / w, x + i + 1, oy + i * (s - t) / w + t);
++	uint32_t fg = colors[SchemeStatus][0], red = 0xf7768eff;
++	double dx, dy, d;
++	switch (kind) {
++	case 'V':
++	case 'M':
++		if (x >= 0.06 && x < 0.32 && y >= 0.34 && y < 0.66)
++			return fg;
++		if (x >= 0.30 && x < 0.58 && fabs(y - 0.5) < 0.16 + (x - 0.30) / 0.28 * 0.32)
++			return fg;
++		if (kind == 'M') {
++			dx = x - 0.85;
++			dy = y - 0.5;
++			return fabs(dx) < 0.19 && fabs(dy) < 0.19 && (fabs(dx - dy) < 0.08 || fabs(dx + dy) < 0.08) ? red : 0;
++		}
++		dx = x - 0.5;
++		dy = y - 0.5;
++		d = hypot(dx, dy);
++		if (dx <= 0 || fabs(dy) > dx * 1.2)
++			return 0;
++		return (arg > 0 && fabs(d - 0.25) < 0.055) || (arg >= 50 && fabs(d - 0.47) < 0.055) ? fg : 0;
++	case 'B':
++	case 'C': {
++		int level = arg < 10 ? 0 : arg < 35 ? 1 : arg < 60 ? 2 : arg < 85 ? 3 : 4;
++		double th = 0.085, x0 = 0.04, x1 = 1.30, y0 = 0.22, y1 = 0.78;
++		double fx0 = x0 + th + 0.06, fx1 = x1 - th - 0.06;
++		if (kind == 'C') {
++			if (inpoly(bolt, LENGTH(bolt), x, y))
++				return 0xffe066ff;
++			if (polydist(bolt, LENGTH(bolt), x, y) < 0.07)
++				return colors[SchemeStatus][1];
++		}
++		if (x >= x0 && x < x1 && y >= y0 && y < y1
++				&& !(x >= x0 + th && x < x1 - th && y >= y0 + th && y < y1 - th))
++			return level || kind == 'C' ? fg : red;
++		if (x >= x1 && x < x1 + 0.12 && y >= 0.38 && y < 0.62)
++			return level || kind == 'C' ? fg : red;
++		if (x >= fx0 && x < fx0 + (fx1 - fx0) * level / 4 && y >= y0 + th + 0.06 && y < y1 - th - 0.06)
++			return level <= 1 && kind != 'C' ? red : fg;
++		return 0;
++	}
++	case 'H':
++		if (inflame(x, y, 0.40, 0.78, 0.13, 0.50))
++			return 0xffe066ff;
++		if (inflame(x, y, 0.40, 0.72, 0.22, 0.28))
++			return 0xff9e3bff;
++		if (inflame(x, y, 0.40, 0.66, 0.32, 0.02))
++			return 0xe0452aff;
++		return 0;
+ 	}
++	return 0;
++}
++
++static int
++iconpx(Monitor *m, int kind)
++{
++	int s = m->b.height * 5 / 8;
++	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : 1.08));
++}
++
++/* Draw a status icon straight into the bar, antialiased with 4x4 samples per pixel */
++static void
++drawicon(Monitor *m, int x, int kind, int arg)
++{
++	pixman_image_t *img = m->drw->image;
++	uint32_t *data = pixman_image_get_data(img), bg = colors[SchemeStatus][1];
++	int stride = pixman_image_get_stride(img) / 4, iw = pixman_image_get_width(img), ih = pixman_image_get_height(img);
++	int s = m->b.height * 5 / 8, oy = (m->b.height - s) / 2, w = iconpx(m, kind);
++	for (int py = 0; py < s; py++)
++		for (int px = 0; px < w; px++) {
++			unsigned int r = 0, g = 0, b = 0;
++			if (x + px < 0 || x + px >= iw || oy + py < 0 || oy + py >= ih)
++				continue;
++			for (int i = 0; i < 16; i++) {
++				uint32_t c = iconpixel(kind, arg, (px + (i % 4 + 0.5) / 4) / s, (py + (i / 4 + 0.5) / 4) / s);
++				c = c ? c : bg;
++				r += c >> 24;
++				g += c >> 16 & 0xff;
++				b += c >> 8 & 0xff;
++			}
++			data[(oy + py) * stride + x + px] = 0xff000000 | (r / 16) << 16 | (g / 16) << 8 | b / 16;
++		}
++}
++
++/* Status items that start with an icon: V/M volume (muted), B/C battery (charging), H too hot */
++static int
++iconkind(const char *s, const char *p)
++{
++	if (!*p || !strchr("VMBCH", *p) || !(p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3))))
++		return 0;
++	if (*p == 'H')
++		return !p[1] || !strncmp(p + 1, " | ", 3) ? 'H' : 0;
++	return p[1] == ' ' && p[2] >= '0' && p[2] <= '9' ? *p : 0;
+ }
+ 
+ static int
+-isvolume(const char *s, const char *p)
++iconw(Monitor *m, int kind)
+ {
+-	return (p[0] == 'V' || p[0] == 'M') && p[1] == ' ' && (p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3)));
++	return iconpx(m, kind) + 2;
+ }
+ 
+ static int
+@@ -1848,14 +1955,15 @@
+ {
+ 	int w = 0;
+ 	char *seg = s;
+-	for (char *p = s; *p; p++)
+-		if (isvolume(s, p)) {
+-			char kind = *p;
+-			*p = '\0';
+-			w += drwl_font_getwidth(m->drw, seg) + speakerw(m);
+-			*p = kind;
+-			seg = p + 1;
+-		}
++	for (char *p = s; *p; p++) {
++		int kind = iconkind(s, p);
++		if (!kind)
++			continue;
++		*p = '\0';
++		w += drwl_font_getwidth(m->drw, seg) + iconw(m, kind);
++		*p = kind;
++		seg = p + 1;
++	}
+ 	return w + drwl_font_getwidth(m->drw, seg);
+ }
+ 
+@@ -1863,25 +1971,30 @@
+ drawstext(Monitor *m, int x, char *s)
+ {
+ 	char *seg = s;
+-	for (char *p = s; *p; p++)
+-		if (isvolume(s, p)) {
+-			char *end = strstr(p, " | ");
+-			char kind = *p;
+-			*p = '\0';
+-			if (*seg)
+-				x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+-			*p = kind;
++	for (char *p = s; *p; p++) {
++		int kind = iconkind(s, p), vol = kind == 'V' || kind == 'M';
++		char *end;
++		if (!kind)
++			continue;
++		end = strstr(p, " | ");
++		*p = '\0';
++		if (*seg)
++			x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
++		*p = kind;
++		if (vol)
+ 			m->volx0 = x;
+-			drawspeaker(m, x, kind == 'M');
+-			drwl_setscheme(m->drw, colors[SchemeStatus]);
+-			x += speakerw(m);
++		drawicon(m, x, kind, atoi(p + 1));
++		drwl_setscheme(m->drw, colors[SchemeStatus]);
++		x += iconw(m, kind);
++		if (vol) {
+ 			if (end)
+ 				*end = '\0';
+ 			m->volx1 = x + drwl_font_getwidth(m->drw, p + 1);
+ 			if (end)
+ 				*end = ' ';
+-			seg = p + 1;
+ 		}
++		seg = p + 1;
++	}
+ 	if (*seg)
+ 		x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+ 	return x;
+@@ -2174,35 +2287,10 @@
+ 	malloc_trim(0);
+ }
+ 
+-static char *
+-flamesep(void)
+-{
+-	char *sep = NULL;
+-	if (!live)
+-		return NULL;
+-	for (char *p = strstr(stext, " | "); p; p = strstr(p + 1, " | "))
+-		if (!isvolume(stext, p + 3))
+-			sep = p;
+-	return sep;
+-}
+-
+-static int
+-flamew(Monitor *m)
+-{
+-	return MAX((int)drwl_font_getwidth(m->drw, " | "), m->b.height * 5 / 8 * 7 / 10 + m->lrpad);
+-}
+-
+ static int
+ statusw(Monitor *m)
+ {
+-	char *sep = flamesep();
+-	int w;
+-	if (!sep)
+-		return stextw(m, stext) + 2;
+-	*sep = '\0';
+-	w = stextw(m, stext) + flamew(m) + stextw(m, sep + 3) + 2;
+-	*sep = ' ';
+-	return w;
++	return stextw(m, stext) + 2;
+ }
+ 
+ void
+@@ -2222,23 +2310,11 @@
+ 
+ 	/* draw status first so it can be overdrawn by tags later */
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
+-		char *sep = flamesep();
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		tw = statusw(m);
+ 		m->volx0 = m->volx1 = 0;
+ 		drwl_rect(m->drw, m->b.width - tw, 0, tw, m->b.height, 1, 1);
+-		if (sep) {
+-			int sx = m->b.width - tw, fw = flamew(m);
+-			*sep = '\0';
+-			sx = drawstext(m, sx, stext);
+-			*sep = ' ';
+-			drwl_rect(m->drw, sx, 0, fw, m->b.height, 1, 1);
+-			drawflame(m, sx, fw);
+-			drwl_setscheme(m->drw, colors[SchemeStatus]);
+-			drawstext(m, sx + fw, sep + 3);
+-		} else {
+-			drawstext(m, m->b.width - tw, stext);
+-		}
++		drawstext(m, m->b.width - tw, stext);
+ 	}
+ 
+ 	wl_list_for_each(c, &clients, link) {
