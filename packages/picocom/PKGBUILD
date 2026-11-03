@@ -1,0 +1,29 @@
+# Maintainer: Sébastien Luttringer
+# Contributor: Jens Adam <jra@byte.cx>
+
+pkgname=picocom
+pkgver=3.1
+pkgrel="3"
+pkgdesc='Minimal dumb-terminal emulation program, very much like minicom'
+url='https://github.com/npat-efault/picocom'
+license=('GPL2')
+arch=(i686 x32)
+makedepends=('git')
+depends=('glibc')
+source=("git+https://github.com/npat-efault/picocom.git#tag=$pkgver")
+
+build() {
+  cd $pkgname
+  make
+}
+
+package() {
+  cd $pkgname
+  install -D -m 755 picocom "$pkgdir/usr/bin/picocom"
+  install -D -m 644 picocom.1 "$pkgdir/usr/share/man/man1/picocom.1"
+}
+
+# vim:set ts=2 sw=2 et:
+md5sums=('SKIP')
+
+unset -f pkgver
