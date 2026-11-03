@@ -200,7 +200,7 @@ grep -q "^builder:" /etc/passwd || echo "builder:x:1000:1000:builder:/build:/bin
 grep -q "^builder:" /etc/group || echo "builder:x:1000:" >>/etc/group
 pacargs="--arch i686"
 [ "$arch" != aarch64 ] || pacargs="--arch aarch64 --disable-sandbox"
-[ "$arch" != x86_64 ] || pacargs="--arch x86_64"
+[ "$arch" != x86_64 ] || pacargs="--arch x86_64 --disable-sandbox"
 if [ -n "$i686deps" ]; then
 	pacman -Udd $pacargs --noconfirm --noscriptlet --overwrite "*" $i686deps
 fi
