@@ -1,0 +1,267 @@
+diff -Nur a/source/core/NstCpu.cpp b/source/core/NstCpu.cpp
+--- a/source/core/NstCpu.cpp
++++ b/source/core/NstCpu.cpp
+@@ -861,6 +861,11 @@
+ 
+ 		uint Cpu::PeekBus(const uint address)
+ 		{
++			return PeekBusInline( address );
++		}
++
++		NST_FORCE_INLINE uint Cpu::PeekBusInline(const uint address)
++		{
+ 			const uint data = map.Peek8( address );
+ 
+ 			// $4015 is read over the CPU's internal data bus and
+@@ -903,7 +908,7 @@
+ 
+ 		inline uint Cpu::FetchPc8()
+ 		{
+-			const uint data = PeekBus( pc );
++			const uint data = PeekBusInline( pc );
+ 			++pc;
+ 			return data;
+ 		}
+@@ -915,7 +920,7 @@
+ 		NST_FORCE_INLINE void Cpu::ImpliedDummyRead()
+ 		{
+ 			cycles.count += cycles.clock[0];
+-			PeekBus( pc );
++			PeekBusInline( pc );
+ 		}
+ 
+ 		inline uint Cpu::FetchPc16()
+@@ -931,11 +936,11 @@
+ 			 * one lump, so instruction lengths are unchanged.
+ 			*/
+ 			cycles.count += cycles.clock[0];
+-			const uint lo = PeekBus( pc );
++			const uint lo = PeekBusInline( pc );
+ 			++pc;
+ 
+ 			cycles.count += cycles.clock[0];
+-			const uint hi = PeekBus( pc );
++			const uint hi = PeekBusInline( pc );
+ 			++pc;
+ 
+ 			return lo | hi << 8;
+@@ -961,7 +966,7 @@
+ 			uint data = FetchPc16();
+ 			cycles.count += cycles.clock[0];
+ 
+-			data = PeekBus( data );
++			data = PeekBusInline( data );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			return data;
+@@ -972,7 +977,7 @@
+ 			const uint address = FetchPc16();
+ 			cycles.count += cycles.clock[0];
+ 
+-			data = PeekBus( address );
++			data = PeekBusInline( address );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			PokeBus( address, data );
+@@ -1058,17 +1063,17 @@
+ 		uint Cpu::AbsReg_R(uint indexed)
+ 		{
+ 			uint data = pc;
+-			indexed += PeekBus( data );
+-			data = (PeekBus( data + 1 ) << 8) + indexed;
++			indexed += PeekBusInline( data );
++			data = (PeekBusInline( data + 1 ) << 8) + indexed;
+ 			cycles.count += cycles.clock[2];
+ 
+ 			if (indexed & 0x100)
+ 			{
+-				PeekBus( data - 0x100 );
++				PeekBusInline( data - 0x100 );
+ 				cycles.count += cycles.clock[0];
+ 			}
+ 
+-			data = PeekBus( data );
++			data = PeekBusInline( data );
+ 			pc += 2;
+ 			cycles.count += cycles.clock[0];
+ 
+@@ -1078,8 +1083,8 @@
+ 		uint Cpu::AbsReg_RW(uint& data,uint indexed)
+ 		{
+ 			uint address = pc;
+-			indexed += PeekBus( address );
+-			address = (PeekBus( address + 1 ) << 8) + indexed;
++			indexed += PeekBusInline( address );
++			address = (PeekBusInline( address + 1 ) << 8) + indexed;
+ 			pc += 2;
+ 
+ 			/* The dummy read is 1 cycle before the real read (cycles 4 and 5
+@@ -1088,10 +1093,10 @@
+ 			 * (e.g. SLO $4015 observing the frame flag clear) depend on it.
+ 			*/
+ 			cycles.count += cycles.clock[2];
+-			PeekBus( address - (indexed & 0x100) );
++			PeekBusInline( address - (indexed & 0x100) );
+ 			cycles.count += cycles.clock[0];
+ 
+-			data = PeekBus( address );
++			data = PeekBusInline( address );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			PokeBus( address, data );
+@@ -1103,10 +1108,10 @@
+ 		NST_FORCE_INLINE uint Cpu::AbsReg_W(uint indexed)
+ 		{
+ 			uint address = pc;
+-			indexed += PeekBus( address );
+-			address = (PeekBus( address + 1 ) << 8) + indexed;
++			indexed += PeekBusInline( address );
++			address = (PeekBusInline( address + 1 ) << 8) + indexed;
+ 
+-			PeekBus( address - (indexed & 0x100) );
++			PeekBusInline( address - (indexed & 0x100) );
+ 			pc += 2;
+ 			cycles.count += cycles.clock[3];
+ 
+@@ -1134,7 +1139,7 @@
+ 			cycles.count += cycles.clock[4];
+ 			data = FetchZpg16( data );
+ 
+-			data = PeekBus( data );
++			data = PeekBusInline( data );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			return data;
+@@ -1146,7 +1151,7 @@
+ 			cycles.count += cycles.clock[4];
+ 			address = FetchZpg16( address );
+ 
+-			data = PeekBus( address );
++			data = PeekBusInline( address );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			PokeBus( address, data );
+@@ -1178,11 +1183,11 @@
+ 
+ 			if (indexed & 0x100)
+ 			{
+-				PeekBus( data - 0x100 );
++				PeekBusInline( data - 0x100 );
+ 				cycles.count += cycles.clock[0];
+ 			}
+ 
+-			data = PeekBus( data );
++			data = PeekBusInline( data );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			return data;
+@@ -1197,9 +1202,9 @@
+ 			const uint ptrHi = PeekRam( (address + 1) & 0xFF );
+ 			const uint indexed = ptrLo + y;
+ 			address = (ptrHi << 8) + indexed;
+-			PeekBus( address - (indexed & 0x100) );
++			PeekBusInline( address - (indexed & 0x100) );
+ 
+-			data = PeekBus( address );
++			data = PeekBusInline( address );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			PokeBus( address, data );
+@@ -1218,7 +1223,7 @@
+ 			const uint indexed = ptrLo + y;
+ 			address = (ptrHi << 8) + indexed;
+ 
+-			PeekBus( address - (indexed & 0x100) );
++			PeekBusInline( address - (indexed & 0x100) );
+ 
+ 			return address;
+ 		}
+@@ -1232,7 +1237,7 @@
+ 		{
+ 			if ((!!tmp) == STATE)
+ 			{
+-				const uint offset = sign_extend_8(uint(PeekBus( pc )));
++				const uint offset = sign_extend_8(uint(PeekBusInline( pc )));
+ 
+ 				pc = ((tmp=pc+1) + offset) & 0xFFFF;
+ 
+@@ -1244,12 +1249,12 @@
+ 				 * PCH catches up. Both are visible to registers.
+ 				*/
+ 				cycles.count += cycles.clock[1];
+-				PeekBus( (tmp & 0xFF00) | (pc & 0x00FF) );
++				PeekBusInline( (tmp & 0xFF00) | (pc & 0x00FF) );
+ 
+ 				if (crossed)
+ 				{
+ 					cycles.count += cycles.clock[0];
+-					PeekBus( (tmp & 0xFF00) | (pc & 0x00FF) );
++					PeekBusInline( (tmp & 0xFF00) | (pc & 0x00FF) );
+ 				}
+ 
+ 				cycles.count += cycles.clock[0];
+@@ -1405,7 +1410,7 @@
+ 			// 6502 trap, can't cross between pages
+ 
+ 			const uint pos = PeekBus16( pc );
+-			pc = PeekBus( pos ) | (PeekBus( (pos & 0xFF00) | ((pos + 1) & 0x00FF) ) << 8);
++			pc = PeekBusInline( pos ) | (PeekBusInline( (pos & 0xFF00) | ((pos + 1) & 0x00FF) ) << 8);
+ 
+ 			cycles.count += cycles.clock[JMP_IND_CYCLES-1];
+ 		}
+@@ -1418,7 +1423,7 @@
+ 			 * high operand changes where the jump goes.
+ 			*/
+ 			cycles.count += cycles.clock[0];
+-			const uint lo = PeekBus( pc );
++			const uint lo = PeekBusInline( pc );
+ 			++pc;
+ 
+ 			cycles.count += cycles.clock[1];
+@@ -1428,7 +1433,7 @@
+ 			Push8( pc & 0xFF );
+ 
+ 			cycles.count += cycles.clock[0];
+-			const uint hi = PeekBus( pc );
++			const uint hi = PeekBusInline( pc );
+ 
+ 			pc = lo | hi << 8;
+ 			cycles.count += cycles.clock[0];
+@@ -1443,7 +1448,7 @@
+ 
+ 			// cycle 6 reads at the pulled address before the increment
+ 			cycles.count += cycles.clock[1];
+-			PeekBus( pc );
++			PeekBusInline( pc );
+ 
+ 			pc = (pc + 1) & 0xFFFF;
+ 			cycles.count += cycles.clock[0];
+@@ -1906,7 +1911,7 @@
+ 
+ 			const bool halted = (cycles.count != before);
+ 
+-			PeekBus( address );
++			PeekBusInline( address );
+ 			cycles.count += cycles.clock[0];
+ 
+ 			return halted;
+@@ -2066,7 +2071,7 @@
+ 		uint Cpu::FetchIRQISRVector()
+ 		{
+ 			if (cycles.count >= cycles.frame)
+-				PeekBus( 0x3000 );
++				PeekBusInline( 0x3000 );
+ 
+ 			if (interrupt.nmiClock != CYCLE_MAX)
+ 			{
+diff -Nur a/source/core/NstCpu.hpp b/source/core/NstCpu.hpp
+--- a/source/core/NstCpu.hpp
++++ b/source/core/NstCpu.hpp
+@@ -562,6 +562,7 @@
+ 			// Emulation-time read that drives the external data bus.
+ 			// ($4015 reads use the CPU's internal bus and leave the external bus unchanged.)
+ 			uint PeekBus(uint address);
++			NST_FORCE_INLINE uint PeekBusInline(uint);
+ 			inline uint PeekRam(uint);
+ 			inline void PokeRam(uint,uint);
+ 
