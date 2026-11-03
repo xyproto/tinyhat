@@ -545,6 +545,7 @@ libresprite = ["libresprite"]
 librsvg = ["librsvg"]
 libutf8proc = ["libutf8proc"]
 libxkbcommon = ["libxkbcommon"]
+libxml2 = ["libxml2"]
 love = ["love"]
 mesa = ["mesa"]
 mgba = ["mgba"]
@@ -2867,7 +2868,6 @@ libxau = { repo = "extra", version = "1.0.12-1", file = "libxau-1.0.12-1-x86_64.
 libxcb = { repo = "extra", version = "1.17.0-1", file = "libxcb-1.17.0-1-x86_64.pkg.tar.zst", sha256 = "2b2e7ac64b1d56c08a227c10bcab179605f2773f31db0a8c89f49f4e5b2f1292" }
 libxcrypt = { repo = "core", version = "4.5.2-1", file = "libxcrypt-4.5.2-1-x86_64.pkg.tar.zst", sha256 = "7d324b88963786491391468203701efd2c812798a9c3fbcc4ff8a4ddb2d9f276" }
 libxdmcp = { repo = "extra", version = "1.1.5-2", file = "libxdmcp-1.1.5-2-x86_64.pkg.tar.zst", sha256 = "623c957c2fd4b427a0f5a531da44931f9f66521391ee0bd0e635479947036b65" }
-libxml2 = { repo = "core", version = "2.15.4-1", file = "libxml2-2.15.4-1-x86_64.pkg.tar.zst", sha256 = "a6b5c30f51a7ca7c85348de8e83280e6825a8f3e193cc6916ecd8e695d4a24bb" }
 libxml2-legacy = { repo = "extra", version = "2.13.9-2", file = "libxml2-legacy-2.13.9-2-x86_64.pkg.tar.zst", sha256 = "aac28a52e81422935e3bfa44044030640c5d525ad8f65a9672a3ab7139974652" }
 libyuv = { repo = "extra", version = "r2921+644251f25-1", file = "libyuv-r2921+644251f25-1-x86_64.pkg.tar.zst", sha256 = "953c7ee536b35be829a3cc8c614f9a0b553830f5d4d030f35fc452d0199612ce" }
 lilv = { repo = "extra", version = "0.28.0-1", file = "lilv-0.28.0-1-x86_64.pkg.tar.zst", sha256 = "d8b6e7aea382261114d383eb0ea93249a1172e28a1bc25613c5cd2a737511c7c" }
@@ -2926,6 +2926,7 @@ patch = { repo = "core", version = "2.8.1-1", file = "patch-2.8.1-1-x86_64.pkg.t
 pciutils = { repo = "core", version = "3.15.0-1", file = "pciutils-3.15.0-1-x86_64.pkg.tar.zst", sha256 = "994429cef5db515b020bc5125faab04a441677837ebc16f03da53aecca213915" }
 pcre = { repo = "core", version = "8.45-5", file = "pcre-8.45-5-x86_64.pkg.tar.zst", sha256 = "386dc0f4c46f359e9bdd033f07d37b43df1f63a2649566685dc0c86e19623274" }
 pcre2 = { repo = "core", version = "10.49-1", file = "pcre2-10.49-1-x86_64.pkg.tar.zst", sha256 = "e37f4152ff869a6ba050ad08307d7b6b474f4d48cbe0c6ccc01ce9118a774dbf" }
+picocom = { repo = "extra", version = "3.1-3", file = "picocom-3.1-3-x86_64.pkg.tar.zst", sha256 = "3fbfdbb568f48169f5d5eff6226b6b8c923e89d79c4e349a1c417ea66cbf910f" }
 pinentry = { repo = "core", version = "1.3.3-1", file = "pinentry-1.3.3-1-x86_64.pkg.tar.zst", sha256 = "16dfcc18fc60f8c654687970a9b7253ce17a987c44119fe2ee37c760460fc557" }
 pipewire = { repo = "extra", version = "1:1.6.10-1", file = "pipewire-1:1.6.10-1-x86_64.pkg.tar.zst", sha256 = "4a28a0f18fa2d6b73563782988c3572bca7ffc8c56f104eeaa5339667cbcac30" }
 pipewire-alsa = { repo = "extra", version = "1:1.6.10-1", file = "pipewire-alsa-1:1.6.10-1-x86_64.pkg.tar.zst", sha256 = "f9bd046cfbc6c77431944d72f15e657f5f6d90132d61967bf025ac2accc44831" }
@@ -2982,6 +2983,7 @@ tzdata = { repo = "core", version = "2026f-1", file = "tzdata-2026f-1-x86_64.pkg
 unarj = { repo = "extra", version = "2.65-2", file = "unarj-2.65-2-x86_64.pkg.tar.zst", sha256 = "9e93ac847972cb973352657397da062b81b9504e25552f21dd544e8355f1f8d0" }
 unrar = { repo = "extra", version = "1:7.3.2-1", file = "unrar-1:7.3.2-1-x86_64.pkg.tar.zst", sha256 = "aa4984fc93d02dc631d9d2c67f649aefd0e18444b93c758981adc817b9ea2483" }
 unzip = { repo = "extra", version = "6.0-23", file = "unzip-6.0-23-x86_64.pkg.tar.zst", sha256 = "12afd31b30f4335ed56cda717fc2ea0e817ee8d13e0562177ddbb20bd2dc937a" }
+usbutils = { repo = "core", version = "020-1", file = "usbutils-020-1-x86_64.pkg.tar.zst", sha256 = "2884e40114c48defe0ee0c66f664bee954d65f2f961ca9fddb11507524519211" }
 util-linux = { repo = "core", version = "2.42.4-1", file = "util-linux-2.42.4-1-x86_64.pkg.tar.zst", sha256 = "95b7096bf4b45274645f6bb96f5b5508af6ea80e5fccba29244abaa53a341962" }
 util-linux-libs = { repo = "core", version = "2.42.4-1", file = "util-linux-libs-2.42.4-1-x86_64.pkg.tar.zst", sha256 = "56075bc7da9be4470da36a040195f98aac0afbc1edcc7e4f27e6d267dcaf9f37" }
 wallutils = { repo = "extra", version = "5.14.4-1", file = "wallutils-5.14.4-1-x86_64.pkg.tar.zst", sha256 = "12d9d5a86c8f8ee33bb2d13cf6d0c148356fa299a97486fae1a05091da959936" }
