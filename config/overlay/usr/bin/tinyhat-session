@@ -22,6 +22,8 @@ case $TINYHAT_GLES_VERSION in 3.* | [4-9].*) gtk_gl=1 ;; esac
 [ -n "$gtk_gl" ] || export GSK_RENDERER="${GSK_RENDERER:-cairo}"
 # Without a GPU, OpenGL is llvmpipe, which loads LLVM into dwl (over 50 MB). The pixman renderer needs no GL
 [ "$TINYHAT_GL_SOFTWARE" = 1 ] && export WLR_RENDERER="${WLR_RENDERER:-pixman}"
+# VirtualBox and VMware show the hardware cursor plane unreliably (it vanishes now and then), so draw the cursor in dwl
+case $(systemd-detect-virt 2>/dev/null) in oracle | vmware) export WLR_NO_HARDWARE_CURSORS="${WLR_NO_HARDWARE_CURSORS:-1}" ;; esac
 log=${XDG_RUNTIME_DIR:-/tmp}/dwl.log
 printf '\033[?25l'
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
