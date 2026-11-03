@@ -9,8 +9,10 @@ fail() {
 	exit 1
 }
 [ "$(id -u)" != 0 ] || fail "run this as a normal user, not as root"
-case $(uname -m) in
+# The architecture of the installed dwl (tinyhat64x32 runs i686 programs on a 64-bit kernel)
+case $(pacman -Qi dwl 2>/dev/null | sed -n 's/^Architecture *: //p') in
 aarch64) arch=aarch64 conf=makepkg-tinyhat-aarch64.conf ignorearch=-A ;;
+x86_64) arch=x86_64 conf=makepkg-tinyhat-x86_64.conf ignorearch=-A ;;
 *) arch=i686 conf=makepkg-tinyhat.conf ignorearch= ;;
 esac
 
@@ -48,6 +50,19 @@ if [ -n "$missing" ]; then
 	doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "could not update the package database"
 	doas /usr/lib/tinyhat/pacman -S --needed --noconfirm --asdeps $missing || fail "could not install" $missing
 fi
+
+# Tiny Hat 1.0.6 and older left the headers and pkg-config files out of the image
+nodev=
+for pc in wlroots-0.20 wayland-server wayland-scanner wayland-protocols xkbcommon libinput pixman-1 fcft libpng xcb xcb-icccm; do
+	pkg-config --exists "$pc" || nodev="$nodev $pc"
+done
+[ -z "$nodev" ] || fail "this Tiny Hat image lacks the development files (headers and pkg-config files) for:$nodev
+Images newer than Tiny Hat 1.0.6 include them, so dwl can be built after upgrading to the next release."
+
+# cc is clang on Tiny Hat, but the recipes are built with gcc on the build machine
+mkdir -p "$work/bin"
+ln -sf /usr/bin/gcc "$work/bin/cc"
+PATH=$work/bin:$PATH
 
 echo "Building dwl..."
 (cd "$recipe" && makepkg --config "$work/makepkg.conf" -f --noconfirm $ignorearch) || fail "the build failed"
