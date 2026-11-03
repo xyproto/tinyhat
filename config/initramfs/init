@@ -240,6 +240,8 @@ if [ "$toram" = auto ]; then
 	mem_kb=$(awk '/^MemTotal:/ { print $2 }' /proc/meminfo)
 	sfs_kb=$(($(stat -c %s "$sfs") / 1024))
 	[ "$mem_kb" -ge $((sfs_kb + 250 * 1024)) ] && toram=1
+	# In a virtual machine the disk is a file the host already caches in its RAM, so a copy only costs memory and boot time
+	grep -qw hypervisor /proc/cpuinfo && toram=0
 fi
 if [ "$toram" = 1 ]; then
 	[ "$quiet" = 1 ] || echo "Tiny Hat: copying the system to RAM, this takes a moment..."
