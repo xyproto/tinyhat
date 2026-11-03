@@ -207,6 +207,7 @@ exclude = [
     "usr/bin/lto-dump",
     "usr/bin/i686-pc-linux-gnu-*",
     "usr/bin/x86_64-linux-gnu-*",
+    "usr/bin/x86_64-pc-linux-gnu-*",
     "usr/bin/analyze-build",
     "usr/bin/c-index-test",
     "usr/bin/clang-apply-replacements",
@@ -408,6 +409,7 @@ remove = [
 # initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
 # "make lock-x86_64" decides to build
 remove = ["archlinux32-keyring"]
+build_from_source = ["libxml2"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go"]
 
