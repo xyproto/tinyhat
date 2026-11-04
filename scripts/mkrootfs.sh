@@ -130,6 +130,12 @@ base)
 	python3 -m zipfile -e vendor/src/beej-bgc.zip "$root/usr/share/tinyhat/c-guide"
 	python3 -m zipfile -e vendor/src/beej-bgclr.zip "$root/usr/share/tinyhat/c-guide"
 	chmod -R u=rwX,go=rX "$root/usr/share/tinyhat/c-guide"
+	rm -rf "$root.fennel"
+	mkdir -p "$root.fennel"
+	bsdtar -xpf "$(pkgfile fennel)" -C "$root.fennel" usr/share/doc/fennel
+	python3 scripts/mkfennelbook.py "$root.fennel/usr/share/doc/fennel" "$root/usr/share/tinyhat/fennel-book"
+	rm -rf "$root.fennel"
+	chmod -R u=rwX,go=rX "$root/usr/share/tinyhat/fennel-book"
 	python3 - "$root"/usr/lib/systemd/libsystemd-core-*.so <<'EOF'
 import sys
 d = open(sys.argv[1], "rb").read()
