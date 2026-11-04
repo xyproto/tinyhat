@@ -10,13 +10,17 @@ stage=$top/build/buildroot/.fuzzelcheck
 rm -rf "$stage"
 mkdir -p "$stage/fuzzel" "$stage/pkg"
 bsdtar -xf "$pkgfile" -C "$stage/pkg" usr/bin/fuzzel
+for dep in $(bsdtar -xOf "$pkgfile" .PKGINFO | sed -n 's/^depend = \([A-Za-z0-9_.+-]*\).*/\1/p'); do
+	depfile=$(python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 "$dep" 2>/dev/null) || continue
+	bsdtar -xf "$depfile" -C "$stage/pkg" --include 'usr/lib/*.so*'
+done
 cp "$top/config/overlay/etc/xdg/fuzzel/fuzzel.ini" "$stage/fuzzel/fuzzel.ini"
 personality=i686
 case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 out=$(${personality:+setarch "$personality"} bwrap --bind "$top/build/buildroot" / --dev /dev --proc /proc --tmpfs /tmp \
 	--unshare-all --uid 0 --gid 0 --clearenv \
 	--setenv PATH /usr/bin --setenv HOME /root --setenv LANG C.UTF-8 \
-	--setenv XDG_CONFIG_HOME /.fuzzelcheck \
+	--setenv XDG_CONFIG_HOME /.fuzzelcheck --setenv LD_LIBRARY_PATH /.fuzzelcheck/pkg/usr/lib \
 	/.fuzzelcheck/pkg/usr/bin/fuzzel --dmenu </dev/null 2>&1) || true
 rm -rf "$stage"
 case $out in
