@@ -761,6 +761,9 @@ build_from_source = true
 [gtkmm]
 excluded = true
 
+[harfbuzz]
+build_from_source = true
+
 [highway]
 prebuilt = true
 
