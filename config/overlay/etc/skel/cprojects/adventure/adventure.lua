@@ -290,10 +290,68 @@ local function makeChime()
     return love.audio.newSource(data, "static")
 end
 
+local function loadConsoleFont(path, size)
+    local file = io.open(path, "rb")
+    if not file then
+        return nil
+    end
+    local ok, data = pcall(love.data.decompress, "string", "gzip", file:read("*a"))
+    file:close()
+    if not ok or data:sub(1, 4) ~= "\114\181\74\134" then
+        return nil
+    end
+    local headerSize, flags, count, glyphBytes, height, width = love.data.unpack("<I4I4I4I4I4I4", data, 9)
+    if flags % 2 == 0 then
+        return nil
+    end
+    local glyphOf, pos = {}, headerSize + count * glyphBytes + 1
+    for glyph = 0, count - 1 do
+        local stop = data:find("\255", pos, true) or #data + 1
+        local singles = data:sub(pos, stop - 1):match("^[^\254]*")
+        for char in singles:gmatch("[%z\1-\127\194-\244][\128-\191]*") do
+            glyphOf[char] = glyphOf[char] or glyph
+        end
+        pos = stop + 1
+    end
+    local chars = {}
+    for code = 32, 255 do
+        local char = code < 128 and string.char(code) or string.char(192 + math.floor(code / 64), 128 + code % 64)
+        if (code < 127 or code > 160) and glyphOf[char] then
+            chars[#chars + 1] = char
+        end
+    end
+    local bytesPerRow = math.ceil(width / 8)
+    local image = love.image.newImageData(1 + #chars * (width * size + 1), height * size)
+    for i, char in ipairs(chars) do
+        local left = 1 + (i - 1) * (width * size + 1)
+        for y = 0, height * size - 1 do
+            image:setPixel(left - 1, y, 1, 0, 1, 1)
+        end
+        local offset = headerSize + glyphOf[char] * glyphBytes
+        for row = 0, height - 1 do
+            for column = 0, width - 1 do
+                local byte = data:byte(offset + row * bytesPerRow + math.floor(column / 8) + 1)
+                if math.floor(byte / 2 ^ (7 - column % 8)) % 2 == 1 then
+                    for dy = 0, size - 1 do
+                        for dx = 0, size - 1 do
+                            image:setPixel(left + column * size + dx, row * size + dy, 1, 1, 1, 1)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    for y = 0, height * size - 1 do
+        image:setPixel(image:getWidth() - 1, y, 1, 0, 1, 1)
+    end
+    return love.graphics.newImageFont(image, table.concat(chars))
+end
+
 function adv.init()
     love.graphics.setDefaultFilter("nearest", "nearest")
-    font = love.graphics.newFont(14, "mono")
-    bigFont = love.graphics.newFont(30, "mono")
+    local vga = "/usr/share/kbd/consolefonts/default8x16.psfu.gz"
+    font = loadConsoleFont(vga, 1) or love.graphics.newFont(14, "mono")
+    bigFont = loadConsoleFont(vga, 2) or love.graphics.newFont(30, "mono")
     love.graphics.setFont(font)
     local ok, source = pcall(makeChime)
     if ok then
