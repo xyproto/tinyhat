@@ -452,6 +452,7 @@ glib2 = ["glib2"]
 glu = ["glu"]
 grafx2 = ["grafx2"]
 gtk4 = ["gtk4"]
+harfbuzz = ["harfbuzz"]
 imv = ["imv"]
 iproute2 = ["iproute2"]
 jemalloc = ["jemalloc"]
@@ -1326,6 +1327,7 @@ chrpath = { repo = "extra", version = "0.18-1", file = "chrpath-0.18-1-aarch64.p
 clang = { repo = "extra", version = "23.1.4-1.1", file = "clang-23.1.4-1.1-aarch64.pkg.tar.xz", sha256 = "8d2074991769edf30e1da4c140a78d21ba3d87bcf65a2966007a111f262b9074" }
 clang-libs = { repo = "extra", version = "23.1.4-1.1", file = "clang-libs-23.1.4-1.1-aarch64.pkg.tar.xz", sha256 = "348e6701a322779f1ea8062a89487be1168171079d4a1379e73d4e0c86ad13e0" }
 cmake = { repo = "extra", version = "4.4.5-1", file = "cmake-4.4.5-1-aarch64.pkg.tar.xz", sha256 = "fdfe85c921c291d5fd83c6f8c4c326c7d70607cc78a6138635055cbd36c2ac4e" }
+colm = { repo = "extra", version = "0.14.7-5", file = "colm-0.14.7-5-aarch64.pkg.tar.xz", sha256 = "da3b2f3dd647a6dac0e435dc7f346e9011c8ccc3cd1ff9b04ed6178061cf13e4" }
 compiler-rt = { repo = "extra", version = "23.1.4-1.1", file = "compiler-rt-23.1.4-1.1-aarch64.pkg.tar.xz", sha256 = "8e30a938f59d959afc604dc3ceb109afe382ebb5dd25b2cf49028466a37564d6" }
 coreutils = { repo = "core", version = "9.12-2", file = "coreutils-9.12-2-aarch64.pkg.tar.xz", sha256 = "855b6439cc94fe5d0a3b1428e63ca785c0fa83135e0c0d59277d704d8f4dd647" }
 cpio = { repo = "extra", version = "2.15-3", file = "cpio-2.15-3-aarch64.pkg.tar.xz", sha256 = "596b6371550dce4a855b5c14396d291b26848f3493d76dcb3298a83e780a90e0" }
@@ -1702,6 +1704,7 @@ python-tqdm = { repo = "extra", version = "4.70.1-1", file = "python-tqdm-4.70.1
 python-typogrify = { repo = "extra", version = "2.1.0-2", file = "python-typogrify-2.1.0-2-any.pkg.tar.xz", sha256 = "f33a9c32f16bdb43ce8f47e4cee0af32f3d2ee9a43cc91de5792136562354263" }
 python-wheel = { repo = "extra", version = "0.48.0-1", file = "python-wheel-0.48.0-1-any.pkg.tar.xz", sha256 = "b950706090ce859b6b38b73bf6c13a58946070f069f0789c8c76de6846ec6d36" }
 python-yaml = { repo = "extra", version = "6.0.3-2", file = "python-yaml-6.0.3-2-aarch64.pkg.tar.xz", sha256 = "35d1d9aad13879b1e300719a41b74357974e4372c7543694d08b84f46e22f014" }
+ragel = { repo = "extra", version = "7.0.4-1", file = "ragel-7.0.4-1-aarch64.pkg.tar.xz", sha256 = "2379465c348a6897b356cac4facc2c382d0438cab61bbf48d84918488524864c" }
 rav1e = { repo = "extra", version = "0.8.1-3", file = "rav1e-0.8.1-3-aarch64.pkg.tar.xz", sha256 = "a4cd3de43626582c42c89627a52bdf3856fed2e3f3a2d378c9e101911b6bb396" }
 raylib = { repo = "extra", version = "6.2-1", file = "raylib-6.2-1-aarch64.pkg.tar.xz", sha256 = "79c4e7e635052f91ec752684ac0656c916b6208eadda3218286d303b47e7aea8" }
 readline = { repo = "core", version = "8.3.6-1", file = "readline-8.3.6-1-aarch64.pkg.tar.xz", sha256 = "6e81d2cf14bf0309761d4c65a0a46f181f61c5a6b83aa64928f1ab12cf6f5797" }
@@ -2367,7 +2370,6 @@ grim = { repo = "extra", version = "1.5.0-2", file = "grim-1.5.0-2-aarch64.pkg.t
 gtest = { repo = "extra", version = "1.18.0-1", file = "gtest-1.18.0-1-aarch64.pkg.tar.xz", sha256 = "b89d9d236da04689bf776e8639976a7568957ea4cd11b5035204daf5211f3d7a" }
 guile = { repo = "core", version = "3.0.11-1", file = "guile-3.0.11-1-aarch64.pkg.tar.xz", sha256 = "28fdd4e5d274c0498a8e3026b7ca3694105b880a6143b6114a25fb8e9eda36af" }
 gzip = { repo = "core", version = "1.15-1", file = "gzip-1.15-1-aarch64.pkg.tar.xz", sha256 = "d92848bfc4994638a500ebb761a9a568017bd0e4104ce80c506a3ee95ad93d0f" }
-harfbuzz = { repo = "extra", version = "15.0.0-1", file = "harfbuzz-15.0.0-1-aarch64.pkg.tar.xz", sha256 = "225cd16850721f56075e4055c7d8dda50f9ddb25cd9c1fc9c56cd1a79d56cb73" }
 highway = { repo = "extra", version = "1.4.0-1", file = "highway-1.4.0-1-aarch64.pkg.tar.xz", sha256 = "5679e47d31ae1ecca8b7e18b9a24ce6027ca333c42d9283bbd30ea7fa672ba8f" }
 hiredis = { repo = "extra", version = "1.4.1-1", file = "hiredis-1.4.1-1-aarch64.pkg.tar.xz", sha256 = "5aa840851191ae4f956b9fdf6074f4fb785ecdc23f27cc103f401a4e0a95dbc4" }
 htop = { repo = "extra", version = "3.5.3-1", file = "htop-3.5.3-1-aarch64.pkg.tar.xz", sha256 = "a58899bd2596d55575493509b3a5aa6f53075cb3d88bb6c712088c57068d9eb7" }
