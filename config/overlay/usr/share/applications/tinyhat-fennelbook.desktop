@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Fennel programming book
+Icon=accessories-dictionary
+Comment=The Fennel language guides, including game making with LÖVE
+Exec=netsurfy file:///usr/share/tinyhat/fennel-book/index.html
+Terminal=false
+Categories=Development;
