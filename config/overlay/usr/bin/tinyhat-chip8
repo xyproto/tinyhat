@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/lib/tinyhat/cproject chip8-hello "CHIP-8 programming in Octo" hello.8o

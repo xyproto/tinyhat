@@ -1,0 +1,19 @@
+pkgbase = octo
+	pkgdesc = Octo CHIP-8 assembler, player and IDE (c-octo), with SDL3
+	pkgver = 20260914.181012.g102994e6166
+	pkgrel = 2
+	url = https://github.com/JohnEarnest/c-octo
+	arch = i686
+	arch = x32
+	arch = x86_64
+	arch = aarch64
+	license = MIT
+	depends = sdl3
+	source = octo-102994e6166236045a067efa930a88532510e03e.tar.gz::https://github.com/JohnEarnest/c-octo/archive/102994e6166236045a067efa930a88532510e03e.tar.gz
+	source = sdl3.patch
+	source = buzzer.patch
+	sha256sums = e160d02a05071bbd5a0d9b180ca9e5680be817f458a95e3af055749163f068ed
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = octo

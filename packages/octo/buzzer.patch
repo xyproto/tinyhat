@@ -1,0 +1,10 @@
+--- a/src/octo_emulator.h
++++ b/src/octo_emulator.h
+@@ -310,6 +310,7 @@
+   e->pending=-1;
+   e->pitch=64;
+   e->osc=0;
++  memset(e->pattern,0xF0,sizeof(e->pattern));
+   memcpy(e->ram+0x200,rom,romsize);
+   memcpy(e->ram,     octo_font_sets[e->options.font][0], 5*16);
+   memcpy(e->ram+5*16,octo_font_sets[e->options.font][1],10*16);

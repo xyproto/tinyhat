@@ -1,0 +1,497 @@
+diff --git a/src/octo_de.c b/src/octo_de.c
+index c705145..247da43 100755
+--- a/src/octo_de.c
++++ b/src/octo_de.c
+@@ -10,7 +10,7 @@
+ #include "octo_emulator.h"
+ #include "octo_compiler.h"
+ #include "octo_cartridge.h"
+-#include <SDL.h>
++#include <SDL3/SDL.h>
+ #include "octo_util.h"
+ 
+ #define MODE_TEXT_EDITOR     0
+@@ -458,12 +458,12 @@ text_pos text_scanw(text_pos from,int dir){
+ }
+ void find_events(SDL_Event*e){
+   size_t len=strlen(state.text_find_str);
+-  if(e->type==SDL_TEXTINPUT){
++  if(e->type==SDL_EVENT_TEXT_INPUT){
+     char c=e->text.text[0];
+     if((c>=' ')&&(c<='~')&&len<sizeof(state.text_find_str)-1)state.text_find_str[len]=c,state.text_find_str[len+1]='\0',state.text_find_changed=1;
+     state.text_timer=0;
+   }
+-  if(e->type==SDL_KEYUP&&e->key.keysym.sym==SDLK_BACKSPACE){
++  if(e->type==SDL_EVENT_KEY_UP&&e->key.key==SDLK_BACKSPACE){
+     if(len>0)state.text_find_str[len-1]='\0',state.text_find_changed=1;
+     state.text_timer=0;
+   }
+@@ -486,12 +486,12 @@ text_span get_ordered_block(void){
+ 
+ void edit_events(SDL_Event*e){
+   text_span span=get_ordered_cursor();
+-  if(e->type==SDL_TEXTINPUT){
+-    text_new_edit(&span,stralloc(e->text.text),0);
++  if(e->type==SDL_EVENT_TEXT_INPUT){
++    text_new_edit(&span,stralloc((char*)e->text.text),0);
+   }
+-  if(e->type==SDL_KEYDOWN){
+-    int code=e->key.keysym.sym;
+-    int mod=e->key.keysym.mod&(KMOD_LCTRL|KMOD_RCTRL|KMOD_LGUI|KMOD_RGUI);
++  if(e->type==SDL_EVENT_KEY_DOWN){
++    int code=e->key.key;
++    int mod=e->key.mod&(SDL_KMOD_LCTRL|SDL_KMOD_RCTRL|SDL_KMOD_LGUI|SDL_KMOD_RGUI);
+     if(code==SDLK_RETURN){
+       text_new_edit(&span,stralloc("\n"),0);
+     }
+@@ -1424,12 +1424,12 @@ void save_file(void){
+ }
+ void save_events(SDL_Event*e){
+   size_t len=strlen(state.open_name);
+-  if(e->type==SDL_TEXTINPUT){
++  if(e->type==SDL_EVENT_TEXT_INPUT){
+     char c=e->text.text[0];
+     if((c>=' ')&&(c<='~')&&len<sizeof(state.open_name)-1)state.open_name[len]=c,state.open_name[len+1]='\0';
+     state.text_timer=0;
+   }
+-  if(e->type==SDL_KEYUP&&e->key.keysym.sym==SDLK_BACKSPACE){
++  if(e->type==SDL_EVENT_KEY_UP&&e->key.key==SDLK_BACKSPACE){
+     if(len>0)state.open_name[len-1]='\0';
+     state.text_timer=0;
+   }
+@@ -1591,23 +1591,24 @@ int main(int argc,char*argv[]){
+   state.mode=MODE_TEXT_EDITOR;
+   state.dirty=0;
+ 
+-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
+-  SDL_Window*win=SDL_CreateWindow("OctoDE",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,ui.win_width*ui.win_scale,ui.win_height*ui.win_scale,SDL_WINDOW_SHOWN);
++  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
++  SDL_Window*win=SDL_CreateWindow("OctoDE",ui.win_width*ui.win_scale,ui.win_height*ui.win_scale,0);
++  SDL_StartTextInput(win);
+   SDL_Renderer*ren=NULL;
+   SDL_Texture*screen=NULL;
+   octo_ui_init(win,&ren,&screen);
+   SDL_Texture*overlay=NULL;
+-  SDL_SetWindowFullscreen(win,ui.windowed?0:SDL_WINDOW_FULLSCREEN_DESKTOP);
++  SDL_SetWindowFullscreen(win,!ui.windowed);
+   SDL_AddTimer((1000/60),tick,NULL);
+-  SDL_JoystickEventState(SDL_ENABLE);
++  SDL_SetJoystickEventsEnabled(true);
+   SDL_Joystick*joy=NULL;
+   audio_init(&emu);
+   random_init();
+ 
+   SDL_Event e; state.running=1;
+   while(state.running&&SDL_WaitEvent(&e)){
+-    if(e.type==SDL_QUIT)state.running=0;
+-    if(e.type==SDL_RENDER_DEVICE_RESET||e.type==SDL_RENDER_TARGETS_RESET){
++    if(e.type==SDL_EVENT_QUIT)state.running=0;
++    if(e.type==SDL_EVENT_RENDER_DEVICE_RESET||e.type==SDL_EVENT_RENDER_TARGETS_RESET){
+       SDL_DestroyTexture(overlay),overlay=NULL;
+       octo_ui_init(win,&ren,&screen);
+     }
+@@ -1617,12 +1618,12 @@ int main(int argc,char*argv[]){
+     if(state.mode==MODE_TEXT_EDITOR&& state.text_find)find_events(&e);
+     if(state.mode==MODE_TEXT_EDITOR&&!state.text_find)edit_events(&e);
+     if(state.mode==MODE_SAVE)save_events(&e);
+-    if(e.type==SDL_USEREVENT){
+-      SDL_FlushEvent(SDL_USEREVENT);
++    if(e.type==SDL_EVENT_USER){
++      SDL_FlushEvent(SDL_EVENT_USER);
+ 
+       if(input.events[EVENT_FULLSCREEN]){
+         ui.windowed=!ui.windowed;
+-        if (SDL_SetWindowFullscreen(win, ui.windowed ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP)) {
++        if (!SDL_SetWindowFullscreen(win, !ui.windowed)) {
+           printf("toggling fullscreen failed: %s\n", SDL_GetError());
+         }
+       }
+@@ -1632,7 +1633,7 @@ int main(int argc,char*argv[]){
+ 
+       int dw, dh, ow=0, oh=0;
+       SDL_GetWindowSize(win,&dw,&dh);
+-      if(overlay!=NULL)SDL_QueryTexture(overlay,NULL,NULL,&ow,&oh);
++      if(overlay!=NULL){float fw,fh;SDL_GetTextureSize(overlay,&fw,&fh);ow=(int)fw,oh=(int)fh;}
+       if(overlay==NULL||ow!=(dw/ui.win_scale)||oh!=(dh/ui.win_scale)){
+         if(overlay!=NULL)SDL_DestroyTexture(overlay);
+         overlay=SDL_CreateTexture(ren,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING,(dw/ui.win_scale),(dh/ui.win_scale));
+@@ -1665,7 +1666,7 @@ int main(int argc,char*argv[]){
+         render();
+         SDL_UnlockTexture(overlay);
+         SDL_SetTextureBlendMode(overlay,SDL_BLENDMODE_NONE);
+-        SDL_RenderCopy(ren,overlay,NULL,NULL);
++        SDL_RenderTexture(ren,overlay,NULL,NULL);
+         SDL_RenderPresent(ren);
+         events_clear();
+       }
+diff --git a/src/octo_run.c b/src/octo_run.c
+index 85ad283..9a3eff2 100755
+--- a/src/octo_run.c
++++ b/src/octo_run.c
+@@ -21,7 +21,7 @@
+ #include "octo_emulator.h"
+ #include "octo_compiler.h"
+ #include "octo_cartridge.h"
+-#include <SDL.h>
++#include <SDL3/SDL.h>
+ #include "octo_util.h"
+ 
+ octo_program* prog=NULL;
+@@ -43,54 +43,55 @@ int main(int argc, char* argv[]){
+   }
+   octo_load_program(&ui,&emu,&prog,source_path,options_path);
+ 
+-  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
+-  SDL_Window  *win=SDL_CreateWindow("Octo-Run",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,ui.win_width*ui.win_scale,ui.win_height*ui.win_scale,SDL_WINDOW_SHOWN);
++  SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO);
++  SDL_Window  *win=SDL_CreateWindow("Octo-Run",ui.win_width*ui.win_scale,ui.win_height*ui.win_scale,0);
++  SDL_StartTextInput(win);
+   SDL_Renderer*ren=NULL;
+   SDL_Texture*screen=NULL;
+   octo_ui_init(win,&ren,&screen);
+   SDL_Texture *overlay=NULL;
+-  SDL_SetWindowFullscreen(win,ui.windowed?0:SDL_WINDOW_FULLSCREEN_DESKTOP);
++  SDL_SetWindowFullscreen(win,!ui.windowed);
+   SDL_AddTimer((1000/60),tick,NULL);
+-  SDL_JoystickEventState(SDL_ENABLE);
++  SDL_SetJoystickEventsEnabled(true);
+   SDL_Joystick*joy=NULL;
+   audio_init(&emu);
+   random_init();
+ 
+   SDL_Event e;
+   while(SDL_WaitEvent(&e)){
+-    if(e.type==SDL_QUIT)break;
+-    if(e.type==SDL_RENDER_DEVICE_RESET||e.type==SDL_RENDER_TARGETS_RESET){
++    if(e.type==SDL_EVENT_QUIT)break;
++    if(e.type==SDL_EVENT_RENDER_DEVICE_RESET||e.type==SDL_EVENT_RENDER_TARGETS_RESET){
+       SDL_DestroyTexture(overlay),overlay=NULL;
+       octo_ui_init(win,&ren,&screen);
+     }
+     events_joystick(&emu,&joy,&e);
+-    if(e.type==SDL_KEYDOWN){
+-      int code=e.key.keysym.sym;
++    if(e.type==SDL_EVENT_KEY_DOWN){
++      SDL_Keycode code=e.key.key;
+       for(int z=0;z<(int)(sizeof(keys)/sizeof(key_mapping));z++)if(keys[z].k==code)emu.keys[keys[z].v]=1;
+     }
+-    if(e.type==SDL_KEYUP){
+-      int code=e.key.keysym.sym;
++    if(e.type==SDL_EVENT_KEY_UP){
++      SDL_Keycode code=e.key.key;
+       for(int z=0;z<(int)(sizeof(keys)/sizeof(key_mapping));z++)if(keys[z].k==code){
+         emu.keys[keys[z].v]=0;
+         if(emu.wait){emu.v[(int)emu.wait_reg]=keys[z].v;emu.wait=0;}
+       }
+-      if(code==SDLK_ESCAPE||code==SDLK_BACKQUOTE)break;
+-      if(code==SDLK_m)ui.show_monitors=!ui.show_monitors,octo_ui_invalidate(&emu);
++      if(code==SDLK_ESCAPE||code==SDLK_GRAVE)break;
++      if(code==SDLK_M)ui.show_monitors=!ui.show_monitors,octo_ui_invalidate(&emu);
+       if(emu.halt){
+-        if(code==SDLK_i)emu.halt=0,octo_ui_invalidate(&emu);
+-        if(code==SDLK_o){emu.dt=emu.st=0;octo_emulator_instruction(&emu);snprintf(emu.halt_message,OCTO_HALT_MAX,"Single Stepping");}
++        if(code==SDLK_I)emu.halt=0,octo_ui_invalidate(&emu);
++        if(code==SDLK_O){emu.dt=emu.st=0;octo_emulator_instruction(&emu);snprintf(emu.halt_message,OCTO_HALT_MAX,"Single Stepping");}
+       }
+       else{
+-        if(code==SDLK_i){emu.halt=1;snprintf(emu.halt_message,OCTO_HALT_MAX,"User Interrupt");}
++        if(code==SDLK_I){emu.halt=1;snprintf(emu.halt_message,OCTO_HALT_MAX,"User Interrupt");}
+       }
+-      if(code==SDLK_f&&e.key.keysym.mod&(KMOD_LCTRL|KMOD_RCTRL|KMOD_LGUI|KMOD_RGUI)){
++      if(code==SDLK_F&&e.key.mod&(SDL_KMOD_LCTRL|SDL_KMOD_RCTRL|SDL_KMOD_LGUI|SDL_KMOD_RGUI)){
+         ui.windowed=!ui.windowed;
+-        SDL_SetWindowFullscreen(win,ui.windowed?0:SDL_WINDOW_FULLSCREEN_DESKTOP);
++        SDL_SetWindowFullscreen(win,!ui.windowed);
+       }
+     }
+-    if(e.type==SDL_USEREVENT){
++    if(e.type==SDL_EVENT_USER){
+       emu_step(&emu,prog);
+-      SDL_FlushEvent(SDL_USEREVENT); // don't queue up repaints if we're running slow!
++      SDL_FlushEvent(SDL_EVENT_USER); // don't queue up repaints if we're running slow!
+ 
+       int bgcolor=emu.options.colors[emu.st>0?OCTO_COLOR_SOUND: OCTO_COLOR_BACKGROUND];
+       SDL_SetRenderDrawColor(ren,(bgcolor>>16)&0xFF,(bgcolor>>8)&0xFF,bgcolor&0xFF,0xFF);
+@@ -98,7 +99,7 @@ int main(int argc, char* argv[]){
+ 
+       int dw, dh, ow=0, oh=0;
+       SDL_GetWindowSize(win,&dw,&dh);
+-      if(overlay!=NULL)SDL_QueryTexture(overlay,NULL,NULL,&ow,&oh);
++      if(overlay!=NULL){float fw,fh;SDL_GetTextureSize(overlay,&fw,&fh);ow=(int)fw,oh=(int)fh;}
+       if(overlay==NULL||ow!=(dw/ui.win_scale)||oh!=(dh/ui.win_scale)){
+         if(overlay!=NULL)SDL_DestroyTexture(overlay);
+         overlay=SDL_CreateTexture(ren,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING,(dw/ui.win_scale),(dh/ui.win_scale));
+diff --git a/src/octo_util.h b/src/octo_util.h
+index 2380163..5f72bad 100755
+--- a/src/octo_util.h
++++ b/src/octo_util.h
+@@ -428,27 +428,27 @@ typedef struct {
+ input_events input={0,-1,-1,0,-1,-1,0,{0},0};
+ 
+ void events_queue(SDL_Event*e){
+-  if(e->type==SDL_KEYDOWN){
+-    int code=e->key.keysym.sym;
++  if(e->type==SDL_EVENT_KEY_DOWN){
++    SDL_Keycode code=e->key.key;
+     if(code==SDLK_LSHIFT)input.is_shifted|=1;
+     if(code==SDLK_RSHIFT)input.is_shifted|=2;
+   }
+-  if(e->type==SDL_KEYUP){
+-    int code =e->key.keysym.sym;
+-    int cmd  =e->key.keysym.mod&(KMOD_LCTRL|KMOD_RCTRL|KMOD_LGUI|KMOD_RGUI);
+-    int shift=e->key.keysym.mod&(KMOD_LSHIFT|KMOD_RSHIFT);
++  if(e->type==SDL_EVENT_KEY_UP){
++    SDL_Keycode code=e->key.key;
++    int cmd  =e->key.mod&(SDL_KMOD_LCTRL|SDL_KMOD_RCTRL|SDL_KMOD_LGUI|SDL_KMOD_RGUI);
++    int shift=e->key.mod&(SDL_KMOD_LSHIFT|SDL_KMOD_RSHIFT);
+     if(code==SDLK_ESCAPE)input.events[EVENT_ESCAPE   ]=1;
+     if(code==SDLK_RETURN)input.events[EVENT_ENTER    ]=1;
+-    if(code==SDLK_f&&cmd)input.events[EVENT_FIND     ]=1;
+-    if(code==SDLK_r&&cmd)input.events[EVENT_RUN      ]=1;
+-    if(code==SDLK_n&&cmd)input.events[EVENT_NEW      ]=1;
+-    if(code==SDLK_o&&cmd)input.events[EVENT_OPEN     ]=1;
+-    if(code==SDLK_s&&cmd)input.events[EVENT_SAVE     ]=1;
+-    if(code==SDLK_e&&cmd)input.events[EVENT_SPRITE   ]=1;
+-    if(code==SDLK_p&&cmd)input.events[EVENT_PALETTE  ]=1;
+-    if(code==SDLK_c&&cmd)input.events[EVENT_COPY     ]=1;
+-    if(code==SDLK_x&&cmd)input.events[EVENT_CUT      ]=1;
+-    if(code==SDLK_v&&cmd)input.events[EVENT_PASTE    ]=1;
++    if(code==SDLK_F&&cmd)input.events[EVENT_FIND     ]=1;
++    if(code==SDLK_R&&cmd)input.events[EVENT_RUN      ]=1;
++    if(code==SDLK_N&&cmd)input.events[EVENT_NEW      ]=1;
++    if(code==SDLK_O&&cmd)input.events[EVENT_OPEN     ]=1;
++    if(code==SDLK_S&&cmd)input.events[EVENT_SAVE     ]=1;
++    if(code==SDLK_E&&cmd)input.events[EVENT_SPRITE   ]=1;
++    if(code==SDLK_P&&cmd)input.events[EVENT_PALETTE  ]=1;
++    if(code==SDLK_C&&cmd)input.events[EVENT_COPY     ]=1;
++    if(code==SDLK_X&&cmd)input.events[EVENT_CUT      ]=1;
++    if(code==SDLK_V&&cmd)input.events[EVENT_PASTE    ]=1;
+     if(code==SDLK_SLASH&&cmd)input.events[EVENT_TOGGLE_COMMENT]=1;
+     if(code==SDLK_UP   )input.events[EVENT_UP   ]=1;
+     if(code==SDLK_DOWN )input.events[EVENT_DOWN ]=1;
+@@ -456,8 +456,8 @@ void events_queue(SDL_Event*e){
+     if(code==SDLK_RIGHT)input.events[EVENT_RIGHT]=1;
+     if(code==SDLK_TAB&&!shift)input.events[EVENT_NEXT]=1;
+     if(code==SDLK_TAB&& shift)input.events[EVENT_PREV]=1;
+-    if(code==SDLK_z&&(!shift)&&cmd)input.events[EVENT_UNDO]=1;
+-    if(code==SDLK_z&&( shift)&&cmd)input.events[EVENT_REDO]=1;
++    if(code==SDLK_Z&&(!shift)&&cmd)input.events[EVENT_UNDO]=1;
++    if(code==SDLK_Z&&( shift)&&cmd)input.events[EVENT_REDO]=1;
+     if(code==SDLK_PAGEUP)  input.events[EVENT_PAGEUP  ]=1;
+     if(code==SDLK_PAGEDOWN)input.events[EVENT_PAGEDOWN]=1;
+     if(code==SDLK_SPACE)   input.events[EVENT_SPACE   ]=1;
+@@ -469,27 +469,27 @@ void events_queue(SDL_Event*e){
+     if(code==SDLK_6)input.events[EVENT_6]=1;
+     if(code==SDLK_HOME)input.events[EVENT_HOME]=1;
+     if(code==SDLK_END )input.events[EVENT_END ]=1;
+-    if(code==SDLK_b&&cmd)input.events[EVENT_FULLSCREEN]=1;
++    if(code==SDLK_B&&cmd)input.events[EVENT_FULLSCREEN]=1;
+     if(code==SDLK_LSHIFT)input.is_shifted&=~1;
+     if(code==SDLK_RSHIFT)input.is_shifted&=~2;
+-    if(code==SDLK_i)input.events[EVENT_INTERRUPT]=1;
+-    if(code==SDLK_o)input.events[EVENT_STEP]=1;
+-    if(code==SDLK_m)input.events[EVENT_TOGGLE_MONITORS]=1;
+-    if(code==SDLK_a&&cmd)input.events[EVENT_SELECT_ALL]=1;
+-    if(code==SDLK_BACKQUOTE)input.events[EVENT_BACK]=1;
++    if(code==SDLK_I)input.events[EVENT_INTERRUPT]=1;
++    if(code==SDLK_O)input.events[EVENT_STEP]=1;
++    if(code==SDLK_M)input.events[EVENT_TOGGLE_MONITORS]=1;
++    if(code==SDLK_A&&cmd)input.events[EVENT_SELECT_ALL]=1;
++    if(code==SDLK_GRAVE)input.events[EVENT_BACK]=1;
+   }
+-  if(e->type==SDL_MOUSEMOTION){
++  if(e->type==SDL_EVENT_MOUSE_MOTION){
+     input.mouse_x=(e->motion.x/tscale);
+     input.mouse_y=(e->motion.y/tscale);
+   }
+-  if(e->type==SDL_MOUSEBUTTONDOWN){
++  if(e->type==SDL_EVENT_MOUSE_BUTTON_DOWN){
+     input.mouse_x=input.down_x=(e->button.x/tscale);
+     input.mouse_y=input.down_y=(e->button.y/tscale);
+     input.is_down=1;
+     input.events[EVENT_MOUSEDOWN]=1;
+     input.right_button=e->button.button!=SDL_BUTTON_LEFT;
+   }
+-  if(e->type==SDL_MOUSEBUTTONUP){
++  if(e->type==SDL_EVENT_MOUSE_BUTTON_UP){
+     input.mouse_x=(e->button.x/tscale);
+     input.mouse_y=(e->button.y/tscale);
+     input.is_down=0;
+@@ -498,7 +498,7 @@ void events_queue(SDL_Event*e){
+     if(input.double_click_timeout>0)input.events[EVENT_DOUBLECLICK]=1,input.double_click_timeout=0;
+     else input.double_click_timeout=20;
+   }
+-  if(e->type==SDL_MOUSEWHEEL){
++  if(e->type==SDL_EVENT_MOUSE_WHEEL){
+     if     (e->wheel.y>0)input.events[EVENT_SCROLLUP   ]=1;
+     else if(e->wheel.y<0)input.events[EVENT_SCROLLDOWN ]=1;
+     else if(e->wheel.x>0)input.events[EVENT_SCROLLRIGHT]=1;
+@@ -515,31 +515,31 @@ int mouse_in(rect*r){
+ 
+ typedef struct {SDL_Keycode k;int v;} key_mapping;
+ key_mapping keys[]={
+-  {SDLK_x,0},
++  {SDLK_X,0},
+   {SDLK_1,1},{SDLK_KP_9,1}/*xo-circle*/,
+   {SDLK_2,2},{SDLK_KP_7,2}/*xo-square*/,
+   {SDLK_3,3},
+-  {SDLK_q,4},{SDLK_F12,4},{SDLK_KP_3,4}/*xo-cross*/,
+-  {SDLK_w,5},{SDLK_UP,5},{SDLK_KP_6,5},
+-  {SDLK_e,6},{SDLK_SPACE,6},{SDLK_BACKSPACE,6},{SDLK_KP_1,6}/*xo-check*/,
+-  {SDLK_a,7},{SDLK_LEFT,7},{SDLK_KP_4,7},
+-  {SDLK_s,8},{SDLK_DOWN,8},{SDLK_KP_2,8},
+-  {SDLK_d,9},{SDLK_RIGHT,9},{SDLK_KP_6,9},
+-  {SDLK_z,10},
+-  {SDLK_c,11},
++  {SDLK_Q,4},{SDLK_F12,4},{SDLK_KP_3,4}/*xo-cross*/,
++  {SDLK_W,5},{SDLK_UP,5},{SDLK_KP_6,5},
++  {SDLK_E,6},{SDLK_SPACE,6},{SDLK_BACKSPACE,6},{SDLK_KP_1,6}/*xo-check*/,
++  {SDLK_A,7},{SDLK_LEFT,7},{SDLK_KP_4,7},
++  {SDLK_S,8},{SDLK_DOWN,8},{SDLK_KP_2,8},
++  {SDLK_D,9},{SDLK_RIGHT,9},{SDLK_KP_6,9},
++  {SDLK_Z,10},
++  {SDLK_C,11},
+   {SDLK_4,12},
+-  {SDLK_r,13},
+-  {SDLK_f,14},
+-  {SDLK_v,15},
++  {SDLK_R,13},
++  {SDLK_F,14},
++  {SDLK_V,15},
+ };
+ 
+ void events_emulator(octo_emulator*emu,SDL_Event*e){
+-  if(e->type==SDL_KEYDOWN){
+-    int code=e->key.keysym.sym;
++  if(e->type==SDL_EVENT_KEY_DOWN){
++    SDL_Keycode code=e->key.key;
+     for(int z=0;z<(int)(sizeof(keys)/sizeof(key_mapping));z++)if(keys[z].k==code)emu->keys[keys[z].v]=1;
+   }
+-  if(e->type==SDL_KEYUP){
+-    int code=e->key.keysym.sym;
++  if(e->type==SDL_EVENT_KEY_UP){
++    SDL_Keycode code=e->key.key;
+     for(int z=0;z<(int)(sizeof(keys)/sizeof(key_mapping));z++)if(keys[z].k==code){
+       emu->keys[keys[z].v]=0;
+       if(emu->wait){emu->v[(int)emu->wait_reg]=keys[z].v;emu->wait=0;}
+@@ -548,12 +548,12 @@ void events_emulator(octo_emulator*emu,SDL_Event*e){
+ }
+ 
+ void events_joystick(octo_emulator*emu, SDL_Joystick**joy, SDL_Event*e){
+-  if(e->type==SDL_JOYDEVICEADDED&&e->jdevice.which==0&&(*joy)==NULL){(*joy)=SDL_JoystickOpen(0);printf("found gamepad\n");}
+-  if(e->type==SDL_JOYDEVICEREMOVED&&e->jdevice.which==0&&(*joy)!=NULL){SDL_JoystickClose(*joy);(*joy)=NULL;printf("lost gamepad\n");}
+-  if(e->type==SDL_JOYAXISMOTION&&(*joy)!=NULL){
++  if(e->type==SDL_EVENT_JOYSTICK_ADDED&&(*joy)==NULL){(*joy)=SDL_OpenJoystick(e->jdevice.which);printf("found gamepad\n");}
++  if(e->type==SDL_EVENT_JOYSTICK_REMOVED&&(*joy)!=NULL&&SDL_GetJoystickID(*joy)==e->jdevice.which){SDL_CloseJoystick(*joy);(*joy)=NULL;printf("lost gamepad\n");}
++  if(e->type==SDL_EVENT_JOYSTICK_AXIS_MOTION&&(*joy)!=NULL&&SDL_GetJoystickID(*joy)==e->jaxis.which){
+     #define DEAD_ZONE ((int)(32768*0.2))
+-    int xaxis=SDL_JoystickGetAxis(*joy,0);
+-    int yaxis=SDL_JoystickGetAxis(*joy,1);
++    int xaxis=SDL_GetJoystickAxis(*joy,0);
++    int yaxis=SDL_GetJoystickAxis(*joy,1);
+     emu->keys[7]=xaxis<-DEAD_ZONE?1:0; // LEFT
+     emu->keys[9]=xaxis> DEAD_ZONE?1:0; // RIGHT
+     emu->keys[5]=yaxis<-DEAD_ZONE?1:0; // UP
+@@ -564,10 +564,10 @@ void events_joystick(octo_emulator*emu, SDL_Joystick**joy, SDL_Event*e){
+       else if(abs(xaxis)>DEAD_ZONE&&abs(xaxis)>abs(yaxis)&&emu->pending==-1)emu->pending=xaxis<0?7:9;
+     }
+   }
+-  if(e->type==SDL_JOYBUTTONDOWN){
++  if(e->type==SDL_EVENT_JOYSTICK_BUTTON_DOWN){
+     int b=e->jbutton.button%2?6:4;emu->keys[b]=1;
+   }
+-  if(e->type==SDL_JOYBUTTONUP){
++  if(e->type==SDL_EVENT_JOYSTICK_BUTTON_UP){
+     int b=e->jbutton.button%2?6:4;emu->keys[b]=0;
+     if(emu->wait)emu->v[(int)emu->wait_reg]=b, emu->wait=0;
+   }
+@@ -733,8 +733,9 @@ void octo_ui_monitors(octo_emulator*emu,octo_program*prog){
+ void octo_ui_init(SDL_Window*win,SDL_Renderer**ren,SDL_Texture**screen){
+   if(*screen)SDL_DestroyTexture(*screen);
+   if(*ren)SDL_DestroyRenderer(*ren);
+-  *ren=SDL_CreateRenderer(win,-1, ui.software_render?SDL_RENDERER_SOFTWARE:SDL_RENDERER_ACCELERATED);
++  *ren=SDL_CreateRenderer(win,ui.software_render?SDL_SOFTWARE_RENDERER:NULL);
+   *screen=SDL_CreateTexture(*ren,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING,128,128); // oversized for rotation
++  SDL_SetTextureScaleMode(*screen,SDL_SCALEMODE_NEAREST);
+ }
+ 
+ void octo_ui_invalidate(octo_emulator*emu){emu->ppx[0]^=0xFF;}
+@@ -757,9 +758,9 @@ void octo_ui_run(octo_emulator*emu,octo_program*prog,octo_ui_config*ui,SDL_Windo
+   int dw, dh, border=5;
+   SDL_GetWindowSize(win,&dw,&dh);
+   int sx=(dw-border)/w,sy=(dh-border)/h, scale=sx<sy?sx:sy;
+-  SDL_Rect s_src={0,0,w,h};
+-  SDL_Rect s_dst={(dw-scale*w)/2,(dh-scale*h)/2,scale*w,scale*h};
+-  SDL_RenderCopy(ren,screen,&s_src,&s_dst);
++  SDL_FRect s_src={0,0,w,h};
++  SDL_FRect s_dst={(dw-scale*w)/2,(dh-scale*h)/2,scale*w,scale*h};
++  SDL_RenderTexture(ren,screen,&s_src,&s_dst);
+   //render ui overlays
+   if(debug){
+     SDL_LockTexture(overlay,NULL,(void**)&p,&pitch);
+@@ -770,13 +771,15 @@ void octo_ui_run(octo_emulator*emu,octo_program*prog,octo_ui_config*ui,SDL_Windo
+     if(ui->show_monitors)octo_ui_monitors(emu,prog);
+     SDL_UnlockTexture(overlay);
+     SDL_SetTextureBlendMode(overlay,SDL_BLENDMODE_BLEND);
+-    SDL_RenderCopy(ren,overlay,NULL,NULL);
++    SDL_SetTextureScaleMode(overlay,SDL_SCALEMODE_NEAREST);
++    SDL_RenderTexture(ren,overlay,NULL,NULL);
+   }
+   SDL_RenderPresent(ren);
+ }
+ 
+-Uint32 tick(Uint32 interval,void*param){
+-  SDL_Event e={SDL_USEREVENT};
++Uint32 tick(void*param,SDL_TimerID id,Uint32 interval){
++  (void)id;
++  SDL_Event e={.type=SDL_EVENT_USER};
+   e.user.data1=param;
+   SDL_PushEvent(&e);
+   return interval;
+@@ -989,30 +992,30 @@ void octo_load_config_default(octo_ui_config*ui,octo_options*o){
+ #define AUDIO_FRAG_SIZE 1024
+ #define AUDIO_SAMPLE_RATE (4096*8)
+ 
+-SDL_AudioSpec audio;
+-
+-void audio_pump(void*user,Uint8*stream,int len){
++void audio_pump(void*user,SDL_AudioStream*stream,int additional,int total){
++  (void)total;
+   octo_emulator*emu=user;
+   double freq=4000*pow(2,(emu->pitch-64)/48.0);
+-  for(int z=0;z<len;z++){
+-    int ip=emu->osc;
+-    stream[z]=!emu->had_sound?audio.silence: (emu->pattern[ip>>3]>>((ip&7)^7))&1?ui.volume: audio.silence;
+-    emu->osc=fmod(emu->osc+(freq/AUDIO_SAMPLE_RATE),128.0);
++  Sint8 buf[AUDIO_FRAG_SIZE];
++  while(additional>0){
++    int len=additional<AUDIO_FRAG_SIZE?additional:AUDIO_FRAG_SIZE;
++    for(int z=0;z<len;z++){
++      int ip=emu->osc;
++      buf[z]=!emu->had_sound?0: (emu->pattern[ip>>3]>>((ip&7)^7))&1?ui.volume: 0;
++      emu->osc=fmod(emu->osc+(freq/AUDIO_SAMPLE_RATE),128.0);
++    }
++    SDL_PutAudioStreamData(stream,buf,len);
++    additional-=len;
+   }
+   emu->had_sound=0;
+ }
+ 
+ void audio_init(octo_emulator*emu){
+-  SDL_memset(&audio,0,sizeof(audio));
+-  audio.freq=AUDIO_SAMPLE_RATE;
+-  audio.format=AUDIO_S8;
+-  audio.channels=1;
+-  audio.samples=AUDIO_FRAG_SIZE;
+-  audio.callback=audio_pump;
+-  audio.userdata=emu;
++  SDL_AudioSpec audio={SDL_AUDIO_S8,1,AUDIO_SAMPLE_RATE};
+   if(ui.volume){
+-    if(SDL_OpenAudio(&audio,NULL)){printf("failed to initialize audio: %s\n",SDL_GetError());}
+-    else{SDL_PauseAudio(0);}
++    SDL_AudioStream*stream=SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK,&audio,audio_pump,emu);
++    if(!stream){printf("failed to initialize audio: %s\n",SDL_GetError());}
++    else{SDL_ResumeAudioStreamDevice(stream);}
+   }
+ }
+ 

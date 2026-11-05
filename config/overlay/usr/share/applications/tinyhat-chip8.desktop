@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Example CHIP-8 program in Octo
+Icon=applications-development
+Comment=A tiny hat to move around, in CHIP-8 assembly, built with octo-cli and run in octo-run
+Exec=tinyhat-chip8
+Terminal=false
+Categories=Development;
