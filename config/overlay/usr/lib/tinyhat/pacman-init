@@ -1,11 +1,13 @@
 #!/bin/sh
 dir=/etc/pacman.d/gnupg
-keyring=archlinux32
-pacman -Q archlinux-keyring >/dev/null 2>&1 && keyring="archlinux32 archlinux"
-pacman -Q archlinuxarm-keyring >/dev/null 2>&1 && keyring=archlinuxarm
+keyring=
+for k in archlinux32 archlinux archlinuxarm; do
+	pacman -Q "$k-keyring" >/dev/null 2>&1 && keyring="$keyring $k"
+done
+[ -n "$keyring" ] || exit 1
 ver=$(for k in $keyring; do pacman -Q "$k-keyring"; done 2>/dev/null | tr '\n' ' ')
 [ -f "$dir/trustdb.gpg" ] || pacman-key --init || exit 1
 [ "$(cat "$dir/.tinyhat-keyring" 2>/dev/null)" = "$ver" ] && exit 0
 pacman-key --populate $keyring || exit 1
-[ "$keyring" = archlinuxarm ] || pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160
+case " $keyring " in *" archlinux32 "*) pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160 ;; esac
 echo "$ver" >"$dir/.tinyhat-keyring"
