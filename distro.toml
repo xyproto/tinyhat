@@ -396,7 +396,7 @@ add = ["archlinuxarm-keyring"]
 uefi = ["linux-aarch64"]
 rpi4 = ["linux-rpi", "raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
-build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber"]
+build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
@@ -414,7 +414,7 @@ remove = [
 # initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
 # "make lock-x86_64" decides to build
 remove = ["archlinux32-keyring"]
-build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber"]
+build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go"]
 
@@ -658,6 +658,9 @@ source = "sources"
 [dav1d]
 build_from_source = true
 
+[dbus]
+build_from_source = true
+
 [dosbox-x]
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/dosbox-x", use_max_tag = true }
@@ -891,6 +894,9 @@ build_from_source = true
 [mtools]
 build_from_source = true
 
+[ncurses]
+build_from_source = true
+
 [netsurfy]
 source = "sources"
 
@@ -1068,7 +1074,7 @@ source = "sources"
 nvchecker = { source = "github", github = "xyproto/tinyxxd", prefix = "v", use_max_tag = true }
 
 [util-linux]
-prebuilt = true
+build_from_source = true
 
 [vala]
 excluded = true
