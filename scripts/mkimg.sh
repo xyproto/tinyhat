@@ -73,7 +73,7 @@ EOF
 	"$top/scripts/chroot.sh" "$br" --bind "$work" /img --ro-bind "$sbkeys" /keys /bin/sh -c '
 		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/efi/EFI/BOOT/grubx64.efi /img/grubx64.efi &&
 		/img/sbs/usr/bin/sbsign --key /keys/tinyhat.key --cert /keys/tinyhat.crt --output /img/root/boot/vmlinuz /img/vmlinuz.unsigned'
-	cp "$sbkeys/tinyhat.cer" "$work/efi/ENROLL_THIS_KEY_IN_MOKMANAGER.cer"
+	cp "$sbkeys/tinyhat.cer" "$work/efi/TINY_HAT_SECURE_BOOT.cer"
 	rm -rf "$work/shim" "$work/sbs" "$work/grub64" "$work/grubx64.efi" "$work/vmlinuz.unsigned"
 fi
 cp "$work/grub/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
