@@ -1,10 +1,10 @@
 VERSION := 1.0.6
-KVER := 7.3
+KVER := 7.3.1
 
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
-.PHONY: help all all_but_aarch64 img iso vdi i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all all_but_aarch64 img iso vdi i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -141,6 +141,7 @@ help:
 	$(call target,lock-check,"check that distro.lock is up to date")
 	$(call target,lock-x86_64,"lock the prebuilt Arch Linux packages for the x86_64 image")
 	$(call target,autoupdate,"update recipes to newer versions")
+	$(call target,latest,"list recipes that are behind upstream (pkgctl version check)")
 	$(call target,test,"run the checks")
 	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
 	$(call target,qemutest,"boot the i686$(comma) x32$(comma) x86_64 and aarch64 images in QEMU$(comma) one at a time")
@@ -184,7 +185,7 @@ all: $(IMGS) $(ISOS) $(VDIS)
 all_but_aarch64: $(X86_FILES)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
-ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 lock-x86_64 import srcinfo autoupdate sign,$(or $(MAKECMDGOALS),help)))
+ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 lock-x86_64 import srcinfo autoupdate latest sign,$(or $(MAKECMDGOALS),help)))
 include $(B)/pkgs.mk
 endif
 
@@ -270,6 +271,9 @@ import:
 # Update recipes and the lock to newer package versions, holding back updates that hit [image] deny
 autoupdate:
 	python3 scripts/autoupdate.py
+
+latest:
+	python3 scripts/latest.py
 
 srcinfo:
 	python3 scripts/srcinfo.py $(if $(ALL),packages/*/)
