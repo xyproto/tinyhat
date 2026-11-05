@@ -1,6 +1,6 @@
 pkgbase = algernon
 	pkgdesc = Web server with Lua, Markdown, QUIC, Redis and PostgreSQL support
-	pkgver = 1.17.12.r8.g01d2d41
+	pkgver = 1.17.13
 	pkgrel = 1
 	url = https://algernon.roboticoverlords.org/
 	arch = i686
@@ -13,7 +13,7 @@ pkgbase = algernon
 	optdepends = postgresql: For using the PostgreSQL database backend
 	optdepends = redis: For using the Redis database backend
 	optdepends = valkey: For using the Redis database backend
-	source = git+https://github.com/xyproto/algernon#commit=01d2d41509ad423fd11ee12da336d43ada61a49e
+	source = git+https://github.com/xyproto/algernon#tag=v1.17.13
 	b2sums = SKIP
 
 pkgname = algernon
