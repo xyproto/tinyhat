@@ -1,7 +1,9 @@
 #!/bin/sh
-dir=$HOME/cprojects/$1
+kind=cprojects
+[ -d "/etc/skel/$kind/$1" ] || kind=asmprojects
+dir=$HOME/$kind/$1
 mkdir -p "$dir"
-for f in "/etc/skel/cprojects/$1"/*; do
+for f in "/etc/skel/$kind/$1"/*; do
 	[ -e "$dir/${f##*/}" ] || cp "$f" "$dir/"
 done
 cd "$dir" && exec foot -T "$2" o "$3"
