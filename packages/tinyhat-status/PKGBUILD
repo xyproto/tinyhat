@@ -1,6 +1,6 @@
 pkgname=tinyhat-status
 pkgver=1
-pkgrel=1
+pkgrel=3
 pkgdesc="Tiny Hat status bar text for dwl"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"

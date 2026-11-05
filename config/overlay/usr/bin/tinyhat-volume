@@ -1,4 +1,9 @@
 #!/bin/sh
+i=0
+until wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | grep -q "^Volume:" || [ "$i" -ge 50 ]; do
+	sleep 0.1
+	i=$((i + 1))
+done
 case $1 in
 up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
 down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;

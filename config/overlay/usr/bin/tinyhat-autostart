@@ -5,10 +5,12 @@ dbus-update-activation-environment --systemd $vars 2>/dev/null
 tinyhat-wallpaper
 [ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo handoff >/run/tinyhat-splash' 2>/dev/null
 [ -e "$HOME/.config/mc/ini" ] || { mkdir -p "$HOME/.config/mc" && cp /etc/skel/.config/mc/ini "$HOME/.config/mc/ini"; }
-mkdir -p "$HOME/cprojects"
-for d in /etc/skel/cprojects/*/; do
-	d=${d%/}
-	[ -e "$HOME/cprojects/${d##*/}" ] || cp -r "$d" "$HOME/cprojects/${d##*/}"
+for kind in cprojects asmprojects; do
+	mkdir -p "$HOME/$kind"
+	for d in "/etc/skel/$kind"/*/; do
+		d=${d%/}
+		[ -e "$HOME/$kind/${d##*/}" ] || cp -r "$d" "$HOME/$kind/${d##*/}"
+	done
 done
 # The log of a kernel crash during an earlier boot, if the kernel kept one (see /usr/lib/tinyhat/crashlogs)
 ls /var/lib/tinyhat/crashlogs/*.txt >/dev/null 2>&1 && tinyhat-crashlog-viewer &
