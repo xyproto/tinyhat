@@ -263,6 +263,26 @@ def prune_runtime(plans, base_of, idx, prefs):
             plans[b] = (info, [d for d in hard if base_of[d] not in comp or d in build], soft)
 
 
+def prune_seeded(plans, base_of, seeded):
+    graph = {b: {base_of[d] for d in hard} - {b} for b, (_, hard, _) in plans.items()}
+
+    def reach(b):
+        seen, todo = set(), [b]
+        while todo:
+            for n in graph.get(todo.pop(), ()):
+                if n not in seen:
+                    seen.add(n)
+                    todo.append(n)
+        return len(seen)
+
+    for comp in sccs(graph):
+        if len(comp) < 2:
+            continue
+        top = max(comp, key=lambda b: (reach(b), b))
+        info, hard, soft = plans[top]
+        plans[top] = (info, [d for d in hard if base_of[d] not in comp or d not in seeded], soft)
+
+
 def prune_soft(plans, base_of):
     while True:
         graph = {b: {base_of[d] for d in hard + soft} - {b} for b, (_, hard, soft) in plans.items()}
@@ -506,6 +526,7 @@ def cmd_mk():
         soft = [d for d in exact_local(soft, full, local) if d not in own and d not in deps]
         i686_plans[info["base"]] = (info, deps, soft)
     prune_runtime(i686_plans, base_of, idx, prefs)
+    prune_seeded(i686_plans, base_of, {p["name"] for p in distro.locked("buildroot")})
     for comp in prune_soft(i686_plans, base_of):
         print(f"mkpkgs.py: dependency cycle: {' '.join(sorted(comp))}", file=sys.stderr)
 
