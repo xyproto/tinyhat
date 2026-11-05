@@ -18,15 +18,42 @@ static void dialog(const char *title, const char *text)
 
 static int run_tar(const char *dest)
 {
+	const char *home = getenv("HOME");
+	if (!home || !*home)
+		home = "/home/tinyhat";
+	char *parent = g_path_get_dirname(home);
+	char *base = g_path_get_basename(home);
+	char *part = g_strconcat(dest, ".part", NULL);
+	char *exclude = NULL, *excludepart = NULL;
+	size_t n = strlen(home);
+	if (strncmp(dest, home, n) == 0 && dest[n] == '/') {
+		exclude = g_strconcat("--exclude=", base, dest + n, NULL);
+		excludepart = g_strconcat(exclude, ".part", NULL);
+	}
 	pid_t pid = fork();
 	if (pid == 0) {
-		execlp("tar", "tar", "-czf", dest, "-C", "/home", "tinyhat", (char *)NULL);
+		if (exclude)
+			execlp("tar", "tar", "--warning=no-file-changed", "--no-wildcards", "--anchored", exclude, excludepart,
+				"-czf", part, "-C", parent, base, (char *)NULL);
+		else
+			execlp("tar", "tar", "--warning=no-file-changed", "-czf", part, "-C", parent, base, (char *)NULL);
 		_exit(127);
 	}
-	int status;
-	if (pid < 0 || waitpid(pid, &status, 0) < 0)
-		return 1;
-	return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+	int status, rc = 2;
+	if (pid > 0 && waitpid(pid, &status, 0) == pid && WIFEXITED(status))
+		rc = WEXITSTATUS(status);
+	if (rc <= 1 && rename(part, dest) == 0)
+		rc = 0;
+	else {
+		unlink(part);
+		rc = 1;
+	}
+	g_free(parent);
+	g_free(base);
+	g_free(part);
+	g_free(exclude);
+	g_free(excludepart);
+	return rc;
 }
 
 static void on_answer(GObject *source, GAsyncResult *result, gpointer data)
