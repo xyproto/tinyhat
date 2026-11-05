@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Octo CHIP-8 IDE
+Icon=applications-games
+Comment=Write CHIP-8 games in Octo assembly, with built-in sprite and palette editors
+Exec=octo-de
+Terminal=false
+Categories=Development;Game;

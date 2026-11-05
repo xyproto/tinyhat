@@ -1,0 +1,35 @@
+pkgname=octo
+_commit=102994e6166236045a067efa930a88532510e03e
+pkgver=20260914.181012.g102994e6166
+pkgrel=2
+pkgdesc="Octo CHIP-8 assembler, player and IDE (c-octo), with SDL3"
+arch=(i686 x32 x86_64 aarch64)
+url="https://github.com/JohnEarnest/c-octo"
+license=(MIT)
+depends=(sdl3)
+source=("octo-$_commit.tar.gz::https://github.com/JohnEarnest/c-octo/archive/$_commit.tar.gz"
+        sdl3.patch
+        buzzer.patch)
+sha256sums=('e160d02a05071bbd5a0d9b180ca9e5680be817f458a95e3af055749163f068ed'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd c-octo-$_commit
+  patch -Np1 -i ../sdl3.patch
+  patch -Np1 -i ../buzzer.patch
+}
+
+build() {
+  cd c-octo-$_commit
+  local f
+  for f in cli run de; do
+    cc -std=c99 $CFLAGS -DVERSION='"1.2"' -o octo-$f src/octo_$f.c $LDFLAGS $(pkg-config --cflags --libs sdl3) -lm
+  done
+}
+
+package() {
+  cd c-octo-$_commit
+  install -Dm755 -t "$pkgdir/usr/bin" octo-cli octo-run octo-de
+  install -Dm644 LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
