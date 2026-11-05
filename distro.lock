@@ -440,6 +440,7 @@ cc65 = ["cc65"]
 chibi-scheme = ["chibi-scheme"]
 compose-tables = ["compose-tables"]
 dav1d = ["dav1d"]
+dbus = ["dbus"]
 dosbox-x = ["dosbox-x"]
 dwl = ["dwl"]
 fcft = ["fcft"]
@@ -476,6 +477,7 @@ mgba = ["mgba"]
 monkeyjumpgo = ["monkeyjumpgo"]
 mpg123 = ["mpg123"]
 mtools = ["mtools"]
+ncurses = ["ncurses"]
 netsurfy = ["netsurfy"]
 nvi2 = ["nvi2"]
 octo = ["octo"]
@@ -504,6 +506,7 @@ tinyhat-retro = ["tinyhat-retro"]
 tinyhat-sounds = ["tinyhat-sounds"]
 tinyhat-splash = ["tinyhat-splash"]
 tinyhat-status = ["tinyhat-status"]
+util-linux = ["util-linux", "util-linux-libs"]
 vice = ["vice"]
 wireplumber = ["libwireplumber", "wireplumber"]
 "wlroots0.20" = ["wlroots0.20"]
@@ -1322,6 +1325,7 @@ asciidoc = { repo = "extra", version = "10.2.1-3", file = "asciidoc-10.2.1-3-any
 attr = { repo = "core", version = "2.6.0-1", file = "attr-2.6.0-1-aarch64.pkg.tar.xz", sha256 = "7d0a27bb1761e2b5c329da6fee515af4d174869f303009283fbc6b74497d267c" }
 audit = { repo = "core", version = "4.2.1-1", file = "audit-4.2.1-1-aarch64.pkg.tar.xz", sha256 = "f2535b990835b668f1c587586617f3663ef33dd495bef14a9be5d680a58bda43" }
 autoconf = { repo = "core", version = "2.73-1", file = "autoconf-2.73-1-any.pkg.tar.xz", sha256 = "c8acb38a598cff1d5c9c835d3cbdf15c899e9c3491d6bb5b82848142f12775f4" }
+autoconf-archive = { repo = "extra", version = "1:2024.10.16-4", file = "autoconf-archive-1:2024.10.16-4-any.pkg.tar.xz", sha256 = "078651003c7c7f781cde143582c150a98c372ceec74a2c2fa9dc0b2ef7498c59" }
 automake = { repo = "core", version = "1.19-1", file = "automake-1.19-1-any.pkg.tar.xz", sha256 = "8617b421ac17d0a8c35aa5a788a1bf36f0a9f934016a57b542b3efb45064d57d" }
 avahi = { repo = "extra", version = "1:0.9rc5-2", file = "avahi-1:0.9rc5-2-aarch64.pkg.tar.xz", sha256 = "ef808937dd227d0edca14cd59b6618270f9b7fbedff529eb1df5b89799db2da8" }
 base-devel = { repo = "core", version = "1-2", file = "base-devel-1-2-any.pkg.tar.xz", sha256 = "b6c4d21b8fbea0d5c31d4aceefa7e9593f433b702c3e419678065a4856ea0b38" }
@@ -1455,6 +1459,7 @@ ijs = { repo = "extra", version = "0.35-7", file = "ijs-0.35-7-aarch64.pkg.tar.x
 imagemagick = { repo = "extra", version = "7.1.2.34-2", file = "imagemagick-7.1.2.34-2-aarch64.pkg.tar.xz", sha256 = "7a3975f8b7838e8c5e383a3e00ffce58692e452213f3f600cab0767714dd5888" }
 intltool = { repo = "extra", version = "0.51.0-6", file = "intltool-0.51.0-6-any.pkg.tar.xz", sha256 = "2d755ce2e580326dd5fce35855af076875490f2c21eb3f6de0c73bb2f538c973" }
 iso-codes = { repo = "extra", version = "4.20.1-1", file = "iso-codes-4.20.1-1-any.pkg.tar.xz", sha256 = "ca93043c3b5fe05f1f3886b3ad7ad5a68964303971edae967a8a82e8b850d010" }
+itstool = { repo = "extra", version = "1:2.0.7-3", file = "itstool-1:2.0.7-3-any.pkg.tar.xz", sha256 = "eb6efdab467ec29e7369421662fbe4d4925c5ae2d5915ed7a74f25f74ba7de8f" }
 jack2 = { repo = "extra", version = "1.9.22-2", file = "jack2-1.9.22-2-aarch64.pkg.tar.xz", sha256 = "ad26da61009387cbe9bca7b0f2db3a1eee6e961b32d8b9cf43c93d773e949ed2" }
 jansson = { repo = "core", version = "2.15.1-1", file = "jansson-2.15.1-1-aarch64.pkg.tar.xz", sha256 = "bffe44d5a784c7cac0a478cfb6caefe065fb59c907c1d182f60750d2873f261f" }
 jasper = { repo = "extra", version = "4.2.9-1", file = "jasper-4.2.9-1-aarch64.pkg.tar.xz", sha256 = "6713142ec9100058e51ba77d4aeeaee265cf7cc6397d48e5b301bb21d213a2a7" }
@@ -1636,6 +1641,7 @@ lz4 = { repo = "core", version = "1:1.10.0-2", file = "lz4-1:1.10.0-2-aarch64.pk
 lzo = { repo = "core", version = "2.10-5", file = "lzo-2.10-5-aarch64.pkg.tar.xz", sha256 = "7831512f18a7764b64f04c2c3483405c7576aefaf543b3fcfd462721afcf3c7d" }
 m4 = { repo = "core", version = "1.4.21-2", file = "m4-1.4.21-2-aarch64.pkg.tar.xz", sha256 = "9bb3f7d0c943311c4e0423e4b723a7f4d62b1bd1b955e4b2b95c83fb01434028" }
 make = { repo = "core", version = "4.4.1-3", file = "make-4.4.1-3-aarch64.pkg.tar.xz", sha256 = "c5c8b56bfbacd875d72823f10c910747714730c4180994d94a176c89ecea1e06" }
+mallard-ducktype = { repo = "extra", version = "1.0.2-13", file = "mallard-ducktype-1.0.2-13-any.pkg.tar.xz", sha256 = "51f8f98a35df28361d5e41c13c1bd940f399aacca557dd05966e077854f6c612" }
 mesa = { repo = "extra", version = "1:26.2.5-1", file = "mesa-1:26.2.5-1-aarch64.pkg.tar.xz", sha256 = "a5a52d9989fdf6091e671661a7aa350542131da5a2ff1b42060425c0c0f9e775" }
 meson = { repo = "extra", version = "1.12.1-2", file = "meson-1.12.1-2-any.pkg.tar.xz", sha256 = "8b5f5b2168be053485f512debbb935f189c4b19f9a79d0e201fc91ccb5d15492" }
 mpdecimal = { repo = "core", version = "4.0.1-3", file = "mpdecimal-4.0.1-3-aarch64.pkg.tar.xz", sha256 = "388611eba7f9b0dddcc03adb4f28bcb8fd2c42fbd8c930ca6b9b0f9e4ece0f1e" }
@@ -1688,12 +1694,15 @@ perl-locale-gettext = { repo = "extra", version = "1.07-17", file = "perl-locale
 perl-lwp-mediatypes = { repo = "extra", version = "6.05-1", file = "perl-lwp-mediatypes-6.05-1-any.pkg.tar.xz", sha256 = "10a5030f3f312bf3332cdcde791518570316eb7a2238e8682ee9d740dbf094e8" }
 perl-mailtools = { repo = "extra", version = "2.22-3", file = "perl-mailtools-2.22-3-any.pkg.tar.xz", sha256 = "71b6383a6dab51efe4be74d14a8ea7bcdb07a34a20da7c2c6f708c4a01257018" }
 perl-mime-base32 = { repo = "extra", version = "1.303-13", file = "perl-mime-base32-1.303-13-any.pkg.tar.xz", sha256 = "0b4f11f3a95ada9c62b3996e36bffcee316f278d1bd6fec2f81792b27c085342" }
+perl-mime-charset = { repo = "extra", version = "1.013.1-6", file = "perl-mime-charset-1.013.1-6-any.pkg.tar.xz", sha256 = "f20159a57b44c214bf69856796bb562fe3cc1ce56f6ad6c452d5c0b5196f11bf" }
 perl-net-http = { repo = "extra", version = "6.24-2", file = "perl-net-http-6.24-2-any.pkg.tar.xz", sha256 = "4558c95d82500dcb2da8e591382dc3afb8a76ec4fa30150dfe28eadd5f8e4d28" }
 perl-timedate = { repo = "extra", version = "2.35-1", file = "perl-timedate-2.35-1-any.pkg.tar.xz", sha256 = "d97a4a2b169a88fbb2db3dc5425eba2b31b58ab4123a1a998c2fcc718cd8251b" }
 perl-try-tiny = { repo = "extra", version = "0.32-4", file = "perl-try-tiny-0.32-4-any.pkg.tar.xz", sha256 = "1a3bbc5d695573bc03522105a4676e400fe3573e23d259eb440f6410ee54c4b3" }
+perl-unicode-linebreak = { repo = "extra", version = "2019.001-10", file = "perl-unicode-linebreak-2019.001-10-aarch64.pkg.tar.xz", sha256 = "11d34e5d1eebdf091d6e463998df10720b6134f75acc6514c2d0922949a661de" }
 perl-uri = { repo = "extra", version = "5.40-1", file = "perl-uri-5.40-1-any.pkg.tar.xz", sha256 = "67c3068ed0e9166f435c7d69b2f0614c520175f09b5628d382ffda0b1b62368e" }
 perl-www-robotrules = { repo = "extra", version = "6.03-1", file = "perl-www-robotrules-6.03-1-any.pkg.tar.xz", sha256 = "c3cd34054c3cd36249c419396fd45a6f04b27d76d21637403138c942e5f3d4e9" }
 perl-xml-parser = { repo = "extra", version = "2.59-2", file = "perl-xml-parser-2.59-2-aarch64.pkg.tar.xz", sha256 = "7f57801ba31fd7f1bc5d5950c3ffe9f0449f5648e6fe5ef0234b50e7a0623155" }
+perl-yaml-tiny = { repo = "extra", version = "1.76-3", file = "perl-yaml-tiny-1.76-3-any.pkg.tar.xz", sha256 = "f5867142272d718c1c7f18b4af1cd42374d7b3cd9d413a7a502ca527e9f9b145" }
 pinentry = { repo = "core", version = "1.3.3-1", file = "pinentry-1.3.3-1-aarch64.pkg.tar.xz", sha256 = "a4e7aea581effe0bcd2c90ad7062597ac83bab88116cf31cda21940ca626a1c1" }
 pipewire = { repo = "extra", version = "1:1.6.10-1", file = "pipewire-1:1.6.10-1-aarch64.pkg.tar.xz", sha256 = "dd950783694d7f92dcee6b6dd5987aa3061eb0bffd2350fe3fa0cb8a26ed64be" }
 pipewire-audio = { repo = "extra", version = "1:1.6.10-1", file = "pipewire-audio-1:1.6.10-1-aarch64.pkg.tar.xz", sha256 = "73574982282bedc816ab12966709cb05f6488568fd88a5024251518e9859eb64" }
@@ -1701,6 +1710,7 @@ pipewire-jack = { repo = "extra", version = "1:1.6.10-1", file = "pipewire-jack-
 pipewire-session-manager = { repo = "extra", version = "1:1.6.10-1", file = "pipewire-session-manager-1:1.6.10-1-aarch64.pkg.tar.xz", sha256 = "ee188ed5ebd60e81728faa4d610ef42f17c88d29e29828ede96b5cd294d0c4d5" }
 pixman = { repo = "extra", version = "0.46.4-1.1", file = "pixman-0.46.4-1.1-aarch64.pkg.tar.xz", sha256 = "4d20f22998a75c9fe1d38c86cd6f4324120fc2bb02f4a749e4794daac6b87dd2" }
 pkgconf = { repo = "core", version = "3.0.10-1", file = "pkgconf-3.0.10-1-aarch64.pkg.tar.xz", sha256 = "402d9162ed197b648b416ba3bef587642fba6bd8e5445929dc6ca91be145a78f" }
+po4a = { repo = "extra", version = "0.74-1", file = "po4a-0.74-1-any.pkg.tar.xz", sha256 = "17a6ed3a08787d19ca06c0aaf574cb55cd214dcebcf980ef325523b64b930794" }
 polkit = { repo = "extra", version = "128-1", file = "polkit-128-1-aarch64.pkg.tar.xz", sha256 = "3065a1dc689619ba12ac697d03cf09b2f82286a38183b27c46e06848a71c094e" }
 poppler = { repo = "extra", version = "26.10.0-1", file = "poppler-26.10.0-1-aarch64.pkg.tar.xz", sha256 = "4f4df8a0175e0ca134fb4dace60729176ea6b6f774d787ad42050b86311e4e9c" }
 poppler-data = { repo = "extra", version = "0.4.12-2", file = "poppler-data-0.4.12-2-any.pkg.tar.xz", sha256 = "33133fcac9cc23446a328260baff65e44b75311a3fcd25f06aabdd7ac3d9cfbf" }
@@ -1814,6 +1824,7 @@ xcb-util-errors = { repo = "extra", version = "1.0.1-2", file = "xcb-util-errors
 xcb-util-renderutil = { repo = "extra", version = "0.3.10-2", file = "xcb-util-renderutil-0.3.10-2-aarch64.pkg.tar.xz", sha256 = "87ab6eb530aaf6a2cf25af677ceb4493346ff319bb86e041afb9408e606784e3" }
 xcb-util-wm = { repo = "extra", version = "0.4.2-2", file = "xcb-util-wm-0.4.2-2-aarch64.pkg.tar.xz", sha256 = "cca68248ca0d4a83382cac35fec66e8965e121d792ab2cb54a048fd7f514b92e" }
 xkeyboard-config = { repo = "extra", version = "2.48-1", file = "xkeyboard-config-2.48-1-any.pkg.tar.xz", sha256 = "6ee5de46d25850dee96be9c28f9870ea2ae0b19ac8fb3c2194d31b9649b03ecd" }
+xmlto = { repo = "extra", version = "0.0.29-1", file = "xmlto-0.0.29-1-aarch64.pkg.tar.xz", sha256 = "b2fc793230b557cf593c5154614703520ae23fa56f5d55b4cab7d91fb7a25cf0" }
 xorg-fonts-encodings = { repo = "extra", version = "1.1.0-2", file = "xorg-fonts-encodings-1.1.0-2-any.pkg.tar.xz", sha256 = "1e6b1699140df659a049dc9094fc3b08a60b624db748bc004f28db51e5bfa641" }
 xorg-server-common = { repo = "extra", version = "21.1.25-2", file = "xorg-server-common-21.1.25-2-aarch64.pkg.tar.xz", sha256 = "2c9cb31118dcc9732198581ee8ecfc8b7cfed048667d750c55fc2bc91770e653" }
 xorg-setxkbmap = { repo = "extra", version = "1.3.5-1", file = "xorg-setxkbmap-1.3.5-1-aarch64.pkg.tar.xz", sha256 = "a3323ae651b0477c7c411e431d68debef85eef9d2f15ca90d89e383e2fad08a4" }
@@ -1822,6 +1833,8 @@ xorg-xwayland = { repo = "extra", version = "24.1.14-1", file = "xorg-xwayland-2
 xorgproto = { repo = "extra", version = "2026.1-1", file = "xorgproto-2026.1-1-any.pkg.tar.xz", sha256 = "8869e139c5f9fd2df006a01f45ec4d2173ef2f7f8e03d54bfcda9ab38370ae81" }
 xxhash = { repo = "extra", version = "0.8.4-1", file = "xxhash-0.8.4-1-aarch64.pkg.tar.xz", sha256 = "28a6488aca21b1ddf92475a08c95c45a80baf5c6ac51fdb7a225cf8ae074a1c6" }
 xz = { repo = "core", version = "5.8.4-1", file = "xz-5.8.4-1-aarch64.pkg.tar.xz", sha256 = "0a72061585c62a92d1a38348bc7f160665b0b508ddc92fd289b6b2ca12785150" }
+yelp-tools = { repo = "extra", version = "42.1-2", file = "yelp-tools-42.1-2-any.pkg.tar.xz", sha256 = "173937140bb0c5803ec425b283e64389795a2659afaaf566872adc56246c33b4" }
+yelp-xsl = { repo = "extra", version = "49.0-1", file = "yelp-xsl-49.0-1-any.pkg.tar.xz", sha256 = "bdb2ee97dc133a284ff2d937f9324a88fa21617e5e7cf6bc60e3205c0eb5f676" }
 zix = { repo = "extra", version = "0.8.2-1", file = "zix-0.8.2-1-aarch64.pkg.tar.xz", sha256 = "27d0816a1719b6d91cc96b00c7e16cedf661a1a45ed2c431cb3fcca8e8cb5025" }
 zlib = { repo = "core", version = "1:1.3.2-4", file = "zlib-1:1.3.2-4-aarch64.pkg.tar.xz", sha256 = "545fe3a3645c098d24bf583481b2259bddb54712c2e6fec633e6f7f94b8fb385" }
 zlib-ng = { repo = "extra", version = "2.3.3-1", file = "zlib-ng-2.3.3-1-aarch64.pkg.tar.xz", sha256 = "1ee3a19d58b27a1f63d455177be5301ca474ed20d3699ffc7f0a4f987852e930" }
@@ -2399,7 +2412,6 @@ clang-libs = { repo = "extra", version = "23.1.4-1.1", file = "clang-libs-23.1.4
 coreutils = { repo = "core", version = "9.12-2", file = "coreutils-9.12-2-aarch64.pkg.tar.xz", sha256 = "855b6439cc94fe5d0a3b1428e63ca785c0fa83135e0c0d59277d704d8f4dd647" }
 cryptsetup = { repo = "core", version = "2.8.8-1", file = "cryptsetup-2.8.8-1-aarch64.pkg.tar.xz", sha256 = "e335839706dfc90e99bec38d104382f06ae82bc32b6a098b00b67e535ccf0e95" }
 curl = { repo = "core", version = "8.23.0-1", file = "curl-8.23.0-1-aarch64.pkg.tar.xz", sha256 = "55078cc1416504596d5c31fbd7b5fc21c63f333d476cc5907ceecfcb03b99a92" }
-dbus = { repo = "core", version = "1.16.2-2", file = "dbus-1.16.2-2-aarch64.pkg.tar.xz", sha256 = "a3ed0571e0ea905cb58e184d8291851afe0d35d7b5769b16b75098a1a4cf0165" }
 dbus-broker = { repo = "core", version = "37-3", file = "dbus-broker-37-3-aarch64.pkg.tar.xz", sha256 = "d6784e1adefd64ef5b5a92bc3a8d34e8df09e9ba80ef81d1238073914b6589d5" }
 dbus-broker-units = { repo = "core", version = "37-3", file = "dbus-broker-units-37-3-aarch64.pkg.tar.xz", sha256 = "0d7592d10d84e9fccfa808e9e46de39d8cff2ebfc12b33e4d2c58223d0f0912d" }
 dbus-units = { repo = "core", version = "37-3", file = "dbus-units-37-3-aarch64.pkg.tar.xz", sha256 = "5d7444e570219667a9789589e9ccbf8535d78d1dae954c22e487af226237b125" }
@@ -2622,7 +2634,6 @@ mtdev = { repo = "extra", version = "1.1.7-1", file = "mtdev-1.1.7-1-aarch64.pkg
 mtr = { repo = "extra", version = "0.96-1", file = "mtr-0.96-1-aarch64.pkg.tar.xz", sha256 = "a5b0363704e625e6e0d5080a19c5f893178ac1c21c9c33e21689415477e3707d" }
 nasm = { repo = "extra", version = "3.02-1", file = "nasm-3.02-1-aarch64.pkg.tar.xz", sha256 = "97437ef058f3bfc0ad0758388397cf4bd004786d25fd99a36001fd03b5c9ad8f" }
 ncdu = { repo = "extra", version = "2.9.2-1", file = "ncdu-2.9.2-1-aarch64.pkg.tar.xz", sha256 = "3349d83ad5eb0f42f2dd4126991afaa0d4670a5f3db4e1174ea22e0d0c51a87a" }
-ncurses = { repo = "core", version = "6.6-2", file = "ncurses-6.6-2-aarch64.pkg.tar.xz", sha256 = "e7b4f3c2190e3ebb559d288b05aba70094efae63738343521a5669e64ab4bfa6" }
 nettle = { repo = "core", version = "4.0-1", file = "nettle-4.0-1-aarch64.pkg.tar.xz", sha256 = "0912dee3f6f20361e607e7101f39345af7ca9fe7bc51a4ba34620468f8949300" }
 nftables = { repo = "extra", version = "1:1.1.7-3", file = "nftables-1:1.1.7-3-aarch64.pkg.tar.xz", sha256 = "5d4a783ce3d7eb2b58b882a5e5ae5463f35af02bb580eaa90255dfbb1ff56c10" }
 npth = { repo = "core", version = "1.8-1", file = "npth-1.8-1-aarch64.pkg.tar.xz", sha256 = "195fb844c1a24b3f38353b4331ce460ddd3fd57ac053ab4ff2567da175f17a98" }
@@ -2698,8 +2709,6 @@ unarj = { repo = "extra", version = "2.65-2", file = "unarj-2.65-2-aarch64.pkg.t
 unrar = { repo = "extra", version = "1:7.3.2-1", file = "unrar-1:7.3.2-1-aarch64.pkg.tar.xz", sha256 = "5e09889d4593948d2730c7e8043843cdee8351b0e6ec28bb14c2bdd96da33c10" }
 unzip = { repo = "extra", version = "6.0-23", file = "unzip-6.0-23-aarch64.pkg.tar.xz", sha256 = "edc91c7e4e400f20345439744262d1ceded104c78d940659a6b9876076ef33fc" }
 usbutils = { repo = "core", version = "020-1", file = "usbutils-020-1-aarch64.pkg.tar.xz", sha256 = "97301e6ad37d7fc165dbb4b82a54d27d203bd117ccf331984bfe5a2dc644efe1" }
-util-linux = { repo = "core", version = "2.42.4-1", file = "util-linux-2.42.4-1-aarch64.pkg.tar.xz", sha256 = "a9ab17512f0f4d1cf7614574e8407561bebd632a50e568111199da0633955046" }
-util-linux-libs = { repo = "core", version = "2.42.4-1", file = "util-linux-libs-2.42.4-1-aarch64.pkg.tar.xz", sha256 = "fc33959229b44ee81ab4c66177783b65cae4390868552a81493dc94be0cf9c60" }
 wallutils = { repo = "extra", version = "5.14.4-1", file = "wallutils-5.14.4-1-aarch64.pkg.tar.xz", sha256 = "f17e2e2cee1818bbaba58905499b3d8cf22318e93226b1893c43d73ebdca7a0f" }
 wayland = { repo = "extra", version = "1.26.0-1", file = "wayland-1.26.0-1-aarch64.pkg.tar.xz", sha256 = "9382b38f97ee3841597f89aa6ca1fceea3d968ae759151eaab9c4b5373d1ce72" }
 wayland-protocols = { repo = "extra", version = "1.49-1", file = "wayland-protocols-1.49-1-any.pkg.tar.xz", sha256 = "9678c0d371ecfb5041b1b1d8a7986977bd82b7233984dbe25b33a54da0dbee27" }
