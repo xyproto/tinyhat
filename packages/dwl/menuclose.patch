@@ -1,0 +1,21 @@
+diff --git a/dwl.c b/dwl.c
+index 802ad55..3575999 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -903,6 +903,16 @@ buttonpress(struct wl_listener *listener, void *data)
+ 		if (locked)
+ 			break;
+ 
++		if (exclusive_focus && ((LayerSurface *)exclusive_focus)->type == LayerShell) {
++			xytonode(cursor->x, cursor->y, NULL, NULL, &l, NULL, NULL);
++			if (l != exclusive_focus) {
++				exclusive_focus = NULL;
++				wlr_seat_keyboard_notify_clear_focus(seat);
++				focusclient(focustop(selmon), 1);
++				return;
++			}
++		}
++
+ 		if (!c && !exclusive_focus &&
+ 			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
+ 			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
