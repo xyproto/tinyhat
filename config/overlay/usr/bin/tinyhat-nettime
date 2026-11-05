@@ -52,6 +52,24 @@ if mountpoint -q /persist && [ ! -f /persist/timezone ]; then
 	fi
 fi
 
+kb=
+if [ -n "${tz-}" ] && [ ! -f /persist/vconsole.conf ]; then
+	kb=$(/usr/lib/tinyhat/tzkeyboard "$tz")
+	layout=${kb%% *}
+	variant=
+	[ "$kb" = "$layout" ] || variant=${kb#* }
+	for h in /home/*/; do
+		u=$(stat -c %U "$h") || continue
+		[ "$u" != root ] && [ ! -e "$h.config/tinyhat/keyboard" ] || continue
+		runuser -u "$u" -- sh -c 'mkdir -p "$1/.config/tinyhat" && echo "$2" > "$1/.config/tinyhat/keyboard"' sh "${h%/}" "$kb" || continue
+		for p in $(pgrep -u "$u" -x dwl); do kill -USR1 "$p"; done
+	done
+	if localectl set-x11-keymap "$layout" "" "$variant" 2>/dev/null; then
+		cp /etc/vconsole.conf /persist/vconsole.conf
+	fi
+	kb=$(awk -v l="$layout" '/^! layout/ { f = 1; next } /^!/ { f = 0 } f && $1 == l { $1 = ""; sub(/^ +/, ""); print; exit }' /usr/share/X11/xkb/rules/base.lst)
+fi
+
 if [ -z "$synced" ]; then
 	http_time http://ip-api.com http://www.gnu.org && synced=1
 fi
@@ -62,7 +80,9 @@ if [ -n "$synced" ]; then
 	hwclock --systohc 2>/dev/null || true
 fi
 
-if [ -n "${tz-}" ]; then
+if [ -n "${tz-}" ] && [ -n "$kb" ]; then
+	notify "Timezone: $tz, keyboard: $kb"
+elif [ -n "${tz-}" ]; then
 	notify "Timezone: $tz"
 elif [ -n "$synced" ] && [ ! -f /persist/timezone ]; then
 	notify "The clock is now set from the network"
