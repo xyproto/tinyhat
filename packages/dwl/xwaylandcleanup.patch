@@ -1,0 +1,17 @@
+diff --git a/dwl.c b/dwl.c
+index 3575999..b2af619 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -1133,8 +1133,10 @@ cleanuplisteners(void)
+ 	wl_list_remove(&new_session_lock.link);
+ 	wl_list_remove(&new_foreign_toplevel_capture_request.link);
+ #ifdef XWAYLAND
+-	wl_list_remove(&new_xwayland_surface.link);
+-	wl_list_remove(&xwayland_ready.link);
++	if (xwayland) {
++		wl_list_remove(&new_xwayland_surface.link);
++		wl_list_remove(&xwayland_ready.link);
++	}
+ #endif
+ }
+ 
