@@ -252,6 +252,17 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
     return hard, soft
 
 
+def prune_runtime(plans, base_of, idx, prefs):
+    graph = {b: {base_of[d] for d in hard} - {b} for b, (_, hard, _) in plans.items()}
+    for comp in sccs(graph):
+        if len(comp) < 2:
+            continue
+        for b in comp:
+            info, hard, soft = plans[b]
+            build = {pkg.lookup(idx["i686"], d, prefs, set()) for d in info["makedepends"]}
+            plans[b] = (info, [d for d in hard if base_of[d] not in comp or d in build], soft)
+
+
 def prune_soft(plans, base_of):
     while True:
         graph = {b: {base_of[d] for d in hard + soft} - {b} for b, (_, hard, soft) in plans.items()}
@@ -494,6 +505,7 @@ def cmd_mk():
         deps = [d for d in exact_local(hard, full, local) if d not in own]
         soft = [d for d in exact_local(soft, full, local) if d not in own and d not in deps]
         i686_plans[info["base"]] = (info, deps, soft)
+    prune_runtime(i686_plans, base_of, idx, prefs)
     for comp in prune_soft(i686_plans, base_of):
         print(f"mkpkgs.py: dependency cycle: {' '.join(sorted(comp))}", file=sys.stderr)
 

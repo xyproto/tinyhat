@@ -182,6 +182,7 @@ bwrap_run() {
 		--setenv PATH "$path" \
 		${libpath:+--setenv LD_LIBRARY_PATH $libpath} \
 		--setenv LANG C.UTF-8 \
+		--setenv HWLOC_HIDE_ERRORS 2 \
 		--setenv MAKEINFO true \
 		--setenv SOURCE_DATE_EPOCH "$epoch" \
 		--setenv TINYHAT_ARCH "$arch" \
