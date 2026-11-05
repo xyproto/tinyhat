@@ -169,7 +169,7 @@ package_util-linux() {
   mv "$pkgdir"/usr/include util-linux-libs/include
   mv "$pkgdir"/"${_python_stdlib}"/site-packages util-linux-libs/site-packages
   rmdir "$pkgdir"/"${_python_stdlib}"
-  mv "$pkgdir"/usr/share/man/man3 util-linux-libs/man3
+  [ ! -d "$pkgdir"/usr/share/man/man3 ] || mv "$pkgdir"/usr/share/man/man3 util-linux-libs/man3
 
   # install systemd-sysusers
   install -Dm0644 util-linux.sysusers \
@@ -200,7 +200,7 @@ package_util-linux-libs() {
   mv util-linux-libs/lib/* "$pkgdir"/usr/lib/
   mv util-linux-libs/include "$pkgdir"/usr/include
   mv util-linux-libs/site-packages "$pkgdir"/"${_python_stdlib}"/site-packages
-  mv util-linux-libs/man3 "$pkgdir"/usr/share/man/man3
+  [ ! -d util-linux-libs/man3 ] || mv util-linux-libs/man3 "$pkgdir"/usr/share/man/man3
 
   install -vDm 644 $pkgbase/Documentation/licenses/COPYING.{BSD*,ISC} -t "$pkgdir/usr/share/licenses/$pkgname/"
   install -vDm 644 $pkgbase-BSD-2-Clause.txt -t "$pkgdir/usr/share/licenses/$pkgname/"
