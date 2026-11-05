@@ -263,24 +263,38 @@ def prune_runtime(plans, base_of, idx, prefs):
             plans[b] = (info, [d for d in hard if base_of[d] not in comp or d in build], soft)
 
 
+def reachable(graph, b):
+    seen, todo = set(), [b]
+    while todo:
+        for n in graph.get(todo.pop(), ()):
+            if n not in seen:
+                seen.add(n)
+                todo.append(n)
+    return seen
+
+
+def break_seeded(deps, base, seeded):
+    deps = dict(deps)
+    while True:
+        graph = {b: {base(d) for d in ds} - {b} for b, ds in deps.items()}
+        changed = False
+        for comp in sccs(graph):
+            if len(comp) < 2:
+                continue
+            for b in sorted(comp, key=lambda b: (len(reachable(graph, b)), b), reverse=True):
+                keep = [d for d in deps[b] if base(d) not in comp or d not in seeded]
+                if len(keep) < len(deps[b]):
+                    deps[b] = keep
+                    changed = True
+                    break
+        if not changed:
+            return deps
+
+
 def prune_seeded(plans, base_of, seeded):
-    graph = {b: {base_of[d] for d in hard} - {b} for b, (_, hard, _) in plans.items()}
-
-    def reach(b):
-        seen, todo = set(), [b]
-        while todo:
-            for n in graph.get(todo.pop(), ()):
-                if n not in seen:
-                    seen.add(n)
-                    todo.append(n)
-        return len(seen)
-
-    for comp in sccs(graph):
-        if len(comp) < 2:
-            continue
-        top = max(comp, key=lambda b: (reach(b), b))
-        info, hard, soft = plans[top]
-        plans[top] = (info, [d for d in hard if base_of[d] not in comp or d not in seeded], soft)
+    hard = break_seeded({b: h for b, (_, h, _) in plans.items()}, lambda d: base_of[d], seeded)
+    for b, (info, _, soft) in list(plans.items()):
+        plans[b] = (info, hard[b], soft)
 
 
 def prune_soft(plans, base_of):
@@ -637,6 +651,9 @@ def arch_rules(lines, arch, by_base, prefs):
         for b in comp if len(comp) > 1 else ():
             deps, make = plans[b]
             plans[b] = ([d for d in deps if names[d]["base"] not in comp or d in make], make)
+    seeded = set(distro.lock().get(f"buildroot-{arch}", {}))
+    hard = break_seeded({b: deps for b, (deps, _) in plans.items()}, lambda d: names[d]["base"], seeded)
+    plans = {b: (hard[b], make) for b, (_, make) in plans.items()}
     stamps = []
     for info in built:
         deps = plans[info["base"]][0]
