@@ -1,6 +1,6 @@
 pkgname=scummvm
 pkgver=2026.4.0
-pkgrel=2
+pkgrel=3
 pkgdesc="Engine for classic adventure games"
 arch=(i686 x32)
 url="https://www.scummvm.org/"
@@ -36,7 +36,7 @@ build() {
     --disable-tts --disable-cloud --disable-libcurl --disable-discord --disable-eventrecorder \
     --disable-gtk --disable-sndio --disable-updates --disable-vpx --disable-taskbar --disable-text-console \
     --disable-sdlnet --disable-all-engines \
-    --enable-engine=scumm,scumm_7_8,sci,sci32,agi,agos,kyra,lol,eob,queen,sky,sword1,sword2,lure,drascula,gob,saga,ihnm,saga2,cine,cruise,made,tinsel,touche,tucker,parallaction,groovie,tsage,access,mads,sherlock,cge,cge2,hugo,dreamweb,lab,mortevielle,teenagent,draci,chewy,supernova,voyeur,mm,xeen,mm1,zvision,twine,dgds,freescape,m4,trecision,darkseed,hopkins,awe,toltecs,lastexpress,glk,ultima,ultima4,ultima6,ultima8,efh,got
+    --enable-engine=scumm,scumm_7_8,sci,sci32,agi,agos,kyra,lol,eob,queen,sky,sword1,sword2,lure,drascula,gob,saga,ihnm,saga2,cine,cruise,made,tinsel,touche,tucker,parallaction,groovie,tsage,access,mads,sherlock,cge,cge2,hugo,dreamweb,lab,mortevielle,teenagent,draci,chewy,supernova,voyeur,mm,xeen,mm1,zvision,twine,dgds,freescape,m4,trecision,darkseed,hopkins,awe,toltecs,lastexpress,glk,efh,got
   make
 }
 

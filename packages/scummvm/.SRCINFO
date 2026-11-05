@@ -1,7 +1,7 @@
 pkgbase = scummvm
 	pkgdesc = Engine for classic adventure games
 	pkgver = 2026.4.0
-	pkgrel = 2
+	pkgrel = 3
 	url = https://www.scummvm.org/
 	arch = i686
 	arch = x32
