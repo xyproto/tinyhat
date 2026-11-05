@@ -1,5 +1,5 @@
 #!/bin/sh
-[ "$1" = --run ] || exec foot -T "Install Java and CGoban 3" "$0" --run
+[ "$1" = --run ] || exec foot -T "Install CGoban 3" "$0" --run
 fail() {
 	printf '\n%s\nPress Enter to close.\n' "$1"
 	read -r _
