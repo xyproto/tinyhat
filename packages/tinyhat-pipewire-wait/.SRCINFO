@@ -1,0 +1,17 @@
+pkgbase = tinyhat-pipewire-wait
+	pkgdesc = Makes PipeWire clients wait for the default sink when PipeWire is started on demand
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	arch = x86_64
+	arch = aarch64
+	license = BSD-3-Clause
+	depends = pipewire
+	source = tinyhat-wait.c
+	source = tinyhat-wait.conf
+	sha256sums = SKIP
+	sha256sums = SKIP
+
+pkgname = tinyhat-pipewire-wait

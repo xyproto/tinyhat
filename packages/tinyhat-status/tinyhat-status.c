@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -146,15 +147,65 @@ static void wifi(char *out, size_t size)
 	globfree(&g);
 }
 
+static void volumefile(char *path, size_t size)
+{
+	auto state = getenv("XDG_STATE_HOME");
+	auto home = getenv("HOME");
+	if (state && *state == '/')
+		snprintf(path, size, "%s/tinyhat/volume", state);
+	else
+		snprintf(path, size, "%s/.local/state/tinyhat/volume", home ? home : "");
+}
+
+static void savevolume(const char *path, const char *text)
+{
+	char old[32] = "", dir[512], tmp[520];
+	auto f = fopen(path, "r");
+	if (f) {
+		if (fgets(old, sizeof old, f))
+			old[strcspn(old, "\n")] = '\0';
+		fclose(f);
+	}
+	if (!strcmp(old, text))
+		return;
+	snprintf(dir, sizeof dir, "%s", path);
+	for (auto p = dir + 1; *p; p++) {
+		if (*p == '/') {
+			*p = '\0';
+			mkdir(dir, 0755);
+			*p = '/';
+		}
+	}
+	snprintf(tmp, sizeof tmp, "%s.tmp", path);
+	f = fopen(tmp, "w");
+	if (!f)
+		return;
+	bool ok = fprintf(f, "%s\n", text) > 0;
+	if (fclose(f) || !ok || rename(tmp, path))
+		unlink(tmp);
+}
+
 static void volume(char *out, size_t size)
 {
-	char text[256];
+	char text[256], path[512];
 	double v;
 	char *argv[] = { "wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@", nullptr };
+	volumefile(path, sizeof path);
 	*out = '\0';
-	if (!run(text, sizeof text, argv) || sscanf(text, "Volume: %lf", &v) != 1)
+	if (running("pipewire") && running("wireplumber") && run(text, sizeof text, argv) &&
+		sscanf(text, "Volume: %lf", &v) == 1) {
+		snprintf(out, size, "%c %d%%", strstr(text, "[MUTED]") ? 'M' : 'V', (int)(v * 100 + 0.5));
+		savevolume(path, out);
 		return;
-	snprintf(out, size, "%c %d%%", strstr(text, "[MUTED]") ? 'M' : 'V', (int)(v * 100 + 0.5));
+	}
+	auto f = fopen(path, "r");
+	if (f) {
+		if (fgets(out, size, f))
+			out[strcspn(out, "\n")] = '\0';
+		fclose(f);
+	}
+	if (!*out)
+		snprintf(out, size, "V 40%%");
 }
 
 static bool readint(const char *path, int *out)
