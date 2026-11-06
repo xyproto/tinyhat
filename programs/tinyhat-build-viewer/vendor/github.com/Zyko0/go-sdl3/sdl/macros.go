@@ -1,0 +1,827 @@
+package sdl
+
+const (
+	ALPHA_OPAQUE            = 255
+	ALPHA_OPAQUE_FLOAT      = 1.
+	ALPHA_TRANSPARENT       = 0
+	ALPHA_TRANSPARENT_FLOAT = 0.
+)
+
+// SDL_BlendMode - A set of blend modes used in drawing operations.
+// (https://wiki.libsdl.org/SDL3/SDL_BlendMode)
+type BlendMode uint32
+
+const (
+	BLENDMODE_NONE                BlendMode = 0x00000000 /**< no blending: dstRGBA = srcRGBA */
+	BLENDMODE_BLEND               BlendMode = 0x00000001 /**< alpha blending: dstRGB = (srcRGB * srcA) + (dstRGB * (1-srcA)), dstA = srcA + (dstA * (1-srcA)) */
+	BLENDMODE_BLEND_PREMULTIPLIED BlendMode = 0x00000010 /**< pre-multiplied alpha blending: dstRGBA = srcRGBA + (dstRGBA * (1-srcA)) */
+	BLENDMODE_ADD                 BlendMode = 0x00000002 /**< additive blending: dstRGB = (srcRGB * srcA) + dstRGB, dstA = dstA */
+	BLENDMODE_ADD_PREMULTIPLIED   BlendMode = 0x00000020 /**< pre-multiplied additive blending: dstRGB = srcRGB + dstRGB, dstA = dstA */
+	BLENDMODE_MOD                 BlendMode = 0x00000004 /**< color modulate: dstRGB = srcRGB * dstRGB, dstA = dstA */
+	BLENDMODE_MUL                 BlendMode = 0x00000008 /**< color multiply: dstRGB = (srcRGB * dstRGB) + (dstRGB * (1-srcA)), dstA = dstA */
+	BLENDMODE_INVALID             BlendMode = 0x7FFFFFFF
+)
+
+// SDL_MouseButtonFlags - A bitmask of pressed mouse buttons, as reported by [SDL_GetMouseState](SDL_GetMouseState), etc.
+// (https://wiki.libsdl.org/SDL3/SDL_MouseButtonFlags)
+type MouseButtonFlags uint32
+
+const (
+	BUTTON_LEFT   MouseButtonFlags = 1
+	BUTTON_MIDDLE MouseButtonFlags = 2
+	BUTTON_RIGHT  MouseButtonFlags = 3
+	BUTTON_X1     MouseButtonFlags = 4
+	BUTTON_X2     MouseButtonFlags = 5
+)
+
+func ButtonMask(x MouseButtonFlags) MouseButtonFlags {
+	return MouseButtonFlags(1) << ((x) - 1)
+}
+
+const (
+	DEBUG_TEXT_FONT_CHARACTER_SIZE = 8
+)
+
+// SDL_InitFlags - Initialization flags for [SDL_Init](SDL_Init) and/or [SDL_InitSubSystem](SDL_InitSubSystem)
+// (https://wiki.libsdl.org/SDL3/SDL_InitFlags)
+type InitFlags uint32
+
+const (
+	INIT_AUDIO    InitFlags = 0x00000010 /**< `SDL_INIT_AUDIO` implies `SDL_INIT_EVENTS` */
+	INIT_VIDEO    InitFlags = 0x00000020 /**< `SDL_INIT_VIDEO` implies `SDL_INIT_EVENTS`, should be initialized on the main thread */
+	INIT_JOYSTICK InitFlags = 0x00000200 /**< `SDL_INIT_JOYSTICK` implies `SDL_INIT_EVENTS` */
+	INIT_HAPTIC   InitFlags = 0x00001000
+	INIT_GAMEPAD  InitFlags = 0x00002000 /**< `SDL_INIT_GAMEPAD` implies `SDL_INIT_JOYSTICK` */
+	INIT_EVENTS   InitFlags = 0x00004000
+	INIT_SENSOR   InitFlags = 0x00008000 /**< `SDL_INIT_SENSOR` implies `SDL_INIT_EVENTS` */
+	INIT_CAMERA   InitFlags = 0x00010000 /**< `SDL_INIT_CAMERA` implies `SDL_INIT_EVENTS` */
+)
+
+// SDL_WindowFlags - The flags on a window.
+// (https://wiki.libsdl.org/SDL3/SDL_WindowFlags)
+type WindowFlags uint64
+
+const (
+	WINDOW_FULLSCREEN          WindowFlags = 0x0000000000000001 /**< window is in fullscreen mode */
+	WINDOW_OPENGL              WindowFlags = 0x0000000000000002 /**< window usable with OpenGL context */
+	WINDOW_OCCLUDED            WindowFlags = 0x0000000000000004 /**< window is occluded */
+	WINDOW_HIDDEN              WindowFlags = 0x0000000000000008 /**< window is neither mapped onto the desktop nor shown in the taskbar/dock/window list; SDL_ShowWindow() is required for it to become visible */
+	WINDOW_BORDERLESS          WindowFlags = 0x0000000000000010 /**< no window decoration */
+	WINDOW_RESIZABLE           WindowFlags = 0x0000000000000020 /**< window can be resized */
+	WINDOW_MINIMIZED           WindowFlags = 0x0000000000000040 /**< window is minimized */
+	WINDOW_MAXIMIZED           WindowFlags = 0x0000000000000080 /**< window is maximized */
+	WINDOW_MOUSE_GRABBED       WindowFlags = 0x0000000000000100 /**< window has grabbed mouse input */
+	WINDOW_INPUT_FOCUS         WindowFlags = 0x0000000000000200 /**< window has input focus */
+	WINDOW_MOUSE_FOCUS         WindowFlags = 0x0000000000000400 /**< window has mouse focus */
+	WINDOW_EXTERNAL            WindowFlags = 0x0000000000000800 /**< window not created by SDL */
+	WINDOW_MODAL               WindowFlags = 0x0000000000001000 /**< window is modal */
+	WINDOW_HIGH_PIXEL_DENSITY  WindowFlags = 0x0000000000002000 /**< window uses high pixel density back buffer if possible */
+	WINDOW_MOUSE_CAPTURE       WindowFlags = 0x0000000000004000 /**< window has mouse captured (unrelated to MOUSE_GRABBED) */
+	WINDOW_MOUSE_RELATIVE_MODE WindowFlags = 0x0000000000008000 /**< window has relative mode enabled */
+	WINDOW_ALWAYS_ON_TOP       WindowFlags = 0x0000000000010000 /**< window should always be above others */
+	WINDOW_UTILITY             WindowFlags = 0x0000000000020000 /**< window should be treated as a utility window, not showing in the task bar and window list */
+	WINDOW_TOOLTIP             WindowFlags = 0x0000000000040000 /**< window should be treated as a tooltip and does not get mouse or keyboard focus, requires a parent window */
+	WINDOW_POPUP_MENU          WindowFlags = 0x0000000000080000 /**< window should be treated as a popup menu, requires a parent window */
+	WINDOW_KEYBOARD_GRABBED    WindowFlags = 0x0000000000100000 /**< window has grabbed keyboard input */
+	WINDOW_FILL_DOCUMENT       WindowFlags = 0x0000000000200000 /**< window is in fill-document mode (Emscripten only), since SDL 3.4.0 */
+	WINDOW_VULKAN              WindowFlags = 0x0000000010000000 /**< window usable for Vulkan surface */
+	WINDOW_METAL               WindowFlags = 0x0000000020000000 /**< window usable for Metal view */
+	WINDOW_TRANSPARENT         WindowFlags = 0x0000000040000000 /**< window with transparent buffer */
+	WINDOW_NOT_FOCUSABLE       WindowFlags = 0x0000000080000000 /**< window should not be focusable */
+)
+
+// SDL_GetWindowProperties - Get the properties associated with a window.
+// (https://wiki.libsdl.org/SDL3/SDL_GetWindowProperties)
+const (
+	PROP_WINDOW_SHAPE_POINTER                             = "SDL.window.shape"
+	PROP_WINDOW_HDR_ENABLED_BOOLEAN                       = "SDL.window.HDR_enabled"
+	PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT                     = "SDL.window.SDR_white_level"
+	PROP_WINDOW_HDR_HEADROOM_FLOAT                        = "SDL.window.HDR_headroom"
+	PROP_WINDOW_ANDROID_WINDOW_POINTER                    = "SDL.window.android.window"
+	PROP_WINDOW_ANDROID_SURFACE_POINTER                   = "SDL.window.android.surface"
+	PROP_WINDOW_UIKIT_WINDOW_POINTER                      = "SDL.window.uikit.window"
+	PROP_WINDOW_UIKIT_METAL_VIEW_TAG_NUMBER               = "SDL.window.uikit.metal_view_tag"
+	PROP_WINDOW_UIKIT_OPENGL_FRAMEBUFFER_NUMBER           = "SDL.window.uikit.opengl.framebuffer"
+	PROP_WINDOW_UIKIT_OPENGL_RENDERBUFFER_NUMBER          = "SDL.window.uikit.opengl.renderbuffer"
+	PROP_WINDOW_UIKIT_OPENGL_RESOLVE_FRAMEBUFFER_NUMBER   = "SDL.window.uikit.opengl.resolve_framebuffer"
+	PROP_WINDOW_KMSDRM_DEVICE_INDEX_NUMBER                = "SDL.window.kmsdrm.dev_index"
+	PROP_WINDOW_KMSDRM_DRM_FD_NUMBER                      = "SDL.window.kmsdrm.drm_fd"
+	PROP_WINDOW_KMSDRM_GBM_DEVICE_POINTER                 = "SDL.window.kmsdrm.gbm_dev"
+	PROP_WINDOW_COCOA_WINDOW_POINTER                      = "SDL.window.cocoa.window"
+	PROP_WINDOW_COCOA_METAL_VIEW_TAG_NUMBER               = "SDL.window.cocoa.metal_view_tag"
+	PROP_WINDOW_OPENVR_OVERLAY_ID_NUMBER                  = "SDL.window.openvr.overlay_id"
+	PROP_WINDOW_VIVANTE_DISPLAY_POINTER                   = "SDL.window.vivante.display"
+	PROP_WINDOW_VIVANTE_WINDOW_POINTER                    = "SDL.window.vivante.window"
+	PROP_WINDOW_VIVANTE_SURFACE_POINTER                   = "SDL.window.vivante.surface"
+	PROP_WINDOW_WIN32_HWND_POINTER                        = "SDL.window.win32.hwnd"
+	PROP_WINDOW_WIN32_HDC_POINTER                         = "SDL.window.win32.hdc"
+	PROP_WINDOW_WIN32_INSTANCE_POINTER                    = "SDL.window.win32.instance"
+	PROP_WINDOW_WAYLAND_DISPLAY_POINTER                   = "SDL.window.wayland.display"
+	PROP_WINDOW_WAYLAND_SURFACE_POINTER                   = "SDL.window.wayland.surface"
+	PROP_WINDOW_WAYLAND_VIEWPORT_POINTER                  = "SDL.window.wayland.viewport"
+	PROP_WINDOW_WAYLAND_EGL_WINDOW_POINTER                = "SDL.window.wayland.egl_window"
+	PROP_WINDOW_WAYLAND_XDG_SURFACE_POINTER               = "SDL.window.wayland.xdg_surface"
+	PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_POINTER              = "SDL.window.wayland.xdg_toplevel"
+	PROP_WINDOW_WAYLAND_XDG_TOPLEVEL_EXPORT_HANDLE_STRING = "SDL.window.wayland.xdg_toplevel_export_handle"
+	PROP_WINDOW_WAYLAND_XDG_POPUP_POINTER                 = "SDL.window.wayland.xdg_popup"
+	PROP_WINDOW_WAYLAND_XDG_POSITIONER_POINTER            = "SDL.window.wayland.xdg_positioner"
+	PROP_WINDOW_X11_DISPLAY_POINTER                       = "SDL.window.x11.display"
+	PROP_WINDOW_X11_SCREEN_NUMBER                         = "SDL.window.x11.screen"
+	PROP_WINDOW_X11_WINDOW_NUMBER                         = "SDL.window.x11.window"
+	PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING               = "SDL.window.emscripten.canvas_id"
+	PROP_WINDOW_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING        = "SDL.window.emscripten.keyboard_element"
+)
+
+// SDL_WINDOWPOS_UNDEFINED_MASK - A magic value used with SDL_WINDOWPOS_UNDEFINED.
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_UNDEFINED_MASK)
+const WINDOWPOS_UNDEFINED_MASK uint32 = 0x1FFF0000
+
+// SDL_WINDOWPOS_UNDEFINED_DISPLAY - Used to indicate that you don't care what the window position is.
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_UNDEFINED_DISPLAY)
+func WINDOWPOS_UNDEFINED_DISPLAY(X DisplayID) int32 {
+	return int32(WINDOWPOS_UNDEFINED_MASK | uint32(X))
+}
+
+// SDL_WINDOWPOS_UNDEFINED - Used to indicate that you don't care what the window position/display is.
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_UNDEFINED)
+const WINDOWPOS_UNDEFINED = int32(WINDOWPOS_UNDEFINED_MASK)
+
+// SDL_WINDOWPOS_ISUNDEFINED - A macro to test if the window position is marked as "undefined."
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_ISUNDEFINED)
+func WINDOWPOS_ISUNDEFINED(X DisplayID) bool {
+	return (uint32(X) & 0xFFFF0000) == WINDOWPOS_UNDEFINED_MASK
+}
+
+// SDL_WINDOWPOS_CENTERED_MASK - A magic value used with SDL_WINDOWPOS_CENTERED.
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_CENTERED_MASK)
+const WINDOWPOS_CENTERED_MASK uint32 = 0x2FFF0000
+
+// SDL_WINDOWPOS_CENTERED_DISPLAY - Used to indicate that the window position should be centered.
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_CENTERED_DISPLAY)
+func WINDOWPOS_CENTERED_DISPLAY(X DisplayID) int32 {
+	return int32(WINDOWPOS_CENTERED_MASK | uint32(X))
+}
+
+// SDL_WINDOWPOS_CENTERED - Used to indicate that the window position should be centered.
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_CENTERED)
+const WINDOWPOS_CENTERED = int32(WINDOWPOS_CENTERED_MASK)
+
+// SDL_WINDOWPOS_ISCENTERED - A macro to test if the window position is marked as "centered."
+// (https://wiki.libsdl.org/SDL3/SDL_WINDOWPOS_ISCENTERED)
+func WINDOWPOS_ISCENTERED(X DisplayID) bool {
+	return (uint32(X) & 0xFFFF0000) == WINDOWPOS_CENTERED_MASK
+}
+
+const (
+	HAT_CENTERED  uint8 = 0x00
+	HAT_UP        uint8 = 0x01
+	HAT_RIGHT     uint8 = 0x02
+	HAT_DOWN      uint8 = 0x04
+	HAT_LEFT      uint8 = 0x08
+	HAT_RIGHTUP   uint8 = HAT_RIGHT | HAT_UP
+	HAT_RIGHTDOWN uint8 = HAT_RIGHT | HAT_DOWN
+	HAT_LEFTUP    uint8 = HAT_LEFT | HAT_UP
+	HAT_LEFTDOWN  uint8 = HAT_LEFT | HAT_DOWN
+)
+
+const (
+	WINDOW_SURFACE_VSYNC_DISABLED = 0
+	WINDOW_SURFACE_VSYNC_ADAPTIVE = -1
+)
+
+const (
+	HINT_ALLOW_ALT_TAB_WHILE_GRABBED             = "SDL_ALLOW_ALT_TAB_WHILE_GRABBED"
+	HINT_ANDROID_ALLOW_RECREATE_ACTIVITY         = "SDL_ANDROID_ALLOW_RECREATE_ACTIVITY"
+	HINT_ANDROID_BLOCK_ON_PAUSE                  = "SDL_ANDROID_BLOCK_ON_PAUSE"
+	HINT_ANDROID_LOW_LATENCY_AUDIO               = "SDL_ANDROID_LOW_LATENCY_AUDIO"
+	HINT_ANDROID_TRAP_BACK_BUTTON                = "SDL_ANDROID_TRAP_BACK_BUTTON"
+	HINT_APP_ID                                  = "SDL_APP_ID"
+	HINT_APP_NAME                                = "SDL_APP_NAME"
+	HINT_APPLE_TV_CONTROLLER_UI_EVENTS           = "SDL_APPLE_TV_CONTROLLER_UI_EVENTS"
+	HINT_APPLE_TV_REMOTE_ALLOW_ROTATION          = "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
+	HINT_AUDIO_ALSA_DEFAULT_DEVICE               = "SDL_AUDIO_ALSA_DEFAULT_DEVICE"
+	HINT_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE      = "SDL_AUDIO_ALSA_DEFAULT_PLAYBACK_DEVICE"
+	HINT_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE     = "SDL_AUDIO_ALSA_DEFAULT_RECORDING_DEVICE"
+	HINT_AUDIO_CATEGORY                          = "SDL_AUDIO_CATEGORY"
+	HINT_AUDIO_CHANNELS                          = "SDL_AUDIO_CHANNELS"
+	HINT_AUDIO_DEVICE_APP_ICON_NAME              = "SDL_AUDIO_DEVICE_APP_ICON_NAME"
+	HINT_AUDIO_DEVICE_SAMPLE_FRAMES              = "SDL_AUDIO_DEVICE_SAMPLE_FRAMES"
+	HINT_AUDIO_DEVICE_STREAM_NAME                = "SDL_AUDIO_DEVICE_STREAM_NAME"
+	HINT_AUDIO_DEVICE_STREAM_ROLE                = "SDL_AUDIO_DEVICE_STREAM_ROLE"
+	HINT_AUDIO_DISK_INPUT_FILE                   = "SDL_AUDIO_DISK_INPUT_FILE"
+	HINT_AUDIO_DISK_OUTPUT_FILE                  = "SDL_AUDIO_DISK_OUTPUT_FILE"
+	HINT_AUDIO_DISK_TIMESCALE                    = "SDL_AUDIO_DISK_TIMESCALE"
+	HINT_AUDIO_DRIVER                            = "SDL_AUDIO_DRIVER"
+	HINT_AUDIO_DUMMY_TIMESCALE                   = "SDL_AUDIO_DUMMY_TIMESCALE"
+	HINT_AUDIO_FORMAT                            = "SDL_AUDIO_FORMAT"
+	HINT_AUDIO_FREQUENCY                         = "SDL_AUDIO_FREQUENCY"
+	HINT_AUDIO_INCLUDE_MONITORS                  = "SDL_AUDIO_INCLUDE_MONITORS"
+	HINT_AUTO_UPDATE_JOYSTICKS                   = "SDL_AUTO_UPDATE_JOYSTICKS"
+	HINT_AUTO_UPDATE_SENSORS                     = "SDL_AUTO_UPDATE_SENSORS"
+	HINT_BMP_SAVE_LEGACY_FORMAT                  = "SDL_BMP_SAVE_LEGACY_FORMAT"
+	HINT_CAMERA_DRIVER                           = "SDL_CAMERA_DRIVER"
+	HINT_CPU_FEATURE_MASK                        = "SDL_CPU_FEATURE_MASK"
+	HINT_JOYSTICK_DIRECTINPUT                    = "SDL_JOYSTICK_DIRECTINPUT"
+	HINT_FILE_DIALOG_DRIVER                      = "SDL_FILE_DIALOG_DRIVER"
+	HINT_DISPLAY_USABLE_BOUNDS                   = "SDL_DISPLAY_USABLE_BOUNDS"
+	HINT_EMSCRIPTEN_ASYNCIFY                     = "SDL_EMSCRIPTEN_ASYNCIFY"
+	HINT_EMSCRIPTEN_CANVAS_SELECTOR              = "SDL_EMSCRIPTEN_CANVAS_SELECTOR"
+	HINT_EMSCRIPTEN_KEYBOARD_ELEMENT             = "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+	HINT_ENABLE_SCREEN_KEYBOARD                  = "SDL_ENABLE_SCREEN_KEYBOARD"
+	HINT_EVDEV_DEVICES                           = "SDL_EVDEV_DEVICES"
+	HINT_EVENT_LOGGING                           = "SDL_EVENT_LOGGING"
+	HINT_FORCE_RAISEWINDOW                       = "SDL_FORCE_RAISEWINDOW"
+	HINT_FRAMEBUFFER_ACCELERATION                = "SDL_FRAMEBUFFER_ACCELERATION"
+	HINT_GAMECONTROLLERCONFIG                    = "SDL_GAMECONTROLLERCONFIG"
+	HINT_GAMECONTROLLERCONFIG_FILE               = "SDL_GAMECONTROLLERCONFIG_FILE"
+	HINT_GAMECONTROLLERTYPE                      = "SDL_GAMECONTROLLERTYPE"
+	HINT_GAMECONTROLLER_IGNORE_DEVICES           = "SDL_GAMECONTROLLER_IGNORE_DEVICES"
+	HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT    = "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"
+	HINT_GAMECONTROLLER_SENSOR_FUSION            = "SDL_GAMECONTROLLER_SENSOR_FUSION"
+	HINT_GDK_TEXTINPUT_DEFAULT_TEXT              = "SDL_GDK_TEXTINPUT_DEFAULT_TEXT"
+	HINT_GDK_TEXTINPUT_DESCRIPTION               = "SDL_GDK_TEXTINPUT_DESCRIPTION"
+	HINT_GDK_TEXTINPUT_MAX_LENGTH                = "SDL_GDK_TEXTINPUT_MAX_LENGTH"
+	HINT_GDK_TEXTINPUT_SCOPE                     = "SDL_GDK_TEXTINPUT_SCOPE"
+	HINT_GDK_TEXTINPUT_TITLE                     = "SDL_GDK_TEXTINPUT_TITLE"
+	HINT_HIDAPI_LIBUSB                           = "SDL_HIDAPI_LIBUSB"
+	HINT_HIDAPI_LIBUSB_WHITELIST                 = "SDL_HIDAPI_LIBUSB_WHITELIST"
+	HINT_HIDAPI_UDEV                             = "SDL_HIDAPI_UDEV"
+	HINT_GPU_DRIVER                              = "SDL_GPU_DRIVER"
+	HINT_HIDAPI_ENUMERATE_ONLY_CONTROLLERS       = "SDL_HIDAPI_ENUMERATE_ONLY_CONTROLLERS"
+	HINT_HIDAPI_IGNORE_DEVICES                   = "SDL_HIDAPI_IGNORE_DEVICES"
+	HINT_IME_IMPLEMENTED_UI                      = "SDL_IME_IMPLEMENTED_UI"
+	HINT_IOS_HIDE_HOME_INDICATOR                 = "SDL_IOS_HIDE_HOME_INDICATOR"
+	HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS        = "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"
+	HINT_JOYSTICK_ARCADESTICK_DEVICES            = "SDL_JOYSTICK_ARCADESTICK_DEVICES"
+	HINT_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED   = "SDL_JOYSTICK_ARCADESTICK_DEVICES_EXCLUDED"
+	HINT_JOYSTICK_BLACKLIST_DEVICES              = "SDL_JOYSTICK_BLACKLIST_DEVICES"
+	HINT_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED     = "SDL_JOYSTICK_BLACKLIST_DEVICES_EXCLUDED"
+	HINT_JOYSTICK_DEVICE                         = "SDL_JOYSTICK_DEVICE"
+	HINT_JOYSTICK_ENHANCED_REPORTS               = "SDL_JOYSTICK_ENHANCED_REPORTS"
+	HINT_JOYSTICK_FLIGHTSTICK_DEVICES            = "SDL_JOYSTICK_FLIGHTSTICK_DEVICES"
+	HINT_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED   = "SDL_JOYSTICK_FLIGHTSTICK_DEVICES_EXCLUDED"
+	HINT_JOYSTICK_GAMEINPUT                      = "SDL_JOYSTICK_GAMEINPUT"
+	HINT_JOYSTICK_GAMECUBE_DEVICES               = "SDL_JOYSTICK_GAMECUBE_DEVICES"
+	HINT_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED      = "SDL_JOYSTICK_GAMECUBE_DEVICES_EXCLUDED"
+	HINT_JOYSTICK_HIDAPI                         = "SDL_JOYSTICK_HIDAPI"
+	HINT_JOYSTICK_HIDAPI_COMBINE_JOY_CONS        = "SDL_JOYSTICK_HIDAPI_COMBINE_JOY_CONS"
+	HINT_JOYSTICK_HIDAPI_GAMECUBE                = "SDL_JOYSTICK_HIDAPI_GAMECUBE"
+	HINT_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE   = "SDL_JOYSTICK_HIDAPI_GAMECUBE_RUMBLE_BRAKE"
+	HINT_JOYSTICK_HIDAPI_JOY_CONS                = "SDL_JOYSTICK_HIDAPI_JOY_CONS"
+	HINT_JOYSTICK_HIDAPI_JOYCON_HOME_LED         = "SDL_JOYSTICK_HIDAPI_JOYCON_HOME_LED"
+	HINT_JOYSTICK_HIDAPI_LUNA                    = "SDL_JOYSTICK_HIDAPI_LUNA"
+	HINT_JOYSTICK_HIDAPI_NINTENDO_CLASSIC        = "SDL_JOYSTICK_HIDAPI_NINTENDO_CLASSIC"
+	HINT_JOYSTICK_HIDAPI_PS3                     = "SDL_JOYSTICK_HIDAPI_PS3"
+	HINT_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER      = "SDL_JOYSTICK_HIDAPI_PS3_SIXAXIS_DRIVER"
+	HINT_JOYSTICK_HIDAPI_PS4                     = "SDL_JOYSTICK_HIDAPI_PS4"
+	HINT_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL     = "SDL_JOYSTICK_HIDAPI_PS4_REPORT_INTERVAL"
+	HINT_JOYSTICK_HIDAPI_PS5                     = "SDL_JOYSTICK_HIDAPI_PS5"
+	HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED          = "SDL_JOYSTICK_HIDAPI_PS5_PLAYER_LED"
+	HINT_JOYSTICK_HIDAPI_SHIELD                  = "SDL_JOYSTICK_HIDAPI_SHIELD"
+	HINT_JOYSTICK_HIDAPI_STADIA                  = "SDL_JOYSTICK_HIDAPI_STADIA"
+	HINT_JOYSTICK_HIDAPI_STEAM                   = "SDL_JOYSTICK_HIDAPI_STEAM"
+	HINT_JOYSTICK_HIDAPI_STEAM_HOME_LED          = "SDL_JOYSTICK_HIDAPI_STEAM_HOME_LED"
+	HINT_JOYSTICK_HIDAPI_STEAMDECK               = "SDL_JOYSTICK_HIDAPI_STEAMDECK"
+	HINT_JOYSTICK_HIDAPI_STEAM_HORI              = "SDL_JOYSTICK_HIDAPI_STEAM_HORI"
+	HINT_JOYSTICK_HIDAPI_SWITCH                  = "SDL_JOYSTICK_HIDAPI_SWITCH"
+	HINT_JOYSTICK_HIDAPI_SWITCH_HOME_LED         = "SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED"
+	HINT_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED       = "SDL_JOYSTICK_HIDAPI_SWITCH_PLAYER_LED"
+	HINT_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS       = "SDL_JOYSTICK_HIDAPI_VERTICAL_JOY_CONS"
+	HINT_JOYSTICK_HIDAPI_WII                     = "SDL_JOYSTICK_HIDAPI_WII"
+	HINT_JOYSTICK_HIDAPI_WII_PLAYER_LED          = "SDL_JOYSTICK_HIDAPI_WII_PLAYER_LED"
+	HINT_JOYSTICK_HIDAPI_XBOX                    = "SDL_JOYSTICK_HIDAPI_XBOX"
+	HINT_JOYSTICK_HIDAPI_XBOX_360                = "SDL_JOYSTICK_HIDAPI_XBOX_360"
+	HINT_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED     = "SDL_JOYSTICK_HIDAPI_XBOX_360_PLAYER_LED"
+	HINT_JOYSTICK_HIDAPI_XBOX_360_WIRELESS       = "SDL_JOYSTICK_HIDAPI_XBOX_360_WIRELESS"
+	HINT_JOYSTICK_HIDAPI_XBOX_ONE                = "SDL_JOYSTICK_HIDAPI_XBOX_ONE"
+	HINT_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED       = "SDL_JOYSTICK_HIDAPI_XBOX_ONE_HOME_LED"
+	HINT_JOYSTICK_IOKIT                          = "SDL_JOYSTICK_IOKIT"
+	HINT_JOYSTICK_LINUX_CLASSIC                  = "SDL_JOYSTICK_LINUX_CLASSIC"
+	HINT_JOYSTICK_LINUX_DEADZONES                = "SDL_JOYSTICK_LINUX_DEADZONES"
+	HINT_JOYSTICK_LINUX_DIGITAL_HATS             = "SDL_JOYSTICK_LINUX_DIGITAL_HATS"
+	HINT_JOYSTICK_LINUX_HAT_DEADZONES            = "SDL_JOYSTICK_LINUX_HAT_DEADZONES"
+	HINT_JOYSTICK_MFI                            = "SDL_JOYSTICK_MFI"
+	HINT_JOYSTICK_RAWINPUT                       = "SDL_JOYSTICK_RAWINPUT"
+	HINT_JOYSTICK_RAWINPUT_CORRELATE_XINPUT      = "SDL_JOYSTICK_RAWINPUT_CORRELATE_XINPUT"
+	HINT_JOYSTICK_ROG_CHAKRAM                    = "SDL_JOYSTICK_ROG_CHAKRAM"
+	HINT_JOYSTICK_THREAD                         = "SDL_JOYSTICK_THREAD"
+	HINT_JOYSTICK_THROTTLE_DEVICES               = "SDL_JOYSTICK_THROTTLE_DEVICES"
+	HINT_JOYSTICK_THROTTLE_DEVICES_EXCLUDED      = "SDL_JOYSTICK_THROTTLE_DEVICES_EXCLUDED"
+	HINT_JOYSTICK_WGI                            = "SDL_JOYSTICK_WGI"
+	HINT_JOYSTICK_WHEEL_DEVICES                  = "SDL_JOYSTICK_WHEEL_DEVICES"
+	HINT_JOYSTICK_WHEEL_DEVICES_EXCLUDED         = "SDL_JOYSTICK_WHEEL_DEVICES_EXCLUDED"
+	HINT_JOYSTICK_ZERO_CENTERED_DEVICES          = "SDL_JOYSTICK_ZERO_CENTERED_DEVICES"
+	HINT_JOYSTICK_HAPTIC_AXES                    = "SDL_JOYSTICK_HAPTIC_AXES"
+	HINT_KEYCODE_OPTIONS                         = "SDL_KEYCODE_OPTIONS"
+	HINT_KMSDRM_DEVICE_INDEX                     = "SDL_KMSDRM_DEVICE_INDEX"
+	HINT_KMSDRM_REQUIRE_DRM_MASTER               = "SDL_KMSDRM_REQUIRE_DRM_MASTER"
+	HINT_LOGGING                                 = "SDL_LOGGING"
+	HINT_MAC_BACKGROUND_APP                      = "SDL_MAC_BACKGROUND_APP"
+	HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK      = "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"
+	HINT_MAC_OPENGL_ASYNC_DISPATCH               = "SDL_MAC_OPENGL_ASYNC_DISPATCH"
+	HINT_MAC_OPTION_AS_ALT                       = "SDL_MAC_OPTION_AS_ALT"
+	HINT_MAC_SCROLL_MOMENTUM                     = "SDL_MAC_SCROLL_MOMENTUM"
+	HINT_MAIN_CALLBACK_RATE                      = "SDL_MAIN_CALLBACK_RATE"
+	HINT_MOUSE_DOUBLE_CLICK_RADIUS               = "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
+	HINT_MOUSE_DOUBLE_CLICK_TIME                 = "SDL_MOUSE_DOUBLE_CLICK_TIME"
+	HINT_MOUSE_DEFAULT_SYSTEM_CURSOR             = "SDL_MOUSE_DEFAULT_SYSTEM_CURSOR"
+	HINT_MOUSE_EMULATE_WARP_WITH_RELATIVE        = "SDL_MOUSE_EMULATE_WARP_WITH_RELATIVE"
+	HINT_MOUSE_FOCUS_CLICKTHROUGH                = "SDL_MOUSE_FOCUS_CLICKTHROUGH"
+	HINT_MOUSE_NORMAL_SPEED_SCALE                = "SDL_MOUSE_NORMAL_SPEED_SCALE"
+	HINT_MOUSE_RELATIVE_MODE_CENTER              = "SDL_MOUSE_RELATIVE_MODE_CENTER"
+	HINT_MOUSE_RELATIVE_SPEED_SCALE              = "SDL_MOUSE_RELATIVE_SPEED_SCALE"
+	HINT_MOUSE_RELATIVE_SYSTEM_SCALE             = "SDL_MOUSE_RELATIVE_SYSTEM_SCALE"
+	HINT_MOUSE_RELATIVE_WARP_MOTION              = "SDL_MOUSE_RELATIVE_WARP_MOTION"
+	HINT_MOUSE_RELATIVE_CURSOR_VISIBLE           = "SDL_MOUSE_RELATIVE_CURSOR_VISIBLE"
+	HINT_MOUSE_TOUCH_EVENTS                      = "SDL_MOUSE_TOUCH_EVENTS"
+	HINT_MUTE_CONSOLE_KEYBOARD                   = "SDL_MUTE_CONSOLE_KEYBOARD"
+	HINT_NO_SIGNAL_HANDLERS                      = "SDL_NO_SIGNAL_HANDLERS"
+	HINT_OPENGL_LIBRARY                          = "SDL_OPENGL_LIBRARY"
+	HINT_EGL_LIBRARY                             = "SDL_EGL_LIBRARY"
+	HINT_OPENGL_ES_DRIVER                        = "SDL_OPENGL_ES_DRIVER"
+	HINT_OPENVR_LIBRARY                          = "SDL_OPENVR_LIBRARY"
+	HINT_ORIENTATIONS                            = "SDL_ORIENTATIONS"
+	HINT_POLL_SENTINEL                           = "SDL_POLL_SENTINEL"
+	HINT_PREFERRED_LOCALES                       = "SDL_PREFERRED_LOCALES"
+	HINT_QUIT_ON_LAST_WINDOW_CLOSE               = "SDL_QUIT_ON_LAST_WINDOW_CLOSE"
+	HINT_RENDER_DIRECT3D_THREADSAFE              = "SDL_RENDER_DIRECT3D_THREADSAFE"
+	HINT_RENDER_DIRECT3D11_DEBUG                 = "SDL_RENDER_DIRECT3D11_DEBUG"
+	HINT_RENDER_VULKAN_DEBUG                     = "SDL_RENDER_VULKAN_DEBUG"
+	HINT_RENDER_GPU_DEBUG                        = "SDL_RENDER_GPU_DEBUG"
+	HINT_RENDER_GPU_LOW_POWER                    = "SDL_RENDER_GPU_LOW_POWER"
+	HINT_RENDER_DRIVER                           = "SDL_RENDER_DRIVER"
+	HINT_RENDER_LINE_METHOD                      = "SDL_RENDER_LINE_METHOD"
+	HINT_RENDER_METAL_PREFER_LOW_POWER_DEVICE    = "SDL_RENDER_METAL_PREFER_LOW_POWER_DEVICE"
+	HINT_RENDER_VSYNC                            = "SDL_RENDER_VSYNC"
+	HINT_RETURN_KEY_HIDES_IME                    = "SDL_RETURN_KEY_HIDES_IME"
+	HINT_ROG_GAMEPAD_MICE                        = "SDL_ROG_GAMEPAD_MICE"
+	HINT_ROG_GAMEPAD_MICE_EXCLUDED               = "SDL_ROG_GAMEPAD_MICE_EXCLUDED"
+	HINT_RPI_VIDEO_LAYER                         = "SDL_RPI_VIDEO_LAYER"
+	HINT_SCREENSAVER_INHIBIT_ACTIVITY_NAME       = "SDL_SCREENSAVER_INHIBIT_ACTIVITY_NAME"
+	HINT_SHUTDOWN_DBUS_ON_QUIT                   = "SDL_SHUTDOWN_DBUS_ON_QUIT"
+	HINT_STORAGE_TITLE_DRIVER                    = "SDL_STORAGE_TITLE_DRIVER"
+	HINT_STORAGE_USER_DRIVER                     = "SDL_STORAGE_USER_DRIVER"
+	HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL     = "SDL_THREAD_FORCE_REALTIME_TIME_CRITICAL"
+	HINT_THREAD_PRIORITY_POLICY                  = "SDL_THREAD_PRIORITY_POLICY"
+	HINT_TIMER_RESOLUTION                        = "SDL_TIMER_RESOLUTION"
+	HINT_TOUCH_MOUSE_EVENTS                      = "SDL_TOUCH_MOUSE_EVENTS"
+	HINT_TRACKPAD_IS_TOUCH_ONLY                  = "SDL_TRACKPAD_IS_TOUCH_ONLY"
+	HINT_TV_REMOTE_AS_JOYSTICK                   = "SDL_TV_REMOTE_AS_JOYSTICK"
+	HINT_VIDEO_ALLOW_SCREENSAVER                 = "SDL_VIDEO_ALLOW_SCREENSAVER"
+	HINT_VIDEO_DISPLAY_PRIORITY                  = "SDL_VIDEO_DISPLAY_PRIORITY"
+	HINT_VIDEO_DOUBLE_BUFFER                     = "SDL_VIDEO_DOUBLE_BUFFER"
+	HINT_VIDEO_DRIVER                            = "SDL_VIDEO_DRIVER"
+	HINT_VIDEO_DUMMY_SAVE_FRAMES                 = "SDL_VIDEO_DUMMY_SAVE_FRAMES"
+	HINT_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK     = "SDL_VIDEO_EGL_ALLOW_GETDISPLAY_FALLBACK"
+	HINT_VIDEO_FORCE_EGL                         = "SDL_VIDEO_FORCE_EGL"
+	HINT_VIDEO_MAC_FULLSCREEN_SPACES             = "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
+	HINT_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY    = "SDL_VIDEO_MAC_FULLSCREEN_MENU_VISIBILITY"
+	HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS            = "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
+	HINT_VIDEO_OFFSCREEN_SAVE_FRAMES             = "SDL_VIDEO_OFFSCREEN_SAVE_FRAMES"
+	HINT_VIDEO_SYNC_WINDOW_OPERATIONS            = "SDL_VIDEO_SYNC_WINDOW_OPERATIONS"
+	HINT_VIDEO_WAYLAND_ALLOW_LIBDECOR            = "SDL_VIDEO_WAYLAND_ALLOW_LIBDECOR"
+	HINT_VIDEO_WAYLAND_MODE_EMULATION            = "SDL_VIDEO_WAYLAND_MODE_EMULATION"
+	HINT_VIDEO_WAYLAND_MODE_SCALING              = "SDL_VIDEO_WAYLAND_MODE_SCALING"
+	HINT_VIDEO_WAYLAND_PREFER_LIBDECOR           = "SDL_VIDEO_WAYLAND_PREFER_LIBDECOR"
+	HINT_VIDEO_WAYLAND_SCALE_TO_DISPLAY          = "SDL_VIDEO_WAYLAND_SCALE_TO_DISPLAY"
+	HINT_VIDEO_WIN_D3DCOMPILER                   = "SDL_VIDEO_WIN_D3DCOMPILER"
+	HINT_VIDEO_X11_EXTERNAL_WINDOW_INPUT         = "SDL_VIDEO_X11_EXTERNAL_WINDOW_INPUT"
+	HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR      = "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
+	HINT_VIDEO_X11_NET_WM_PING                   = "SDL_VIDEO_X11_NET_WM_PING"
+	HINT_VIDEO_X11_NODIRECTCOLOR                 = "SDL_VIDEO_X11_NODIRECTCOLOR"
+	HINT_VIDEO_X11_SCALING_FACTOR                = "SDL_VIDEO_X11_SCALING_FACTOR"
+	HINT_VIDEO_X11_VISUALID                      = "SDL_VIDEO_X11_VISUALID"
+	HINT_VIDEO_X11_WINDOW_VISUALID               = "SDL_VIDEO_X11_WINDOW_VISUALID"
+	HINT_VIDEO_X11_XRANDR                        = "SDL_VIDEO_X11_XRANDR"
+	HINT_VITA_ENABLE_BACK_TOUCH                  = "SDL_VITA_ENABLE_BACK_TOUCH"
+	HINT_VITA_ENABLE_FRONT_TOUCH                 = "SDL_VITA_ENABLE_FRONT_TOUCH"
+	HINT_VITA_MODULE_PATH                        = "SDL_VITA_MODULE_PATH"
+	HINT_VITA_PVR_INIT                           = "SDL_VITA_PVR_INIT"
+	HINT_VITA_RESOLUTION                         = "SDL_VITA_RESOLUTION"
+	HINT_VITA_PVR_OPENGL                         = "SDL_VITA_PVR_OPENGL"
+	HINT_VITA_TOUCH_MOUSE_DEVICE                 = "SDL_VITA_TOUCH_MOUSE_DEVICE"
+	HINT_VULKAN_DISPLAY                          = "SDL_VULKAN_DISPLAY"
+	HINT_VULKAN_LIBRARY                          = "SDL_VULKAN_LIBRARY"
+	HINT_WAVE_FACT_CHUNK                         = "SDL_WAVE_FACT_CHUNK"
+	HINT_WAVE_CHUNK_LIMIT                        = "SDL_WAVE_CHUNK_LIMIT"
+	HINT_WAVE_RIFF_CHUNK_SIZE                    = "SDL_WAVE_RIFF_CHUNK_SIZE"
+	HINT_WAVE_TRUNCATION                         = "SDL_WAVE_TRUNCATION"
+	HINT_WINDOW_ACTIVATE_WHEN_RAISED             = "SDL_WINDOW_ACTIVATE_WHEN_RAISED"
+	HINT_WINDOW_ACTIVATE_WHEN_SHOWN              = "SDL_WINDOW_ACTIVATE_WHEN_SHOWN"
+	HINT_WINDOW_ALLOW_TOPMOST                    = "SDL_WINDOW_ALLOW_TOPMOST"
+	HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN = "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
+	HINT_WINDOWS_CLOSE_ON_ALT_F4                 = "SDL_WINDOWS_CLOSE_ON_ALT_F4"
+	HINT_WINDOWS_ENABLE_MENU_MNEMONICS           = "SDL_WINDOWS_ENABLE_MENU_MNEMONICS"
+	HINT_WINDOWS_ENABLE_MESSAGELOOP              = "SDL_WINDOWS_ENABLE_MESSAGELOOP"
+	HINT_WINDOWS_GAMEINPUT                       = "SDL_WINDOWS_GAMEINPUT"
+	HINT_WINDOWS_RAW_KEYBOARD                    = "SDL_WINDOWS_RAW_KEYBOARD"
+	HINT_WINDOWS_FORCE_SEMAPHORE_KERNEL          = "SDL_WINDOWS_FORCE_SEMAPHORE_KERNEL"
+	HINT_WINDOWS_INTRESOURCE_ICON                = "SDL_WINDOWS_INTRESOURCE_ICON"
+	HINT_WINDOWS_INTRESOURCE_ICON_SMALL          = "SDL_WINDOWS_INTRESOURCE_ICON_SMALL"
+	HINT_WINDOWS_USE_D3D9EX                      = "SDL_WINDOWS_USE_D3D9EX"
+	HINT_WINDOWS_ERASE_BACKGROUND_MODE           = "SDL_WINDOWS_ERASE_BACKGROUND_MODE"
+	HINT_X11_FORCE_OVERRIDE_REDIRECT             = "SDL_X11_FORCE_OVERRIDE_REDIRECT"
+	HINT_X11_WINDOW_TYPE                         = "SDL_X11_WINDOW_TYPE"
+	HINT_X11_XCB_LIBRARY                         = "SDL_X11_XCB_LIBRARY"
+	HINT_XINPUT_ENABLED                          = "SDL_XINPUT_ENABLED"
+	HINT_ASSERT                                  = "SDL_ASSERT"
+	HINT_PEN_MOUSE_EVENTS                        = "SDL_PEN_MOUSE_EVENTS"
+	HINT_PEN_TOUCH_EVENTS                        = "SDL_PEN_TOUCH_EVENTS"
+)
+
+// SDL_MessageBoxFlags - Message box flags.
+// (https://wiki.libsdl.org/SDL3/SDL_MessageBoxFlags)
+type MessageBoxFlags uint32
+
+const (
+	MESSAGEBOX_ERROR                 MessageBoxFlags = 0x00000010 /**< error dialog */
+	MESSAGEBOX_WARNING               MessageBoxFlags = 0x00000020 /**< warning dialog */
+	MESSAGEBOX_INFORMATION           MessageBoxFlags = 0x00000040 /**< informational dialog */
+	MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT MessageBoxFlags = 0x00000080 /**< buttons placed left to right */
+	MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT MessageBoxFlags = 0x00000100 /**< buttons placed right to left */
+)
+
+// SDL_MessageBoxButtonFlags - [SDL_MessageBoxButtonData](SDL_MessageBoxButtonData) flags.
+// (https://wiki.libsdl.org/SDL3/SDL_MessageBoxButtonFlags)
+type MessageBoxButtonFlags uint32
+
+const (
+	MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT MessageBoxButtonFlags = 0x00000001 /**< Marks the default button when return is hit */
+	MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT MessageBoxButtonFlags = 0x00000002 /**< Marks the default button when escape is hit */
+)
+
+// SDL_GPUTextureUsageFlags - Specifies how a texture is intended to be used by the client.
+// (https://wiki.libsdl.org/SDL3/SDL_GPUTextureUsageFlags)
+type GPUTextureUsageFlags uint32
+
+const (
+	GPU_TEXTUREUSAGE_SAMPLER                                 GPUTextureUsageFlags = 1 << 0 /**< Texture supports sampling. */
+	GPU_TEXTUREUSAGE_COLOR_TARGET                            GPUTextureUsageFlags = 1 << 1 /**< Texture is a color render target. */
+	GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET                    GPUTextureUsageFlags = 1 << 2 /**< Texture is a depth stencil target. */
+	GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ                   GPUTextureUsageFlags = 1 << 3 /**< Texture supports storage reads in graphics stages. */
+	GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ                    GPUTextureUsageFlags = 1 << 4 /**< Texture supports storage reads in the compute stage. */
+	GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE                   GPUTextureUsageFlags = 1 << 5 /**< Texture supports storage writes in the compute stage. */
+	GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE GPUTextureUsageFlags = 1 << 6 /**< Texture supports reads and writes in the same compute shader. This is NOT equivalent to READ | WRITE. */
+)
+
+// SDL_GPUBufferUsageFlags - Specifies how a buffer is intended to be used by the client.
+// (https://wiki.libsdl.org/SDL3/SDL_GPUBufferUsageFlags)
+type GPUBufferUsageFlags uint32
+
+const (
+	GPU_BUFFERUSAGE_VERTEX                GPUBufferUsageFlags = 1 << 0 /**< Buffer is a vertex buffer. */
+	GPU_BUFFERUSAGE_INDEX                 GPUBufferUsageFlags = 1 << 1 /**< Buffer is an index buffer. */
+	GPU_BUFFERUSAGE_INDIRECT              GPUBufferUsageFlags = 1 << 2 /**< Buffer is an indirect buffer. */
+	GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ GPUBufferUsageFlags = 1 << 3 /**< Buffer supports storage reads in graphics stages. */
+	GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ  GPUBufferUsageFlags = 1 << 4 /**< Buffer supports storage reads in the compute stage. */
+	GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE GPUBufferUsageFlags = 1 << 5 /**< Buffer supports storage writes in the compute stage. */
+)
+
+// SDL_GPUShaderFormat - Specifies the format of shader code.
+// (https://wiki.libsdl.org/SDL3/SDL_GPUShaderFormat)
+type GPUShaderFormat uint32
+
+const (
+	GPU_SHADERFORMAT_INVALID  GPUShaderFormat = 0
+	GPU_SHADERFORMAT_PRIVATE  GPUShaderFormat = 1 << 0 /**< Shaders for NDA'd platforms. */
+	GPU_SHADERFORMAT_SPIRV    GPUShaderFormat = 1 << 1 /**< SPIR-V shaders for Vulkan. */
+	GPU_SHADERFORMAT_DXBC     GPUShaderFormat = 1 << 2 /**< DXBC SM5_1 shaders for D3D12. */
+	GPU_SHADERFORMAT_DXIL     GPUShaderFormat = 1 << 3 /**< DXIL SM6_0 shaders for D3D12. */
+	GPU_SHADERFORMAT_MSL      GPUShaderFormat = 1 << 4 /**< MSL shaders for Metal. */
+	GPU_SHADERFORMAT_METALLIB GPUShaderFormat = 1 << 5 /**< Precompiled metallib shaders for Metal. */
+)
+
+const (
+	PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN          = "SDL.gpu.device.create.debugmode"
+	PROP_GPU_DEVICE_CREATE_PREFERLOWPOWER_BOOLEAN     = "SDL.gpu.device.create.preferlowpower"
+	PROP_GPU_DEVICE_CREATE_NAME_STRING                = "SDL.gpu.device.create.name"
+	PROP_GPU_DEVICE_CREATE_SHADERS_PRIVATE_BOOLEAN    = "SDL.gpu.device.create.shaders.private"
+	PROP_GPU_DEVICE_CREATE_SHADERS_SPIRV_BOOLEAN      = "SDL.gpu.device.create.shaders.spirv"
+	PROP_GPU_DEVICE_CREATE_SHADERS_DXBC_BOOLEAN       = "SDL.gpu.device.create.shaders.dxbc"
+	PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN       = "SDL.gpu.device.create.shaders.dxil"
+	PROP_GPU_DEVICE_CREATE_SHADERS_MSL_BOOLEAN        = "SDL.gpu.device.create.shaders.msl"
+	PROP_GPU_DEVICE_CREATE_SHADERS_METALLIB_BOOLEAN   = "SDL.gpu.device.create.shaders.metallib"
+	PROP_GPU_DEVICE_CREATE_D3D12_SEMANTIC_NAME_STRING = "SDL.gpu.device.create.d3d12.semantic"
+
+	PROP_GPU_COMPUTEPIPELINE_CREATE_NAME_STRING = "SDL.gpu.computepipeline.create.name"
+
+	PROP_GPU_GRAPHICSPIPELINE_CREATE_NAME_STRING = "SDL.gpu.graphicspipeline.create.name"
+
+	PROP_GPU_SAMPLER_CREATE_NAME_STRING = "SDL.gpu.sampler.create.name"
+
+	PROP_GPU_SHADER_CREATE_NAME_STRING = "SDL.gpu.shader.create.name"
+
+	PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_R_FLOAT        = "SDL.gpu.texture.create.d3d12.clear.r"
+	PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_G_FLOAT        = "SDL.gpu.texture.create.d3d12.clear.g"
+	PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_B_FLOAT        = "SDL.gpu.texture.create.d3d12.clear.b"
+	PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_A_FLOAT        = "SDL.gpu.texture.create.d3d12.clear.a"
+	PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_DEPTH_FLOAT    = "SDL.gpu.texture.create.d3d12.clear.depth"
+	PROP_GPU_TEXTURE_CREATE_D3D12_CLEAR_STENCIL_NUMBER = "SDL.gpu.texture.create.d3d12.clear.stencil"
+	PROP_GPU_TEXTURE_CREATE_NAME_STRING                = "SDL.gpu.texture.create.name"
+
+	PROP_GPU_BUFFER_CREATE_NAME_STRING = "SDL.gpu.buffer.create.name"
+
+	PROP_GPU_TRANSFERBUFFER_CREATE_NAME_STRING = "SDL.gpu.transferbuffer.create.name"
+)
+
+// SDL_Keycode - The SDL virtual key representation.
+// (https://wiki.libsdl.org/SDL3/SDL_Keycode)
+type Keycode uint32
+
+const (
+	K_EXTENDED_MASK = (1 << 29)
+	K_SCANCODE_MASK = (1 << 30)
+
+	K_UNKNOWN              Keycode = 0x00000000 /**< 0 */
+	K_RETURN               Keycode = 0x0000000d /**< '\r' */
+	K_ESCAPE               Keycode = 0x0000001b /**< '\x1B' */
+	K_BACKSPACE            Keycode = 0x00000008 /**< '\b' */
+	K_TAB                  Keycode = 0x00000009 /**< '\t' */
+	K_SPACE                Keycode = 0x00000020 /**< ' ' */
+	K_EXCLAIM              Keycode = 0x00000021 /**< '!' */
+	K_DBLAPOSTROPHE        Keycode = 0x00000022 /**< '"' */
+	K_HASH                 Keycode = 0x00000023 /**< '#' */
+	K_DOLLAR               Keycode = 0x00000024 /**< '$' */
+	K_PERCENT              Keycode = 0x00000025 /**< '%' */
+	K_AMPERSAND            Keycode = 0x00000026 /**< '&' */
+	K_APOSTROPHE           Keycode = 0x00000027 /**< '\'' */
+	K_LEFTPAREN            Keycode = 0x00000028 /**< '(' */
+	K_RIGHTPAREN           Keycode = 0x00000029 /**< ')' */
+	K_ASTERISK             Keycode = 0x0000002a /**< '*' */
+	K_PLUS                 Keycode = 0x0000002b /**< '+' */
+	K_COMMA                Keycode = 0x0000002c /**< ',' */
+	K_MINUS                Keycode = 0x0000002d /**< '-' */
+	K_PERIOD               Keycode = 0x0000002e /**< '.' */
+	K_SLASH                Keycode = 0x0000002f /**< '/' */
+	K_0                    Keycode = 0x00000030 /**< '0' */
+	K_1                    Keycode = 0x00000031 /**< '1' */
+	K_2                    Keycode = 0x00000032 /**< '2' */
+	K_3                    Keycode = 0x00000033 /**< '3' */
+	K_4                    Keycode = 0x00000034 /**< '4' */
+	K_5                    Keycode = 0x00000035 /**< '5' */
+	K_6                    Keycode = 0x00000036 /**< '6' */
+	K_7                    Keycode = 0x00000037 /**< '7' */
+	K_8                    Keycode = 0x00000038 /**< '8' */
+	K_9                    Keycode = 0x00000039 /**< '9' */
+	K_COLON                Keycode = 0x0000003a /**< ':' */
+	K_SEMICOLON            Keycode = 0x0000003b /**< ';' */
+	K_LESS                 Keycode = 0x0000003c /**< '<' */
+	K_EQUALS               Keycode = 0x0000003d /**< '=' */
+	K_GREATER              Keycode = 0x0000003e /**< '>' */
+	K_QUESTION             Keycode = 0x0000003f /**< '?' */
+	K_AT                   Keycode = 0x00000040 /**< '@' */
+	K_LEFTBRACKET          Keycode = 0x0000005b /**< '[' */
+	K_BACKSLASH            Keycode = 0x0000005c /**< '\\' */
+	K_RIGHTBRACKET         Keycode = 0x0000005d /**< ']' */
+	K_CARET                Keycode = 0x0000005e /**< '^' */
+	K_UNDERSCORE           Keycode = 0x0000005f /**< '_' */
+	K_GRAVE                Keycode = 0x00000060 /**< '`' */
+	K_A                    Keycode = 0x00000061 /**< 'a' */
+	K_B                    Keycode = 0x00000062 /**< 'b' */
+	K_C                    Keycode = 0x00000063 /**< 'c' */
+	K_D                    Keycode = 0x00000064 /**< 'd' */
+	K_E                    Keycode = 0x00000065 /**< 'e' */
+	K_F                    Keycode = 0x00000066 /**< 'f' */
+	K_G                    Keycode = 0x00000067 /**< 'g' */
+	K_H                    Keycode = 0x00000068 /**< 'h' */
+	K_I                    Keycode = 0x00000069 /**< 'i' */
+	K_J                    Keycode = 0x0000006a /**< 'j' */
+	K_K                    Keycode = 0x0000006b /**< 'k' */
+	K_L                    Keycode = 0x0000006c /**< 'l' */
+	K_M                    Keycode = 0x0000006d /**< 'm' */
+	K_N                    Keycode = 0x0000006e /**< 'n' */
+	K_O                    Keycode = 0x0000006f /**< 'o' */
+	K_P                    Keycode = 0x00000070 /**< 'p' */
+	K_Q                    Keycode = 0x00000071 /**< 'q' */
+	K_R                    Keycode = 0x00000072 /**< 'r' */
+	K_S                    Keycode = 0x00000073 /**< 's' */
+	K_T                    Keycode = 0x00000074 /**< 't' */
+	K_U                    Keycode = 0x00000075 /**< 'u' */
+	K_V                    Keycode = 0x00000076 /**< 'v' */
+	K_W                    Keycode = 0x00000077 /**< 'w' */
+	K_X                    Keycode = 0x00000078 /**< 'x' */
+	K_Y                    Keycode = 0x00000079 /**< 'y' */
+	K_Z                    Keycode = 0x0000007a /**< 'z' */
+	K_LEFTBRACE            Keycode = 0x0000007b /**< '{' */
+	K_PIPE                 Keycode = 0x0000007c /**< '|' */
+	K_RIGHTBRACE           Keycode = 0x0000007d /**< '}' */
+	K_TILDE                Keycode = 0x0000007e /**< '~' */
+	K_DELETE               Keycode = 0x0000007f /**< '\x7F' */
+	K_PLUSMINUS            Keycode = 0x000000b1 /**< '\xB1' */
+	K_CAPSLOCK             Keycode = 0x40000039 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CAPSLOCK) */
+	K_F1                   Keycode = 0x4000003a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F1) */
+	K_F2                   Keycode = 0x4000003b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F2) */
+	K_F3                   Keycode = 0x4000003c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F3) */
+	K_F4                   Keycode = 0x4000003d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F4) */
+	K_F5                   Keycode = 0x4000003e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F5) */
+	K_F6                   Keycode = 0x4000003f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F6) */
+	K_F7                   Keycode = 0x40000040 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F7) */
+	K_F8                   Keycode = 0x40000041 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F8) */
+	K_F9                   Keycode = 0x40000042 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F9) */
+	K_F10                  Keycode = 0x40000043 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F10) */
+	K_F11                  Keycode = 0x40000044 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F11) */
+	K_F12                  Keycode = 0x40000045 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F12) */
+	K_PRINTSCREEN          Keycode = 0x40000046 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_PRINTSCREEN) */
+	K_SCROLLLOCK           Keycode = 0x40000047 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SCROLLLOCK) */
+	K_PAUSE                Keycode = 0x40000048 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_PAUSE) */
+	K_INSERT               Keycode = 0x40000049 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_INSERT) */
+	K_HOME                 Keycode = 0x4000004a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_HOME) */
+	K_PAGEUP               Keycode = 0x4000004b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_PAGEUP) */
+	K_END                  Keycode = 0x4000004d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_END) */
+	K_PAGEDOWN             Keycode = 0x4000004e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_PAGEDOWN) */
+	K_RIGHT                Keycode = 0x4000004f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RIGHT) */
+	K_LEFT                 Keycode = 0x40000050 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_LEFT) */
+	K_DOWN                 Keycode = 0x40000051 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_DOWN) */
+	K_UP                   Keycode = 0x40000052 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_UP) */
+	K_NUMLOCKCLEAR         Keycode = 0x40000053 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_NUMLOCKCLEAR) */
+	K_KP_DIVIDE            Keycode = 0x40000054 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_DIVIDE) */
+	K_KP_MULTIPLY          Keycode = 0x40000055 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MULTIPLY) */
+	K_KP_MINUS             Keycode = 0x40000056 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MINUS) */
+	K_KP_PLUS              Keycode = 0x40000057 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_PLUS) */
+	K_KP_ENTER             Keycode = 0x40000058 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_ENTER) */
+	K_KP_1                 Keycode = 0x40000059 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_1) */
+	K_KP_2                 Keycode = 0x4000005a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_2) */
+	K_KP_3                 Keycode = 0x4000005b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_3) */
+	K_KP_4                 Keycode = 0x4000005c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_4) */
+	K_KP_5                 Keycode = 0x4000005d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_5) */
+	K_KP_6                 Keycode = 0x4000005e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_6) */
+	K_KP_7                 Keycode = 0x4000005f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_7) */
+	K_KP_8                 Keycode = 0x40000060 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_8) */
+	K_KP_9                 Keycode = 0x40000061 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_9) */
+	K_KP_0                 Keycode = 0x40000062 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_0) */
+	K_KP_PERIOD            Keycode = 0x40000063 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_PERIOD) */
+	K_APPLICATION          Keycode = 0x40000065 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_APPLICATION) */
+	K_POWER                Keycode = 0x40000066 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_POWER) */
+	K_KP_EQUALS            Keycode = 0x40000067 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_EQUALS) */
+	K_F13                  Keycode = 0x40000068 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F13) */
+	K_F14                  Keycode = 0x40000069 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F14) */
+	K_F15                  Keycode = 0x4000006a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F15) */
+	K_F16                  Keycode = 0x4000006b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F16) */
+	K_F17                  Keycode = 0x4000006c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F17) */
+	K_F18                  Keycode = 0x4000006d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F18) */
+	K_F19                  Keycode = 0x4000006e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F19) */
+	K_F20                  Keycode = 0x4000006f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F20) */
+	K_F21                  Keycode = 0x40000070 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F21) */
+	K_F22                  Keycode = 0x40000071 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F22) */
+	K_F23                  Keycode = 0x40000072 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F23) */
+	K_F24                  Keycode = 0x40000073 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_F24) */
+	K_EXECUTE              Keycode = 0x40000074 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_EXECUTE) */
+	K_HELP                 Keycode = 0x40000075 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_HELP) */
+	K_MENU                 Keycode = 0x40000076 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MENU) */
+	K_SELECT               Keycode = 0x40000077 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SELECT) */
+	K_STOP                 Keycode = 0x40000078 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_STOP) */
+	K_AGAIN                Keycode = 0x40000079 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AGAIN) */
+	K_UNDO                 Keycode = 0x4000007a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_UNDO) */
+	K_CUT                  Keycode = 0x4000007b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CUT) */
+	K_COPY                 Keycode = 0x4000007c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_COPY) */
+	K_PASTE                Keycode = 0x4000007d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_PASTE) */
+	K_FIND                 Keycode = 0x4000007e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_FIND) */
+	K_MUTE                 Keycode = 0x4000007f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MUTE) */
+	K_VOLUMEUP             Keycode = 0x40000080 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_VOLUMEUP) */
+	K_VOLUMEDOWN           Keycode = 0x40000081 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_VOLUMEDOWN) */
+	K_KP_COMMA             Keycode = 0x40000085 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_COMMA) */
+	K_KP_EQUALSAS400       Keycode = 0x40000086 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_EQUALSAS400) */
+	K_ALTERASE             Keycode = 0x40000099 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_ALTERASE) */
+	K_SYSREQ               Keycode = 0x4000009a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SYSREQ) */
+	K_CANCEL               Keycode = 0x4000009b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CANCEL) */
+	K_CLEAR                Keycode = 0x4000009c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CLEAR) */
+	K_PRIOR                Keycode = 0x4000009d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_PRIOR) */
+	K_RETURN2              Keycode = 0x4000009e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RETURN2) */
+	K_SEPARATOR            Keycode = 0x4000009f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SEPARATOR) */
+	K_OUT                  Keycode = 0x400000a0 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_OUT) */
+	K_OPER                 Keycode = 0x400000a1 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_OPER) */
+	K_CLEARAGAIN           Keycode = 0x400000a2 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CLEARAGAIN) */
+	K_CRSEL                Keycode = 0x400000a3 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CRSEL) */
+	K_EXSEL                Keycode = 0x400000a4 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_EXSEL) */
+	K_KP_00                Keycode = 0x400000b0 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_00) */
+	K_KP_000               Keycode = 0x400000b1 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_000) */
+	K_THOUSANDSSEPARATOR   Keycode = 0x400000b2 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_THOUSANDSSEPARATOR) */
+	K_DECIMALSEPARATOR     Keycode = 0x400000b3 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_DECIMALSEPARATOR) */
+	K_CURRENCYUNIT         Keycode = 0x400000b4 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CURRENCYUNIT) */
+	K_CURRENCYSUBUNIT      Keycode = 0x400000b5 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CURRENCYSUBUNIT) */
+	K_KP_LEFTPAREN         Keycode = 0x400000b6 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_LEFTPAREN) */
+	K_KP_RIGHTPAREN        Keycode = 0x400000b7 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_RIGHTPAREN) */
+	K_KP_LEFTBRACE         Keycode = 0x400000b8 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_LEFTBRACE) */
+	K_KP_RIGHTBRACE        Keycode = 0x400000b9 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_RIGHTBRACE) */
+	K_KP_TAB               Keycode = 0x400000ba /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_TAB) */
+	K_KP_BACKSPACE         Keycode = 0x400000bb /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_BACKSPACE) */
+	K_KP_A                 Keycode = 0x400000bc /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_A) */
+	K_KP_B                 Keycode = 0x400000bd /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_B) */
+	K_KP_C                 Keycode = 0x400000be /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_C) */
+	K_KP_D                 Keycode = 0x400000bf /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_D) */
+	K_KP_E                 Keycode = 0x400000c0 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_E) */
+	K_KP_F                 Keycode = 0x400000c1 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_F) */
+	K_KP_XOR               Keycode = 0x400000c2 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_XOR) */
+	K_KP_POWER             Keycode = 0x400000c3 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_POWER) */
+	K_KP_PERCENT           Keycode = 0x400000c4 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_PERCENT) */
+	K_KP_LESS              Keycode = 0x400000c5 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_LESS) */
+	K_KP_GREATER           Keycode = 0x400000c6 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_GREATER) */
+	K_KP_AMPERSAND         Keycode = 0x400000c7 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_AMPERSAND) */
+	K_KP_DBLAMPERSAND      Keycode = 0x400000c8 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_DBLAMPERSAND) */
+	K_KP_VERTICALBAR       Keycode = 0x400000c9 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_VERTICALBAR) */
+	K_KP_DBLVERTICALBAR    Keycode = 0x400000ca /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_DBLVERTICALBAR) */
+	K_KP_COLON             Keycode = 0x400000cb /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_COLON) */
+	K_KP_HASH              Keycode = 0x400000cc /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_HASH) */
+	K_KP_SPACE             Keycode = 0x400000cd /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_SPACE) */
+	K_KP_AT                Keycode = 0x400000ce /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_AT) */
+	K_KP_EXCLAM            Keycode = 0x400000cf /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_EXCLAM) */
+	K_KP_MEMSTORE          Keycode = 0x400000d0 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMSTORE) */
+	K_KP_MEMRECALL         Keycode = 0x400000d1 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMRECALL) */
+	K_KP_MEMCLEAR          Keycode = 0x400000d2 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMCLEAR) */
+	K_KP_MEMADD            Keycode = 0x400000d3 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMADD) */
+	K_KP_MEMSUBTRACT       Keycode = 0x400000d4 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMSUBTRACT) */
+	K_KP_MEMMULTIPLY       Keycode = 0x400000d5 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMMULTIPLY) */
+	K_KP_MEMDIVIDE         Keycode = 0x400000d6 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_MEMDIVIDE) */
+	K_KP_PLUSMINUS         Keycode = 0x400000d7 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_PLUSMINUS) */
+	K_KP_CLEAR             Keycode = 0x400000d8 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_CLEAR) */
+	K_KP_CLEARENTRY        Keycode = 0x400000d9 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_CLEARENTRY) */
+	K_KP_BINARY            Keycode = 0x400000da /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_BINARY) */
+	K_KP_OCTAL             Keycode = 0x400000db /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_OCTAL) */
+	K_KP_DECIMAL           Keycode = 0x400000dc /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_DECIMAL) */
+	K_KP_HEXADECIMAL       Keycode = 0x400000dd /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_KP_HEXADECIMAL) */
+	K_LCTRL                Keycode = 0x400000e0 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_LCTRL) */
+	K_LSHIFT               Keycode = 0x400000e1 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_LSHIFT) */
+	K_LALT                 Keycode = 0x400000e2 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_LALT) */
+	K_LGUI                 Keycode = 0x400000e3 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_LGUI) */
+	K_RCTRL                Keycode = 0x400000e4 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RCTRL) */
+	K_RSHIFT               Keycode = 0x400000e5 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RSHIFT) */
+	K_RALT                 Keycode = 0x400000e6 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RALT) */
+	K_RGUI                 Keycode = 0x400000e7 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_RGUI) */
+	K_MODE                 Keycode = 0x40000101 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MODE) */
+	K_SLEEP                Keycode = 0x40000102 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SLEEP) */
+	K_WAKE                 Keycode = 0x40000103 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_WAKE) */
+	K_CHANNEL_INCREMENT    Keycode = 0x40000104 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CHANNEL_INCREMENT) */
+	K_CHANNEL_DECREMENT    Keycode = 0x40000105 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CHANNEL_DECREMENT) */
+	K_MEDIA_PLAY           Keycode = 0x40000106 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_PLAY) */
+	K_MEDIA_PAUSE          Keycode = 0x40000107 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_PAUSE) */
+	K_MEDIA_RECORD         Keycode = 0x40000108 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_RECORD) */
+	K_MEDIA_FAST_FORWARD   Keycode = 0x40000109 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_FAST_FORWARD) */
+	K_MEDIA_REWIND         Keycode = 0x4000010a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_REWIND) */
+	K_MEDIA_NEXT_TRACK     Keycode = 0x4000010b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_NEXT_TRACK) */
+	K_MEDIA_PREVIOUS_TRACK Keycode = 0x4000010c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_PREVIOUS_TRACK) */
+	K_MEDIA_STOP           Keycode = 0x4000010d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_STOP) */
+	K_MEDIA_EJECT          Keycode = 0x4000010e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_EJECT) */
+	K_MEDIA_PLAY_PAUSE     Keycode = 0x4000010f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_PLAY_PAUSE) */
+	K_MEDIA_SELECT         Keycode = 0x40000110 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_MEDIA_SELECT) */
+	K_AC_NEW               Keycode = 0x40000111 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_NEW) */
+	K_AC_OPEN              Keycode = 0x40000112 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_OPEN) */
+	K_AC_CLOSE             Keycode = 0x40000113 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_CLOSE) */
+	K_AC_EXIT              Keycode = 0x40000114 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_EXIT) */
+	K_AC_SAVE              Keycode = 0x40000115 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_SAVE) */
+	K_AC_PRINT             Keycode = 0x40000116 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_PRINT) */
+	K_AC_PROPERTIES        Keycode = 0x40000117 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_PROPERTIES) */
+	K_AC_SEARCH            Keycode = 0x40000118 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_SEARCH) */
+	K_AC_HOME              Keycode = 0x40000119 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_HOME) */
+	K_AC_BACK              Keycode = 0x4000011a /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_BACK) */
+	K_AC_FORWARD           Keycode = 0x4000011b /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_FORWARD) */
+	K_AC_STOP              Keycode = 0x4000011c /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_STOP) */
+	K_AC_REFRESH           Keycode = 0x4000011d /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_REFRESH) */
+	K_AC_BOOKMARKS         Keycode = 0x4000011e /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_AC_BOOKMARKS) */
+	K_SOFTLEFT             Keycode = 0x4000011f /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SOFTLEFT) */
+	K_SOFTRIGHT            Keycode = 0x40000120 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_SOFTRIGHT) */
+	K_CALL                 Keycode = 0x40000121 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_CALL) */
+	K_ENDCALL              Keycode = 0x40000122 /**< SDL_SCANCODE_TO_KEYCODE(SDL_SCANCODE_ENDCALL) */
+	K_LEFT_TAB             Keycode = 0x20000001 /**< Extended key Left Tab */
+	K_LEVEL5_SHIFT         Keycode = 0x20000002 /**< Extended key Level 5 Shift */
+	K_MULTI_KEY_COMPOSE    Keycode = 0x20000003 /**< Extended key Multi-key Compose */
+	K_LMETA                Keycode = 0x20000004 /**< Extended key Left Meta */
+	K_RMETA                Keycode = 0x20000005 /**< Extended key Right Meta */
+	K_LHYPER               Keycode = 0x20000006 /**< Extended key Left Hyper */
+	K_RHYPER               Keycode = 0x20000007 /**< Extended key Right Hyper */
+)
+
+// SDL_Keymod - Valid key modifiers (possibly OR'd together).
+// (https://wiki.libsdl.org/SDL3/SDL_Keymod)
+type Keymod uint16
+
+const (
+	KMOD_NONE   Keymod = 0x0000                      /**< no modifier is applicable. */
+	KMOD_LSHIFT Keymod = 0x0001                      /**< the left Shift key is down. */
+	KMOD_RSHIFT Keymod = 0x0002                      /**< the right Shift key is down. */
+	KMOD_LEVEL5 Keymod = 0x0004                      /**< the Level 5 Shift key is down. */
+	KMOD_LCTRL  Keymod = 0x0040                      /**< the left Ctrl (Control) key is down. */
+	KMOD_RCTRL  Keymod = 0x0080                      /**< the right Ctrl (Control) key is down. */
+	KMOD_LALT   Keymod = 0x0100                      /**< the left Alt key is down. */
+	KMOD_RALT   Keymod = 0x0200                      /**< the right Alt key is down. */
+	KMOD_LGUI   Keymod = 0x0400                      /**< the left GUI key (often the Windows key) is down. */
+	KMOD_RGUI   Keymod = 0x0800                      /**< the right GUI key (often the Windows key) is down. */
+	KMOD_NUM    Keymod = 0x1000                      /**< the Num Lock key (may be located on an extended keypad) is down. */
+	KMOD_CAPS   Keymod = 0x2000                      /**< the Caps Lock key is down. */
+	KMOD_MODE   Keymod = 0x4000                      /**< the !AltGr key is down. */
+	KMOD_SCROLL Keymod = 0x8000                      /**< the Scroll Lock key is down. */
+	KMOD_CTRL   Keymod = (KMOD_LCTRL | KMOD_RCTRL)   /**< Any Ctrl key is down. */
+	KMOD_SHIFT  Keymod = (KMOD_LSHIFT | KMOD_RSHIFT) /**< Any Shift key is down. */
+	KMOD_ALT    Keymod = (KMOD_LALT | KMOD_RALT)     /**< Any Alt key is down. */
+	KMOD_GUI    Keymod = (KMOD_LGUI | KMOD_RGUI)     /**< Any GUI key is down. */
+)
+
+const (
+	GL_CONTEXT_PROFILE_CORE          = 0x0001 /**< OpenGL Core Profile context */
+	GL_CONTEXT_PROFILE_COMPATIBILITY = 0x0002 /**< OpenGL Compatibility Profile context */
+	GL_CONTEXT_PROFILE_ES            = 0x0004 /**< GLX_CONTEXT_ES2_PROFILE_BIT_EXT */
+)
+
+const (
+	AUDIO_DEVICE_DEFAULT_PLAYBACK  AudioDeviceID = 0xFFFFFFFF
+	AUDIO_DEVICE_DEFAULT_RECORDING AudioDeviceID = 0xFFFFFFFE
+)
