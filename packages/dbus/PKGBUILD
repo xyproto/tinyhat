@@ -7,7 +7,6 @@ pkgbase=dbus
 pkgname=(
   dbus
   dbus-daemon-units
-  dbus-docs
 )
 pkgver=1.16.2
 pkgrel="2"
@@ -24,16 +23,12 @@ depends=(
 )
 makedepends=(
   docbook-xsl
-  doxygen
   git
   glib2
-  mallard-ducktype
   meson
   python
-  qt5-tools
   systemd
   xmlto
-  yelp-tools
 )
 source=(
   "git+https://gitlab.freedesktop.org/dbus/dbus.git?signed#tag=dbus-$pkgver"
@@ -65,6 +60,9 @@ build() {
     -D relocation=disabled
     -D selinux=disabled
     -D x11_autolaunch=disabled
+    -D qt_help=disabled
+    -D doxygen_docs=disabled
+    -D ducktype_docs=disabled
   )
 
   arch-meson dbus build "${meson_options[@]}"
@@ -102,7 +100,6 @@ package_dbus() {
   meson install -C build --destdir "$pkgdir"
 
   _pick unit "$pkgdir"/usr/lib/systemd/{system,user}/dbus.service
-  _pick docs "$pkgdir"/usr/share/doc
 
   install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 *.hook
 
