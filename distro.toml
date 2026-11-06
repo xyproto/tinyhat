@@ -632,6 +632,7 @@ source = "sources"
 nvchecker = { source = "github", github = "xyproto/aquarium", prefix = "v", use_max_tag = true }
 
 [arm-none-eabi-gcc]
+heavy = true
 prebuilt = true
 
 [arm-none-eabi-newlib]
@@ -651,6 +652,9 @@ build_for = ["i686"]
 
 [bonzomatic]
 build_from_source = true
+
+[boost]
+heavy = true
 
 [busybox]
 build_for = ["i686"]
@@ -681,6 +685,7 @@ build_from_source = true
 build_from_source = true
 
 [dosbox-x]
+heavy = true
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/dosbox-x", use_max_tag = true }
 
@@ -710,6 +715,7 @@ build_from_source = true
 build_from_source = true
 
 [furnace]
+heavy = true
 source = "sources"
 nvchecker = { source = "github", github = "tildearrow/furnace", prefix = "v", use_latest_release = true }
 
@@ -721,10 +727,12 @@ nvchecker = { source = "gitea", gitea = "dnkl/fuzzel", host = "codeberg.org", us
 source = "sources"
 
 [gcc]
+heavy = true
 build_for = ["i686"]
 prebuilt = true
 
 [gdb]
+heavy = true
 source = "sources"
 
 [gdk-pixbuf2]
@@ -862,6 +870,7 @@ source = "sources"
 source = "sources"
 
 [librsvg]
+heavy = true
 build_for = ["i686"]
 build_from_source = true
 
@@ -881,6 +890,7 @@ source = "sources"
 prebuilt = true
 
 [llvm]
+heavy = true
 source = "sources"
 prebuilt = true
 prebuilt_reason = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23"
@@ -899,6 +909,7 @@ build_for = ["i686"]
 source = "sources"
 
 [mesa]
+heavy = true
 prebuilt = true
 
 [meson]
@@ -1008,6 +1019,7 @@ build_for = ["i686"]
 build_from_source = true
 
 [scummvm]
+heavy = true
 source = "sources"
 nvchecker = { source = "github", github = "scummvm/scummvm", prefix = "v", use_latest_release = true }
 
@@ -1051,6 +1063,7 @@ nvchecker = { source = "github", github = "swaywm/swaylock", prefix = "v", use_l
 prebuilt = true
 
 [systemd]
+heavy = true
 build_from_source = true
 
 [tcc]
