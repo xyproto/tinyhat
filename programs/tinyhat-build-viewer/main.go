@@ -47,16 +47,21 @@ var (
 )
 
 func findTop() string {
-	var dirs []string
+	var starts []string
 	if wd, err := os.Getwd(); err == nil {
-		dirs = append(dirs, wd, filepath.Dir(wd))
+		starts = append(starts, wd)
 	}
 	if exe, err := os.Executable(); err == nil {
-		dirs = append(dirs, filepath.Dir(exe), filepath.Dir(filepath.Dir(exe)))
+		starts = append(starts, filepath.Dir(exe))
 	}
-	for _, d := range dirs {
-		if _, err := os.Stat(filepath.Join(d, "distro.toml")); err == nil {
-			return d
+	for _, d := range starts {
+		for ; ; d = filepath.Dir(d) {
+			if _, err := os.Stat(filepath.Join(d, "distro.toml")); err == nil {
+				return d
+			}
+			if filepath.Dir(d) == d {
+				break
+			}
 		}
 	}
 	return "."
