@@ -1,0 +1,51 @@
+# Maintainer: Jan Alexander Steffens (heftig) <heftig@archlinux.org>
+
+pkgbase=sof-bin
+pkgname=(
+  sof-firmware
+  sof-tools
+)
+pkgver=2026.09.2
+pkgrel="1"
+pkgdesc="Sound Open Firmware"
+url="https://www.sofproject.org/"
+arch=(i686 x32)
+license=('BSD-3-Clause AND ISC')
+source=(https://github.com/thesofproject/sof-bin/releases/download/v$pkgver/sof-bin-$pkgver.tar.gz)
+b2sums=('141801c34c3c8fba9dcc556cbe629310f3fb501c86eda3eb77d43b4de050d10b3d117045b46af7ccfec8e0d75284212587652f7ad3a8b84523ed84e047b1bd21')
+
+prepare() {
+  cd sof-bin-$pkgver
+  sha256sum -c sha256sum.txt
+}
+
+package_sof-firmware() {
+  options+=(!strip)
+
+  local fwdir="$pkgdir/usr/lib/firmware/intel"
+  mkdir -p "$fwdir"
+
+  cd sof-bin-$pkgver
+
+  cp -at "$fwdir" sof*
+
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 LICENCE* Notice*
+}
+
+package_sof-tools() {
+  pkgdesc+=" - tools"
+  depends=(
+    alsa-lib
+    glibc
+    python
+  )
+
+  cd sof-bin-$pkgver
+
+  install -Dt "$pkgdir/usr/bin" tools/*
+  install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 LICENCE* Notice*
+}
+
+# vim:set sw=2 sts=-1 et:
+
+unset -f pkgver
