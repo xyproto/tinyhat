@@ -1,7 +1,7 @@
 pkgbase = netsurfy
 	pkgdesc = Lightweight and fast web browser, forked from NetSurf
 	pkgver = 1.0.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/xyproto/netsurfy
 	arch = i686
 	arch = x32
@@ -12,6 +12,7 @@ pkgbase = netsurfy
 	makedepends = perl-html-parser
 	makedepends = tinyxxd
 	makedepends = icu69
+	depends = bubblewrap
 	depends = curl
 	depends = gtk4
 	depends = libjpeg-turbo
@@ -24,7 +25,10 @@ pkgbase = netsurfy
 	conflicts = netsurf
 	replaces = netsurf
 	source = netsurfy-1.0.4.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v1.0.4.tar.gz
+	source = netsurfy-sandbox
 	sha256sums = fc9714257d0d1d76a368616859e065e69dd975ab12591717c8a31345b68a7154
+	sha256sums = SKIP
 	b2sums = d8d29c38c3332f16dd17354ef73df236cde7ca43241733640a6bdc663546b978e11d4d1719c3dedb48cd5e046463886e4968bcb31eb7876001dc755b7cd2512b
+	b2sums = SKIP
 
 pkgname = netsurfy
