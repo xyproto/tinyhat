@@ -1,0 +1,104 @@
+diff --git a/jomon.h b/jomon.h
+index b41c126..dcfd1f2 100644
+--- a/jomon.h
++++ b/jomon.h
+@@ -16,6 +16,18 @@
+ #include "wrapper.h"
+ #include "attributes.h"
+ #include "interface.h"
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <linux/capability.h>
++
++static inline bool can_capture(void)
++{
++    struct __user_cap_header_struct h = { _LINUX_CAPABILITY_VERSION_3, 0 };
++    struct __user_cap_data_struct d[2];
++
++    return geteuid() == 0 || (syscall(SYS_capget, &h, d) == 0 &&
++                              (d[0].effective & (1U << CAP_NET_RAW)));
++}
+ 
+ /*
+  * Only a portion of each packet is passed by the kernel to the application, this
+diff --git a/linux/interface.c b/linux/interface.c
+index 07f0627..d53872c 100644
+--- a/linux/interface.c
++++ b/linux/interface.c
+@@ -200,6 +200,14 @@ void linux_activate(iface_handle_t *handle, char *device, struct bpf_prog *bpf)
+     /* only receive packets on the specified interface */
+     if (bind(handle->fd, (struct sockaddr *) &ll_addr, sizeof(ll_addr)) == -1)
+         err_sys("bind error");
++    if (!ctx.opt.nopromiscuous) {
++        struct packet_mreq mr = {
++            .mr_ifindex = ll_addr.sll_ifindex,
++            .mr_type = PACKET_MR_PROMISC
++        };
++
++        setsockopt(handle->fd, SOL_PACKET, PACKET_ADD_MEMBERSHIP, &mr, sizeof(mr));
++    }
+ }
+ 
+ void linux_close(iface_handle_t *handle)
+@@ -267,23 +275,8 @@ void linux_read_packet_mmap(iface_handle_t *handle)
+     } while ((bd->hdr.bh1.block_status & TP_STATUS_USER) == TP_STATUS_USER);
+ }
+ 
+-void linux_set_promiscuous(iface_handle_t *handle UNUSED, char *dev, bool enable)
++void linux_set_promiscuous(iface_handle_t *handle UNUSED, char *dev UNUSED, bool enable UNUSED)
+ {
+-    int sockfd;
+-    struct ifreq ifr;
+-
+-    if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+-        err_sys("socket error");
+-    strlcpy(ifr.ifr_name, dev, IFNAMSIZ);
+-    if (ioctl(sockfd, SIOCGIFFLAGS, &ifr) == -1)
+-        err_sys("ioctl error");
+-    if (enable)
+-        ifr.ifr_flags |= IFF_PROMISC;
+-    else
+-        ifr.ifr_flags &= ~IFF_PROMISC;
+-    if (ioctl(sockfd, SIOCSIFFLAGS, &ifr))
+-        err_sys("ioctl error");
+-    close(sockfd);
+ }
+ 
+ void get_local_mac(char *dev, unsigned char *mac)
+diff --git a/main.c b/main.c
+index 5d34cc9..8da3444 100644
+--- a/main.c
++++ b/main.c
+@@ -235,7 +235,7 @@ int main(int argc, char **argv)
+     if (ctx.opt.text_mode) {
+         ui_set_active("text");
+     } else  {
+-        if (!ctx.opt.load_file || geteuid() == 0)
++        if (!ctx.opt.load_file || can_capture())
+             process_init();
+         setup_signal(SIGWINCH, sig_callback, 0);
+     }
+diff --git a/ui/ncurses/main_screen.c b/ui/ncurses/main_screen.c
+index e4278c2..081d00e 100644
+--- a/ui/ncurses/main_screen.c
++++ b/ui/ncurses/main_screen.c
+@@ -116,7 +116,7 @@ static void add_actionbar_elems(screen *s)
+ {
+     actionbar_add(s, "F1", "Help", false);
+     actionbar_add(s, "F2", "Menu", false);
+-    actionbar_add(s, "F3", "Start", ctx.capturing || geteuid() != 0);
++    actionbar_add(s, "F3", "Start", ctx.capturing || !can_capture());
+     actionbar_add(s, "F4", "Stop", !ctx.capturing);
+     actionbar_add(s, "F5", "Save", ctx.capturing ||
+                   vector_size(((main_screen *) s)->packet_ref) == 0);
+@@ -608,9 +608,7 @@ void main_screen_get_input(screen *s)
+         break;
+     case KEY_F(3):
+     {
+-        uid_t euid = geteuid();
+-
+-        if (!ctx.capturing && euid == 0) {
++        if (!ctx.capturing && can_capture()) {
+             if (ms->subwindow.win) {
+                 delete_subwindow(ms, false);
+                 ms->main_line.selected = false;
