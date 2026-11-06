@@ -96,7 +96,7 @@ VDIS := $(ISOS:.iso=.vdi)
 X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
 X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(X86_IMGS:.img=.vdi)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
-KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.5.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-i686.fragment
+KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.5.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-common.fragment
 MKROOTFS = TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh
 MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION)
 
@@ -198,12 +198,12 @@ $(IMG_I686): $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-$(IMG_RPI4): $(B)/initramfs-rpi4.img $(B)/root-rpi4.sfs $(B)/.buildroot scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
-	scripts/mkimg-rpi.sh $@ $(B)/initramfs-rpi4.img $(B)/root-rpi4.sfs
+$(IMG_RPI4): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)/.buildroot scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
+	scripts/mkimg-rpi.sh $@ $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)/Image-arm64
 	@ls -l $@
 
-$(IMG_AARCH64): $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/pkg/i686/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
-	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs
+$(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/pkg/i686/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
+	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/Image-arm64
 	@ls -l $@
 
 %.vdi: %.img
@@ -390,22 +390,23 @@ $(B)/rootfs-x86_64.lock: $(X86_64_STAMPS) distro.lock
 $(B)/rootfs-rpi4.lock: $(AARCH64_STAMPS) distro.lock
 	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ rpi4
 
-$(B)/vmlinuz: $(KERNEL_DEPS)
+$(B)/vmlinuz: $(KERNEL_DEPS) config/kernel-x86.fragment config/kernel-i686.fragment
 	@mkdir -p $(B)
-	scripts/mkkernel.sh $(KVER) i386 $(B)/vmlinuz $(CURDIR)/config/kernel-i686.fragment
+	scripts/mkkernel.sh $(KVER) i386 $(B)/vmlinuz $(CURDIR)/config/kernel-common.fragment $(CURDIR)/config/kernel-x86.fragment $(CURDIR)/config/kernel-i686.fragment
 
-$(B)/vmlinuz-x32: $(KERNEL_DEPS) config/kernel-x32.fragment
+$(B)/vmlinuz-x32: $(KERNEL_DEPS) config/kernel-x86.fragment config/kernel-x32.fragment
 	@mkdir -p $(B)
-	scripts/mkkernel.sh $(KVER) x86_64 $(B)/vmlinuz-x32 $(CURDIR)/config/kernel-i686.fragment $(CURDIR)/config/kernel-x32.fragment
+	scripts/mkkernel.sh $(KVER) x86_64 $(B)/vmlinuz-x32 $(CURDIR)/config/kernel-common.fragment $(CURDIR)/config/kernel-x86.fragment $(CURDIR)/config/kernel-x32.fragment
+
+$(B)/Image-arm64: $(KERNEL_DEPS) config/kernel-arm64.fragment
+	@mkdir -p $(B)
+	scripts/mkkernel.sh $(KVER) arm64 $(B)/Image-arm64 $(CURDIR)/config/kernel-common.fragment $(CURDIR)/config/kernel-arm64.fragment
 
 $(B)/initramfs.img: $(B)/pkg/i686/busybox $(B)/pkg/i686/tinyhat-splash $(B)/rootfs.lock config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
 
 $(B)/initramfs-aarch64.img: $(B)/rootfs-aarch64.lock config/initramfs/init scripts/mkinitramfs.sh
-	scripts/mkinitramfs.sh $@ aarch64 linux-aarch64
-
-$(B)/initramfs-rpi4.img: $(B)/rootfs-rpi4.lock config/initramfs/init scripts/mkinitramfs.sh
-	scripts/mkinitramfs.sh $@ aarch64 linux-rpi
+	scripts/mkinitramfs.sh $@ aarch64
 
 $(SOUNDFONT_GU): | vendor/src/GeneralUser-GS-2.0.3.sf2
 	@mkdir -p $(dir $@)
@@ -450,14 +451,12 @@ $(B)/rootfs-x86_64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x86_64.lock $(B)/
 	$(MKROOTFS) base $(B)/rootfs-x86_64 $(B)/modules-x86_64 $(B)/root-x86_64.sfs $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
 	touch $@
 
-$(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock
-	@mkdir -p $(B)/modules-aarch64
-	$(MKROOTFS) base $(B)/rootfs-aarch64 $(B)/modules-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+$(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock $(B)/Image-arm64
+	$(MKROOTFS) base $(B)/rootfs-aarch64 $(B)/modules-arm64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	touch $@
 
-$(B)/rootfs-rpi4.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-rpi4.lock
-	@mkdir -p $(B)/modules-rpi4
-	$(MKROOTFS) base $(B)/rootfs-rpi4 $(B)/modules-rpi4 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+$(B)/rootfs-rpi4.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-rpi4.lock $(B)/Image-arm64
+	$(MKROOTFS) base $(B)/rootfs-rpi4 $(B)/modules-arm64 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	touch $@
 
 $(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-i686
@@ -473,11 +472,11 @@ $(B)/root-x86_64.sfs: $(B)/rootfs-x86_64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.l
 	@ls -l $@
 
 $(B)/root-aarch64.sfs: $(B)/rootfs-aarch64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-aarch64
-	$(MKROOTFS) finalize $(B)/rootfs-aarch64 $(B)/modules-aarch64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+	$(MKROOTFS) finalize $(B)/rootfs-aarch64 $(B)/modules-arm64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	@ls -l $@
 
 $(B)/root-rpi4.sfs: $(B)/rootfs-rpi4.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-rpi4
-	$(MKROOTFS) finalize $(B)/rootfs-rpi4 $(B)/modules-rpi4 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+	$(MKROOTFS) finalize $(B)/rootfs-rpi4 $(B)/modules-arm64 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	@ls -l $@
 
 $(B)/test-usb.img: $(IMG_I686)
