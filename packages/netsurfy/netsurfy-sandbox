@@ -1,0 +1,54 @@
+#!/bin/sh
+real=/usr/lib/netsurfy/netsurfy
+home=${HOME:?}
+run=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
+config=${XDG_CONFIG_HOME:-$home/.config}
+cache=${XDG_CACHE_HOME:-$home/.cache}
+nsconfig=$config/netsurfy
+[ ! -d "$home/.netsurfy" ] || nsconfig=$home/.netsurfy
+downloads=$(sed -n 's/^downloads_directory://p' "$nsconfig/Choices" 2>/dev/null | tail -n 1)
+[ -n "$downloads" ] || downloads=$(xdg-user-dir DOWNLOAD 2>/dev/null) || downloads=
+[ -n "$downloads" ] && [ "$downloads" != "$home" ] || downloads=$home/downloads
+mkdir -p "$nsconfig" "$cache/netsurfy" "$downloads"
+
+n=$#
+for a; do
+	case $a in
+	file://*) p=${a#file://} ;;
+	-*) continue ;;
+	*) p=$a ;;
+	esac
+	p=$(realpath -e -- "$p" 2>/dev/null) || continue
+	[ -d "$p" ] || [ "${p%/*}" = "$home" ] || p=${p%/*}
+	[ "$p" = "$home" ] || set -- "$@" --ro-bind "$p" "$p"
+done
+for d in bin sbin lib lib64; do
+	[ -L "/$d" ] && set -- "$@" --symlink "$(readlink "/$d")" "/$d"
+done
+[ -n "${WAYLAND_DISPLAY-}" ] && set -- "$@" --ro-bind-try "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY"
+set -- "$@" --bind-try "$config/netsurfy" "$config/netsurfy" --bind "$cache/netsurfy" "$cache/netsurfy" \
+	--bind-try "$home/.netsurfy" "$home/.netsurfy" --bind "$downloads" "$downloads"
+for f in gtk-4.0 fontconfig user-dirs.dirs; do
+	set -- "$@" --ro-bind-try "$config/$f" "$config/$f"
+done
+set -- "$@" -- "$real"
+while [ "$n" -gt 0 ]; do
+	a=$1
+	shift
+	case $a in
+	-* | *://*) ;;
+	*) [ ! -e "$a" ] || a=$(realpath -- "$a") ;;
+	esac
+	set -- "$@" "$a"
+	n=$((n - 1))
+done
+
+exec bwrap --unshare-all --share-net --die-with-parent --new-session \
+	--ro-bind /usr /usr --ro-bind /etc /etc --ro-bind /sys /sys \
+	--ro-bind-try /var/cache/fontconfig /var/cache/fontconfig \
+	--proc /proc --dev /dev --dev-bind-try /dev/dri /dev/dri --tmpfs /tmp \
+	--tmpfs "$home" --perms 0700 --dir "$run" \
+	--ro-bind-try "$home/.local/share/fonts" "$home/.local/share/fonts" \
+	--setenv GTK_A11Y none --setenv NO_AT_BRIDGE 1 --setenv GDK_DEBUG no-portals \
+	--setenv GSETTINGS_BACKEND memory --unsetenv DBUS_SESSION_BUS_ADDRESS \
+	"$@"

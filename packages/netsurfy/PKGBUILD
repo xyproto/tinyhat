@@ -2,19 +2,22 @@
 
 pkgname=netsurfy
 pkgver=1.0.4
-pkgrel=1
+pkgrel=2
 pkgdesc='Lightweight and fast web browser, forked from NetSurf'
 arch=(i686 x32)
 url='https://github.com/xyproto/netsurfy'
 license=(GPL-2.0-only MIT)
-depends=(curl gtk4 libjpeg-turbo libpng librsvg 'libutf8proc>=2.9.0' libwebp zlib)
+depends=(bubblewrap curl gtk4 libjpeg-turbo libpng librsvg 'libutf8proc>=2.9.0' libwebp zlib)
 makedepends=(check 'nsgenbind>=0.9' perl-html-parser tinyxxd icu69)
 provides=(netsurf)
 conflicts=(netsurf)
 replaces=(netsurf)
-source=("$pkgname-$pkgver.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('fc9714257d0d1d76a368616859e065e69dd975ab12591717c8a31345b68a7154')
-b2sums=('d8d29c38c3332f16dd17354ef73df236cde7ca43241733640a6bdc663546b978e11d4d1719c3dedb48cd5e046463886e4968bcb31eb7876001dc755b7cd2512b')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v$pkgver.tar.gz"
+        netsurfy-sandbox)
+sha256sums=('fc9714257d0d1d76a368616859e065e69dd975ab12591717c8a31345b68a7154'
+            'SKIP')
+b2sums=('d8d29c38c3332f16dd17354ef73df236cde7ca43241733640a6bdc663546b978e11d4d1719c3dedb48cd5e046463886e4968bcb31eb7876001dc755b7cd2512b'
+        'SKIP')
 
 build() {
   make -C $pkgname-$pkgver NETSURFY_USE_RSVG=YES NETSURFY_USE_NSSVG=NO
@@ -22,6 +25,8 @@ build() {
 
 package() {
   make -C $pkgname-$pkgver NETSURFY_USE_RSVG=YES NETSURFY_USE_NSSVG=NO DESTDIR="$pkgdir" install
+  install -Dm755 "$pkgdir/usr/bin/$pkgname" "$pkgdir/usr/lib/$pkgname/$pkgname"
+  install -Dm755 netsurfy-sandbox "$pkgdir/usr/bin/$pkgname"
   cd $pkgname-$pkgver
   install -Dm644 frontends/gtk/res/$pkgname.xpm "$pkgdir/usr/share/pixmaps/$pkgname.xpm"
   install -Dm644 frontends/gtk/res/$pkgname.desktop "$pkgdir/usr/share/applications/$pkgname.desktop"
