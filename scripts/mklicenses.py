@@ -19,7 +19,7 @@ REPO = os.path.join(TOP, "build", "repo")
 PKGDIR = os.path.join(TOP, "build", f"repo-{ARCH}") if ARCH in ("aarch64", "x86_64") else REPO
 SRC = os.path.join(TOP, "vendor", "src")
 
-X86_ONLY = {"linux", "xpadneo", "open-watcom"}
+X86_ONLY = {"open-watcom"}
 SOURCES = [
     ("linux", "7.3.1", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
      "linux-7.3.1.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
