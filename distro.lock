@@ -642,6 +642,7 @@ bluez-libs = { repo = "extra", version = "5.79-1.0", file = "bluez-libs-5.79-1.0
 boost = { repo = "extra", version = "1.83.0-7.0", file = "boost-1.83.0-7.0-i686.pkg.tar.zst", sha256 = "277d8a4030b7f836aef31f924cd3baaef72f5d32ee541d063a374e1609f4f667" }
 boost-libs = { repo = "extra", version = "1.83.0-7.0", file = "boost-libs-1.83.0-7.0-i686.pkg.tar.zst", sha256 = "f6db4131282012e4bb2493f2c181132b3a795718e409366a0f0f2183dea2c923" }
 brotli = { repo = "core", version = "1.1.0-1.0", file = "brotli-1.1.0-1.0-i686.pkg.tar.zst", sha256 = "f4be75194acd92a9f9450a7c265872b54a0c64a69b469407698af24fb38a738f" }
+bubblewrap = { repo = "extra", version = "0.13.0-1.0", file = "bubblewrap-0.13.0-1.0-i686.pkg.tar.zst", sha256 = "2847fb584382102183d08728c40806d2b87b55d1bb66cde01ece4f4bac65150c" }
 bzip2 = { repo = "core", version = "1.0.8-6.3", file = "bzip2-1.0.8-6.3-i686.pkg.tar.zst", sha256 = "6e6e5b82d844f12bccb0c58d4fedde076d5b19fa1fc9e018f0fab03304b5cdf3" }
 ca-certificates = { repo = "core", version = "20240618-1.0", file = "ca-certificates-20240618-1.0-any.pkg.tar.zst", sha256 = "72dd0e45fe4b4d24e94c43595be61e6c8739128787ae06c1f6d5ed00c4f43280" }
 ca-certificates-mozilla = { repo = "core", version = "3.107-1.0", file = "ca-certificates-mozilla-3.107-1.0-i686.pkg.tar.zst", sha256 = "a69026caf02c4d313d2b724e4d12492e72d4a73663f1fc71867daa8eba57b4f9" }
@@ -3116,6 +3117,7 @@ bonzomatic = { version = "2023.06.15-6", a32 = "aee39c468775915b9a4b26602f00c7e3
 boost = { version = "1.92.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[boost]\nsource = \"git\"\ngit = \"https://github.com/boostorg/boost.git\"\nprefix = \"boost-\"\nexclude_regex = \".*beta.*\"\n" }
 brightnessctl = { version = "0.5.1-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 brotli = { version = "1.2.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[brotli]\nsource = \"git\"\ngit = \"https://github.com/google/brotli.git\"\nprefix = \"v\"\n" }
+bubblewrap = { version = "0.13.1-1", nvchecker = "[bubblewrap]\nsource = \"git\"\ngit = \"https://github.com/containers/bubblewrap.git\"\nprefix = \"v\"\n" }
 busybox = { version = "1.36.1-4", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[busybox]\nsource = \"git\"\ngit = \"https://git.busybox.net/busybox/\"\ninclude_regex = \"1_\\\\d*[02468]_\\\\d+\"\nfrom_pattern = \"_\"\nto_pattern = \".\"\n" }
 bzip2 = { version = "1.0.8-6", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 ca-certificates = { version = "20240618-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
@@ -3492,6 +3494,7 @@ shadow = { version = "4.20.0.arch1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab
 shared-mime-info = { version = "2.5.1-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[shared-mime-info]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/xdg/shared-mime-info.git\"\n" }
 sl = { version = "5.05-6", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[sl]\nsource = \"git\"\ngit = \"https://github.com/eyJhb/sl.git\"\n" }
 slang = { version = "2.3.3-4", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
+sof-bin = { version = "2026.09.2-1", nvchecker = "[sof-bin]\nsource = \"git\"\ngit = \"https://github.com/thesofproject/sof-bin.git\"\nprefix = \"v\"\n" }
 sord = { version = "0.16.22-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[sord]\nsource = \"git\"\ngit = \"https://gitlab.com/drobilla/sord\"\nprefix = \"v\"\n" }
 spandsp = { version = "0.0.6-7", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[spandsp]\nsource = \"regex\"\nurl = \"https://www.soft-switch.org/downloads/spandsp/\"\nregex = \"spandsp-([^\\\"]*).tar.gz\"\n" }
 speexdsp = { version = "1.2.1-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[speexdsp]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/speexdsp.git\"\nprefix = \"SpeexDSP-\"\n" }

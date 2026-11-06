@@ -23,6 +23,7 @@ packages = [
     "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "archlinux-wallpaper", "xcursor-vanilla-dmz",
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
+    "linux-firmware-amdgpu", "linux-firmware-mediatek", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware", "alsa-ucm-conf",
     "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "lazygit", "aget", "cairo",
     "opendoas",
     "libmnl",
@@ -121,31 +122,49 @@ exclude = [
     "usr/lib/firmware/intel/ish",
     "usr/lib/firmware/intel/avs",
     "usr/lib/firmware/intel/catpt",
-    "usr/lib/firmware/intel/sof*",
     "usr/lib/firmware/intel/ice",
     "usr/lib/firmware/intel/qat*",
     "usr/lib/firmware/qat*",
+    "usr/lib/gconv/EBCDIC-*", "usr/lib/gconv/IBM037.so", "usr/lib/gconv/IBM038.so", "usr/lib/gconv/IBM1025.so",
+    "usr/lib/gconv/IBM1026.so", "usr/lib/gconv/IBM1047.so", "usr/lib/gconv/IBM1097.so", "usr/lib/gconv/IBM1112.so",
+    "usr/lib/gconv/IBM1122.so", "usr/lib/gconv/IBM1123.so", "usr/lib/gconv/IBM1130.so", "usr/lib/gconv/IBM1132.so",
+    "usr/lib/gconv/IBM1137.so", "usr/lib/gconv/IBM1140.so", "usr/lib/gconv/IBM1141.so", "usr/lib/gconv/IBM1142.so",
+    "usr/lib/gconv/IBM1143.so", "usr/lib/gconv/IBM1144.so", "usr/lib/gconv/IBM1145.so", "usr/lib/gconv/IBM1146.so",
+    "usr/lib/gconv/IBM1147.so", "usr/lib/gconv/IBM1148.so", "usr/lib/gconv/IBM1149.so", "usr/lib/gconv/IBM1153.so",
+    "usr/lib/gconv/IBM1154.so", "usr/lib/gconv/IBM1155.so", "usr/lib/gconv/IBM1156.so", "usr/lib/gconv/IBM1157.so",
+    "usr/lib/gconv/IBM1158.so", "usr/lib/gconv/IBM1160.so", "usr/lib/gconv/IBM1164.so", "usr/lib/gconv/IBM1166.so",
+    "usr/lib/gconv/IBM12712.so", "usr/lib/gconv/IBM1364.so", "usr/lib/gconv/IBM1371.so", "usr/lib/gconv/IBM1388.so",
+    "usr/lib/gconv/IBM1390.so", "usr/lib/gconv/IBM1399.so", "usr/lib/gconv/IBM16804.so", "usr/lib/gconv/IBM256.so",
+    "usr/lib/gconv/IBM273.so", "usr/lib/gconv/IBM274.so", "usr/lib/gconv/IBM275.so", "usr/lib/gconv/IBM277.so",
+    "usr/lib/gconv/IBM278.so", "usr/lib/gconv/IBM280.so", "usr/lib/gconv/IBM281.so", "usr/lib/gconv/IBM284.so",
+    "usr/lib/gconv/IBM285.so", "usr/lib/gconv/IBM290.so", "usr/lib/gconv/IBM297.so", "usr/lib/gconv/IBM420.so",
+    "usr/lib/gconv/IBM423.so", "usr/lib/gconv/IBM424.so", "usr/lib/gconv/IBM4517.so", "usr/lib/gconv/IBM4899.so",
+    "usr/lib/gconv/IBM4971.so", "usr/lib/gconv/IBM500.so", "usr/lib/gconv/IBM803.so", "usr/lib/gconv/IBM870.so",
+    "usr/lib/gconv/IBM871.so", "usr/lib/gconv/IBM875.so", "usr/lib/gconv/IBM880.so", "usr/lib/gconv/IBM9030.so",
+    "usr/lib/gconv/IBM905.so", "usr/lib/gconv/IBM918.so", "usr/lib/gconv/IBM930.so", "usr/lib/gconv/IBM933.so",
+    "usr/lib/gconv/IBM935.so", "usr/lib/gconv/IBM937.so", "usr/lib/gconv/IBM939.so", "usr/share/kbd/keymaps/atari",
+    "usr/share/kbd/keymaps/amiga", "usr/share/kbd/keymaps/sun", "usr/share/kbd/keymaps/mac",
+    "usr/share/kbd/keymaps/ppc",
     "usr/lib/firmware/LENOVO",
-    "usr/lib/firmware/xe",
-    "usr/lib/firmware/i915",
-    "usr/lib/firmware/ath10k",
-    "usr/lib/firmware/ath11k",
-    "usr/lib/firmware/ath12k",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-so-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-ty-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-gl-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-ma-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-bz-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-sc-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-dr-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-br-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-wh-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-sh-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-gf-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-Qu*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-cc-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-hr-*",
-    "usr/lib/firmware/intel/iwlwifi/iwlwifi-*.pnvm*",
+    "usr/lib/firmware/nvidia/*/gsp",
+    "usr/lib/firmware/nvidia/[0-9]*",
+    "usr/lib/firmware/amdgpu/aldebaran*",
+    "usr/lib/firmware/amdgpu/arcturus*",
+    "usr/lib/firmware/amdgpu/*9_4_3*",
+    "usr/lib/firmware/amdgpu/*9_4_4*",
+    "usr/lib/firmware/amdgpu/*13_0_6*",
+    "usr/lib/firmware/amdgpu/*13_0_12*",
+    "usr/lib/firmware/amdgpu/*13_0_14*",
+    "usr/lib/firmware/mediatek/mt7981*",
+    "usr/lib/firmware/mediatek/mt7986*",
+    "usr/lib/firmware/mediatek/mt7988*",
+    "usr/lib/firmware/mediatek/mt7996",
+    "usr/lib/firmware/mediatek/mt8*",
+    "usr/lib/firmware/ath11k/IPQ*",
+    "usr/lib/firmware/ath11k/QCN9074",
+    "usr/lib/firmware/ath11k/WCN6750",
+    "usr/lib/firmware/ath12k/IPQ*",
+    "usr/lib/firmware/ath12k/QCN9274",
     "usr/lib/d3d",
     "usr/lib/bellagio",
     "usr/lib/python3*",
@@ -396,7 +415,7 @@ add = ["archlinuxarm-keyring"]
 uefi = ["linux-aarch64"]
 rpi4 = ["linux-rpi", "raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
-build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton"]
+build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton", "jomon"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
@@ -404,7 +423,7 @@ exclude = ["boot"]
 remove = [
     "archlinux32-keyring", "archlinux-keyring",
     # PC hardware
-    "linux-firmware-radeon", "linux-firmware-intel",
+    "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-amdgpu", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware",
     # Not in Arch Linux ARM yet (the arm-none-eabi toolchain for GBA development)
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "gba-dev",
 ]
@@ -414,7 +433,7 @@ remove = [
 # initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
 # "make lock-x86_64" decides to build
 remove = ["archlinux32-keyring"]
-build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton"]
+build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton", "jomon"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go"]
 
@@ -580,7 +599,7 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 "shim-x64-16.1-10.x86_64.rpm" = { url = "https://kojipkgs.fedoraproject.org/packages/shim/16.1/10/x86_64/shim-x64-16.1-10.x86_64.rpm", sha256 = "50ca8ad0f0893a9b69d257b232cc38fe572d7f2c814bc9aec4df5e492800cdc7" }
 "linux-7.3.1.tar.xz" = { url = "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.3.1.tar.xz", sha256 = "fa595aad93734f829c963c2a90ef7c3673224fd7fdae7b49406e397cde2de231" }
 "open-watcom-2026-10-01.tar.xz" = { url = "https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz", sha256 = "e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe" }
-"xpadneo-0.10.4.tar.gz" = { url = "https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.4.tar.gz", sha256 = "5271c02a788f9470199e9e18596e0d8537687ff68b2fcc64c03ecf92638f5c84" }
+"xpadneo-0.10.5.tar.gz" = { url = "https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.5.tar.gz", sha256 = "084c1ef57b4567c54cb4e4c01c9ae47b180c59a001457ad1e0ed574fdd09b59b" }
 "lure-1.1.zip" = { url = "https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip", sha256 = "f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108" }
 "soltys-en-v1.0.zip" = { url = "https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip", sha256 = "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6" }
 
@@ -785,6 +804,10 @@ build_from_source = true
 
 [jemalloc]
 build_from_source = true
+
+[jomon]
+source = "sources"
+caps = { "usr/bin/jomon" = "cap_net_raw" }
 
 [kmod]
 build_from_source = true
