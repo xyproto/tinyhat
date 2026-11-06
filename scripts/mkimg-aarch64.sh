@@ -7,16 +7,15 @@ export SOURCE_DATE_EPOCH
 out=$1
 initrd=$2
 sfs=$3
+kernel=$4
 work=$top/build/img/$(basename "$out" .img)
 br=$top/build/buildroot
 esp_mib=16
 efi_modules="fat part_msdos part_gpt xfs search search_label normal linux echo test sleep reboot halt configfile efi_gop font gfxterm gfxmenu png loadenv smbios regexp"
-pkg() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo-$1" "$1" "$2"; }
 host() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 "$1"; }
 rm -rf "$work"
-mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/kernel" "$work/grub" "$work/grubarm" "$work/kbd"
-bsdtar -xf "$(pkg aarch64 linux-aarch64)" -C "$work/kernel" boot/Image
-cp "$work/kernel/boot/Image" "$work/root/boot/vmlinuz"
+mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/grub" "$work/grubarm" "$work/kbd"
+cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
 bsdtar -xf "$(host grub)" -C "$work/grub" usr/bin/grub-mkimage usr/bin/grub-mkfont
 mkdir -p "$work/grubarm/usr/lib/grub"
@@ -40,7 +39,7 @@ mkdir -p "$work/efi/EFI/BOOT" "$work/efi/tinyhat"
 } >"$work/efi/tinyhat/grubenv"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
 	/img/grub/usr/bin/grub-mkimage -d /img/grubarm/usr/lib/grub/arm64-efi -O arm64-efi -o /img/efi/EFI/BOOT/BOOTAA64.EFI -c /img/early.cfg -p /boot/grub $efi_modules
-rm -rf "$work/kernel" "$work/grub" "$work/grubarm" "$work/kbd"
+rm -rf "$work/grub" "$work/grubarm" "$work/kbd"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
 "$top/scripts/chroot.sh" "$br" --bind "$work" /img \

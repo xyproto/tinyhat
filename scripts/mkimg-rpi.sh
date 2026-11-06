@@ -7,13 +7,15 @@ export SOURCE_DATE_EPOCH
 out=$1
 initrd=$2
 sfs=$3
+kernel=$4
 work=$top/build/img/$(basename "$out" .img)
 boot_mib=128
 pkg() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo-aarch64" aarch64 "$1"; }
 rm -rf "$work"
 mkdir -p "$work/root/tinyhat"
 bsdtar -xf "$(pkg raspberrypi-bootloader)" -C "$work" boot
-bsdtar -xf "$(pkg linux-rpi)" -C "$work" --exclude boot/config.txt --exclude boot/cmdline.txt boot
+cp "$kernel" "$work/boot/kernel8.img"
+cp "$kernel".dtbs/*.dtb "$work/boot/"
 cp "$top/config/rpi/config.txt" "$top/config/rpi/cmdline.txt" "$work/boot/"
 cp "$initrd" "$work/boot/initramfs.img"
 cp "$sfs" "$work/root/tinyhat/root.sfs"
