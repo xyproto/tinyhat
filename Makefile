@@ -96,7 +96,7 @@ VDIS := $(ISOS:.iso=.vdi)
 X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
 X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(X86_IMGS:.img=.vdi)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
-KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.4.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-i686.fragment
+KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.5.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-i686.fragment
 MKROOTFS = TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh
 MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION)
 
@@ -435,7 +435,7 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py
+ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py scripts/fwprune.py
 ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) config/rofi/config.rasi packages/tinyhat-splash/hat.c packages/tinyhat-splash/hat.h scripts/elfcheck.py scripts/symcheck.sh
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
