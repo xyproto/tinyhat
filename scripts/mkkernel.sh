@@ -38,7 +38,10 @@ make -s ARCH=$arch tinyconfig
 ./scripts/kconfig/merge_config.sh -m -O . .config "$@"
 make -s ARCH=$arch olddefconfig
 python3 "$top/scripts/kcheck.py" "$@" .config
-make -s ARCH=$arch -j"$(nproc)" KBUILD_BUILD_USER=tinyhat KBUILD_BUILD_HOST=tinyhat KBUILD_BUILD_TIMESTAMP="@${SOURCE_DATE_EPOCH:-315532800}" $target modules $dtbs
+mkdir -p "$top/build/chroot"
+exec 6>"$top/build/chroot/.heavy"
+flock 6
+MAKEFLAGS= make -s ARCH=$arch -j"$(nproc)" KBUILD_BUILD_USER=tinyhat KBUILD_BUILD_HOST=tinyhat KBUILD_BUILD_TIMESTAMP="@${SOURCE_DATE_EPOCH:-315532800}" $target modules $dtbs
 rm -rf "$modules"
 make -s ARCH=$arch INSTALL_MOD_PATH="$modules/usr" INSTALL_MOD_STRIP=1 modules_install
 rm -rf "$xp"

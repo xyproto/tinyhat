@@ -123,6 +123,16 @@ if [ "${PKG_JOBS:-0}" -gt 0 ]; then
 	done
 fi
 
+load=${PKG_LOAD-}
+prio=10
+if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
+	mkdir -p "$top/build/chroot"
+	exec 6>"$top/build/chroot/.heavy"
+	flock 6
+	load=
+	prio=0
+fi
+
 distccd_pid=
 cleanup() {
 	[ -z "$distccd_pid" ] || kill "$distccd_pid" 2>/dev/null || true
@@ -147,7 +157,7 @@ if [ "$arch" = aarch64 ] && command -v distccd >/dev/null && command -v aarch64-
 	done
 	port=$((36320 + slot))
 	jobs=$((jobs * 2))
-	DISTCCD_PATH=$top/build/distcc distccd --no-detach --daemon --listen 127.0.0.1 --port "$port" --allow 127.0.0.1 \
+	DISTCCD_PATH=$top/build/distcc nice -n "$prio" distccd --no-detach --daemon --listen 127.0.0.1 --port "$port" --allow 127.0.0.1 \
 		--enable-tcp-insecure --jobs "$jobs" --log-file "$top/build/log/aarch64-$base.distccd.log" &
 	distccd_pid=$!
 	printf '%s\n' "BUILDENV=(distcc color !ccache !check !sign)" "DISTCC_HOSTS=\"127.0.0.1:$port/$jobs\"" \
@@ -173,7 +183,7 @@ sandbox() {
 }
 
 bwrap_run() {
-	${personality:+setarch "$personality"} bwrap \
+	nice -n "$prio" ${personality:+setarch "$personality"} bwrap \
 		--overlay-src "$seed" --overlay "$work/upper" "$work/ovl" / \
 		--ro-bind "$top/vendor" /vendor \
 		--dev /dev --proc /proc --tmpfs /tmp \
@@ -251,7 +261,7 @@ run() {
 		--setenv CCACHE_DIR /ccache \
 		--setenv CCACHE_MAXSIZE "${CCACHE_MAXSIZE:-20G}" \
 		--setenv TINYHAT_JOBS "$jobs" \
-		--setenv TINYHAT_LOAD "${PKG_LOAD-}" \
+		--setenv TINYHAT_LOAD "$load" \
 		--setenv CARGO_BUILD_JOBS "${PKG_CARGO_JOBS:-$(nproc)}" \
 		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \

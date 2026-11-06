@@ -165,10 +165,12 @@ def main():
             print(name, h, url)
     elif cmd == "pins":
         print("\n".join(pins()))
+    elif cmd == "heavy":
+        print(1 if tables().get(args[0], {}).get("heavy") else 0)
     elif cmd == "caps":
         print("\n".join(caps(args[0])))
     else:
-        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | caps ROOT")
+        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | caps ROOT | heavy BASE")
 
 
 if __name__ == "__main__":
