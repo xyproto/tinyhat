@@ -23,8 +23,8 @@ X86_ONLY = {"linux", "xpadneo", "open-watcom"}
 SOURCES = [
     ("linux", "7.3.1", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
      "linux-7.3.1.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
-    ("xpadneo", "0.10.4", "https://github.com/atar-axis/xpadneo", "GPL-2.0-only",
-     "xpadneo-0.10.4.tar.gz", ["LICENSE.md", "LICENSES/"]),
+    ("xpadneo", "0.10.5", "https://github.com/atar-axis/xpadneo", "GPL-2.0-only",
+     "xpadneo-0.10.5.tar.gz", ["LICENSE.md", "LICENSES/"]),
     ("open-watcom", "2.0 (2026-10-01 build)", "https://github.com/open-watcom/open-watcom-v2", "Watcom-1.0",
      "open-watcom-2026-10-01.tar.xz", ["license.txt"]),
     ("pixelitos", "20260721 (icon theme)", "https://github.com/ItzSelenux/pixelitos-icon-theme", "MIT",

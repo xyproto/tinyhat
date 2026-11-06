@@ -110,6 +110,7 @@ base)
 	rm -f "$root/etc/fonts/conf.d/70-no-bitmaps-except-emoji.conf"
 
 	cp -a "$modules/." "$root/"
+	python3 scripts/fwprune.py "$root"
 	for k in "$modules"/usr/lib/modules/*/; do
 		[ -d "$k" ] || continue
 		k=${k%/}
@@ -288,8 +289,11 @@ systemctl set-default multi-user.target
 	find "$root/usr/share/man" -name "*.gz" -type f -exec gunzip -f {} +
 
 	rm -f "$sfs"
-	mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 128K -noappend -quiet -no-progress -no-xattrs \
+	python3 scripts/distro.py caps "$root" > "$sfs.caps"
+	mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 128K -noappend -quiet -no-progress \
+		-xattrs-include '^security\.capability$' -pf "$sfs.caps" \
 		-wildcards -e 'dev/*' 'proc/*' 'sys/*' 'run/*' 'tmp/*'
+	rm -f "$sfs.caps"
 	;;
 *)
 	echo "usage: $0 base|finalize root modules sfs lock licdir" >&2

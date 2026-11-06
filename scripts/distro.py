@@ -73,6 +73,23 @@ def sources():
     return {name: (s["sha256"], s["url"]) for name, s in section("sources").items()}
 
 
+def caps(root):
+    names = {}
+    with open("/usr/include/linux/capability.h") as f:
+        for line in f:
+            w = line.split()
+            if len(w) == 3 and w[0] == "#define" and w[1].startswith("CAP_") and w[2].isdigit():
+                names[w[1].lower()] = int(w[2])
+    out = []
+    for t in tables().values():
+        for path, cs in t.get("caps", {}).items():
+            if os.path.isfile(os.path.join(root, path)):
+                bits = sum(1 << names[c] for c in cs.split(","))
+                v = (0x02000001).to_bytes(4, "little") + (bits & 0xffffffff).to_bytes(4, "little") + bytes(4) + (bits >> 32).to_bytes(4, "little") + bytes(4)
+                out.append(f"/{path} x security.capability=0x{v.hex()}")
+    return out
+
+
 def locked(name):
     return [dict(p, name=n) for n, p in sorted(lock().get(name, {}).items())]
 
@@ -148,8 +165,10 @@ def main():
             print(name, h, url)
     elif cmd == "pins":
         print("\n".join(pins()))
+    elif cmd == "caps":
+        print("\n".join(caps(args[0])))
     else:
-        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins")
+        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | caps ROOT")
 
 
 if __name__ == "__main__":
