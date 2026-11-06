@@ -1,13 +1,13 @@
 pkgbase=llvm
 pkgname=(llvm-libs llvm clang)
-pkgver=23.1.4
-pkgrel=1
+pkgver=23.1.5
+pkgrel="1"
 arch=(i686 x32)
 url="https://llvm.org/"
 license=('Apache-2.0 WITH LLVM-exception')
 makedepends=(cmake ninja python libffi zlib zstd libxml2 ncurses)
 source=("https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz")
-sha256sums=('819ecf7351f1a66f76b2d701d8942faaf5faeb324cb90c9d5b090de142434bb2')
+sha256sums=('fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e')
 
 build() {
   cmake -S llvm-project-$pkgver.src/llvm -B build -G Ninja \

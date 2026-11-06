@@ -1,5 +1,5 @@
 pkgbase = llvm
-	pkgver = 23.1.4
+	pkgver = 23.1.5
 	pkgrel = 1
 	url = https://llvm.org/
 	arch = i686
@@ -13,8 +13,8 @@ pkgbase = llvm
 	makedepends = zstd
 	makedepends = libxml2
 	makedepends = ncurses
-	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.4/llvm-project-23.1.4.src.tar.xz
-	sha256sums = 819ecf7351f1a66f76b2d701d8942faaf5faeb324cb90c9d5b090de142434bb2
+	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.5/llvm-project-23.1.5.src.tar.xz
+	sha256sums = fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e
 
 pkgname = llvm-libs
 	pkgdesc = LLVM runtime libraries, built for X86 and AMDGPU
@@ -28,9 +28,9 @@ pkgname = llvm-libs
 
 pkgname = llvm
 	pkgdesc = LLVM development files and tools
-	depends = llvm-libs=23.1.4
+	depends = llvm-libs=23.1.5
 
 pkgname = clang
 	pkgdesc = C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU
-	depends = llvm-libs=23.1.4
+	depends = llvm-libs=23.1.5
 	depends = gcc
