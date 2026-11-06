@@ -15,6 +15,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -121,6 +122,7 @@ type sampler struct {
 	ccache              string
 	ccacheAt            time.Time
 	btime               float64
+	session, active     float64
 }
 
 func push(s []float64, v float64) []float64 {
@@ -172,10 +174,13 @@ func countObjects(dir string) int {
 var ruleRe = regexp.MustCompile(`(?m)^\$\(B\)/pkg/(\w+)/([^:\s]+):(.*)$`)
 var wildRe = regexp.MustCompile(`^\$\(wildcard (packages/[^/]+)/\*\)$`)
 var stampRe = regexp.MustCompile(`^\$\(B\)/pkg/(\w+)/(.+)$`)
+var tokenRe = regexp.MustCompile(`\$\(wildcard [^)]*\)|\S+`)
+var listRe = regexp.MustCompile(`(?m)^(ROOTFS_I686_STAMPS|ROOTFS_X32_STAMPS|X86_64_STAMPS|AARCH64_STAMPS) :=((?:.*\\\n)*.*)$`)
+var listStampRe = regexp.MustCompile(`\$\(B\)/pkg/(\w+)/([^\s\\]+)`)
 
 func (s *sampler) sample() *snapshot {
 	snap := &snapshot{}
-	for _, line := range strings.Split(readFile("/proc/stat"), "\n") {
+	for line := range strings.SplitSeq(readFile("/proc/stat"), "\n") {
 		f := strings.Fields(line)
 		if len(f) > 4 && f[0] == "cpu" {
 			var total uint64
@@ -196,7 +201,7 @@ func (s *sampler) sample() *snapshot {
 		}
 	}
 	var memTotal, memAvail float64
-	for _, line := range strings.Split(readFile("/proc/meminfo"), "\n") {
+	for line := range strings.SplitSeq(readFile("/proc/meminfo"), "\n") {
 		f := strings.Fields(line)
 		if len(f) >= 2 {
 			v, _ := strconv.ParseFloat(f[1], 64)
@@ -269,6 +274,15 @@ func (s *sampler) sample() *snapshot {
 			ksecs[i] = now() - t
 		}
 	}
+	if start > 0 {
+		if s.session == 0 || start < s.session {
+			s.session = start
+		}
+		s.active = now()
+	} else if now()-s.active > 600 {
+		s.session = 0
+	}
+	start = s.session
 	snap.Start = start
 	for _, j := range jobs {
 		snap.Jobs = append(snap.Jobs, j)
@@ -302,9 +316,31 @@ func (s *sampler) sample() *snapshot {
 		}
 	}
 
+	mk := readFile(filepath.Join(bdir, "pkgs.mk"))
 	rules := map[string][]string{}
-	for _, m := range ruleRe.FindAllStringSubmatch(readFile(filepath.Join(bdir, "pkgs.mk")), -1) {
-		rules[m[1]+"/"+m[2]] = strings.Fields(m[3])
+	for _, m := range ruleRe.FindAllStringSubmatch(mk, -1) {
+		rules[m[1]+"/"+m[2]] = tokenRe.FindAllString(m[3], -1)
+	}
+	wanted := map[string]bool{}
+	var want func(key string)
+	want = func(key string) {
+		if wanted[key] {
+			return
+		}
+		if _, ok := rules[key]; !ok {
+			return
+		}
+		wanted[key] = true
+		for _, tok := range rules[key] {
+			if m := stampRe.FindStringSubmatch(tok); m != nil {
+				want(m[1] + "/" + m[2])
+			}
+		}
+	}
+	for _, m := range listRe.FindAllStringSubmatch(mk, -1) {
+		for _, st := range listStampRe.FindAllStringSubmatch(m[2], -1) {
+			want(st[1] + "/" + st[2])
+		}
 	}
 	if time.Since(s.srcAt) > time.Minute {
 		s.src, s.srcAt = map[string]float64{}, time.Now()
@@ -360,7 +396,7 @@ func (s *sampler) sample() *snapshot {
 		return result
 	}
 	done, total := 0, 0
-	for key := range rules {
+	for key := range wanted {
 		arch := key[:strings.IndexByte(key, '/')]
 		for i, a := range arches {
 			if a != arch {
@@ -390,7 +426,7 @@ func (s *sampler) sample() *snapshot {
 		cmd.Env = append(os.Environ(), "CCACHE_DIR="+filepath.Join(home, ".ccache"))
 		if out, err := cmd.Output(); err == nil {
 			st := map[string]float64{}
-			for _, line := range strings.Split(string(out), "\n") {
+			for line := range strings.SplitSeq(string(out), "\n") {
 				if k, v, ok := strings.Cut(line, "\t"); ok {
 					st[k], _ = strconv.ParseFloat(v, 64)
 				}
@@ -674,7 +710,6 @@ func (n *news) fetchLoop() {
 	}
 	sources := []source{{"lobste.rs", "all", lobsters}, {"HN", "all", hackerNews}}
 	for _, r := range subreddits {
-		r := r
 		sources = append(sources, source{"r/" + r, "rotate", func(p string) ([]item, error) { return n.reddit(r, p) }})
 	}
 	sources = append(sources,
@@ -684,7 +719,7 @@ func (n *news) fetchLoop() {
 	mix := func() []item {
 		var mixed []item
 		seen := map[string]bool{}
-		for i := 0; i < 12; i++ {
+		for i := range 12 {
 			for _, p := range periods {
 				for _, src := range sources {
 					list := got[src.name+"|"+p[0]]
@@ -1155,7 +1190,7 @@ func (v *viewer) nextItem() item {
 	if v.served%8 == 0 && digest != "" && !inRing["gemini:digest"] {
 		return item{Name: "Gemini", Title: "digest of the news", Extra: "hot, 24h, week and month", URL: "gemini:digest"}
 	}
-	for pass := 0; pass < 2; pass++ {
+	for range 2 {
 		for _, it := range items {
 			if !v.seen[it.URL] && !inRing[it.URL] {
 				v.seen[it.URL] = true
@@ -1191,11 +1226,8 @@ func (v *viewer) ticker(w float32, dt float32) {
 		e.passes++
 		v.news.mu.Lock()
 		still := e.it.URL == "gemini:digest"
-		for _, it := range v.news.items {
-			if it == e.it {
-				still = true
-				break
-			}
+		if slices.Contains(v.news.items, e.it) {
+			still = true
 		}
 		v.news.mu.Unlock()
 		for _, p := range e.parts {
@@ -1251,7 +1283,7 @@ func (v *viewer) hat(ox, oy, size float32, snap *snapshot, t, dt float64) {
 	k := v.k
 	line := func(a, b pt, c rgb, alpha float64, width int) {
 		v.r.SetDrawColorFloat(c.r, c.g, c.b, float32(alpha))
-		for o := 0; o < width; o++ {
+		for o := range width {
 			off := float32(o) - float32(width-1)/2
 			v.r.RenderLine(float32(a.x)*k, float32(a.y)*k+off, float32(b.x)*k, float32(b.y)*k+off)
 		}
