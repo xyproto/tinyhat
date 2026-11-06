@@ -2,10 +2,18 @@
 import glob
 import os
 import re
+import shutil
 import subprocess
 import sys
 
 root = sys.argv[1]
+OWNERS = {"amdgpu": ["amdgpu"], "xe": ["xe"], "cirrus": ["snd-hda-scodec-cs35l41*", "snd-hda-scodec-cs35l56*"]}
+for d, names in OWNERS.items():
+    path = os.path.join(root, "usr/lib/firmware", d)
+    found = [m for n in names for m in glob.glob(os.path.join(root, "usr/lib/modules/*/kernel/**", n + ".ko*"), recursive=True)]
+    if os.path.isdir(path) and not found:
+        shutil.rmtree(path)
+        print(f"fwprune.py: removed usr/lib/firmware/{d}, since no module in this image uses it")
 fwdir = os.path.join(root, "usr/lib/firmware/intel/iwlwifi")
 mods = glob.glob(os.path.join(root, "usr/lib/modules/*/kernel/drivers/net/wireless/intel/iwlwifi/iwlwifi.ko*"))
 if not os.path.isdir(fwdir) or not mods:
