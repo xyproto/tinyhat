@@ -337,9 +337,11 @@ func (s *sampler) sample() *snapshot {
 			}
 		}
 	}
+	lists := map[string][]string{}
 	for _, m := range listRe.FindAllStringSubmatch(mk, -1) {
 		for _, st := range listStampRe.FindAllStringSubmatch(m[2], -1) {
 			want(st[1] + "/" + st[2])
+			lists[m[1]] = append(lists[m[1]], st[1]+"/"+st[2])
 		}
 	}
 	if time.Since(s.srcAt) > time.Minute {
@@ -476,12 +478,25 @@ func (s *sampler) sample() *snapshot {
 			snap.Failed = true
 		}
 	}
+	inputs := map[string][2]string{
+		"tinyhat32.img":       {"ROOTFS_I686_STAMPS", "vmlinuz"},
+		"tinyhat64x32.img":    {"ROOTFS_X32_STAMPS", "vmlinuz-x32"},
+		"tinyhat64.img":       {"X86_64_STAMPS", "vmlinuz-x32"},
+		"tinyhat-aarch64.img": {"AARCH64_STAMPS", "Image-arm64"},
+		"tinyhat-rpi4.img":    {"AARCH64_STAMPS", "Image-arm64"},
+	}
 	for _, img := range imageNames {
 		row := imageRow{Name: img, State: "missing"}
 		if t, ok := mtime(filepath.Join(top, img)); ok {
-			row.State, row.When = "old", time.Unix(int64(t), 0).Format("15:04")
-			if start > 0 && t >= start {
-				row.State = "new"
+			newestInput, _ := stat(filepath.Join(bdir, inputs[img][1]))
+			for _, key := range lists[inputs[img][0]] {
+				if dt, ok := stat(filepath.Join(bdir, "pkg", key)); ok && dt > newestInput {
+					newestInput = dt
+				}
+			}
+			row.State, row.When = "outdated", time.Unix(int64(t), 0).Format("15:04")
+			if t >= newestInput {
+				row.State = "up to date"
 			}
 		}
 		snap.Images = append(snap.Images, row)
@@ -1447,8 +1462,8 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 	v.text(20, y, "images", 15, accent)
 	for _, im := range snap.Images {
 		y += 20
-		c := map[string]rgb{"new": {0.5, 0.95, 0.5}, "old": {0.75, 0.75, 0.75}, "missing": {0.5, 0.5, 0.5}}[im.State]
-		v.text(30, y, fmt.Sprintf("%-22s %-8s %s", im.Name, im.State, im.When), 13, c)
+		c := map[string]rgb{"up to date": {0.5, 0.95, 0.5}, "outdated": {0.85, 0.65, 0.4}, "missing": {0.5, 0.5, 0.5}}[im.State]
+		v.text(30, y, fmt.Sprintf("%-22s %-10s %s", im.Name, im.State, im.When), 13, c)
 	}
 	y += 30
 	v.text(20, y, "log", 15, accent)
