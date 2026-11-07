@@ -167,6 +167,12 @@ exclude = [
     "usr/lib/firmware/ath11k/WCN6750",
     "usr/lib/firmware/ath12k/IPQ*",
     "usr/lib/firmware/ath12k/QCN9274",
+    "usr/lib/firmware/intel/sof/community",
+    "usr/lib/firmware/intel/sof-ipc4/*/community",
+    "usr/lib/firmware/ath10k/QCA9888",
+    "usr/lib/firmware/ath10k/QCA9984",
+    "usr/lib/firmware/ath10k/QCA4019",
+    "usr/lib/firmware/ath10k/QCA99X0",
     "usr/lib/d3d",
     "usr/lib/bellagio",
     "usr/lib/python3*",
@@ -417,7 +423,7 @@ add = ["archlinuxarm-keyring"]
 uefi = []
 rpi4 = ["raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
-build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib"]
+build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "arm-none-eabi-binutils", "arm-none-eabi-gcc"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
