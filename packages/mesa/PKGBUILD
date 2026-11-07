@@ -832,7 +832,6 @@ eval "$(
       s/-D html-docs=enabled/-D html-docs=disabled/
       s/microsoft-experimental,nouveau,/microsoft-experimental,/
       s/-D intel-rt=enabled/-D intel-rt=disabled/
-      s/-D gallium-drivers=all/-D gallium-drivers=r300,r600,radeonsi,crocus,v3d,vc4,freedreno,etnaviv,i915,nouveau,svga,tegra,virgl,lima,panfrost,llvmpipe,softpipe,iris,d3d12,asahi,rocket,ethosu/
     '
   declare -f package_mesa | \
     sed '
@@ -841,6 +840,11 @@ eval "$(
       /_pick docs /d
     '
 )"
+case $CARCH in
+aarch64) _gallium=v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu ;;
+*) _gallium=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe ;;
+esac
+eval "$(declare -f build | sed "s/-D gallium-drivers=all/-D gallium-drivers=$_gallium/")"
 if [ "$CARCH" = 'i686' ]; then
   eval "$(
     declare -f build | \
