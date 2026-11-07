@@ -16,7 +16,7 @@ def monitor(sock, cmd):
 KEYS = {" ": "spc", "\n": "ret", "-": "minus", "=": "equal", "/": "slash", ".": "dot", ",": "comma",
         ";": "semicolon", "'": "apostrophe", "\\": "backslash", "_": "shift-minus", "|": "shift-backslash",
         ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon",
-        "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4"}
+        "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4", "~": "shift-grave_accent"}
 REPORT = ("doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain --no-pager; echo TH-MEMORY; free -m; "
           "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-END) >/dev/{tty} 2>&1'\n")
 SEARCH = "https://html.duckduckgo.com/html/?q=tiny+hat+linux"
@@ -154,6 +154,15 @@ def main():
     web = [os.path.join(QMT, f"{tag}-{name}.ppm") for name in ("search", "lobsters")]
     subprocess.run(["cp", "--sparse=always", "-f", img, disk], check=True)
     os.truncate(disk, 4 << 30)
+    if k != "rpi4":
+        with open(disk, "rb") as f:
+            f.seek(446 + 8)
+            offset = int.from_bytes(f.read(4), "little") * 512
+        env = os.path.join(QMT, f"{tag}.grubenv")
+        block = "# GRUB Environment Block\nth_cmdline=tinyhat.keyboard=us\n"
+        with open(env, "w") as f:
+            f.write(block + "#" * (1024 - len(block)))
+        subprocess.run(["mcopy", "-o", "-i", f"{disk}@@{offset}", env, "::/tinyhat/grubenv"], check=True)
     for f in [sock, shot, serial] + web:
         if os.path.exists(f):
             os.remove(f)

@@ -288,6 +288,7 @@ systemctl set-default multi-user.target
 	done
 	find "$root/usr/share/man" -name "*.gz" -type f -exec gunzip -f {} +
 
+	python3 scripts/elfshrink.py "$root"
 	rm -f "$sfs"
 	python3 scripts/distro.py caps "$root" > "$sfs.caps"
 	mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 128K -noappend -quiet -no-progress \
