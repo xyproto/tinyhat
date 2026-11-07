@@ -32,6 +32,7 @@ ARCH_SOURCES = {
         "repos": ["core", "extra", "alarm"],
         "dbdir": os.path.join(TOP, "vendor", "db", "aarch64"),
         "vendordir": os.path.join(TOP, "vendor", "archlinuxarm"),
+        "any_from": "x86_64",
     },
     "x86_64": {
         "mirrors": os.environ.get("ARCH_MIRRORS", "https://geo.mirror.pkgbuild.com "
@@ -339,7 +340,14 @@ def arch_db(arch):
         path = os.path.join(src["dbdir"], f"{repo}.db")
         if os.environ.get("REFRESH") or not os.path.exists(path):
             download_any([f"{repo_url(arch, m, repo)}/{repo}.db" for m in src["mirrors"]], path)
-    return load_db(src["dbdir"], src["repos"])
+    pkgs, provides = load_db(src["dbdir"], src["repos"])
+    if "any_from" in src:
+        other, other_provides = arch_db(src["any_from"])
+        for name, p in other.items():
+            if name not in pkgs and re.search(r"-any\.pkg\.tar\.[a-z0-9]+$", p["filename"]):
+                add_pkg(pkgs, provides, dict(p, repo=f"{src['any_from']}:{p['repo']}"),
+                        [pv for pv, names in other_provides.items() if name in names])
+    return pkgs, provides
 
 
 def cmd_lock(name, *extra):
@@ -485,8 +493,11 @@ def fetch_pkg(p, pkgdir, arch=None):
             return
     os.makedirs(os.path.dirname(vendored), exist_ok=True)
     fn = urllib.parse.quote(p["filename"])
+    repo = p["repo"]
+    if ":" in repo:
+        arch, repo = repo.split(":", 1)
     if arch in ARCH_SOURCES:
-        urls = [f"{repo_url(arch, m, p['repo'])}/{fn}" for m in ARCH_SOURCES[arch]["mirrors"]]
+        urls = [f"{repo_url(arch, m, repo)}/{fn}" for m in ARCH_SOURCES[arch]["mirrors"]]
         # Arch Linux mirrors only keep the newest version, the archive keeps them all
         if "archive" in ARCH_SOURCES[arch]:
             urls.append(f"{ARCH_SOURCES[arch]['archive']}/{p['name'][0]}/{p['name']}/{fn}")
