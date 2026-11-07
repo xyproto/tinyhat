@@ -53,8 +53,9 @@ if mountpoint -q /persist && [ ! -f /persist/timezone ]; then
 fi
 
 kb=
-if [ -n "${tz-}" ] && [ ! -f /persist/vconsole.conf ]; then
-	kb=$(/usr/lib/tinyhat/tzkeyboard "$tz")
+cmdkb=$(tr ' ' '\n' </proc/cmdline | sed -n 's/^tinyhat\.keyboard=//p' | tr : ' ')
+if [ -n "$cmdkb" ] || { [ -n "${tz-}" ] && [ ! -f /persist/vconsole.conf ]; }; then
+	kb=${cmdkb:-$(/usr/lib/tinyhat/tzkeyboard "$tz")}
 	layout=${kb%% *}
 	variant=
 	[ "$kb" = "$layout" ] || variant=${kb#* }
