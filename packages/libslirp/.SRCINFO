@@ -1,6 +1,6 @@
 pkgbase = libslirp
 	pkgdesc = General purpose TCP-IP emulator
-	pkgver = 4.9.5
+	pkgver = 4.9.7
 	pkgrel = 1
 	url = https://gitlab.freedesktop.org/slirp/libslirp
 	arch = i686
@@ -10,8 +10,8 @@ pkgbase = libslirp
 	makedepends = meson
 	depends = glib2
 	provides = libslirp.so
-	source = https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v4.9.5/libslirp-v4.9.5.tar.gz
-	sha512sums = b8ed4209f8d8f64908299e8c43985dc3dc1c42c980721f7897b8a887e7d90c15e961f4f2e3273e3e5fd8d10d3ae33b8643a9f0e094dd2afd2abc4fa129a896d6
-	b2sums = a77063bbb1f4da849bde4dc2ae46f5a78e14a836a86b77f342d97a656cbae1672f253d257ca20a55a2e9568f1fbb786f7e9338e2f6eadf03340900c3d4fef4c9
+	source = https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v4.9.7/libslirp-v4.9.7.tar.gz
+	sha512sums = e7ab5bae9696a5b3f9bc0a846757a5d7a9dd24407c04f1c3483730baa0b0269fb9574c5f26569f1718a4b51023a62a5c4b8826a82e5c44b8d14a1ede5fb7e566
+	b2sums = 12df06926f2fbcb1cdb45c4e3b086e8df0d1c520646185eb608f6aa97e53a94bca43a182909470a806ff0f20da0e710212b9e9d82197422faf7d3da922544e29
 
 pkgname = libslirp

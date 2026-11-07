@@ -1,6 +1,6 @@
 pkgbase = gperftools
 	pkgdesc = Fast, multi-threaded malloc and nifty performance analysis tools
-	pkgver = 2.18.1
+	pkgver = 2.19.2
 	pkgrel = 1
 	url = https://github.com/gperftools/gperftools
 	arch = i686
@@ -11,7 +11,7 @@ pkgbase = gperftools
 	depends = libgcc
 	depends = libstdc++
 	depends = libunwind
-	source = git+https://github.com/gperftools/gperftools.git#tag=gperftools-2.18.1
-	b2sums = c34297c71106df8ffa7111c7f9530b25c883492f24604da45e223487ca3eaadc7a670683eff1e6a81c237573ffd347de3986e7146fb15cbcd5a0263d5cbeada3
+	source = git+https://github.com/gperftools/gperftools.git#tag=gperftools-2.19.2
+	b2sums = 9c4889ea59c03bde9ecfa85924b4af98ebdb0cfba1f5a127b9770e6419953915dbdcc8465ec1af088ee157e8d15a16db9f6750708dbfca5c0b5cd91bb23d1f49
 
 pkgname = gperftools

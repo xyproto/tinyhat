@@ -7,7 +7,7 @@
 # Contributor: Bogdan Burlacu <bogdan.burlacu AT pm.me>
 
 pkgname=onetbb
-pkgver=2023.1.0
+pkgver=2023.2.0
 pkgrel="1"
 pkgdesc='oneAPI Threading Building Blocks - a high level abstract threading library'
 arch=(i686 x32)
@@ -31,7 +31,7 @@ provides=("intel-tbb=${pkgver}" "tbb=${pkgver}")
 replaces=('intel-tbb' 'tbb')
 source=("https://github.com/uxlfoundation/oneTBB/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz"
         '010-onetbb-fix-linkage-of-test-malloc-pure-c.patch')
-sha512sums=('c8e9b9100873d6f8514da18ca700165466a9c042d24a6ce9e8901c8996c348f2e58f0251b1eca47d33cc5f382783bfc7693bc6c451716540d4caa57339b3b535'
+sha512sums=('4a960b9a8011e30887c71ce6bc7be429d57bc0de22435b5d6c3247e6b3d783c0a053adc6fa189a41076c6e913733bab417456a21d98633cc2f33283e1be58c87'
             'ea5480e7995f4c20ac66ca589ce1f98edb85e70eb1af498df04df09461c9a6175bcd2bf0dea7038f992528d8fd3e47932e16dedee0831436cb046c9fb23b4fb3')
 
 prepare() {

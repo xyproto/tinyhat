@@ -2,8 +2,8 @@
 # Maintainer: T.J. Townsend <blakkheim@archlinux.org>
 
 pkgname=rsync
-pkgver=3.5.1
-pkgrel="3"
+pkgver=3.5.2
+pkgrel="1"
 pkgdesc='A fast and versatile file copying tool for remote and local files'
 arch=(i686 x32)
 url='https://rsync.samba.org/'
@@ -19,7 +19,7 @@ validpgpkeys=('0048C8B026D4C96F0E589C2F6C859FB14B96A8C5'  # Wayne Davison <wayne
               
 source=("git+https://github.com/RsyncProject/rsync.git?signed#tag=v${pkgver}"
         'rsyncd.conf')
-sha256sums=('0544af624869e1759f37fe4ec0ab26b99805a9c288ce698ccb5a5b93fb920041'
+sha256sums=('ecca327979d221f965942f6a052a9a5e821dea6c3353531588a3b374c9cf278a'
             '733ccb571721433c3a6262c58b658253ca6553bec79c2bdd0011810bb4f2156b')
 
 _backports=(

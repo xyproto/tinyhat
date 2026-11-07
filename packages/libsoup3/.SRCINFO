@@ -1,6 +1,6 @@
 pkgbase = libsoup3
 	pkgdesc = HTTP client/server library for GNOME
-	pkgver = 3.8.0
+	pkgver = 3.8.1
 	pkgrel = 1
 	url = https://libsoup.gnome.org/
 	arch = i686
@@ -25,9 +25,9 @@ pkgbase = libsoup3
 	depends = sqlite
 	depends = zlib
 	depends = zstd
-	source = git+https://gitlab.gnome.org/GNOME/libsoup.git#tag=3.8.0
+	source = git+https://gitlab.gnome.org/GNOME/libsoup.git#tag=3.8.1
 	source = 0001-tests-Remove-AuthDigestQop-none.patch
-	b2sums = 140707e698a031d9c801d33c1c5439d04b7bb12490a4aa63d013e388a56e8ef68e569b16d1181388ba9e5943932149bf1371ddc21034615664de29a0bb7359ae
+	b2sums = f08a41fbf00fd087a653111e66c8bed8a64612994f568dc72453b7e03c6f02769071602b3ed26181a277c076964a648ac1738cf0b20556a57e86e4ec1a36d11d
 	b2sums = 0ae74e19f3764bc4f02fe2de2099182e0aa37d7b0fce36e67f25076b314b363c055c5accb4c54f18f859b27484d038d20ed5d031c38a8c2f252e35d23cb86079
 
 pkgname = libsoup3

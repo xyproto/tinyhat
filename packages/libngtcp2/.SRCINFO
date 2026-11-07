@@ -1,6 +1,6 @@
 pkgbase = libngtcp2
 	pkgdesc = Implementation of IETF QUIC protocol
-	pkgver = 1.25.0
+	pkgver = 1.26.0
 	pkgrel = 1
 	url = https://github.com/ngtcp2/ngtcp2
 	arch = i686
@@ -15,14 +15,14 @@ pkgbase = libngtcp2
 	provides = libngtcp2.so
 	provides = libngtcp2_crypto_gnutls.so
 	provides = libngtcp2_crypto_ossl.so
-	source = git+https://github.com/ngtcp2/ngtcp2.git?signed#tag=v1.25.0
+	source = git+https://github.com/ngtcp2/ngtcp2.git?signed#tag=v1.26.0
 	source = git+https://github.com/ngtcp2/munit.git
 	source = git+https://github.com/ngtcp2/urlparse.git
 	validpgpkeys = F4F3B91474D1EB29889BD0EF7E8403D5D673C366
-	sha256sums = cf8cf5673a16d359e4c3830188b0c4733f4c4ce7ae9fa7dada82869ea79c0b55
+	sha256sums = 3d832aaffcce0d8204b811c2ae8be4d3428b75136f04a61ac92d5f874d4b3747
 	sha256sums = SKIP
 	sha256sums = SKIP
-	b2sums = b2a2485332decc9208fbfbde833380fdb8bf72844e1ed482e6469e3075da4dc5caa7f6c5e8f5c43fbf6f108fc0b2b8bba647dd9b5e054628255f60cbe07fb4ec
+	b2sums = 8e3a12f1f8cb2d7f29dfd443b007f353c41038e0d527c95f9d5c1d07ef793321a2da0ffd003d94c6369fc69e40910e024cc757b11bd9101ec77d6f062b2ff634
 	b2sums = SKIP
 	b2sums = SKIP
 

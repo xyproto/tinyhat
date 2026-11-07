@@ -1,14 +1,14 @@
 pkgbase = libgrapheme
 	pkgdesc = Unicode string library
-	pkgver = 2.0.2
+	pkgver = 3.0.0
 	pkgrel = 1
 	url = https://libs.suckless.org/libgrapheme/
 	arch = i686
 	arch = x32
 	license = ISC
 	depends = glibc
-	source = https://dl.suckless.org/libgrapheme/libgrapheme-2.0.2.tar.gz
-	sha256sums = a68bbddde76bd55ba5d64116ce5e42a13df045c81c0852de9ab60896aa143125
-	b2sums = ade6c3ca8481bf3c3e1b1512a3c02caa9f7f2bcb3e9a59f0f3c5af7a1603c2ff2bf4f689d25e47e156d663d95c4e9e209e03504fcde27a9daf1791bc4954663e
+	source = https://dl.suckless.org/libgrapheme/libgrapheme-3.0.0.tar.gz
+	sha256sums = 32585af73dda62fbcc0fed14f199aa1bc988ad01dad0bfbd06cf175d9cf3d68c
+	b2sums = f38706554bc97d73a09aaf3dfc0f0f04e883c3505b860c6d3629b04248f747c83f48adad6970cf0e3ccc85d3965e12fdbf5ad58fe60980b0a41f11d050bccaed
 
 pkgname = libgrapheme
