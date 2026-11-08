@@ -1,0 +1,13 @@
+--- a/dwl.c	2026-11-08 16:21:50.691305961 +0100
++++ b/dwl.c	2026-11-08 16:21:50.711504919 +0100
+@@ -3299,6 +3299,10 @@
+ 				event->x, event->y, event->width, event->height);
+ 		return;
+ 	}
++	if (c->isfullscreen) {
++		resize(c, c->geom, 0);
++		return;
++	}
+ 	if ((c->isfloating && c != grabc) || !c->mon->lt[c->mon->sellt]->arrange) {
+ 		resize(c, (struct wlr_box){.x = event->x - c->bw,
+ 				.y = event->y - c->bw, .width = event->width + c->bw * 2,
