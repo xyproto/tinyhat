@@ -32,6 +32,7 @@ if [ ! -f "$src/Makefile" ] || [ ! -f "$src/scripts/Kbuild.include" ]; then
 	rm -rf "$src"
 	mkdir -p "$src"
 	tar -xf "$top/vendor/src/linux-$ver.tar.xz" -C "$src" --strip-components=1
+	patch -d "$src" -Np1 -s -i "$top/config/kernel-tinyhat-panic.patch"
 fi
 cd "$src"
 make -s ARCH=$arch tinyconfig

@@ -96,7 +96,7 @@ VDIS := $(ISOS:.iso=.vdi)
 X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
 X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(X86_IMGS:.img=.vdi)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
-KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.5.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-common.fragment
+KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.5.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-common.fragment config/kernel-tinyhat-panic.patch
 MKROOTFS = TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh
 MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION)
 
