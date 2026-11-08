@@ -1,7 +1,7 @@
 pkgbase = love
 	pkgdesc = An open-source 2D game engine which uses the versatile Lua scripting language to create dynamic gaming experiences
 	pkgver = 12.0.r1835.gb7daef0
-	pkgrel = 1
+	pkgrel = 2
 	url = http://love2d.org/
 	arch = i686
 	license = zlib

@@ -1,0 +1,20 @@
+--- a/src/octo_de.c	2026-11-08 23:09:55.147013370 +0100
++++ b/src/octo_de.c	2026-11-08 23:09:55.170114381 +0100
+@@ -1637,6 +1637,7 @@
+       if(overlay==NULL||ow!=(dw/ui.win_scale)||oh!=(dh/ui.win_scale)){
+         if(overlay!=NULL)SDL_DestroyTexture(overlay);
+         overlay=SDL_CreateTexture(ren,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING,(dw/ui.win_scale),(dh/ui.win_scale));
++        SDL_SetTextureScaleMode(overlay,SDL_SCALEMODE_NEAREST);
+       }
+ 
+       if(state.mode==MODE_RUN){
+--- a/src/octo_run.c	2026-11-08 23:09:55.147013370 +0100
++++ b/src/octo_run.c	2026-11-08 23:09:55.170511014 +0100
+@@ -103,6 +103,7 @@
+       if(overlay==NULL||ow!=(dw/ui.win_scale)||oh!=(dh/ui.win_scale)){
+         if(overlay!=NULL)SDL_DestroyTexture(overlay);
+         overlay=SDL_CreateTexture(ren,SDL_PIXELFORMAT_ARGB8888,SDL_TEXTUREACCESS_STREAMING,(dw/ui.win_scale),(dh/ui.win_scale));
++        SDL_SetTextureScaleMode(overlay,SDL_SCALEMODE_NEAREST);
+       }
+       octo_ui_run(&emu,prog,&ui,win,ren,screen,overlay);
+     }
