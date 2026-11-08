@@ -291,6 +291,9 @@ if [ "$reset" = 1 ] && [ -n "$where" ] && grep -q " /run/tinyhat/data " /proc/mo
 fi
 anim=/run/tinyhat/data/bootsplash/active
 [ -f "$anim" ] || anim=/run/tinyhat/data/state/bootanim/hat
+if [ -n "$where" ] && [ -f "$anim" ]; then
+	cp -f "$anim" /run/tinyhat/bootsplash-active
+fi
 if [ -n "$where" ] && [ -f "$anim" ] && [ -p /run/tinyhat-splash ]; then
 	say "hat /run/tinyhat/lower $anim"
 	i=0
