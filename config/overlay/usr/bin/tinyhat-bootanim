@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/lib/tinyhat/cproject bootanim "Boot animation in C" hat.c

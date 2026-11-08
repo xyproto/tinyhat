@@ -1,7 +1,7 @@
 #!/bin/sh
 label=THDATA
 min_mib=64
-dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/var/lib/bluetooth pacman-gnupg:/etc/pacman.d/gnupg dropbear:/etc/dropbear state:/var/lib/tinyhat"
+dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/var/lib/bluetooth pacman-gnupg:/etc/pacman.d/gnupg dropbear:/etc/dropbear state:/var/lib/tinyhat bootsplash:/var/lib/tinyhat-bootsplash"
 
 mode=stick
 for arg in $(cat /proc/cmdline); do
