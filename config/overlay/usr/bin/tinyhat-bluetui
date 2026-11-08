@@ -3,4 +3,9 @@ if [ -z "$(ls /sys/class/bluetooth 2>/dev/null)" ]; then
 	tinyhat-notice "No Bluetooth adapter was found" 6
 	exit 1
 fi
+shown=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bluetui-help
+if [ ! -e "$shown" ]; then
+	: >"$shown"
+	tinyhat-bluetui-help >/dev/null 2>&1 &
+fi
 exec tinyhat-term bluetui
