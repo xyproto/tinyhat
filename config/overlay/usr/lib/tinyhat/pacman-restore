@@ -23,6 +23,8 @@ for desc in "$old"/upper/var/lib/pacman/local/*/desc; do
 done
 if [ -n "$names" ]; then
 	msg "reinstalling the packages installed with pacman before Tiny Hat was upgraded:$names"
+	set -- $names
+	[ -p /run/tinyhat-splash ] && timeout 2 sh -c 'printf "msg %s\n" "$1" >/run/tinyhat-splash' sh "Reinstalling $# packages from before the upgrade, this can take a few minutes"
 	systemctl start tinyhat-pacman-init.service
 	/usr/lib/tinyhat/pacman -U --noconfirm --needed $files >/dev/null 2>&1 || /usr/lib/tinyhat/pacman -Sy --noconfirm --needed $names ||
 		echo "$names" >/persist/pacman-not-restored.txt

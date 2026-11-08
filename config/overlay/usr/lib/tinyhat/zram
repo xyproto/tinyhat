@@ -1,4 +1,16 @@
 #!/bin/sh
 kib=$(awk '/^MemTotal:/ { print int($2 / 2) }' /proc/meminfo)
-dev=$(zramctl --find --algorithm lz4 --size "${kib}KiB") || exit 1
-mkswap -q "$dev" && swapon --priority 100 "$dev"
+udevadm wait --timeout=60 /dev/zram0 2>/dev/null
+for try in 1 2 3 4 5; do
+	if dev=$(zramctl --find --algorithm lz4 --size "${kib}KiB") && mkswap -q "$dev" && swapon --priority 100 "$dev"; then
+		exit 0
+	fi
+	echo "zram attempt $try of 5 failed${dev:+ on $dev}" >&2
+	if [ -n "$dev" ]; then
+		swapoff "$dev" 2>/dev/null
+		zramctl --reset "$dev" 2>/dev/null
+	fi
+	dev=
+	sleep 2
+done
+exit 1
