@@ -21,3 +21,4 @@ have = parse(sys.argv[-1], False)
 bad = [f"{k}: wanted {v}, got {have.get(k, 'n')}" for k, v in want.items() if have.get(k, "n") != v]
 for b in bad:
     print("kconfig:", b, file=sys.stderr)
+sys.exit(1 if bad else 0)
