@@ -1,0 +1,29 @@
+if [ "$CARCH" = aarch64 ]; then
+  _x86=$_target-gcc-$pkgver-1-x86_64.pkg.tar.zst
+  source+=("https://archive.archlinux.org/packages/a/$_target-gcc/$_x86")
+  sha256sums+=('b3fca2319f030bafe17873b4cbcaef3d643043a99f18317cc2793bcaf563b702')
+  noextract+=("$_x86")
+
+  build() {
+    CFLAGS=${CFLAGS/-Werror=format-security/}
+    CXXFLAGS=${CXXFLAGS/-Werror=format-security/}
+    cd "$srcdir"/build-gcc
+    eval "$(declare -f _build_gcc | sed 's/make INHIBIT_LIBC_CFLAGS=/make all-gcc all-lto-plugin INHIBIT_LIBC_CFLAGS=/')"
+    _build_gcc
+  }
+
+  package() {
+    cd "$srcdir"/build-gcc
+    make DESTDIR="$pkgdir" install-gcc install-lto-plugin -j1
+    mkdir -p "$srcdir"/x86
+    bsdtar -xf "$srcdir/$_x86" -C "$srcdir"/x86 usr/$_target usr/lib/gcc/$_target
+    cd "$srcdir"/x86
+    find usr -type f | while IFS= read -r f; do
+      [ ! -e "$pkgdir/$f" ] || continue
+      [ "$(od -An -tx1 -N4 "$f" | tr -d ' ')" = 7f454c46 ] && [ "$(od -An -tx1 -j18 -N2 "$f" | tr -d ' ')" = 3e00 ] && continue
+      install -Dm644 "$f" "$pkgdir/$f"
+    done
+    find "$pkgdir"/usr/bin/ "$pkgdir"/usr/lib/gcc/$_target/$pkgver -type f -perm -u+x -exec strip '{}' \; 2>/dev/null || true
+    rm -rf "$pkgdir"/usr/share/man/man7 "$pkgdir"/usr/share/info "$pkgdir"/usr/lib/libcc1.*
+  }
+fi
