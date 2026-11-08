@@ -4,7 +4,7 @@
 pkgname=love
 pkgver=12.0.r1835.gb7daef0
 _commit=b7daef0f7c1dc5888090f5d5b22d4eaf4ffd1d87
-pkgrel=1
+pkgrel=2
 pkgdesc="An open-source 2D game engine which uses the versatile Lua scripting language to create dynamic gaming experiences"
 arch=(i686)
 url="http://love2d.org/"
@@ -34,6 +34,7 @@ V
   echo $((${major:-0} * 100 + ${minor:-0})); }
 if [ -n "$TINYHAT_GL_VERSION" ] && [ "$(ver "$TINYHAT_GL_VERSION")" -lt 303 ] && [ "$(ver "${TINYHAT_GLES_VERSION:-0.0}")" -lt 300 ]; then
   export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe
+  command -v tinyhat-notice >/dev/null && tinyhat-notice "This graphics chip has OpenGL $TINYHAT_GL_VERSION, LÖVE needs 3.3, so it runs in software and can be slow" 8
 fi
 exec /usr/lib/love/love "$@"
 EOF

@@ -17,7 +17,7 @@ packages = [
     "filesystem", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "gawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
     "systemd", "shadow",
     "xfsprogs", "dosfstools", "exfatprogs", "mtools", "ntfs-3g",
-    "alsa-utils", "pipewire", "pipewire-alsa", "wireplumber", "tinyhat-pipewire-wait",
+    "alsa-utils", "pipewire", "pipewire-alsa", "pipewire-jack", "wireplumber", "tinyhat-pipewire-wait",
     "bluez", "bluez-utils", "bluetui",
     "iwd", "wireless-regdb", "impala", "dhcpcd", "openresolv",
     "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "archlinux-wallpaper", "xcursor-vanilla-dmz",
@@ -34,7 +34,7 @@ packages = [
     "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "imv", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-play",
-    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-retro", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
+    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
@@ -672,6 +672,7 @@ source = "sources"
 
 [cairo]
 build_from_source = true
+pacman_ignore = false
 
 [cargo-c]
 build_from_source = true
@@ -688,6 +689,7 @@ source = "sources"
 
 [dav1d]
 build_from_source = true
+pacman_ignore = false
 
 [dbus]
 build_from_source = true
@@ -1097,9 +1099,6 @@ source = "sources"
 [tinyhat-play]
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/tinyhat-play", prefix = "v", use_max_tag = true }
-
-[tinyhat-retro]
-source = "sources"
 
 [tinyhat-sounds]
 source = "sources"
