@@ -2,7 +2,7 @@
 
 pkgname=algernon
 pkgver=1.17.13
-pkgrel=1
+pkgrel=2
 pkgdesc='Web server with Lua, Markdown, QUIC, Redis and PostgreSQL support'
 arch=(i686)
 url='https://algernon.roboticoverlords.org/'
@@ -14,6 +14,7 @@ optdepends=('mariadb: For using the MariaDB/MySQL database backend'
             'postgresql: For using the PostgreSQL database backend'
             'redis: For using the Redis database backend'
             'valkey: For using the Redis database backend')
+options=(docs)
 source=("git+https://github.com/xyproto/algernon#tag=v$pkgver")
 b2sums=('SKIP')
 
@@ -32,6 +33,7 @@ package() {
   install -d "$pkgdir/usr/share/doc/$pkgname/samples"
   cp -r samples "$pkgdir/usr/share/doc/$pkgname/samples"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
 
   cd system
   install -Dm644 logrotate "$pkgdir/etc/logrotate.d/algernon"

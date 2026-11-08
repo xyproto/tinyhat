@@ -93,6 +93,7 @@ base)
 		echo /usr/lib32 >"$root/etc/ld.so.conf.d/lib32.conf"
 	fi
 	rm -rf "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
+	bsdtar -xpf "$(pkgfile algernon)" -C "$root" usr/share/doc/algernon/README.md
 	rm -rf "$root/usr/share/icons/Adwaita" "$root/usr/share/icons/AdwaitaLegacy"
 	rm -rf "$root"/usr/share/wayland-sessions
 	rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
