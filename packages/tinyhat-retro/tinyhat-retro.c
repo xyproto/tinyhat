@@ -139,6 +139,17 @@ static bool key(SDL_Scancode a, SDL_Scancode b)
     return keys[a] || (b != SDL_SCANCODE_UNKNOWN && keys[b]);
 }
 
+static bool start_key(void)
+{
+    static bool alt_enter;
+    bool down = key(SDL_SCANCODE_RETURN, SDL_SCANCODE_KP_ENTER);
+    if (down && (SDL_GetModState() & SDL_KMOD_ALT))
+        alt_enter = true;
+    else if (!down)
+        alt_enter = false;
+    return down && !alt_enter;
+}
+
 static int16_t input_state(unsigned port, unsigned device, unsigned index, unsigned id)
 {
     (void)index;
@@ -184,7 +195,7 @@ static int16_t input_state(unsigned port, unsigned device, unsigned index, unsig
     case RETRO_DEVICE_ID_JOYPAD_X: return key(SDL_SCANCODE_S, SDL_SCANCODE_UNKNOWN);
     case RETRO_DEVICE_ID_JOYPAD_L: return key(SDL_SCANCODE_Q, SDL_SCANCODE_UNKNOWN);
     case RETRO_DEVICE_ID_JOYPAD_R: return key(SDL_SCANCODE_W, SDL_SCANCODE_UNKNOWN);
-    case RETRO_DEVICE_ID_JOYPAD_START: return key(SDL_SCANCODE_RETURN, SDL_SCANCODE_KP_ENTER);
+    case RETRO_DEVICE_ID_JOYPAD_START: return start_key();
     case RETRO_DEVICE_ID_JOYPAD_SELECT: return key(SDL_SCANCODE_RSHIFT, SDL_SCANCODE_BACKSPACE);
     }
     return 0;
@@ -401,6 +412,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "tinyhat-retro: %s\n", SDL_GetError());
         return 1;
     }
+    SDL_HideCursor();
     SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, (int)av.timing.sample_rate };
     audio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
     SDL_SetRenderVSync(renderer, audio ? 0 : 1);

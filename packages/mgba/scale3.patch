@@ -1,0 +1,11 @@
+--- a/src/platform/sdl/main.c	2026-11-08 16:24:40.471529570 +0100
++++ b/src/platform/sdl/main.c	2026-11-08 16:24:40.491529596 +0100
+@@ -118,7 +118,7 @@
+ 	renderer.core->desiredVideoDimensions(renderer.core, &renderer.width, &renderer.height);
+ 	renderer.ratio = graphicsOpts.multiplier;
+ 	if (renderer.ratio == 0) {
+-		renderer.ratio = 1;
++		renderer.ratio = 3;
+ 	}
+ 	opts.width = renderer.width * renderer.ratio;
+ 	opts.height = renderer.height * renderer.ratio;
