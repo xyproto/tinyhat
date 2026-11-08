@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Algernon documentation
+Icon=help-contents
+Comment=The Algernon web server README, rendered as HTML
+Exec=algernon -m /usr/share/doc/algernon/README.md
+Terminal=false
+Categories=Development;
