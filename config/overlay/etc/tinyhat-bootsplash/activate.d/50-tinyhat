@@ -1,0 +1,7 @@
+#!/bin/sh
+mkdir -p /run/tinyhat
+if [ -n "$2" ] && [ -x "$1" ]; then
+	cp -f "$1" /run/tinyhat/bootsplash-active
+else
+	rm -f /run/tinyhat/bootsplash-active
+fi

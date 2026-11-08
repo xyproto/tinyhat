@@ -1,5 +1,5 @@
 pkgname=tinyhat-splash
-pkgver=1.0.0
+pkgver=1.0.1
 pkgrel=1
 pkgdesc="Tiny Hat boot splash, boot and shutdown animations in C, and the Boot Animations gallery"
 arch=(i686 x32)
@@ -10,16 +10,7 @@ makedepends=(kbd python)
 optdepends=('tcc: building animations' 'make: building animations' 'orbiton: editing animations')
 provides=(tinyhat-bootsplash)
 source=("tinyhat-bootsplash-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('9644910ff925e3f376657a6d1a5beaf25c5e88cabe8740848a9260ad7b76bc40')
-
-prepare() {
-  cd tinyhat-bootsplash-$pkgver
-  local m
-  for m in animations/*/Makefile templates/*/Makefile; do
-    grep -q 'origin CC' "$m" ||
-      sed -i 's/^CFLAGS ?= -O2 -Wall$/&\nifeq ($(origin CC),default)\nCC := $(if $(shell command -v cc 2>\/dev\/null),cc,tcc)\nendif/' "$m"
-  done
-}
+sha256sums=('14105cae4e6d2f22fc4495faec1b79437f75956be22552acb476aadd14733799')
 
 build() {
   cd tinyhat-bootsplash-$pkgver
