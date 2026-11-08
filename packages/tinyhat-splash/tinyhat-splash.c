@@ -43,6 +43,7 @@ static const Rgb TEAL = { 0x1a, 0x9e, 0x96 };
 static const Rgb GRAY = { 0x49, 0x49, 0x49 };
 static const Rgb LIGHT = { 0xc0, 0xca, 0xf5 };
 static const Rgb WHITE = { 0xff, 0xff, 0xff };
+static const Rgb RED = { 0xf7, 0x76, 0x8e };
 
 static const uint32_t ink[INKS] = INK_COLORS;
 static const Rgb STAR[] = { { 0x2f, 0x34, 0x4b }, { 0x56, 0x5f, 0x89 }, { 0xa9, 0xb1, 0xd6 }, { 0xff, 0xff, 0xff } };
@@ -60,6 +61,8 @@ static unsigned char *back;
 static int W, H, BPP;
 static int dx0, dy0, dx1, dy1;
 static char message[128];
+static char failure[128];
+static int failures;
 static int progress = -1;
 static long tick;
 static volatile sig_atomic_t stop;
@@ -329,6 +332,23 @@ static void draw_title(void)
 	text((W - text_width("TINY HAT", s)) / 2, title_y(), s, "TINY HAT", WHITE);
 }
 
+static void draw_failure(void)
+{
+	int s = text_scale(), y = title_y() + 36 * s;
+	size_t max = (size_t)(W / (8 * s)) - 2;
+	char line[192];
+	if (!failures)
+		return;
+	if (failures > 1)
+		snprintf(line, sizeof(line), "Failed: %s (and %d more)", failure, failures - 1);
+	else
+		snprintf(line, sizeof(line), "Failed: %s", failure);
+	if (strlen(line) > max)
+		line[max] = '\0';
+	fill(0, y, W, y + 16 * s, BG);
+	text((W - text_width(line, s)) / 2, y, s, line, RED);
+}
+
 static void draw_status(void)
 {
 	int s = text_scale(), top = title_y() + 32 * s + 24 * s;
@@ -508,6 +528,7 @@ static void draw_all(void)
 	draw_stars(1);
 	draw_hat();
 	draw_title();
+	draw_failure();
 	draw_status();
 }
 
@@ -593,6 +614,15 @@ static void command(char *line)
 		for (char *p = message; *p; p++)
 			if (*p >= 'a' && *p <= 'z')
 				*p = (char)(*p - 'a' + 'A');
+	} else if (!strncmp(line, "fail ", 5)) {
+		size_t n = strlen(line + 5);
+		if (n >= sizeof(failure))
+			n = sizeof(failure) - 1;
+		memcpy(failure, line + 5, n);
+		failure[n] = '\0';
+		failures++;
+		if (!shutdown_mode)
+			draw_failure();
 	} else if (!strncmp(line, "progress", 8)) {
 		progress = atoi(line + 8);
 		if (progress > 100)

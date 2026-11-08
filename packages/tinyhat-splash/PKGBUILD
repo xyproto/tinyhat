@@ -1,6 +1,6 @@
 pkgname=tinyhat-splash
 pkgver=1
-pkgrel=1
+pkgrel=2
 pkgdesc="Tiny Hat boot splash for the initramfs"
 arch=(i686 x32)
 url="https://github.com/xyproto/tinyhat"
