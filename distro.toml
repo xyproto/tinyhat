@@ -439,7 +439,7 @@ remove = [
 # initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
 # "make lock-x86_64" decides to build
 remove = ["archlinux32-keyring"]
-build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton", "jomon"]
+build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "zsnes"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go"]
 
@@ -1163,4 +1163,4 @@ build_from_source = true
 
 [zsnes]
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/zsnes", use_max_tag = true }
+nvchecker = { source = "github", github = "xyproto/zsnes", use_max_tag = true, prefix = "v" }
