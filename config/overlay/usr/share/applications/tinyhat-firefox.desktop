@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install Firefox
+Icon=applications-system
+Comment=Install the Firefox web browser and the libraries it needs
+Exec=tinyhat-firefox
+Terminal=false
+Categories=System;
