@@ -1,32 +1,35 @@
 pkgname=tinyhat-splash
-pkgver=1
-pkgrel=2
-pkgdesc="Tiny Hat boot splash for the initramfs"
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Tiny Hat boot splash, boot and shutdown animations in C, and the Boot Animations gallery"
 arch=(i686 x32)
-url="https://github.com/xyproto/tinyhat"
+url="https://github.com/xyproto/tinyhat-bootsplash"
 license=(BSD-3-Clause)
+depends=(gtk4)
 makedepends=(kbd python)
-source=(tinyhat-splash.c hat.c hat.h)
-sha256sums=('SKIP' 'SKIP' 'SKIP')
+optdepends=('tcc: building animations' 'make: building animations' 'orbiton: editing animations')
+provides=(tinyhat-bootsplash)
+source=("tinyhat-bootsplash-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/refs/tags/v$pkgver.tar.gz")
+sha256sums=('9644910ff925e3f376657a6d1a5beaf25c5e88cabe8740848a9260ad7b76bc40')
+
+prepare() {
+  cd tinyhat-bootsplash-$pkgver
+  local m
+  for m in animations/*/Makefile templates/*/Makefile; do
+    grep -q 'origin CC' "$m" ||
+      sed -i 's/^CFLAGS ?= -O2 -Wall$/&\nifeq ($(origin CC),default)\nCC := $(if $(shell command -v cc 2>\/dev\/null),cc,tcc)\nendif/' "$m"
+  done
+}
 
 build() {
-  python3 - /usr/share/kbd/consolefonts/default8x16.psfu.gz >font.h <<'PY'
-import gzip, struct, sys
-d = gzip.open(sys.argv[1]).read()
-magic, _, size, _, count, glyph, height, width = struct.unpack("<8I", d[:32])
-assert magic == 0x864AB572 and count >= 256 and glyph == 16 and height == 16 and width == 8
-data = d[size:size + 256 * 16]
-print("static const unsigned char font8x16[256 * 16] = {")
-for i in range(0, len(data), 16):
-    print("\t" + ", ".join("0x%02x" % b for b in data[i:i + 16]) + ",")
-print("};")
-PY
+  cd tinyhat-bootsplash-$pkgver
   local colors
   colors=$(python3 -c 'import sys, tomllib; d = tomllib.load(open(sys.argv[1], "rb")); print("-DHAT_COLOR=0x" + d["hat_color"][1:], "-DHAT_HIGHLIGHT_COLOR=0x" + d["hat_highlight_color"][1:])' /tinyhat/build/theme.toml)
-  cc $CFLAGS $colors -static -I. -o tinyhat-splash tinyhat-splash.c hat.c $LDFLAGS -lm
+  make PREFIX=/usr COLORS="$colors" SPLASH_LDFLAGS=-static
 }
 
 package() {
-  install -Dm755 tinyhat-splash "$pkgdir/usr/bin/tinyhat-splash"
+  cd tinyhat-bootsplash-$pkgver
+  make PREFIX=/usr DESTDIR="$pkgdir" install
   strip --strip-all "$pkgdir/usr/bin/tinyhat-splash"
 }

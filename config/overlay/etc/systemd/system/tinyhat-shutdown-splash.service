@@ -7,7 +7,7 @@ ConditionKernelCommandLine=quiet
 
 [Service]
 Type=forking
-ExecStart=@/usr/bin/tinyhat-splash @tinyhat-splash --shutdown
+ExecStart=@/usr/bin/tinyhat-splash @tinyhat-splash --shutdown /var/lib/tinyhat-bootsplash/active
 
 [Install]
 WantedBy=poweroff.target reboot.target halt.target
