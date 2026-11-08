@@ -1,6 +1,6 @@
 pkgname=mgba
 pkgver=0.10.5
-pkgrel=1
+pkgrel=2
 pkgdesc="Game Boy Advance emulator, SDL3 frontend"
 arch=(i686 x32)
 url="https://mgba.io/"
@@ -9,8 +9,14 @@ depends=(sdl3 libpng zlib)
 makedepends=(cmake ninja)
 source=("mgba-$pkgver.tar.gz::https://github.com/mgba-emu/mgba/archive/refs/tags/$pkgver.tar.gz"
         altenter.patch
-        sdl3.patch)
+        sdl3.patch
+        gamepad.patch
+        hidecursor.patch
+        scale3.patch)
 sha256sums=('91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14'
+            'SKIP'
+            'SKIP'
+            'SKIP'
             'SKIP'
             'SKIP')
 
@@ -18,6 +24,9 @@ prepare() {
   cd mgba-$pkgver
   patch -Np1 -i ../altenter.patch
   patch -Np1 -i ../sdl3.patch
+  patch -Np1 -i ../gamepad.patch
+  patch -Np1 -i ../hidecursor.patch
+  patch -Np1 -i ../scale3.patch
 }
 
 build() {

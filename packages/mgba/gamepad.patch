@@ -1,0 +1,69 @@
+--- a/src/platform/sdl/sdl-events.c	2026-11-08 15:40:08.584953186 +0100
++++ b/src/platform/sdl/sdl-events.c	2026-11-08 15:40:08.733953377 +0100
+@@ -646,6 +646,53 @@
+ 	mCoreThreadContinue(context);
+ }
+ 
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++static void _mSDLHandleGamepadButton(struct mCoreThread* context, const SDL_GamepadButtonEvent* event) {
++	int key;
++	switch (event->button) {
++	case SDL_GAMEPAD_BUTTON_SOUTH:
++		key = GBA_KEY_B;
++		break;
++	case SDL_GAMEPAD_BUTTON_EAST:
++		key = GBA_KEY_A;
++		break;
++	case SDL_GAMEPAD_BUTTON_LEFT_SHOULDER:
++		key = GBA_KEY_L;
++		break;
++	case SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER:
++		key = GBA_KEY_R;
++		break;
++	case SDL_GAMEPAD_BUTTON_START:
++		key = GBA_KEY_START;
++		break;
++	case SDL_GAMEPAD_BUTTON_BACK:
++		key = GBA_KEY_SELECT;
++		break;
++	case SDL_GAMEPAD_BUTTON_DPAD_UP:
++		key = GBA_KEY_UP;
++		break;
++	case SDL_GAMEPAD_BUTTON_DPAD_DOWN:
++		key = GBA_KEY_DOWN;
++		break;
++	case SDL_GAMEPAD_BUTTON_DPAD_LEFT:
++		key = GBA_KEY_LEFT;
++		break;
++	case SDL_GAMEPAD_BUTTON_DPAD_RIGHT:
++		key = GBA_KEY_RIGHT;
++		break;
++	default:
++		return;
++	}
++	mCoreThreadInterrupt(context);
++	if (event->down) {
++		context->core->addKeys(context->core, 1 << key);
++	} else {
++		context->core->clearKeys(context->core, 1 << key);
++	}
++	mCoreThreadContinue(context);
++}
++#endif
++
+ static void _mSDLHandleJoyHat(struct mCoreThread* context, struct mSDLPlayer* sdlContext, const struct SDL_JoyHatEvent* event) {
+ 	int allKeys = mInputMapHat(sdlContext->bindings, SDL_BINDING_BUTTON, event->hat, -1);
+ 	if (allKeys == 0) {
+@@ -726,6 +773,12 @@
+ 	case SDL_JOYHATMOTION:
+ 		_mSDLHandleJoyHat(context, sdlContext, &event->jhat);
+ 		break;
++#if SDL_VERSION_ATLEAST(3, 0, 0)
++	case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
++	case SDL_EVENT_GAMEPAD_BUTTON_UP:
++		_mSDLHandleGamepadButton(context, &event->gbutton);
++		break;
++#endif
+ 	case SDL_JOYAXISMOTION:
+ 		_mSDLHandleJoyAxis(context, sdlContext, &event->jaxis);
+ 		break;

@@ -1,14 +1,14 @@
 pkgname=zsnes
-pkgver=2.3.8
-pkgrel=2
+pkgver=2.3.9
+pkgrel=1
 pkgdesc="Super Nintendo emulator"
 arch=(i686)
 url="https://github.com/xyproto/zsnes"
 license=(GPL-2.0-or-later)
 depends=(sdl3 libglvnd libpng pipewire zlib)
 makedepends=(mesa)
-source=("zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/$pkgver.tar.gz")
-b2sums=('c44f6d169ff4051382cf3fc125d828edb510d78ea5b55fd6162519339e21944bd8867c3e17b75b2970591b2b0b2ca6a8d34673b8b5b7be6818a59e26e7f73f6c')
+source=("zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/v$pkgver.tar.gz")
+b2sums=('c1e8eb04b46a200413eed1ac49aa97bda952784feee9fbf2e02d3b34e0c2654d974816fa9a03f82a771fe7511a8a7b7c24f842e37483ff40bae1f8596c843e88')
 
 _zsnes_flags() {
   local flags=-O3
