@@ -476,6 +476,7 @@ libretro-nestopia = ["libretro-nestopia"]
 librsvg = ["librsvg"]
 libutf8proc = ["libutf8proc"]
 libxkbcommon = ["libxkbcommon"]
+libxml2 = ["libxml2"]
 love = ["love"]
 make = ["make"]
 mesa = ["mesa"]
@@ -2577,12 +2578,11 @@ libxau = { repo = "extra", version = "1.0.12-1", file = "libxau-1.0.12-1-aarch64
 libxcb = { repo = "extra", version = "1.17.0-1", file = "libxcb-1.17.0-1-aarch64.pkg.tar.xz", sha256 = "329a41249a09b4bb7f9b5f9694c1848c971188243cc1c0a479df4227800214c0" }
 libxcrypt = { repo = "core", version = "4.5.2-1", file = "libxcrypt-4.5.2-1-aarch64.pkg.tar.xz", sha256 = "e699156589561ac0c6bfc7da42891e3945647ecdd178b907f7742696fb01a0c5" }
 libxdmcp = { repo = "extra", version = "1.1.5-2", file = "libxdmcp-1.1.5-2-aarch64.pkg.tar.xz", sha256 = "aaf3575b4139a0ee675cbc15c03324d09892ded2188ac7cc326a8b36ef308496" }
-libxml2 = { repo = "core", version = "2.15.4-1", file = "libxml2-2.15.4-1-aarch64.pkg.tar.xz", sha256 = "c86239f383dc47736c4f6851063fb034edcda5ed59c7cafbe694e5f65e2d0da0" }
 lilv = { repo = "extra", version = "0.28.0-1", file = "lilv-0.28.0-1-aarch64.pkg.tar.xz", sha256 = "9e83a52165a501988ce86ce6dbe0dffde94a1b3607b5669a0a83a3d8a9207c68" }
 linux-api-headers = { repo = "core", version = "7.3-1", file = "linux-api-headers-7.3-1-aarch64.pkg.tar.xz", sha256 = "134ec46c9c6f5f639a2090d9b2e4b854cdab30444cdc2ba5bc104f84d86c075e" }
 linux-firmware-atheros = { repo = "core", version = "20260916-1", file = "linux-firmware-atheros-20260916-1-any.pkg.tar.xz", sha256 = "3585438c34b7014dd156d814104c8d2f60ea11d642a4a31354239e8602418708" }
 linux-firmware-broadcom = { repo = "core", version = "20260916-1", file = "linux-firmware-broadcom-20260916-1-any.pkg.tar.xz", sha256 = "92986151fa0765edf364d9536aa6b76210445c60c808e852aa586085891fe0d9" }
-linux-firmware-mediatek = { repo = "core", version = "20260916-1", file = "linux-firmware-mediatek-20260916-1-any.pkg.tar.xz", sha256 = "0b9a3876db35b50f0cdc898a4e5570ef1d6e153a7ec6ae6216ee03eaa9305b73" }
+linux-firmware-mediatek = { repo = "core", version = "20261019-1", file = "linux-firmware-mediatek-20261019-1-any.pkg.tar.xz", sha256 = "65188c7fb747a96004daa96929f38d4417e71edf5da8cd1a07617a81d67e0ca5" }
 linux-firmware-realtek = { repo = "core", version = "20260916-1", file = "linux-firmware-realtek-20260916-1-any.pkg.tar.xz", sha256 = "5f7f940945e7b6e8a968435d7eba4e61a75f606fd680f95efc4fd0c433f1c15f" }
 linux-firmware-whence = { repo = "core", version = "20260916-1", file = "linux-firmware-whence-20260916-1-any.pkg.tar.xz", sha256 = "52671ff7275c0a62029150ef700778da7e448f36b381e73da964751e8862bdbc" }
 llvm-libs = { repo = "extra", version = "23.1.4-1.1", file = "llvm-libs-23.1.4-1.1-aarch64.pkg.tar.xz", sha256 = "a9017c93ed68e50f37001c49924b2eaffa8b7c636961285c3c0f375f3b5ba860" }
@@ -2625,7 +2625,7 @@ patch = { repo = "core", version = "2.8.1-1", file = "patch-2.8.1-1-aarch64.pkg.
 pciutils = { repo = "core", version = "3.15.0-1", file = "pciutils-3.15.0-1-aarch64.pkg.tar.xz", sha256 = "57e4440f20a6ab0ea94a8c8725b569c1beac5d2952a793ddf80fdee1067c5a84" }
 pcre = { repo = "core", version = "8.45-5", file = "pcre-8.45-5-aarch64.pkg.tar.xz", sha256 = "a553cb6ea6ebf3b47133696c42c2d7adbc4be55c41666723590caf408d24b85b" }
 pcre2 = { repo = "core", version = "10.49-1", file = "pcre2-10.49-1-aarch64.pkg.tar.xz", sha256 = "8334385fdb4ed51807d6345cbe23c961ada160b589855d362c28127f5065a5a6" }
-picocom = { repo = "extra", version = "3.1-3", file = "picocom-3.1-3-aarch64.pkg.tar.xz", sha256 = "d6722ff603eb5c94cc573f31865b4d1e670dee53f7549b8ef9f92a315b7f6eb5" }
+picocom = { repo = "extra", version = "3.1-4", file = "picocom-3.1-4-aarch64.pkg.tar.xz", sha256 = "7c1d9b5b588f359331d1dea0f1852f6bc50b6a2550eb3dca1c548c200d9ef401" }
 pinentry = { repo = "core", version = "1.3.3-1", file = "pinentry-1.3.3-1-aarch64.pkg.tar.xz", sha256 = "a4e7aea581effe0bcd2c90ad7062597ac83bab88116cf31cda21940ca626a1c1" }
 pixman = { repo = "extra", version = "0.46.4-1.1", file = "pixman-0.46.4-1.1-aarch64.pkg.tar.xz", sha256 = "4d20f22998a75c9fe1d38c86cd6f4324120fc2bb02f4a749e4794daac6b87dd2" }
 pkgconf = { repo = "core", version = "3.0.10-1", file = "pkgconf-3.0.10-1-aarch64.pkg.tar.xz", sha256 = "402d9162ed197b648b416ba3bef587642fba6bd8e5445929dc6ca91be145a78f" }

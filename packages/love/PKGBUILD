@@ -15,6 +15,9 @@ source=("love::git+https://github.com/love2d/love#commit=$_commit")
 sha512sums=('6f1e23c9456ce83be9227a0036373da8c17e7082d76c871acb7db801d24ab30a23ce1a7c6f72f9a4c67793cef5ce0226e7b2316f59367242926f894ab74eae7f')
 
 build() {
+  case $CARCH in
+  i686) CFLAGS="$CFLAGS -msse2 -mfpmath=sse" CXXFLAGS="$CXXFLAGS -msse2 -mfpmath=sse" ;;
+  esac
   cmake -S love -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
     -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS -Wl,--start-group"
   ninja -C build
