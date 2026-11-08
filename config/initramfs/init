@@ -10,6 +10,7 @@ mount -t tmpfs -o mode=0755,nosuid,nodev run /run
 label=TINYHAT
 toram=auto
 persist=1
+reset=0
 mode=stick
 init=/usr/lib/systemd/systemd
 quiet=0
@@ -21,6 +22,7 @@ for arg in $(cat /proc/cmdline); do
 	tinyhat.toram | tinyhat.toram=1) toram=1 ;;
 	tinyhat.toram=0) toram=0 ;;
 	tinyhat.nopersist) persist=0 ;;
+	tinyhat.reset) reset=1 ;;
 	tinyhat.persist=*) mode=${arg#*=} ;;
 	tinyhat.shell) sh ;;
 	quiet) quiet=1 ;;
@@ -280,6 +282,12 @@ elif [ "$where" = file ] && find_savefile "$disk"; then
 	exitrd
 else
 	where=
+fi
+if [ "$reset" = 1 ] && [ -n "$where" ] && grep -q " /run/tinyhat/data " /proc/mounts; then
+	say "msg Erasing the saved packages, files and settings"
+	rm -rf /run/tinyhat/data/* /run/tinyhat/data/.[!.]*
+	: >/run/tinyhat/data/.tinyhat-seed
+	say "msg"
 fi
 if [ -n "$where" ] && [ -f /run/tinyhat/data/state/bootanim/hat ] && [ -p /run/tinyhat-splash ]; then
 	say "hat /run/tinyhat/lower /run/tinyhat/data/state/bootanim/hat"
