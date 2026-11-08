@@ -177,7 +177,9 @@ EOF
 		python3 scripts/distro.py pins
 	)
 	ignorepkgs=
+	upgradable=" $(python3 scripts/distro.py unignored | tr '\n' ' ') "
 	for p in $(printf '%s\n' $localpkgs $ignore | sort -u); do
+		case $upgradable in *" $p "*) continue ;; esac
 		inlock "$p" && ignorepkgs="$ignorepkgs $p"
 	done
 	sed -i "s|^#IgnorePkg *=.*|IgnorePkg =$ignorepkgs glfw-x11 glfw-wayland|" "$root/etc/pacman.conf"

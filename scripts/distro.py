@@ -52,6 +52,10 @@ def providers():
     return dict(section("providers"))
 
 
+def unignored():
+    return sorted(base for base, t in tables().items() if t.get("pacman_ignore") is False)
+
+
 def pins():
     return {base: [t["pin"], f"{base}-{t['pin']}-{t.get('pin_arch', 'i686')}.pkg.tar.zst", t["pin_sha256"]]
             for base, t in tables().items() if "pin" in t}
@@ -165,12 +169,14 @@ def main():
             print(name, h, url)
     elif cmd == "pins":
         print("\n".join(pins()))
+    elif cmd == "unignored":
+        print("\n".join(unignored()))
     elif cmd == "heavy":
         print(1 if tables().get(args[0], {}).get("heavy") else 0)
     elif cmd == "caps":
         print("\n".join(caps(args[0])))
     else:
-        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | caps ROOT | heavy BASE")
+        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE")
 
 
 if __name__ == "__main__":
