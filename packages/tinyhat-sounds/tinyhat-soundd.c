@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include <SDL3/SDL.h>
+#include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <fluidsynth.h>
@@ -439,8 +440,69 @@ static void typewriter(char c)
 	}
 }
 
+static bool plays_sound(const char *pid)
+{
+	static const char *const apps[] = {
+		"dosbox-x", "dosbox", "scummvm", "zsnes", "love", "lovr", "ft2-clone", "pt2-clone", "furnace",
+		"retroarch", "mednafen", "mgba", "mpv", "ffplay", "mpg123", "openmpt123", "aplay", "pw-play",
+		"pw-cat", "paplay", "fluidsynth", "timidity", "milkytracker", "schismtracker", "sunvox",
+	};
+	char path[300], name[32] = "";
+	snprintf(path, sizeof path, "/proc/%s/comm", pid);
+	auto f = fopen(path, "r");
+	if (!f)
+		return false;
+	bool hit = fgets(name, sizeof name, f) != nullptr;
+	fclose(f);
+	if (!hit)
+		return false;
+	name[strcspn(name, "\n")] = '\0';
+	for (size_t i = 0; i < SDL_arraysize(apps); i++)
+		if (!strcmp(name, apps[i]))
+			return true;
+	snprintf(path, sizeof path, "/proc/%s/fd", pid);
+	auto d = opendir(path);
+	if (!d)
+		return false;
+	hit = false;
+	for (struct dirent *e; !hit && (e = readdir(d));) {
+		char link[64];
+		snprintf(path, sizeof path, "/proc/%s/fd/%s", pid, e->d_name);
+		ssize_t n = readlink(path, link, sizeof link - 1);
+		if (n <= 0)
+			continue;
+		link[n] = '\0';
+		hit = !strncmp(link, "/dev/snd/pcmC", 13) && link[n - 1] == 'p';
+	}
+	closedir(d);
+	return hit && strcmp(name, "pipewire") && strcmp(name, "wireplumber");
+}
+
+static bool others_playing(void)
+{
+	static Uint64 checked;
+	static bool busy;
+	Uint64 now = SDL_GetTicks();
+	if (checked && now - checked < 1000)
+		return busy;
+	checked = now;
+	busy = false;
+	char self[16];
+	snprintf(self, sizeof self, "%d", (int)getpid());
+	auto d = opendir("/proc");
+	if (!d)
+		return false;
+	for (struct dirent *e; !busy && (e = readdir(d));)
+		if (e->d_name[0] >= '1' && e->d_name[0] <= '9' && strcmp(e->d_name, self))
+			busy = plays_sound(e->d_name);
+	closedir(d);
+	return busy;
+}
+
 static void key(char c, config cfg)
 {
+	if (others_playing())
+		return;
 	if (cfg.typewriter)
 		typewriter(c);
 	if (cfg.fart)
