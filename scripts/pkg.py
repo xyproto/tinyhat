@@ -460,9 +460,9 @@ def read_lock(lockfile):
 def link(src, dest):
     """Point dest at src with a relative symlink instead of storing a second copy. The sandboxes in
     makepkg.sh mount vendor/ at /vendor, so links from build/repo resolve inside them too."""
-    if os.path.lexists(dest):
-        os.unlink(dest)
-    os.symlink(os.path.relpath(os.path.realpath(src), os.path.dirname(os.path.abspath(dest))), dest)
+    tmp = f"{dest}.{os.getpid()}.tmp"
+    os.symlink(os.path.relpath(os.path.realpath(src), os.path.dirname(os.path.abspath(dest))), tmp)
+    os.replace(tmp, dest)
 
 
 _mirrored = None

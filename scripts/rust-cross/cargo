@@ -1,0 +1,47 @@
+#!/bin/sh
+t=/opt/tinyhat-rust/toolchain
+b=/opt/tinyhat-rust/bin
+export LD_LIBRARY_PATH=/host/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+export RUSTC=$t/bin/rustc RUSTDOC=$t/bin/rustdoc
+export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
+export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=cc
+export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=$b/hostcc
+export HOST_CC=$b/hostcc CC_x86_64_unknown_linux_gnu=$b/hostcc
+export PKG_CONFIG_ALLOW_CROSS=1
+case ${1-} in
+cbuild | cinstall | ctest | capi)
+	sub=$1
+	shift
+	set -- "$sub" --target aarch64-unknown-linux-gnu "$@"
+	;;
+esac
+"$t/bin/cargo" "$@"
+rc=$?
+dirs=${CARGO_TARGET_DIR:-target}
+prev=
+for a; do
+	case $prev in
+	--target-dir) dirs="$dirs $a" ;;
+	--manifest-path) dirs="$dirs $(dirname "$a")/target" ;;
+	esac
+	case $a in
+	--target-dir=*) dirs="$dirs ${a#--target-dir=}" ;;
+	--manifest-path=*) dirs="$dirs $(dirname "${a#--manifest-path=}")/target" ;;
+	esac
+	prev=$a
+done
+for d in $dirs; do
+	[ -d "$d/aarch64-unknown-linux-gnu" ] || continue
+	for p in "$d"/aarch64-unknown-linux-gnu/*/; do
+		[ -d "$p" ] || continue
+		n=$(basename "$p")
+		if [ ! -e "$d/$n" ]; then
+			ln -s "aarch64-unknown-linux-gnu/$n" "$d/$n"
+		elif [ ! -L "$d/$n" ]; then
+			for f in "$p"*; do
+				[ -f "$f" ] && ln -sf "../aarch64-unknown-linux-gnu/$n/${f##*/}" "$d/$n/${f##*/}"
+			done
+		fi
+	done
+done
+exit $rc
