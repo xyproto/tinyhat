@@ -36,6 +36,7 @@ path=/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
 libpath=
 personality=i686
 ignorearch=
+rustcross=
 case $arch in
 x32)
 	path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
@@ -47,6 +48,7 @@ aarch64)
 	conf=${conf%.conf}-aarch64.conf
 	personality=
 	ignorearch=--ignorearch
+	case $(uname -m) in x86_64) rustcross=1 path=/opt/tinyhat-rust/bin:$path ;; esac
 	;;
 x86_64)
 	seed=$top/build/buildroot-x86_64
@@ -133,6 +135,8 @@ if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
 	prio=0
 fi
 
+[ -z "$rustcross" ] || "$top/scripts/rust-cross.sh"
+
 distccd_pid=
 cleanup() {
 	[ -z "$distccd_pid" ] || kill "$distccd_pid" 2>/dev/null || true
@@ -197,6 +201,8 @@ bwrap_run() {
 		--setenv SOURCE_DATE_EPOCH "$epoch" \
 		--setenv TINYHAT_ARCH "$arch" \
 		--setenv TINYHAT_BOOTSTRAP "$bootstrap" \
+		${rustcross:+--ro-bind /usr /host/usr --ro-bind /usr/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2} \
+		${rustcross:+--ro-bind $top/build/rust-cross /opt/tinyhat-rust/toolchain --ro-bind $top/scripts/rust-cross /opt/tinyhat-rust/bin} \
 		"$@"
 }
 
