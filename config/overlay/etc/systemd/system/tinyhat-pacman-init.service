@@ -7,6 +7,7 @@ Type=oneshot
 RemainAfterExit=yes
 Nice=19
 IOSchedulingClass=idle
+TimeoutStartSec=15min
 ExecStart=/usr/lib/tinyhat/pacman-init
 ExecStartPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 

@@ -1,0 +1,7 @@
+[Unit]
+Description=Show a failed unit on the boot splash
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/tinyhat/bootfail %I

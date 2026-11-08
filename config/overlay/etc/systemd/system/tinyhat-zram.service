@@ -1,12 +1,13 @@
 [Unit]
 Description=Compressed swap in RAM
 DefaultDependencies=no
-Before=swap.target
+After=systemd-udev-trigger.service
 ConditionKernelCommandLine=!tinyhat.nozram
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+TimeoutStartSec=2min
 ExecStart=/usr/lib/tinyhat/zram
 
 [Install]

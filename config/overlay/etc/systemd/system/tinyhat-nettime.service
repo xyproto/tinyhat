@@ -4,7 +4,8 @@ After=tinyhat-persist.service dhcpcd.service
 
 [Service]
 Type=oneshot
-ExecStart=/usr/bin/tinyhat-nettime
+TimeoutStartSec=5min
+ExecStart=-/usr/bin/tinyhat-nettime
 
 [Install]
 WantedBy=multi-user.target

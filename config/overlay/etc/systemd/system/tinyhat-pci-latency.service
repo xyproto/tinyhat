@@ -5,7 +5,7 @@ ConditionArchitecture=|x86-64
 
 [Service]
 Type=oneshot
-ExecStart=/usr/lib/tinyhat/pci-latency
+ExecStart=-/usr/lib/tinyhat/pci-latency
 
 [Install]
 WantedBy=multi-user.target
