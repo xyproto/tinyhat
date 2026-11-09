@@ -29,6 +29,8 @@
 /tinyhat64.iso
 /tinyhat64x32.img
 /tinyhat64x32.iso
+/tinyhat-aarch64.img
+/tinyhat-rpi4.img
 /vendor/archlinux/
 /vendor/archlinux32/
 /vendor/pkg/
