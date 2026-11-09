@@ -996,12 +996,6 @@ excluded = true
 [qemacs]
 source = "sources"
 
-[qt6-base]
-excluded = true
-
-[qt6-declarative]
-excluded = true
-
 [rav1e]
 build_for = ["i686"]
 
