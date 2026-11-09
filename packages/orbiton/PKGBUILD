@@ -1,6 +1,6 @@
 pkgname=orbiton
-_commit=baf68c011e9fd2562e2115ef6a301b4aa0c2ad91
-pkgver=2.74.6.r72.gbaf68c0
+_commit=e88ba2a2d5a625c3a30a4b6bdd61668fbc12cc13
+pkgver=2.74.6.r73.ge88ba2a
 pkgrel=1
 pkgdesc="Editor and IDE"
 arch=(i686 x86_64 aarch64)
@@ -10,7 +10,7 @@ depends=(glibc)
 makedepends=(go-tinyhat)
 options=(!buildflags)
 source=("orbiton-$_commit.tar.gz::https://github.com/xyproto/orbiton/archive/$_commit.tar.gz")
-sha256sums=('e764399e65a0d14528064d61a605c8ec3c004631c8af729ae043280bbc9cc3b9')
+sha256sums=('4cd7b98e3a20e10f75649e852c9dfe0a509d1b904384bdad499ff6ebbe78920d')
 
 build() {
   cd orbiton-$_commit/v2
