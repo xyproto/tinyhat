@@ -48,7 +48,8 @@ def parse(path):
     epoch = base.get("epoch", ["0"])
     info = {"pkgbase": base.get("pkgbase"), "pkgnames": list(pkgs), "depends": {}, "provides": {}, "arch": {},
             "makedepends": get({}, "makedepends"), "constraints": constraints,
-            "version": f"{epoch[0] if epoch else '0'}:{base.get('pkgver', [''])[0]}"}
+            "version": f"{epoch[0] if epoch else '0'}:{base.get('pkgver', [''])[0]}",
+            "release": base.get("pkgrel", ["1"])[0]}
     for name, fields in pkgs.items():
         info["depends"][name] = get(fields, "depends")
         info["provides"][name] = get(fields, "provides")
@@ -419,8 +420,48 @@ def mode_file(base, mode):
     return f"$(B)/pkg/mode/{base}"
 
 
-def rule(lines, target, info, prereqs, args, log, buildroot="$(B)/.buildroot"):
-    lines.append(f"{target}: {buildroot} $(wildcard {info['dir']}/*) {' '.join(sorted(set(prereqs)))}".rstrip())
+VERS = os.path.join(TOP, "build", "pkg", "ver")
+VERSION_OF = {}
+
+
+def ver_file(kind, name, version):
+    d = os.path.join(VERS, kind)
+    os.makedirs(d, exist_ok=True)
+    path = os.path.join(d, name)
+    fresh = not os.path.exists(path)
+    distro.write_if_changed(path, f"{version}\n")
+    if fresh:
+        os.utime(path, (0, 0))
+    return f"$(B)/pkg/ver/{kind}/{name}"
+
+
+def declared(info, lockname):
+    seeded = {p["name"]: p["version"] for p in distro.locked(lockname)}
+    out = []
+    for d in all_deps(info) + list(info.get("checkdepends", [])):
+        name = re.split(r"[<>=]", d, maxsplit=1)[0]
+        if name in seeded and name not in info["pkgnames"]:
+            out.append(ver_file(f"seed-{lockname}", name, seeded[name]))
+    return out
+
+
+def dep_prereqs(prereqs):
+    vers, order = [], []
+    for p in prereqs:
+        m = re.match(r"^\$\(B\)/pkg/(i686|x32|boot|aarch64|x86_64)/(.+)$", p)
+        if m and (m.group(1), m.group(2)) in VERSION_OF:
+            vers.append(ver_file(m.group(1), m.group(2), VERSION_OF[(m.group(1), m.group(2))]))
+            order.append(p)
+        else:
+            vers.append(p)
+    return vers, order
+
+
+def rule(lines, target, info, prereqs, args, log, buildroot="$(B)/.buildroot", lockname="buildroot"):
+    vers, order = dep_prereqs(prereqs)
+    vers += declared(info, lockname)
+    inputs = f"$(filter-out %/tiny.lua,$(wildcard {info['dir']}/*))"
+    lines.append(f"{target}: {inputs} {' '.join(sorted(set(vers)))} | {buildroot} {' '.join(sorted(set(order)))}".rstrip())
     lines.append("\t@mkdir -p $(B)/log $(@D)")
     lines.append(f"\tscripts/makepkg.sh {' '.join(args)} >$(B)/log/{log}.log 2>&1 || "
                  f"{{ tail -40 $(B)/log/{log}.log; exit 1; }}")
@@ -515,6 +556,12 @@ def cmd_mk():
     for note in notes:
         print(f"mkpkgs.py: {note}", file=sys.stderr)
 
+    for info in infos:
+        for kind in ("i686", "x32", "boot"):
+            VERSION_OF[(kind, info["base"])] = f"{info['version']}-{info['release']}"
+    for b in prebuilt:
+        VERSION_OF[("i686", b)] = "prebuilt " + " ".join(
+            f"{n}={seed[0][n]['version']}" for n in sorted(by_base[b]["pkgnames"]) if n in seed[0])
     i686_plans = {}
     for info in infos:
         arches = base_arches(info)
@@ -527,7 +574,8 @@ def cmd_mk():
             i686_stamps.append(target)
             names_here = [n for n in info["pkgnames"] if set(info["arch"][n]) & {"i686", "any"}]
             names_here = [n for n in names_here if n in image] or names_here
-            lines.append(f"{target}: $(B)/.buildroot {mode_file(info['base'], 'prebuilt')}")
+            seeded = [ver_file("seed-buildroot", n, seed[0][n]["version"]) for n in names_here if n in seed[0]]
+            lines.append(f"{target}: {mode_file(info['base'], 'prebuilt')} {' '.join(seeded)} | $(B)/.buildroot".replace("  ", " "))
             lines.append("\t@mkdir -p $(@D)")
             lines.append(f"\tpython3 scripts/pkg.py prebuilt $(REPO) vendor/archlinux32/pkg.lock {' '.join(names_here)}")
             lines.append("\t@touch $@")
@@ -656,12 +704,14 @@ def arch_rules(lines, arch, by_base, prefs):
     plans = {b: (hard[b], make) for b, (_, make) in plans.items()}
     stamps = []
     for info in built:
+        VERSION_OF[(arch, info["base"])] = f"{info['version']}-{info['release']}"
+    for info in built:
         deps = plans[info["base"]][0]
         target = stamp(arch, info["base"])
         stamps.append(target)
         rule(lines, target, info, [stamp(arch, names[d]["base"]) for d in deps],
              ["--arch", arch, info["dir"]] + [f"{arch}/{d}" for d in deps], f"{arch}-{info['base']}",
-             f"$(B)/.buildroot-{arch}")
+             f"$(B)/.buildroot-{arch}", f"buildroot-{arch}")
     return stamps
 
 
