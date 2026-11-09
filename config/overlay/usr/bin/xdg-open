@@ -7,8 +7,8 @@ esac
 case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
 *.zip | *.jar | *.rar | *.7z | *.tar | *.tar.* | *.tgz | *.tbz | *.tbz2 | *.txz | *.tzst | *.gz | *.bz2 | *.xz | *.zst | *.lz | *.lz4 | *.lzma | *.lzo | *.lha | *.lzh | *.arj | *.cpio | *.deb | *.rpm)
 	exec foot mc "$1" ;;
-*.png | *.jpg | *.jpeg | *.gif | *.bmp | *.webp | *.tif | *.tiff | *.svg | *.ff)
-	exec imv "$1" ;;
+*.png | *.jpg | *.jpeg | *.jpe | *.jfif | *.gif | *.bmp | *.webp | *.tif | *.tiff | *.svg | *.ff | *.qoi | *.tga | *.xpm | *.xcf | *.pnm | *.ppm | *.pgm | *.pbm | *.ico | *.cur)
+	exec tinyhat-view "$1" ;;
 *.pdf)
 	exec zathura "$1" ;;
 *.fur | *.dmf | *.ftm | *.0cc | *.dnm | *.eft)
