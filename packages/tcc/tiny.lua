@@ -1,0 +1,17 @@
+return {
+  name = "tcc",
+  version = "0.9.27.r1337.gb39cbc70",
+  release = "1",
+  desc = "Tiny C Compiler (tinycc)",
+  url = "https://bellard.org/tcc/",
+  license = { "LGPL-2.0-or-later" },
+  arch = { "i686" },
+  source = { "git+https://repo.or.cz/tinycc.git#commit=b39cbc70c4ccc0540c2ef65010b8241caf005ad4" },
+  sha256 = { "1f247760aebaf9d093be38ee500d860a22bd6b5d091a4735046e4e172c4d5b5d" },
+  depends = { "glibc" },
+  makedepends = { "git" },
+  options = { "docs", "staticlibs" },
+  build_dir = "tinycc",
+  style = "configure",
+  configure = { "--prefix=/usr", "--docdir=/usr/share/doc/tcc", "--disable-static" },
+}

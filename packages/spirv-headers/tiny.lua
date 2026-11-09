@@ -1,0 +1,25 @@
+return {
+  name = "spirv-headers",
+  version = "1.4.363.0",
+  release = "1",
+  epoch = "1",
+  desc = "SPIR-V header files and registry",
+  url = "https://www.khronos.org/spirv/",
+  license = { "MIT" },
+  arch = { "any" },
+  groups = { "vulkan-devel" },
+  source = { "git+https://github.com/KhronosGroup/SPIRV-Headers#tag=vulkan-sdk-${version}" },
+  b2 = {
+    "f34ee9e4c663fe9b70a23991e7626a54b9066fc23659bfdc806e0747ba413b8b880bcc65c86a3fddff440b41f90b9cb0fb7734cb82a2673b5d56a2ac3ff157e6",
+  },
+  makedepends = { "cmake", "git", "ninja" },
+  build_dir = "SPIRV-Headers",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DCMAKE_INSTALL_SYSCONFDIR=/etc",
+    "-DCMAKE_SKIP_INSTALL_RPATH=ON",
+  },
+  install_license = { "LICENSE" },
+}

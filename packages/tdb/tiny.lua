@@ -1,0 +1,21 @@
+return {
+  name = "tdb",
+  version = "1.4.15",
+  release = "2",
+  desc = "Trivial Database similar to GDBM but allows simultaneous commits",
+  url = "https://tdb.samba.org/",
+  license = { "GPL-3.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "https://samba.org/ftp/tdb/tdb-${version}.tar.gz" },
+  b2 = {
+    "e867c8f4e9712c1a0ed10dd2d35e9cd51819ff722e4e710efde8b1ed8e20575e752d020fb0b6bc8658a720ea17491c07e30fa0b88c515bfb830f83bf128e6ee4",
+  },
+  depends = { "glibc" },
+  optdepends = { "python: for python bindings" },
+  makedepends = { "python", "docbook-xsl" },
+  libdepends = { "libxslt" },
+  provides = { "libtdb.so" },
+  build_dir = "tdb-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr", "--localstatedir=/var", "--disable-rpath-install", "--sysconfdir=/etc/samba" },
+}

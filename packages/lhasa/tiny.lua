@@ -1,0 +1,20 @@
+return {
+  name = "lhasa",
+  version = "0.6.0",
+  release = "1",
+  desc = "Free LZH/LHA archive tool",
+  url = "https://github.com/fragglet/lhasa",
+  license = { "ISC" },
+  arch = { "i686", "x32" },
+  source = { "https://github.com/fragglet/lhasa/releases/download/v${version}/lhasa-${version}.tar.gz" },
+  sha512 = {
+    "250ddd2a2660a1980ceea69ce5dca7006516f8af9b1b5f8077bfd10221ed67be2270218c924bf34c92e624cc5aeb039fab189feb7ec758873e38c26af63fa10e",
+  },
+  depends = { "glibc" },
+  provides = { "lha" },
+  conflicts = { "lha" },
+  build_dir = "lhasa-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+  install_license = { "COPYING.md" },
+}

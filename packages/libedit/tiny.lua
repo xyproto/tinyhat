@@ -1,0 +1,20 @@
+return {
+  name = "libedit",
+  version = "20260512_3.1",
+  release = "1",
+  desc = "Command line editor library providing generic line editing, history, and tokenization functions",
+  url = "https://thrysoee.dk/editline/",
+  license = { "BSD-3-Clause" },
+  arch = { "i686", "x32" },
+  source = { "https://thrysoee.dk/editline//libedit-20260512-3.1.tar.gz" },
+  sha256 = { "432d5e7ea8b0116dd39f2eca7bc11d0eed77faa6b77ea526ace89907c23ea4a0" },
+  depends = { "glibc", "libncursesw.so", "ncurses" },
+  build_dir = "libedit-20260512-3.1",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+  make_args = { "V=1" },
+  install = {
+    { "ChangeLog", "usr/share/doc/libedit/" },
+  },
+  install_license = { "COPYING" },
+}

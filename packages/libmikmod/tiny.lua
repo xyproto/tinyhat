@@ -1,0 +1,20 @@
+return {
+  name = "libmikmod",
+  version = "3.3.15",
+  release = "1",
+  desc = "Module player library supporting many formats, including MOD, S3M, IT and XM",
+  url = "https://mikmod.sourceforge.net",
+  license = { "LGPL-2.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "git+https://git.code.sf.net/p/mikmod/mikmod#tag=libmikmod-${version}" },
+  b2 = {
+    "2f1497fe944498ecad3e839c8fd9395916e92a3299ea99610ae5165d7388ec57e1beb64c2e9b3d65725ea4572cf571caf8a9e65d266d5e44348f59424bf73349",
+  },
+  depends = { "glibc", "sh" },
+  makedepends = { "cmake", "git", "ninja" },
+  libdepends = { "alsa-lib", "libpulse" },
+  provides = { "libmikmod.so" },
+  build_dir = "mikmod/libmikmod",
+  style = "cmake",
+  configure = { "-DCMAKE_BUILD_TYPE=None", "-DCMAKE_INSTALL_PREFIX=/usr", "-DENABLE_DL=1" },
+}

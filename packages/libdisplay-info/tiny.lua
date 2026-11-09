@@ -1,0 +1,20 @@
+return {
+  name = "libdisplay-info",
+  version = "0.4.0",
+  release = "1",
+  desc = "EDID and DisplayID library",
+  url = "https://gitlab.freedesktop.org/emersion/libdisplay-info",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = {
+    "https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/${version}/libdisplay-info-${version}.tar.gz",
+  },
+  sha256 = { "787b58aec473830b0030251ba2b880560b4b3853dc5d6961a6e9701abae29b55" },
+  depends = { "glibc" },
+  makedepends = { "meson", "ninja", "python" },
+  libdepends = { "hwdata" },
+  build_dir = "libdisplay-info-${version}",
+  style = "meson",
+  configure = { "--auto-features=auto", "--prefix=/usr", "--buildtype=minsize" },
+  install_license = { "LICENSE" },
+}

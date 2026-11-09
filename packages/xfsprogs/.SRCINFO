@@ -1,6 +1,6 @@
 pkgbase = xfsprogs
 	pkgdesc = XFS filesystem utilities
-	pkgver = 7.2.0
+	pkgver = 7.2.1
 	pkgrel = 1
 	url = https://xfs.wiki.kernel.org
 	arch = i686
@@ -11,17 +11,20 @@ pkgbase = xfsprogs
 	makedepends = icu
 	depends = device-mapper
 	depends = libedit
-	depends = libinih
 	depends = liburcu
 	depends = sh
 	depends = util-linux-libs
 	optdepends = icu: for xfs_scrub
 	optdepends = python-dbus: for xfs_scrub_all script
 	optdepends = smtp-forwarder: for xfs_scrub_fail script
-	source = git+https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git?signed#tag=v7.2.0
+	source = git+https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git?signed#tag=v7.2.1
+	source = xfsprogs-toml-config.patch
+	source = xfsprogs-32bit.patch
 	validpgpkeys = AE1B2A9562721A6FC4307C1F46A7EA18AC33E108
 	validpgpkeys = 2B8185919E8D248981869DED20AE1692E13DDEE0
 	validpgpkeys = 4020459E58C1A52511F5399113F703E6C11CF6F0
-	b2sums = c5f3b99262bef358dac18729da3a8926a48e9dc08077258c65adb05cc578ade963a2a04d2db4f3ecbba9f0be9ceaa08b811a363f1c8ade192ace47f5b54666e2
+	b2sums = SKIP
+	b2sums = 68221b6d8b01aaf4a6d93d2191fc86ae0516ce2c14c5512305d087f4c8584e16b4a000bfd7a5d80f9f3bb4b8bafc2089c74ab03c7f14077a7bdc752f285fed73
+	b2sums = e50cdc207d7db0270cc86b8604de132244a7ccf4322dea6aa06a5672109f5ea9b88c66566eb20d64b88e613d9ff460ebf9ec792b43440bcfa770c7468493bb1c
 
 pkgname = xfsprogs

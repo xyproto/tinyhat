@@ -1,0 +1,15 @@
+return {
+  name = "libmnl",
+  version = "1.0.5",
+  release = "2",
+  desc = "Minimalistic user-space library oriented to Netlink developers.",
+  url = "https://www.netfilter.org/projects/libmnl/",
+  license = { "LGPL2.1" },
+  arch = { "i686", "x32" },
+  source = { "https://www.netfilter.org/projects/libmnl/files/libmnl-${version}.tar.bz2" },
+  sha256 = { "274b9b919ef3152bfb3da3a13c950dd60d6e2bcd54230ffeca298d03b40d0525" },
+  depends = { "glibc" },
+  build_dir = "libmnl-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}

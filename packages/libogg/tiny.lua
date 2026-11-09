@@ -1,0 +1,21 @@
+return {
+  name = "libogg",
+  version = "1.3.6",
+  release = "1",
+  desc = "Ogg bitstream and framing library",
+  url = "https://www.xiph.org/ogg/",
+  license = { "BSD" },
+  arch = { "i686", "x32" },
+  source = { "git+https://github.com/xiph/ogg.git?signed#tag=v${version}" },
+  sha256 = { "2e83a0b16d3863e87f3d9372686b00fa0bf62a2641b458b929185103645fdf35" },
+  depends = { "glibc" },
+  makedepends = { "cmake", "git", "ninja" },
+  provides = { "libogg.so" },
+  build_dir = "ogg",
+  style = "cmake",
+  configure = { "-DCMAKE_INSTALL_PREFIX=/usr", "-DBUILD_SHARED_LIBS=ON" },
+  install = {
+    { "ogg.m4", "usr/share/aclocal/" },
+  },
+  install_license = { "COPYING" },
+}

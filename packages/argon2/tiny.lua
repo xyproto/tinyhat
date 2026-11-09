@@ -1,0 +1,18 @@
+return {
+  name = "argon2",
+  version = "20190702",
+  release = "7",
+  desc = "A password-hashing function (reference C implementation)",
+  url = "https://github.com/P-H-C/phc-winner-argon2",
+  license = { "Apache", "custom:CC0" },
+  arch = { "i686", "x32" },
+  source = { "https://github.com/P-H-C/phc-winner-argon2/archive/${version}/argon2-${version}.tar.gz" },
+  sha256 = { "daf972a89577f8772602bf2eb38b6a3dd3d922bf5724d45e7f9589b5e830442c" },
+  depends = { "glibc" },
+  provides = { "libargon2.so" },
+  build_dir = "phc-winner-argon2-${version}",
+  style = "make",
+  make_args = { "ARGON2_VERSION=20190702", "OPTTARGET=none", "LIBRARY_REL=lib" },
+  install_args = { "ARGON2_VERSION=20190702", "OPTTARGET=none", "LIBRARY_REL=lib" },
+  install_license = { "LICENSE" },
+}

@@ -1,0 +1,16 @@
+return {
+  name = "libraw1394",
+  version = "2.1.2",
+  release = "4",
+  desc = "Provides an API to the Linux IEEE1394 (FireWire) driver",
+  url = "https://ieee1394.wiki.kernel.org/index.php/Main_Page",
+  license = { "LGPL-2.1-only" },
+  arch = { "i686", "x32" },
+  source = { "https://www.kernel.org/pub/linux/libs/ieee1394/libraw1394-${version}.tar.xz" },
+  sha256 = { "03ccc69761d22c7deb1127fc301010dd13e70e44bb7134b8ff0d07590259a55e" },
+  depends = { "glibc" },
+  libdepends = { "pkgconfig" },
+  build_dir = "libraw1394-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}

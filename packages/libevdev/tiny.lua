@@ -1,0 +1,21 @@
+return {
+  name = "libevdev",
+  version = "1.14.0",
+  release = "1",
+  desc = "Wrapper library for evdev devices",
+  url = "https://www.freedesktop.org/wiki/Software/libevdev/",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "https://freedesktop.org/software/libevdev/libevdev-${version}.tar.xz" },
+  sha512 = {
+    "527a643ec805618f04967c88105347966fc54726edbd884631255eb8f71cd4fdcb661b2051cd724a979372dbc5a7e47c8ab68098fa8cd3fcdd9a5413db7e062c",
+  },
+  depends = { "glibc" },
+  makedepends = { "python", "meson" },
+  libdepends = { "check", "valgrind" },
+  provides = { "libevdev.so" },
+  build_dir = "libevdev-${version}",
+  style = "meson",
+  configure = { "-Ddocumentation=disabled" },
+  install_license = { "COPYING" },
+}

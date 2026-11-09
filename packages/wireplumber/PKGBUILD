@@ -9,7 +9,7 @@ pkgname=(
   wireplumber-system-services
 )
 pkgver=0.5.19
-pkgrel="1"
+pkgrel="2"
 pkgdesc="Session / policy manager implementation for PipeWire"
 url="https://pipewire.pages.freedesktop.org/wireplumber/"
 arch=(i686 x32 x86_64 aarch64)
@@ -50,6 +50,7 @@ build() {
     -D system-lua=true
     -D systemd-system-service=true
   )
+  [[ $CARCH != aarch64 ]] || meson_options+=(-D doc=disabled)
 
   arch-meson $pkgbase build "${meson_options[@]}"
   meson compile -C build
@@ -103,7 +104,9 @@ package_wireplumber() {
     _pick libw usr/include
     _pick libw usr/share/gir-1.0
 
-    _pick docs usr/share/doc/wireplumber/html
+    if [[ -d usr/share/doc/wireplumber/html ]]; then
+      _pick docs usr/share/doc/wireplumber/html
+    fi
 
     _pick system usr/lib/systemd/system
   )
@@ -130,7 +133,9 @@ package_libwireplumber() {
 package_wireplumber-docs() {
   pkgdesc+=" - documentation"
 
-  mv docs/* "$pkgdir"
+  if [[ -d docs ]]; then
+    mv docs/* "$pkgdir"
+  fi
 
   install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE
 }

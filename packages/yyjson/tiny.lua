@@ -1,0 +1,30 @@
+return {
+  name = "yyjson",
+  version = "0.13.0",
+  release = "1",
+  desc = "A high performance JSON library written in ANSI C",
+  url = "https://ibireme.github.io/yyjson",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = {
+    "yyjson-${version}.tar.gz::https://github.com/ibireme/yyjson/archive/refs/tags/${version}.tar.gz",
+  },
+  sha256 = { "34e0f62a2bc11ab20d601e8ca1cc2b2079503aa45119a19133d89d19b94a0fae" },
+  depends = { "glibc" },
+  makedepends = { "cmake" },
+  provides = { "libyyjson.so" },
+  build_dir = "yyjson-${version}",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE=None",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DYYJSON_BUILD_TESTS=ON",
+    "-Wno-dev",
+  },
+  install = {
+    { "README.md", "usr/share/doc/yyjson/README.md" },
+    { "doc/*.md", "usr/share/doc/yyjson/" },
+  },
+  install_license = { "LICENSE" },
+}

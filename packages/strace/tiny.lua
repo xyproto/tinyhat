@@ -1,0 +1,16 @@
+return {
+  name = "strace",
+  version = "7.2",
+  release = "1",
+  desc = "A diagnostic, debugging and instructional userspace tracer",
+  url = "https://strace.io/",
+  license = { "LGPL-2.1-or-later" },
+  arch = { "i686", "x32" },
+  source = { "https://github.com/strace/strace/releases/download/v${version}/strace-${version}.tar.xz" },
+  sha256 = { "4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5" },
+  depends = { "glibc", "libunwind" },
+  build_dir = "strace-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr", "--with-libunwind", "--enable-mpers=check" },
+  install_license = { "COPYING" },
+}

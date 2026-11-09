@@ -1,0 +1,18 @@
+pkgname=tinyhat-view
+pkgver=1
+pkgrel=1
+pkgdesc="Tiny Hat image viewer"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat"
+license=(BSD-3-Clause)
+depends=(glibc sdl3 sdl3_image)
+source=(tinyhat-view.c)
+sha256sums=(SKIP)
+
+build() {
+  cc -std=c23 $CFLAGS -o tinyhat-view tinyhat-view.c $LDFLAGS -lSDL3 -lSDL3_image -lm
+}
+
+package() {
+  install -Dm755 tinyhat-view "$pkgdir/usr/bin/tinyhat-view"
+}

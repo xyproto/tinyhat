@@ -1,0 +1,21 @@
+return {
+  name = "fennel",
+  version = "1.6.1",
+  release = "3",
+  desc = "A Lua Lisp language",
+  url = "https://fennel-lang.org",
+  license = { "MIT" },
+  arch = { "any" },
+  source = { "fennel::git+https://git.sr.ht/~technomancy/fennel#tag=${version}" },
+  sha256 = { "98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd" },
+  depends = { "lua54" },
+  makedepends = { "git" },
+  build_dir = "fennel",
+  style = "make",
+  make_args = { "LUA=lua5.4", "build" },
+  install_args = { "LUA=lua5.4" },
+  install = {
+    { "*.md", "usr/share/doc/fennel/" },
+  },
+  install_license = { "LICENSE" },
+}

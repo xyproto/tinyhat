@@ -1,0 +1,23 @@
+return {
+  name = "highway",
+  version = "1.4.0",
+  release = "1",
+  desc = "A C++ library that provides portable SIMD/vector intrinsics",
+  url = "https://github.com/google/highway/",
+  license = { "Apache-2.0 OR BSD-3-Clause" },
+  arch = { "i686", "x32" },
+  source = { "https://github.com/google/highway/archive/${version}/highway-${version}.tar.gz" },
+  sha256 = { "e72241ac9524bb653ae52ced768b508045d4438726a303f10181a38f764a453c" },
+  depends = { "glibc", "gtest", "libgcc", "libstdc++" },
+  makedepends = { "cmake" },
+  build_dir = "highway-${version}",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE:STRING=None",
+    "-DCMAKE_INSTALL_PREFIX:PATH=/usr",
+    "-DBUILD_SHARED_LIBS:BOOL=ON",
+    "-DHWY_SYSTEM_GTEST:BOOL=ON",
+    "-Wno-dev",
+  },
+  install_license = { "LICENSE" },
+}

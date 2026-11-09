@@ -1,0 +1,21 @@
+return {
+  name = "libvdpau",
+  version = "1.5",
+  release = "4",
+  desc = "Nvidia VDPAU library",
+  url = "https://www.freedesktop.org/wiki/Software/VDPAU/",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "git+https://gitlab.freedesktop.org/vdpau/libvdpau.git#tag=${version}" },
+  b2 = {
+    "d8f0e7d6290d51fd764f2c29443fef52aea8a6ae5c3c3a91ca2a9ed788cd74972189c20095c239b0aab3dcece54acc320be95dfe5ec65902381b8f3bfe80ac3a",
+  },
+  depends = { "glibc", "libx11", "libxext" },
+  optdepends = { "libvdpau-va-gl: driver using VAAPI", "nvidia-utils: driver for NVIDIA" },
+  makedepends = { "git", "meson" },
+  libdepends = { "xorgproto" },
+  provides = { "libvdpau.so" },
+  build_dir = "libvdpau",
+  style = "meson",
+  install_license = { "COPYING" },
+}

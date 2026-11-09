@@ -1,0 +1,16 @@
+return {
+  name = "sed",
+  version = "4.10",
+  release = "2",
+  desc = "GNU stream editor",
+  url = "https://www.gnu.org/software/sed/",
+  license = { "GPL-3.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "https://ftp.gnu.org/pub/gnu/sed/sed-${version}.tar.xz" },
+  sha256 = { "b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7" },
+  depends = { "glibc", "acl" },
+  makedepends = { "gettext" },
+  build_dir = "sed-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}
