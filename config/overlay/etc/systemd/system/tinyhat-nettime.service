@@ -1,6 +1,6 @@
 [Unit]
 Description=Tiny Hat: set the timezone and clock from the network
-After=tinyhat-persist.service dhcpcd.service
+After=tinyhat-persist.service systemd-networkd.service
 
 [Service]
 Type=oneshot

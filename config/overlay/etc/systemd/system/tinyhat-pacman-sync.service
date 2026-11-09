@@ -7,7 +7,7 @@ Type=exec
 Nice=19
 CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
-ExecStart=/usr/lib/tinyhat/pacman-sync
+ExecStart=/usr/bin/tinyionice -c 3 /usr/lib/tinyhat/pacman-sync
 ExecStopPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 
 [Install]
