@@ -2,7 +2,7 @@
 
 pkgname=netsurfy
 pkgver=1.0.4
-pkgrel=2
+pkgrel=3
 pkgdesc='Lightweight and fast web browser, forked from NetSurf'
 arch=(i686 x32)
 url='https://github.com/xyproto/netsurfy'
