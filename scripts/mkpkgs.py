@@ -422,6 +422,7 @@ def mode_file(base, mode):
 
 VERS = os.path.join(TOP, "build", "pkg", "ver")
 VERSION_OF = {}
+NAME_BASE = {}
 
 
 def ver_file(kind, name, version):
@@ -436,12 +437,18 @@ def ver_file(kind, name, version):
 
 
 def declared(info, lockname):
+    kind = lockname.partition("-")[2] or "i686"
     seeded = {p["name"]: p["version"] for p in distro.locked(lockname)}
     out = []
     for d in all_deps(info) + list(info.get("checkdepends", [])):
         name = re.split(r"[<>=]", d, maxsplit=1)[0]
-        if name in seeded and name not in info["pkgnames"]:
-            out.append(ver_file(f"seed-{lockname}", name, seeded[name]))
+        if name in info["pkgnames"]:
+            continue
+        base = NAME_BASE.get(kind, {}).get(name)
+        if base is not None and (kind, base) in VERSION_OF:
+            out.append(ver_file(kind, name, VERSION_OF[(kind, base)]))
+        elif name in seeded:
+            out.append(ver_file(kind, name, seeded[name]))
     return out
 
 
@@ -559,6 +566,8 @@ def cmd_mk():
     for info in infos:
         for kind in ("i686", "x32", "boot"):
             VERSION_OF[(kind, info["base"])] = f"{info['version']}-{info['release']}"
+            for n in info["pkgnames"]:
+                NAME_BASE.setdefault(kind, {})[n] = info["base"]
     for b in prebuilt:
         VERSION_OF[("i686", b)] = "prebuilt " + " ".join(
             f"{n}={seed[0][n]['version']}" for n in sorted(by_base[b]["pkgnames"]) if n in seed[0])
@@ -705,6 +714,8 @@ def arch_rules(lines, arch, by_base, prefs):
     stamps = []
     for info in built:
         VERSION_OF[(arch, info["base"])] = f"{info['version']}-{info['release']}"
+        for n in info["pkgnames"]:
+            NAME_BASE.setdefault(arch, {})[n] = info["base"]
     for info in built:
         deps = plans[info["base"]][0]
         target = stamp(arch, info["base"])
