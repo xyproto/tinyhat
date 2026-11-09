@@ -108,7 +108,9 @@ type snapshot struct {
 	CPU, Mem, Load   []float64
 	Info             string
 	Images           []imageRow
+	Steps            []string
 	Logs             []string
+	LogName          string
 	Progress         float64
 }
 
@@ -123,6 +125,131 @@ type sampler struct {
 	ccacheAt            time.Time
 	btime               float64
 	session, active     float64
+	imgMu               sync.Mutex
+	imgState            map[string]string
+	imgBusy             atomic.Bool
+	imgAt               time.Time
+}
+
+func (s *sampler) checkImages() {
+	defer s.imgBusy.Store(false)
+	state := map[string]string{}
+	args := []string{"-n", "19", "make", "-q"}
+	for _, pat := range []string{"*.lock", "*.toml", "*.mk", "*.txt"} {
+		matches, _ := filepath.Glob(filepath.Join(bdir, pat))
+		for _, m := range matches {
+			args = append(args, "-o", rel(m))
+		}
+	}
+	for _, img := range imageNames {
+		if _, ok := mtime(filepath.Join(top, img)); !ok {
+			state[img] = "missing"
+			continue
+		}
+		cmd := exec.Command("nice", append(args, img)...)
+		cmd.Dir = top
+		for _, e := range os.Environ() {
+			if !strings.HasPrefix(e, "MAKEFLAGS=") && !strings.HasPrefix(e, "MFLAGS=") && !strings.HasPrefix(e, "MAKELEVEL=") {
+				cmd.Env = append(cmd.Env, e)
+			}
+		}
+		err := cmd.Run()
+		var exit *exec.ExitError
+		switch {
+		case err == nil:
+			state[img] = "up to date"
+		case errors.As(err, &exit) && exit.ExitCode() == 1:
+			state[img] = "outdated"
+		default:
+			state[img] = "unknown"
+		}
+	}
+	s.imgMu.Lock()
+	s.imgState = state
+	s.imgMu.Unlock()
+}
+
+func fdTarget(pid string, fd int) string {
+	t, err := os.Readlink(fmt.Sprintf("/proc/%s/fd/%d", pid, fd))
+	if err != nil || !strings.HasPrefix(t, "/") {
+		return ""
+	}
+	if fi, err := os.Stat(t); err != nil || !fi.Mode().IsRegular() {
+		return ""
+	}
+	return t
+}
+
+func tail(path string, n int) []string {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil
+	}
+	defer f.Close()
+	if fi, err := f.Stat(); err == nil && fi.Size() > 65536 {
+		f.Seek(fi.Size()-65536, io.SeekStart)
+	}
+	b, _ := io.ReadAll(f)
+	lines := strings.Split(strings.TrimRight(string(b), "\n"), "\n")
+	if len(lines) > n {
+		lines = lines[len(lines)-n:]
+	}
+	return lines
+}
+
+func rel(p string) string {
+	if r, err := filepath.Rel(top, p); err == nil && !strings.HasPrefix(r, "..") {
+		return r
+	}
+	return p
+}
+
+func stepFor(a []string) string {
+	arg := func(i int) string {
+		if i < len(a) {
+			return a[i]
+		}
+		return ""
+	}
+	base := filepath.Base(a[0])
+	script := ""
+	if (base == "sh" || base == "bash" || base == "python3" || base == "python") && len(a) > 1 {
+		script = filepath.Base(a[1])
+		a = a[1:]
+	} else if strings.HasPrefix(a[0], "scripts/") {
+		script = base
+	}
+	switch {
+	case script == "mkkernel.sh":
+		return "compiling the " + arg(2) + " kernel"
+	case script == "mkrootfs.sh":
+		return "assembling " + rel(arg(2)) + " (" + arg(1) + " stage)"
+	case script == "mkinitramfs.sh":
+		return "making the initramfs " + rel(arg(1))
+	case script == "mkimg.sh" || script == "mkimg-aarch64.sh" || script == "mkimg-rpi.sh":
+		return "writing the disk image " + rel(arg(1))
+	case script == "mkiso.sh":
+		return "making an ISO from " + rel(arg(1))
+	case script == "mklicenses.py":
+		return "collecting license files"
+	case script == "elfshrink.py":
+		return "shrinking programs with UPX and sstrip"
+	case script == "fwprune.py":
+		return "pruning firmware"
+	case script == "pkg.py" && arg(1) == "extract":
+		return "unpacking packages into " + rel(arg(4))
+	case script == "pkg.py" && arg(1) == "fetch":
+		return "downloading packages"
+	case base == "mksquashfs":
+		return "squashing " + rel(arg(1)) + " into " + rel(arg(2))
+	case base == "upx":
+		return "packing programs with UPX"
+	case base == "VBoxManage" || base == "qemu-img":
+		return "converting a disk image"
+	case strings.HasPrefix(base, "qemu-system-"):
+		return "QEMU test running (" + strings.TrimPrefix(base, "qemu-system-") + ")"
+	}
+	return ""
 }
 
 func push(s []float64, v float64) []float64 {
@@ -240,9 +367,12 @@ func (s *sampler) sample() *snapshot {
 	running := [3]bool{}
 	ksecs := [3]float64{}
 	jobs := map[string]job{}
+	steps := map[string]float64{}
+	var logFiles []string
+	jobLog, jobLogAt := "", 0.0
 	for _, p := range procs {
 		a := p.argv
-		if a[0] == "make" || (len(a) > 1 && a[0] == "python3" && a[1] == "scripts/failfast.py") {
+		if (a[0] == "make" && !slices.Contains(a, "-q") && !slices.Contains(a, "-n")) || (len(a) > 1 && a[0] == "python3" && a[1] == "scripts/failfast.py") {
 			if t := s.procStart(p.pid); start == 0 || t < start {
 				start = t
 			}
@@ -262,6 +392,24 @@ func (s *sampler) sample() *snapshot {
 			key := arch + "/" + pkg
 			if old, ok := jobs[key]; !ok || secs > old.Secs {
 				jobs[key] = job{arch, pkg, secs}
+			}
+		}
+		if step := stepFor(a); step != "" {
+			secs := now() - s.procStart(p.pid)
+			if old, ok := steps[step]; !ok || secs > old {
+				steps[step] = secs
+			}
+		}
+		if len(a) > 1 && a[0] == "python3" && a[1] == "scripts/failfast.py" {
+			if t := fdTarget(p.pid, 1); t != "" && !slices.Contains(logFiles, t) {
+				logFiles = append(logFiles, t)
+			}
+		}
+		if len(a) > 2 && strings.HasSuffix(a[1], "scripts/makepkg.sh") {
+			if t := fdTarget(p.pid, 1); t != "" {
+				if mt, ok := mtime(t); ok && mt > jobLogAt {
+					jobLog, jobLogAt = t, mt
+				}
 			}
 		}
 		if len(a) > 3 && strings.HasSuffix(a[1], "scripts/mkkernel.sh") {
@@ -284,6 +432,10 @@ func (s *sampler) sample() *snapshot {
 	}
 	start = s.session
 	snap.Start = start
+	for step, secs := range steps {
+		snap.Steps = append(snap.Steps, fmt.Sprintf("%-60s %3d min %02d s", step, int(secs)/60, int(secs)%60))
+	}
+	slices.Sort(snap.Steps)
 	for _, j := range jobs {
 		snap.Jobs = append(snap.Jobs, j)
 	}
@@ -452,52 +604,60 @@ func (s *sampler) sample() *snapshot {
 	}
 	snap.Info = s.ccache + "     " + disk
 
-	for _, name := range []string{"x86.log", "aarch64.log"} {
-		p := filepath.Join(bdir, name)
-		t, ok := mtime(p)
-		if !ok || (start > 0 && t < start) {
-			continue
+	if len(logFiles) == 0 {
+		newestLog := 0.0
+		if es, err := os.ReadDir(bdir); err == nil {
+			for _, e := range es {
+				if !strings.HasSuffix(e.Name(), ".log") {
+					continue
+				}
+				p := filepath.Join(bdir, e.Name())
+				if t, ok := mtime(p); ok && t > newestLog {
+					newestLog = t
+					logFiles = []string{p}
+				}
+			}
 		}
-		f, err := os.Open(p)
-		if err != nil {
-			continue
-		}
-		if fi, err := f.Stat(); err == nil && fi.Size() > 65536 {
-			f.Seek(fi.Size()-65536, io.SeekStart)
-		}
-		b, _ := io.ReadAll(f)
-		f.Close()
-		lines := strings.Split(strings.TrimRight(string(b), "\n"), "\n")
-		if len(lines) > 80 {
-			lines = lines[len(lines)-80:]
-		}
-		snap.Logs = append(snap.Logs, lines...)
 	}
+	var names []string
+	for _, p := range logFiles {
+		snap.Logs = append(snap.Logs, tail(p, 80)...)
+		names = append(names, rel(p))
+	}
+	if jobLog != "" {
+		snap.Logs = append(snap.Logs, "", "--- "+rel(jobLog)+" ---")
+		snap.Logs = append(snap.Logs, tail(jobLog, 12)...)
+		names = append(names, rel(jobLog))
+	}
+	snap.LogName = strings.Join(names, ", ")
 	for _, l := range snap.Logs {
 		if strings.Contains(l, "failfast.py: stopping") || strings.Contains(l, "*** ") {
 			snap.Failed = true
 		}
 	}
-	inputs := map[string][2]string{
-		"tinyhat32.img":       {"ROOTFS_I686_STAMPS", "vmlinuz"},
-		"tinyhat64x32.img":    {"ROOTFS_X32_STAMPS", "vmlinuz-x32"},
-		"tinyhat64.img":       {"X86_64_STAMPS", "vmlinuz-x32"},
-		"tinyhat-aarch64.img": {"AARCH64_STAMPS", "Image-arm64"},
-		"tinyhat-rpi4.img":    {"AARCH64_STAMPS", "Image-arm64"},
+	if time.Since(s.imgAt) > 30*time.Second && s.imgBusy.CompareAndSwap(false, true) {
+		s.imgAt = time.Now()
+		go s.checkImages()
+	}
+	s.imgMu.Lock()
+	state := s.imgState
+	s.imgMu.Unlock()
+	writing := map[string]bool{}
+	for step := range steps {
+		if strings.HasPrefix(step, "writing the disk image ") {
+			writing[strings.TrimPrefix(step, "writing the disk image ")] = true
+		}
 	}
 	for _, img := range imageNames {
-		row := imageRow{Name: img, State: "missing"}
+		row := imageRow{Name: img, State: "checking"}
+		if st, ok := state[img]; ok {
+			row.State = st
+		}
 		if t, ok := mtime(filepath.Join(top, img)); ok {
-			newestInput, _ := stat(filepath.Join(bdir, inputs[img][1]))
-			for _, key := range lists[inputs[img][0]] {
-				if dt, ok := stat(filepath.Join(bdir, "pkg", key)); ok && dt > newestInput {
-					newestInput = dt
-				}
-			}
-			row.State, row.When = "outdated", time.Unix(int64(t), 0).Format("15:04")
-			if t >= newestInput {
-				row.State = "up to date"
-			}
+			row.When = time.Unix(int64(t), 0).Format("Jan 2 15:04")
+		}
+		if writing[img] {
+			row.State = "writing now"
 		}
 		snap.Images = append(snap.Images, row)
 	}
@@ -1373,6 +1533,12 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 		status, sc = "BUILD STOPPED AT AN ERROR", rgb{1, 0.35, 0.35}
 	} else if snap.Start > 0 {
 		status = "building"
+	} else {
+		for _, st := range snap.Steps {
+			if strings.HasPrefix(st, "QEMU test") {
+				status = "testing in QEMU"
+			}
+		}
 	}
 	v.text(20, oy+34, "Tiny Hat build", 24, accent)
 	v.text(260, oy+34, fmt.Sprintf("%s   elapsed %d:%02d:%02d", status, int(el)/3600, int(el)%3600/60, int(el)%60), 16, sc)
@@ -1417,6 +1583,13 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 	}
 	y += 44
 	v.text(20, y, "running now", 15, accent)
+	for i, st := range snap.Steps {
+		if i == 4 {
+			break
+		}
+		y += 22
+		v.text(30, y, st, 13, rgb{0.95, 0.85, 0.5})
+	}
 	for i, j := range snap.Jobs {
 		if i == 8 {
 			break
@@ -1431,9 +1604,9 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 		v.text(30, y, fmt.Sprintf("%-8s %-28s %3d min %02d s", j.Arch, j.Pkg, int(j.Secs)/60, int(j.Secs)%60), 13, c)
 		v.fill(470, y-11, float32(math.Min(float64(w-490), j.Secs/6)), 10, c, 1)
 	}
-	if len(snap.Jobs) == 0 {
+	if len(snap.Jobs) == 0 && len(snap.Steps) == 0 {
 		y += 22
-		v.text(30, y, "no package jobs", 13, rgb{0.6, 0.6, 0.6})
+		v.text(30, y, "nothing", 13, rgb{0.6, 0.6, 0.6})
 	}
 	y += 30
 	gw := (w - 60) / 3
@@ -1462,11 +1635,18 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 	v.text(20, y, "images", 15, accent)
 	for _, im := range snap.Images {
 		y += 20
-		c := map[string]rgb{"up to date": {0.5, 0.95, 0.5}, "outdated": {0.85, 0.65, 0.4}, "missing": {0.5, 0.5, 0.5}}[im.State]
-		v.text(30, y, fmt.Sprintf("%-22s %-10s %s", im.Name, im.State, im.When), 13, c)
+		c, ok := map[string]rgb{"up to date": {0.5, 0.95, 0.5}, "outdated": {0.85, 0.65, 0.4}, "missing": {0.5, 0.5, 0.5},
+			"writing now": {0.95, 0.85, 0.5}}[im.State]
+		if !ok {
+			c = rgb{0.6, 0.6, 0.6}
+		}
+		v.text(30, y, fmt.Sprintf("%-22s %-12s %s", im.Name, im.State, im.When), 13, c)
 	}
 	y += 30
 	v.text(20, y, "log", 15, accent)
+	if snap.LogName != "" {
+		v.text(60, y, snap.LogName, 12, rgb{0.6, 0.6, 0.7})
+	}
 	cw := float32(6.6)
 	rows := int((h - y - 12) / 16)
 	logs := snap.Logs
