@@ -7,7 +7,7 @@ ConditionPathExists=/run/tinyhat/persistroot
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/lib/tinyhat/pacman-restore
+ExecStart=/usr/bin/tinyionice -c 2 -n 7 /usr/lib/tinyhat/pacman-restore
 StandardOutput=journal
 TimeoutStartSec=30min
 
