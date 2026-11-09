@@ -75,7 +75,9 @@ for d in LIBDIRS:
             if machine is not None:
                 have.setdefault(machine, set()).add(fn)
 missing = {}
-for dirpath, _, files in os.walk(root):
+for dirpath, dirnames, files in os.walk(root):
+    if os.path.relpath(dirpath, root) == "usr/lib":
+        dirnames[:] = [d for d in dirnames if d != "firmware"]
     for fn in files:
         path = os.path.join(dirpath, fn)
         if os.path.islink(path) or not os.path.isfile(path):

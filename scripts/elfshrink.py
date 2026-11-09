@@ -63,6 +63,8 @@ for top in ("usr/bin", "usr/lib"):
                 saved["upx"] += before - os.path.getsize(path)
                 os.chmod(path, st.st_mode & 0o7777)
                 continue
+            if ".so" in name:
+                continue
             if HAVE["sstrip"] and subprocess.run(["sstrip", path], capture_output=True).returncode == 0:
                 saved["sstrip"] += before - os.path.getsize(path)
                 os.chmod(path, st.st_mode & 0o7777)

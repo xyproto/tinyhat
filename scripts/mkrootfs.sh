@@ -49,6 +49,9 @@ base)
 	bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/lib/*.o' usr/lib/libc_nonshared.a
 	bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
 	bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/crt*.o" "usr/lib/gcc/$triplet/*/libgcc*.a"
+	if bsdtar -tf "$(pkgfile gcc)" | grep -q "^usr/lib/gcc/$triplet/[^/]*/libgcc_s.so$"; then
+		bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/libgcc_s*.so"
+	fi
 	if [ "$arch" != aarch64 ]; then
 		a=$(bsdtar -tf "$(pkgfile arm-none-eabi-gcc)" | sed -n 's|^\(usr/lib/gcc/arm-none-eabi/[^/]*\)/$|\1|p' | head -n1)
 		bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \

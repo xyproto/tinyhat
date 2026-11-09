@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, shutil, socket, subprocess, sys, time
+import os, re, shutil, socket, subprocess, sys, time
 
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 QMT = os.path.join(TOP, "build", "qmt")
@@ -18,13 +18,19 @@ KEYS = {" ": "spc", "\n": "ret", "-": "minus", "=": "equal", "/": "slash", ".": 
         ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon",
         "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4", "~": "shift-grave_accent"}
 REPORT = ("doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain --no-pager; echo TH-MEMORY; free -m; "
-          "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-END) >/dev/{tty} 2>&1'\n")
+          "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-COMPILE; R=/usr/share/tinyhat-bootsplash; "
+          "for c in cc tcc; do command -v $c >/dev/null || continue; $c -o /tmp/th-$c -I$R/runtime $R/templates/basic/anim.c "
+          "$R/runtime/draw.c $R/runtime/main.c -lm >/dev/null 2>&1 && echo $c=ok || echo $c=failed; done; "
+          "echo TH-END) >/dev/{tty} 2>&1'\n")
 SEARCH = "https://html.duckduckgo.com/html/?q=tiny+hat+linux"
 LOBSTERS = "https://lobste.rs"
 NETSURFY = ("sh -c 'netsurfy -v \"" + SEARCH + "\" 2>/tmp/th-ns1.log & sleep 30; kill $!; "
             "netsurfy -v " + LOBSTERS + " 2>/tmp/th-ns2.log & sleep 30; kill $!; "
             "doas sh -c \"(echo TH-NETSURFY; grep -c ip3/ /tmp/th-ns1.log; grep -c done.https://lobste.rs /tmp/th-ns2.log; "
             "echo TH-NETSURFY-END) >/dev/ttyS0\"' &\n")
+QEMU_RPI4_SUPPLIES = [("/emmc2-bus@fe000000/mmc@7e340000", "vqmmc-supply"), ("/emmc2-bus@fe000000/mmc@7e340000", "vmmc-supply"),
+                      ("/soc/mmc@7e300000", "mmc-pwrseq")]
+QEMU_RPI4_MISSING = ["/soc/clock@7ef00000", "/soc/interrupt-controller@7ef00100", "/soc/i2c@7ef04500", "/soc/i2c@7ef09500"]
 OVMF_X64 = "/usr/share/edk2/x64/OVMF_CODE.4m.fd"
 OVMF_X64_VARS = "/usr/share/edk2/x64/OVMF_VARS.4m.fd"
 AAVMF = "/usr/share/edk2/aarch64/QEMU_EFI.fd"
@@ -54,7 +60,13 @@ def qemu_command(img, disk, uefi, serial, sock):
     common = ["-display", "none", "-serial", f"file:{serial}", "-monitor", f"unix:{sock},server,nowait"]
     if k == "rpi4":
         f = pi_boot_files(disk)
-        cmdline = open(f["cmdline.txt"]).read().strip().replace("console=serial0,115200", "console=ttyAMA0,115200")
+        cmdline = re.sub(r"console=(serial0|ttyS\d+),", "console=ttyAMA0,", open(f["cmdline.txt"]).read().strip())
+        dtb = f["bcm2711-rpi-4-b.dtb"]
+        for node in QEMU_RPI4_MISSING:
+            subprocess.run(["fdtput", "-t", "s", dtb, node, "status", "disabled"], check=True)
+        for node, prop in QEMU_RPI4_SUPPLIES:
+            subprocess.run(["fdtput", "-d", dtb, node, prop], stderr=subprocess.DEVNULL)
+        subprocess.run(["fdtput", "-r", dtb, "/soc/mmc@7e300000/wifi@1"], stderr=subprocess.DEVNULL)
         return ["qemu-system-aarch64", "-M", "raspi4b", "-kernel", f["kernel8.img"], "-dtb", f["bcm2711-rpi-4-b.dtb"],
                 "-initrd", f["initramfs.img"], "-append", cmdline,
                 "-drive", f"if=sd,file={disk},format=raw"] + common
@@ -92,14 +104,18 @@ def type_text(sock, text):
 
 def health(serial):
     text = open(serial, errors="replace").read() if os.path.exists(serial) else ""
+    text = re.sub(r"(?i)\bth-(failed|memory|processes|compile|end)\b", lambda m: "TH-" + m.group(1).upper(), text)
     m = text.rfind("TH-FAILED")
     if m < 0 or "TH-END" not in text[m:]:
         return None
     block = text[m:text.index("TH-END", m)].replace("\r", "")
     sections = {}
-    for name in ("TH-FAILED", "TH-MEMORY", "TH-PROCESSES"):
+    for name in ("TH-FAILED", "TH-MEMORY", "TH-PROCESSES", "TH-COMPILE"):
+        if name not in block:
+            sections[name] = []
+            continue
         start = block.index(name) + len(name)
-        ends = [block.index(n) for n in ("TH-MEMORY", "TH-PROCESSES") if n in block and block.index(n) > start]
+        ends = [block.index(n) for n in ("TH-MEMORY", "TH-PROCESSES", "TH-COMPILE") if n in block and block.index(n) > start]
         sections[name] = [l for l in block[start:min(ends) if ends else len(block)].splitlines() if l.strip()]
     return sections
 
@@ -177,6 +193,10 @@ def main():
             if not os.path.exists(sock):
                 continue
             monitor(sock, f"screendump {shot}")
+            if k == "rpi4" and os.path.exists(serial) and "login:" in open(serial, errors="replace").read():
+                ok = True
+                up = int(time.time() - start)
+                break
             if desktop_up(shot):
                 time.sleep(5)
                 monitor(sock, f"screendump {shot}")
@@ -184,10 +204,11 @@ def main():
                 up = int(time.time() - start)
                 if k == "rpi4":
                     break
+                slow = k == "aarch64"
                 monitor(sock, "sendkey ctrl-alt-r")
-                time.sleep(3)
+                time.sleep(20 if slow else 3)
                 type_text(sock, REPORT.format(tty="ttyS0" if k in ("i686", "x32") else "ttyAMA0"))
-                for _ in range(20):
+                for _ in range(120 if slow else 20):
                     time.sleep(1)
                     report = health(serial)
                     if report:
@@ -216,7 +237,8 @@ def main():
         if os.path.exists(f) and shutil.which("magick"):
             subprocess.run(["magick", f, f[:-4] + ".png"])
     if ok:
-        print(f"qemutest: {label} reached the desktop in {up} s (screenshot and serial log in build/qmt)")
+        reached = "the serial login prompt" if k == "rpi4" else "the desktop"
+        print(f"qemutest: {label} reached {reached} in {up} s (screenshot and serial log in build/qmt)")
         if k == "rpi4":
             print("qemutest: the emulated Raspberry Pi 4 has no USB keyboard, so there is no health report")
         elif report is None:
@@ -235,6 +257,10 @@ def main():
                 ok = False
             else:
                 print("qemutest: no failed units")
+            compiled = [l.strip() for l in report["TH-COMPILE"]]
+            print("qemutest: building a C program: " + (", ".join(compiled) or "no compiler found"))
+            if not compiled or any(l.endswith("=failed") for l in compiled):
+                ok = False
         if k in ("i686", "x32"):
             if web_report is None:
                 print("qemutest: no NetSurfy report on the serial port")

@@ -37,6 +37,7 @@ libpath=
 personality=i686
 ignorearch=
 rustcross=
+crosscc=
 case $arch in
 x32)
 	path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
@@ -49,6 +50,10 @@ aarch64)
 	personality=
 	ignorearch=--ignorearch
 	case $(uname -m) in x86_64) rustcross=1 path=/opt/tinyhat-rust/bin:$path ;; esac
+	if [ -n "$rustcross" ] && command -v aarch64-linux-gnu-gcc >/dev/null; then
+		crosscc=1
+		path=/opt/tinyhat-cc/bin:$path
+	fi
 	;;
 x86_64)
 	seed=$top/build/buildroot-x86_64
@@ -136,10 +141,13 @@ if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
 fi
 
 [ -z "$rustcross" ] || "$top/scripts/rust-cross.sh"
+if [ -n "$crosscc" ] && { [ ! -x "$top/build/cross-cc/launch" ] || [ "$top/scripts/cross-launch.c" -nt "$top/build/cross-cc/launch" ]; }; then
+	mkdir -p "$top/build/cross-cc"
+	cc -O2 -static -o "$top/build/cross-cc/launch.$$" "$top/scripts/cross-launch.c"
+	mv -f "$top/build/cross-cc/launch.$$" "$top/build/cross-cc/launch"
+fi
 
-distccd_pid=
 cleanup() {
-	[ -z "$distccd_pid" ] || kill "$distccd_pid" 2>/dev/null || true
 	chmod -R u+rwX "$work" 2>/dev/null || true
 	rm -rf "$work"
 }
@@ -148,24 +156,10 @@ trap cleanup EXIT
 mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
 cp -rL "$dir" "$work/pkg/$base"
 
-# Compiling under emulation is slow, so aarch64 builds send the compiler runs to the host's cross compiler
 jobs=${PKG_MAKE_JOBS:-$(nproc)}
 echo "source $conf" >"$work/makepkg.conf"
-if [ "$arch" = aarch64 ] && command -v distccd >/dev/null && command -v aarch64-linux-gnu-gcc >/dev/null; then
-	mkdir -p "$top/build/distcc" "$top/build/log"
-	for c in cc gcc aarch64-unknown-linux-gnu-gcc; do
-		ln -sfn "$(command -v aarch64-linux-gnu-gcc)" "$top/build/distcc/$c"
-	done
-	for c in c++ g++ aarch64-unknown-linux-gnu-g++; do
-		ln -sfn "$(command -v aarch64-linux-gnu-g++)" "$top/build/distcc/$c"
-	done
-	port=$((36320 + slot))
-	jobs=$((jobs * 2))
-	DISTCCD_PATH=$top/build/distcc nice -n "$prio" distccd --no-detach --daemon --listen 127.0.0.1 --port "$port" --allow 127.0.0.1 \
-		--enable-tcp-insecure --jobs "$jobs" --log-file "$top/build/log/aarch64-$base.distccd.log" &
-	distccd_pid=$!
-	printf '%s\n' "BUILDENV=(distcc color !ccache !check !sign)" "DISTCC_HOSTS=\"127.0.0.1:$port/$jobs\"" \
-		"MAKEFLAGS=\"-j$jobs\"" "NINJAFLAGS=\"-j$jobs\"" >>"$work/makepkg.conf"
+if [ -n "$crosscc" ]; then
+	printf '%s\n' "BUILDENV=(!distcc color !ccache !check !sign)" "MAKEFLAGS=\"-j$jobs\"" "NINJAFLAGS=\"-j$jobs\"" >>"$work/makepkg.conf"
 fi
 
 sandbox() {
@@ -203,6 +197,8 @@ bwrap_run() {
 		--setenv TINYHAT_BOOTSTRAP "$bootstrap" \
 		${rustcross:+--ro-bind /usr /host/usr --ro-bind /usr/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2} \
 		${rustcross:+--ro-bind $top/build/rust-cross /opt/tinyhat-rust/toolchain --ro-bind $top/scripts/rust-cross /opt/tinyhat-rust/bin} \
+		${crosscc:+--ro-bind $top/scripts/cross-cc /opt/tinyhat-cc/bin --ro-bind $top/build/cross-cc/launch /opt/tinyhat-cc/launch} \
+		${crosscc:+--ro-bind /usr/lib/go /usr/lib/go --setenv GOARCH arm64} \
 		"$@"
 }
 
@@ -254,6 +250,9 @@ if [ "$arch" = x32 ]; then
 fi
 ' sh "$arch" "$tc" "$i686deps" "$x32deps" "$sysdeps"
 
+mkp=makepkg
+[ -z "$crosscc" ] || mkp="/lib64/ld-linux-x86-64.so.2 --library-path /host/usr/lib --argv0 bash /host/usr/bin/bash /usr/bin/makepkg"
+
 run() {
 	sandbox --uid 1000 --gid 1000 --share-net \
 		--bind "$work/pkg/$base" /startdir \
@@ -271,8 +270,9 @@ run() {
 		--setenv CARGO_BUILD_JOBS "${PKG_CARGO_JOBS:-$(nproc)}" \
 		--setenv FAKEROOTDONTTRYCHOWN 1 \
 		--setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
+		--setenv TINYHAT_MAKEPKG "$mkp" \
 		--chdir /startdir \
-		/bin/sh -c 'exec 2>&9 9>&-; exec makepkg "$@"' sh --config /etc/makepkg-build.conf -d --noconfirm --skippgpcheck --holdver $ignorearch "$@"
+		/bin/sh -c 'exec 2>&9 9>&-; exec $TINYHAT_MAKEPKG "$@"' sh --config /etc/makepkg-build.conf -d --noconfirm --skippgpcheck --holdver $ignorearch "$@"
 }
 
 exec 8>"$top/vendor/src/.lock"
