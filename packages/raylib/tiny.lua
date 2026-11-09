@@ -1,0 +1,27 @@
+return {
+  name = "raylib",
+  version = "6.2",
+  release = "1",
+  desc = "raylib 6.0 on SDL3 and OpenGL 2.1",
+  url = "https://www.raylib.com/",
+  license = { "Zlib" },
+  arch = { "i686", "x32" },
+  source = {
+    "raylib-${version}.tar.gz::https://github.com/raysan5/raylib/archive/refs/tags/${version}.tar.gz",
+  },
+  sha256 = { "df7a13129b1bec9e73a6962efff170beba310ee6eab8f94cd000b7316b4db5ee" },
+  depends = { "sdl3" },
+  makedepends = { "cmake", "ninja" },
+  libdepends = { "mesa", "libglvnd" },
+  build_dir = "raylib-${version}",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DPLATFORM=SDL",
+    "-DOPENGL_VERSION=2.1",
+    "-DBUILD_SHARED_LIBS=ON",
+    "-DBUILD_EXAMPLES=OFF",
+  },
+  install_license = { "LICENSE" },
+}

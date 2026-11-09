@@ -1,34 +1,35 @@
 pkgbase = netsurfy
 	pkgdesc = Lightweight and fast web browser, forked from NetSurf
-	pkgver = 1.0.4
-	pkgrel = 3
+	pkgver = 1.0.4.r5.gc7a9776
+	pkgrel = 1
 	url = https://github.com/xyproto/netsurfy
 	arch = i686
 	arch = x32
 	license = GPL-2.0-only
 	license = MIT
-	makedepends = check
-	makedepends = nsgenbind>=0.9
+	makedepends = bison
+	makedepends = cmake
+	makedepends = flex
+	makedepends = ninja
+	makedepends = perl
 	makedepends = perl-html-parser
-	makedepends = tinyxxd
-	makedepends = icu69
 	depends = bubblewrap
 	depends = curl
+	depends = expat
 	depends = gtk4
 	depends = libjpeg-turbo
 	depends = libpng
-	depends = librsvg
-	depends = libutf8proc>=2.9.0
 	depends = libwebp
+	depends = openssl
 	depends = zlib
 	provides = netsurf
 	conflicts = netsurf
 	replaces = netsurf
-	source = netsurfy-1.0.4.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v1.0.4.tar.gz
+	source = netsurfy-c7a9776222131e1dbafe8410e8974aaf701cc440.tar.gz::https://github.com/xyproto/netsurfy/archive/c7a9776222131e1dbafe8410e8974aaf701cc440.tar.gz
 	source = netsurfy-sandbox
-	sha256sums = fc9714257d0d1d76a368616859e065e69dd975ab12591717c8a31345b68a7154
+	sha256sums = ef281e4e79f2e4b6ee9986a25742e8a1b3c5a425d5c77c19d7f1a479b8cac9b3
 	sha256sums = SKIP
-	b2sums = d8d29c38c3332f16dd17354ef73df236cde7ca43241733640a6bdc663546b978e11d4d1719c3dedb48cd5e046463886e4968bcb31eb7876001dc755b7cd2512b
+	b2sums = b6a56413da0f281220eac3b6838faa31d65a2391aea155c369f0296cf374cb91dd79e795a93ea25f9c0f794ea9ee107abdb26eab4ce80f6343d24c31df91844c
 	b2sums = SKIP
 
 pkgname = netsurfy

@@ -1,0 +1,22 @@
+return {
+  name = "fcft",
+  version = "3.3.3",
+  release = "1",
+  desc = "Simple library for font loading and glyph rasterization",
+  url = "https://codeberg.org/dnkl/fcft",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "fcft-${version}.tar.gz::https://codeberg.org/dnkl/fcft/archive/${version}.tar.gz" },
+  sha256 = { "b0c0f4a599f43723736c8565b8b84337c4195077f07f1bb8bb3252bb13a2306a" },
+  depends = { "fontconfig", "freetype2", "harfbuzz", "libutf8proc", "pixman" },
+  makedepends = { "meson", "scdoc" },
+  libdepends = { "tllist" },
+  provides = { "libfcft.so" },
+  build_dir = "fcft",
+  style = "meson",
+  configure = { "-Dgrapheme-shaping=enabled", "-Drun-shaping=enabled" },
+  install = {
+    { "unicode/license.txt", "usr/share/licenses/fcft/LICENSE.unicode" },
+  },
+  install_license = { "LICENSE" },
+}

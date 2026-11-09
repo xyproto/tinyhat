@@ -1,0 +1,38 @@
+return {
+  name = "libtiff",
+  version = "4.7.2",
+  release = "2",
+  desc = "Library for manipulation of TIFF images",
+  url = "http://www.simplesystems.org/libtiff/",
+  license = { "libtiff" },
+  arch = { "i686", "x32" },
+  source = { "git+https://gitlab.com/libtiff/libtiff.git?signed#tag=v${version}" },
+  sha256 = { "633aa6529859b02b08df2dc29e0119fe614991f4490441c2eb80052de68a3754" },
+  depends = {
+    "libstdc++",
+    "glibc",
+    "jbigkit",
+    "libdeflate",
+    "libjpeg-turbo",
+    "libjpeg.so",
+    "libwebp",
+    "xz",
+    "zlib",
+    "zstd",
+  },
+  optdepends = { "freeglut: for using tiffgt" },
+  makedepends = { "cmake", "git" },
+  provides = { "libtiff.so", "libtiffxx.so" },
+  arch_overrides = {
+    i686 = {
+      libdepends = { "freeglut", "glu", "mesa", "jbigkit" },
+    },
+    pentium4 = {
+      libdepends = { "freeglut", "glu", "mesa", "jbigkit" },
+    },
+  },
+  build_dir = "libtiff",
+  style = "cmake",
+  configure = { "-DCMAKE_INSTALL_PREFIX=/usr", "-DCMAKE_BUILD_TYPE=None", "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" },
+  install_license = { "LICENSE.md" },
+}

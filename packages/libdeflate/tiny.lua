@@ -1,0 +1,25 @@
+return {
+  name = "libdeflate",
+  version = "1.26",
+  release = "1",
+  desc = "Heavily optimized library for DEFLATE/zlib/gzip compression and decompression",
+  url = "https://github.com/ebiggers/libdeflate",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "git+https://github.com/ebiggers/libdeflate.git#tag=v${version}" },
+  b2 = {
+    "00204ed5c71f5601e2dfa33dd38b32abcd66d9f9257c8a0d3a1c678529c5a94f2cb31a623001a6ffd950a508bd583ad9dabaefb03de112c97c362a32f7264df8",
+  },
+  depends = { "glibc" },
+  makedepends = { "cmake", "git", "ninja" },
+  provides = { "libdeflate.so" },
+  build_dir = "libdeflate",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE=None",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DLIBDEFLATE_BUILD_STATIC_LIB=OFF",
+    "-DLIBDEFLATE_BUILD_TESTS=ON",
+  },
+  install_license = { "COPYING" },
+}

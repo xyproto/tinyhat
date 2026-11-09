@@ -1,0 +1,20 @@
+return {
+  name = "grim",
+  version = "1.5.0",
+  release = "2",
+  desc = "Screenshot utility for Wayland",
+  url = "https://gitlab.freedesktop.org/emersion/grim",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "git+https://gitlab.freedesktop.org/emersion/grim#tag=v${version}" },
+  b2 = {
+    "fcb867a416bcc1acad28e35ab1a2e1aeea4d5c04196ee74b7ad372256ef780ab77bb2afd93badb8c203c0a320ea7b229a999dfd9faa575c8c42150e5fcbcbd9a",
+  },
+  depends = { "cairo", "libjpeg-turbo", "wayland" },
+  makedepends = { "git", "meson", "ninja", "scdoc" },
+  libdepends = { "bash-completion", "fish", "pango", "wayland-protocols" },
+  build_dir = "grim",
+  style = "meson",
+  configure = { "-Dbash-completions=true", "-Dfish-completions=true" },
+  install_license = { "LICENSE" },
+}

@@ -1,0 +1,15 @@
+return {
+  name = "liburcu",
+  version = "0.15.7",
+  release = "1",
+  desc = "LGPLv2.1 userspace RCU (read-copy-update) library",
+  url = "https://lttng.org/urcu",
+  license = { "LGPL2.1" },
+  arch = { "i686", "x32" },
+  source = { "https://lttng.org/files/urcu/userspace-rcu-${version}.tar.bz2" },
+  sha256 = { "2556b83adc0f9b3ac8024e613e17d014d04c4c49110604ce55fcb14eae32edd3" },
+  depends = { "glibc" },
+  build_dir = "userspace-rcu-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}

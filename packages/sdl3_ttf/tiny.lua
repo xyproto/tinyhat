@@ -1,0 +1,27 @@
+return {
+  name = "sdl3_ttf",
+  version = "3.2.2",
+  release = "1",
+  desc = "SDL3 TrueType font library",
+  url = "https://github.com/libsdl-org/SDL_ttf",
+  license = { "Zlib" },
+  arch = { "i686", "x32" },
+  source = {
+    "https://github.com/libsdl-org/SDL_ttf/releases/download/release-${version}/SDL3_ttf-${version}.tar.gz",
+  },
+  sha256 = { "63547d58d0185c833213885b635a2c0548201cc8f301e6587c0be1a67e1e045d" },
+  depends = { "sdl3", "freetype2" },
+  makedepends = { "cmake", "ninja" },
+  build_dir = "SDL3_ttf-${version}",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE=MinSizeRel",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DSDLTTF_VENDORED=OFF",
+    "-DSDLTTF_HARFBUZZ=OFF",
+    "-DSDLTTF_PLUTOSVG=OFF",
+    "-DSDLTTF_SAMPLES=OFF",
+    "-DSDLTTF_INSTALL_MAN=OFF",
+  },
+  install_license = { "LICENSE.txt" },
+}

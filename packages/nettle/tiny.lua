@@ -1,0 +1,16 @@
+return {
+  name = "nettle",
+  version = "4.0",
+  release = "1",
+  desc = "A low-level cryptographic library",
+  url = "https://www.lysator.liu.se/~nisse/nettle",
+  license = { "LGPL-3.0-or-later OR GPL-2.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "https://ftp.gnu.org/gnu/nettle/nettle-${version}.tar.gz" },
+  sha256 = { "3addbc00da01846b232fb3bc453538ea5468da43033f21bb345cb1e9073f5094" },
+  depends = { "glibc", "gmp" },
+  provides = { "libnettle.so", "libhogweed.so" },
+  build_dir = "nettle-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr", "--disable-static" },
+}

@@ -1,0 +1,15 @@
+return {
+  name = "libksba",
+  version = "1.8.1",
+  release = "1",
+  desc = "Library for working with X.509 certificates, CMS data and related objects",
+  url = "https://www.gnupg.org/related_software/libksba/",
+  license = { "GPL-2.0-only", "GPL-3.0-only", "LGPL-3.0-only" },
+  arch = { "i686", "x32" },
+  source = { "https://www.gnupg.org/ftp/gcrypt/libksba/libksba-${version}.tar.bz2" },
+  sha256 = { "c2f84393011827219ae117131dba8e7684c2bed0961eed11b0642c2acba440b5" },
+  depends = { "bash", "libgpg-error", "glibc" },
+  build_dir = "libksba-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}

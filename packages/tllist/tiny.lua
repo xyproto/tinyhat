@@ -1,0 +1,15 @@
+return {
+  name = "tllist",
+  version = "1.1.0",
+  release = "2",
+  desc = "A typed linked list C header file only library",
+  url = "https://codeberg.org/dnkl/tllist",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "tllist-${version}.tar.gz::https://codeberg.org/dnkl/tllist/archive/${version}.tar.gz" },
+  sha256 = { "0e7b7094a02550dd80b7243bcffc3671550b0f1d8ba625e4dff52517827d5d23" },
+  makedepends = { "meson" },
+  build_dir = "tllist",
+  style = "meson",
+  install_license = { "LICENSE" },
+}

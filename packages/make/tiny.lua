@@ -1,0 +1,16 @@
+return {
+  name = "make",
+  version = "4.4.1",
+  release = "1",
+  desc = "GNU make, built without Guile support",
+  url = "https://www.gnu.org/software/make/",
+  license = { "GPL-3.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "https://ftp.gnu.org/gnu/make/make-${version}.tar.gz" },
+  sha256 = { "dd16fb1d67bfab79a72f5e8390735c49e3e8e70b4945a15ab1f81ddb78658fb3" },
+  depends = { "glibc" },
+  build_dir = "make-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr", "--without-guile" },
+  install_license = { "COPYING" },
+}

@@ -1,0 +1,27 @@
+return {
+  name = "vulkan-icd-loader",
+  version = "1.4.363.0",
+  release = "1",
+  desc = "Vulkan Installable Client Driver (ICD) Loader",
+  url = "https://www.vulkan.org/",
+  license = { "Apache-2.0" },
+  arch = { "i686", "x32" },
+  groups = { "vulkan-devel" },
+  source = { "git+https://github.com/KhronosGroup/Vulkan-Loader#tag=vulkan-sdk-${version}" },
+  b2 = {
+    "259bb9fae3c7f84a2d3439dd5b4a3ca8a777ab2ac867f91cea4647326d7fdd3425437ff98e9622cc98091e8cd9534fb7b30fb4459d3e7cf2b3488104a1b5e3d1",
+  },
+  depends = { "glibc" },
+  optdepends = { "vulkan-driver: packaged vulkan driver" },
+  makedepends = { "cmake", "git", "ninja", "python-lxml" },
+  libdepends = { "libx11", "libxrandr", "vulkan-headers", "wayland" },
+  provides = { "libvulkan.so" },
+  build_dir = "Vulkan-Loader",
+  style = "cmake",
+  configure = {
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DCMAKE_INSTALL_SYSCONFDIR=/etc",
+    "-DCMAKE_SKIP_INSTALL_RPATH=ON",
+  },
+}

@@ -1,0 +1,17 @@
+return {
+  name = "liblqr",
+  version = "0.4.3",
+  release = "1",
+  desc = "A seam-carving C/C++ library called Liquid Rescale",
+  url = "https://liblqr.wikidot.com/",
+  license = { "GPL-3.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "git+https://github.com/carlobaldassi/liblqr#tag=v${version}" },
+  sha256 = { "1b1d26ab3138b0ec34062c3f1b8cd808d5c7a85e37fdbb9c6fd6722f52b2122d" },
+  depends = { "glib2", "glibc" },
+  makedepends = { "git" },
+  options = { "!emptydirs" },
+  build_dir = "liblqr",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}

@@ -5,7 +5,7 @@ pkgbase=foot
 pkgdesc='Fast, lightweight, and minimalistic Wayland terminal emulator'
 pkgname=($pkgbase $pkgbase-terminfo)
 pkgver=1.28.0
-pkgrel="2"
+pkgrel="3"
 url="https://codeberg.org/dnkl/$pkgbase"
 arch=(i686 x32)
 license=(MIT)
@@ -31,6 +31,11 @@ sha256sums=('05a057b1145507625d9f548ae546705d58ba60cbb26a8958ce72f0b9c1bdee46')
 
 build() {
 	cd "$pkgbase"
+	if [[ $CARCH == aarch64 ]]; then
+		meson setup build --prefix=/usr --buildtype=release -Dterminfo-base-name=foot-extra --wrap-mode=nodownload
+		meson compile -C build
+		return
+	fi
 	./pgo/pgo.sh \
 		full-headless-sway \
 		. build \

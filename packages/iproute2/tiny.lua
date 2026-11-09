@@ -1,0 +1,28 @@
+return {
+  name = "iproute2",
+  version = "7.3.0",
+  release = "1",
+  desc = "IP Routing Utilities",
+  url = "https://git.kernel.org/pub/scm/network/iproute2/iproute2.git",
+  license = { "GPL-2.0-or-later" },
+  arch = { "i686", "x32" },
+  source = {
+    "git+https://git.kernel.org/pub/scm/network/iproute2/iproute2.git#tag=v${version}",
+    "0001-make-iproute2-fhs-compliant.patch",
+  },
+  sha256 = {
+    "ad89c9e89cb74de7d26da8c15f835ab12f840d17e769f6273b0e4ef72a53004c",
+    "758b82bd61ed7512d215efafd5fab5ae7a28fbfa6161b85e2ce7373285e56a5d",
+  },
+  depends = { "glibc", "libcap", "libcap.so", "libelf", "libbpf", "libbpf.so" },
+  optdepends = { "db: userspace arp daemon", "linux-atm: ATM support", "python: for routel" },
+  makedepends = { "git" },
+  libdepends = { "db", "linux-atm" },
+  provides = { "iproute" },
+  options = { "!emptydirs" },
+  build_dir = "iproute2",
+  patches = { "0001-make-iproute2-fhs-compliant.patch" },
+  style = "configure",
+  configure = { "--color", "auto" },
+  install_args = { "SBINDIR=/usr/bin" },
+}

@@ -1,0 +1,17 @@
+return {
+  name = "iw",
+  version = "6.17",
+  release = "1",
+  desc = "nl80211 based CLI configuration utility for wireless devices",
+  url = "https://wireless.wiki.kernel.org/en/users/documentation/iw",
+  license = { "GPL" },
+  arch = { "i686", "x32" },
+  source = { "git+https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git#tag=v${version}?signed" },
+  sha256 = { "25cde7e1517f2b7bae36920dc8987c95ca61c5a953d0f004fe6ece17f59980c9" },
+  depends = { "libnl" },
+  makedepends = { "git" },
+  libdepends = { "linux-api-headers" },
+  build_dir = "iw",
+  style = "make",
+  install_args = { "SBINDIR=/usr/bin" },
+}

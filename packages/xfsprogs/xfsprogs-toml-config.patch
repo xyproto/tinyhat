@@ -1,0 +1,185 @@
+diff --git a/configure.ac b/configure.ac
+index 7825b1f..078d518 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -147,8 +147,6 @@ AC_MULTILIB($enable_lib64)
+ AC_MULTIARCH($multiarch)
+ AC_RT($enable_librt)
+ 
+-AC_PACKAGE_NEED_INI_H
+-AC_PACKAGE_NEED_LIBINIH
+ 
+ AC_PACKAGE_NEED_UUID_H
+ AC_PACKAGE_NEED_UUIDCOMPARE
+diff --git a/include/builddefs.in b/include/builddefs.in
+index acdbc5c..f59663f 100644
+--- a/include/builddefs.in
++++ b/include/builddefs.in
+@@ -29,7 +29,6 @@ LIBTERMCAP = @libtermcap@
+ LIBEDITLINE = @libeditline@
+ LIBBLKID = @libblkid@
+ LIBDEVMAPPER = @libdevmapper@
+-LIBINIH = @libinih@
+ LIBXFS = $(TOPDIR)/libxfs/libxfs.la
+ LIBFROG = $(TOPDIR)/libfrog/libfrog.la
+ LIBXCMD = $(TOPDIR)/libxcmd/libxcmd.la
+diff --git a/man/man8/mkfs.xfs.8.in b/man/man8/mkfs.xfs.8.in
+index 927cd07..f5c9493 100644
+--- a/man/man8/mkfs.xfs.8.in
++++ b/man/man8/mkfs.xfs.8.in
+@@ -1361,7 +1361,7 @@ Do not attempt to discard blocks at mkfs time.
+ .B \-V
+ Prints the version number and exits.
+ .SH Configuration File Format
+-The configuration file uses a basic INI format to specify sections and options
++The configuration file uses a small subset of TOML to specify sections and options
+ within a section.
+ Section and option names are case sensitive.
+ Section names must not contain whitespace.
+diff --git a/mkfs/Makefile b/mkfs/Makefile
+index 16793bd..971837d 100644
+--- a/mkfs/Makefile
++++ b/mkfs/Makefile
+@@ -22,7 +22,7 @@ CFGFILES = \
+ 	lts_6.18.conf
+ 
+ LLDLIBS += $(LIBXFS) $(LIBXCMD) $(LIBFROG) $(LIBRT) $(LIBBLKID) \
+-	$(LIBUUID) $(LIBINIH) $(LIBURCU) $(LIBPTHREAD)
++	$(LIBUUID) $(LIBURCU) $(LIBPTHREAD)
+ LTDEPENDENCIES += $(LIBXFS) $(LIBXCMD) $(LIBFROG)
+ LLDFLAGS = -static-libtool-libs
+ LDIRT = $(XFS_PROTOFILE)
+diff --git a/mkfs/xfs_mkfs.c b/mkfs/xfs_mkfs.c
+index 2812a6a..898312a 100644
+--- a/mkfs/xfs_mkfs.c
++++ b/mkfs/xfs_mkfs.c
+@@ -16,7 +16,6 @@
+ #include "libfrog/fsproperties.h"
+ #include "libfrog/zones.h"
+ #include "proto.h"
+-#include <ini.h>
+ 
+ /* Convert a quantity of mega/giga/terabytes into units of blocks */
+ #define TERABLOCKS(count, blog)	((uint64_t)(count) << (40 - (blog)))
+@@ -5809,6 +5808,103 @@ check_root_ino(
+ 	}
+ }
+ 
++static char *
++toml_trim(
++	char			*s)
++{
++	char			*e;
++
++	while (isspace((unsigned char)*s))
++		s++;
++	e = s + strlen(s);
++	while (e > s && isspace((unsigned char)e[-1]))
++		*--e = '\0';
++	return s;
++}
++
++static bool
++toml_rest_ok(
++	const char		*s)
++{
++	while (isspace((unsigned char)*s))
++		s++;
++	return *s == '\0' || *s == '#';
++}
++
++static int
++toml_parse(
++	const char		*path,
++	int			(*handler)(void *, const char *,
++					   const char *, const char *),
++	void			*user)
++{
++	FILE			*f;
++	char			line[1024];
++	char			section[256] = "";
++	int			lineno = 0;
++	int			error = 0;
++
++	f = fopen(path, "r");
++	if (!f)
++		return -1;
++	while (fgets(line, sizeof(line), f)) {
++		char		*s, *eq, *key, *val, *end;
++
++		lineno++;
++		s = toml_trim(line);
++		if (*s == '\0' || *s == '#')
++			continue;
++		if (*s == '[') {
++			end = strchr(s, ']');
++			if (!end || !toml_rest_ok(end + 1)) {
++				error = lineno;
++				break;
++			}
++			*end = '\0';
++			s = toml_trim(s + 1);
++			if (*s == '\0' || strlen(s) >= sizeof(section)) {
++				error = lineno;
++				break;
++			}
++			strcpy(section, s);
++			continue;
++		}
++		eq = strchr(s, '=');
++		if (!eq) {
++			error = lineno;
++			break;
++		}
++		*eq = '\0';
++		key = toml_trim(s);
++		val = toml_trim(eq + 1);
++		if (*val == '"' || *val == '\'') {
++			end = strchr(val + 1, *val);
++			if (!end || !toml_rest_ok(end + 1)) {
++				error = lineno;
++				break;
++			}
++			*end = '\0';
++			val++;
++		} else {
++			end = strchr(val, '#');
++			if (end)
++				*end = '\0';
++			val = toml_trim(val);
++			if (!strcmp(val, "true"))
++				val = "1";
++			else if (!strcmp(val, "false"))
++				val = "0";
++		}
++		if (*key == '\0' || *val == '\0' ||
++		    !handler(user, section, key, val)) {
++			error = lineno;
++			break;
++		}
++	}
++	fclose(f);
++	return error;
++}
++
+ /*
+  * INI file format option parser.
+  *
+@@ -5842,7 +5938,7 @@ cfgfile_parse(
+ 	if (!cli->cfgfile)
+ 		return;
+ 
+-	error = ini_parse(cli->cfgfile, cfgfile_parse_ini, cli);
++	error = toml_parse(cli->cfgfile, cfgfile_parse_ini, cli);
+ 	if (error) {
+ 		if (error > 0) {
+ 			fprintf(stderr,
+@@ -5888,7 +5984,7 @@ defcfgfile_parse(
+ 	if (!cli->defcfgfile)
+ 		return;
+ 
+-	error = ini_parse(cli->defcfgfile, cfgfile_parse_ini, cli);
++	error = toml_parse(cli->defcfgfile, cfgfile_parse_ini, cli);
+ 	if (error) {
+ 		if (error > 0) {
+ 			fprintf(stderr,

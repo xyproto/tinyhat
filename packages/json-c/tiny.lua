@@ -1,0 +1,28 @@
+return {
+  name = "json-c",
+  version = "0.19",
+  release = "1",
+  desc = "JSON implementation in C",
+  url = "https://github.com/json-c/json-c/wiki",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "git+https://github.com/json-c/json-c#tag=json-c-${version}-20260627" },
+  b2 = {
+    "791312737431a2a8b82de9cefa2d609dec8021e0b93eced8ffd1fa4f4fdb0c557468840ca5729df2dc2312f5eae76eb6ac4be30b2bf1f38b07790622346ce4c0",
+  },
+  depends = { "glibc" },
+  makedepends = { "cmake", "git", "ninja" },
+  provides = { "libjson-c.so" },
+  build_dir = "json-c",
+  style = "cmake",
+  configure = {
+    "-DBUILD_STATIC_LIBS=OFF",
+    "-DCMAKE_BUILD_TYPE=None",
+    "-DCMAKE_INSTALL_LIBDIR=/usr/lib",
+    "-DCMAKE_INSTALL_PREFIX=/usr",
+    "-DCMAKE_POLICY_VERSION_MINIMUM=3.5",
+    "-DENABLE_RDRAND=OFF",
+    "-DENABLE_THREADING=ON",
+  },
+  install_license = { "COPYING" },
+}

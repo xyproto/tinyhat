@@ -1,7 +1,7 @@
 pkgbase = wireplumber
 	pkgdesc = Session / policy manager implementation for PipeWire
 	pkgver = 0.5.19
-	pkgrel = 1
+	pkgrel = 2
 	url = https://pipewire.pages.freedesktop.org/wireplumber/
 	arch = i686
 	arch = x32

@@ -1,0 +1,17 @@
+return {
+  name = "lcms2",
+  version = "2.19.1",
+  release = "1",
+  desc = "Small-footprint color management engine, version 2",
+  url = "http://www.littlecms.com/",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "https://github.com/mm2/Little-CMS/releases/download/lcms${version}/lcms2-${version}.tar.gz" },
+  sha256 = { "bfc54f7bab59fbc921012014a8032e4cba4abd46db47d46b76416a8c0b2815c8" },
+  depends = { "glibc", "libjpeg-turbo", "libtiff" },
+  provides = { "liblcms2.so" },
+  build_dir = "lcms2-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+  install_license = { "LICENSE" },
+}

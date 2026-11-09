@@ -1,0 +1,16 @@
+return {
+  name = "ncdu",
+  version = "1.22",
+  release = "1",
+  desc = "Disk usage analyzer with an ncurses interface",
+  url = "https://dev.yorhel.nl/ncdu",
+  license = { "MIT" },
+  arch = { "i686", "x32" },
+  source = { "https://dev.yorhel.nl/download/ncdu-${version}.tar.gz" },
+  sha256 = { "0ad6c096dc04d5120581104760c01b8f4e97d4191d6c9ef79654fa3c691a176b" },
+  depends = { "ncurses", "glibc" },
+  build_dir = "ncdu-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+  install_license = { "COPYING" },
+}

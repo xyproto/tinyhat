@@ -1,0 +1,15 @@
+return {
+  name = "ell",
+  version = "0.83",
+  release = "1",
+  desc = "Embedded Linux library",
+  url = "https://git.kernel.org/pub/scm/libs/ell/ell.git/",
+  license = { "LGPL-2.1-or-later" },
+  arch = { "i686", "x32" },
+  source = { "https://mirrors.edge.kernel.org/pub/linux/libs/ell/ell-${version}.tar.xz" },
+  sha256 = { "39a562f5ab2768e69da1ffbb1f98a8eb3483baffc7d2ef6adc3705e4fd4e53fb" },
+  depends = { "libgcc", "glibc" },
+  build_dir = "ell-${version}",
+  style = "configure",
+  configure = { "--prefix=/usr" },
+}

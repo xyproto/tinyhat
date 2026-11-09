@@ -1,0 +1,16 @@
+return {
+  name = "libde265",
+  version = "1.1.3",
+  release = "1",
+  desc = "Open h.265 video codec implementation",
+  url = "https://github.com/strukturag/libde265",
+  license = { "LGPL-3.0-or-later" },
+  arch = { "i686", "x32" },
+  source = { "git+https://github.com/strukturag/libde265#tag=v${version}" },
+  sha256 = { "15b35cc5ed154a31bd825bb22d033d9bb93663d1f85ba971ff04b41a239c99a3" },
+  depends = { "glibc", "libgcc", "libstdc++" },
+  makedepends = { "cmake", "git" },
+  build_dir = "libde265",
+  style = "cmake",
+  configure = { "-DCMAKE_INSTALL_PREFIX=/usr", "-DENABLE_ENCODER=ON" },
+}
