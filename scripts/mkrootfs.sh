@@ -276,6 +276,7 @@ systemctl set-default multi-user.target
 	rm -rf "$root/var/cache/"* "$root/var/log/"*
 	mkdir -p "$root/media" "$root/persist" "$root/etc/dropbear" "$root/var/lib/tinyhat"
 
+	python3 scripts/forbidcheck.py "$root"
 	python3 scripts/elfcheck.py "$root"
 	scripts/inroot.sh "$root" /bin/sh -c "$(cat scripts/symcheck.sh)"
 
