@@ -1,0 +1,12 @@
+#!/bin/sh
+unset LD_PRELOAD
+export LD_LIBRARY_PATH=/host/usr/lib
+n=${0##*/}
+n=${n#aarch64-unknown-linux-gnu-}
+case $n in
+ar | nm | ranlib)
+	for p in /host/usr/lib/gcc/aarch64-linux-gnu/*/liblto_plugin.so; do :; done
+	exec /host/usr/bin/aarch64-linux-gnu-"$n" --plugin "$p" "$@"
+	;;
+esac
+exec /host/usr/bin/aarch64-linux-gnu-"$n" "$@"

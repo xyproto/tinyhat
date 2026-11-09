@@ -1,0 +1,4 @@
+#!/bin/sh
+unset LD_PRELOAD
+export LD_LIBRARY_PATH=/host/usr/lib
+exec /host/usr/bin/pacman "$@"
