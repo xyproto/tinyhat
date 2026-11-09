@@ -1,0 +1,8 @@
+#!/bin/sh
+unset LD_PRELOAD
+export LD_LIBRARY_PATH=/host/usr/lib
+for g in /usr/lib/gcc/aarch64-unknown-linux-gnu/*; do :; done
+for i in /host/usr/lib/gcc/aarch64-linux-gnu/*/include; do :; done
+c=/usr/include/c++/${g##*/}
+exec /host/usr/bin/aarch64-linux-gnu-g++ --sysroot=/ -nostdinc -nostdinc++ -idirafter "$c" -idirafter "$c"/aarch64-unknown-linux-gnu \
+	-idirafter "$c"/backward -idirafter "$i" -idirafter /usr/include -B/opt/tinyhat-cc/bin/ -B/usr/lib/ -L"$g" -L/usr/lib "$@"

@@ -1,0 +1,5 @@
+#!/bin/sh
+unset LD_PRELOAD
+export LD_LIBRARY_PATH=/host/usr/lib
+for i in /host/usr/lib/gcc/aarch64-linux-gnu/*/include; do :; done
+exec /host/usr/bin/aarch64-linux-gnu-cpp --sysroot=/ -nostdinc -idirafter "$i" -idirafter /usr/include "$@"
