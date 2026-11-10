@@ -1,0 +1,112 @@
+diff --git a/src/frontends/gtk/completion.c b/src/frontends/gtk/completion.c
+index 08456dd..b52872f 100644
+--- a/src/frontends/gtk/completion.c
++++ b/src/frontends/gtk/completion.c
+@@ -127,17 +127,48 @@ void nsgtk_completion_init(void)
+ 	nsgtk_completion_list = gtk_list_store_new(1, G_TYPE_STRING);
+ }
+ 
++static guint nsgtk_completion_timer;
++
++static gboolean nsgtk_completion_show(gpointer data)
++{
++	GtkEntry *entry = data;
++	GtkEntryCompletion *completion = gtk_entry_get_completion(entry);
++
++	nsgtk_completion_timer = 0;
++	if (completion == NULL || !gtk_widget_has_focus(GTK_WIDGET(entry)) ||
++	    nsoption_bool(url_suggestion) == false) {
++		return G_SOURCE_REMOVE;
++	}
++	urldb_iterate_partial(gtk_editable_get_text(GTK_EDITABLE(entry)),
++			      nsgtk_completion_udb_callback);
++	gtk_entry_completion_set_popup_completion(completion, TRUE);
++	gtk_entry_completion_complete(completion);
++	return G_SOURCE_REMOVE;
++}
++
++/* exported interface documented in completion.h */
++void nsgtk_completion_cancel(void)
++{
++	if (nsgtk_completion_timer != 0) {
++		g_source_remove(nsgtk_completion_timer);
++		nsgtk_completion_timer = 0;
++	}
++}
++
+ /* exported interface documented in completion.h */
+ gboolean nsgtk_completion_update(GtkEntry *entry)
+ {
+-	gtk_list_store_clear(nsgtk_completion_list);
++	GtkEntryCompletion *completion = gtk_entry_get_completion(entry);
+ 
+-	if (nsoption_bool(url_suggestion) == true) {
+-		urldb_iterate_partial(gtk_editable_get_text(
+-					      GTK_EDITABLE(entry)),
+-				      nsgtk_completion_udb_callback);
++	nsgtk_completion_cancel();
++	gtk_list_store_clear(nsgtk_completion_list);
++	if (completion != NULL) {
++		gtk_entry_completion_set_popup_completion(completion, FALSE);
+ 	}
+-
++	nsgtk_completion_timer = g_timeout_add_full(G_PRIORITY_DEFAULT, 600,
++						    nsgtk_completion_show,
++						    g_object_ref(entry),
++						    g_object_unref);
+ 	return TRUE;
+ }
+ 
+@@ -170,8 +201,7 @@ nsgtk_completion_connect_signals(GtkEntry *entry,
+ 
+ 	gtk_entry_completion_set_minimum_key_length(completion, 1);
+ 
+-	/* enable popup for completion */
+-	gtk_entry_completion_set_popup_completion(completion, TRUE);
++	gtk_entry_completion_set_popup_completion(completion, FALSE);
+ 
+ 	/* when selected callback */
+ 	g_signal_connect(G_OBJECT(completion),
+diff --git a/src/frontends/gtk/completion.h b/src/frontends/gtk/completion.h
+index 02c0657..f38cfcd 100644
+--- a/src/frontends/gtk/completion.h
++++ b/src/frontends/gtk/completion.h
+@@ -36,6 +36,8 @@ void nsgtk_completion_init(void);
+  */
+ gboolean nsgtk_completion_update(GtkEntry *entry);
+ 
++void nsgtk_completion_cancel(void);
++
+ /**
+  * connect signals on entry completion
+  */
+diff --git a/src/frontends/gtk/toolbar.c b/src/frontends/gtk/toolbar.c
+index b40d905..4f60ab3 100644
+--- a/src/frontends/gtk/toolbar.c
++++ b/src/frontends/gtk/toolbar.c
+@@ -1734,6 +1734,8 @@ static gboolean url_entry_activate_cb(GtkWidget *widget, gpointer data)
+ 	struct browser_window *bw;
+ 	nsurl *url;
+ 
++	nsgtk_completion_cancel();
++
+ 	res = search_web_omni(gtk_editable_get_text(GTK_EDITABLE(widget)),
+ 			      SEARCH_WEB_OMNI_NONE,
+ 			      &url);
+diff --git a/src/frontends/gtk/window.c b/src/frontends/gtk/window.c
+index 7e48e9b..eb7c22f 100644
+--- a/src/frontends/gtk/window.c
++++ b/src/frontends/gtk/window.c
+@@ -542,6 +542,12 @@ static gboolean nsgtk_window_key_pressed(GtkEventControllerKey *controller,
+ 	if (browser_window_key_press(g->bw, nskey))
+ 		return TRUE;
+ 
++	if (keyval == GDK_KEY(space) && (state & GDK_CONTROL_MASK) == 0) {
++		double page = gtk_adjustment_get_page_increment(g->vadj);
++		nsgtk_adjustment_scroll(g->vadj, (state & GDK_SHIFT_MASK) ? -page : page);
++		return TRUE;
++	}
++
+ 	if ((state & (GDK_SHIFT_MASK | GDK_LOCK_MASK | GDK_CONTROL_MASK)) != 0)
+ 		return FALSE;
+ 
