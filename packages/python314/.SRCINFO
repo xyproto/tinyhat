@@ -1,0 +1,29 @@
+pkgbase = python314
+	pkgdesc = The Python programming language, for Tiny Hat images
+	pkgver = 3.14.10
+	pkgrel = 1
+	url = https://www.python.org/
+	arch = i686
+	arch = x32
+	license = PSF-2.0
+	depends = bzip2
+	depends = expat
+	depends = gdbm
+	depends = libffi
+	depends = libnsl
+	depends = libxcrypt
+	depends = openssl
+	depends = zlib
+	depends = tzdata
+	depends = mpdecimal
+	depends = zstd
+	depends = sqlite
+	provides = python=3.14.10
+	provides = python3=3.14.10
+	conflicts = python
+	source = https://www.python.org/ftp/python/3.14.10/Python-3.14.10.tar.xz
+	source = EXTERNALLY-MANAGED
+	sha512sums = 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a
+	sha512sums = 62a6fbfbaeaa3ba7c54e109d9c3b7f67e73bb21986da4c1fcc5d28cca83d71e0fcae28e1fc70ee8ddce7dea8cd0b64e18d1031dae3a2eae5eaa379c53efd53a0
+
+pkgname = python314
