@@ -1,10 +1,10 @@
-VERSION := 1.0.6
+VERSION := 1.0.7
 KVER := 7.3.1
 
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
-.PHONY: help all all_but_aarch64 img iso vdi i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all all_but_aarch64 img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -58,7 +58,7 @@ SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 OVERLAY := $(shell find config/overlay)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
-VDI_SIZE ?= 20G
+DISK_SIZE ?= 20G
 
 # Disk space and memory while building: how many packages build at once (one per 8 GB of memory, at least 1),
 # how many compile jobs each of them may run (all cores, held back by the load limit PKG_LOAD so that packages
@@ -92,12 +92,14 @@ IMG_AARCH64 := tinyhat-aarch64.img
 IMG_RPI4 := tinyhat-rpi4.img
 IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64) $(IMG_AARCH64) $(IMG_RPI4)
 ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_X86_64:.img=.iso) $(IMG_AARCH64:.img=.iso)
-VDIS := $(ISOS:.iso=.vdi)
 X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
-X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(X86_IMGS:.img=.vdi)
+QEMU_TARS := $(IMG_AARCH64:.img=.tar.gz)
+OVAS := $(X86_IMGS:.img=.ova)
+X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(OVAS)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 KERNEL_DEPS := vendor/src/linux-$(KVER).tar.xz vendor/src/xpadneo-0.10.5.tar.gz scripts/mkkernel.sh scripts/kcheck.py config/kernel-common.fragment config/kernel-tinyhat-panic.patch
-MKROOTFS = TINYHAT_PKGS="$(TINYHAT_PKGS)" scripts/userns.sh scripts/mkrootfs.sh
+MKROOTFS = TINYHAT_PKGS="$(TINYHAT_PKGS)" TINYHAT_VERSION="$(VERSION)" scripts/userns.sh scripts/mkrootfs.sh
+$(shell mkdir -p $(B) && [ "$$(cat $(B)/version 2>/dev/null)" = "$(VERSION)" ] || echo "$(VERSION)" > $(B)/version)
 MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION)
 
 .DELETE_ON_ERROR:
@@ -130,9 +132,10 @@ help:
 	$(call target,aarch64_iso,"64-bit ARM UEFI ISO")
 	$(call target,iso,"all four ISO images")
 	@printf '\n$(C_GRP)Groups and releases$(C_OFF)\n'
-	$(call target,vdi,"VirtualBox disk images (i686$(comma) x32$(comma) x86_64$(comma) aarch64)")
-	$(call target,all,"every .img$(comma) .iso and .vdi")
-	$(call target,all_but_aarch64,"the i686$(comma) x32 and x86_64 .img$(comma) .iso and .vdi files")
+	$(call target,ova,"VirtualBox appliances (i686$(comma) x32$(comma) x86_64)")
+	$(call target,qemu,"aarch64 QEMU disk image and run script (.tar.gz)")
+	$(call target,all,"every .img$(comma) .iso$(comma) .ova and .tar.gz")
+	$(call target,all_but_aarch64,"the i686$(comma) x32 and x86_64 .img$(comma) .iso and .ova files")
 	$(call target,dist,"release files in $(B)/dist$(comma) signed")
 	$(call target,dist_but_aarch64,"release files in $(B)/dist without the ARM images$(comma) signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
@@ -178,9 +181,11 @@ img: $(IMGS)
 
 iso: $(ISOS)
 
-vdi: $(VDIS)
+ova: $(OVAS)
 
-all: $(IMGS) $(ISOS) $(VDIS)
+qemu: $(QEMU_TARS)
+
+all: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
 
 all_but_aarch64: $(X86_FILES)
 
@@ -206,13 +211,12 @@ $(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sf
 	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/Image-arm64
 	@ls -l $@
 
-%.vdi: %.img
-	rm -f $@.tmp $@.raw
-	cp --sparse=always $< $@.raw
-	truncate -s $(VDI_SIZE) $@.raw
-	VBoxManage convertfromraw $@.raw $@.tmp --format VDI
-	rm -f $@.raw
-	mv $@.tmp $@
+%.ova: %.img scripts/mkova.sh
+	scripts/mkova.sh $< $@ $(if $(filter $(IMG_I686),$<),ArchLinux,ArchLinux_64) $(VERSION) $(DISK_SIZE)
+	@ls -l $@
+
+%.tar.gz: %.img scripts/mkqemutar.sh
+	scripts/mkqemutar.sh $< $@ $(DISK_SIZE)
 	@ls -l $@
 
 $(IMG_X32): $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(IMG_DEPS) $(B)/pkg/i686/grub-efi64 $(B)/pkg/i686/sbsigntools vendor/src/shim-x64-16.1-10.x86_64.rpm $(SB_KEYS)/tinyhat.cer
@@ -299,7 +303,7 @@ dist: distbuild
 dist_but_aarch64: distbuild_but_aarch64
 	@$(MAKE) --no-print-directory sign
 
-distbuild: $(IMGS) $(ISOS) $(VDIS)
+distbuild: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
 distbuild_but_aarch64: $(X86_FILES)
 distbuild distbuild_but_aarch64:
 	$(MKDIST) $^
@@ -437,7 +441,7 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	@touch $@
 
 ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/lure-1.1.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
-ROOTFS_FINAL_DEPS := $(B)/theme.toml $(OVERLAY) scripts/forbidcheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
+ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(OVERLAY) scripts/forbidcheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
 	$(MKROOTFS) base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
@@ -525,7 +529,7 @@ status:
 
 clean:
 	scripts/userns.sh rm -rf $(B)
-	rm -f $(IMGS) $(IMGS:=.tmp) $(ISOS) $(VDIS) $(VDIS:=.tmp)
+	rm -f $(IMGS) $(IMGS:=.tmp) $(ISOS) $(QEMU_TARS) $(QEMU_TARS:=.tmp) $(OVAS) $(OVAS:=.tmp.ova)
 
 distclean: clean
 	rm -rf vendor/pkg vendor/pkg-aarch64 vendor/pkg-x86_64
