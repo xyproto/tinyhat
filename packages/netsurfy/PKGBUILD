@@ -3,7 +3,7 @@
 pkgname=netsurfy
 _commit=c7a9776222131e1dbafe8410e8974aaf701cc440
 pkgver=1.0.4.r5.gc7a9776
-pkgrel=1
+pkgrel=2
 pkgdesc='Lightweight and fast web browser, forked from NetSurf'
 arch=(i686 x32)
 url='https://github.com/xyproto/netsurfy'
@@ -14,11 +14,19 @@ provides=(netsurf)
 conflicts=(netsurf)
 replaces=(netsurf)
 source=("$pkgname-$_commit.tar.gz::https://github.com/xyproto/netsurfy/archive/$_commit.tar.gz"
-        netsurfy-sandbox)
+        netsurfy-sandbox
+        keys.patch)
 sha256sums=('ef281e4e79f2e4b6ee9986a25742e8a1b3c5a425d5c77c19d7f1a479b8cac9b3'
-            'SKIP')
+            'SKIP'
+            '3bed3ad6238381b410e6965869760f0a872318629298109e7ec19ec6c9728fb8')
 b2sums=('b6a56413da0f281220eac3b6838faa31d65a2391aea155c369f0296cf374cb91dd79e795a93ea25f9c0f794ea9ee107abdb26eab4ce80f6343d24c31df91844c'
-        'SKIP')
+        'SKIP'
+        '0cadf7c5bcbbf3f2003a98f36b1077349993378970823ac1b854e63c3aae666c3a04dffa72fa634a192d713a8d5db65b713374c329da8c3c5e5954d2c848ce7a')
+
+prepare() {
+  cd $pkgname-$_commit
+  patch -Np1 -i ../keys.patch
+}
 
 build() {
   cmake -B build -S $pkgname-$_commit -G Ninja \
