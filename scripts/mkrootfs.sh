@@ -121,7 +121,7 @@ base)
 		k=${k##*/}
 		db=$root/var/lib/pacman/local/linux-tinyhat-${k%%-*}-1
 		mkdir -p "$db"
-		printf '%%NAME%%\nlinux-tinyhat\n\n%%VERSION%%\n%s-1\n\n%%DESC%%\nThe Tiny Hat Linux kernel\n\n%%ARCH%%\n%s\n\n%%PROVIDES%%\nNTSYNC-MODULE\n\n' "${k%%-*}" "$arch" >"$db/desc"
+		printf '%%NAME%%\nlinux-tinyhat\n\n%%VERSION%%\n%s-1\n\n%%DESC%%\nThe Tiny Hat Linux kernel\n\n%%ARCH%%\n%s\n\n%%PROVIDES%%\nNTSYNC-MODULE\nVIRTUALBOX-GUEST-MODULES\n\n' "${k%%-*}" "$arch" >"$db/desc"
 		printf '%%FILES%%\n\n' >"$db/files"
 	done
 
@@ -203,6 +203,10 @@ finalize)
 	fi
 	mv "$manifest.new" "$manifest"
 	cp -a config/overlay/. "$root/"
+	if [ -n "${TINYHAT_VERSION-}" ]; then
+		sed -i "/^ID_LIKE=/a VERSION=\"$TINYHAT_VERSION\"\nVERSION_ID=$TINYHAT_VERSION" "$root/etc/os-release"
+		sed -i "1s/^Tiny Hat\$/Tiny Hat $TINYHAT_VERSION/" "$root/etc/tinyhat/help.txt"
+	fi
 	(cd config/overlay && find . -mindepth 1) | while IFS= read -r p; do
 		if [ -d "config/overlay/$p" ] || [ -x "config/overlay/$p" ]; then
 			chmod 755 "$root/$p"
@@ -261,6 +265,7 @@ passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
 systemctl enable tinyhat-console.service tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service tinyhat-crashlogs.service fstrim.timer
+[ ! -f /usr/lib/systemd/system/vboxservice.service ] || systemctl enable vboxservice.service
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
