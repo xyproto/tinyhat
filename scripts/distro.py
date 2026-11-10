@@ -66,7 +66,15 @@ def skipped():
 
 
 def excluded():
-    return {base for base, t in tables().items() if t.get("excluded")}
+    return set(section("deny").get("everywhere", []))
+
+
+def deny_image():
+    return list(section("deny").get("image", []))
+
+
+def deny_files():
+    return list(section("deny").get("files", []))
 
 
 def prebuilt_listed():

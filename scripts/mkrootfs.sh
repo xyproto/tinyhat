@@ -261,11 +261,11 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service tinyhat-crashlogs.service fstrim.timer
+systemctl enable tinyhat-console.service tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service tinyhat-crashlogs.service fstrim.timer
 systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
-systemctl mask systemd-nsresourced.socket systemd-nsresourced.service systemd-boot-update.service systemd-pcrmachine.service systemd-pcrphase.service systemd-pcrphase-sysinit.service ldconfig.service 2>/dev/null || true
+systemctl mask systemd-vconsole-setup.service systemd-nsresourced.socket systemd-nsresourced.service systemd-boot-update.service systemd-pcrmachine.service systemd-pcrphase.service systemd-pcrphase-sysinit.service ldconfig.service 2>/dev/null || true
 systemctl --global disable mpris-proxy.service filter-chain.service pipewire.service fluidsynth.service 2>/dev/null || true
 systemctl --global enable pipewire.socket wireplumber.service
 systemctl --global mask gcr-ssh-agent.socket gcr-ssh-agent.service p11-kit-server.socket p11-kit-server.service 2>/dev/null || true
