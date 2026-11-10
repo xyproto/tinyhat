@@ -12,9 +12,52 @@ prebuilt_all = true
 # glibc x32-runtime zlib zstd xz bzip2 libffi expat
 x32 = []
 
+[deny]
+# image: never in an image (checked when the package lists are worked out, when updates are
+# considered and in the finished root filesystems). Patterns, or NAME<VERSION for versions that are too old.
+# everywhere: never built, installed or used as a build dependency either.
+# files: no root filesystem may contain these, whichever package they come from.
+image = [
+    "perl", "perl-*",
+    "sdl2-*", "sdl2_*",
+    "guile", "portaudio", "libheif", "libavif", "libjxl",
+    "gtk2-*",
+    "gtk3-*",
+    "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
+    "xorg-server*", "xorg-x*", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
+    "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
+    "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice",
+    "xcb-util", "xcb-util-cursor", "xcb-util-errors", "xcb-util-image", "xcb-util-keysyms", "xcb-util-renderutil",
+    "qt5-base", "qt6-base", "sdl2", "sdl2_image", "gtk2", "gtk3",
+    # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
+    "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
+]
+everywhere = [
+    "appstream",
+    "at-spi2-core",
+    "ffmpeg",
+    "gstreamer",
+    "gtk2",
+    "gtk3",
+    "gtkmm",
+    "libglade",
+    "npm",
+    "opencv",
+    "python2",
+    "sdl12-compat",
+    "sdl2",
+    "vala",
+    "vte3",
+    "wpewebkit",
+]
+files = [
+    "usr/lib/libQt5Core.so*", "usr/lib/libQt6Core.so*", "usr/bin/perl", "usr/lib/libSDL2-2.0.so*",
+    "usr/lib/libSDL2_image*.so*", "usr/lib/libgtk-x11-2.0.so*", "usr/lib/libgtk-3.so*",
+]
+
 [image]
 packages = [
-    "filesystem", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "gawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
+    "filesystem", "tinyhat-keyring", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "gawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
     "systemd", "shadow",
     "xfsprogs", "dosfstools", "exfatprogs", "mtools", "ntfs-3g",
     "alsa-utils", "pipewire", "pipewire-alsa", "pipewire-jack", "wireplumber", "tinyhat-pipewire-wait",
@@ -40,26 +83,6 @@ packages = [
 skip = [
     "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
     "llvm", "llvm-lit",
-]
-# No root filesystem, and so no image, ISO or VDI, may contain these (scripts/forbidcheck.py)
-forbidden = ["qt5-base", "qt6-base", "perl", "sdl2", "sdl2_image", "gtk2", "gtk3"]
-forbidden_files = [
-    "usr/lib/libQt5Core.so*", "usr/lib/libQt6Core.so*", "usr/bin/perl", "usr/lib/libSDL2-2.0.so*",
-    "usr/lib/libSDL2_image*.so*", "usr/lib/libgtk-x11-2.0.so*", "usr/lib/libgtk-3.so*",
-]
-# Package updates that would make the image depend on one of these are held back (scripts/autoupdate.py)
-deny = [
-    "perl", "perl-*",
-    "sdl2-*", "sdl2_*",
-    "guile", "portaudio", "libheif", "libavif", "libjxl",
-    "gtk2-*",
-    "gtk3-*",
-    "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
-    "xorg-server*", "xorg-x*", "libxext", "libxrender", "libxrandr", "libxi", "libxinerama", "libxcursor",
-    "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
-    "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice", "xcb-util*",
-    # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
-    "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
 ]
 exclude = [
     # Headers, pkg-config, CMake and aclocal files stay, so programs can be built on Tiny Hat
@@ -638,9 +661,6 @@ arch = "i686"
 build_for = ["i686"]
 build_from_source = true
 
-[appstream]
-excluded = true
-
 [aquarium]
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/aquarium", prefix = "v", use_max_tag = true }
@@ -651,9 +671,6 @@ prebuilt = true
 
 [arm-none-eabi-newlib]
 prebuilt = true
-
-[at-spi2-core]
-excluded = true
 
 [bind]
 build_from_source = true
@@ -710,9 +727,6 @@ source = "sources"
 
 [fcft]
 build_from_source = true
-
-[ffmpeg]
-excluded = true
 
 [fish]
 build_for = ["i686"]
@@ -796,20 +810,8 @@ build_for = ["i686"]
 [grub-efi64]
 source = "sources"
 
-[gstreamer]
-excluded = true
-
-[gtk2]
-excluded = true
-
-[gtk3]
-excluded = true
-
 [gtk4]
 build_from_source = true
-
-[gtkmm]
-excluded = true
 
 [harfbuzz]
 build_from_source = true
@@ -850,9 +852,6 @@ nvchecker = { source = "gitlab", gitlab = "emersion/libdisplay-info", host = "gi
 [libepoxy]
 build_from_source = true
 
-[libglade]
-excluded = true
-
 [libglvnd]
 build_from_source = true
 
@@ -877,7 +876,6 @@ build_from_source = true
 
 [libretro-blastem]
 source = "sources"
-
 
 [libretro-nestopia]
 source = "sources"
@@ -947,9 +945,6 @@ build_from_source = true
 [netsurfy]
 source = "sources"
 
-[npm]
-excluded = true
-
 [nss]
 prebuilt = true
 
@@ -961,9 +956,6 @@ source = "sources"
 
 [onetbb]
 prebuilt = true
-
-[opencv]
-excluded = true
 
 [openssl]
 prebuilt = true
@@ -990,9 +982,6 @@ nvchecker = { source = "github", github = "pure-fish/pure", prefix = "v", use_la
 [pvsneslib]
 source = "sources"
 
-[python2]
-excluded = true
-
 [qemacs]
 source = "sources"
 
@@ -1017,12 +1006,6 @@ build_from_source = true
 heavy = true
 source = "sources"
 nvchecker = { source = "github", github = "scummvm/scummvm", prefix = "v", use_latest_release = true }
-
-[sdl12-compat]
-excluded = true
-
-[sdl2]
-excluded = true
 
 [sdl3]
 source = "sources"
@@ -1097,6 +1080,9 @@ source = "sources"
 [tinyhat-status]
 source = "sources"
 
+[tinyhat-keyring]
+source = "sources"
+
 [tinyhat-view]
 source = "sources"
 
@@ -1107,14 +1093,8 @@ nvchecker = { source = "github", github = "xyproto/tinyxxd", prefix = "v", use_m
 [util-linux]
 build_from_source = true
 
-[vala]
-excluded = true
-
 [vice]
 source = "sources"
-
-[vte3]
-excluded = true
 
 [wallutils]
 source = "sources"
@@ -1126,9 +1106,6 @@ nvchecker = { source = "gitlab", gitlab = "wlroots/wlroots", host = "gitlab.free
 
 [wireplumber]
 build_from_source = true
-
-[wpewebkit]
-excluded = true
 
 [x32-binutils]
 source = "sources"
