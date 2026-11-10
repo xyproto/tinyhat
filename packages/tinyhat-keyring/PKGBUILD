@@ -1,0 +1,16 @@
+pkgname=tinyhat-keyring
+pkgver=20261110
+pkgrel=1
+pkgdesc="Tiny Hat PGP keyring"
+arch=(any)
+url="https://github.com/xyproto/tinyhat"
+license=(BSD-3-Clause)
+install=tinyhat-keyring.install
+source=(tinyhat.gpg tinyhat-trusted tinyhat-revoked)
+sha256sums=('13be90ca0e4205cdf1c60ea8dbf4544d18832ca08aa1f9a6c12e0510822741d5'
+            'd4bde5ab275d50664ab8addb26d99569e6d8fcb48666bf02623b629b03c24084'
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+
+package() {
+  install -Dm644 -t "$pkgdir/usr/share/pacman/keyrings" tinyhat.gpg tinyhat-trusted tinyhat-revoked
+}
