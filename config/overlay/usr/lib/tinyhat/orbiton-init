@@ -6,7 +6,7 @@ mountpoint -q /dev || mount -t devtmpfs dev /dev
 mkdir -p /dev/pts /dev/shm
 mount -t devpts -o gid=5,mode=620 devpts /dev/pts
 mount -t tmpfs -o mode=1777 tmp /tmp
-/usr/lib/systemd/systemd-udevd --daemon
+SYSTEMD_LOG_TARGET=kmsg /usr/lib/systemd/systemd-udevd --daemon >/dev/null 2>&1
 udevadm trigger --type=subsystems --action=add
 udevadm trigger --type=devices --action=add
 udevadm settle -t 10
