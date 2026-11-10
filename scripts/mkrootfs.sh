@@ -210,7 +210,6 @@ finalize)
 			chmod 644 "$root/$p"
 		fi
 	done
-	[ ! -x "$root/usr/bin/rofi" ] || install -Dm644 config/rofi/config.rasi "$root/etc/xdg/rofi/config.rasi"
 	[ "$arch" != aarch64 ] || rm -f "$root/usr/bin/tinyhat-watcom" "$root/usr/share/applications/tinyhat-watcom.desktop" "$root/etc/profile.d/watcom.sh" "$root/usr/bin/tinyhat-wine" "$root/usr/share/applications/tinyhat-wine.desktop"
 	[ "$arch" = x32 ] || rm -f "$root/usr/bin/tinyhat-steam" "$root/usr/share/applications/tinyhat-steam.desktop" "$root/usr/lib/tinyhat/steam-install"
 	mkdir -p "$root/usr/share/licenses/tinyhat"
