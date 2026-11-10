@@ -1,0 +1,13 @@
+[Unit]
+Description=Console keymap and font
+After=systemd-udev-trigger.service tinyhat-persist.service
+
+[Service]
+Type=oneshot
+Nice=19
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle
+ExecStart=/usr/lib/tinyhat/console
+
+[Install]
+WantedBy=multi-user.target

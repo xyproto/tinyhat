@@ -1,0 +1,10 @@
+#!/bin/sh
+KEYMAP= FONT=
+[ -r /etc/vconsole.conf ] && . /etc/vconsole.conf
+[ -n "$KEYMAP" ] && loadkeys -q -C /dev/tty1 "$KEYMAP"
+if [ -n "$FONT" ]; then
+	for n in 2 3 4 5 6; do
+		setfont -C "/dev/tty$n" "$FONT" 2>/dev/null
+	done
+fi
+exit 0
