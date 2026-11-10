@@ -296,8 +296,10 @@ def resolve(name, extra=(), repodir=None, arch="i686"):
 
 
 def check_excluded(name, sel, extra=()):
-    """Stop if an excluded package (distro.toml excluded = true) got into the selection, naming what pulled it in."""
-    bad = {p["name"] for p in sel} & distro.excluded()
+    """Stop if a package that [deny] keeps out of images got into the selection, naming what pulled it in."""
+    patterns = [e for e in distro.deny_image() if not re.search(r"[<>=]", e)] if name.startswith("image") else []
+    bad = {p["name"] for p in sel if p["name"] in distro.excluded()
+           or any(fnmatch.fnmatchcase(p["name"], pat) for pat in patterns)}
     if not bad:
         return
     by = {}
@@ -309,7 +311,7 @@ def check_excluded(name, sel, extra=()):
         users = sorted(set(by.get(n, [])))
         lines.append(f"  {n}: needed by {', '.join(users)}" if users else f"  {n}: listed for [{name}]" +
                      (f" (from {', '.join(extra)})" if extra else ""))
-    die(f"[{name}] would contain excluded packages:\n" + "\n".join(lines))
+    die(f"[{name}] would contain packages that [deny] keeps out:\n" + "\n".join(lines))
 
 
 def lock_line(p, repo=None):

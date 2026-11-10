@@ -175,16 +175,16 @@ def satisfies(version, constraints):
 
 
 def deny_rules():
-    """[image] deny entries as (name pattern, operator, version): "perl*" or "llvm<23"."""
+    """[deny] image entries as (name pattern, operator, version): "perl*" or "llvm<23"."""
     out = []
-    for e in distro.section("image").get("deny", []):
+    for e in distro.deny_image():
         m = re.fullmatch(r"([^<>=]+)(<=|<)(.+)", e)
         out.append((m.group(1), m.group(2), m.group(3)) if m else (e, None, None))
     return out + [(name, None, None) for name in sorted(distro.excluded())]
 
 
 def denied(name, version=None, rules=None):
-    """Whether a package (with this version, if known) matches [image] deny. Version rules only match known versions."""
+    """Whether a package (with this version, if known) matches [deny] image. Version rules only match known versions."""
     for pat, op, ver in deny_rules() if rules is None else rules:
         if not fnmatch.fnmatchcase(name, pat):
             continue
