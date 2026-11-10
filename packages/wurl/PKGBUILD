@@ -1,0 +1,30 @@
+pkgname=wurl
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Small wget replacement that uses libcurl"
+arch=(i686 x32)
+url="https://github.com/xyproto/wurl"
+license=(MIT)
+depends=(curl glibc)
+provides=(wget)
+conflicts=(wget)
+source=("$pkgname-$pkgver.tar.gz::https://github.com/xyproto/wurl/archive/refs/tags/v$pkgver.tar.gz"
+        filename.patch)
+sha256sums=('020b08361e29c12adf9ced7739198de69c1208b3a4ccfd504ecc2257d24857b5'
+            '06a0585e56714503c5e1ea9d78c2f2c6017e8dd92da42af29bf83bcacb0da8fe')
+
+prepare() {
+  cd $pkgname-$pkgver
+  patch -Np1 -i ../filename.patch
+}
+
+build() {
+  cd $pkgname-$pkgver
+  make CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS -lcurl"
+}
+
+package() {
+  cd $pkgname-$pkgver
+  install -Dm755 wget "$pkgdir/usr/bin/wget"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
