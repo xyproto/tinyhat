@@ -1,0 +1,51 @@
+diff --git a/dwl.c b/dwl.c
+index 088fa52..052fff7 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -1993,6 +1993,12 @@ stextw(Monitor *m, char *s)
+ 		w += drwl_font_getwidth(m->drw, seg) + iconw(m, kind);
+ 		*p = kind;
+ 		seg = p + 1;
++		while (*seg == ' ')
++			seg++;
++		while (*seg >= '0' && *seg <= '9')
++			seg++;
++		if (*seg == '%')
++			seg++;
+ 	}
+ 	return w + drwl_font_getwidth(m->drw, seg);
+ }
+@@ -2003,10 +2009,8 @@ drawstext(Monitor *m, int x, char *s)
+ 	char *seg = s;
+ 	for (char *p = s; *p; p++) {
+ 		int kind = iconkind(s, p), vol = kind == 'V' || kind == 'M';
+-		char *end;
+ 		if (!kind)
+ 			continue;
+-		end = strstr(p, " | ");
+ 		*p = '\0';
+ 		if (*seg)
+ 			x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+@@ -2016,14 +2020,15 @@ drawstext(Monitor *m, int x, char *s)
+ 		drawicon(m, x, kind, atoi(p + 1));
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		x += iconw(m, kind);
+-		if (vol) {
+-			if (end)
+-				*end = '\0';
+-			m->volx1 = x + drwl_font_getwidth(m->drw, p + 1);
+-			if (end)
+-				*end = ' ';
+-		}
++		if (vol)
++			m->volx1 = x;
+ 		seg = p + 1;
++		while (*seg == ' ')
++			seg++;
++		while (*seg >= '0' && *seg <= '9')
++			seg++;
++		if (*seg == '%')
++			seg++;
+ 	}
+ 	if (*seg)
+ 		x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);

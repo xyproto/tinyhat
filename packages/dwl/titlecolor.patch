@@ -1,0 +1,12 @@
+diff --git a/dwl.c b/dwl.c
+index 3c1da86..088fa52 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -2469,6 +2469,7 @@ drawtasks(Monitor *m, int x, int w)
+ 	if (sel && !sel->isminimized && x + w - m->taskx[n] > m->b.height * 3) {
+ 		const char *title = client_get_title(sel);
+ 		int tw = TEXTW(m, title), aw = x + w - m->taskx[n];
++		drwl_setscheme(m->drw, colors[SchemeSel]);
+ 		drwl_text(m->drw, m->taskx[n], 0, aw, m->b.height, tw < aw ? (aw - tw) / 2 + m->lrpad / 2 : m->lrpad / 2, title, 0);
+ 	}
+ }
