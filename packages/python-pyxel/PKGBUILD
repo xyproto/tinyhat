@@ -1,0 +1,40 @@
+pkgname=python-pyxel
+pkgver=3.0.1
+pkgrel=1
+pkgdesc="Retro game engine for Python, built with SDL3"
+arch=(i686 x32)
+url="https://github.com/kitao/pyxel"
+license=(MIT)
+depends=(glibc gcc-libs sdl3 "python>=3.14")
+makedepends=(cargo clang python)
+source=("pyxel-$pkgver.tar.gz::https://github.com/kitao/pyxel/archive/refs/tags/v$pkgver.tar.gz"
+        sdl3.patch)
+sha256sums=('969abc7322a3eb4d6f1ce2038f8c23e034db988428479cc4d32871e6f92696c9'
+            'SKIP')
+
+prepare() {
+  cd pyxel-$pkgver
+  patch -Np1 -i ../sdl3.patch
+  cd crates
+  cargo fetch --locked --target host-tuple
+}
+
+build() {
+  cd pyxel-$pkgver/crates
+  PYO3_PYTHON=python3 cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3
+}
+
+package() {
+  cd pyxel-$pkgver
+  local site="$pkgdir/usr/lib/python3.14/site-packages/pyxel"
+  install -d "$site"
+  cp -r python/pyxel/. "$site/"
+  install -Dm755 crates/target/release/libpyxel_binding.so "$site/pyxel_binding.abi3.so"
+  install -Dm755 /dev/stdin "$pkgdir/usr/bin/pyxel" <<'SCRIPT'
+#!/usr/bin/python3
+import sys
+from pyxel.cli import cli
+sys.exit(cli())
+SCRIPT
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
