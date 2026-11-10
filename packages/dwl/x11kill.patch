@@ -1,0 +1,43 @@
+diff --git a/dwl.c b/dwl.c
+index faaed1f..3c1da86 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -3055,6 +3055,19 @@ typedef struct {
+ 	struct wl_event_source *timer;
+ } PendingKill;
+ 
++static pid_t
++clientpid(Client *c)
++{
++	pid_t pid = 0;
++
++#ifdef XWAYLAND
++	if (client_is_x11(c))
++		return c->surface.xwayland->pid;
++#endif
++	wl_client_get_credentials(c->surface.xdg->client->client, &pid, NULL, NULL);
++	return pid;
++}
++
+ static int
+ forcekill(void *data)
+ {
+@@ -3065,8 +3078,7 @@ forcekill(void *data)
+ 	wl_list_for_each(c, &clients, link) {
+ 		if (c != p->c)
+ 			continue;
+-		pid = 0;
+-		wl_client_get_credentials(c->surface.xdg->client->client, &pid, NULL, NULL);
++		pid = clientpid(c);
+ 		if (pid == p->pid)
+ 			kill(p->pid, SIGKILL);
+ 		break;
+@@ -3088,7 +3100,7 @@ killclient(const Arg *arg)
+ 	client_send_close(sel);
+ 	if (client_is_unmanaged(sel))
+ 		return;
+-	wl_client_get_credentials(sel->surface.xdg->client->client, &pid, NULL, NULL);
++	pid = clientpid(sel);
+ 	if (pid <= 1 || pid == getpid())
+ 		return;
+ 	p = ecalloc(1, sizeof(*p));

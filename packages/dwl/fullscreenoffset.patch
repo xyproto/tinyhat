@@ -1,0 +1,89 @@
+diff --git a/dwl.c b/dwl.c
+index a46af77..faaed1f 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -319,6 +319,7 @@ static void cleanuplisteners(void);
+ static void closemon(Monitor *m);
+ static void commitlayersurfacenotify(struct wl_listener *listener, void *data);
+ static void commitnotify(struct wl_listener *listener, void *data);
++static void fsoffset(Client *c);
+ static void commitpopup(struct wl_listener *listener, void *data);
+ static void createdecoration(struct wl_listener *listener, void *data);
+ static void createidleinhibitor(struct wl_listener *listener, void *data);
+@@ -546,6 +547,7 @@ static struct wl_listener new_foreign_toplevel_capture_request = {.notify = capt
+ #ifdef XWAYLAND
+ static void activatex11(struct wl_listener *listener, void *data);
+ static void associatex11(struct wl_listener *listener, void *data);
++static void commitx11(struct wl_listener *listener, void *data);
+ static void configurex11(struct wl_listener *listener, void *data);
+ static void createnotifyx11(struct wl_listener *listener, void *data);
+ static void dissociatex11(struct wl_listener *listener, void *data);
+@@ -1210,11 +1212,27 @@ commitlayersurfacenotify(struct wl_listener *listener, void *data)
+ 	arrangelayers(l->mon);
+ }
+ 
++void
++fsoffset(Client *c)
++{
++	struct wlr_surface *s = client_surface(c);
++	int x = c->bw, y = c->bw;
++
++	if (c->isfullscreen && s && s->current.width > 0 && s->current.height > 0) {
++		x = MAX(0, (c->geom.width - s->current.width) / 2);
++		y = MAX(0, (c->geom.height - s->current.height) / 2);
++	}
++	wlr_scene_node_set_position(&c->scene_surface->node, x, y);
++}
++
+ void
+ commitnotify(struct wl_listener *listener, void *data)
+ {
+ 	Client *c = wl_container_of(listener, c, commit);
+ 
++	if (c->isfullscreen && client_surface(c)->mapped)
++		fsoffset(c);
++
+ 	if (c->surface.xdg->initial_commit) {
+ 		/*
+ 		 * Get the monitor this client will be rendered on
+@@ -3622,14 +3640,7 @@ resize(Client *c, struct wlr_box geo, int interact)
+ 	wlr_scene_node_for_each_buffer(&c->scene_surface->node, setfilter,
+ 			c->isfullscreen ? &(enum wlr_scale_filter_mode){WLR_SCALE_FILTER_NEAREST}
+ 			: &(enum wlr_scale_filter_mode){WLR_SCALE_FILTER_BILINEAR});
+-	if (c->isfullscreen) {
+-		struct wlr_surface *s = client_surface(c);
+-		if (s->current.width > 0 && s->current.height > 0
+-				&& (s->current.width < c->geom.width || s->current.height < c->geom.height))
+-			wlr_scene_node_set_position(&c->scene_surface->node,
+-					MAX(0, (c->geom.width - s->current.width) / 2),
+-					MAX(0, (c->geom.height - s->current.height) / 2));
+-	}
++	fsoffset(c);
+ 	wlr_scene_rect_set_size(c->border[0], c->geom.width, c->bw);
+ 	wlr_scene_rect_set_size(c->border[1], c->geom.width, c->bw);
+ 	wlr_scene_rect_set_size(c->border[2], c->bw, c->geom.height - 2 * c->bw);
+@@ -4753,6 +4764,7 @@ associatex11(struct wl_listener *listener, void *data)
+ 
+ 	LISTEN(&client_surface(c)->events.map, &c->map, mapnotify);
+ 	LISTEN(&client_surface(c)->events.unmap, &c->unmap, unmapnotify);
++	LISTEN(&client_surface(c)->events.commit, &c->commit, commitx11);
+ }
+ 
+ void
+@@ -4809,6 +4821,16 @@ dissociatex11(struct wl_listener *listener, void *data)
+ 	Client *c = wl_container_of(listener, c, dissociate);
+ 	wl_list_remove(&c->map.link);
+ 	wl_list_remove(&c->unmap.link);
++	wl_list_remove(&c->commit.link);
++}
++
++void
++commitx11(struct wl_listener *listener, void *data)
++{
++	Client *c = wl_container_of(listener, c, commit);
++
++	if (c->isfullscreen && client_surface(c)->mapped)
++		fsoffset(c);
+ }
+ 
+ void
