@@ -858,18 +858,8 @@ build_from_source = true
 [libglvnd-glx]
 source = "sources"
 
-[libgrapheme]
-source = "sources"
-nvchecker = { source = "regex", url = "https://dl.suckless.org/libgrapheme/", regex = "libgrapheme-([\\d.]+)\\.tar\\.gz" }
-
 [libjxl]
 prebuilt = true
-
-[libnsbmp]
-source = "sources"
-
-[libnsgif]
-build_from_source = true
 
 [libresprite]
 build_from_source = true
@@ -998,9 +988,6 @@ nvchecker = { source = "github", github = "raysan5/rfxgen", use_max_tag = true }
 
 [ripgrep]
 build_for = ["i686"]
-
-[rofi]
-build_from_source = true
 
 [scummvm]
 heavy = true
