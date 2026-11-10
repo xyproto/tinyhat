@@ -15,6 +15,7 @@ old=
 	pid=$(pidof dwl) && kill -USR1 $pid
 }
 tinyhat-notice "Keyboard layout: $choice" 4
-if doas localectl set-x11-keymap "$code" 2>/dev/null && mountpoint -q /persist; then
-	doas cp /etc/vconsole.conf /persist/vconsole.conf
+if doas localectl set-x11-keymap "$code" 2>/dev/null; then
+	doas systemctl --no-block restart tinyhat-console.service
+	mountpoint -q /persist && doas cp /etc/vconsole.conf /persist/vconsole.conf
 fi

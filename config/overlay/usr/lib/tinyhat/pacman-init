@@ -1,7 +1,7 @@
 #!/bin/sh
 dir=/etc/pacman.d/gnupg
 keyring=
-for k in archlinux32 archlinux archlinuxarm; do
+for k in archlinux32 archlinux archlinuxarm tinyhat; do
 	pacman -Q "$k-keyring" >/dev/null 2>&1 && keyring="$keyring $k"
 done
 [ -n "$keyring" ] || exit 1

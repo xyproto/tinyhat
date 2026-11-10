@@ -67,6 +67,7 @@ if [ -n "$cmdkb" ] || { [ -n "${tz-}" ] && [ ! -f /persist/vconsole.conf ]; }; t
 	done
 	if localectl set-x11-keymap "$layout" "" "$variant" 2>/dev/null; then
 		cp /etc/vconsole.conf /persist/vconsole.conf
+		systemctl --no-block restart tinyhat-console.service
 	fi
 	kb=$(awk -v l="$layout" '/^! layout/ { f = 1; next } /^!/ { f = 0 } f && $1 == l { $1 = ""; sub(/^ +/, ""); print; exit }' /usr/share/X11/xkb/rules/base.lst)
 fi

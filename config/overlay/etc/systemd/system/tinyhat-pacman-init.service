@@ -6,10 +6,11 @@ After=tinyhat-persist.service time-sync.target
 Type=oneshot
 RemainAfterExit=yes
 Nice=19
+CPUSchedulingPolicy=idle
 IOSchedulingClass=idle
 TimeoutStartSec=15min
-ExecStart=/usr/bin/tinyionice -c 3 /usr/lib/tinyhat/pacman-init
-ExecStartPost=-/usr/bin/tinyionice -c 3 /usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
+ExecStart=/usr/lib/tinyhat/pacman-init
+ExecStartPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
 
 [Install]
 WantedBy=multi-user.target
