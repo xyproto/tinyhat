@@ -43,10 +43,16 @@ for img in "$@"; do
 		files="$files $name-$ver.iso"
 		continue
 		;;
-	*.vdi)
-		name=${img##*/}; name=${name%.vdi}
-		cp "$img" "$name-$ver.vdi"
-		files="$files $name-$ver.vdi"
+	*.ova)
+		name=${img##*/}; name=${name%.ova}
+		cp "$img" "$name-$ver.ova"
+		files="$files $name-$ver.ova"
+		continue
+		;;
+	*.tar.gz)
+		name=${img##*/}; name=${name%.tar.gz}
+		cp "$img" "$name-$ver.tar.gz"
+		files="$files $name-$ver.tar.gz"
 		continue
 		;;
 	tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
