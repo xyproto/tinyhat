@@ -43,6 +43,12 @@ ae() { printf '%s\n' "$@" >>"$conf"; }
 printf '[autoexec]\n' >"$conf"
 set -- "$@" -conf "$conf"
 ae "@echo off" "mount y /usr/share/tinyhat/dos -ro" "set PATH=Z:\\;Y:\\"
+[ ! -d /usr/share/tinyhat/ultrasnd ] || ae "mount u /usr/share/tinyhat/ultrasnd -ro"
+tp=${XDG_DATA_HOME:-$HOME/.local/share}/tinyhat/tp55
+if [ -f "$tp/TURBO.EXE" ]; then
+	[ -f "$tp/TPC.CFG" ] || printf '/UT:\\\r\n/IT:\\\r\n/OT:\\\r\n' >"$tp/TPC.CFG"
+	ae "mount t \"$tp\"" "set PATH=Z:\;Y:\;T:\\"
+fi
 drivec="the DOS folder in your home directory"
 drived=
 drivee=
@@ -69,6 +75,7 @@ fi
 ae "cls" "c:" "echo Tiny Hat DOS" "echo." "echo C:  $drivec"
 [ -z "$drived" ] || ae "echo D:  $drived"
 [ -z "$drivee" ] || ae "echo E:  $drivee"
+[ ! -f "$tp/TURBO.EXE" ] || ae "echo T:  Turbo Pascal 5.5 (type TURBO to start it)"
 ae "echo." \
 	"echo DIR lists files, CD NAME enters a folder, CD .. goes back." \
 	"echo K lists the programs here. Type a program name to run it." \
