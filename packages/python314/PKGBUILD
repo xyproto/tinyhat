@@ -1,6 +1,6 @@
 pkgname=python314
 pkgver=3.14.10
-pkgrel=1
+pkgrel=2
 _pybasever=${pkgver%.*}
 pkgdesc="The Python programming language, for Tiny Hat images"
 arch=(i686 x32)
@@ -21,7 +21,7 @@ prepare() {
 
 build() {
   cd Python-$pkgver
-  ./configure --prefix=/usr \
+  py_cv_module__tkinter=n/a ./configure --prefix=/usr \
               --enable-shared \
               --with-computed-gotos \
               --enable-ipv6 \
@@ -39,10 +39,10 @@ package() {
   make DESTDIR="$pkgdir" install
   ln -s python3 "$pkgdir/usr/bin/python"
   ln -s python3-config "$pkgdir/usr/bin/python-config"
-  ln -s idle3 "$pkgdir/usr/bin/idle"
   ln -s pydoc3 "$pkgdir/usr/bin/pydoc"
   ln -s python$_pybasever.1 "$pkgdir/usr/share/man/man1/python.1"
-  rm -rf "$pkgdir/usr/lib/python$_pybasever"/{test,idlelib/idle_test,tkinter/test}
+  rm -rf "$pkgdir/usr/lib/python$_pybasever"/{test,idlelib,tkinter,turtledemo,turtle.py}
+  rm -f "$pkgdir"/usr/bin/{idle,idle3,"idle$_pybasever"}
   install -Dm644 ../EXTERNALLY-MANAGED -t "$pkgdir/usr/lib/python$_pybasever/"
   install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

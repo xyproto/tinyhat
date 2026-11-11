@@ -1,7 +1,7 @@
 pkgbase = python314
 	pkgdesc = The Python programming language, for Tiny Hat images
 	pkgver = 3.14.10
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.python.org/
 	arch = i686
 	arch = x32

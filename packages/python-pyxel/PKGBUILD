@@ -5,8 +5,8 @@ pkgdesc="Retro game engine for Python, built with SDL3"
 arch=(i686 x32)
 url="https://github.com/kitao/pyxel"
 license=(MIT)
-depends=(glibc gcc-libs sdl3 "python>=3.14")
-makedepends=(cargo clang python)
+depends=(glibc gcc-libs sdl3 python)
+makedepends=(cargo clang llvm python)
 source=("pyxel-$pkgver.tar.gz::https://github.com/kitao/pyxel/archive/refs/tags/v$pkgver.tar.gz"
         sdl3.patch)
 sha256sums=('969abc7322a3eb4d6f1ce2038f8c23e034db988428479cc4d32871e6f92696c9'
@@ -21,7 +21,9 @@ prepare() {
 
 build() {
   cd pyxel-$pkgver/crates
-  PYO3_PYTHON=python3 cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3
+  local lib=/usr/lib
+  [ -d /host/usr/lib ] && lib=/host/usr/lib && export LD_LIBRARY_PATH=/host/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+  LIBCLANG_PATH=$(ls $lib/libclang.so.[0-9]*.[0-9]*.[0-9]* | sort -V | tail -1) PYO3_PYTHON=python3 cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3
 }
 
 package() {
