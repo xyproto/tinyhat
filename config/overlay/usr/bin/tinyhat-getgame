@@ -1,0 +1,79 @@
+#!/bin/sh
+list=/usr/share/tinyhat/games.tsv
+label() {
+	case $1 in
+	nes) echo NES ;; genesis) echo Genesis ;; gba) echo "Game Boy Advance" ;; c64) echo C64 ;;
+	chip8) echo CHIP-8 ;; dos) echo DOS ;; scummvm) echo ScummVM ;; linux) echo Linux ;; *) echo "$1" ;;
+	esac
+}
+choice=$(while IFS='	' read -r plat title desc _; do
+	printf '%s: %s — %s\n' "$(label "$plat")" "$title" "$desc"
+done <"$list" | fuzzel --dmenu --width 90 --prompt "Download and run a game ❯ ") || exit 0
+[ -n "$choice" ] || exit 0
+title=${choice#*: }
+title=${title%% — *}
+line=$(awk -F'\t' -v t="$title" '$2 == t' "$list")
+[ -n "$line" ] || exit 1
+plat=$(printf '%s' "$line" | cut -f1)
+file=$(printf '%s' "$line" | cut -f4)
+url=$(printf '%s' "$line" | cut -f5)
+sum=$(printf '%s' "$line" | cut -f6)
+run=$(printf '%s' "$line" | cut -f7)
+
+if [ "$plat" = linux ]; then
+	if ! command -v "$run" >/dev/null; then
+		foot -T "Installing $title" sh -c "echo 'Installing $title with pacman...'; doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $file || { echo; echo 'The installation failed. Press Enter to close.'; read _; exit 1; }" || exit 1
+	fi
+	command -v "$run" >/dev/null || exit 1
+	exec "$run"
+fi
+
+case $plat in
+dos) dir=$HOME/DOS/$(printf '%s' "$title" | tr -cd 'A-Za-z0-9' | cut -c1-8 | tr 'a-z' 'A-Z') ;;
+scummvm) dir=${XDG_DATA_HOME:-$HOME/.local/share}/tinyhat/scummvm/$run ;;
+*) dir=$HOME/ROMs/$plat ;;
+esac
+mkdir -p "$dir" || exit 1
+target=$dir/$run
+[ "$plat" = scummvm ] && target=$dir/.complete
+if [ ! -e "$target" ]; then
+	tmp=$(mktemp -d) || exit 1
+	trap 'rm -rf "$tmp"' EXIT
+	tinyhat-notice "Downloading $title..." 4
+	if ! curl -fsSL --max-time 900 -o "$tmp/$file" "$url" || ! echo "$sum  $tmp/$file" | sha256sum -c --status; then
+		tinyhat-notice "Could not download $title. Check the network connection." 6
+		exit 1
+	fi
+	case $file in
+	*.zip)
+		mkdir "$tmp/x" && bsdtar -xf "$tmp/$file" -C "$tmp/x" || exit 1
+		case $plat in
+		c64) find "$tmp/x" -iname "$run" -exec cp {} "$dir/$run" \; ;;
+		dos)
+			src=$tmp/x
+			[ "$(find "$src" -mindepth 1 -maxdepth 1 | wc -l)" = 1 ] && [ -d "$src/${run%%/*}" ] && src=$src/${run%%/*}
+			cp -r "$src/." "$dir/"
+			for f in "$dir"/*; do
+				u=$(printf '%s' "${f##*/}" | tr 'a-z' 'A-Z')
+				[ "${f##*/}" = "$u" ] || mv "$f" "$dir/$u"
+			done
+			target=$dir/${run##*/}
+			;;
+		*)
+			src=$tmp/x
+			[ "$(find "$src" -mindepth 1 -maxdepth 1 | wc -l)" = 1 ] && [ -d "$(find "$src" -mindepth 1 -maxdepth 1)" ] && src=$(find "$src" -mindepth 1 -maxdepth 1)
+			cp -r "$src/." "$dir/" && : >"$dir/.complete"
+			;;
+		esac
+		;;
+	*) cp "$tmp/$file" "$dir/$run" ;;
+	esac
+fi
+[ "$plat" = dos ] && target=$dir/${run##*/}
+[ -e "$target" ] || { tinyhat-notice "$title could not be unpacked" 6; exit 1; }
+case $plat in
+chip8) exec octo-run "$target" ;;
+dos) exec tinyhat-dosbox "$target" ;;
+scummvm) exec scummvm --path="$dir" --auto-detect ;;
+*) exec tinyhat-emulate "$plat" "$target" ;;
+esac
