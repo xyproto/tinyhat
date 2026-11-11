@@ -1,10 +1,10 @@
-<img alt="Logo" src="img/tinyhat.svg" width=24 align=right>
+<img alt="Logo" src="img/tinyhat.svg" width=32>
 
 # Tiny Hat
 
 This is a Linux distro based on Arch Linux, [archlinux32](https://archlinux32.org/) and Arch Linux ARM, with a few custom packages on top.
 
-⭐ Please [recommend Tiny Hat on DistroWatch](https://distrowatch.com/dwres.php?resource=links#new) if you found it fun. :)
+Please [recommend Tiny Hat on DistroWatch](https://distrowatch.com/dwres.php?resource=links#new) if you found it fun. :)
 
 ### Goals
 
