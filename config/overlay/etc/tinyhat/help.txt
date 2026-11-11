@@ -20,7 +20,7 @@ Ctrl+Alt+S	ScummVM
 Ctrl+Alt+A	Scan drives for ScummVM games
 Ctrl+Alt+Z	ZSNES 2
 Ctrl+Alt+V	C64 (VICE)
-Ctrl+Alt+8	Octo CHIP-8 IDE
+Ctrl+Alt+8	CHIP-8 (Octo)
 Ctrl+Alt+I	LibreSprite
 Ctrl+Alt+O	Write a book in Orbiton
 Ctrl+Alt+H	Toggle sharing ~/pub over HTTP
