@@ -81,7 +81,7 @@ index 02c0657..f38cfcd 100644
   * connect signals on entry completion
   */
 diff --git a/src/frontends/gtk/toolbar.c b/src/frontends/gtk/toolbar.c
-index b40d905..4f60ab3 100644
+index b40d905..75bfafc 100644
 --- a/src/frontends/gtk/toolbar.c
 +++ b/src/frontends/gtk/toolbar.c
 @@ -1734,6 +1734,8 @@ static gboolean url_entry_activate_cb(GtkWidget *widget, gpointer data)
@@ -93,6 +93,15 @@ index b40d905..4f60ab3 100644
  	res = search_web_omni(gtk_editable_get_text(GTK_EDITABLE(widget)),
  			      SEARCH_WEB_OMNI_NONE,
  			      &url);
+@@ -1745,6 +1747,8 @@ static gboolean url_entry_activate_cb(GtkWidget *widget, gpointer data)
+ 	}
+ 	if (res != NSERROR_OK) {
+ 		nsgtk_warning(messages_get_errorcode(res), 0);
++	} else {
++		gtk_widget_grab_focus(nsgtk_window_get_layout(tb->get_ctx));
+ 	}
+ 
+ 	return TRUE;
 diff --git a/src/frontends/gtk/window.c b/src/frontends/gtk/window.c
 index 7e48e9b..eb7c22f 100644
 --- a/src/frontends/gtk/window.c
