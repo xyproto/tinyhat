@@ -1,0 +1,14 @@
+pkgbase = tinyhat-ultrasnd
+	pkgdesc = Gravis Ultrasound patches (ULTRASND) for DOSBox-X, made from FreePats
+	pkgver = 20060219
+	pkgrel = 1
+	url = https://freepats.zenvoid.org/
+	arch = any
+	license = GPL-2.0-or-later
+	makedepends = python
+	source = freepats_20060219.orig.tar.gz::https://deb.debian.org/debian/pool/main/f/freepats/freepats_20060219.orig.tar.gz
+	source = mkultrasnd.py
+	sha256sums = 70bf8ca084df3903d6c9de43fe20539fc0a553d95cfba4d525da3fe66fda5f10
+	sha256sums = SKIP
+
+pkgname = tinyhat-ultrasnd
