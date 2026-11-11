@@ -111,8 +111,7 @@ def main():
     info(path, "Beneath a Steel Sky (floppy)", "1.3", "https://www.scummvm.org/games/#games-sky", "LicenseRef-BASS-Freeware")
 
     for name, title, version, zipname, member, url in (
-            ("lure-of-the-temptress", "Lure of the Temptress", "1.1", "lure-1.1.zip", "lure/LICENSE.txt", "https://www.scummvm.org/games/#games-lure"),
-            ("soltys", "Soltys", "1.0", "soltys-en-v1.0.zip", "license.txt", "https://www.scummvm.org/games/#games-soltys")):
+            ("soltys", "Soltys", "1.0", "soltys-en-v1.0.zip", "license.txt", "https://www.scummvm.org/games/#games-soltys"),):
         path = os.path.join(OUT, name)
         os.makedirs(path)
         with zipfile.ZipFile(os.path.join(SRC, zipname)) as z:

@@ -50,7 +50,7 @@ for d in /media/*/; do
     wait "$pid" && : >"$cache/scanned-$id"
     found=$((found + $(grep -c '^Game Added' "$log")))
 done
-for g in bass lure soltys; do
+for g in bass soltys; do
     if [ -d "/usr/share/games/$g" ] && ! grep -qsx "path=/usr/share/games/$g" "$ini"; then
         scummvm --add --path="/usr/share/games/$g" >"$cache/scan-$g.log" 2>&1
     fi
