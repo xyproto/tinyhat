@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install Turbo Pascal 5.5
+Icon=applications-development
+Comment=Downloads the free Turbo Pascal 5.5 from Embarcadero's museum (1 MB). It then appears as drive T: in DOSBox-X
+Exec=tinyhat-turbopascal
+Terminal=false
+Categories=Development;

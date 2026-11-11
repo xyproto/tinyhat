@@ -1,0 +1,27 @@
+#!/bin/sh
+dir=${XDG_DATA_HOME:-$HOME/.local/share}/tinyhat/tp55
+if [ -f "$dir/TURBO.EXE" ]; then
+	tinyhat-notice "Turbo Pascal 5.5 is already installed. Press Ctrl+Alt+D and type TURBO." 6
+	exit 0
+fi
+url=http://altd.embarcadero.com/download/museum/tp55.zip
+sum=a04ff65555f88cd7714a11362c6f625f254932679ad5623b207015893ef638b6
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+tinyhat-notice "Downloading Turbo Pascal 5.5 (free from Embarcadero's museum, 1 MB)" 4
+if ! curl -fsSL --max-time 60 -o "$tmp/tp55.zip" "$url" || ! echo "$sum  $tmp/tp55.zip" | sha256sum -c --status; then
+	tinyhat-notice "Could not download Turbo Pascal 5.5. Check the network connection." 6
+	exit 1
+fi
+mkdir -p "$tmp/x" "$tmp/tp" && bsdtar -xf "$tmp/tp55.zip" -C "$tmp/x" || exit 1
+find "$tmp/x" -type f -exec cp {} "$tmp/tp/" \;
+cd "$tmp/tp" || exit 1
+for a in *.ARC; do
+	[ -f "$a" ] && nomarch "$a" >/dev/null && rm -f "$a"
+done
+rm -f INSTALL.EXE UNPACK.COM TINSTXFR.EXE
+for f in *; do
+	u=$(printf '%s' "$f" | tr 'a-z' 'A-Z')
+	[ "$f" = "$u" ] || mv "$f" "$u"
+done
+mkdir -p "${dir%/*}" && rm -rf "$dir.new" && mv "$tmp/tp" "$dir.new" && mv "$dir.new" "$dir" && tinyhat-notice "Turbo Pascal 5.5 is installed. Press Ctrl+Alt+D and type TURBO." 6
