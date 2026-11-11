@@ -8,7 +8,7 @@ pkgname=(
   cairo-docs
 )
 pkgver=1.18.6
-pkgrel="1"
+pkgrel="2"
 pkgdesc="2D graphics library with support for multiple output devices"
 url="https://cairographics.org/"
 arch=(i686 x32)
@@ -77,9 +77,5 @@ package_cairo-docs() {
 
 # vim:set sw=2 sts=-1 et:
 
-_d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(libx11|libxcb|libxext|libxrender)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
-eval "$(
-  declare -f build | sed 's/-D dwrite=disabled/-D dwrite=disabled -D xlib=disabled -D xcb=disabled/'
-)"
 
 unset -f pkgver

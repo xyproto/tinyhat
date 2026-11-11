@@ -5,19 +5,107 @@ fail() {
 	read -r _
 	exit 1
 }
+pm() {
+	doas /usr/lib/tinyhat/pacman "$@"
+}
+cncurl=https://github.com/FunkyFr3sh/cnc-ddraw/releases/download/v7.1.0.0/cnc-ddraw.zip
+cncsum=0b13ab89a64c9918189b1dadd449ef6ed3cb3b7b19cabd96d8adbd95505bb908
+bneturl='https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE&gameProgram=BATTLENET_APP'
+
 doas systemctl start tinyhat-pacman-init.service
-doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "Could not update the package database."
-doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-doas /usr/lib/tinyhat/pacman -S --needed --noconfirm wine-staging winetricks xorg-xwayland || fail "Could not install Wine."
+pm -Sy --noconfirm || fail "Could not update the package database."
+pm -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
+pm -S --needed --noconfirm wine-staging winetricks wine-gecko wine-mono gnutls alsa-lib alsa-plugins cabextract unzip xorg-xwayland || fail "Could not install Wine."
 doas modprobe binfmt_misc
+doas modprobe ntsync 2>/dev/null
 doas systemctl restart systemd-binfmt.service || fail "Could not register Windows programs with binfmt_misc."
-printf '\nSetting up Wine in ~/.wine (one time only)...\n'
-export WINEDEBUG=-all
-WINEDLLOVERRIDES="mscoree,mshtml,winemenubuilder.exe=d" wineboot -i >/dev/null 2>&1 || fail "Could not set up ~/.wine."
-wine reg add 'HKCU\Software\Wine\Drivers' /v Graphics /d wayland /f >/dev/null 2>&1
-wine reg add 'HKCU\Software\Wine\FileOpenAssociations' /v Enable /d N /f >/dev/null 2>&1
+
+export WINEDEBUG=-all WINEPREFIX=${WINEPREFIX:-$HOME/.wine}
+printf '\nSetting up Wine in %s (one time only)...\n' "$WINEPREFIX"
+WINEDLLOVERRIDES="winemenubuilder.exe=d" wineboot -i >/dev/null 2>&1 || fail "Could not set up $WINEPREFIX."
+reg() {
+	wine reg add "$@" /f >/dev/null 2>&1
+}
+reg 'HKCU\Software\Wine\Drivers' /v Graphics /d x11,wayland
+reg 'HKCU\Software\Wine\FileOpenAssociations' /v Enable /d N
+reg 'HKCU\Software\Wine\DllOverrides' /v winemenubuilder.exe /d ''
+reg 'HKCU\Software\Wine\DllOverrides' /v locationapi /d ''
+reg 'HKCU\Software\Wine\AppDefaults\StarCraft.exe\DllOverrides' /v ddraw /d native,builtin
+
 printf '\nInstalling the Microsoft core fonts and the Visual C++ 6 runtime...\n'
 winetricks -q corefonts vcrun6 || printf '\nCould not install the core fonts or the Visual C++ 6 runtime. Try again later with "winetricks corefonts vcrun6".\n'
+
+printf '\nInstalling cnc-ddraw, for StarCraft 1.16.1 and other DirectDraw games...\n'
+sys=$WINEPREFIX/drive_c/windows/syswow64
+[ -d "$sys" ] || sys=$WINEPREFIX/drive_c/windows/system32
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+if curl -fsSL --max-time 120 -o "$tmp/cnc-ddraw.zip" "$cncurl" && echo "$cncsum  $tmp/cnc-ddraw.zip" | sha256sum -c --status &&
+	mkdir "$tmp/c" && bsdtar -xf "$tmp/cnc-ddraw.zip" -C "$tmp/c" ddraw.dll ddraw.ini Shaders; then
+	awk '/^\[/ { s = $0 }
+		s ~ /^\[ddraw\]/ && /^(fullscreen|windowed|maintas)=/ { sub(/=[^\r]*/, "=true") }
+		s ~ /^\[ddraw\]/ && /^savesettings=/ { sub(/=[^\r]*/, "=0") }
+		{ print }' "$tmp/c/ddraw.ini" >"$sys/ddraw.ini"
+	\cp -f "$tmp/c/ddraw.dll" "$sys/ddraw.dll"
+	rm -rf "$sys/Shaders"
+	\cp -rf "$tmp/c/Shaders" "$sys/Shaders"
+else
+	printf '\nCould not download cnc-ddraw. StarCraft 1.16.1 may show wrong colours or a white window.\n'
+fi
+
+if [ "$(uname -m)" = x86_64 ]; then
+	cfg="$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Battle.net"
+	mkdir -p "$cfg"
+	[ -f "$cfg/Battle.net.config" ] || cat >"$cfg/Battle.net.config" <<'EOF'
+{
+  "Client": {
+    "GameLaunchWindowBehavior": "2",
+    "HardwareAcceleration": "false",
+    "Sound": {
+      "Enabled": "false"
+    },
+    "Streaming": {
+      "StreamingEnabled": "false"
+    }
+  }
+}
+EOF
+	launcher="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+	if [ ! -f "$launcher" ]; then
+		printf '\nInstall Battle.net too, for StarCraft Remastered and the free StarCraft? [y/N] '
+		read -r answer
+		case $answer in
+		[yY]*)
+			printf '\nDownloading Battle.net...\n'
+			if curl -fsSL --max-time 300 -o "$tmp/Battle.net-Setup.exe" "$bneturl"; then
+				printf 'Running the Battle.net installer. When the login window appears, log in or close it.\n'
+				wine "$tmp/Battle.net-Setup.exe" >/dev/null 2>&1
+				wineserver -w
+			else
+				printf '\nCould not download Battle.net.\n'
+			fi
+			;;
+		esac
+	fi
+	if [ -f "$launcher" ]; then
+		mkdir -p "$HOME/.local/share/applications"
+		cat >"$HOME/.local/share/applications/tinyhat-battlenet.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=Battle.net
+Comment=Blizzard's launcher for StarCraft Remastered, running in Wine
+Icon=applications-games
+Exec=env WINEDEBUG=-all wine "$launcher"
+Terminal=false
+Categories=Game;
+EOF
+	fi
+else
+	printf '\nBattle.net and StarCraft Remastered need 64-bit Windows, so they need the 64-bit Tiny Hat image.\n'
+fi
 wineserver -w
-printf '\nWine is ready. Start Windows programs with "wine program.exe", or run .exe files directly.\nPress Enter to close.\n'
+
+printf '\nWine is ready. Start Windows programs with "wine program.exe", or run .exe files directly.\n'
+printf 'StarCraft 1.16.1: run the installer from the CD with wine, then the 1.16.1 patch. It runs with cnc-ddraw.\n'
+printf 'Press Enter to close.\n'
 read -r _

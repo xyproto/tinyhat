@@ -2,7 +2,7 @@
 Type=Application
 Name=Install Wine
 Icon=applications-system
-Comment=Install Wine (wine-staging, winetricks, the core fonts and the Visual C++ 6 runtime) for running Windows programs, and set it up
+Comment=Install Wine (wine-staging, winetricks, Gecko, Mono, the core fonts, the Visual C++ 6 runtime and cnc-ddraw) for running Windows programs and games like StarCraft, and set it up
 Exec=tinyhat-wine
 Terminal=false
 Categories=System;
