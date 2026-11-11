@@ -1,0 +1,17 @@
+pkgname=tinyhat-freedos
+pkgver=1.4
+pkgrel=1
+pkgdesc="FreeDOS 1.4 installer floppy images, for running FreeDOS in DOSBox-X"
+arch=(any)
+url="https://www.freedos.org/"
+license=(GPL-2.0-or-later)
+depends=(dosbox-x mtools)
+source=("FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/distributions/$pkgver/FD14-FloppyEdition.zip")
+noextract=(FD14-FloppyEdition.zip)
+sha256sums=('45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a')
+
+package() {
+  install -d "$pkgdir/usr/share/tinyhat/freedos"
+  bsdtar -xf FD14-FloppyEdition.zip -C "$pkgdir/usr/share/tinyhat/freedos" --strip-components=1 '144m/*'
+  chmod 644 "$pkgdir"/usr/share/tinyhat/freedos/*
+}

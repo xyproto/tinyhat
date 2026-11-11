@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=FreeDOS
+Icon=media-floppy
+Comment=FreeDOS 1.4 in DOSBox-X, installed to its own hard disk image the first time
+Exec=tinyhat-freedos
+Terminal=false
+Categories=Game;Emulator;
