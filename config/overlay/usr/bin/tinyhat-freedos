@@ -1,0 +1,26 @@
+#!/bin/sh
+fd=/usr/share/tinyhat/freedos
+dir=${XDG_DATA_HOME:-$HOME/.local/share}/tinyhat/freedos
+mkdir -p "$dir" || exit 1
+conf=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-freedos.conf
+rc=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-freedos.mtoolsrc
+printf 'drive c: file="%s/c.img" partition=1\nmtools_skip_check=1\n' "$dir" >"$rc"
+installed=
+[ -f "$dir/c.img" ] && MTOOLSRC=$rc mdir -b c:/KERNEL.SYS >/dev/null 2>&1 && installed=1
+{
+	printf '[autoexec]\n@echo off\nmount f "%s"\n' "$dir"
+	printf 'mount g "%s" -ro\n' "$fd"
+	[ -f "$dir/c.img" ] || printf 'imgmake f:\\c.img -t hd -size 64\n'
+	printf 'imgmount 2 f:\\c.img -t hdd -fs none\n'
+	if [ -n "$installed" ]; then
+		printf 'boot -l c\n'
+	else
+		printf 'echo FreeDOS is not installed yet. The installer starts now.\n'
+		printf 'echo When it asks for the next floppy disk, press Ctrl+F4.\n'
+		printf 'pause\n'
+		printf 'imgmount 0 g:\\x86BOOT.img g:\\x86DSK01.img g:\\x86DSK02.img g:\\x86DSK03.img g:\\x86DSK04.img g:\\x86DSK05.img g:\\x86DSK06.img -t floppy -ro\n'
+		printf 'boot -l a\n'
+	fi
+} >"$conf"
+SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec dosbox-x -conf /etc/tinyhat/dosbox-x.conf -userconf -fastlaunch \
+	-set "dosbox memsize=32" -set "gus gus=false" -conf "$conf"
