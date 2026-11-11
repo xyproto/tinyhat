@@ -1,7 +1,7 @@
 pkgbase = python-pyxel
 	pkgdesc = Retro game engine for Python, built with SDL3
 	pkgver = 3.0.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/kitao/pyxel
 	arch = i686
 	arch = x32

@@ -63,6 +63,114 @@ index 5f32fba..d775470 100644
 +        .write_to_file(Path::new(&out_dir).join("bindings.rs"))
 +        .unwrap();
 +}
+diff --git a/crates/pyxel-core/src/graphics.rs b/crates/pyxel-core/src/graphics.rs
+index e38ce7b..c187f25 100644
+--- a/crates/pyxel-core/src/graphics.rs
++++ b/crates/pyxel-core/src/graphics.rs
+@@ -115,47 +115,12 @@ impl Graphics {
+         let mut screen_shaders = Vec::new();
+ 
+         for &screen_frag in &SCREEN_FRAGS {
+-            let vertex_shader = gl
+-                .create_shader(glow::VERTEX_SHADER)
+-                .expect("Failed to create OpenGL vertex shader");
+-            gl.shader_source(vertex_shader, &format!("{glsl_version}{COMMON_VERT}"));
+-            gl.compile_shader(vertex_shader);
+-            assert!(
+-                gl.get_shader_compile_status(vertex_shader),
+-                "\n[vertex shader]\n{}",
+-                gl.get_shader_info_log(vertex_shader)
+-            );
+-
+-            let fragment_shader = gl
+-                .create_shader(glow::FRAGMENT_SHADER)
+-                .expect("Failed to create OpenGL fragment shader");
+-            gl.shader_source(
+-                fragment_shader,
+-                &format!("{glsl_version}{COMMON_FRAG}{screen_frag}"),
+-            );
+-            gl.compile_shader(fragment_shader);
+-            assert!(
+-                gl.get_shader_compile_status(fragment_shader),
+-                "\n[fragment shader]\n{}",
+-                gl.get_shader_info_log(fragment_shader)
+-            );
+-
+-            let program = gl
+-                .create_program()
+-                .expect("Failed to create OpenGL shader program");
+-            gl.attach_shader(program, vertex_shader);
+-            gl.attach_shader(program, fragment_shader);
+-            gl.link_program(program);
+-            assert!(
+-                gl.get_program_link_status(program),
+-                "{}",
+-                gl.get_program_info_log(program)
+-            );
+-
+-            gl.detach_shader(program, vertex_shader);
+-            gl.delete_shader(vertex_shader);
+-            gl.detach_shader(program, fragment_shader);
+-            gl.delete_shader(fragment_shader);
++            let program = Self::create_screen_program(gl, glsl_version, screen_frag)
++                .or_else(|err| {
++                    eprintln!("pyxel: using the crisp screen shader instead: {err}");
++                    Self::create_screen_program(gl, glsl_version, SCREEN_FRAGS[0])
++                })
++                .unwrap_or_else(|err| panic!("{err}"));
+             let uniform_locations: [Option<glow::UniformLocation>; NUM_UNIFORMS] =
+                 std::array::from_fn(|i| gl.get_uniform_location(program, UNIFORM_NAMES[i]));
+ 
+@@ -195,6 +160,49 @@ impl Graphics {
+         screen_shaders
+     }
+ 
++    unsafe fn create_screen_program(
++        gl: &mut glow::Context,
++        glsl_version: &str,
++        screen_frag: &str,
++    ) -> Result<glow::NativeProgram, String> {
++        let vertex_shader = gl.create_shader(glow::VERTEX_SHADER)?;
++        gl.shader_source(vertex_shader, &format!("{glsl_version}{COMMON_VERT}"));
++        gl.compile_shader(vertex_shader);
++        if !gl.get_shader_compile_status(vertex_shader) {
++            let log = gl.get_shader_info_log(vertex_shader);
++            gl.delete_shader(vertex_shader);
++            return Err(format!("\n[vertex shader]\n{log}"));
++        }
++
++        let fragment_shader = gl.create_shader(glow::FRAGMENT_SHADER)?;
++        gl.shader_source(
++            fragment_shader,
++            &format!("{glsl_version}{COMMON_FRAG}{screen_frag}"),
++        );
++        gl.compile_shader(fragment_shader);
++        if !gl.get_shader_compile_status(fragment_shader) {
++            let log = gl.get_shader_info_log(fragment_shader);
++            gl.delete_shader(vertex_shader);
++            gl.delete_shader(fragment_shader);
++            return Err(format!("\n[fragment shader]\n{log}"));
++        }
++
++        let program = gl.create_program()?;
++        gl.attach_shader(program, vertex_shader);
++        gl.attach_shader(program, fragment_shader);
++        gl.link_program(program);
++        gl.detach_shader(program, vertex_shader);
++        gl.delete_shader(vertex_shader);
++        gl.detach_shader(program, fragment_shader);
++        gl.delete_shader(fragment_shader);
++        if !gl.get_program_link_status(program) {
++            let log = gl.get_program_info_log(program);
++            gl.delete_program(program);
++            return Err(log);
++        }
++        Ok(program)
++    }
++
+     // Texture setup
+ 
+     unsafe fn set_texture_nearest_clamp(gl: &mut glow::Context) {
 diff --git a/crates/pyxel-core/src/platform/facade.rs b/crates/pyxel-core/src/platform/facade.rs
 index 4bf72f9..9033303 100644
 --- a/crates/pyxel-core/src/platform/facade.rs
