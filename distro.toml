@@ -31,6 +31,7 @@ image = [
     "qt5-base", "qt6-base", "sdl2", "sdl2_image", "gtk2", "gtk3",
     # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
     "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
+    "tk", "tk[0-9]*",
 ]
 everywhere = [
     "appstream",
@@ -53,6 +54,7 @@ everywhere = [
 files = [
     "usr/lib/libQt5Core.so*", "usr/lib/libQt6Core.so*", "usr/bin/perl", "usr/lib/libSDL2-2.0.so*",
     "usr/lib/libSDL2_image*.so*", "usr/lib/libgtk-x11-2.0.so*", "usr/lib/libgtk-3.so*",
+    "usr/lib/python2*", "usr/lib/python3.[0-9]", "usr/lib/python3.1[0-3]", "usr/lib/libtk[0-9]*.so*",
 ]
 
 [image]
@@ -74,14 +76,14 @@ packages = [
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "wurl", "python314", "python-pyxel", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "wurl", "python314", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "tinyhat-freedos", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
-    "VIRTUALBOX-GUEST-MODULES", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
+    "VIRTUALBOX-GUEST-MODULES", "python", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
     "llvm", "llvm-lit",
 ]
 exclude = [
@@ -638,7 +640,6 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 "linux-7.3.1.tar.xz" = { url = "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-7.3.1.tar.xz", sha256 = "fa595aad93734f829c963c2a90ef7c3673224fd7fdae7b49406e397cde2de231" }
 "open-watcom-2026-10-01.tar.xz" = { url = "https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz", sha256 = "e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe" }
 "xpadneo-0.10.5.tar.gz" = { url = "https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.5.tar.gz", sha256 = "084c1ef57b4567c54cb4e4c01c9ae47b180c59a001457ad1e0ed574fdd09b59b" }
-"lure-1.1.zip" = { url = "https://downloads.scummvm.org/frs/extras/Lure%20of%20the%20Temptress/lure-1.1.zip", sha256 = "f3178245a1483da1168c3a11e70b65d33c389f1f5df63d4f3a356886c1890108" }
 "soltys-en-v1.0.zip" = { url = "https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip", sha256 = "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6" }
 
 # Packages: [name] tables. source = "arch" (the default) imports the PKGBUILD from the
@@ -1081,6 +1082,15 @@ source = "sources"
 source = "sources"
 
 [python-pyxel]
+source = "sources"
+
+[nomarch]
+source = "sources"
+
+[tinyhat-ultrasnd]
+source = "sources"
+
+[tinyhat-freedos]
 source = "sources"
 
 [tinyxxd]
