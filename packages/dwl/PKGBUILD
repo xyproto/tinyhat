@@ -1,6 +1,6 @@
 pkgname=dwl
 pkgver=0.9
-pkgrel=5
+pkgrel=6
 pkgdesc="dwm for Wayland, with the Tiny Hat patches"
 arch=(i686 x32)
 url="https://codeberg.org/dwl/dwl"
