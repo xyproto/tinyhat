@@ -274,6 +274,7 @@ def list_config(name, extra=()):
         targets += [t for t in s.get("add", []) if t not in targets]
         targets += [t for v in VARIANTS for t in s.get(v, []) if t not in targets]
         skip |= set(base.get("skip", []))
+        skip -= set(s.get("add", []))
     for path in extra:
         targets += [t for t in read_list(path) if t not in targets]
     skipped = distro.skipped()

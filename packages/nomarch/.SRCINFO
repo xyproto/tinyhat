@@ -1,0 +1,13 @@
+pkgbase = nomarch
+	pkgdesc = Extracts files from old .ARC archives
+	pkgver = 1.4
+	pkgrel = 1
+	url = https://packages.debian.org/source/sid/nomarch
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	depends = glibc
+	source = https://deb.debian.org/debian/pool/main/n/nomarch/nomarch_1.4.orig.tar.gz
+	sha256sums = fe20da34e0d3ba0cf6388701f44ac22224cf65130ddbc5fcbc27bc4949a6e1ad
+
+pkgname = nomarch

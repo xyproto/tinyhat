@@ -297,6 +297,7 @@ libpkgs = [
     "netsurfy",
     "nettle",
     "nftables",
+    "nomarch",
     "npth",
     "nspr",
     "nss",
@@ -339,6 +340,7 @@ libpkgs = [
     "python",
     "python-cairo",
     "python-gobject",
+    "python-pyxel",
     "python314",
     "qemacs",
     "rav1e",
@@ -371,6 +373,7 @@ libpkgs = [
     "testcontroller",
     "tic-80",
     "tinyhat-files",
+    "tinyhat-freedos",
     "tinyhat-gui",
     "tinyhat-keyring",
     "tinyhat-midibench",
@@ -379,6 +382,7 @@ libpkgs = [
     "tinyhat-sounds",
     "tinyhat-splash",
     "tinyhat-status",
+    "tinyhat-ultrasnd",
     "tinyhat-view",
     "tinyxml2",
     "tllist",
@@ -477,6 +481,7 @@ mpg123 = ["mpg123"]
 mtools = ["mtools"]
 ncurses = ["ncurses"]
 netsurfy = ["netsurfy"]
+nomarch = ["nomarch"]
 nvi2 = ["nvi2"]
 octo = ["octo"]
 orbiton = ["orbiton"]
@@ -486,6 +491,7 @@ png2xpm = ["png2xpm"]
 pt2-clone = ["pt2-clone"]
 pure-fish = ["pure-fish"]
 pvsneslib = ["pvsneslib"]
+python-pyxel = ["python-pyxel"]
 qemacs = ["qemacs"]
 raylib = ["raylib"]
 rfxgen = ["rfxgen"]
@@ -500,6 +506,7 @@ systemd = ["systemd", "systemd-libs"]
 testcontroller = ["testcontroller"]
 tic-80 = ["tic-80"]
 tinyhat-files = ["tinyhat-files"]
+tinyhat-freedos = ["tinyhat-freedos"]
 tinyhat-gui = ["tinyhat-gui"]
 tinyhat-keyring = ["tinyhat-keyring"]
 tinyhat-midibench = ["tinyhat-midibench"]
@@ -508,6 +515,7 @@ tinyhat-play = ["tinyhat-play"]
 tinyhat-sounds = ["tinyhat-sounds"]
 tinyhat-splash = ["tinyhat-splash"]
 tinyhat-status = ["tinyhat-status"]
+tinyhat-ultrasnd = ["tinyhat-ultrasnd"]
 tinyhat-view = ["tinyhat-view"]
 util-linux = ["util-linux", "util-linux-libs"]
 vice = ["vice"]
@@ -575,6 +583,7 @@ mpg123 = ["mpg123"]
 mtools = ["mtools"]
 ncurses = ["ncurses"]
 netsurfy = ["netsurfy"]
+nomarch = ["nomarch"]
 nvi2 = ["nvi2"]
 octo = ["octo"]
 orbiton = ["orbiton"]
@@ -584,6 +593,7 @@ png2xpm = ["png2xpm"]
 pt2-clone = ["pt2-clone"]
 pure-fish = ["pure-fish"]
 pvsneslib = ["pvsneslib"]
+python-pyxel = ["python-pyxel"]
 qemacs = ["qemacs"]
 raylib = ["raylib"]
 rfxgen = ["rfxgen"]
@@ -598,6 +608,7 @@ systemd = ["systemd", "systemd-libs"]
 testcontroller = ["testcontroller"]
 tic-80 = ["tic-80"]
 tinyhat-files = ["tinyhat-files"]
+tinyhat-freedos = ["tinyhat-freedos"]
 tinyhat-gui = ["tinyhat-gui"]
 tinyhat-keyring = ["tinyhat-keyring"]
 tinyhat-midibench = ["tinyhat-midibench"]
@@ -606,6 +617,7 @@ tinyhat-play = ["tinyhat-play"]
 tinyhat-sounds = ["tinyhat-sounds"]
 tinyhat-splash = ["tinyhat-splash"]
 tinyhat-status = ["tinyhat-status"]
+tinyhat-ultrasnd = ["tinyhat-ultrasnd"]
 tinyhat-view = ["tinyhat-view"]
 util-linux = ["util-linux", "util-linux-libs"]
 vice = ["vice"]
@@ -1027,6 +1039,7 @@ mdbook = { repo = "extra", version = "0.4.48-1.0", file = "mdbook-0.4.48-1.0-i68
 mercurial = { repo = "extra", version = "6.7.2-1.0", file = "mercurial-6.7.2-1.0-i686.pkg.tar.zst", sha256 = "9e792b22fee57849ebf25a6b02dccda0e85d48707c448bf21f63a071b1815dda" }
 mesa = { repo = "extra", version = "1:24.0.4-2.0", file = "mesa-1:24.0.4-2.0-i686.pkg.tar.zst", sha256 = "b751c48b446e501fcda9195954aa7a61c4f6648fc51a978fb57e75b86806dcf9" }
 meson = { repo = "extra", version = "1.4.0-2.0", file = "meson-1.4.0-2.0-any.pkg.tar.zst", sha256 = "98bf5f4869b28364554f6d8bc123a61208222819052e8bb440ddeb4c616daae8" }
+mpdecimal = { repo = "core", version = "4.0.1-3.0", file = "mpdecimal-4.0.1-3.0-i686.pkg.tar.zst", sha256 = "5114dfa72132a011baa6096cb01e2773dd2da17e7b222c08c04229ee6b5412ae" }
 mpfr = { repo = "core", version = "4.2.2-1.0", file = "mpfr-4.2.2-1.0-i686.pkg.tar.zst", sha256 = "bfe0ca7e0248456c1e73c75f0cc1b07238877721e312d478ce70633ae9cf2fd1" }
 mpg123 = { repo = "extra", version = "1.33.7-1.0", file = "mpg123-1.33.7-1.0-i686.pkg.tar.zst", sha256 = "cd7f5708e96a118db93b3a255b395f78f2616c6d1205d94859ca66923b64915e" }
 mtdev = { repo = "extra", version = "1.1.7-1.0", file = "mtdev-1.1.7-1.0-i686.pkg.tar.zst", sha256 = "eba3deb7207ff77d1578d72a04eee1d3805f216f4848463230d6301fbc4ea392" }
@@ -2002,7 +2015,7 @@ libasyncns = { repo = "extra", version = "1:0.8+r3+g68cd5af-3", file = "libasync
 libatomic = { repo = "core", version = "16.2.1+r23+gd564253eb6c8-1", file = "libatomic-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst", sha256 = "920cfea3dcac82e3d7c8ebbf64dfe341821c1118277d55b6c1e96035cd943656" }
 libavif = { repo = "extra", version = "1.4.2-1", file = "libavif-1.4.2-1-x86_64.pkg.tar.zst", sha256 = "296986d8795009e86279608a311c580154d84b82d53365495d76cf28ef375441" }
 libblake3 = { repo = "extra", version = "1.8.7-1", file = "libblake3-1.8.7-1-x86_64.pkg.tar.zst", sha256 = "1092d411d22cdd2f2c6b611f73086e29732cb441abbe1a0235ebff422ab37a3b" }
-libbpf = { repo = "core", version = "1.7.0-1", file = "libbpf-1.7.0-1-x86_64.pkg.tar.zst", sha256 = "07ca39704fd534fcb4f520550cdddad5c113521f87035fb66f66a50a6d843257" }
+libbpf = { repo = "core", version = "1.8.0-1", file = "libbpf-1.8.0-1-x86_64.pkg.tar.zst", sha256 = "3f14dc1512ca84ceffdf73f5019313c3c0afc462ed6cc4a150d06963509bad4c" }
 libbsd = { repo = "extra", version = "0.12.2-2", file = "libbsd-0.12.2-2-x86_64.pkg.tar.zst", sha256 = "e26194849786b0202828a348be3f4b90d410604cd7d48f113a4301584a49895a" }
 libcap = { repo = "core", version = "2.78-1", file = "libcap-2.78-1-x86_64.pkg.tar.zst", sha256 = "3e984fe1d323b1c5a5fc60fef005776a4882fbca913d6fe3c41ad11128929ed1" }
 libcap-ng = { repo = "core", version = "0.9.6-1", file = "libcap-ng-0.9.6-1-x86_64.pkg.tar.zst", sha256 = "05b0a8356f898e251845b2e5ffa5966be21ca85f3eaaf5aeb8a9e8df4148ba5c" }
@@ -2336,7 +2349,7 @@ xorgproto = { repo = "extra", version = "2026.1-1", file = "xorgproto-2026.1-1-a
 xxhash = { repo = "extra", version = "0.8.4-1", file = "xxhash-0.8.4-1-x86_64.pkg.tar.zst", sha256 = "ef60bad0552de3eb8a0e1e2a07eb1bcaceaa771a5f36401a2cf0de135ffcc72b" }
 xz = { repo = "core", version = "5.8.4-1", file = "xz-5.8.4-1-x86_64.pkg.tar.zst", sha256 = "89b8e777c8f7a39413e1b223d4c212caec6ddd9470b3d1ea1d5161bcc6215c04" }
 zix = { repo = "extra", version = "0.8.2-1", file = "zix-0.8.2-1-x86_64.pkg.tar.zst", sha256 = "563534f9bf8ac7b17f9936d0a00f2853b7ed8a0154d2d2e8147bf34fa4983dcf" }
-zlib = { repo = "core", version = "1:1.3.2-4", file = "zlib-1:1.3.2-4-x86_64.pkg.tar.zst", sha256 = "81e183eb4c676c86eb1709d1878f7aec1df10d59ce0980b5ab0724560328d015" }
+zlib = { repo = "core", version = "1:1.4-1", file = "zlib-1:1.4-1-x86_64.pkg.tar.zst", sha256 = "a56796509f9b9e953e31b2fbeef5ae6bb61bff7e3e84cde3f4184581e9eb810c" }
 zlib-ng = { repo = "extra", version = "2.3.3-1", file = "zlib-ng-2.3.3-1-x86_64.pkg.tar.zst", sha256 = "52971dcf5ca5e763a070518da9d615be52ea8f645fd44ee323211b6251d1cc67" }
 zstd = { repo = "core", version = "1.5.7-3", file = "zstd-1.5.7-3-x86_64.pkg.tar.zst", sha256 = "d4cf0049137124c8a025eedfad267a3e8a02310c9efb9d1ae4a61aa1d02789fc" }
 
@@ -2787,7 +2800,7 @@ libarchive = { repo = "core", version = "3.8.11-2", file = "libarchive-3.8.11-2-
 libassuan = { repo = "core", version = "3.0.0-1", file = "libassuan-3.0.0-1-x86_64.pkg.tar.zst", sha256 = "1843d675b324c9d549f3413dcbe653ec86876ac2898fc94423926ed30eab25a1" }
 libatomic = { repo = "core", version = "16.2.1+r23+gd564253eb6c8-1", file = "libatomic-16.2.1+r23+gd564253eb6c8-1-x86_64.pkg.tar.zst", sha256 = "920cfea3dcac82e3d7c8ebbf64dfe341821c1118277d55b6c1e96035cd943656" }
 libblake3 = { repo = "extra", version = "1.8.7-1", file = "libblake3-1.8.7-1-x86_64.pkg.tar.zst", sha256 = "1092d411d22cdd2f2c6b611f73086e29732cb441abbe1a0235ebff422ab37a3b" }
-libbpf = { repo = "core", version = "1.7.0-1", file = "libbpf-1.7.0-1-x86_64.pkg.tar.zst", sha256 = "07ca39704fd534fcb4f520550cdddad5c113521f87035fb66f66a50a6d843257" }
+libbpf = { repo = "core", version = "1.8.0-1", file = "libbpf-1.8.0-1-x86_64.pkg.tar.zst", sha256 = "3f14dc1512ca84ceffdf73f5019313c3c0afc462ed6cc4a150d06963509bad4c" }
 libbsd = { repo = "extra", version = "0.12.2-2", file = "libbsd-0.12.2-2-x86_64.pkg.tar.zst", sha256 = "e26194849786b0202828a348be3f4b90d410604cd7d48f113a4301584a49895a" }
 libcap = { repo = "core", version = "2.78-1", file = "libcap-2.78-1-x86_64.pkg.tar.zst", sha256 = "3e984fe1d323b1c5a5fc60fef005776a4882fbca913d6fe3c41ad11128929ed1" }
 libcap-ng = { repo = "core", version = "0.9.6-1", file = "libcap-ng-0.9.6-1-x86_64.pkg.tar.zst", sha256 = "05b0a8356f898e251845b2e5ffa5966be21ca85f3eaaf5aeb8a9e8df4148ba5c" }
@@ -2984,7 +2997,7 @@ xz = { repo = "core", version = "5.8.4-1", file = "xz-5.8.4-1-x86_64.pkg.tar.zst
 yyjson = { repo = "extra", version = "0.13.0-1", file = "yyjson-0.13.0-1-x86_64.pkg.tar.zst", sha256 = "9d23b8c5ea00af3722e2239f2c27ed498eeb8e0bed9086bfa8d5519f89de1757" }
 zip = { repo = "extra", version = "3.0-14", file = "zip-3.0-14-x86_64.pkg.tar.zst", sha256 = "b1b09aedec942330aae0715be52066455aac418f8f8c39ee3db00d7b3d92cd0b" }
 zix = { repo = "extra", version = "0.8.2-1", file = "zix-0.8.2-1-x86_64.pkg.tar.zst", sha256 = "563534f9bf8ac7b17f9936d0a00f2853b7ed8a0154d2d2e8147bf34fa4983dcf" }
-zlib = { repo = "core", version = "1:1.3.2-4", file = "zlib-1:1.3.2-4-x86_64.pkg.tar.zst", sha256 = "81e183eb4c676c86eb1709d1878f7aec1df10d59ce0980b5ab0724560328d015" }
+zlib = { repo = "core", version = "1:1.4-1", file = "zlib-1:1.4-1-x86_64.pkg.tar.zst", sha256 = "a56796509f9b9e953e31b2fbeef5ae6bb61bff7e3e84cde3f4184581e9eb810c" }
 zlib-ng = { repo = "extra", version = "2.3.3-1", file = "zlib-ng-2.3.3-1-x86_64.pkg.tar.zst", sha256 = "52971dcf5ca5e763a070518da9d615be52ea8f645fd44ee323211b6251d1cc67" }
 zstd = { repo = "core", version = "1.5.7-3", file = "zstd-1.5.7-3-x86_64.pkg.tar.zst", sha256 = "d4cf0049137124c8a025eedfad267a3e8a02310c9efb9d1ae4a61aa1d02789fc" }
 
