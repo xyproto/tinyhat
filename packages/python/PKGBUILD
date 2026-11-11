@@ -214,3 +214,5 @@ if [ "$CARCH" = 'i486' ]; then
 fi
 
 unset -f pkgver
+
+depends=(${depends[@]/#openssl-3/openssl})
