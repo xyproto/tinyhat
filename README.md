@@ -2,11 +2,9 @@
 
 # Tiny Hat
 
-This is a Linux distro based on Arch Linux and [archlinux32](https://archlinux32.org/), with a few custom packages on top.
+This is a Linux distro based on Arch Linux, [archlinux32](https://archlinux32.org/) and Arch Linux ARM, with a few custom packages on top.
 
-This `README.md` file, design choices and package selection is human made. AI tooling has been used for creating the Makefile, adding test scripts, debugging why some program fails to start etc.
-
-Time consuming testing on real hardware has been done by a human (me).
+⭐ Please [recommend Tiny Hat on DistroWatch](https://distrowatch.com/dwres.php?resource=links#new) if you found it fun. :)
 
 ### Goals
 
@@ -30,7 +28,7 @@ The goals for this distro are:
 * Be not impossible to use for brand new users.
 * Have reproducible builds.
 
-It also includes MemTest86+.
+It also includes MemTest86+ and FreeDOS (floppy edition).
 
 ### Reproducible builds
 
@@ -88,6 +86,10 @@ For `make autoupdate`, these packages are also needed:
 
 * Just plop the USB drive into the x86 computer you wish to boot and turn on the computer.
 * If needed, press F10, Del or F2 repeatedly at boot to get into the BIOS, where it is possible to select that the system should boot from the USB drive before the harddrive.
+
+### Tooling
+
+This `README.md` file, design choices and package selection is human made. AI tooling has been used for creating the `Makefile`, adding test scripts, debugging why some program fails to start etc. Time consuming testing on real hardware has been done by a human (me).
 
 ### Licenses
 
