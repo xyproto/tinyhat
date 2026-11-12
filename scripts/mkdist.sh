@@ -2,7 +2,7 @@
 set -eu
 umask 022
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
-: "${SOURCE_DATE_EPOCH:=$(git -C "$top" log -1 --format=%ct 2>/dev/null || echo 315532800)}"
+: "${SOURCE_DATE_EPOCH:=$(git -C "$top" log -1 --format=%ct 2> /dev/null || echo 315532800)}"
 export SOURCE_DATE_EPOCH
 ver=$1
 shift
@@ -12,9 +12,9 @@ out=$top/build/dist
 system=$top/build/system
 stage=$out/src/tinyhat-write-macos-$ver
 tgz() {
-	tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
-		-cf - "$1" | gzip -n -9 >"$out/$1.tar.gz"
-	rm -rf "$out/src"
+  tar -C "$out/src" --sort=name --owner=0 --group=0 --numeric-owner --mtime="@$SOURCE_DATE_EPOCH" \
+    -cf - "$1" | gzip -n -9 > "$out/$1.tar.gz"
+  rm -rf "$out/src"
 }
 mkdir -p "$out" "$system"
 rm -rf "$out/src"
@@ -35,45 +35,48 @@ files="$files tinyhat-licenses-$ver.tar.gz"
 cd "$out"
 
 for img in "$@"; do
-	img=$(cd "$top" && readlink -f "$img")
-	case ${img##*/} in
-	*.iso)
-		name=${img##*/}; name=${name%.iso}
-		cp "$img" "$name-$ver.iso"
-		files="$files $name-$ver.iso"
-		continue
-		;;
-	*.ova)
-		name=${img##*/}; name=${name%.ova}
-		cp "$img" "$name-$ver.ova"
-		files="$files $name-$ver.ova"
-		continue
-		;;
-	*.tar.gz)
-		name=${img##*/}; name=${name%.tar.gz}
-		cp "$img" "$name-$ver.tar.gz"
-		files="$files $name-$ver.tar.gz"
-		continue
-		;;
-	tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
-	tinyhat64*) name=tinyhat64 prog=tinyhat64 formula=tinyhat64-writer class=Tinyhat64Writer app="Tiny Hat 64 Writer" ;;
-	tinyhat-aarch64*) name=tinyhat-aarch64 prog=tinyhat-aarch64 formula=tinyhat-aarch64-writer class=TinyhatAarch64Writer app="Tiny Hat ARM Writer" ;;
-	tinyhat-rpi4*) name=tinyhat-rpi4 prog=tinyhat-rpi4 formula=tinyhat-rpi4-writer class=TinyhatRpi4Writer app="Tiny Hat Raspberry Pi 4 Writer" ;;
-	*) name=tinyhat32 prog=tinyhat formula=tinyhat-writer class=TinyhatWriter app="Tiny Hat Writer" ;;
-	esac
-	cmd=$prog-write
-	gz=$out/$name-$ver.img.gz
-	if [ ! -f "$gz" ] || [ "$img" -nt "$gz" ]; then
-		gzip -n -c -9 "$img" >"$gz.tmp"
-		mv "$gz.tmp" "$gz"
-	fi
-	ln -f "$gz" "$out/img.gz"
-	cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
-		-o "$out/$prog-$ver-linux-x86_64" "$top/programs/tinyhat-write.c" \
-		$(pkg-config --cflags --libs gtk4)
-	rm -f "$out/img.gz"
-	imgsha=$(sha256sum "$gz" | awk '{ print $1 }')
-	cat >"$system/$formula.rb" <<EOF
+  img=$(cd "$top" && readlink -f "$img")
+  case ${img##*/} in
+    *.iso)
+      name=${img##*/}
+      name=${name%.iso}
+      cp "$img" "$name-$ver.iso"
+      files="$files $name-$ver.iso"
+      continue
+      ;;
+    *.ova)
+      name=${img##*/}
+      name=${name%.ova}
+      cp "$img" "$name-$ver.ova"
+      files="$files $name-$ver.ova"
+      continue
+      ;;
+    *.tar.gz)
+      name=${img##*/}
+      name=${name%.tar.gz}
+      cp "$img" "$name-$ver.tar.gz"
+      files="$files $name-$ver.tar.gz"
+      continue
+      ;;
+    tinyhat64x32*) name=tinyhat64x32 prog=tinyhat64x32 formula=tinyhat64x32-writer class=Tinyhat64x32Writer app="Tiny Hat 64x32 Writer" ;;
+    tinyhat64*) name=tinyhat64 prog=tinyhat64 formula=tinyhat64-writer class=Tinyhat64Writer app="Tiny Hat 64 Writer" ;;
+    tinyhat-aarch64*) name=tinyhat-aarch64 prog=tinyhat-aarch64 formula=tinyhat-aarch64-writer class=TinyhatAarch64Writer app="Tiny Hat ARM Writer" ;;
+    tinyhat-rpi4*) name=tinyhat-rpi4 prog=tinyhat-rpi4 formula=tinyhat-rpi4-writer class=TinyhatRpi4Writer app="Tiny Hat Raspberry Pi 4 Writer" ;;
+    *) name=tinyhat32 prog=tinyhat formula=tinyhat-writer class=TinyhatWriter app="Tiny Hat Writer" ;;
+  esac
+  cmd=$prog-write
+  gz=$out/$name-$ver.img.gz
+  if [ ! -f "$gz" ] || [ "$img" -nt "$gz" ]; then
+    gzip -n -c -9 "$img" > "$gz.tmp"
+    mv "$gz.tmp" "$gz"
+  fi
+  ln -f "$gz" "$out/img.gz"
+  cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
+    -o "$out/$prog-$ver-linux-x86_64" "$top/programs/tinyhat-write.c" \
+    $(pkg-config --cflags --libs gtk4)
+  rm -f "$out/img.gz"
+  imgsha=$(sha256sum "$gz" | awk '{ print $1 }')
+  cat > "$system/$formula.rb" << EOF
 class $class < Formula
   desc "Write Tiny Hat images to USB sticks"
   homepage "$home"
@@ -125,9 +128,9 @@ class $class < Formula
   end
 end
 EOF
-	files="$files $name-$ver.img.gz $prog-$ver-linux-x86_64"
+  files="$files $name-$ver.img.gz $prog-$ver-linux-x86_64"
 done
 
 rm -f SHA256SUMS.asc
-sha256sum $files >SHA256SUMS
+sha256sum $files > SHA256SUMS
 ls -l $files SHA256SUMS
