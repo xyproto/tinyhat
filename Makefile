@@ -4,7 +4,7 @@ KVER := 7.3.1
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
-.PHONY: help all all_but_aarch64 img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild dist_but_aarch64 distbuild_but_aarch64 sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -135,9 +135,7 @@ help:
 	$(call target,ova,"VirtualBox appliances (i686$(comma) x32$(comma) x86_64)")
 	$(call target,qemu,"aarch64 QEMU disk image and run script (.tar.gz)")
 	$(call target,all,"every .img$(comma) .iso$(comma) .ova and .tar.gz")
-	$(call target,all_but_aarch64,"the i686$(comma) x32 and x86_64 .img$(comma) .iso and .ova files")
 	$(call target,dist,"release files in $(B)/dist$(comma) signed")
-	$(call target,dist_but_aarch64,"release files in $(B)/dist without the ARM images$(comma) signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
 	$(call target,packages,"build or fetch every package the images need")
 	$(call target,lock,"update distro.lock")
@@ -186,8 +184,6 @@ ova: $(OVAS)
 qemu: $(QEMU_TARS)
 
 all: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
-
-all_but_aarch64: $(X86_FILES)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
 ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 lock-x86_64 import srcinfo autoupdate latest sign,$(or $(MAKECMDGOALS),help)))
@@ -300,12 +296,8 @@ test: patchcheck sourcecheck fuzzelcheck
 dist: distbuild
 	@$(MAKE) --no-print-directory sign
 
-dist_but_aarch64: distbuild_but_aarch64
-	@$(MAKE) --no-print-directory sign
-
 distbuild: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
-distbuild_but_aarch64: $(X86_FILES)
-distbuild distbuild_but_aarch64:
+distbuild:
 	$(MKDIST) $^
 	@ls -l $(B)/dist
 
