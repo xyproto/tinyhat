@@ -1,4 +1,6 @@
-## Plans, in strategic order
+## Plans
+
+- [ ] When drawing with the left mouse button on the desktop background, draw a performant version of the compiz flame effect.
 
 ### 1. Security
 
