@@ -1,6 +1,10 @@
 ## Plans
 
 - [ ] When drawing with the left mouse button on the desktop background, draw a performant version of the compiz flame effect.
+- [ ] Also mention win-f and alt-shift-f to toggle maximized on the help background.
+- [ ] When starting monkeyjumpgo, also show a window with the keybindings, the first time it is started.
+- [ ] Add a link to the interactive way to go to the alt-space menu.
+- [ ] Add a shortcut to starting monkeyjumpgo with a 19x19 board to the alt-space menu.
 
 ### 1. Security
 
