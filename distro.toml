@@ -32,6 +32,7 @@ image = [
     # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
     "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
     "tk", "tk[0-9]*",
+    "python<3.14",
 ]
 everywhere = [
     "appstream",
@@ -69,21 +70,21 @@ packages = [
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
     "linux-firmware-amdgpu", "linux-firmware-mediatek", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware", "alsa-ucm-conf",
-    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "lazygit", "aget", "cairo",
+    "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "lazygit", "aget", "cairo-wayland",
     "opendoas",
     "libmnl",
     "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "wurl", "python314", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "tinyhat-freedos", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "lutris", "nomarch", "tinyhat-ultrasnd", "tinyhat-freedos", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
-    "VIRTUALBOX-GUEST-MODULES", "python", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
+    "VIRTUALBOX-GUEST-MODULES", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
     "llvm", "llvm-lit",
 ]
 exclude = [
@@ -206,7 +207,8 @@ exclude = [
     "usr/lib/firmware/ath10k/QCA99X0",
     "usr/lib/d3d",
     "usr/lib/bellagio",
-    "usr/lib/python3*",
+    "usr/lib/python2*", "usr/lib/python3.[0-9]", "usr/lib/python3.1[0-3]",
+    "usr/lib/python3*/site-packages/boost",
     "usr/lib/libavahi-qt5*",
     "usr/lib/whiptcl.so",
     "usr/lib/imlib2/loaders/heif.so",
@@ -450,7 +452,7 @@ exclude = [
 # The 64-bit ARM images: [image] packages with these changes, plus the uefi packages for the UEFI
 # image (tinyhat-aarch64.img) or the rpi4 packages for the Raspberry Pi 4 image (tinyhat-rpi4.img).
 # Packages come prebuilt from Arch Linux ARM, except the recipes that "make lock-aarch64" decides to build
-add = ["archlinuxarm-keyring", "python"]
+add = ["archlinuxarm-keyring"]
 uefi = []
 rpi4 = ["raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
@@ -460,7 +462,7 @@ buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
 exclude = ["boot"]
 remove = [
-    "archlinux32-keyring", "archlinux-keyring", "python314",
+    "archlinux32-keyring", "archlinux-keyring",
     # PC hardware
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-amdgpu", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware",
 ]
@@ -469,8 +471,8 @@ remove = [
 # The 64-bit x86 image (tinyhat64.img): [image] packages with these changes. It boots the 64-bit kernel and the
 # initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
 # "make lock-x86_64" decides to build
-add = ["virtualbox-guest-utils-nox", "python"]
-remove = ["archlinux32-keyring", "python314"]
+add = ["virtualbox-guest-utils-nox"]
+remove = ["archlinux32-keyring"]
 build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "zsnes", "xfsprogs"]
 # Added to the build environment, which otherwise has what the built recipes need
 buildroot = ["go"]
@@ -484,6 +486,13 @@ packages = [
     "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo", "libmikmod",
     "grub",
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
+    "expat", "gdbm", "libffi", "libnsl", "libxcrypt", "openssl", "tzdata", "mpdecimal", "sqlite", "libxml2", "libxslt", "libyaml",
+]
+local = ["python", "cython", "python-markupsafe", "python-lxml"]
+exclude = ["usr/lib/python3.1[0-3]", "usr/bin/python3.1[0-3]*", "usr/lib/libpython3.1[0-3]*"]
+i686_skip = [
+    "python", "cython", "python-markupsafe", "python-lxml", "python-yaml", "python-numpy", "python-gobject", "dbus-python",
+    "python-zope-interface", "python-twisted", "python-cairo", "mercurial", "gdb", "gdb-common", "boost", "boost-libs", "python-evdev",
 ]
 skip = [
     "pandoc",
@@ -600,6 +609,8 @@ skip = [
 ]
 
 [providers]
+"libcairo.so" = "cairo-wayland"
+"libcairo-gobject.so" = "cairo-wayland"
 "libjack.so" = "pipewire-jack"
 jack = "pipewire-jack"
 dbus-units = "dbus-broker-units"
@@ -812,6 +823,9 @@ build_for = ["i686"]
 [grub-efi64]
 source = "sources"
 
+[grim]
+build_from_source = true
+
 [gtk4]
 build_from_source = true
 
@@ -961,6 +975,9 @@ build_from_source = true
 [pipewire]
 build_from_source = true
 
+[poppler]
+build_from_source = true
+
 [png2xpm]
 source = "sources"
 
@@ -1075,10 +1092,19 @@ source = "sources"
 [tinyhat-view]
 source = "sources"
 
-[wurl]
+[tinyhat-guru]
 source = "sources"
 
-[python314]
+[glib2-introspection]
+source = "sources"
+
+[python]
+source = "sources"
+
+[lutris]
+source = "sources"
+
+[libdisplay-info0.3]
 source = "sources"
 
 [python-pyxel]
