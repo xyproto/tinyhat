@@ -204,7 +204,7 @@ finalize)
 	cp -a config/overlay/. "$root/"
 	if [ -n "${TINYHAT_VERSION-}" ]; then
 		sed -i "/^ID_LIKE=/a VERSION=\"$TINYHAT_VERSION\"\nVERSION_ID=$TINYHAT_VERSION" "$root/etc/os-release"
-		sed -i "1s/^Tiny Hat\$/Tiny Hat $TINYHAT_VERSION/" "$root/etc/tinyhat/help.txt"
+		sed -i "s/^title = \"Tiny Hat\"\$/title = \"Tiny Hat $TINYHAT_VERSION\"/" "$root/etc/desktop.toml"
 	fi
 	(cd config/overlay && find . -mindepth 1) | while IFS= read -r p; do
 		if [ -d "config/overlay/$p" ] || [ -x "config/overlay/$p" ]; then
@@ -280,6 +280,7 @@ systemctl set-default multi-user.target
 	mkdir -p "$root/media" "$root/persist" "$root/etc/dropbear" "$root/var/lib/tinyhat"
 
 	python3 scripts/forbidcheck.py "$root"
+	python3 scripts/sonamecheck.py "$root" "$lock" "$arch"
 	python3 scripts/elfcheck.py "$root"
 	scripts/inroot.sh "$root" /bin/sh -c "$(cat scripts/symcheck.sh)"
 

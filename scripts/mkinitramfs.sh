@@ -21,7 +21,7 @@ x() {
 	shift
 	bsdtar -xf "$(pkgfile "$libs" "$p")" -C "$work" "$@"
 }
-for p in busybox tinyhat-splash; do
+for p in busybox tinyhat-splash tinyhat-guru; do
 	bsdtar -xf "$(pkgfile "$repo" "$p")" -C "$work" "usr/bin/$p"
 	mv "$work/usr/bin/$p" "$work/bin/$p"
 	chmod 755 "$work/bin/$p"
