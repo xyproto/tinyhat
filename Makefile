@@ -329,13 +329,16 @@ $(B)/.fetched-buildroot: $(B)/buildroot.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg
 	@touch $@
 
-$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh $(RUST_DIST)
+BUILDROOT_LOCAL := $(shell python3 scripts/distro.py local buildroot)
+
+$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh scripts/localroot.py $(RUST_DIST) $(foreach p,$(BUILDROOT_LOCAL),$(filter-out %/tiny.lua %/.SRCINFO,$(wildcard packages/$(p)/*)))
 	chmod -R u+rwX $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
-	python3 scripts/pkg.py extract $(B)/buildroot.lock vendor/pkg $(B)/buildroot
+	python3 scripts/pkg.py extract $(B)/buildroot.lock vendor/pkg $(B)/buildroot buildroot
 	ldconfig -r $(B)/buildroot
 	scripts/postinstall.sh $(B)/buildroot $(B)/buildroot.lock vendor/pkg
 	scripts/rust.sh $(B)/buildroot $(RUST_DIST)
+	python3 scripts/localroot.py $(B)/buildroot
 	@touch $@
 
 $(B)/buildroot-aarch64.lock: distro.lock scripts/distro.py
@@ -406,7 +409,7 @@ $(B)/Image-arm64: $(KERNEL_DEPS) config/kernel-arm64.fragment
 	@mkdir -p $(B)
 	scripts/mkkernel.sh $(KVER) arm64 $(B)/Image-arm64 $(CURDIR)/config/kernel-common.fragment $(CURDIR)/config/kernel-arm64.fragment
 
-$(B)/initramfs.img: $(B)/pkg/i686/busybox $(B)/pkg/i686/tinyhat-splash $(B)/rootfs.lock config/initramfs/init scripts/mkinitramfs.sh
+$(B)/initramfs.img: $(B)/pkg/i686/busybox $(B)/pkg/i686/tinyhat-splash $(B)/pkg/i686/tinyhat-guru $(B)/rootfs.lock config/initramfs/init scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
 
 $(B)/initramfs-aarch64.img: $(B)/rootfs-aarch64.lock config/initramfs/init scripts/mkinitramfs.sh
@@ -441,7 +444,7 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	@touch $@
 
 ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
-ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(OVERLAY) scripts/forbidcheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
+ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(OVERLAY) scripts/forbidcheck.py scripts/sonamecheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
 	$(MKROOTFS) base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
