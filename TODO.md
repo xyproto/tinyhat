@@ -16,6 +16,9 @@
 - [ ] It would be nice if the volume icon tooltip also showed if pipewire was loaded or not.
 - [ ] There is a bit too much horizontal space to the right side of the volume icon. It would be nice
       if the margin was based on non-transparent pixels in the image, and not just on the image data width.
+- [ ] The boot animation gallery / editor launcher / configurator needs many small improvements.
+      It currently does not work. Consider splitting everything that has to do with boot/shutdown animations
+      out to a separate repository. It would be fun if it worked on Arch Linux too.
 
 ### Various
 
