@@ -97,5 +97,5 @@ The licenses are generated during the build (`make licenses` writes them to `bui
 
 ### General
 
-* Version: 1.0.6
+* Version: 1.0.7
 * License: BSD-3
