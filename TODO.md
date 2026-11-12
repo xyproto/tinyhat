@@ -1,28 +1,28 @@
 ## Plans
 
+- [ ] alt-left and alt-right should work in NetSurfy to go back/forward.
+- [ ] Just "ls" should not list with details, by default.
+
+### Various
+
 - [ ] When booting straight into Orbiton, ctrl-q should play the shutdown animation and reboot, instead of just shutting down.
 - [ ] Let all QEMU tests etc. specify the keyboard layout before sending keypresses, for instance ctrl-alt-k "English (US)".
-- [ ] altgr+4 to draw "$" no longer works with the Norwegian keyboard layout!
+- [x] altgr+4 to draw "$" no longer works with the Norwegian keyboard layout!
 - [ ] Let the help text background frame be centered vertically (minus the status bar height)
 - [ ] When drawing with the left mouse button on the desktop background, draw a performant version of the compiz flame effect.
 - [ ] Also mention win-f and alt-shift-f to toggle maximized on the help background.
-- [ ] When starting monkeyjumpgo, also show a window with the keybindings, the first time it is started.
+- [ ] When starting monkeyjumpgo, also show a window with the keybindings, the first time it is started + console output.
 - [ ] Add a link to the interactive way to go to the alt-space menu.
 - [ ] Add a shortcut to starting monkeyjumpgo with a 19x19 board to the alt-space menu.
-- [ ] alt-left and alt-right should work in NetSurfy to go back/forward.
 - [ ] By default, the mouse buttons can go forward/backwards, like now, but it would be fun if the user
       could configure them to start a desktop shortcut, run a command, adjust the volume,
       toggle floating/tiled mode etc. This could be configured in the dwl toml config file.
-- [ ] Just "ls" should not list with details, by default.
 - [ ] It would be nice if the volume icon tooltip also showed if pipewire was loaded or not.
 - [ ] There is a bit too much horizontal space to the right side of the volume icon. It would be nice
       if the margin was based on non-transparent pixels in the image, and not just on the image data width.
 - [ ] The boot animation gallery / editor launcher / configurator needs many small improvements.
       It currently does not work. Consider splitting everything that has to do with boot/shutdown animations
       out to a separate repository. It would be fun if it worked on Arch Linux too.
-
-### Various
-
 - [ ] Commit by theme once it passes (kernel, Python, dwl, DOS, Wine, build scripts).
 - [ ] Test on real hardware: rounded teal window title, Pyxel on the Radeon (shader fallback),
       space/focus in NetSurfy, Lutris install without the cairo error.
@@ -69,7 +69,6 @@
 - [ ] x32 builds of DOSBox-X, ZSNES, ScummVM, mGBA and VICE for tinyhat64x32.
 - [ ] Patch OpenTTD to SDL3, then consider including it.
 - [ ] A Pyxel-based turtle module, since Python is built without tkinter (undecided).
-- [ ] Man pages: compressing them makes the squashfs larger, so they stay uncompressed (undecided).
 - [ ] innoextract and vulkan-icd-loader as on-demand additions to the Wine installer.
 - [ ] Measure boot time on the retro PC.
 - [ ] `wget` as a fish alias for `curl -fLO` (wurl removed), `WINETRICKS_DOWNLOADER=curl` everywhere.
