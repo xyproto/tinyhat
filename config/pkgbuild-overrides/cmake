@@ -1,0 +1,4 @@
+depends=(${depends[@]/cppdap})
+makedepends=(git nlohmann-json)
+eval "$(declare -f build | sed -e 's/ --sphinx-man//' -e 's/ --sphinx-html//' -e 's/ --qt-gui//' -e 's/ --system-libs/ --system-libs --no-system-cppdap/')"
+eval "$(declare -f package | sed -e '/_sources/d' -e '/emacs -batch/d')"

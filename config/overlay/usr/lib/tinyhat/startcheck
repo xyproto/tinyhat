@@ -1,0 +1,30 @@
+#!/bin/sh
+check() {
+	name=$1
+	shift
+	if out=$(timeout 60 "$@" 2>&1); then
+		echo "ok $name"
+	else
+		echo "FAILED $name: $(printf '%s' "$out" | tail -n 2 | tr '\n' ' ' | cut -c1-200)"
+	fi
+}
+check python python3 -c 'import encodings, ssl, sqlite3, json, ctypes, venv, zlib, lzma, bz2'
+command -v pyxel >/dev/null && check pyxel python3 -c 'import pyxel'
+command -v lutris >/dev/null && check lutris sh -c 'cd /usr/bin && exec python3 -c "import gi; gi.require_version(\"Gtk\", \"4.0\"); import lutris.gui.application"'
+if command -v gdb >/dev/null && command -v cc >/dev/null; then
+	printf 'int main(void) { return 0; }\n' >/tmp/th-gdb.c
+	cc -g -o /tmp/th-gdb /tmp/th-gdb.c && check gdb gdb -batch -ex run /tmp/th-gdb
+fi
+command -v wine >/dev/null && check wine wine --version
+for f in /usr/share/applications/*.desktop; do
+	[ -f "$f" ] || continue
+	cmd=$(sed -n 's/^Exec=//p' "$f" | head -n 1)
+	set -- $cmd
+	while [ "$1" = env ] || [ "${1#*=}" != "$1" ]; do shift; done
+	[ -n "$1" ] || continue
+	if command -v "$1" >/dev/null 2>&1; then
+		echo "ok ${f##*/}"
+	else
+		echo "FAILED ${f##*/}: $1 is missing"
+	fi
+done

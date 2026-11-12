@@ -1,0 +1,1 @@
+depends=($(printf '%s\n' "${depends[@]}" | sed 's/^cairo$/libcairo.so/'))

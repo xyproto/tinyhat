@@ -1,4 +1,5 @@
 _d=(); for _p in "${depends[@]}"; do [[ $_p =~ ^(libx11|libxcb|libxext|libxrender)$ ]] || _d+=("$_p"); done; depends=("${_d[@]}")
-eval "$(
-  declare -f build | sed 's/-D dwrite=disabled/-D dwrite=disabled -D xlib=disabled -D xcb=disabled/'
-)"
+eval "$(declare -f build | sed 's/-D dwrite=disabled/-D dwrite=disabled -D xlib=disabled -D xcb=disabled/')"
+pkgname=(cairo-wayland)
+conflicts=(cairo)
+eval "$(declare -f package_cairo | sed '1s/^package_cairo /package_cairo-wayland /')"

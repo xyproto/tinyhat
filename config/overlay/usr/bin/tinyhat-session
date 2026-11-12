@@ -6,7 +6,7 @@ tinyhat-soundd &
 : "${EDITOR:=/usr/bin/o}"
 : "${MANPAGER:=/usr/bin/o}"
 export BROWSER EDITOR MANPAGER
-export GTK_A11Y=none WLR_XWAYLAND=/usr/bin/Xwayland DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf EGL_LOG_LEVEL=fatal XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect DRAW_USE_LLVM=0 O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
+export GTK_A11Y=none WLR_XWAYLAND=/usr/bin/Xwayland DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf EGL_LOG_LEVEL=fatal XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
 eval "$(MESA_SHADER_CACHE_DISABLE=true tinyhat-glinfo 2>/dev/null)"
 virt=$(systemd-detect-virt 2>/dev/null)
 # With 3D acceleration on, VirtualBox has an SVGA3D GPU, but the buffers rendered with it fail to reach dwl
@@ -24,6 +24,10 @@ elif [ "${TINYHAT_GL_VERSION%%.*}" -ge 3 ] 2>/dev/null || [ "${TINYHAT_GL_VERSIO
 	TINYHAT_SDL_RENDER=opengl,software
 fi
 export TINYHAT_GL_VERSION TINYHAT_GLES_VERSION TINYHAT_GL_RENDERER TINYHAT_GL_SOFTWARE TINYHAT_SDL_RENDER
+case $TINYHAT_GL_RENDERER in
+*llvmpipe* | *softpipe*) ;;
+*) export DRAW_USE_LLVM=0 ;;
+esac
 gtk_gl=
 case $TINYHAT_GL_VERSION in 3.[3-9] | 4.* | [5-9].*) gtk_gl=1 ;; esac
 case $TINYHAT_GLES_VERSION in 3.* | [4-9].*) gtk_gl=1 ;; esac
@@ -60,6 +64,15 @@ for try in 1 2 3; do
 	sleep 3
 done
 [ -p /run/tinyhat-splash ] && timeout 1 sh -c 'echo quit >/run/tinyhat-splash' 2>/dev/null
+while :; do
+	tinyhat-guru "The graphical session (dwl) stopped $try times" 3 "$log" "Enter=Try again,T=Text console,R=Restart,P=Power off"
+	case $? in
+	10) exec tinyhat-session ;;
+	114) exec doas systemctl reboot ;;
+	112) exec doas systemctl poweroff ;;
+	116) break ;;
+	esac
+done
 printf '\033[?25h'
 tail -n 15 "$log"
 echo "The graphical session stopped. The log is in $log. Type tinyhat-session to start it again."

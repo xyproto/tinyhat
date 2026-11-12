@@ -4,7 +4,7 @@ for _p in "${depends[@]}"; do
   case $_p in
     libgl|libx11|libxcursor|libxdamage|libxext|libxfixes|libxi|libxinerama|libxrandr|libxrender) ;;
     gstreamer|gst-plugins-bad-libs|gst-plugins-base-libs|vulkan-icd-loader|xdg-desktop-portal-gtk) ;;
-    libcloudproviders|libcolord|libcups|tinysparql|gtk-update-icon-cache|adwaita-fonts) ;;
+    libcloudproviders|libcolord|libcups|tinysparql|gtk-update-icon-cache|adwaita-fonts|at-spi2-core) ;;
     *) _d+=("$_p") ;;
   esac
 done
@@ -24,7 +24,7 @@ build() {
     -D tracker=disabled \
     -D colord=disabled \
     -D accesskit=disabled \
-    -D introspection=disabled \
+    -D introspection=enabled \
     -D documentation=false \
     -D man-pages=false \
     -D build-demos=false \
@@ -50,3 +50,5 @@ END
 
   rm -f "$pkgdir"/usr/bin/gtk4-update-icon-cache "$pkgdir"/usr/share/man/man1/gtk4-update-icon-cache.1
 }
+depends=($(printf '%s\n' "${depends[@]}" | sed 's/^cairo$/libcairo.so/'))
+makedepends+=(glib2-introspection)

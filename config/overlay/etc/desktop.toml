@@ -1,0 +1,532 @@
+title = "Tiny Hat"
+help_footer = """
+USB sticks and CDs show up in /media and as D: in DOSBox-X. DOS games can be placed in ~/DOS,
+which is C: in DOSBox-X. A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:."""
+
+[windows]
+layout = "float"
+master_size = 0.55
+master_count = 1
+border = 2
+gap = 6
+focus_follows_mouse = false
+
+[bar]
+show = true
+position = "top"
+
+[keyboard]
+layout = ""
+variant = ""
+options = ""
+repeat_rate = 25
+repeat_delay = 600
+
+[mouse]
+speed = 0.0
+acceleration = true
+natural_scrolling = false
+left_handed = false
+
+[touchpad]
+tap_to_click = true
+natural_scrolling = false
+disable_while_typing = true
+speed = 0.0
+
+[[background]]
+wallpaper = "/usr/share/backgrounds/tinyhat/wirehat.png"
+mode = "left"
+color = "1a1b26"
+help = true
+
+[[background]]
+wallpaper = "/usr/share/backgrounds/tinyhat/wirehat.png"
+mode = "center"
+color = "1a1b26"
+
+[[background]]
+color = "000000"
+
+[[background]]
+color = "008080"
+
+[[background]]
+wallpaper = "/usr/share/backgrounds/tinyhat/hundetann.png"
+mode = "tile"
+color = "1a1b26"
+
+[[background]]
+wallpaper = "/usr/share/backgrounds/archlinux/small.png"
+mode = "fill"
+color = "1a1b26"
+
+[[rule]]
+title = "DOSBox-X"
+float = true
+
+[[rule]]
+title = "ScummVM"
+float = true
+
+[[rule]]
+title = "ZSNES"
+float = true
+
+[[rule]]
+title = "TIC-80"
+float = true
+
+[[rule]]
+title = "Tiny Hat"
+float = true
+
+[[rule]]
+title = "Fasttracker II"
+float = true
+
+[[key]]
+separator = true
+
+[[key]]
+hotkey = "Alt+Space"
+run = "tinyhat-menu"
+description = "Application Menu"
+
+[[key]]
+hotkey = "Alt+Shift+W"
+action = "close"
+description = "Close window (Alt+F4 also works)"
+
+[[key]]
+hotkey = "Alt+Shift+F"
+action = "fullscreen"
+description = "Toggle fullscreen (Alt+Enter also works in some applications)."
+
+[[key]]
+hotkey = "Alt+Tab"
+action = "alttab"
+arg = 1
+description = "Jump between windows"
+
+[[key]]
+hotkey = "Ctrl+Alt+Up"
+run = "tinyhat-volume up"
+shown = "Ctrl+Alt+Up / Down"
+description = "Audio volume"
+
+[[key]]
+hotkey = "Alt+F2"
+run = "tinyhat-run"
+description = "Run a command (Win+R also works)"
+
+[[key]]
+separator = true
+
+[[key]]
+hotkey = "Ctrl+Alt+R"
+run = "tinyhat-term"
+description = "Terminal"
+
+[[key]]
+hotkey = "Ctrl+Alt+N"
+run = "tinyhat-run -n NetSurfy netsurfy"
+description = "NetSurfy web browser"
+
+[[key]]
+hotkey = "Ctrl+Alt+K"
+run = "tinyhat-keyboard"
+description = "Keyboard layout selection"
+
+[[key]]
+hotkey = "Ctrl+Alt+B"
+run = "tinyhat-bluetui"
+description = "Bluetooth devices"
+
+[[key]]
+hotkey = "Ctrl+Alt+W"
+run = "tinyhat-wifi"
+description = "Wi-Fi settings"
+
+[[key]]
+hotkey = "Ctrl+Alt+Y"
+run = "tinyhat-sounds"
+description = "System sound settings"
+
+[[key]]
+hotkey = "Ctrl+Alt+M"
+run = "tinyhat-run -l tinyhat-play"
+description = "Download and run a homebrew game"
+
+[[key]]
+hotkey = "Ctrl+Alt+T"
+run = "tinyhat-run -l tic80"
+description = "TIC-80 fantasy console"
+
+[[key]]
+hotkey = "Ctrl+Alt+D"
+run = "tinyhat-run -l tinyhat-dosbox"
+description = "DOSBox-X"
+
+[[key]]
+hotkey = "Ctrl+Alt+S"
+run = "tinyhat-run -l tinyhat-scummvm"
+description = "ScummVM"
+
+[[key]]
+hotkey = "Ctrl+Alt+A"
+run = "tinyhat-scan-games -f"
+description = "Scan drives for ScummVM games"
+
+[[key]]
+hotkey = "Ctrl+Alt+Z"
+run = "tinyhat-run -l zsnes"
+description = "ZSNES 2"
+
+[[key]]
+hotkey = "Ctrl+Alt+V"
+run = "tinyhat-run -l tinyhat-emulate c64"
+description = "C64 (VICE)"
+
+[[key]]
+hotkey = "Ctrl+Alt+8"
+run = "tinyhat-run -l octo-de"
+description = "CHIP-8 (Octo)"
+
+[[key]]
+hotkey = "Ctrl+Alt+I"
+run = "tinyhat-run -g -n LibreSprite libresprite"
+description = "LibreSprite"
+
+[[key]]
+hotkey = "Ctrl+Alt+O"
+run = "tinyhat-book"
+description = "Write a book in Orbiton"
+
+[[key]]
+hotkey = "Ctrl+Alt+H"
+run = "tinyhat-share"
+description = "Toggle sharing ~/pub over HTTP"
+
+[[key]]
+hotkey = "Ctrl+Alt+L"
+run = "swaylock -f"
+description = 'Lock the screen (the default password is "tinyhat")'
+
+[[key]]
+separator = true
+
+[[key]]
+hotkey = "Ctrl+Alt+C"
+run = "tinyhat-code"
+description = "Example game in C (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+F"
+run = "tinyhat-fennel"
+description = "Example game in Fennel and LÖVE (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+P"
+run = "tinyhat-adventure"
+description = "Example point-and-click game in Lua (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+G"
+run = "tinyhat-gba"
+description = "Example GBA program in C (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+J"
+run = "tinyhat-snesdev"
+description = "Example SNES program in C (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+E"
+run = "tinyhat-watcom"
+description = "Example DOS program in C (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+U"
+run = "tinyhat-c64dev"
+description = "Example C64 program in C (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+X"
+run = "tinyhat-intro"
+description = "Example 256 byte demoscene intro (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+0"
+run = "tinyhat-pyxel"
+description = "Example game in Python and Pyxel (2x Ctrl+Space to run)"
+
+[[key]]
+separator = true
+
+[[key]]
+shown = "Right click desktop"
+description = "Toggle background"
+
+[[key]]
+shown = "Alt+Left drag"
+description = "Move a window (Alt+Right drag to resize)"
+
+[[key]]
+hotkey = "Win+1"
+action = "view"
+arg = 1
+shown = "Win+1..4"
+description = "Go to desktop 1-4 (combine with Shift to send a window there)"
+
+[[key]]
+separator = true
+
+[[key]]
+hotkey = "Ctrl+Alt+Shift+Q"
+run = "poweroff"
+description = "Power off"
+
+[[key]]
+separator = true
+
+[[key]]
+hotkey = "Ctrl+Alt+Down"
+run = "tinyhat-volume down"
+
+[[key]]
+hotkey = "Alt+F4"
+action = "close"
+
+[[key]]
+hotkey = "Win+R"
+run = "tinyhat-run"
+
+[[key]]
+hotkey = "Alt+Shift+ISO_Left_Tab"
+action = "alttab"
+arg = -1
+
+[[key]]
+hotkey = "Win+P"
+run = "tinyhat-menu"
+
+[[key]]
+hotkey = "Win+Space"
+run = "tinyhat-menu"
+
+[[key]]
+hotkey = "Menu"
+run = "tinyhat-menu"
+
+[[key]]
+hotkey = "Win+Return"
+run = "tinyhat-term"
+
+[[key]]
+hotkey = "Win+L"
+run = "swaylock -f"
+
+[[key]]
+hotkey = "Print"
+run = "tinyhat-screenshot"
+
+[[key]]
+hotkey = "XF86AudioRaiseVolume"
+run = "tinyhat-volume up"
+
+[[key]]
+hotkey = "XF86AudioLowerVolume"
+run = "tinyhat-volume down"
+
+[[key]]
+hotkey = "XF86AudioMute"
+run = "tinyhat-volume mute"
+
+[[key]]
+hotkey = "XF86MonBrightnessUp"
+run = "tinyhat-brightness up"
+
+[[key]]
+hotkey = "XF86MonBrightnessDown"
+run = "tinyhat-brightness down"
+
+[[key]]
+hotkey = "Ctrl+Alt+Delete"
+run = "reboot --no-wall"
+
+[[key]]
+hotkey = "Win+Shift+Return"
+action = "zoom"
+
+[[key]]
+hotkey = "Win+J"
+action = "focusstack"
+arg = 1
+
+[[key]]
+hotkey = "Win+K"
+action = "focusstack"
+arg = -1
+
+[[key]]
+hotkey = "Win+I"
+action = "incnmaster"
+arg = 1
+
+[[key]]
+hotkey = "Win+D"
+action = "showdesktop"
+
+[[key]]
+hotkey = "Win+Shift+H"
+action = "mfact"
+arg = -0.05
+
+[[key]]
+hotkey = "Win+Shift+L"
+action = "mfact"
+arg = 0.05
+
+[[key]]
+hotkey = "Win+Tab"
+action = "view"
+
+[[key]]
+hotkey = "Win+Shift+C"
+action = "close"
+
+[[key]]
+hotkey = "Win+T"
+action = "layout"
+arg = "tile"
+
+[[key]]
+hotkey = "Win+E"
+action = "layout"
+arg = "float"
+
+[[key]]
+hotkey = "Win+Ctrl+Space"
+action = "layout"
+
+[[key]]
+hotkey = "Win+M"
+action = "minimize"
+
+[[key]]
+hotkey = "Win+Shift+Space"
+action = "float"
+
+[[key]]
+hotkey = "Win+F"
+action = "fullscreen"
+
+[[key]]
+hotkey = "Win+0"
+action = "view"
+arg = 0
+
+[[key]]
+hotkey = "Win+Shift+0"
+action = "tag"
+arg = 0
+
+[[key]]
+hotkey = "Win+comma"
+action = "focusmon"
+arg = "left"
+
+[[key]]
+hotkey = "Win+period"
+action = "focusmon"
+arg = "right"
+
+[[key]]
+hotkey = "Win+Shift+less"
+action = "tagmon"
+arg = "left"
+
+[[key]]
+hotkey = "Win+Shift+greater"
+action = "tagmon"
+arg = "right"
+
+[[key]]
+hotkey = "Win+2"
+action = "view"
+arg = 2
+
+[[key]]
+hotkey = "Win+3"
+action = "view"
+arg = 3
+
+[[key]]
+hotkey = "Win+4"
+action = "view"
+arg = 4
+
+[[key]]
+hotkey = "Win+Ctrl+1"
+action = "toggleview"
+arg = 1
+
+[[key]]
+hotkey = "Win+Ctrl+2"
+action = "toggleview"
+arg = 2
+
+[[key]]
+hotkey = "Win+Ctrl+3"
+action = "toggleview"
+arg = 3
+
+[[key]]
+hotkey = "Win+Ctrl+4"
+action = "toggleview"
+arg = 4
+
+[[key]]
+hotkey = "Win+Shift+1"
+action = "tag"
+arg = 1
+
+[[key]]
+hotkey = "Win+Shift+2"
+action = "tag"
+arg = 2
+
+[[key]]
+hotkey = "Win+Shift+3"
+action = "tag"
+arg = 3
+
+[[key]]
+hotkey = "Win+Shift+4"
+action = "tag"
+arg = 4
+
+[[key]]
+hotkey = "Win+Ctrl+Shift+1"
+action = "toggletag"
+arg = 1
+
+[[key]]
+hotkey = "Win+Ctrl+Shift+2"
+action = "toggletag"
+arg = 2
+
+[[key]]
+hotkey = "Win+Ctrl+Shift+3"
+action = "toggletag"
+arg = 3
+
+[[key]]
+hotkey = "Win+Ctrl+Shift+4"
+action = "toggletag"
+arg = 4
+
+[[launcher]]
+desktop = "tinyhat-monkeyjump.desktop"
+icon = "glider"

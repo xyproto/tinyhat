@@ -5,10 +5,10 @@
  
  static struct drm_panic_line panic_msg[] = {
 -	PANIC_LINE("KERNEL PANIC!"),
-+	PANIC_LINE("TINY HAT CRASHED!"),
++	PANIC_LINE("Software Failure.   Restarting in a few seconds."),
  	PANIC_LINE(""),
 -	PANIC_LINE("Please reboot your computer."),
-+	PANIC_LINE("Restarting automatically in a few seconds."),
++	PANIC_LINE("Guru Meditation #00000001.0000DEAD"),
  	PANIC_LINE(""),
  	PANIC_LINE(""), /* will be replaced by the panic description */
  };
