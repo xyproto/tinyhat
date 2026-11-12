@@ -5,6 +5,11 @@
 - [ ] When starting monkeyjumpgo, also show a window with the keybindings, the first time it is started.
 - [ ] Add a link to the interactive way to go to the alt-space menu.
 - [ ] Add a shortcut to starting monkeyjumpgo with a 19x19 board to the alt-space menu.
+- [ ] alt-left and alt-right should work in NetSurfy to go back/forward.
+- [ ] By default, the mouse buttons can go forward/backwards, like now, but it would be fun if the user
+      could configure them to start a desktop shortcut, run a command, adjust the volume,
+      toggle floating/tiled mode etc. This could be configured in the dwl toml config file.
+- [ ] Just "ls" should not list with details, by default.
 
 ### 1. Security
 
