@@ -2,6 +2,7 @@
 
 - [ ] Let all QEMU tests etc. specify the keyboard layout before sending keypresses, for instance ctrl-alt-k "English (US)".
 - [ ] altgr+4 to draw "$" no longer works with the Norwegian keyboard layout!
+- [ ] Let the help text background frame be centered vertically (minus the status bar height)
 - [ ] When drawing with the left mouse button on the desktop background, draw a performant version of the compiz flame effect.
 - [ ] Also mention win-f and alt-shift-f to toggle maximized on the help background.
 - [ ] When starting monkeyjumpgo, also show a window with the keybindings, the first time it is started.
