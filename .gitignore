@@ -35,4 +35,5 @@
 \#*#
 __pycache__/
 include.txt
+tinyhat-aarch64.tar.gz
 venv/
