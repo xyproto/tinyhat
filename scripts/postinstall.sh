@@ -5,20 +5,20 @@ lock=$2
 pkgdir=$3
 
 inroot() {
-	bwrap --bind "$root" / --dev /dev --proc /proc --tmpfs /tmp --unshare-all --clearenv \
-		--setenv PATH /usr/bin --setenv LANG C.UTF-8 "$@"
+  bwrap --bind "$root" / --dev /dev --proc /proc --tmpfs /tmp --unshare-all --clearenv \
+    --setenv PATH /usr/bin --setenv LANG C.UTF-8 "$@"
 }
 
 [ -f "$root/etc/ld.so.cache" ] || inroot /usr/bin/ldconfig
 mkdir -p "$root/var/lib/tinyhat-install"
 while read -r _ name ver file _; do
-	bsdtar -xOf "$pkgdir/$file" .INSTALL >"$root/var/lib/tinyhat-install/$name" 2>/dev/null || {
-		rm -f "$root/var/lib/tinyhat-install/$name"
-		continue
-	}
-	inroot /bin/sh -c '. "$1"; if command -v post_install >/dev/null; then post_install "$2"; fi' \
-		sh "/var/lib/tinyhat-install/$name" "$ver" </dev/null >/dev/null 2>&1 || echo "postinstall.sh: $name post_install failed" >&2
-done <"$lock"
+  bsdtar -xOf "$pkgdir/$file" .INSTALL > "$root/var/lib/tinyhat-install/$name" 2> /dev/null || {
+    rm -f "$root/var/lib/tinyhat-install/$name"
+    continue
+  }
+  inroot /bin/sh -c '. "$1"; if command -v post_install >/dev/null; then post_install "$2"; fi' \
+    sh "/var/lib/tinyhat-install/$name" "$ver" < /dev/null > /dev/null 2>&1 || echo "postinstall.sh: $name post_install failed" >&2
+done < "$lock"
 rm -rf "$root/var/lib/tinyhat-install"
 
 inroot /usr/bin/update-ca-trust

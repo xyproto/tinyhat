@@ -9,22 +9,22 @@ libs=$repo
 ld=usr/lib/ld-linux.so.2
 work=$top/build/initramfs
 if [ "$arch" = aarch64 ]; then
-	libs=$top/build/repo-aarch64
-	ld=usr/lib/ld-linux-aarch64.so.1
-	work=$top/build/$(basename "$out" .img)
+  libs=$top/build/repo-aarch64
+  ld=usr/lib/ld-linux-aarch64.so.1
+  work=$top/build/$(basename "$out" .img)
 fi
 rm -rf "$work"
 mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/newroot"
 pkgfile() { python3 "$top/scripts/pkg.py" repofile "$1" "$arch" "$2"; }
 x() {
-	p=$1
-	shift
-	bsdtar -xf "$(pkgfile "$libs" "$p")" -C "$work" "$@"
+  p=$1
+  shift
+  bsdtar -xf "$(pkgfile "$libs" "$p")" -C "$work" "$@"
 }
 for p in busybox tinyhat-splash tinyhat-guru; do
-	bsdtar -xf "$(pkgfile "$repo" "$p")" -C "$work" "usr/bin/$p"
-	mv "$work/usr/bin/$p" "$work/bin/$p"
-	chmod 755 "$work/bin/$p"
+  bsdtar -xf "$(pkgfile "$repo" "$p")" -C "$work" "usr/bin/$p"
+  mv "$work/usr/bin/$p" "$work/bin/$p"
+  chmod 755 "$work/bin/$p"
 done
 rm -rf "$work/usr"
 x util-linux usr/bin/sfdisk usr/bin/partx usr/bin/wipefs

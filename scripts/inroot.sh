@@ -3,7 +3,7 @@ set -eu
 umask 022
 root=$1
 shift
-cleanup() { umount -lR "$root/dev" "$root/proc" "$root/tmp" "$root/run" 2>/dev/null || true; }
+cleanup() { umount -lR "$root/dev" "$root/proc" "$root/tmp" "$root/run" 2> /dev/null || true; }
 trap cleanup EXIT
 mkdir -p "$root/dev" "$root/proc" "$root/sys" "$root/tmp" "$root/run"
 mount --rbind /dev "$root/dev"
