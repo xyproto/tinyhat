@@ -166,6 +166,7 @@ def load_db(dbdir=DBDIR, repos=None):
                 "filename": fields["FILENAME"][0],
                 "sha256": fields["SHA256SUM"][0],
                 "depends": [strip_ver(d) for d in fields.get("DEPENDS", [])],
+                "provides_full": fields.get("PROVIDES", []),
             }, fields.get("PROVIDES", []))
     return pkgs, provides
 
@@ -285,10 +286,53 @@ def list_config(name, extra=()):
     return targets, distro.providers(), skip | skipped
 
 
+ANY_RE = re.compile(r"-any\.pkg\.tar\.[a-z0-9]+$")
+
+
+def python_bound(p):
+    """Whether a noarch package is tied to the Python version it was built for."""
+    return any(n == "python" or n.startswith("python-") for n in [p["name"]] + p["depends"])
+
+
+def i686_with_arch_any():
+    """The archlinux32 index, with the noarch Python packages taken from Arch Linux, since those are built for
+    the latest Python and the archlinux32 ones for an old one. Arch Linux noarch packages that archlinux32 lacks
+    are added too."""
+    pkgs, provides = load_db()
+    other, other_provides = arch_db("x86_64")
+    provs = {}
+    for pv, names in other_provides.items():
+        for n in names:
+            provs.setdefault(n, []).append(pv)
+    for name, p in other.items():
+        if not ANY_RE.search(p["filename"]):
+            continue
+        mine = pkgs.get(name)
+        if mine is not None and not (ANY_RE.search(mine["filename"]) and python_bound(mine)):
+            continue
+        if mine is not None:
+            del pkgs[name]
+            for names in provides.values():
+                while name in names:
+                    names.remove(name)
+        add_pkg(pkgs, provides, dict(p, repo=f"x86_64:{p['repo']}"), provs.get(name, []))
+    for name, p in list(pkgs.items()):
+        if ":" not in p["repo"] and ANY_RE.search(p["filename"]) and python_bound(p):
+            del pkgs[name]
+            for names in provides.values():
+                while name in names:
+                    names.remove(name)
+    return pkgs, provides
+
+
 def resolve(name, extra=(), repodir=None, arch="i686"):
     targets, prefs, skip = list_config(name, extra)
     if repodir:
         indexes = {a: load_repo(repodir, a) for a in ({"i686", arch} if arch == "x32" else {arch})}
+    elif name == "buildroot":
+        indexes = {"i686": i686_with_arch_any()}
+        conf = distro.section(name)
+        skip = skip | set(conf.get("local", [])) | set(conf.get("i686_skip", []))
     else:
         indexes = {"i686": load_db()}
     sel = resolve_targets(targets, indexes, arch, prefs, skip)

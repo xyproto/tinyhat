@@ -179,12 +179,14 @@ def main():
         print("\n".join(pins()))
     elif cmd == "unignored":
         print("\n".join(unignored()))
+    elif cmd == "local":
+        print(" ".join(section(args[0]).get("local", [])))
     elif cmd == "heavy":
         print(1 if tables().get(args[0], {}).get("heavy") else 0)
     elif cmd == "caps":
         print("\n".join(caps(args[0])))
     else:
-        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE")
+        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE | local SECTION")
 
 
 if __name__ == "__main__":

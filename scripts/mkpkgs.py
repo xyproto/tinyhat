@@ -236,7 +236,8 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
         if seedname is None or local_first(idx, localname) or too_old:
             wanted, out = [localname], hard
         else:
-            wanted, out = sorted(seed_closure(seed, seedname, prefs, cache) & broken), hard
+            wanted, out = [pkg.lookup(idx["i686"], n, prefs, set()) or n
+                           for n in sorted(seed_closure(seed, seedname, prefs, cache) & broken)], hard
             if localname in image and localname not in SEED_ONLY and localname in versions["local"] and seedname in versions["seed"] and \
                     newer(versions["local"][localname], versions["seed"][seedname]):
                 soft.append(localname)
@@ -497,7 +498,8 @@ def cmd_mk():
     broken = set(pkg.read_list(SEED_BROKEN))
     # Prebuilt packages older than [image] deny allows (like "llvm<23") are treated as broken, so they get built
     too_old = {n for n, p in seed[0].items() if denied(n, p["version"], [r for r in deny_rules() if r[1]])}
-    broken |= too_old
+    broken |= too_old | {n for n, p in seed[0].items() if pkg.python_bound(p)}
+    broken |= set(distro.section("buildroot").get("i686_skip", [])) & set(seed[0])
     closures = {}
     versions = {"local": {n: i["version"] for i in infos for n in i["pkgnames"]},
                 "seed": {p["name"]: p["version"] for p in distro.locked("buildroot")}}
@@ -538,7 +540,7 @@ def cmd_mk():
             deps = {pkg.lookup(seed, d, prefs, set()) for n in needed if n in seed[0] for d in seed[0][n]["depends"]}
             if not available:
                 note = f"{base} is not available prebuilt, building it"
-            elif set(info["pkgnames"]) & broken:
+            elif (set(info["pkgnames"]) | {pkg.lookup(seed, n, prefs, set()) for n in needed}) & broken:
                 note = f"prebuilt {base} is broken in the seed, building it"
             elif deps & broken:
                 note = f"prebuilt {base} needs {' '.join(sorted(deps & broken))}, which is broken in the seed, building it"
@@ -873,6 +875,7 @@ def cmd_lock_arch(arch):
         pin = distro.tables().get(info["base"], {}).get("version")
         if pin and any(n in db and db[n]["version"] != pin for n in info["pkgnames"]):
             local.add(info["base"])
+    local |= {base_of[t] for t in targets if t not in db and t in base_of}
 
     def resolve():
         pkgs, provs = {}, {}

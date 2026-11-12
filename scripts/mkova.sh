@@ -19,7 +19,7 @@ VBoxManage convertfromraw "$work/disk.raw" "$work/disk.vdi" --format VDI >/dev/n
 rm -f "$work/disk.raw"
 
 VBoxManage createvm --name "$name" --ostype "$ostype" --basefolder "$PWD/$work" --register >/dev/null
-VBoxManage modifyvm "$name" --memory 4096 --cpus 2 --vram 128 --graphicscontroller vmsvga --accelerate-3d on \
+VBoxManage modifyvm "$name" --memory 4096 --cpus 2 --vram 128 --graphicscontroller vmsvga --accelerate-3d off \
 	--firmware bios --rtc-use-utc on --mouse usbtablet --usb-ohci on \
 	--audio-enabled on --audio-out on --audio-controller hda --audio-driver default \
 	--nic1 nat --nic-type1 82540EM --clipboard-mode disabled
