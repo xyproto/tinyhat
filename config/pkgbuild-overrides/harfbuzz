@@ -1,4 +1,5 @@
 pkgname=(harfbuzz harfbuzz-cairo harfbuzz-icu)
-makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala|chafa|glew|glfw|libgl|gtk-doc|help2man'))
-eval "$(declare -f build | sed -E 's/ -D ?(introspection|vapi|gir|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D introspection=disabled -D chafa=disabled -D gpu_demo=disabled -D docs=disabled -D utilities=disabled /')"
+makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'vala|chafa|glew|glfw|libgl|gtk-doc|help2man'))
+eval "$(declare -f build | sed -E 's/ -D ?(vapi|vala|vapigen)=[A-Za-z]+//g; s/arch-meson /arch-meson -D chafa=disabled -D gpu_demo=disabled -D docs=disabled -D utilities=disabled /')"
 eval "$(declare -f package_harfbuzz | sed -E '/harfbuzz-utils/d; s/_pick hb-(utils|docs) [^;)]*;?//')"
+makedepends+=(glib2-introspection)

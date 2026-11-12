@@ -1,0 +1,2 @@
+makedepends=(${makedepends[@]/mypy})
+eval "$(declare -f build | sed '/CHARSET_NORMALIZER_USE_MYPYC/d')"

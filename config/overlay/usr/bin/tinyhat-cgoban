@@ -1,18 +1,32 @@
 #!/bin/sh
 mkdir -p "$HOME/sgf"
 cd "$HOME/sgf" || exit 1
+if [ -x /opt/tinyhat-jbr/bin/java ]; then
+	exec /opt/tinyhat-jbr/bin/java \
+		-Dawt.toolkit.name=WLToolkit \
+		-Dawt.useSystemAAFontSettings=on \
+		-Dfile.encoding=UTF-8 \
+		-Dswing.defaultfont=JetBrainsMono-Regular \
+		-Dswing.aatext=true \
+		-Xms32m \
+		-Xmx256m \
+		-XX:+UseG1GC \
+		-XX:+UseStringDeduplication \
+		-XX:MaxGCPauseMillis=100 \
+		-jar /usr/share/java/cgoban3/cgoban.jar "$@"
+fi
 export _JAVA_AWT_WM_NONREPARENTING=1
 exec java \
-    -Dawt.useSystemAAFontSettings=on \
-    -Dfile.encoding=UTF-8 \
-    -Dsun.java2d.xrender=false \
-    -Dsun.java2d.pmoffscreen=false \
-    -Dsun.java2d.opengl=false \
-    -Dswing.defaultfont=JetBrainsMono-Regular \
-    -Dswing.aatext=true \
-    -Xms32m \
-    -Xmx256m \
-    -XX:+UseG1GC \
-    -XX:+UseStringDeduplication \
-    -XX:MaxGCPauseMillis=100 \
-    -jar /usr/share/java/cgoban3/cgoban.jar "$@"
+	-Dawt.useSystemAAFontSettings=on \
+	-Dfile.encoding=UTF-8 \
+	-Dsun.java2d.xrender=false \
+	-Dsun.java2d.pmoffscreen=false \
+	-Dsun.java2d.opengl=false \
+	-Dswing.defaultfont=JetBrainsMono-Regular \
+	-Dswing.aatext=true \
+	-Xms32m \
+	-Xmx256m \
+	-XX:+UseG1GC \
+	-XX:+UseStringDeduplication \
+	-XX:MaxGCPauseMillis=100 \
+	-jar /usr/share/java/cgoban3/cgoban.jar "$@"

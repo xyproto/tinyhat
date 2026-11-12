@@ -52,6 +52,15 @@ copy() {
 
 rescue() {
 	say quit
+	if [ -x /bin/tinyhat-guru ]; then
+		dmesg 2>/dev/null | tail -n 30 >/run/guru.log
+		echo "$*" >>/run/guru.log
+		/bin/tinyhat-guru "Tiny Hat could not start: $*" 2 /run/guru.log "Enter=Rescue shell,R=Restart,P=Power off"
+		case $? in
+		114) reboot -f ;;
+		112) poweroff -f ;;
+		esac
+	fi
 	echo "Tiny Hat: $*"
 	echo "Dropping to a shell. Type 'exit' to try booting again."
 	setsid cttyhack sh

@@ -6,10 +6,24 @@ if systemctl -q is-active dropbear.service; then
 	tinyhat-status --refresh
 	tinyhat-firewall close 22
 	notice "SSH server stopped"
-else
-	doas systemctl start dropbear.service
-	tinyhat-status --refresh
-	tinyhat-firewall open 22
-	addr=$(tinyhat-addr)
-	notice "SSH server running: ssh tinyhat@${addr:-this-computer}"
+	exit 0
+fi
+if [ ! -s "$HOME/.ssh/authorized_keys" ] && [ ! -e /etc/dropbear/allow-passwords ]; then
+	[ "$1" = --setup ] || exec foot -T "SSH server" "$0" --setup
+	printf 'Everyone knows the default password, so choose a new one before\nother computers can log in with ssh, scp or SFTP.\n\n'
+	if ! passwd; then
+		printf '\nThe password was not changed, so the SSH server was not started.\nPress Enter to close.\n'
+		read -r _
+		exit 1
+	fi
+	doas touch /etc/dropbear/allow-passwords || exit 1
+fi
+doas systemctl start dropbear.service
+tinyhat-status --refresh
+tinyhat-firewall open 22
+addr=$(tinyhat-addr)
+notice "SSH server running: ssh tinyhat@${addr:-this-computer}"
+if [ "$1" = --setup ]; then
+	printf '\nThe SSH server is running: ssh tinyhat@%s\nPress Enter to close.\n' "${addr:-this-computer}"
+	read -r _
 fi

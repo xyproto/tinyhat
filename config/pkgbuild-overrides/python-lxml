@@ -1,0 +1,3 @@
+pkgname=(python-lxml)
+makedepends=(${makedepends[@]/python-sphinx*})
+eval "$(declare -f build | sed -e '/make html/d' -e 's/--no-isolation/--no-isolation --skip-dependency-check/')"

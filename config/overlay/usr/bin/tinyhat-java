@@ -5,10 +5,35 @@ fail() {
 	read -r _
 	exit 1
 }
+jbr=/opt/tinyhat-jbr
+case $(uname -m) in
+x86_64)
+	jbrfile=jbr-25.0.4.1-linux-x64-b635.79.tar.gz
+	jbrsum=840290fa620370749e4ca6be880d8da19bf3be3a30cb61b2296361b15ea45f6c0d801ab203b03272747e6f0b4319e346aa631b34b07a6962d0c7b346ea1bd17a
+	;;
+aarch64)
+	jbrfile=jbr-25.0.4.1-linux-aarch64-b635.79.tar.gz
+	jbrsum=12fee32895fa8f1a9d6b77db43e3b9a1b638ebf9a36f82f5af8bbf700bdc45a9d59db06374fba3fe0667900c686dce2ded5daf7b0163c3de55c5376ef7392be8
+	;;
+*) jbrfile= ;;
+esac
 doas systemctl start tinyhat-pacman-init.service
 doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "Could not update the package database."
 doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-doas /usr/lib/tinyhat/pacman -S --needed --noconfirm jre-openjdk xorg-xwayland libxext libxi libxrender libxtst || fail "Could not install Java."
+if [ -n "$jbrfile" ]; then
+	if [ ! -x "$jbr/bin/java" ]; then
+		doas /usr/lib/tinyhat/pacman -S --needed --noconfirm fontconfig freetype2 alsa-lib libxkbcommon wayland || fail "Could not install the libraries Java needs."
+		tmp=$(mktemp -d) || fail "Could not make a temporary directory."
+		trap 'rm -rf "$tmp"' EXIT
+		printf '\nDownloading the JetBrains Runtime (Java with Wayland support, 100 MB)...\n'
+		curl -fL --max-time 1800 -o "$tmp/$jbrfile" "https://cache-redirector.jetbrains.com/intellij-jbr/$jbrfile" || fail "Could not download Java."
+		echo "$jbrsum  $tmp/$jbrfile" | sha512sum -c --status || fail "The Java download is damaged. Try again."
+		mkdir "$tmp/x" && bsdtar -xf "$tmp/$jbrfile" -C "$tmp/x" --strip-components 1 || fail "Could not unpack Java."
+		doas rm -rf "$jbr.new" && doas mv "$tmp/x" "$jbr.new" && doas chown -R root:root "$jbr.new" && doas mv "$jbr.new" "$jbr" || fail "Could not install Java."
+	fi
+else
+	doas /usr/lib/tinyhat/pacman -S --needed --noconfirm jre-openjdk xorg-xwayland libxext libxi libxrender libxtst || fail "Could not install Java."
+fi
 doas mkdir -p /usr/share/java/cgoban3
 doas curl -fL -o /usr/share/java/cgoban3/cgoban.jar https://files.gokgs.com/javaBin/cgoban.jar || fail "Could not download CGoban 3."
 doas install -Dm644 /dev/stdin /usr/share/applications/tinyhat-cgoban.desktop <<'END' || fail "Could not add CGoban 3 to the menu."

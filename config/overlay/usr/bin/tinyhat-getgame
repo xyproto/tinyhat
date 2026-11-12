@@ -22,7 +22,7 @@ run=$(printf '%s' "$line" | cut -f7)
 
 if [ "$plat" = linux ]; then
 	if ! command -v "$run" >/dev/null; then
-		foot -T "Installing $title" sh -c "echo 'Installing $title with pacman...'; doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $file || { echo; echo 'The installation failed. Press Enter to close.'; read _; exit 1; }" || exit 1
+		foot -T "Installing $title" sh -c "echo 'Installing $title with pacman...'; doas /usr/lib/tinyhat/pacman -S --needed --noconfirm --ask 4 $file || { echo; echo 'The installation failed. Press Enter to close.'; read _; exit 1; }" || exit 1
 	fi
 	command -v "$run" >/dev/null || exit 1
 	exec "$run"

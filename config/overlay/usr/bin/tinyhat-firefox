@@ -8,7 +8,6 @@ fail() {
 doas systemctl start tinyhat-pacman-init.service
 doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "Could not update the package database."
 doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-doas /usr/lib/tinyhat/pacman -S --needed --noconfirm firefox || fail "Could not install Firefox."
-doas /usr/lib/tinyhat/pacman -S --noconfirm cairo || fail "Could not install the cairo library that Firefox needs."
+doas /usr/lib/tinyhat/pacman -S --needed --noconfirm --ask 4 firefox || fail "Could not install Firefox."
 printf '\nFirefox is installed. Start Firefox from the menu.\nPress Enter to close.\n'
 read -r _

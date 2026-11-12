@@ -15,7 +15,7 @@ bneturl='https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE
 doas systemctl start tinyhat-pacman-init.service
 pm -Sy --noconfirm || fail "Could not update the package database."
 pm -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-pm -S --needed --noconfirm wine-staging winetricks wine-gecko wine-mono gnutls alsa-lib alsa-plugins cabextract unzip xorg-xwayland || fail "Could not install Wine."
+pm -S --needed --noconfirm --ask 4 wine-staging winetricks wine-gecko wine-mono gnutls alsa-lib alsa-plugins cabextract unzip || fail "Could not install Wine."
 doas modprobe binfmt_misc
 doas modprobe ntsync 2>/dev/null
 doas systemctl restart systemd-binfmt.service || fail "Could not register Windows programs with binfmt_misc."
@@ -26,7 +26,7 @@ WINEDLLOVERRIDES="winemenubuilder.exe=d" wineboot -i >/dev/null 2>&1 || fail "Co
 reg() {
 	wine reg add "$@" /f >/dev/null 2>&1
 }
-reg 'HKCU\Software\Wine\Drivers' /v Graphics /d x11,wayland
+reg 'HKCU\Software\Wine\Drivers' /v Graphics /d wayland,x11
 reg 'HKCU\Software\Wine\FileOpenAssociations' /v Enable /d N
 reg 'HKCU\Software\Wine\DllOverrides' /v winemenubuilder.exe /d ''
 reg 'HKCU\Software\Wine\DllOverrides' /v locationapi /d ''
@@ -95,7 +95,7 @@ Type=Application
 Name=Battle.net
 Comment=Blizzard's launcher for StarCraft Remastered, running in Wine
 Icon=applications-games
-Exec=env WINEDEBUG=-all wine "$launcher"
+Exec=env WINEDEBUG=-all wine "${launcher%/*}/Battle.net.exe" --in-process-gpu
 Terminal=false
 Categories=Game;
 EOF
