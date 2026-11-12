@@ -1,0 +1,35 @@
+# Maintainer: Robin Candau <antiz@archlinux.org>
+# Contributor: Sergey A. <murlakatamenka@disroot.org>
+# Contributor: Robert Cegliński <rob.ceglinski@gmail.com>
+# Contributor: Christopher Snowhill <chris@kode54.net>
+# Contributor: Denis Zheleztsov <difrex.punk@gmail.com>
+
+pkgname=wlr-randr
+pkgver=0.5.0
+pkgrel="1"
+pkgdesc="Utility to manage outputs of a Wayland compositor"
+url="https://gitlab.freedesktop.org/emersion/wlr-randr"
+arch=(i686 x32)
+license=('MIT')
+depends=('wayland' 'glibc')
+makedepends=('meson' 'scdoc')
+source=("${pkgname}-${pkgver}.tar.gz::${url}/-/archive/v${pkgver}/${pkgname}-v${pkgver}.tar.gz")
+sha256sums=('c566d94fddb84f801c733f1415a4ad5b75870305346363074cbdf468d4ac263a')
+
+build() {
+	cd "${pkgname}-v${pkgver}"
+	arch-meson build
+	meson compile -C build
+
+	scdoc < "${pkgname}.1.scd" > "${pkgname}.1"
+}
+
+package() {
+	cd "${pkgname}-v${pkgver}"
+	meson install -C build --destdir "${pkgdir}"
+
+	install -Dm 644 "${pkgname}.1" "${pkgdir}/usr/share/man/man1/${pkgname}.1"
+	install -Dm 644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
+
+unset -f pkgver

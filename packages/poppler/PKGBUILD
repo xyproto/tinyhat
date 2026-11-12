@@ -140,8 +140,9 @@ eval "$(declare -f build | sed 's/-DENABLE_GTK_DOC=ON/& -DENABLE_QT5=OFF -DENABL
 eval "$(declare -f package_poppler | sed "s/ 'nss'//; s/ 'gpgmepp'//; s/ 'nspr'//")"
 makedepends=(${makedepends[@]/gtk3/})
 eval "$(declare -f build | sed 's/-DENABLE_GTK_DOC=ON/& -DBUILD_GTK_TESTS=OFF/')"
-
 makedepends=($(printf '%s\n' "${makedepends[@]}" | grep -v -x -E 'gobject-introspection|vala'))
 eval "$(declare -f build | sed 's/-DENABLE_GTK_DOC=ON/-DENABLE_GTK_DOC=ON -DENABLE_GOBJECT_INTROSPECTION=OFF/')"
+eval "$(declare -f package_poppler package_poppler-glib | sed "s/'cairo'/'libcairo.so'/")"
+makedepends=($(printf '%s\n' "${makedepends[@]}" | sed 's/^cmake$/cmake>=3.28/'))
 
 unset -f pkgver

@@ -1,7 +1,7 @@
 pkgbase = libxml2
 	pkgdesc = XML library, built without ICU
 	pkgver = 2.15.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://gitlab.gnome.org/GNOME/libxml2
 	arch = i686
 	arch = x32

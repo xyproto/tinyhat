@@ -8,7 +8,7 @@ return {
   arch = { "i686", "x32" },
   source = { "https://github.com/swaywm/swaylock/releases/download/v${version}/swaylock-${version}.tar.gz" },
   sha256 = { "a15154348fef852fdb224112d137c393c826478b777f63479beb15e8d3812eaf" },
-  depends = { "cairo", "libxkbcommon", "pam", "wayland" },
+  depends = { "libcairo.so", "libxkbcommon", "pam", "wayland" },
   makedepends = { "meson", "ninja" },
   libdepends = { "wayland-protocols" },
   backup = { "etc/pam.d/swaylock" },

@@ -4,17 +4,17 @@
                         ((hex >> 8) & 0xFF) / 255.0f, \
                         (hex & 0xFF) / 255.0f }
 /* appearance */
-static const int sloppyfocus               = 0;  /* focus follows mouse */
+static int sloppyfocus               = 0;  /* focus follows mouse */
 static const int bypass_surface_visibility = 0;  /* 1 means idle inhibitors will disable idle tracking even if it's surface isn't visible  */
-static const unsigned int borderpx         = 2;  /* border pixel of windows */
-static const unsigned int gappx            = 6;  /* gap between windows */
+static unsigned int borderpx         = 2;  /* border pixel of windows */
+static unsigned int gappx            = 6;  /* gap between windows */
 static const int snapedge                  = 8;
 static const int snapcorner                = 96;
 static const float snapalpha               = 0.25f;
 static const unsigned int snap             = 0;
 static const int barvpad                   = 4;  /* vertical padding in the bar */
-static const int showbar                   = 1; /* 0 means no bar */
-static const int topbar                    = 1; /* 0 means bottom bar */
+static int showbar                   = 1; /* 0 means no bar */
+static int topbar                    = 1; /* 0 means bottom bar */
 static const char *fonts[]                 = {"JetBrains Mono NL:size=10"};
 static const char *cursor_theme            = "Vanilla-DMZ";
 static const float rootcolor[]             = COLOR(0x1a1b26ff);
@@ -76,8 +76,8 @@ static const struct xkb_rule_names xkb_rules = {
     .options = NULL,
 };
 
-static const int repeat_rate = 25;
-static const int repeat_delay = 600;
+static int repeat_rate = 25;
+static int repeat_delay = 600;
 
 /* Trackpad */
 static const int tap_to_click = 1;
@@ -143,7 +143,6 @@ static const char *snesdevcmd[] = { "tinyhat-snesdev", NULL };
 static const char *c64devcmd[] = { "tinyhat-c64dev", NULL };
 static const char *bluetoothcmd[] = { "tinyhat-bluetui", NULL };
 static const char *octocmd[] = { "tinyhat-run", "-l", "octo-de", NULL };
-static const char *cyclecmd[] = { "tinyhat-wallpaper", "--cycle", NULL };
 static const char *scummvmcmd[] = { "tinyhat-run", "-l", "tinyhat-scummvm", NULL };
 static const char *scangamescmd[] = { "tinyhat-scan-games", "-f", NULL };
 static const char *playcmd[] = { "tinyhat-run", "-l", "tinyhat-play", NULL };
@@ -269,7 +268,7 @@ static const Button buttons[] = {
     { ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
     { ClkTitle,    0,      BTN_MIDDLE, taskclose,      {0} },
     { ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },
-    { ClkRoot,     0,      BTN_RIGHT,  spawn,          {.v = cyclecmd} },
+    { ClkRoot,     0,      BTN_RIGHT,  nextbackground, {0} },
     { ClkMenu,     0,      BTN_LEFT,   spawn,          {.v = menucmd} },
     { ClkStatus,   0,      BTN_MIDDLE, spawn,          {.v = termcmd} },
     { ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },

@@ -1,4 +1,5 @@
-diff -Nur a/dwl.c b/dwl.c
+diff --git a/dwl.c b/dwl.c
+index db14548..d1af094 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -92,7 +92,7 @@
@@ -10,7 +11,7 @@ diff -Nur a/dwl.c b/dwl.c
  enum { CurNormal, CurPressed, CurMove, CurResize }; /* cursor */
  enum { XDGShell, LayerShell, X11 }; /* client types */
  enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
-@@ -135,6 +135,7 @@
+@@ -135,6 +135,7 @@ typedef struct {
  	struct wl_list flink;
  	struct wlr_box geom; /* layout-relative, includes border */
  	struct wlr_box prev; /* layout-relative, includes border */
@@ -18,7 +19,7 @@ diff -Nur a/dwl.c b/dwl.c
  	struct wlr_box bounds; /* only width and height are used */
  	union {
  		struct wlr_xdg_surface *xdg;
-@@ -250,7 +251,7 @@
+@@ -250,7 +251,7 @@ struct Monitor {
  	int nmaster;
  	char ltsymbol[16];
  	Client *tasks[32];
@@ -27,7 +28,7 @@ diff -Nur a/dwl.c b/dwl.c
  	int asleep;
  	Drwl *drw;
  	Buffer *pool[2];
-@@ -342,6 +343,7 @@
+@@ -342,6 +343,7 @@ static void destroysessionlock(struct wl_listener *listener, void *data);
  static void destroykeyboardgroup(struct wl_listener *listener, void *data);
  static Monitor *dirtomon(enum wlr_direction dir);
  static void drawbar(Monitor *m);
@@ -35,7 +36,7 @@ diff -Nur a/dwl.c b/dwl.c
  static void drawbars(void);
  static void focusclient(Client *c, int lift);
  static void focusmon(const Arg *arg);
-@@ -350,6 +352,8 @@
+@@ -350,6 +352,8 @@ static void drawtasks(Monitor *m, int x, int w);
  static void minimize(const Arg *arg);
  static void showdesktop(const Arg *arg);
  static void taskclick(const Arg *arg);
@@ -44,7 +45,7 @@ diff -Nur a/dwl.c b/dwl.c
  static void focusstack(const Arg *arg);
  static Client *focustop(Monitor *m);
  static void fullscreennotify(struct wl_listener *listener, void *data);
-@@ -368,7 +372,6 @@
+@@ -368,7 +372,6 @@ static void killclient(const Arg *arg);
  static void locksession(struct wl_listener *listener, void *data);
  static void mapnotify(struct wl_listener *listener, void *data);
  static void maximizenotify(struct wl_listener *listener, void *data);
@@ -52,7 +53,7 @@ diff -Nur a/dwl.c b/dwl.c
  static void motionabsolute(struct wl_listener *listener, void *data);
  static void motionnotify(uint32_t time, struct wlr_input_device *device, double sx,
  		double sy, double sx_unaccel, double sy_unaccel);
-@@ -882,7 +885,7 @@
+@@ -882,7 +885,7 @@ buttonpress(struct wl_listener *listener, void *data)
  			} else if (i < LENGTH(tags)) {
  				click = ClkTagBar;
  				arg.ui = 1 << i;
@@ -61,7 +62,7 @@ diff -Nur a/dwl.c b/dwl.c
  				click = ClkLtSymbol;
  			else if (cx > selmon->b.width - (TEXTW(selmon, stext) - selmon->lrpad + 2)) {
  				click = ClkStatus;
-@@ -1782,9 +1785,9 @@
+@@ -1782,9 +1785,9 @@ drawbar(Monitor *m)
  				urg & 1 << i);
  		x += w;
  	}
@@ -74,10 +75,11 @@ diff -Nur a/dwl.c b/dwl.c
  
  	if ((w = m->b.width - tw - x) > m->b.height) {
  		if (notice[0]) {
-@@ -1810,11 +1813,36 @@
+@@ -1809,12 +1812,37 @@ drawbar(Monitor *m)
+ 	wlr_buffer_unlock(&buf->base);
  }
  
- void
++void
 +drawlayout(Monitor *m, int x, int w)
 +{
 +	int s = m->b.height * 9 / 16, ix = x + (w - s) / 2, iy = (m->b.height - s) / 2;
@@ -102,7 +104,7 @@ diff -Nur a/dwl.c b/dwl.c
 +	}
 +}
 +
-+void
+ void
  drawtasks(Monitor *m, int x, int w)
  {
  	Client *t, *sel = focustop(m);
@@ -113,7 +115,7 @@ diff -Nur a/dwl.c b/dwl.c
  
  	drwl_setscheme(m->drw, colors[SchemeNorm]);
  	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
-@@ -1824,17 +1849,27 @@
+@@ -1824,17 +1852,27 @@ drawtasks(Monitor *m, int x, int w)
  	m->ntasks = n;
  	if (!n)
  		return;
@@ -149,10 +151,11 @@ diff -Nur a/dwl.c b/dwl.c
  }
  
  void
-@@ -2067,6 +2102,39 @@
+@@ -2066,6 +2104,39 @@ taskclick(const Arg *arg)
+ 	drawbars();
  }
  
- void
++void
 +taskhover(void)
 +{
 +	Monitor *m;
@@ -185,14 +188,14 @@ diff -Nur a/dwl.c b/dwl.c
 +		setlayout(&(Arg){.v = &layouts[i]});
 +}
 +
-+void
+ void
  focusstack(const Arg *arg)
  {
- 	/* Focus the next or previous client (in tiling order) on selmon */
-@@ -2536,25 +2604,6 @@
+@@ -2539,25 +2610,6 @@ maximizenotify(struct wl_listener *listener, void *data)
+ 		wlr_xdg_surface_schedule_configure(c->surface.xdg);
  }
  
- void
+-void
 -monocle(Monitor *m)
 -{
 -	Client *c;
@@ -211,20 +214,19 @@ diff -Nur a/dwl.c b/dwl.c
 -		wlr_scene_node_raise_to_top(&c->scene->node);
 -}
 -
--void
+ void
  motionabsolute(struct wl_listener *listener, void *data)
  {
- 	/* This event is forwarded by the cursor when a pointer emits an _absolute_
-@@ -2588,6 +2637,8 @@
- 	/* Find the client under the pointer and send the event along. */
- 	xytonode(cursor->x, cursor->y, &surface, &c, &l, &sx, &sy);
+@@ -2637,6 +2689,8 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
+ 	/* Update drag icon's position */
+ 	wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
  
 +	taskhover();
 +
- 	if (cursor_mode == CurPressed && !seat->drag
- 			&& surface != seat->pointer_state.focused_surface
- 			&& toplevel_from_wlr_surface(seat->pointer_state.focused_surface, &w, &focusedl) >= 0) {
-@@ -3095,14 +3146,26 @@
+ 	/* If we are currently grabbing the mouse, handle and return */
+ 	if (cursor_mode == CurMove) {
+ 		/* Move the grabbed client to the new position. */
+@@ -3099,14 +3153,26 @@ setfullscreen(Client *c, int fullscreen)
  void
  setlayout(const Arg *arg)
  {

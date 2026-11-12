@@ -1,0 +1,22 @@
+pkgbase = glib2-introspection
+	pkgdesc = GObject introspection data for GLib, GObject and Gio
+	pkgver = 2.90.1
+	pkgrel = 1
+	url = https://gitlab.gnome.org/GNOME/glib
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = gettext
+	makedepends = glib2
+	makedepends = gobject-introspection
+	makedepends = libffi
+	makedepends = meson
+	makedepends = pcre2
+	makedepends = python
+	makedepends = util-linux-libs
+	makedepends = zlib
+	depends = glib2=2.90.1
+	source = https://download.gnome.org/sources/glib/2.90/glib-2.90.1.tar.xz
+	sha256sums = 93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396
+
+pkgname = glib2-introspection

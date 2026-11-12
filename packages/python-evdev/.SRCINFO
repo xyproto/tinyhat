@@ -1,0 +1,19 @@
+pkgbase = python-evdev
+	pkgdesc = Python bindings for the Linux input subsystem
+	pkgver = 2.0.0
+	pkgrel = 1
+	url = https://python-evdev.readthedocs.io/en/latest/
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	makedepends = python-wheel
+	depends = glibc
+	depends = python
+	source = git+https://github.com/gvalkov/python-evdev#tag=v2.0.0
+	b2sums = cb7f8c200f249ca458456ab3d028965e01101309a4bcd07af1a8b2e89cf04c25f6fc16e4dd9eec7a719236138768ad10c8734df343e95e4c0442617744225292
+
+pkgname = python-evdev

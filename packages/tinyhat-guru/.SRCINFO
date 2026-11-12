@@ -1,0 +1,16 @@
+pkgbase = tinyhat-guru
+	pkgdesc = Tiny Hat crash screen, with a QR code for reporting the crash
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	license = MIT
+	depends = glibc
+	source = tinyhat-guru.c
+	source = QR-Code-generator-1.8.0.tar.gz::https://github.com/nayuki/QR-Code-generator/archive/refs/tags/v1.8.0.tar.gz
+	sha256sums = SKIP
+	sha256sums = 2ec0a4d33d6f521c942eeaf473d42d5fe139abcfa57d2beffe10c5cf7d34ae60
+
+pkgname = tinyhat-guru

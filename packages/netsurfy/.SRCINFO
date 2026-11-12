@@ -1,7 +1,7 @@
 pkgbase = netsurfy
 	pkgdesc = Lightweight and fast web browser, forked from NetSurf
-	pkgver = 1.0.4.r5.gc7a9776
-	pkgrel = 3
+	pkgver = 1.0.5
+	pkgrel = 1
 	url = https://github.com/xyproto/netsurfy
 	arch = i686
 	arch = x32
@@ -25,13 +25,13 @@ pkgbase = netsurfy
 	provides = netsurf
 	conflicts = netsurf
 	replaces = netsurf
-	source = netsurfy-c7a9776222131e1dbafe8410e8974aaf701cc440.tar.gz::https://github.com/xyproto/netsurfy/archive/c7a9776222131e1dbafe8410e8974aaf701cc440.tar.gz
+	source = netsurfy-1.0.5.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v1.0.5.tar.gz
 	source = netsurfy-sandbox
 	source = keys.patch
-	sha256sums = ef281e4e79f2e4b6ee9986a25742e8a1b3c5a425d5c77c19d7f1a479b8cac9b3
+	sha256sums = 3fc8faa395324fbe984541f9d2ab81c4348a17223f578a23957009ccfe3f7835
 	sha256sums = SKIP
 	sha256sums = a9cde2fbc7347657bc9b14dd8521e333abb9d96632638d1935846b15bf4424bf
-	b2sums = b6a56413da0f281220eac3b6838faa31d65a2391aea155c369f0296cf374cb91dd79e795a93ea25f9c0f794ea9ee107abdb26eab4ce80f6343d24c31df91844c
+	b2sums = 744c2c1e0aaf39ad444383e5a5c2a2f7599562fe11798fe2b673a712017f78f4a9355601e798a7e3f75715edf0206796aa5121ff8a5cee56e3e389e912fcc68f
 	b2sums = SKIP
 	b2sums = 3b035716a7116c3d875055a984fe034ccebbd6370b4d3f5cf7377c1f0bf9e32bdd70750491313a974828ecd5e7e1f86d1bbb6111838a975ac61b0ffc945a0e74
 

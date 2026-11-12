@@ -273,7 +273,7 @@ static bool hot(void)
 static void add(char *line, size_t size, const char *item)
 {
 	size_t len = strlen(line);
-	snprintf(line + len, size - len, "%s%s", len ? " | " : "", item);
+	snprintf(line + len, size - len, "%s%s", len ? "\t" : "", item);
 }
 
 static void status(char *line, size_t size, const char *rundir)
@@ -289,7 +289,7 @@ static void status(char *line, size_t size, const char *rundir)
 		add(line, size, item);
 	}
 	if (running("dropbear"))
-		add(line, size, "ssh on");
+		add(line, size, "K");
 	wifi(text, sizeof text);
 	if (*text) {
 		snprintf(item, sizeof item, "W %s", text);

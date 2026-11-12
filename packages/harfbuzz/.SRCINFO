@@ -14,6 +14,7 @@ pkgbase = harfbuzz
 	makedepends = glib2
 	makedepends = glib2-devel
 	makedepends = glibc
+	makedepends = gobject-introspection
 	makedepends = graphite
 	makedepends = icu
 	makedepends = libpng
@@ -22,6 +23,7 @@ pkgbase = harfbuzz
 	makedepends = python
 	makedepends = ragel
 	makedepends = zlib
+	makedepends = glib2-introspection
 	source = git+https://github.com/harfbuzz/harfbuzz?signed#tag=15.1.0
 	validpgpkeys = 053D20F17CCCA9651B2C6FCB9AB24930C0B997A2
 	validpgpkeys = 9F377DDB6D3153A48EB3EB1E63CC496475267693

@@ -1,0 +1,24 @@
+pkgname=libdisplay-info0.3
+pkgver=0.3.0
+pkgrel=2
+pkgdesc="EDID and DisplayID library, version 0.3 for programs built against it"
+arch=(i686 x32)
+url="https://gitlab.freedesktop.org/emersion/libdisplay-info"
+license=(MIT)
+depends=(glibc)
+makedepends=(meson ninja hwdata python)
+provides=(libdisplay-info.so)
+source=("https://gitlab.freedesktop.org/emersion/libdisplay-info/-/archive/$pkgver/libdisplay-info-$pkgver.tar.gz")
+sha256sums=('2b467e3336aec63819d6aca28d7310d3dc7415b2b3a3c3a5aec9d3727053c078')
+
+build() {
+  meson setup build libdisplay-info-$pkgver --prefix=/usr --buildtype=minsize
+  ninja -C build
+}
+
+package() {
+  DESTDIR="$srcdir/root" ninja -C build install
+  install -d "$pkgdir/usr/lib"
+  cp -a "$srcdir"/root/usr/lib/libdisplay-info.so.3 "$srcdir"/root/usr/lib/libdisplay-info.so.0.3.* "$pkgdir/usr/lib/"
+  install -Dm644 libdisplay-info-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

@@ -1,0 +1,62 @@
+# Maintainer: Felix Yan <felixonmars@archlinux.org>
+# Maintainer: David Runge <dvzrv@archlinux.org>
+# Maintainer: Carl Smedstad <carsme@archlinux.org>
+# Contributor: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+# Contributor: William J Bowman <bluephoenix47@gmail.com>
+
+pkgname=python-certifi
+pkgver=2026.10.23
+pkgrel="1"
+pkgdesc="Python package for providing Mozilla's CA Bundle (using system CA store)"
+arch=(any)
+url="https://github.com/certifi/python-certifi"
+license=(MPL-2.0)
+depends=(
+  ca-certificates
+  python
+)
+makedepends=(
+  git
+  python-build
+  python-installer
+  python-setuptools
+  python-wheel
+)
+checkdepends=(python-pytest)
+source=("git+$url.git#tag=$pkgver")
+sha512sums=('7dba3881c5130e5dc67f71f26da3f6459d82bcf03df9604ae7bc0737fd22569a2921aa17397721a1a3fa70023a603e27a1d7fdee5e53879e06f9b83894366842')
+b2sums=('e717de20971f40f0351d1008adb7467a250cae933b123cd94b7e294ffca7cedff4c31e825bc223aac9d0d2f60bbf714efd478ef34d8308a1b668ca94eb1aca49')
+
+prepare() {
+  cd $pkgname
+  # Use system CA store. Replacing the copy in the source tree so the test
+  # suite is actually run against it.
+  ln -sf /etc/ssl/certs/ca-certificates.crt certifi/cacert.pem
+  # Our CA store has non-ASCII comments, but we are not packaging for JVM
+  # https://github.com/certifi/python-certifi/issues/50
+  sed -i 's/encoding="ascii"/encoding="utf-8"/' certifi/core.py
+}
+
+build() {
+  cd $pkgname
+  python -m build --wheel --no-isolation
+}
+
+check() {
+  cd $pkgname
+  pytest
+}
+
+package() {
+  local site_packages=$(python -c "import site; print(site.getsitepackages()[0])")
+
+  cd $pkgname
+  python -m installer --destdir="$pkgdir" dist/*.whl
+
+  # Replace CA store here again because the symlink was installed as a file
+  ln -sf /etc/ssl/certs/ca-certificates.crt "$pkgdir/$site_packages/certifi/cacert.pem"
+
+  install -Dm644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname/
+}
+
+unset -f pkgver

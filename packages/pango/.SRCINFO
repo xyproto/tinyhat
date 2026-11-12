@@ -9,9 +9,11 @@ pkgbase = pango
 	license = LGPL-2.1-or-later
 	makedepends = git
 	makedepends = glib2-devel
+	makedepends = gobject-introspection
 	makedepends = help2man
 	makedepends = meson
-	depends = cairo
+	makedepends = glib2-introspection
+	depends = libcairo.so
 	depends = fontconfig>=2:2.17.0
 	depends = freetype2
 	depends = fribidi

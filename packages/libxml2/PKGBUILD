@@ -1,6 +1,6 @@
 pkgname=libxml2
 pkgver=2.15.4
-pkgrel=1
+pkgrel=2
 pkgdesc="XML library, built without ICU"
 arch=(i686 x32 x86_64)
 url="https://gitlab.gnome.org/GNOME/libxml2"
@@ -18,7 +18,7 @@ prepare() {
 
 build() {
   meson setup build libxml2-$pkgver --prefix=/usr --buildtype=minsize \
-    -Dicu=disabled -Dpython=disabled -Ddocs=disabled -Dhistory=disabled -Dreadline=disabled -Dhttp=disabled
+    -Dicu=disabled -Dpython=disabled -Ddocs=disabled -Dhistory=disabled -Dreadline=disabled -Dhttp=disabled -Dschematron=enabled
   ninja -C build
 }
 

@@ -1,0 +1,1257 @@
+diff --git a/Makefile b/Makefile
+index 08a3370..b0133c5 100644
+--- a/Makefile
++++ b/Makefile
+@@ -17,11 +17,13 @@ DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEV
+ LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
+ 
+ all: dwl
+-dwl: dwl.c client.h config.h ime.h util.h config.mk cursor-shape-v1-protocol.h \
++dwl: dwl.c tomlc17.o tomlc17.h client.h config.h ime.h util.h config.mk cursor-shape-v1-protocol.h \
+ 	ext-image-copy-capture-v1-protocol.h \
+ 	pointer-constraints-unstable-v1-protocol.h wlr-layer-shell-unstable-v1-protocol.h \
+ 	wlr-output-power-management-unstable-v1-protocol.h xdg-shell-protocol.h
+-	$(CC) dwl.c $(DWLCFLAGS) $(LDFLAGS) $(LDLIBS) -o $@
++	$(CC) dwl.c tomlc17.o $(DWLCFLAGS) $(LDFLAGS) $(LDLIBS) -o $@
++tomlc17.o: tomlc17.c tomlc17.h
++	$(CC) $(CFLAGS) -c tomlc17.c -o $@
+ 
+ # wayland-scanner is a tool which generates C headers and rigging for Wayland
+ # protocols, which are specified in XML. wlroots requires you to rig these up
+diff --git a/dwl.c b/dwl.c
+index 3755b1a..28a1cdb 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -4,6 +4,9 @@
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <getopt.h>
++#include <strings.h>
++#include <sys/inotify.h>
++#include <sys/stat.h>
+ #include <libinput.h>
+ #include <limits.h>
+ #include <linux/input-event-codes.h>
+@@ -82,6 +85,11 @@
+ 
+ #include "xdg-shell-protocol.h"
+ #include "util.h"
++#include "tomlc17.h"
++
++#ifndef SYSCONFDIR
++#define SYSCONFDIR "/etc"
++#endif
+ #include "drwl.h"
+ #include <png.h>
+ 
+@@ -256,6 +264,7 @@ struct Monitor {
+ 	Client *tasks[32];
+ 	int taskx[33], ntasks, taskhover;
+ 	int volx0, volx1;
++	int launchx[9], nlaunch;
+ 	int asleep;
+ 	Drwl *drw;
+ 	Buffer *pool[2];
+@@ -371,6 +380,7 @@ static void fullscreennotify(struct wl_listener *listener, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
+ static int reloadkeymap(int signo, void *data);
++static void nextbackground(const Arg *arg);
+ static void setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data);
+ static void unblocksignals(void);
+ static void incnmaster(const Arg *arg);
+@@ -565,6 +575,851 @@ static struct wlr_xwayland *xwayland;
+ /* configuration, allows nested code to access above variables */
+ #include "config.h"
+ 
++typedef struct {
++	Key key;
++	char *argv[4];
++	char *cmd;
++	char *desktop;
++	char *hotkey;
++	char *shown;
++	char *description;
++	int separator;
++	int bound;
++	int removed;
++} ConfKey;
++
++typedef struct {
++	char *desktop, *icon;
++	pixman_image_t *img;
++} Launcher;
++
++typedef struct {
++	char *appid, *title;
++	uint32_t tags;
++	int isfloating;
++} ConfRule;
++
++typedef struct {
++	char *wallpaper, *mode;
++	uint32_t color;
++	int help;
++} Background;
++
++typedef struct {
++	struct wl_list link;
++	struct libinput_device *device;
++	struct wl_listener destroy;
++} PointerDev;
++
++typedef struct {
++	ConfKey *keys;
++	int n;
++	Launcher launch[8];
++	int nlaunch;
++	ConfRule *rules;
++	int nrules;
++	int layout, nmaster, border, gap, sloppy, showbar, topbar, rate, delay;
++	int maccel, mnatural, lefthanded, tap, tnatural, dwt;
++	double mfact, mspeed, tspeed;
++	char *kblayout, *kbvariant, *kboptions;
++	char *title, *footer;
++	Background *bgs;
++	int nbgs;
++} Conf;
++
++static Conf conf;
++static int bgindex;
++static struct {
++	int sloppy, border, gap, showbar, topbar, rate, delay;
++} confdef;
++static struct wl_list pointerdevs;
++static pixman_image_t *wallload(const char *path);
++static int confloaded;
++static char *helptextbuf;
++static int conffd = -1;
++
++static const struct {
++	const char *name;
++	void (*func)(const Arg *);
++	char type;
++} confactions[] = {
++	{ "close", killclient, 0 },
++	{ "fullscreen", togglefullscreen, 0 },
++	{ "float", togglefloating, 0 },
++	{ "zoom", zoom, 0 },
++	{ "minimize", minimize, 0 },
++	{ "showdesktop", showdesktop, 0 },
++	{ "alttab", altab, 'i' },
++	{ "focusstack", focusstack, 'i' },
++	{ "incnmaster", incnmaster, 'i' },
++	{ "mfact", setmfact, 'f' },
++	{ "view", view, 't' },
++	{ "toggleview", toggleview, 't' },
++	{ "tag", tag, 't' },
++	{ "toggletag", toggletag, 't' },
++	{ "layout", setlayout, 'l' },
++	{ "togglelayout", togglelayout, 0 },
++	{ "focusmon", focusmon, 'd' },
++	{ "tagmon", tagmon, 'd' },
++	{ "chvt", chvt, 'u' },
++	{ "next_background", nextbackground, 0 },
++	{ "quit", quit, 0 },
++};
++
++static void
++confunset(Conf *c)
++{
++	memset(c, 0, sizeof(*c));
++	c->layout = c->nmaster = c->border = c->gap = c->sloppy = c->showbar = c->topbar = -1;
++	c->rate = c->delay = c->maccel = c->mnatural = c->lefthanded = c->tap = c->tnatural = c->dwt = -1;
++	c->mfact = c->mspeed = c->tspeed = NAN;
++}
++
++static void
++conffree(Conf *c)
++{
++	for (int i = 0; i < c->n; i++) {
++		free(c->keys[i].cmd);
++		free(c->keys[i].desktop);
++		free(c->keys[i].hotkey);
++		free(c->keys[i].shown);
++		free(c->keys[i].description);
++	}
++	free(c->keys);
++	for (int i = 0; i < c->nlaunch; i++) {
++		free(c->launch[i].desktop);
++		free(c->launch[i].icon);
++		if (c->launch[i].img)
++			pixman_image_unref(c->launch[i].img);
++	}
++	for (int i = 0; i < c->nrules; i++) {
++		free(c->rules[i].appid);
++		free(c->rules[i].title);
++	}
++	free(c->rules);
++	free(c->kblayout);
++	free(c->kbvariant);
++	free(c->kboptions);
++	free(c->title);
++	free(c->footer);
++	for (int i = 0; i < c->nbgs; i++) {
++		free(c->bgs[i].wallpaper);
++		free(c->bgs[i].mode);
++	}
++	free(c->bgs);
++	confunset(c);
++}
++
++static char *
++tomlstr(toml_datum_t t, const char *key)
++{
++	toml_datum_t d = toml_get(t, key);
++	return d.type == TOML_STRING ? strdup(d.u.s) : NULL;
++}
++
++static void
++confreplace(char **dst, toml_datum_t t, const char *key)
++{
++	toml_datum_t d = toml_seek(t, key);
++	if (d.type == TOML_STRING) {
++		free(*dst);
++		*dst = strdup(d.u.s);
++	}
++}
++
++static void
++confint(int *dst, toml_datum_t t, const char *key)
++{
++	toml_datum_t d = toml_seek(t, key);
++	if (d.type == TOML_INT64)
++		*dst = (int)d.u.int64;
++	else if (d.type == TOML_BOOLEAN)
++		*dst = d.u.boolean;
++}
++
++static void
++confnum(double *dst, toml_datum_t t, const char *key)
++{
++	toml_datum_t d = toml_seek(t, key);
++	if (d.type == TOML_FP64)
++		*dst = d.u.fp64;
++	else if (d.type == TOML_INT64)
++		*dst = (double)d.u.int64;
++}
++
++static int
++confchoice(int *dst, toml_datum_t t, const char *key, const char *a, const char *b, char *err, size_t errlen)
++{
++	toml_datum_t d = toml_seek(t, key);
++	if (d.type == TOML_UNKNOWN)
++		return 1;
++	if (d.type == TOML_STRING && (!strcmp(d.u.s, a) || !strcmp(d.u.s, b))) {
++		*dst = !strcmp(d.u.s, b);
++		return 1;
++	}
++	snprintf(err, errlen, "line %d: %s must be \"%s\" or \"%s\"", d.lineno, key, a, b);
++	return 0;
++}
++
++static int
++confhotkey(const char *spec, uint32_t *mod, xkb_keysym_t *sym)
++{
++	char buf[128], *tok, *save = NULL, *last = NULL;
++	snprintf(buf, sizeof(buf), "%s", spec);
++	*mod = 0;
++	for (tok = strtok_r(buf, "+", &save); tok; tok = strtok_r(NULL, "+", &save)) {
++		if (last) {
++			if (!strcasecmp(last, "Ctrl") || !strcasecmp(last, "Control"))
++				*mod |= WLR_MODIFIER_CTRL;
++			else if (!strcasecmp(last, "Alt"))
++				*mod |= WLR_MODIFIER_ALT;
++			else if (!strcasecmp(last, "Shift"))
++				*mod |= WLR_MODIFIER_SHIFT;
++			else if (!strcasecmp(last, "Win") || !strcasecmp(last, "Super") || !strcasecmp(last, "Logo"))
++				*mod |= WLR_MODIFIER_LOGO;
++			else if (!strcasecmp(last, "AltGr"))
++				*mod |= WLR_MODIFIER_MOD5;
++			else
++				return 0;
++		}
++		last = tok;
++	}
++	if (!last)
++		return 0;
++	if (!strcasecmp(last, "Enter"))
++		last = "Return";
++	else if (!strcasecmp(last, "Esc"))
++		last = "Escape";
++	else if (!strcasecmp(last, "Del"))
++		last = "Delete";
++	else if (!strcasecmp(last, "PgUp"))
++		last = "Prior";
++	else if (!strcasecmp(last, "PgDn"))
++		last = "Next";
++	if (!(*sym = xkb_keysym_from_name(last, XKB_KEYSYM_NO_FLAGS)))
++		*sym = xkb_keysym_from_name(last, XKB_KEYSYM_CASE_INSENSITIVE);
++	*sym = xkb_keysym_to_lower(*sym);
++	return *sym != XKB_KEY_NoSymbol;
++}
++
++static void
++spawndesktop(const Arg *arg)
++{
++	const char *name = arg->v, *dirs = getenv("XDG_DATA_DIRS"), *home = getenv("XDG_DATA_HOME");
++	char path[PATH_MAX], line[1024], cmd[1024] = "", list[PATH_MAX * 4];
++	FILE *f = NULL;
++	int section = 0;
++
++	if (home && *home)
++		snprintf(list, sizeof(list), "%s:%s", home, dirs && *dirs ? dirs : "/usr/local/share:/usr/share");
++	else
++		snprintf(list, sizeof(list), "%s/.local/share:%s", getenv("HOME") ? getenv("HOME") : "",
++				dirs && *dirs ? dirs : "/usr/local/share:/usr/share");
++	for (char *save = NULL, *d = strtok_r(list, ":", &save); d && !f; d = strtok_r(NULL, ":", &save)) {
++		snprintf(path, sizeof(path), "%s/applications/%s", d, name);
++		f = fopen(path, "r");
++	}
++	if (!f) {
++		snprintf(notice, sizeof(notice), "desktop.toml: %s not found", name);
++		drawbars();
++		return;
++	}
++	while (fgets(line, sizeof(line), f)) {
++		line[strcspn(line, "\r\n")] = '\0';
++		if (line[0] == '[')
++			section = !strcmp(line, "[Desktop Entry]");
++		else if (section && !strncmp(line, "Exec=", 5)) {
++			size_t o = 0;
++			for (const char *s = line + 5; *s && o + 1 < sizeof(cmd); s++) {
++				if (*s == '%' && s[1]) {
++					if (s[1] == '%')
++						cmd[o++] = '%';
++					s++;
++				} else {
++					cmd[o++] = *s;
++				}
++			}
++			cmd[o] = '\0';
++			break;
++		}
++	}
++	fclose(f);
++	if (cmd[0])
++		spawn(&(Arg){ .v = (const char *[]){ "/bin/sh", "-c", cmd, NULL } });
++}
++
++static int
++confentry(ConfKey *k, toml_datum_t t, char *err, size_t errlen)
++{
++	toml_datum_t sep = toml_get(t, "separator"), act = toml_get(t, "action"), arg = toml_get(t, "arg");
++	void (*func)(const Arg *) = NULL;
++	Arg a = { 0 };
++	uint32_t mod = 0;
++	xkb_keysym_t sym = XKB_KEY_NoSymbol;
++
++	memset(k, 0, sizeof(*k));
++	if (sep.type == TOML_BOOLEAN && sep.u.boolean) {
++		k->separator = 1;
++		return 1;
++	}
++	k->hotkey = tomlstr(t, "hotkey");
++	k->shown = tomlstr(t, "shown");
++	k->description = tomlstr(t, "description");
++	k->cmd = tomlstr(t, "run");
++	k->desktop = tomlstr(t, "desktop");
++	if (k->hotkey && !confhotkey(k->hotkey, &mod, &sym)) {
++		snprintf(err, errlen, "line %d: unknown hotkey \"%s\"", t.lineno, k->hotkey);
++		return 0;
++	}
++	if (act.type == TOML_STRING) {
++		size_t i;
++		for (i = 0; i < LENGTH(confactions) && strcmp(confactions[i].name, act.u.s); i++);
++		if (i == LENGTH(confactions)) {
++			snprintf(err, errlen, "line %d: unknown action \"%s\"", t.lineno, act.u.s);
++			return 0;
++		}
++		func = confactions[i].func;
++		switch (confactions[i].type) {
++		case 'i':
++			a.i = arg.type == TOML_INT64 ? (int)arg.u.int64 : 1;
++			break;
++		case 'u':
++			a.ui = arg.type == TOML_INT64 ? (uint32_t)arg.u.int64 : 1;
++			break;
++		case 'f':
++			a.f = arg.type == TOML_FP64 ? (float)arg.u.fp64 : arg.type == TOML_INT64 ? (float)arg.u.int64 : 0.05f;
++			break;
++		case 't':
++			if (arg.type == TOML_INT64)
++				a.ui = arg.u.int64 <= 0 ? ~0u : 1u << (arg.u.int64 - 1);
++			break;
++		case 'l':
++			if (arg.type == TOML_STRING)
++				a.v = !strcmp(arg.u.s, "float") ? &layouts[0] : &layouts[LENGTH(layouts) - 1];
++			break;
++		case 'd':
++			a.i = arg.type == TOML_STRING && !strcmp(arg.u.s, "left") ? WLR_DIRECTION_LEFT : WLR_DIRECTION_RIGHT;
++			break;
++		}
++	} else if (k->cmd && *k->cmd) {
++		func = spawn;
++		k->argv[0] = "/bin/sh";
++		k->argv[1] = "-c";
++		k->argv[2] = k->cmd;
++		a.v = k->argv;
++	} else if (k->desktop && *k->desktop) {
++		func = spawndesktop;
++		a.v = k->desktop;
++	}
++	if (k->hotkey) {
++		k->bound = func != NULL;
++		k->removed = func == NULL;
++		memcpy(&k->key, &(Key){ mod, sym, func, a }, sizeof(Key));
++	} else if (func) {
++		snprintf(err, errlen, "line %d: an entry with an action needs a hotkey", t.lineno);
++		return 0;
++	}
++	return 1;
++}
++
++static int
++confsame(const ConfKey *a, const ConfKey *b)
++{
++	if (a->hotkey && b->hotkey)
++		return a->key.mod == b->key.mod && a->key.keysym == b->key.keysym;
++	if (!a->hotkey && !b->hotkey && a->shown && b->shown)
++		return !strcmp(a->shown, b->shown);
++	return 0;
++}
++
++static int
++confparse(Conf *c, const char *path, char *err, size_t errlen)
++{
++	toml_result_t r;
++	toml_datum_t list;
++	FILE *f;
++
++	if (!(f = fopen(path, "r")))
++		return 1;
++	r = toml_parse_file_named(f, path);
++	fclose(f);
++	if (!r.ok) {
++		snprintf(err, errlen, "%s", r.errmsg);
++		toml_free(r);
++		return 0;
++	}
++	confreplace(&c->title, r.toptab, "title");
++	confreplace(&c->footer, r.toptab, "help_footer");
++	list = toml_get(r.toptab, "background");
++	if (list.type == TOML_ARRAY) {
++		for (int i = 0; i < c->nbgs; i++) {
++			free(c->bgs[i].wallpaper);
++			free(c->bgs[i].mode);
++		}
++		free(c->bgs);
++		c->bgs = NULL;
++		c->nbgs = 0;
++		for (int i = 0; i < list.u.arr.size; i++) {
++			toml_datum_t t = list.u.arr.elem[i], col, help;
++			Background *b;
++			if (t.type != TOML_TABLE)
++				continue;
++			c->bgs = realloc(c->bgs, (c->nbgs + 1) * sizeof(*c->bgs));
++			b = &c->bgs[c->nbgs++];
++			b->wallpaper = tomlstr(t, "wallpaper");
++			b->mode = tomlstr(t, "mode");
++			col = toml_get(t, "color");
++			help = toml_get(t, "help");
++			b->color = col.type == TOML_STRING ? (uint32_t)strtoul(col.u.s + (col.u.s[0] == '#'), NULL, 16) & 0xffffff
++				: (uint32_t)(rootcolor[0] * 255) << 16 | (uint32_t)(rootcolor[1] * 255) << 8 | (uint32_t)(rootcolor[2] * 255);
++			b->help = help.type == TOML_BOOLEAN && help.u.boolean;
++		}
++	}
++	if (!confchoice(&c->layout, r.toptab, "windows.layout", "float", "tile", err, errlen)
++			|| !confchoice(&c->topbar, r.toptab, "bar.position", "bottom", "top", err, errlen)) {
++		toml_free(r);
++		return 0;
++	}
++	confnum(&c->mfact, r.toptab, "windows.master_size");
++	confint(&c->nmaster, r.toptab, "windows.master_count");
++	confint(&c->border, r.toptab, "windows.border");
++	confint(&c->gap, r.toptab, "windows.gap");
++	confint(&c->sloppy, r.toptab, "windows.focus_follows_mouse");
++	confint(&c->showbar, r.toptab, "bar.show");
++	confreplace(&c->kblayout, r.toptab, "keyboard.layout");
++	confreplace(&c->kbvariant, r.toptab, "keyboard.variant");
++	confreplace(&c->kboptions, r.toptab, "keyboard.options");
++	confint(&c->rate, r.toptab, "keyboard.repeat_rate");
++	confint(&c->delay, r.toptab, "keyboard.repeat_delay");
++	confnum(&c->mspeed, r.toptab, "mouse.speed");
++	confint(&c->maccel, r.toptab, "mouse.acceleration");
++	confint(&c->mnatural, r.toptab, "mouse.natural_scrolling");
++	confint(&c->lefthanded, r.toptab, "mouse.left_handed");
++	confnum(&c->tspeed, r.toptab, "touchpad.speed");
++	confint(&c->tap, r.toptab, "touchpad.tap_to_click");
++	confint(&c->tnatural, r.toptab, "touchpad.natural_scrolling");
++	confint(&c->dwt, r.toptab, "touchpad.disable_while_typing");
++	list = toml_get(r.toptab, "rule");
++	for (int i = 0; list.type == TOML_ARRAY && i < list.u.arr.size; i++) {
++		toml_datum_t t = list.u.arr.elem[i], fl, dk;
++		ConfRule *nr;
++		if (t.type != TOML_TABLE)
++			continue;
++		c->rules = realloc(c->rules, (c->nrules + 1) * sizeof(*c->rules));
++		nr = &c->rules[c->nrules++];
++		nr->appid = tomlstr(t, "app_id");
++		nr->title = tomlstr(t, "title");
++		fl = toml_get(t, "float");
++		dk = toml_get(t, "desktop");
++		nr->isfloating = fl.type == TOML_BOOLEAN ? fl.u.boolean : 0;
++		nr->tags = dk.type == TOML_INT64 && dk.u.int64 > 0 ? 1u << (dk.u.int64 - 1) : 0;
++	}
++	list = toml_get(r.toptab, "launcher");
++	if (list.type == TOML_ARRAY) {
++		for (int i = 0; i < c->nlaunch; i++) {
++			free(c->launch[i].desktop);
++			free(c->launch[i].icon);
++		}
++		c->nlaunch = 0;
++		for (int i = 0; i < list.u.arr.size; i++) {
++			toml_datum_t t = list.u.arr.elem[i];
++			char *desktop = t.type == TOML_TABLE ? tomlstr(t, "desktop") : NULL;
++			if (!desktop) {
++				snprintf(err, errlen, "line %d: a [[launcher]] needs a desktop file", t.lineno);
++				toml_free(r);
++				return 0;
++			}
++			if (c->nlaunch == LENGTH(c->launch)) {
++				free(desktop);
++				continue;
++			}
++			c->launch[c->nlaunch].desktop = desktop;
++			c->launch[c->nlaunch++].icon = tomlstr(t, "icon");
++		}
++	}
++	list = toml_get(r.toptab, "key");
++	for (int i = 0; list.type == TOML_ARRAY && i < list.u.arr.size; i++) {
++		ConfKey k;
++		int j;
++		if (list.u.arr.elem[i].type != TOML_TABLE || !confentry(&k, list.u.arr.elem[i], err, errlen)) {
++			if (!err[0])
++				snprintf(err, errlen, "line %d: [[key]] must be a table", list.u.arr.elem[i].lineno);
++			toml_free(r);
++			return 0;
++		}
++		for (j = 0; !k.separator && j < c->n && !(!c->keys[j].removed && confsame(&c->keys[j], &k)); j++);
++		if (!k.separator && j < c->n) {
++			ConfKey *old = &c->keys[j];
++			free(old->cmd);
++			free(old->desktop);
++			free(old->hotkey);
++			free(old->shown);
++			free(old->description);
++			memcpy(old, &k, sizeof(k));
++			if (!k.hotkey && (!k.description || !*k.description))
++				old->removed = 1;
++			continue;
++		}
++		c->keys = realloc(c->keys, (c->n + 1) * sizeof(*c->keys));
++		memcpy(&c->keys[c->n++], &k, sizeof(k));
++	}
++	toml_free(r);
++	return 1;
++}
++
++static void
++confhelp(void)
++{
++	size_t len = 0, cap = 4096;
++	int described = 0;
++	char *b = malloc(cap);
++
++	free(helptextbuf);
++	helptextbuf = NULL;
++	if (!b)
++		return;
++	b[0] = '\0';
++#define APPEND(...) do { \
++		int need = snprintf(NULL, 0, __VA_ARGS__); \
++		while (len + need + 1 > cap) \
++			b = realloc(b, cap *= 2); \
++		len += sprintf(b + len, __VA_ARGS__); \
++	} while (0)
++	if (conf.title)
++		APPEND("%s\n", conf.title);
++	for (int i = 0; i < conf.n; i++) {
++		ConfKey *k = &conf.keys[i];
++		if (k->removed)
++			continue;
++		if (k->separator)
++			APPEND("\n");
++		else if (k->description && *k->description) {
++			APPEND("%s\t%s\n", k->shown ? k->shown : k->hotkey ? k->hotkey : "", k->description);
++			described = 1;
++		}
++	}
++	if (conf.footer)
++		APPEND("%s%s", conf.footer, len && conf.footer[0] && conf.footer[strlen(conf.footer) - 1] != '\n' ? "\n" : "");
++#undef APPEND
++	if (described)
++		helptextbuf = b;
++	else
++		free(b);
++}
++
++static void
++bgstate(char *path, size_t len)
++{
++	const char *state = getenv("XDG_STATE_HOME"), *home = getenv("HOME");
++	if (state && *state)
++		snprintf(path, len, "%s/tinyhat/background", state);
++	else
++		snprintf(path, len, "%s/.local/state/tinyhat/background", home ? home : "");
++}
++
++static void
++bgapply(void)
++{
++	Background *b;
++	if (!conf.nbgs)
++		return;
++	bgindex = (bgindex % conf.nbgs + conf.nbgs) % conf.nbgs;
++	b = &conf.bgs[bgindex];
++	wallrgb = b->color;
++	if (b->wallpaper && *b->wallpaper) {
++		snprintf(wallmode, sizeof(wallmode), "%s", b->mode && *b->mode ? b->mode : "fill");
++		snprintf(wallpath, sizeof(wallpath), "%s", b->wallpaper);
++	} else {
++		wallmode[0] = wallpath[0] = '\0';
++	}
++	snprintf(helppath, sizeof(helppath), "%s", b->help ? "on" : "");
++}
++
++static void
++nextbackground(const Arg *arg)
++{
++	char path[PATH_MAX], dir[PATH_MAX];
++	FILE *f;
++	if (!conf.nbgs)
++		return;
++	bgindex++;
++	bgapply();
++	bgstate(path, sizeof(path));
++	snprintf(dir, sizeof(dir), "%s", path);
++	for (char *s = dir + 1; (s = strchr(s, '/')); s++) {
++		*s = '\0';
++		mkdir(dir, 0755);
++		*s = '/';
++	}
++	if ((f = fopen(path, "w"))) {
++		fprintf(f, "%d\n", bgindex);
++		fclose(f);
++	}
++	wallupdate();
++}
++
++static void
++confpath(char *path, size_t len, const char *rel)
++{
++	const char *xdg = getenv("XDG_CONFIG_HOME"), *home = getenv("HOME");
++	if (xdg && *xdg)
++		snprintf(path, len, "%s%s", xdg, rel);
++	else
++		snprintf(path, len, "%s/.config%s", home ? home : "", rel);
++}
++
++static int
++confkeymap(struct xkb_rule_names *names, char *buf, size_t len)
++{
++	char path[PATH_MAX], user[PATH_MAX], *variant;
++	const char *home = getenv("HOME");
++	struct stat kst, ust;
++	FILE *f;
++
++	*names = xkb_rules;
++	if (conf.kblayout && *conf.kblayout)
++		names->layout = conf.kblayout;
++	if (conf.kbvariant && *conf.kbvariant)
++		names->variant = conf.kbvariant;
++	if (conf.kboptions && *conf.kboptions)
++		names->options = conf.kboptions;
++	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
++	confpath(user, sizeof(user), "/tinyhat/desktop.toml");
++	if (stat(path, &kst) || (conf.kblayout && *conf.kblayout && !stat(user, &ust) && ust.st_mtime > kst.st_mtime) || !(f = fopen(path, "r")))
++		return 0;
++	if (!fgets(buf, (int)len, f))
++		buf[0] = '\0';
++	fclose(f);
++	buf[strcspn(buf, "\r\n")] = '\0';
++	if (!buf[0])
++		return 0;
++	names->variant = NULL;
++	if ((variant = strchr(buf, ' '))) {
++		*variant++ = '\0';
++		names->variant = variant;
++	}
++	names->layout = buf;
++	return 1;
++}
++
++static void
++configpointer(struct libinput_device *device)
++{
++	int touchpad = libinput_device_config_tap_get_finger_count(device) > 0;
++	int natural = touchpad ? (conf.tnatural >= 0 ? conf.tnatural : natural_scrolling)
++		: (conf.mnatural >= 0 ? conf.mnatural : natural_scrolling);
++	double speed = touchpad ? (isnan(conf.tspeed) ? accel_speed : conf.tspeed)
++		: (isnan(conf.mspeed) ? accel_speed : conf.mspeed);
++	enum libinput_config_accel_profile profile = !touchpad && conf.maccel >= 0
++		? (conf.maccel ? LIBINPUT_CONFIG_ACCEL_PROFILE_ADAPTIVE : LIBINPUT_CONFIG_ACCEL_PROFILE_FLAT) : accel_profile;
++
++	if (touchpad) {
++		libinput_device_config_tap_set_enabled(device, conf.tap >= 0 ? conf.tap : tap_to_click);
++		libinput_device_config_tap_set_drag_enabled(device, tap_and_drag);
++		libinput_device_config_tap_set_drag_lock_enabled(device, drag_lock);
++		libinput_device_config_tap_set_button_map(device, button_map);
++	}
++	if (libinput_device_config_scroll_has_natural_scroll(device))
++		libinput_device_config_scroll_set_natural_scroll_enabled(device, natural);
++	if (libinput_device_config_dwt_is_available(device))
++		libinput_device_config_dwt_set_enabled(device, conf.dwt >= 0 ? conf.dwt : disable_while_typing);
++	if (libinput_device_config_left_handed_is_available(device))
++		libinput_device_config_left_handed_set(device, conf.lefthanded >= 0 ? conf.lefthanded : left_handed);
++	if (libinput_device_config_middle_emulation_is_available(device))
++		libinput_device_config_middle_emulation_set_enabled(device, middle_button_emulation);
++	if (libinput_device_config_scroll_get_methods(device) != LIBINPUT_CONFIG_SCROLL_NO_SCROLL)
++		libinput_device_config_scroll_set_method(device, scroll_method);
++	if (libinput_device_config_click_get_methods(device) != LIBINPUT_CONFIG_CLICK_METHOD_NONE)
++		libinput_device_config_click_set_method(device, click_method);
++	if (libinput_device_config_send_events_get_modes(device))
++		libinput_device_config_send_events_set_mode(device, send_events_mode);
++	if (libinput_device_config_accel_is_available(device)) {
++		libinput_device_config_accel_set_profile(device, profile);
++		libinput_device_config_accel_set_speed(device, MAX(-1.0, MIN(1.0, speed)));
++	}
++}
++
++static void
++confmon(Monitor *m)
++{
++	if (conf.layout >= 0) {
++		m->lt[0] = &layouts[conf.layout ? LENGTH(layouts) - 1 : 0];
++		m->lt[1] = &layouts[conf.layout ? 0 : LENGTH(layouts) - 1];
++		m->sellt = 0;
++		strncpy(m->ltsymbol, m->lt[0]->symbol, sizeof(m->ltsymbol) - 1);
++	}
++	if (!isnan(conf.mfact))
++		m->mfact = (float)MAX(0.05, MIN(0.95, conf.mfact));
++	if (conf.nmaster >= 0)
++		m->nmaster = conf.nmaster;
++}
++
++static void
++confsettings(const Conf *old)
++{
++	unsigned int oldborder = borderpx;
++	int barchanged, winchanged, kbchanged;
++	Monitor *m;
++	Client *c;
++	PointerDev *p;
++
++	sloppyfocus = conf.sloppy >= 0 ? conf.sloppy : confdef.sloppy;
++	borderpx = conf.border >= 0 ? (unsigned int)conf.border : (unsigned int)confdef.border;
++	gappx = conf.gap >= 0 ? (unsigned int)conf.gap : (unsigned int)confdef.gap;
++	barchanged = showbar != (conf.showbar >= 0 ? conf.showbar : confdef.showbar)
++		|| topbar != (conf.topbar >= 0 ? conf.topbar : confdef.topbar);
++	showbar = conf.showbar >= 0 ? conf.showbar : confdef.showbar;
++	topbar = conf.topbar >= 0 ? conf.topbar : confdef.topbar;
++	kbchanged = repeat_rate != (conf.rate >= 0 ? conf.rate : confdef.rate)
++		|| repeat_delay != (conf.delay >= 0 ? conf.delay : confdef.delay);
++	repeat_rate = conf.rate >= 0 ? conf.rate : confdef.rate;
++	repeat_delay = conf.delay >= 0 ? conf.delay : confdef.delay;
++	if (!kb_group)
++		return;
++	winchanged = old->layout != conf.layout || old->nmaster != conf.nmaster
++		|| (isnan(old->mfact) ? !isnan(conf.mfact) : old->mfact != conf.mfact);
++	wl_list_for_each(m, &mons, link) {
++		if (winchanged)
++			confmon(m);
++		if (barchanged)
++			wlr_scene_node_set_enabled(&m->scene_buffer->node, m->wlr_output->enabled ? showbar : 0);
++	}
++	if (oldborder != borderpx)
++		wl_list_for_each(c, &clients, link)
++			if (c->bw == oldborder)
++				c->bw = borderpx;
++	wl_list_for_each(m, &mons, link) {
++		arrangelayers(m);
++		arrange(m);
++	}
++	if (kbchanged)
++		wlr_keyboard_set_repeat_info(&kb_group->wlr_group->keyboard, repeat_rate, repeat_delay);
++	reloadkeymap(0, NULL);
++	wl_list_for_each(p, &pointerdevs, link)
++		configpointer(p->device);
++}
++
++static void
++destroypointerdev(struct wl_listener *listener, void *data)
++{
++	PointerDev *p = wl_container_of(listener, p, destroy);
++	wl_list_remove(&p->link);
++	wl_list_remove(&p->destroy.link);
++	free(p);
++}
++
++static void
++confload(int applywall)
++{
++	char user[PATH_MAX], err[256] = "";
++	const char *bad = NULL;
++	Conf c, old;
++	int sys, usr;
++
++	confunset(&c);
++	confpath(user, sizeof(user), "/tinyhat/desktop.toml");
++	sys = !access(SYSCONFDIR "/desktop.toml", F_OK);
++	usr = !access(user, F_OK);
++	if ((sys && !confparse(&c, SYSCONFDIR "/desktop.toml", err, sizeof(err)) && (bad = SYSCONFDIR "/desktop.toml"))
++			|| (usr && !confparse(&c, user, err, sizeof(err)) && (bad = user))) {
++		const char *home = getenv("HOME");
++		size_t hl = home ? strlen(home) : 0;
++		conffree(&c);
++		if (hl && !strncmp(bad, home, hl) && bad[hl] == '/')
++			snprintf(notice, sizeof(notice), "~%s: %s", bad + hl, err);
++		else
++			snprintf(notice, sizeof(notice), "%s: %s", bad, err);
++		if (event_loop)
++			drawbars();
++		else
++			fprintf(stderr, "%s\n", notice);
++		return;
++	}
++	old = conf;
++	conf = c;
++	confloaded = sys || usr;
++	confsettings(&old);
++	conffree(&old);
++	for (int i = 0; i < conf.n; i++)
++		if (conf.keys[i].cmd && conf.keys[i].key.func == spawn)
++			memcpy(&conf.keys[i].key, &(Key){ conf.keys[i].key.mod, conf.keys[i].key.keysym, spawn,
++					{ .v = (conf.keys[i].argv[0] = "/bin/sh", conf.keys[i].argv[1] = "-c",
++						conf.keys[i].argv[2] = conf.keys[i].cmd, conf.keys[i].argv[3] = NULL, conf.keys[i].argv) } },
++					sizeof(Key));
++	for (int i = 0; i < conf.nlaunch; i++)
++		if (conf.launch[i].icon && conf.launch[i].icon[0] == '/')
++			conf.launch[i].img = wallload(conf.launch[i].icon);
++	confhelp();
++	if (strstr(notice, "desktop.toml: "))
++		notice[0] = '\0';
++	if (applywall)
++		bgapply();
++}
++
++static void
++confwatch(void)
++{
++	char dir[PATH_MAX];
++	if (conffd < 0)
++		return;
++	inotify_add_watch(conffd, SYSCONFDIR, IN_CLOSE_WRITE | IN_MOVED_TO | IN_DELETE | IN_CREATE);
++	confpath(dir, sizeof(dir), "");
++	inotify_add_watch(conffd, dir, IN_CREATE | IN_MOVED_TO | IN_ONLYDIR);
++	confpath(dir, sizeof(dir), "/tinyhat");
++	inotify_add_watch(conffd, dir, IN_CLOSE_WRITE | IN_MOVED_TO | IN_DELETE | IN_CREATE | IN_ONLYDIR);
++}
++
++static int
++confin(int fd, unsigned int mask, void *data)
++{
++	char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
++	ssize_t n;
++	int reload = 0;
++
++	while ((n = read(fd, buf, sizeof(buf))) > 0) {
++		for (char *p = buf; p < buf + n; p += sizeof(struct inotify_event) + ((struct inotify_event *)p)->len) {
++			struct inotify_event *e = (struct inotify_event *)p;
++			if (e->len && (!strcmp(e->name, "desktop.toml") || !strcmp(e->name, "tinyhat")))
++				reload = 1;
++		}
++	}
++	if (reload) {
++		confwatch();
++		confload(1);
++		wallupdate();
++		drawbars();
++	}
++	return 0;
++}
++
++static void
++confinit(void)
++{
++	char path[PATH_MAX];
++	FILE *f;
++
++	confunset(&conf);
++	wl_list_init(&pointerdevs);
++	confdef.sloppy = sloppyfocus;
++	confdef.border = (int)borderpx;
++	confdef.gap = (int)gappx;
++	confdef.showbar = showbar;
++	confdef.topbar = topbar;
++	confdef.rate = repeat_rate;
++	confdef.delay = repeat_delay;
++	bgstate(path, sizeof(path));
++	if ((f = fopen(path, "r"))) {
++		if (fscanf(f, "%d", &bgindex) != 1)
++			bgindex = 0;
++		fclose(f);
++	}
++	if ((conffd = inotify_init1(IN_NONBLOCK | IN_CLOEXEC)) >= 0) {
++		confwatch();
++		wl_event_loop_add_fd(event_loop, conffd, WL_EVENT_READABLE, confin, NULL);
++	}
++	confload(1);
++}
++
+ /* attempt to encapsulate suck into one file */
+ #include "client.h"
+ 
+@@ -614,7 +1469,14 @@ applyrules(Client *c)
+ 	appid = client_get_appid(c);
+ 	title = client_get_title(c);
+ 
+-	for (r = rules; r < END(rules); r++) {
++	for (i = 0; confloaded && i < conf.nrules; i++) {
++		if ((!conf.rules[i].title || strstr(title, conf.rules[i].title))
++				&& (!conf.rules[i].appid || strstr(appid, conf.rules[i].appid))) {
++			c->isfloating = conf.rules[i].isfloating;
++			newtags |= conf.rules[i].tags;
++		}
++	}
++	for (r = rules; !(confloaded && conf.nrules) && r < END(rules); r++) {
+ 		if ((!r->title || strstr(title, r->title))
+ 				&& (!r->id || strstr(appid, r->id))) {
+ 			c->isfloating = r->isfloating;
+@@ -935,6 +1797,11 @@ buttonpress(struct wl_listener *listener, void *data)
+ 				click = ClkLtSymbol;
+ 			else if (cx > selmon->b.width - statusw(selmon)) {
+ 				click = ClkStatus;
++				for (i = 0; event->button == BTN_LEFT && i < (unsigned int)selmon->nlaunch; i++)
++					if (cx >= selmon->launchx[i] && cx < selmon->launchx[i + 1]) {
++						spawndesktop(&(Arg){ .v = conf.launch[i].desktop });
++						return;
++					}
+ 				if (event->button == BTN_LEFT && selmon->volx1 > selmon->volx0 && cx >= selmon->volx0 && cx < selmon->volx1) {
+ 					spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "mute", NULL }});
+ 					return;
+@@ -1341,14 +2208,17 @@ createkeyboardgroup(void)
+ 	KeyboardGroup *group = ecalloc(1, sizeof(*group));
+ 	struct xkb_context *context;
+ 	struct xkb_keymap *keymap;
++	struct xkb_rule_names names;
++	char kbline[256];
+ 
+ 	group->wlr_group = wlr_keyboard_group_create();
+ 	group->wlr_group->data = group;
+ 
+ 	/* Prepare an XKB keymap and assign it to the keyboard group. */
++	confkeymap(&names, kbline, sizeof(kbline));
+ 	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+-	if (!(keymap = xkb_keymap_new_from_names(context, &xkb_rules,
+-				XKB_KEYMAP_COMPILE_NO_FLAGS)))
++	if (!(keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))
++			&& !(keymap = xkb_keymap_new_from_names(context, &xkb_rules, XKB_KEYMAP_COMPILE_NO_FLAGS)))
+ 		die("failed to compile keymap");
+ 
+ 	wlr_keyboard_set_keymap(&group->wlr_group->keyboard, keymap);
+@@ -1460,6 +2330,7 @@ createmon(struct wl_listener *listener, void *data)
+ 			break;
+ 		}
+ 	}
++	confmon(m);
+ 
+ 	/* The mode is a tuple of (width, height, refresh rate), and each
+ 	 * monitor supports only a specific set of modes. We just pick the
+@@ -1563,39 +2434,11 @@ createpointer(struct wlr_pointer *pointer)
+ 	struct libinput_device *device;
+ 	if (wlr_input_device_is_libinput(&pointer->base)
+ 			&& (device = wlr_libinput_get_device_handle(&pointer->base))) {
+-
+-		if (libinput_device_config_tap_get_finger_count(device)) {
+-			libinput_device_config_tap_set_enabled(device, tap_to_click);
+-			libinput_device_config_tap_set_drag_enabled(device, tap_and_drag);
+-			libinput_device_config_tap_set_drag_lock_enabled(device, drag_lock);
+-			libinput_device_config_tap_set_button_map(device, button_map);
+-		}
+-
+-		if (libinput_device_config_scroll_has_natural_scroll(device))
+-			libinput_device_config_scroll_set_natural_scroll_enabled(device, natural_scrolling);
+-
+-		if (libinput_device_config_dwt_is_available(device))
+-			libinput_device_config_dwt_set_enabled(device, disable_while_typing);
+-
+-		if (libinput_device_config_left_handed_is_available(device))
+-			libinput_device_config_left_handed_set(device, left_handed);
+-
+-		if (libinput_device_config_middle_emulation_is_available(device))
+-			libinput_device_config_middle_emulation_set_enabled(device, middle_button_emulation);
+-
+-		if (libinput_device_config_scroll_get_methods(device) != LIBINPUT_CONFIG_SCROLL_NO_SCROLL)
+-			libinput_device_config_scroll_set_method(device, scroll_method);
+-
+-		if (libinput_device_config_click_get_methods(device) != LIBINPUT_CONFIG_CLICK_METHOD_NONE)
+-			libinput_device_config_click_set_method(device, click_method);
+-
+-		if (libinput_device_config_send_events_get_modes(device))
+-			libinput_device_config_send_events_set_mode(device, send_events_mode);
+-
+-		if (libinput_device_config_accel_is_available(device)) {
+-			libinput_device_config_accel_set_profile(device, accel_profile);
+-			libinput_device_config_accel_set_speed(device, accel_speed);
+-		}
++		PointerDev *p = ecalloc(1, sizeof(*p));
++		p->device = device;
++		wl_list_insert(&pointerdevs, &p->link);
++		LISTEN(&pointer->base.events.destroy, &p->destroy, destroypointerdev);
++		configpointer(device);
+ 	}
+ 
+ 	wlr_cursor_attach_input_device(cursor, &pointer->base);
+@@ -1948,6 +2791,17 @@ iconpixel(int kind, int arg, double x, double y)
+ 			return level <= 1 && kind != 'C' ? red : fg;
+ 		return 0;
+ 	}
++	case 'G': {
++		static const int stones[][2] = { { 1, 0 }, { 2, 1 }, { 0, 2 }, { 1, 2 }, { 2, 2 } };
++		double c = 0.92 / 3, gx = (x - 0.04) / c, gy = (y - 0.04) / c;
++		for (size_t i = 0; i < LENGTH(stones); i++)
++			if (hypot(gx - stones[i][0] - 0.5, gy - stones[i][1] - 0.5) < 0.36)
++				return fg;
++		if (gx >= -0.06 && gx <= 3.06 && gy >= -0.06 && gy <= 3.06
++				&& (fabs(gx - round(gx)) < 0.06 || fabs(gy - round(gy)) < 0.06))
++			return colors[SchemeStatus][2];
++		return 0;
++	}
+ 	case 'H':
+ 		if (inflame(x, y, 0.40, 0.78, 0.13, 0.50))
+ 			return 0xffe066ff;
+@@ -1964,7 +2818,7 @@ static int
+ iconpx(Monitor *m, int kind)
+ {
+ 	int s = m->b.height * 5 / 8;
+-	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : 1.08));
++	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : kind == 'G' ? 1.0 : 1.08));
+ }
+ 
+ /* Draw a status icon straight into the bar, antialiased with 4x4 samples per pixel */
+@@ -2008,6 +2862,57 @@ iconw(Monitor *m, int kind)
+ 	return iconpx(m, kind) + 2;
+ }
+ 
++static void
++drawpng(Monitor *m, int x, pixman_image_t *src)
++{
++	pixman_image_t *img = m->drw->image;
++	uint32_t *data = pixman_image_get_data(img), *sp = pixman_image_get_data(src), bg = colors[SchemeStatus][1];
++	int stride = pixman_image_get_stride(img) / 4, iw = pixman_image_get_width(img), ih = pixman_image_get_height(img);
++	int sw = pixman_image_get_width(src), sh = pixman_image_get_height(src), sstride = pixman_image_get_stride(src) / 4;
++	int s = m->b.height * 5 / 8, oy = (m->b.height - s) / 2;
++	double scale = (double)MAX(sw, sh) / s, ox = (s - sw / scale) / 2, oy2 = (s - sh / scale) / 2;
++	for (int py = 0; py < s; py++)
++		for (int px = 0; px < s; px++) {
++			unsigned int r = 0, g = 0, b = 0;
++			if (x + px < 0 || x + px >= iw || oy + py < 0 || oy + py >= ih)
++				continue;
++			for (int i = 0; i < 16; i++) {
++				int sx = (int)((px + (i % 4 + 0.5) / 4 - ox) * scale), sy = (int)((py + (i / 4 + 0.5) / 4 - oy2) * scale);
++				uint32_t c = sx >= 0 && sx < sw && sy >= 0 && sy < sh ? sp[sy * sstride + sx] : 0;
++				unsigned int a = c >> 24;
++				r += ((c >> 16 & 0xff) * a + (bg >> 24) * (255 - a)) / 255;
++				g += ((c >> 8 & 0xff) * a + (bg >> 16 & 0xff) * (255 - a)) / 255;
++				b += ((c & 0xff) * a + (bg >> 8 & 0xff) * (255 - a)) / 255;
++			}
++			data[(oy + py) * stride + x + px] = 0xff000000 | (r / 16) << 16 | (g / 16) << 8 | b / 16;
++		}
++}
++
++static int
++launchw(Monitor *m)
++{
++	return conf.nlaunch ? conf.nlaunch * iconw(m, 'G') + drwl_font_getwidth(m->drw, " | ") : 0;
++}
++
++static int
++drawlaunchers(Monitor *m, int x)
++{
++	m->nlaunch = conf.nlaunch;
++	for (int i = 0; i < conf.nlaunch; i++) {
++		m->launchx[i] = x;
++		if (conf.launch[i].img)
++			drawpng(m, x, conf.launch[i].img);
++		else
++			drawicon(m, x, 'G', 0);
++		x += iconw(m, 'G');
++	}
++	m->launchx[conf.nlaunch] = x;
++	drwl_setscheme(m->drw, colors[SchemeStatus]);
++	if (conf.nlaunch)
++		x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, " | "), m->b.height, 0, " | ", 0);
++	return x;
++}
++
+ static int
+ stextw(Monitor *m, char *s)
+ {
+@@ -2028,13 +2933,14 @@ stextw(Monitor *m, char *s)
+ 		if (*seg == '%')
+ 			seg++;
+ 	}
+-	return w + drwl_font_getwidth(m->drw, seg);
++	return w + drwl_font_getwidth(m->drw, seg) + launchw(m);
+ }
+ 
+ static int
+ drawstext(Monitor *m, int x, char *s)
+ {
+ 	char *seg = s;
++	int launched = 0;
+ 	for (char *p = s; *p; p++) {
+ 		int kind = iconkind(s, p), vol = kind == 'V' || kind == 'M';
+ 		if (!kind)
+@@ -2043,6 +2949,8 @@ drawstext(Monitor *m, int x, char *s)
+ 		if (*seg)
+ 			x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+ 		*p = kind;
++		if (!launched++)
++			x = drawlaunchers(m, x);
+ 		if (vol)
+ 			m->volx0 = x;
+ 		drawicon(m, x, kind, atoi(p + 1));
+@@ -2058,6 +2966,8 @@ drawstext(Monitor *m, int x, char *s)
+ 		if (*seg == '%')
+ 			seg++;
+ 	}
++	if (!launched)
++		x = drawlaunchers(m, x);
+ 	if (*seg)
+ 		x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+ 	return x;
+@@ -2249,7 +3159,8 @@ wallhelp(Monitor *m)
+ 	FILE *f;
+ 	int bw, bh, lineh;
+ 
+-	if (!(f = fopen(helppath, "r")))
++	if (!strcmp(helppath, "on") ? !helptextbuf || !(f = fmemopen(helptextbuf, strlen(helptextbuf), "r"))
++			: !(f = fopen(helppath, "r")))
+ 		return;
+ 	while (n < 48 && fgets(lines[n], sizeof(lines[n]), f)) {
+ 		lines[n][strcspn(lines[n], "\n")] = '\0';
+@@ -2375,7 +3286,7 @@ drawbar(Monitor *m)
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		tw = statusw(m);
+-		m->volx0 = m->volx1 = 0;
++		m->volx0 = m->volx1 = m->nlaunch = 0;
+ 		drwl_rect(m->drw, m->b.width - tw, 0, tw, m->b.height, 1, 1);
+ 		drawstext(m, m->b.width - tw, stext);
+ 	}
+@@ -2908,26 +3819,14 @@ setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data)
+ int
+ reloadkeymap(int signo, void *data)
+ {
+-	char path[4096], line[256] = "", *variant;
+-	const char *home = getenv("HOME");
+-	struct xkb_rule_names names = xkb_rules;
++	char line[256];
++	struct xkb_rule_names names;
+ 	struct xkb_context *context;
+ 	struct xkb_keymap *keymap;
+-	FILE *f;
+ 
+-	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
+-	if ((f = fopen(path, "r"))) {
+-		if (!fgets(line, sizeof(line), f))
+-			line[0] = '\0';
+-		fclose(f);
+-	}
+-	line[strcspn(line, "\r\n")] = '\0';
+-	if ((variant = strchr(line, ' '))) {
+-		*variant++ = '\0';
+-		names.variant = variant;
+-	}
+-	if (line[0])
+-		names.layout = line;
++	if (!kb_group)
++		return 0;
++	confkeymap(&names, line, sizeof(line));
+ 	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+ 	if ((keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))) {
+ 		wlr_keyboard_set_keymap(&kb_group->wlr_group->keyboard, keymap);
+@@ -3002,7 +3901,16 @@ keybinding(uint32_t mods, xkb_keysym_t sym)
+ 	 * processing.
+ 	 */
+ 	const Key *k;
++	if (confloaded) {
++		for (int i = 0; i < conf.n; i++) {
++			k = &conf.keys[i].key;
++			if (conf.keys[i].bound && !conf.keys[i].removed && CLEANMASK(mods) == CLEANMASK(k->mod) && sym == k->keysym)
++				return k;
++		}
++	}
+ 	for (k = keys; k < END(keys); k++) {
++		if (confloaded && k->func != quit && k->func != chvt)
++			continue;
+ 		if (CLEANMASK(mods) == CLEANMASK(k->mod) && sym == k->keysym && k->func)
+ 			return k;
+ 	}
+@@ -4148,6 +5056,7 @@ setup(void)
+ 	 * https://drewdevault.com/2018/07/29/Wayland-shells.html
+ 	 */
+ 	wl_list_init(&clients);
++	confinit();
+ 	wl_list_init(&fstack);
+ 
+ 	xdg_shell = wlr_xdg_shell_create(dpy, 6);
+@@ -4581,7 +5490,6 @@ updatemons(struct wl_listener *listener, void *data)
+ 
+ 	wlr_scene_node_set_position(&root_bg->node, sgeom.x, sgeom.y);
+ 	wlr_scene_rect_set_size(root_bg, sgeom.width, sgeom.height);
+-	wallupdate();
+ 
+ 	/* Make sure the clients are hidden when dwl is locked */
+ 	wlr_scene_node_set_position(&locked_bg->node, sgeom.x, sgeom.y);
+@@ -4625,6 +5533,7 @@ updatemons(struct wl_listener *listener, void *data)
+ 			selmon = m;
+ 		}
+ 	}
++	wallupdate();
+ 
+ 	if (selmon && selmon->wlr_output->enabled) {
+ 		wl_list_for_each(c, &clients, link) {
+@@ -4977,8 +5886,21 @@ main(int argc, char *argv[])
+ 	char *startup_cmd = NULL;
+ 	int c;
+ 
+-	while ((c = getopt(argc, argv, "s:hdv")) != -1) {
+-		if (c == 's')
++	while ((c = getopt(argc, argv, "s:hdvp")) != -1) {
++		if (c == 'p') {
++			confunset(&conf);
++			confdef.sloppy = sloppyfocus;
++			confdef.border = (int)borderpx;
++			confdef.gap = (int)gappx;
++			confdef.showbar = showbar;
++			confdef.topbar = topbar;
++			confdef.rate = repeat_rate;
++			confdef.delay = repeat_delay;
++			confload(0);
++			if (helptextbuf)
++				fputs(helptextbuf, stdout);
++			return helptextbuf ? EXIT_SUCCESS : EXIT_FAILURE;
++		} else if (c == 's')
+ 			startup_cmd = optarg;
+ 		else if (c == 'd')
+ 			log_level = WLR_DEBUG;
+@@ -4999,5 +5921,5 @@ main(int argc, char *argv[])
+ 	return EXIT_SUCCESS;
+ 
+ usage:
+-	die("Usage: %s [-v] [-d] [-s startup command]", argv[0]);
++	die("Usage: %s [-v] [-d] [-p] [-s startup command]", argv[0]);
+ }
