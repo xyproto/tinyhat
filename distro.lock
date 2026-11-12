@@ -19,7 +19,6 @@ libpkgs = [
     "brotli",
     "bwbasic",
     "bzip2",
-    "cairo",
     "cc65",
     "chafa",
     "chibi-scheme",
@@ -72,6 +71,7 @@ libpkgs = [
     "glew",
     "glfw",
     "glib2",
+    "glib2-introspection",
     "glibc",
     "glibmm",
     "glslang",
@@ -268,6 +268,7 @@ libpkgs = [
     "libxt",
     "libxtst",
     "libxxf86vm",
+    "libyaml",
     "libyuv",
     "lilv",
     "lirc",
@@ -341,7 +342,6 @@ libpkgs = [
     "python-cairo",
     "python-gobject",
     "python-pyxel",
-    "python314",
     "qemacs",
     "rav1e",
     "raylib",
@@ -375,6 +375,7 @@ libpkgs = [
     "tinyhat-files",
     "tinyhat-freedos",
     "tinyhat-gui",
+    "tinyhat-guru",
     "tinyhat-keyring",
     "tinyhat-midibench",
     "tinyhat-pipewire-wait",
@@ -401,7 +402,6 @@ libpkgs = [
     "wayland",
     "webrtc-audio-processing-1",
     "wlroots0.20",
-    "wurl",
     "x264",
     "x265",
     "x32-binutils",
@@ -434,7 +434,7 @@ bind = ["bind"]
 bonzomatic = ["bonzomatic"]
 busybox = []
 bwbasic = ["bwbasic"]
-cairo = ["cairo"]
+cairo = ["cairo-wayland"]
 cc65 = ["cc65"]
 chibi-scheme = ["chibi-scheme"]
 compose-tables = ["compose-tables"]
@@ -454,8 +454,11 @@ gdk-pixbuf2 = ["gdk-pixbuf2"]
 girara = ["girara"]
 glew = ["glew"]
 glib2 = ["glib2"]
+glib2-introspection = ["glib2-introspection"]
 glu = ["glu"]
+gobject-introspection = ["gobject-introspection-runtime", "libgirepository"]
 grafx2 = ["grafx2"]
+grim = ["grim"]
 gtk4 = ["gtk4"]
 harfbuzz = ["harfbuzz"]
 iproute2 = ["iproute2"]
@@ -463,6 +466,7 @@ jemalloc = ["jemalloc"]
 jomon = ["jomon"]
 kmod = ["kmod"]
 libdisplay-info = ["libdisplay-info"]
+"libdisplay-info0.3" = ["libdisplay-info0.3"]
 libepoxy = ["libepoxy"]
 libglvnd = ["libglvnd"]
 libglvnd-glx = ["libglvnd-glx"]
@@ -473,6 +477,7 @@ libutf8proc = ["libutf8proc"]
 libxkbcommon = ["libxkbcommon"]
 libxml2 = ["libxml2"]
 love = ["love"]
+lutris = ["lutris"]
 make = ["make"]
 mesa = ["mesa"]
 mgba = ["mgba"]
@@ -488,6 +493,7 @@ orbiton = ["orbiton"]
 pango = ["pango"]
 pipewire = ["alsa-card-profiles", "libpipewire", "pipewire", "pipewire-alsa", "pipewire-audio", "pipewire-jack", "pipewire-session-manager"]
 png2xpm = ["png2xpm"]
+poppler = ["poppler", "poppler-glib"]
 pt2-clone = ["pt2-clone"]
 pure-fish = ["pure-fish"]
 pvsneslib = ["pvsneslib"]
@@ -508,6 +514,7 @@ tic-80 = ["tic-80"]
 tinyhat-files = ["tinyhat-files"]
 tinyhat-freedos = ["tinyhat-freedos"]
 tinyhat-gui = ["tinyhat-gui"]
+tinyhat-guru = ["tinyhat-guru"]
 tinyhat-keyring = ["tinyhat-keyring"]
 tinyhat-midibench = ["tinyhat-midibench"]
 tinyhat-pipewire-wait = ["tinyhat-pipewire-wait"]
@@ -522,7 +529,6 @@ vice = ["vice"]
 wallutils = ["wallutils"]
 wireplumber = ["libwireplumber", "wireplumber"]
 "wlroots0.20" = ["wlroots0.20"]
-wurl = ["wurl"]
 xfsprogs = ["xfsprogs"]
 zathura = ["zathura"]
 zathura-pdf-poppler = ["zathura-pdf-poppler"]
@@ -536,7 +542,7 @@ aquarium = ["aquarium"]
 bind = ["bind"]
 bonzomatic = ["bonzomatic"]
 bwbasic = ["bwbasic"]
-cairo = ["cairo"]
+cairo = ["cairo-wayland"]
 cc65 = ["cc65"]
 chibi-scheme = ["chibi-scheme"]
 compose-tables = ["compose-tables"]
@@ -556,8 +562,11 @@ gdk-pixbuf2 = ["gdk-pixbuf2"]
 girara = ["girara"]
 glew = ["glew"]
 glib2 = ["glib2"]
+glib2-introspection = ["glib2-introspection"]
 glu = ["glu"]
+gobject-introspection = ["gobject-introspection-runtime", "libgirepository"]
 grafx2 = ["grafx2"]
+grim = ["grim"]
 gtk4 = ["gtk4"]
 harfbuzz = ["harfbuzz"]
 iproute2 = ["iproute2"]
@@ -565,6 +574,7 @@ jemalloc = ["jemalloc"]
 jomon = ["jomon"]
 kmod = ["kmod"]
 libdisplay-info = ["libdisplay-info"]
+"libdisplay-info0.3" = ["libdisplay-info0.3"]
 libepoxy = ["libepoxy"]
 libglvnd = ["libglvnd"]
 libglvnd-glx = ["libglvnd-glx"]
@@ -575,6 +585,7 @@ libutf8proc = ["libutf8proc"]
 libxkbcommon = ["libxkbcommon"]
 libxml2 = ["libxml2"]
 love = ["love"]
+lutris = ["lutris"]
 make = ["make"]
 mesa = ["mesa"]
 mgba = ["mgba"]
@@ -590,6 +601,7 @@ orbiton = ["orbiton"]
 pango = ["pango"]
 pipewire = ["alsa-card-profiles", "libpipewire", "pipewire", "pipewire-alsa", "pipewire-audio", "pipewire-jack", "pipewire-session-manager"]
 png2xpm = ["png2xpm"]
+poppler = ["poppler", "poppler-glib"]
 pt2-clone = ["pt2-clone"]
 pure-fish = ["pure-fish"]
 pvsneslib = ["pvsneslib"]
@@ -610,6 +622,7 @@ tic-80 = ["tic-80"]
 tinyhat-files = ["tinyhat-files"]
 tinyhat-freedos = ["tinyhat-freedos"]
 tinyhat-gui = ["tinyhat-gui"]
+tinyhat-guru = ["tinyhat-guru"]
 tinyhat-keyring = ["tinyhat-keyring"]
 tinyhat-midibench = ["tinyhat-midibench"]
 tinyhat-pipewire-wait = ["tinyhat-pipewire-wait"]
@@ -624,13 +637,13 @@ vice = ["vice"]
 wallutils = ["wallutils"]
 wireplumber = ["libwireplumber", "wireplumber"]
 "wlroots0.20" = ["wlroots0.20"]
-wurl = ["wurl"]
 xfsprogs = ["xfsprogs"]
 zathura = ["zathura"]
 zathura-pdf-poppler = ["zathura-pdf-poppler"]
 zsnes = ["zsnes"]
 
 [buildroot]
+7zip = { repo = "extra", version = "26.04-1.0", file = "7zip-26.04-1.0-i686.pkg.tar.zst", sha256 = "8839dc8c5948f099a265361bebbdba2223b57dd3d0f2319b2acdc615680afb92" }
 a52dec = { repo = "extra", version = "0.8.0-3.0", file = "a52dec-0.8.0-3.0-i686.pkg.tar.zst", sha256 = "2477553f90394a35e7c4fd80affbcbfecfa8dbda8791dd1a4fbac424f8cc4054" }
 abseil-cpp = { repo = "extra", version = "20240116.2-2.0", file = "abseil-cpp-20240116.2-2.0-i686.pkg.tar.zst", sha256 = "17baca7dca79279ddcddf021042879938b57f92470d5273cbad8508e4505ffc8" }
 acl = { repo = "core", version = "2.4.0-1.0", file = "acl-2.4.0-1.0-i686.pkg.tar.zst", sha256 = "77155db4e9d3415eb6b63c2658fb9cea7aefe9183011e6cecc7814c912c1c603" }
@@ -648,7 +661,7 @@ argon2 = { repo = "extra", version = "20190702-7.0", file = "argon2-20190702-7.0
 arm-none-eabi-binutils = { repo = "extra", version = "2.47-1.0", file = "arm-none-eabi-binutils-2.47-1.0-i686.pkg.tar.zst", sha256 = "07b9242a6b83680d128c83245c51ea98903286cf12ee304ec8c81a54861d8c80" }
 arm-none-eabi-gcc = { repo = "extra", version = "16.2.0-1.0", file = "arm-none-eabi-gcc-16.2.0-1.0-i686.pkg.tar.zst", sha256 = "988ca4cfaa15bd7a7eab2b891a52d67c4f68d8f4cc3fd83af497b10c9d3deb9d" }
 arm-none-eabi-newlib = { repo = "extra", version = "4.4.0.20231231-1.0", file = "arm-none-eabi-newlib-4.4.0.20231231-1.0-any.pkg.tar.zst", sha256 = "84a7019f93e6ef93ffa873b6999cb48bca430fda05ce4d5f0106013216a166d7" }
-asciidoc = { repo = "extra", version = "10.2.0-4.0", file = "asciidoc-10.2.0-4.0-any.pkg.tar.zst", sha256 = "b6553efbf74d8fd0cc90b77c937ebc303dcfbf0b4931d8290980eb9ebd7689a6" }
+asciidoc = { repo = "x86_64:extra", version = "10.2.1-3", file = "asciidoc-10.2.1-3-any.pkg.tar.zst", sha256 = "08899d4a4d183dbf87fa4141bafaad7e67c9cf59939d95be4c7284c4dde7f84e" }
 aspell = { repo = "extra", version = "0.60.8-3.0", file = "aspell-0.60.8-3.0-i686.pkg.tar.zst", sha256 = "c3c24ead361e2ac7f4eba58211c670781902679bc8328321677aafeb85b3ed53" }
 attr = { repo = "core", version = "2.6.0-1.0", file = "attr-2.6.0-1.0-i686.pkg.tar.zst", sha256 = "11b9cd74f9dbd2ce40f94397c0c3e49a605dab6c68e2f6f8763060ddffc8962a" }
 audit = { repo = "core", version = "3.0.9-2.0", file = "audit-3.0.9-2.0-i686.pkg.tar.zst", sha256 = "64dd331ae4e4eb7f14398951da71a16eff5d5ee8f70744131c79792e772bfd9c" }
@@ -666,14 +679,13 @@ bison = { repo = "core", version = "3.8.2-8.2", file = "bison-3.8.2-8.2-i686.pkg
 blas = { repo = "extra", version = "3.12.1-2.0", file = "blas-3.12.1-2.0-i686.pkg.tar.zst", sha256 = "35e0826bd7f67b018580815e0fc4c33ca5aa4c33fd27a54d49cd0273dcd5401e" }
 bluez = { repo = "extra", version = "5.79-1.0", file = "bluez-5.79-1.0-i686.pkg.tar.zst", sha256 = "c74ec4730cf58663eaefa7ec965c5073c3f6a3550baa177125fb1f2aa79ebbee" }
 bluez-libs = { repo = "extra", version = "5.79-1.0", file = "bluez-libs-5.79-1.0-i686.pkg.tar.zst", sha256 = "6949a9a25c4efc544befd6ad64c4b0e5c0318a1037caf82da50a168a2e3ace8e" }
-boost = { repo = "extra", version = "1.83.0-7.0", file = "boost-1.83.0-7.0-i686.pkg.tar.zst", sha256 = "277d8a4030b7f836aef31f924cd3baaef72f5d32ee541d063a374e1609f4f667" }
-boost-libs = { repo = "extra", version = "1.83.0-7.0", file = "boost-libs-1.83.0-7.0-i686.pkg.tar.zst", sha256 = "f6db4131282012e4bb2493f2c181132b3a795718e409366a0f0f2183dea2c923" }
 brotli = { repo = "core", version = "1.1.0-1.0", file = "brotli-1.1.0-1.0-i686.pkg.tar.zst", sha256 = "f4be75194acd92a9f9450a7c265872b54a0c64a69b469407698af24fb38a738f" }
 bubblewrap = { repo = "extra", version = "0.13.0-1.0", file = "bubblewrap-0.13.0-1.0-i686.pkg.tar.zst", sha256 = "2847fb584382102183d08728c40806d2b87b55d1bb66cde01ece4f4bac65150c" }
 bzip2 = { repo = "core", version = "1.0.8-6.3", file = "bzip2-1.0.8-6.3-i686.pkg.tar.zst", sha256 = "6e6e5b82d844f12bccb0c58d4fedde076d5b19fa1fc9e018f0fab03304b5cdf3" }
 ca-certificates = { repo = "core", version = "20240618-1.0", file = "ca-certificates-20240618-1.0-any.pkg.tar.zst", sha256 = "72dd0e45fe4b4d24e94c43595be61e6c8739128787ae06c1f6d5ed00c4f43280" }
 ca-certificates-mozilla = { repo = "core", version = "3.107-1.0", file = "ca-certificates-mozilla-3.107-1.0-i686.pkg.tar.zst", sha256 = "a69026caf02c4d313d2b724e4d12492e72d4a73663f1fc71867daa8eba57b4f9" }
 ca-certificates-utils = { repo = "core", version = "20240618-1.0", file = "ca-certificates-utils-20240618-1.0-any.pkg.tar.zst", sha256 = "6f9242cbe0ae5a41d537ef8e321d1f8517418b354ddc8e07c3cf2897ce2a3280" }
+cabextract = { repo = "extra", version = "1.11-3.0", file = "cabextract-1.11-3.0-i686.pkg.tar.zst", sha256 = "520eb69251b68a7b502d9609d3987082ba4be31c543b742cba456511ed6c8f2e" }
 cairo = { repo = "extra", version = "1.18.6-1.0", file = "cairo-1.18.6-1.0-i686.pkg.tar.zst", sha256 = "92f8c251bf8b15e3be86fd3ae70d9f18e6dd2a231467041b127f8cc22d16c001" }
 cblas = { repo = "extra", version = "3.12.1-2.0", file = "cblas-3.12.1-2.0-i686.pkg.tar.zst", sha256 = "d9960f743758abddc82046c6bfbd3b6556fa3266dad5328a415ea9e831c5309b" }
 ccache = { repo = "extra", version = "4.7.4-2.0", file = "ccache-4.7.4-2.0-i686.pkg.tar.zst", sha256 = "40c7f77a4f6c8f6dd64446059c604e5187ee4421b6d018c9e4e9ff8961faea8e" }
@@ -683,7 +695,7 @@ chrpath = { repo = "extra", version = "0.18-1.0", file = "chrpath-0.18-1.0-i686.
 clang = { repo = "extra", version = "15.0.7-8.0", file = "clang-15.0.7-8.0-i686.pkg.tar.zst", sha256 = "49fb22d579938de30032bce917a5a28b854c0786fe5240e3065143aeaffeeb8c" }
 cmake = { repo = "extra", version = "3.25.1-1.0", file = "cmake-3.25.1-1.0-i686.pkg.tar.zst", sha256 = "c6f120b5898d96862724b573204d54a3df50bb9ffddb1f0ff8a47f764a9dbc00" }
 cmocka = { repo = "extra", version = "2.0.2-1.0", file = "cmocka-2.0.2-1.0-i686.pkg.tar.zst", sha256 = "f1a4996b9c00493db7f29a8a15f2da2ab333931212581602f16c7f3568d0d027" }
-codespell = { repo = "extra", version = "2.2.6-1.0", file = "codespell-2.2.6-1.0-any.pkg.tar.zst", sha256 = "db7e99528513b6d8880bd916fa348a4655186aa6d9221c68a17d8dc5222db81d" }
+codespell = { repo = "x86_64:extra", version = "2.4.3-1", file = "codespell-2.4.3-1-any.pkg.tar.zst", sha256 = "2414eadd4acfe9995a270f676b1da32b2ee3586fb6699bb8e0ada68bc89ba5c2" }
 compiler-rt = { repo = "extra", version = "23.1.1-1.0", file = "compiler-rt-23.1.1-1.0-i686.pkg.tar.zst", sha256 = "26beb333a16c562314c305e2e7ec7ad03212e7629572d12a539ea844ca494870" }
 coreutils = { repo = "core", version = "9.11-2.0", file = "coreutils-9.11-2.0-i686.pkg.tar.zst", sha256 = "8754c113d7e886e9795fbfe60e39c75bb0184729b33ae591f0d245cbbc529fe2" }
 cpio = { repo = "extra", version = "2.15-3.0", file = "cpio-2.15-3.0-i686.pkg.tar.zst", sha256 = "eb236bde06d754ee00eb2bb18e6f1ab2b3cc3b8dbd6a2d29a1de1cb73dbd7864" }
@@ -692,16 +704,14 @@ cunit = { repo = "extra", version = "2.1.3-4.0", file = "cunit-2.1.3-4.0-i686.pk
 cups = { repo = "extra", version = "2:2.4.20-1.0", file = "cups-2:2.4.20-1.0-i686.pkg.tar.zst", sha256 = "b5ada51fac6910a82bc9888d5a7b3138b63cb5eb6ca39053bd6b13b9a80d1c36" }
 cups-filters = { repo = "extra", version = "1.28.17-4.0", file = "cups-filters-1.28.17-4.0-i686.pkg.tar.zst", sha256 = "f6aebb06aef6a1a1f74290bb497b10899e28b91ece56dff860a4b77bcff20537" }
 curl = { repo = "core", version = "8.22.0-1.1", file = "curl-8.22.0-1.1-i686.pkg.tar.zst", sha256 = "3556a67de75be7031e874ef4a9ec91909142964fd783ea27579ede58fd941b15" }
-cython = { repo = "extra", version = "3.0.10-1.0", file = "cython-3.0.10-1.0-i686.pkg.tar.zst", sha256 = "5a1a7e58208de9166f698947b7548bb1b978252a2a1977dbb878b018c013ee44" }
 dav1d = { repo = "extra", version = "1.2.1-1.0", file = "dav1d-1.2.1-1.0-i686.pkg.tar.zst", sha256 = "eae15027d584903069e520e4eac63f3487bc4dc481434fac8f43961264587d79" }
 db = { repo = "core", version = "6.2.32-4.0", file = "db-6.2.32-4.0-i686.pkg.tar.zst", sha256 = "9a657f54f546b989c6379301fe54aa91599a4ca6c881dc647a505d87e84aa95f" }
 "db5.3" = { repo = "core", version = "5.3.28-7.1", file = "db5.3-5.3.28-7.1-i686.pkg.tar.zst", sha256 = "2e748253c4bfbfd6b9429ced65c896d0dce278ede41c2d5e4fec72af6e9d8333" }
-dblatex = { repo = "extra", version = "0.3.12-6.0", file = "dblatex-0.3.12-6.0-any.pkg.tar.zst", sha256 = "39f4e4ae5f1ad924143b834688d0546a20aba8088374d691d47f810f16a6044f" }
+dblatex = { repo = "x86_64:extra", version = "0.3.12-13", file = "dblatex-0.3.12-13-any.pkg.tar.zst", sha256 = "5996854ffaa6f9953d37ce7072aae46481c97b23151089f198931d42868786a9" }
 dbus = { repo = "core", version = "1.14.10-2.1", file = "dbus-1.14.10-2.1-i686.pkg.tar.zst", sha256 = "fe1e491ea1411d823ef0733d442cc68781aa6c03399ca9704e835846316bbea3" }
 dbus-broker = { repo = "core", version = "36-1.0", file = "dbus-broker-36-1.0-i686.pkg.tar.zst", sha256 = "f042684e87118e20085238752e54e4835f4116c0bc1528561ca11d46d2e8f2dd" }
 dbus-broker-units = { repo = "core", version = "36-1.0", file = "dbus-broker-units-36-1.0-i686.pkg.tar.zst", sha256 = "9402c7f69929bddf8b0ebfa66c57219ee59878d7f1774b91efcfdfa16374199c" }
 "dbus-c++" = { repo = "extra", version = "0.9.0-13.0", file = "dbus-c++-0.9.0-13.0-i686.pkg.tar.zst", sha256 = "095cffe1831aeba5fbe9c2b9c5a90822c4a5fb5bc18983ac9102ce6e544e4b93" }
-dbus-python = { repo = "extra", version = "1.3.2-2.0", file = "dbus-python-1.3.2-2.0-i686.pkg.tar.zst", sha256 = "e37e2844522eb27551830ff984678e25a24e90fcd8467076adf43136f079e05c" }
 dconf = { repo = "extra", version = "0.49.0-1.0", file = "dconf-0.49.0-1.0-i686.pkg.tar.zst", sha256 = "02cda3d2b2535b35be1b6f3039ae2c72b22f9e644c00071083ba62dd0be05067" }
 debugedit = { repo = "core", version = "5.3-2.0", file = "debugedit-5.3-2.0-i686.pkg.tar.zst", sha256 = "c05861f1dcafd44d6b4a829d9ed46bc3ca1c9683f3e1723bddb2c8eda519d99b" }
 debuginfod = { repo = "core", version = "0.188-1.0", file = "debuginfod-0.188-1.0-i686.pkg.tar.zst", sha256 = "52f3405d3fb1a727416cdb1b82b43f58b991ec9bd9e0f560b4b81de61af5b990" }
@@ -736,7 +746,6 @@ filesystem = { repo = "core", version = "2025.10.12-1.0", file = "filesystem-202
 findutils = { repo = "core", version = "4.11.0-1.0", file = "findutils-4.11.0-1.0-i686.pkg.tar.zst", sha256 = "5dd36fb2f8f7c4c36297b1c8569ebbf0617e1afbbf3cfcc0fc9133d4660fd4e2" }
 fish = { repo = "extra", version = "3.7.1-2.0", file = "fish-3.7.1-2.0-i686.pkg.tar.zst", sha256 = "95e2422942684ef9a8f3323a601539d1a0170cff169646c8e39c46f110a46ee4" }
 flac = { repo = "extra", version = "1.4.3-2.0", file = "flac-1.4.3-2.0-i686.pkg.tar.zst", sha256 = "e88ddf1f4837d082a564cb0c745def6d8b52097da0362847651d3b8cf7b65a7d" }
-flake8 = { repo = "extra", version = "1:7.0.0-1.0", file = "flake8-1:7.0.0-1.0-any.pkg.tar.zst", sha256 = "3fe41881898e67ac20193405759ad64caa052ab5cf7b7f1154c4659c4dfc1bb4" }
 flex = { repo = "core", version = "2.6.4-5.2", file = "flex-2.6.4-5.2-i686.pkg.tar.zst", sha256 = "12027edb047dfa48a2e6ffdf75f9c11356021e922f98197da984744ceb8dfac2" }
 fmt = { repo = "extra", version = "9.1.0-4.1", file = "fmt-9.1.0-4.1-i686.pkg.tar.zst", sha256 = "3f73f38b689332a5b9fa7bc75b9f6772f8d36b230aa484d3993e1fd2a8960b41" }
 fontconfig = { repo = "extra", version = "2:2.14.1-2.0", file = "fontconfig-2:2.14.1-2.0-i686.pkg.tar.zst", sha256 = "ec930fcb25414fc2d6c0190080baa478dff0fa2064b29f0f9fef90153c2c7998" }
@@ -754,8 +763,6 @@ gcc = { repo = "core", version = "15.2.1+r604+g0b99615a8aef-1.1", file = "gcc-15
 gcc-fortran = { repo = "core", version = "15.2.1+r604+g0b99615a8aef-1.1", file = "gcc-fortran-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst", sha256 = "fa47cf1f2882fc6f6ad0f691414b2fd595f5dd12c41b6adc39db54ce4db15fb5" }
 gcc-libs = { repo = "core", version = "15.2.1+r604+g0b99615a8aef-1.1", file = "gcc-libs-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst", sha256 = "9a0842c4595aa55ebfdc896fc899736eefe7a337d6e0582e700c38bc56432fd7" }
 gd = { repo = "extra", version = "2.3.3-6.1", file = "gd-2.3.3-6.1-i686.pkg.tar.zst", sha256 = "c045704baf86dc296d4dbfa12af7311837d7b0de830975671725612ec918059f" }
-gdb = { repo = "extra", version = "17.1-2.2", file = "gdb-17.1-2.2-i686.pkg.tar.zst", sha256 = "cca01a7bc01d26fb46121d27abd961f7bbecef7fb03cd93ae5e93946bf1a0313" }
-gdb-common = { repo = "extra", version = "17.1-2.2", file = "gdb-common-17.1-2.2-i686.pkg.tar.zst", sha256 = "0e9e31ad6cf8e1af3b3032c16e6cec6f1bb062509d9d3df8507cfd708d0932c6" }
 gdbm = { repo = "core", version = "1.23-1.0", file = "gdbm-1.23-1.0-i686.pkg.tar.zst", sha256 = "5a282fa74572004799b70c9a32acec7822387f43be617a6fdd884c1459a41375" }
 gdk-pixbuf2 = { repo = "extra", version = "2.42.12-2.0", file = "gdk-pixbuf2-2.42.12-2.0-i686.pkg.tar.zst", sha256 = "47de4f2bcf9db880842591128cbb020baa88aa22e8c5753bdf1b6748981c11b9" }
 gendesk = { repo = "extra", version = "1.0.15-1.0", file = "gendesk-1.0.15-1.0-i686.pkg.tar.zst", sha256 = "399a6179c4c636c2d0c0db1870099c122983c9dc86853de3de4d93f09aba7598" }
@@ -763,7 +770,7 @@ geoip = { repo = "extra", version = "1.6.12-3.0", file = "geoip-1.6.12-3.0-i686.
 geoip-database = { repo = "extra", version = "20250129-1.0", file = "geoip-database-20250129-1.0-any.pkg.tar.zst", sha256 = "758ba80203ce53ddc05c1b79274b25d7f961f5f995ecde65b09aac2a94e4cbdb" }
 gettext = { repo = "core", version = "1.0-2.0", file = "gettext-1.0-2.0-i686.pkg.tar.zst", sha256 = "5e08aa88ca45af7b988397d733e3df51105911df5aba50b49c7c3a583cd9dd02" }
 ghostscript = { repo = "extra", version = "10.05.0-3.0", file = "ghostscript-10.05.0-3.0-i686.pkg.tar.zst", sha256 = "c03de4685fbde7099c53fba594861e41b147abfecefbc964ec40c743634d7aa1" }
-gi-docgen = { repo = "extra", version = "2023.3-1.0", file = "gi-docgen-2023.3-1.0-any.pkg.tar.zst", sha256 = "fe2b7b2b36f477966fdb9e0c6b77f66ca13cf0468c0573b483c4c27003eefb11" }
+gi-docgen = { repo = "x86_64:extra", version = "2026.1-1", file = "gi-docgen-2026.1-1-any.pkg.tar.zst", sha256 = "38227857f97f586d72b8f4cd7fb1818dd9d897a4505acb6af64136377d47606a" }
 giflib = { repo = "extra", version = "6.1.3-2.0", file = "giflib-6.1.3-2.0-i686.pkg.tar.zst", sha256 = "ffecf623508225820113a82852df52e6dd22779a99de0729a11ca0a4e55164fe" }
 git = { repo = "extra", version = "2.55.0-1.1", file = "git-2.55.0-1.1-i686.pkg.tar.zst", sha256 = "4f44b44ccf4dfc0b8f3142945b399f47005e81cc9c41a64e9ccb44fc16852746" }
 glfw = { repo = "extra", version = "1:3.5.1-1.0", file = "glfw-1:3.5.1-1.0-i686.pkg.tar.zst", sha256 = "24b81a565dd3d52d49c628d625012cf8765a4ca96b43628e8b7aecaca9abfa9d" }
@@ -781,7 +788,6 @@ gnulib-l10n = { repo = "core", version = "20241231-1.0", file = "gnulib-l10n-202
 gnupg = { repo = "core", version = "2.4.8-1.0", file = "gnupg-2.4.8-1.0-i686.pkg.tar.zst", sha256 = "6a216ab4374fedb13699fcf410c1bac6471730f40eafae01b0e36c2df3755420" }
 gnutls = { repo = "core", version = "3.8.13-3.0", file = "gnutls-3.8.13-3.0-i686.pkg.tar.zst", sha256 = "a199d1fc09b2f9fbc464fe2fa8e2ac7f4de7b94abc19ccd8f058a1e0d37f0f7a" }
 go = { repo = "extra", version = "2:1.22.5-1.0", file = "go-2:1.22.5-1.0-i686.pkg.tar.zst", sha256 = "039ad5befc7376e543f424d1890902775181c1bacdfc4f921f4402482e0d2d95" }
-gobject-introspection-runtime = { repo = "extra", version = "1.80.1-1.4", file = "gobject-introspection-runtime-1.80.1-1.4-i686.pkg.tar.zst", sha256 = "c737f1ccc76f41428e28c27519940b4fc14aa7182a8fe6b078969b2b6c13d782" }
 gperf = { repo = "extra", version = "3.3-1.0", file = "gperf-3.3-1.0-i686.pkg.tar.zst", sha256 = "9cf8082175eeb8a2b426228862c445c235642124e13ff7ece384da269b8827be" }
 gperftools = { repo = "extra", version = "2.18.1-1.0", file = "gperftools-2.18.1-1.0-i686.pkg.tar.zst", sha256 = "14f114905e94349328ad77b56edb7dc401693d6e00b073c423119554ae7404d4" }
 gpgme = { repo = "core", version = "2.0.1-1.0", file = "gpgme-2.0.1-1.0-i686.pkg.tar.zst", sha256 = "33e39185274a1fa22f9123108b759fb7231e17b41e4f9f5c266a73c1f60e1a25" }
@@ -794,11 +800,11 @@ groff = { repo = "core", version = "1.24.2-1.0", file = "groff-1.24.2-1.0-i686.p
 grub = { repo = "core", version = "2:2.12-3.0", file = "grub-2:2.12-3.0-i686.pkg.tar.zst", sha256 = "cf9fdd1e37f3d1b1cb252988fed2c2aeeda408d665dbdded46dc4fd3ac10b558" }
 gsfonts = { repo = "extra", version = "20200910-6.0", file = "gsfonts-20200910-6.0-any.pkg.tar.zst", sha256 = "649269e2deef76646b1a9a8c95b31dffcb7e3878a97090602ef4c40e9ef2a390" }
 gtest = { repo = "extra", version = "1.14.0-2.0", file = "gtest-1.14.0-2.0-i686.pkg.tar.zst", sha256 = "9e38a181aa50da482e66728a6bf80b8cffc21ec6cbe35a4b6d812ca43e9013c2" }
-gtk-doc = { repo = "extra", version = "1.34.0-1.0", file = "gtk-doc-1.34.0-1.0-any.pkg.tar.zst", sha256 = "40f92e2958fb4fa7e0a4f2a5cbd9149be5239726f69908f44e9348c71f103e52" }
+gtk-doc = { repo = "x86_64:extra", version = "1.37.0-1", file = "gtk-doc-1.37.0-1-any.pkg.tar.zst", sha256 = "b01772b3e79492b4763859a54052789a1965336581f7aa32dfb08e1a5f989d2b" }
 gtk-update-icon-cache = { repo = "extra", version = "1:4.16.7-1.0", file = "gtk-update-icon-cache-1:4.16.7-1.0-i686.pkg.tar.zst", sha256 = "72d7a01948ef5a958ea4564024c6ad296d6989bbb6e33a7294700b3e7a30368c" }
 gts = { repo = "extra", version = "0.7.6.121130-5.0", file = "gts-0.7.6.121130-5.0-i686.pkg.tar.zst", sha256 = "88a375ac0ec276baf70cb0554decf553e1bea283d7265d7508180048b7f267cb" }
 guile = { repo = "core", version = "3.0.11-1.0", file = "guile-3.0.11-1.0-i686.pkg.tar.zst", sha256 = "96e3bd3a589523ba0cfce65b40b5479e38b43bf717f032333ee86561563e65d5" }
-gyp = { repo = "extra", version = "20230914.a03d7413-1.0", file = "gyp-20230914.a03d7413-1.0-any.pkg.tar.zst", sha256 = "9025b1f3a243a4775bf6ce49b08c48c1d79dc833d256d3ef9948c6e41db7ade0" }
+gyp = { repo = "x86_64:extra", version = "20240207.1615ec32-2", file = "gyp-20240207.1615ec32-2-any.pkg.tar.zst", sha256 = "2f372bc9070a4eb7a88f96086066db8005c3916b18d2c665f8f1c25c61ba1b6f" }
 gzip = { repo = "core", version = "1.15-1.0", file = "gzip-1.15-1.0-i686.pkg.tar.zst", sha256 = "66e36d2990d014fc13eb895963c39cd8c0f47b03446a1b8e78909e96696bef43" }
 harfbuzz = { repo = "extra", version = "7.1.0-1.0", file = "harfbuzz-7.1.0-1.0-i686.pkg.tar.zst", sha256 = "ceed36aaa81fe27577c52ea70f672860e56db5ceaeaefa6f2151b9e4c103547f" }
 help2man = { repo = "extra", version = "1.49.3-2.0", file = "help2man-1.49.3-2.0-i686.pkg.tar.zst", sha256 = "0455e08e24ce2478b1499cf6d85bc858f2ab95721a35f30c2c308820a6722897" }
@@ -815,7 +821,7 @@ imagemagick = { repo = "extra", version = "7.1.1.8-1.0", file = "imagemagick-7.1
 imath = { repo = "extra", version = "3.1.11-1.0", file = "imath-3.1.11-1.0-i686.pkg.tar.zst", sha256 = "848f03ee529f6e33cfbfc8c06fa058581527f8130e21bd6a77a6b0ec09c6df1a" }
 intltool = { repo = "extra", version = "0.51.0-6.0", file = "intltool-0.51.0-6.0-any.pkg.tar.zst", sha256 = "36bf38f80b245d0ee4a61a79f9e218e243ecead21e67f1fb61b0041fba92e3a4" }
 iso-codes = { repo = "extra", version = "4.20.1-1.0", file = "iso-codes-4.20.1-1.0-any.pkg.tar.zst", sha256 = "dfbd07e3c4747b2a58e4e3fd881031f0d6db3344b489bfbb72ab0f11fe7aff05" }
-itstool = { repo = "extra", version = "1:2.0.7-3.0", file = "itstool-1:2.0.7-3.0-any.pkg.tar.zst", sha256 = "c29d7f94371e7c3da310673611c7995a290aa003d04d1a290515c3b5ce02f3e2" }
+itstool = { repo = "x86_64:extra", version = "1:2.0.7-3", file = "itstool-1:2.0.7-3-any.pkg.tar.zst", sha256 = "4cab46eefcf2f1bcf3871baa3ebb9e197ad5bf7a46329e3a92f0076d7af97126" }
 iucode-tool = { repo = "extra", version = "2.3.1-6.0", file = "iucode-tool-2.3.1-6.0-i686.pkg.tar.zst", sha256 = "b04f815d565b8187d779313a95756f3750844b4143f68a2523e1a03468490a53" }
 iw = { repo = "core", version = "6.17-1.0", file = "iw-6.17-1.0-i686.pkg.tar.zst", sha256 = "1194659408067f00f92133fcf91bf5d4aeac030dd71b69a835dbc802450120a6" }
 iwd = { repo = "extra", version = "2.22-1.0", file = "iwd-2.22-1.0-i686.pkg.tar.zst", sha256 = "261467a97ef39a54aa55b1ac71eafcbcb2654050417496a35cf527f97744ce31" }
@@ -886,7 +892,6 @@ libfreeaptx = { repo = "extra", version = "0.2.2-1.0", file = "libfreeaptx-0.2.2
 libgcc = { repo = "core", version = "15.2.1+r604+g0b99615a8aef-1.1", file = "libgcc-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst", sha256 = "480a94a14a5548e908423629bd01302ac629f842a8258c4aa11f37087e4f9440" }
 libgcrypt = { repo = "core", version = "1.12.4-1.0", file = "libgcrypt-1.12.4-1.0-i686.pkg.tar.zst", sha256 = "ab30e5dd4540d15c38eda175d2e971afb8af14be88f1bf01c80ecbd1bd53ef93" }
 libgfortran = { repo = "core", version = "15.2.1+r604+g0b99615a8aef-1.1", file = "libgfortran-15.2.1+r604+g0b99615a8aef-1.1-i686.pkg.tar.zst", sha256 = "9ce1aedf6944ad2d739949bb59771caf6bda66355191d449dd0215e580411054" }
-libgirepository = { repo = "extra", version = "1.80.1-1.4", file = "libgirepository-1.80.1-1.4-i686.pkg.tar.zst", sha256 = "0cd32b7b5f4ecb50774567b5702d3332caa9f210cca16f21b25b245e70a82f52" }
 libgit2 = { repo = "extra", version = "1:1.5.0-2.1", file = "libgit2-1:1.5.0-2.1-i686.pkg.tar.zst", sha256 = "db3960afe9b3067e5942255ed4610dbaea7457634ea03f7bf6a6c224e3120ac5" }
 libglvnd = { repo = "extra", version = "1.7.0-3.0", file = "libglvnd-1.7.0-3.0-i686.pkg.tar.zst", sha256 = "6548fa5c2fca069148305c8b88d43bb6a396ee8861eb52448080bea5a00188a2" }
 libgnome-keyring = { repo = "extra", version = "1:3.12.0+r14+g23438cc-1.0", file = "libgnome-keyring-1:3.12.0+r14+g23438cc-1.0-i686.pkg.tar.zst", sha256 = "3d07eec29a8bc13a2bfb67a1a9ff3b26e20ff11745f54f167480ca24b7ea37f9" }
@@ -1031,14 +1036,14 @@ lz4 = { repo = "core", version = "1:1.10.0-2.0", file = "lz4-1:1.10.0-2.0-i686.p
 lzo = { repo = "core", version = "2.10-5.1", file = "lzo-2.10-5.1-i686.pkg.tar.zst", sha256 = "3fc2096a8e38544eafeb5a8282f13387184c4af624efc2b7f79113fd376d8955" }
 m4 = { repo = "core", version = "1.4.21-2.0", file = "m4-1.4.21-2.0-i686.pkg.tar.zst", sha256 = "5459e531e07e37d94d77efb021b368246691dd0301e55a3c4701a8e13e2bd4d3" }
 make = { repo = "core", version = "4.4.1-3.0", file = "make-4.4.1-3.0-i686.pkg.tar.zst", sha256 = "406118ee5cafc9354a72066a5434e7fe7d4b54a6de5d66f6039891744e61f194" }
-mallard-ducktype = { repo = "extra", version = "1.0.2-10.0", file = "mallard-ducktype-1.0.2-10.0-any.pkg.tar.zst", sha256 = "d6f3fd0d829d776af4326249e33774a175c87676733484afac0bbc73350cc958" }
+mallard-ducktype = { repo = "x86_64:extra", version = "1.0.2-13", file = "mallard-ducktype-1.0.2-13-any.pkg.tar.zst", sha256 = "138d0bea18b4818d82c5f526cb813d0629557f53574d0f1c1dc4755661f9df80" }
 man2html = { repo = "extra", version = "3.0.1-10.0", file = "man2html-3.0.1-10.0-any.pkg.tar.zst", sha256 = "ff2c21c7f608f4d8d4ab187b86afac5136a1908ac251ddd2633ae17d5beb5e5a" }
 mandoc = { repo = "extra", version = "1.14.6-5.0", file = "mandoc-1.14.6-5.0-i686.pkg.tar.zst", sha256 = "ecf87687e467340ae4fa69c37f44a93c6aacae9458c6a312badbf7aa995a2349" }
 mariadb-libs = { repo = "extra", version = "10.9.4-2.1", file = "mariadb-libs-10.9.4-2.1-i686.pkg.tar.zst", sha256 = "8dc7c11a595e1b6f92c20a6f67c0ef8a143d5965187ed0b66f22a5538a00c536" }
 mdbook = { repo = "extra", version = "0.4.48-1.0", file = "mdbook-0.4.48-1.0-i686.pkg.tar.zst", sha256 = "f6f3740a2760c35ff0e1eb9b77534c8fd1709ebcccb8000a54d7e97e3c7355dd" }
-mercurial = { repo = "extra", version = "6.7.2-1.0", file = "mercurial-6.7.2-1.0-i686.pkg.tar.zst", sha256 = "9e792b22fee57849ebf25a6b02dccda0e85d48707c448bf21f63a071b1815dda" }
 mesa = { repo = "extra", version = "1:24.0.4-2.0", file = "mesa-1:24.0.4-2.0-i686.pkg.tar.zst", sha256 = "b751c48b446e501fcda9195954aa7a61c4f6648fc51a978fb57e75b86806dcf9" }
-meson = { repo = "extra", version = "1.4.0-2.0", file = "meson-1.4.0-2.0-any.pkg.tar.zst", sha256 = "98bf5f4869b28364554f6d8bc123a61208222819052e8bb440ddeb4c616daae8" }
+meson = { repo = "x86_64:extra", version = "1.12.1-2", file = "meson-1.12.1-2-any.pkg.tar.zst", sha256 = "d7dd6a03661d12e52b739381f5290579bcc79189316513c1000a7c6cb3f2f900" }
+meson-python = { repo = "x86_64:extra", version = "0.22.1-1", file = "meson-python-0.22.1-1-any.pkg.tar.zst", sha256 = "f533c9d710c2a5e1fa7c908f0d7f1d2fad42a56c7bc7a210082e5a5eeb2f0ed8" }
 mpdecimal = { repo = "core", version = "4.0.1-3.0", file = "mpdecimal-4.0.1-3.0-i686.pkg.tar.zst", sha256 = "5114dfa72132a011baa6096cb01e2773dd2da17e7b222c08c04229ee6b5412ae" }
 mpfr = { repo = "core", version = "4.2.2-1.0", file = "mpfr-4.2.2-1.0-i686.pkg.tar.zst", sha256 = "bfe0ca7e0248456c1e73c75f0cc1b07238877721e312d478ce70633ae9cf2fd1" }
 mpg123 = { repo = "extra", version = "1.33.7-1.0", file = "mpg123-1.33.7-1.0-i686.pkg.tar.zst", sha256 = "cd7f5708e96a118db93b3a255b395f78f2616c6d1205d94859ca66923b64915e" }
@@ -1050,6 +1055,7 @@ ncurses = { repo = "core", version = "6.4_20230520-3.0", file = "ncurses-6.4_202
 netpbm = { repo = "extra", version = "10.86.51-1.0", file = "netpbm-10.86.51-1.0-i686.pkg.tar.zst", sha256 = "468be83572540bc38ea3c1995b4d02f07ad2e1085e5d030b98731f9f6cb61004" }
 nettle = { repo = "core", version = "4.0-1.0", file = "nettle-4.0-1.0-i686.pkg.tar.zst", sha256 = "b8594314b325679439285517b6602ae007f704a736782a6547c90a8ab561daea" }
 ninja = { repo = "extra", version = "1.11.1-3.0", file = "ninja-1.11.1-3.0-i686.pkg.tar.zst", sha256 = "8f5f034ffdbaa95880aa5d0b172ebd83c370aa70f78bd9a96c5f6fea58159e5d" }
+nlohmann-json = { repo = "extra", version = "3.12.0-2.0", file = "nlohmann-json-3.12.0-2.0-any.pkg.tar.zst", sha256 = "1a2e71f96ddefd252b8ba3052a1a167e1e99ce44c86484cfbdc97ea348a1b856" }
 npth = { repo = "core", version = "1.8-1.0", file = "npth-1.8-1.0-i686.pkg.tar.zst", sha256 = "17888763d1526136f7f38a988d6612e8d803976b7de53415198c32f72612468c" }
 nspr = { repo = "core", version = "4.40-1.0", file = "nspr-4.40-1.0-i686.pkg.tar.zst", sha256 = "1665ed1526e348285ac41491e29b8b2942ddff215e4ce3b80d35d72312f29ec8" }
 nss = { repo = "core", version = "3.107-1.0", file = "nss-3.107-1.0-i686.pkg.tar.zst", sha256 = "9317996911829afeff679ee2253827b9828b09c9cc466b0aa9002f83f999a1ec" }
@@ -1119,7 +1125,6 @@ po4a = { repo = "extra", version = "0.74-1.0", file = "po4a-0.74-1.0-any.pkg.tar
 polkit = { repo = "extra", version = "127-3.0", file = "polkit-127-3.0-i686.pkg.tar.zst", sha256 = "53e4c1dd867475ce800135a31d5b91f1880f558b91fda8beb8a3a38b529e66ee" }
 poppler = { repo = "extra", version = "23.03.0-1.0", file = "poppler-23.03.0-1.0-i686.pkg.tar.zst", sha256 = "731c8b66f9507c7fdca580f928bbf882a0508d9517b27e0cbad94d3d1a173a62" }
 poppler-data = { repo = "extra", version = "0.4.12-2.0", file = "poppler-data-0.4.12-2.0-any.pkg.tar.zst", sha256 = "324f67e460808f8ec90bf6a9f2fb2c91d49567489f8a2a26e87b52bd8470e289" }
-poppler-glib = { repo = "extra", version = "23.03.0-1.0", file = "poppler-glib-23.03.0-1.0-i686.pkg.tar.zst", sha256 = "e71807e4dd565def0914ebc7a1d58e3afccbb4325f58097064dd49266a5fde14" }
 popt = { repo = "core", version = "1.19-2.0", file = "popt-1.19-2.0-i686.pkg.tar.zst", sha256 = "d01d870c08eadc57e44ad9ca6e9aa58b5a6af36170bbca64b24f010df8e582e7" }
 portaudio = { repo = "extra", version = "1:19.7.0-1.0", file = "portaudio-1:19.7.0-1.0-i686.pkg.tar.zst", sha256 = "743b44daebbda45ae56e80e0c1433ee56b36a8f59b8e9b91c91417eceaa72a9a" }
 postgresql-libs = { repo = "extra", version = "15.3-5.0", file = "postgresql-libs-15.3-5.0-i686.pkg.tar.zst", sha256 = "c19e0a9284f72742e2f24cefdc9129ca71914961e3baec99d57b3435044b34bf" }
@@ -1129,100 +1134,88 @@ protobuf = { repo = "extra", version = "21.12-1.0", file = "protobuf-21.12-1.0-i
 protobuf-c = { repo = "extra", version = "1.4.1-1.0", file = "protobuf-c-1.4.1-1.0-i686.pkg.tar.zst", sha256 = "3de897efd56fce8c2b4ac2fd520ede42af34d72bc4f03c8eb1097d4ea0f75fde" }
 psmisc = { repo = "core", version = "23.7-2.0", file = "psmisc-23.7-2.0-i686.pkg.tar.zst", sha256 = "286dac7d31697fbfbe77e03373dba6aebc3c180421256174d31f85ad02986c7b" }
 publicsuffix-list = { repo = "extra", version = "20260507.2070.ee780bcf-1.0", file = "publicsuffix-list-20260507.2070.ee780bcf-1.0-any.pkg.tar.zst", sha256 = "c55dea93c01ff6875b0049806c5cad6aae8369eebff31517e99ff49dd6564422" }
-pygmentize = { repo = "extra", version = "2.5.2-1.1", file = "pygmentize-2.5.2-1.1-any.pkg.tar.xz", sha256 = "d5cddac635c038eb25043040641be4e3f59561edfe79763638140f097c52a18b" }
-python = { repo = "core", version = "3.11.8-1.1", file = "python-3.11.8-1.1-i686.pkg.tar.zst", sha256 = "c878623e352306ff0a50a122f0849d47b3f503ad10733cc30d7ee28740ca8d7a" }
-python-astroid = { repo = "extra", version = "3.1.0-2.0", file = "python-astroid-3.1.0-2.0-any.pkg.tar.zst", sha256 = "5e227605954ffa0cbe958cce20bff00564a9445841e6424683957c87b898737f" }
-python-attrs = { repo = "extra", version = "23.2.0-1.0", file = "python-attrs-23.2.0-1.0-any.pkg.tar.zst", sha256 = "f54c3f24c5b9181d510e51577a7d64a7939e04b46f67904609f0c82c5d876681" }
-python-autocommand = { repo = "extra", version = "2.2.2-4.0", file = "python-autocommand-2.2.2-4.0-any.pkg.tar.zst", sha256 = "9bacea3a9f2a9f521412021f53a16e79c3b9bb94a3447ead0240ff75f8519b4d" }
-python-automat = { repo = "extra", version = "22.10.0-3.0", file = "python-automat-22.10.0-3.0-any.pkg.tar.zst", sha256 = "e70b93fe7cb99a10ce6d5eef534d30859f950385c1a1d947e365b8f383c998e8" }
-python-babel = { repo = "extra", version = "2.14.0-1.0", file = "python-babel-2.14.0-1.0-any.pkg.tar.zst", sha256 = "47fb1d35e34fe54efe8f9f6533f8406e0b259a3b01e6b2c53c4beb6a65182356" }
-python-black = { repo = "extra", version = "22.12.0-2.0", file = "python-black-22.12.0-2.0-any.pkg.tar.zst", sha256 = "df22ba25b20b6a302d5b486dd47296f51186d63d72e99c31cf7bfaffed6d0e1c" }
-python-breathe = { repo = "extra", version = "4.35.0-2.0", file = "python-breathe-4.35.0-2.0-any.pkg.tar.zst", sha256 = "ee976a64b0488130c72adec9de8a8fcad3e7a6634f64b32733991c9d590481c7" }
-python-build = { repo = "extra", version = "1.2.1-1.0", file = "python-build-1.2.1-1.0-any.pkg.tar.zst", sha256 = "657ff5e728518c7bc9549e495a95eeaf50fa8c55a0081fa6f34c9403c5918345" }
-python-chardet = { repo = "extra", version = "5.2.0-1.0", file = "python-chardet-5.2.0-1.0-any.pkg.tar.zst", sha256 = "8c0a47501a59c5fdf02a125e0abea101a6d77381bf5811699f30521bd8162890" }
-python-charset-normalizer = { repo = "extra", version = "3.3.2-1.0", file = "python-charset-normalizer-3.3.2-1.0-any.pkg.tar.zst", sha256 = "bc0a98fd52021d02a72617687907d4cd42f6f874ac534028271cb989d25d23c2" }
-python-click = { repo = "extra", version = "8.1.7-1.0", file = "python-click-8.1.7-1.0-any.pkg.tar.zst", sha256 = "2c5cba78709fc04d7c0c1e00d439136330750c066849b423076b6f42f84fb0a7" }
-python-colorama = { repo = "extra", version = "0.4.6-2.0", file = "python-colorama-0.4.6-2.0-any.pkg.tar.zst", sha256 = "22ffc6cb00075b3c7ce7fa6f477482267fd962811711b8d5bfb1cff6879aea2f" }
-python-commonmark = { repo = "extra", version = "0.9.1-9.0", file = "python-commonmark-0.9.1-9.0-any.pkg.tar.zst", sha256 = "0bdc8a9d401dc4b0da5c01296eba167d22d373bd7d4770058930048f96fb5290" }
-python-constantly = { repo = "extra", version = "23.10.0-1.0", file = "python-constantly-23.10.0-1.0-any.pkg.tar.zst", sha256 = "3c6462bb7464fb5fc702bac70cd7896f3f2272d876bc4be2ff3a3f170138f259" }
-python-dill = { repo = "extra", version = "0.3.8-1.0", file = "python-dill-0.3.8-1.0-any.pkg.tar.zst", sha256 = "1eb328ac155eef78bc4e3132a9eca92e39d82738a8861aa972ace0dd5a9480d2" }
-python-docutils = { repo = "extra", version = "1:0.20.1-2.0", file = "python-docutils-1:0.20.1-2.0-any.pkg.tar.zst", sha256 = "07339539d1fe3414adac79dee15fa62566bc7ce8d3bc52d29bd1b63beb8dbe57" }
-python-entrypoints = { repo = "extra", version = "0.4-3.0", file = "python-entrypoints-0.4-3.0-any.pkg.tar.zst", sha256 = "26749254033c7fca7692bac328795d57651b7d1e79e70ee3bbe0a3e21db29fa9" }
-python-fastjsonschema = { repo = "extra", version = "2.19.1-1.0", file = "python-fastjsonschema-2.19.1-1.0-any.pkg.tar.zst", sha256 = "b3108bdcf8d3b8449668750edca73da24c932c3ed6c50ce07636ec461c0bbd1f" }
-python-future = { repo = "extra", version = "0.18.3-2.0", file = "python-future-0.18.3-2.0-any.pkg.tar.zst", sha256 = "7ec7739edfe31a84de7e5e5770de6b077f652e7043630197d410379e8c9ff010" }
-python-gobject = { repo = "extra", version = "3.48.1-2.0", file = "python-gobject-3.48.1-2.0-i686.pkg.tar.zst", sha256 = "8e2b2f3a6e8d53ca47c4af0604edc7aec1eff64b24aaae5d5454bd6597937501" }
-python-hyperlink = { repo = "extra", version = "21.0.0-5.0", file = "python-hyperlink-21.0.0-5.0-any.pkg.tar.zst", sha256 = "ad656cd4498277d2ce4e992452230d9f07697e207b5ebb83ef069c42b9c52708" }
-python-idna = { repo = "extra", version = "3.6-1.0", file = "python-idna-3.6-1.0-any.pkg.tar.zst", sha256 = "2077be439436a24b7f3bc5cd7d916ffc48ab2982d2c993386e5a9a6ec1a1d04e" }
-python-imagesize = { repo = "extra", version = "1.4.1-4.0", file = "python-imagesize-1.4.1-4.0-any.pkg.tar.zst", sha256 = "51eaad8c64c9b90fc51553cf24a14f4ead04da692ed0bfc4c7fe9c5996de75b5" }
-python-incremental = { repo = "extra", version = "22.10.0-4.0", file = "python-incremental-22.10.0-4.0-any.pkg.tar.zst", sha256 = "e07b46962c5d957bfc51b30a665305b6b075d8707d7a6457ca6dd4545f312d71" }
-python-inflect = { repo = "extra", version = "7.2.1-1.0", file = "python-inflect-7.2.1-1.0-any.pkg.tar.zst", sha256 = "e6ff3b4a26771cb2a24db59193086f8cf23c99bea631992a0797e45d8177ce2d" }
-python-iniconfig = { repo = "extra", version = "2.0.0-4.0", file = "python-iniconfig-2.0.0-4.0-any.pkg.tar.zst", sha256 = "41f8e9c4f8fb4b752d109746446f055d7a1a4864d03e7d795230f2317c6f6712" }
-python-installer = { repo = "extra", version = "0.7.0-4.0", file = "python-installer-0.7.0-4.0-any.pkg.tar.zst", sha256 = "96f238d011895ab608f1686166b91b098111fc27d42ac901f976106002930ea3" }
-python-isodate = { repo = "extra", version = "0.6.1-3.0", file = "python-isodate-0.6.1-3.0-any.pkg.tar.zst", sha256 = "8212a9298f829e61a435741421ede9c05a69b7b9bda8ff823538adfd078d6d50" }
-python-isort = { repo = "extra", version = "5.13.2-1.0", file = "python-isort-5.13.2-1.0-any.pkg.tar.zst", sha256 = "30a30e360b37f3c01ffc4646df632f16d4c5bf38e270fe04a08ebe4837ce7a7e" }
-"python-jaraco.context" = { repo = "extra", version = "4.3.0-3.3", file = "python-jaraco.context-4.3.0-3.3-any.pkg.tar.zst", sha256 = "83d3392b6c632ab2c550f1a4965a11368bbd7fbd2eac160faa1e2970ac101c8c" }
-"python-jaraco.functools" = { repo = "extra", version = "4.0.0-1.0", file = "python-jaraco.functools-4.0.0-1.0-any.pkg.tar.zst", sha256 = "8097a7319e28c230579a185be413ac56a8b402e68965a6afdcaf7a9fc142c8ff" }
-"python-jaraco.text" = { repo = "extra", version = "3.12.0-1.0", file = "python-jaraco.text-3.12.0-1.0-any.pkg.tar.zst", sha256 = "92e227735380eeb132b4a5d3b6e1f743059d314466c03dde455afd729445462b" }
-python-jinja = { repo = "extra", version = "1:3.1.3-1.0", file = "python-jinja-1:3.1.3-1.0-any.pkg.tar.zst", sha256 = "e31891a1967b2b28dbee0328cb316e571ddcb399090d35596dfbcf8c2fc071a5" }
-python-libevdev = { repo = "extra", version = "0.11-2.0", file = "python-libevdev-0.11-2.0-any.pkg.tar.zst", sha256 = "90d78453ec65391fc0982f0185b976c94b8509f617f4b61a5809b5a9e208425d" }
-python-lxml = { repo = "extra", version = "5.1.0-1.0", file = "python-lxml-5.1.0-1.0-i686.pkg.tar.zst", sha256 = "026d4d3752f264f6af7a083a29435019863dadcc147bbece58cc571a7a1cf78e" }
-python-magic = { repo = "extra", version = "1:0.4.27-3.0", file = "python-magic-1:0.4.27-3.0-any.pkg.tar.zst", sha256 = "1090ccdc47d6f3c434a6d699c9e834c9d13b8adefab799888d0d1295353789b8" }
-python-mako = { repo = "extra", version = "1.3.3-1.0", file = "python-mako-1.3.3-1.0-any.pkg.tar.zst", sha256 = "21c039bf2176c306aaeeb0acae9157e8e58fbd6b5dc3d1377447b4c9bcf670be" }
-python-markdown = { repo = "extra", version = "3.6-2.0", file = "python-markdown-3.6-2.0-any.pkg.tar.zst", sha256 = "95c8158a1d4ab75f699a1e7113370e2f54a5a462c1aac178cace04ce590e87c1" }
-python-markupsafe = { repo = "extra", version = "2.1.5-1.4", file = "python-markupsafe-2.1.5-1.4-i686.pkg.tar.zst", sha256 = "4fee5718beef8517829dfec329b3a5136b57752f62e544fe278d5ff8caabf4bd" }
-python-mccabe = { repo = "extra", version = "0.7.0-6.0", file = "python-mccabe-0.7.0-6.0-any.pkg.tar.zst", sha256 = "7833b3b6b96207f837c11e1a7e7abe1a4070b04d831910c100ebdea57360a910" }
-python-more-itertools = { repo = "extra", version = "10.2.0-1.0", file = "python-more-itertools-10.2.0-1.0-any.pkg.tar.zst", sha256 = "9a2b1dc3fd42b7b2428d2d15999bee83388ed9f76a1e14c7e5406d7683f55b90" }
-python-mypy_extensions = { repo = "extra", version = "1.0.0-3.0", file = "python-mypy_extensions-1.0.0-3.0-any.pkg.tar.zst", sha256 = "ebeb9edfac6b9289a9fb5278130cb2aeefecb3d66faac49b4bff24ab5b884c64" }
-python-numpy = { repo = "extra", version = "1.26.4-1.0", file = "python-numpy-1.26.4-1.0-i686.pkg.tar.zst", sha256 = "d264f2854e7d1277893c2f9f09b42f7219c08034e2c83484b9f7403a1e4607e2" }
-python-ordered-set = { repo = "extra", version = "4.1.0-4.3", file = "python-ordered-set-4.1.0-4.3-any.pkg.tar.zst", sha256 = "91a9ce15773c7eda2d38c197c56021f384a4587f5a8111bcc5410d047478c686" }
-python-packaging = { repo = "extra", version = "23.2-1.0", file = "python-packaging-23.2-1.0-any.pkg.tar.zst", sha256 = "b767dc167828400b19bcef2edae44fe44fb2ecb8edb62fa8c298faa0a8fd55c0" }
-python-pathspec = { repo = "extra", version = "0.12.1-1.0", file = "python-pathspec-0.12.1-1.0-any.pkg.tar.zst", sha256 = "6d7dfe9b94721b88ce906822201bf0aa035eb93744719cc87cba573a8439f110" }
-python-pkgconfig = { repo = "extra", version = "1.5.5-5.0", file = "python-pkgconfig-1.5.5-5.0-any.pkg.tar.zst", sha256 = "78209d125da43cdd4108418d02b0cbca9963ec2cae1ff35786be5b3dda30b758" }
-python-platformdirs = { repo = "extra", version = "4.2.0-1.0", file = "python-platformdirs-4.2.0-1.0-any.pkg.tar.zst", sha256 = "6ea2df882ee3ae3355105459ac05d3b24c116c6056fde81c33a0aa8f3b1b2b91" }
-python-pluggy = { repo = "extra", version = "1.4.0-2.0", file = "python-pluggy-1.4.0-2.0-any.pkg.tar.zst", sha256 = "133194d15e59e09434a3531eeec26c3f86e8b16dfed904565e9da18d0bb2db4a" }
-python-ply = { repo = "extra", version = "3.11-12.1", file = "python-ply-3.11-12.1-any.pkg.tar.zst", sha256 = "e5a357cef99eb56686bd22f79a75be3270f8bf848088753d2ce79018d271a5d9" }
-python-pycodestyle = { repo = "extra", version = "2.11.1-1.0", file = "python-pycodestyle-2.11.1-1.0-any.pkg.tar.zst", sha256 = "526cf94d61e4d87a8576d54dacf7d27b47f418707bf0ad524df2ed9cdfc1399a" }
-python-pycparser = { repo = "extra", version = "2.22-1.0", file = "python-pycparser-2.22-1.0-any.pkg.tar.zst", sha256 = "d9f736709eb514a045eb1852236c3ee66dc090113fc7d1b4caefc6ff9fe2269e" }
-python-pyflakes = { repo = "extra", version = "3.2.0-1.0", file = "python-pyflakes-3.2.0-1.0-any.pkg.tar.zst", sha256 = "3ce9d2aae18ddfed4b79935176399d1f790354d28c11f1e100d051a3102a09f0" }
-python-pygments = { repo = "extra", version = "2.17.2-1.0", file = "python-pygments-2.17.2-1.0-any.pkg.tar.zst", sha256 = "276d0ffcac47bfd7f1cc04b8215e3cbe58be3886dec6c0d9f4faeb84eea73989" }
-python-pylint = { repo = "extra", version = "3.1.0-1.0", file = "python-pylint-3.1.0-1.0-any.pkg.tar.zst", sha256 = "58615f6533ddc6f6efa0e5834449c97b13f42c869cfc89245decdb6a159a0615" }
-python-pyparsing = { repo = "extra", version = "3.1.2-1.0", file = "python-pyparsing-3.1.2-1.0-any.pkg.tar.zst", sha256 = "909411f3712b654c8366b2d6285ee9dc25e81d58e4bd07ef1cddc13630139dfb" }
-python-pyproject-hooks = { repo = "extra", version = "1.0.0-5.2", file = "python-pyproject-hooks-1.0.0-5.2-any.pkg.tar.zst", sha256 = "ac40698e0447ace684fc99f9b0b8b081e27ad7cde80486175ce0c2b81e43468b" }
-python-pytest = { repo = "extra", version = "1:8.1.1-1.0", file = "python-pytest-1:8.1.1-1.0-any.pkg.tar.zst", sha256 = "a9bfeea53adf7e633084d848d1bfe89821207b8fcbd2eb0cb0fcb685e7279be7" }
-python-pytz = { repo = "extra", version = "2024.1-1.0", file = "python-pytz-2024.1-1.0-any.pkg.tar.zst", sha256 = "087bd2355286eab2ea4a1b37c9b450b77bf50c97a2414796952e46f84d379a02" }
-python-pyudev = { repo = "extra", version = "0.24.1-2.0", file = "python-pyudev-0.24.1-2.0-any.pkg.tar.zst", sha256 = "7bdfa66d7784177c8f989bef796af7e4fccd88ef0e8bd99832073cebcb389f7d" }
-python-rdflib = { repo = "extra", version = "6.2.0-3.0", file = "python-rdflib-6.2.0-3.0-any.pkg.tar.zst", sha256 = "cf281952ca8fcf1615adb3371610ce06487059aa106ee6741878fcaba50fa06b" }
-python-requests = { repo = "extra", version = "2.31.0-1.0", file = "python-requests-2.31.0-1.0-any.pkg.tar.zst", sha256 = "7f1243b56f6638d8a77930fb803f14f1931ca6aca846fa645453a1a1fac0a3de" }
-python-setuptools = { repo = "extra", version = "1:69.0.3-4.0", file = "python-setuptools-1:69.0.3-4.0-any.pkg.tar.zst", sha256 = "df66964fee6825c27de14877e581d7218ed6d78dfbcdf4f87c07f6aaf206ee99" }
-python-six = { repo = "extra", version = "1.16.0-8.1", file = "python-six-1.16.0-8.1-any.pkg.tar.zst", sha256 = "61f627b6a3468edeea33fd6ef0bb00592408f1f1f2254dd9836c7505d6aee52b" }
-python-smartypants = { repo = "extra", version = "2.0.1-10.1", file = "python-smartypants-2.0.1-10.1-any.pkg.tar.zst", sha256 = "7cb9d96ea63fbeb1827c9c5f16fb64a2b45ecb67db20d8201a52d994d2db399a" }
-python-snowballstemmer = { repo = "extra", version = "2.2.0-5.0", file = "python-snowballstemmer-2.2.0-5.0-any.pkg.tar.zst", sha256 = "e10c7028e42a0b24f5c83c5c234b95255256e954244e58fb4441fccc6b9f1a6c" }
-python-sphinx = { repo = "extra", version = "7.2.6-1.0", file = "python-sphinx-7.2.6-1.0-any.pkg.tar.zst", sha256 = "45222521c1fe39c74ede828bed31112b25a486b54d53284d50f1302509baa5fa" }
-python-sphinx-alabaster-theme = { repo = "extra", version = "0.7.16-1.0", file = "python-sphinx-alabaster-theme-0.7.16-1.0-any.pkg.tar.zst", sha256 = "b707fa5b20a89385647717a9cb1fabf1f69fb5a962315431e7be7f217a32e740" }
-python-sphinx-lv2-theme = { repo = "extra", version = "1.4.2-1.0", file = "python-sphinx-lv2-theme-1.4.2-1.0-any.pkg.tar.zst", sha256 = "964425a3d51e3d50867a90e0159e902a7057f667247db424c2d6bc1ed5e5d55a" }
-python-sphinx_rtd_theme = { repo = "extra", version = "1.3.0-1.0", file = "python-sphinx_rtd_theme-1.3.0-1.0-any.pkg.tar.zst", sha256 = "0a447c28c6d9526519c2e371e9258ee27e0272818a1615ce53244fc6ae9d4b54" }
-python-sphinxcontrib-applehelp = { repo = "extra", version = "1.0.8-1.0", file = "python-sphinxcontrib-applehelp-1.0.8-1.0-any.pkg.tar.zst", sha256 = "0a5da735fbcaf2a60d584a68c3e1fc447fbdd4d79f3570923621ed6159d3d065" }
-python-sphinxcontrib-devhelp = { repo = "extra", version = "1.0.2-11.1", file = "python-sphinxcontrib-devhelp-1.0.2-11.1-any.pkg.tar.zst", sha256 = "1f5e99b901b58f1e8b7de3f6775ba52516ecdee31086c3ff22f02457c7b4fae8" }
-python-sphinxcontrib-htmlhelp = { repo = "extra", version = "2.0.1-3.1", file = "python-sphinxcontrib-htmlhelp-2.0.1-3.1-any.pkg.tar.zst", sha256 = "c9df5908406869e6b4c79336d5c34730240ca7462e06d89a73fe1b603323a297" }
-python-sphinxcontrib-jquery = { repo = "extra", version = "4.1-2.0", file = "python-sphinxcontrib-jquery-4.1-2.0-any.pkg.tar.zst", sha256 = "0543d75a1721737c5fb816487b259d79815f26961b6cfeb7870a188dea2578f8" }
-python-sphinxcontrib-jsmath = { repo = "extra", version = "1.0.1-15.2", file = "python-sphinxcontrib-jsmath-1.0.1-15.2-any.pkg.tar.zst", sha256 = "dd760363b5f0a3826ff6f9249774390ef38144fb421a359f57bacc78d91d7528" }
-python-sphinxcontrib-qthelp = { repo = "extra", version = "1.0.3-11.1", file = "python-sphinxcontrib-qthelp-1.0.3-11.1-any.pkg.tar.zst", sha256 = "a13f87a79c0e270d5a65d0ab494e4a6f05e6a6e89b80c5b8c4882c2cc85538bf" }
-python-sphinxcontrib-serializinghtml = { repo = "extra", version = "1.1.10-1.0", file = "python-sphinxcontrib-serializinghtml-1.1.10-1.0-any.pkg.tar.zst", sha256 = "4c6c1baa604e3e653233c8e8e59d2f09f9611fb7fdd038efebcfa46c17c46f86" }
-python-sphinxygen = { repo = "extra", version = "1.0.4-1.0", file = "python-sphinxygen-1.0.4-1.0-any.pkg.tar.zst", sha256 = "1ad2a10be66d82700f766ee096031209f928812adf1d92456e79ab24e4daa48c" }
-python-toml = { repo = "extra", version = "0.10.2-9.0", file = "python-toml-0.10.2-9.0-any.pkg.tar.zst", sha256 = "6879f2b405c9b5330c8b7bf7affecb466c0b0e2554d8fede73399d027d0cd464" }
-python-tomli = { repo = "extra", version = "2.0.1-3.1", file = "python-tomli-2.0.1-3.1-any.pkg.tar.zst", sha256 = "8b69a2856f76c216bba198bfb1a7f64f8e87fd3affc19c300d9f2d94cdf8ad51" }
-python-tomlkit = { repo = "extra", version = "0.12.4-1.0", file = "python-tomlkit-0.12.4-1.0-any.pkg.tar.zst", sha256 = "290828fed40433f1b1cd3bf585e3eb835a8c2c633c9448f26275e3d9c1ea552d" }
-python-tqdm = { repo = "extra", version = "4.66.2-1.0", file = "python-tqdm-4.66.2-1.0-any.pkg.tar.zst", sha256 = "65eab6b4def0c8ea0a06f49636cdcdcda7b49949cd85a471d17b2a7af1e3feb5" }
-python-trove-classifiers = { repo = "extra", version = "2024.3.25-1.0", file = "python-trove-classifiers-2024.3.25-1.0-any.pkg.tar.zst", sha256 = "a4f6d268d15d9ebf5a49a5bd782d4b5c3f5cedda6e626e518d49991ec2283c18" }
-python-twisted = { repo = "extra", version = "24.3.0-1.0", file = "python-twisted-24.3.0-1.0-any.pkg.tar.zst", sha256 = "ca75be00170d32b7f36a7b37a7934cc31e8564830f62bf6debf01cda0b63a572" }
-python-typeguard = { repo = "extra", version = "4.2.1-1.0", file = "python-typeguard-4.2.1-1.0-any.pkg.tar.zst", sha256 = "8a67c8cb27d2a6ac10dfbe0a74411a1fd4d75d3d0a8bc97f215cd7caf68e077b" }
-python-typing_extensions = { repo = "extra", version = "4.10.0-1.0", file = "python-typing_extensions-4.10.0-1.0-any.pkg.tar.zst", sha256 = "2d0da04ce22fca7a5077b88f238199dbe15e8048265ef788e0e7249d1b6147e6" }
-python-typogrify = { repo = "extra", version = "2.0.7-14.0", file = "python-typogrify-2.0.7-14.0-any.pkg.tar.zst", sha256 = "97465c80b13369d1be756ea873754a13e8e73996fc98c1657f5cef7f3f95b8f0" }
-python-urllib3 = { repo = "extra", version = "1.26.18-1.0", file = "python-urllib3-1.26.18-1.0-any.pkg.tar.zst", sha256 = "1692f07300f8ffd39bacb18ac5de88edd34c56f7cf406a959cda371ac46b50d8" }
-python-validate-pyproject = { repo = "extra", version = "0.13-1.0", file = "python-validate-pyproject-0.13-1.0-any.pkg.tar.zst", sha256 = "02c015ac27866521a7233d2cccc4f91b8cdcd712856c299bb047958eaa3bc7bf" }
-python-wheel = { repo = "extra", version = "0.43.0-1.0", file = "python-wheel-0.43.0-1.0-any.pkg.tar.zst", sha256 = "51c986373a84ccd7664b970f60958adfda78f00ab4f158bc79a03ef755623f2d" }
-python-yaml = { repo = "extra", version = "6.0.1-2.0", file = "python-yaml-6.0.1-2.0-i686.pkg.tar.zst", sha256 = "fdd03c68f56557bb720ed1693b01d45a538450bce879a963e7b13c2a3109d0f1" }
-python-zope-interface = { repo = "extra", version = "6.2-1.0", file = "python-zope-interface-6.2-1.0-i686.pkg.tar.zst", sha256 = "a07de10172410ffbfd3b40c841373422173c9969e6ef15892534aeeb56aa2991" }
+python-astroid = { repo = "x86_64:extra", version = "4.3.4-1", file = "python-astroid-4.3.4-1-any.pkg.tar.zst", sha256 = "796ad416cbfe378ac1d5c71f260c7c89f7c39ece93983d827ae469ec4ba05851" }
+python-autocommand = { repo = "x86_64:extra", version = "2.2.2-9", file = "python-autocommand-2.2.2-9-any.pkg.tar.zst", sha256 = "17b5712b2fd15f1202c72861998da29c4d25696f22cb4d1a704373fcf7926043" }
+python-babel = { repo = "x86_64:extra", version = "2.18.0-1", file = "python-babel-2.18.0-1-any.pkg.tar.zst", sha256 = "c77addf5936a5624dfb749b0361b1d5b3f8c1aa4246775d8ff4e82bb3ab5c7a7" }
+python-black = { repo = "x86_64:extra", version = "26.10.1-1", file = "python-black-26.10.1-1-any.pkg.tar.zst", sha256 = "7fbde661f434daf4df3a47fe6d92828147c1012db126ad9228f31cf43af46f6c" }
+python-breathe = { repo = "x86_64:extra", version = "5.1.0-1", file = "python-breathe-5.1.0-1-any.pkg.tar.zst", sha256 = "c4067044e6e8c66a791ac7168cb099dae48732bfb0a298f9638e27f37f24b926" }
+python-build = { repo = "x86_64:extra", version = "1.6.1-1", file = "python-build-1.6.1-1-any.pkg.tar.zst", sha256 = "845433b636bc8d64cdafd1f608e8cebe0791b30a5e9ce73c4fd8cb57912f9f8f" }
+python-certifi = { repo = "x86_64:extra", version = "2026.10.23-1", file = "python-certifi-2026.10.23-1-any.pkg.tar.zst", sha256 = "b60a590b11254f1445d64d8b6fc54d47ff20fcacc7ad3001f686b5173ff71a18" }
+python-chardet = { repo = "x86_64:extra", version = "6.0.0.post1-1", file = "python-chardet-6.0.0.post1-1-any.pkg.tar.zst", sha256 = "9cbf6ea78aae62bb5fca348e7901e0dd7017fc413927b7dfa93b121e63e253fc" }
+python-charset-normalizer = { repo = "x86_64:extra", version = "3.5.1-1", file = "python-charset-normalizer-3.5.1-1-any.pkg.tar.zst", sha256 = "10905c5019f4ec7a096b19dafb0027fd310adbf8e987db0fb376839893c122f1" }
+python-click = { repo = "x86_64:extra", version = "8.5.1-1", file = "python-click-8.5.1-1-any.pkg.tar.zst", sha256 = "57ee5e51828ea4e664199a7eccab3535bfd3c510d4cf2fdcdd28b80f9e7c9d43" }
+python-colorama = { repo = "x86_64:extra", version = "0.4.6-6", file = "python-colorama-0.4.6-6-any.pkg.tar.zst", sha256 = "36ef3376c9095115249874848f06834a1668cde76a12d5a039196037e7322ca3" }
+python-commonmark = { repo = "x86_64:extra", version = "0.9.2-1", file = "python-commonmark-0.9.2-1-any.pkg.tar.zst", sha256 = "3527d5523d4a4250bb82d7b8c6c0e4c4620fa614055340804e49734de0bf50bb" }
+python-dill = { repo = "x86_64:extra", version = "0.4.1-1", file = "python-dill-0.4.1-1-any.pkg.tar.zst", sha256 = "b4966c7d1971a69b2e791a6373b8fd0c937f86354fe210efe18f2cdd36edc220" }
+python-distro = { repo = "x86_64:extra", version = "1.9.0-4", file = "python-distro-1.9.0-4-any.pkg.tar.zst", sha256 = "709426d44273d59cf5c68c47f0bd4a8b6e9c76cc1f8656e20223b4fd91633504" }
+python-docutils = { repo = "x86_64:extra", version = "1:0.23-1", file = "python-docutils-1:0.23-1-any.pkg.tar.zst", sha256 = "b4cf3122bdc83f1b47f65dccb06ad27cc56f687388fe1e2e464f07269503414e" }
+python-editables = { repo = "x86_64:extra", version = "0.6-1", file = "python-editables-0.6-1-any.pkg.tar.zst", sha256 = "905dcd892bb3f3fea083c83762ef19474cd72bf3d9b18f2ae3a30493fe937506" }
+python-flake8 = { repo = "x86_64:extra", version = "1:7.5.0-1", file = "python-flake8-1:7.5.0-1-any.pkg.tar.zst", sha256 = "a1e58f893c60d77051f9ab8e1f7e6dab9faa8095b310548bdb70b74473e19d6d" }
+python-flit-core = { repo = "x86_64:extra", version = "4.1.0-1", file = "python-flit-core-4.1.0-1-any.pkg.tar.zst", sha256 = "15eef63d36c6a0b7018c6e6d910bc65c0e55e778a0ec796e86d146e8fa4c9e21" }
+python-hatch-vcs = { repo = "x86_64:extra", version = "0.5.0-4", file = "python-hatch-vcs-0.5.0-4-any.pkg.tar.zst", sha256 = "1f7b451c4c9b7c4e89da39251e76ef4998ab92ff7b02f271cfa2673ba6dbffbc" }
+python-hatchling = { repo = "x86_64:extra", version = "1.32.4-1", file = "python-hatchling-1.32.4-1-any.pkg.tar.zst", sha256 = "6b950ef4d5533311e7bb5d4c992f80d7d3360fa8b24564a2968fb06c9c543f0e" }
+python-idna = { repo = "x86_64:extra", version = "3.20-1", file = "python-idna-3.20-1-any.pkg.tar.zst", sha256 = "b7d5bcfc85f987724594d26a5cb1efe95035993cda6f9cca61ed1f850e301596" }
+python-imagesize = { repo = "x86_64:extra", version = "2.0.1-1", file = "python-imagesize-2.0.1-1-any.pkg.tar.zst", sha256 = "620f393363d3cd34ea8da698a01d4923efed328fc864483560f9b4a50db514a5" }
+python-iniconfig = { repo = "x86_64:extra", version = "2.3.0-1", file = "python-iniconfig-2.3.0-1-any.pkg.tar.zst", sha256 = "923a04a567ae8ed730bab1e14ec605fc175e46c0d595fff8663e1fe51415390f" }
+python-installer = { repo = "x86_64:extra", version = "1.1.0-1", file = "python-installer-1.1.0-1-any.pkg.tar.zst", sha256 = "b60226d6a3c694e64e3686c5f18728e4a83a1093b198188cc4ff5cc81d8a0be3" }
+python-isort = { repo = "x86_64:extra", version = "9.0.2-2", file = "python-isort-9.0.2-2-any.pkg.tar.zst", sha256 = "3fdb683289f48436906958ad80da3140637034a045e4d5506f804e9ae6f3dab0" }
+"python-jaraco.collections" = { repo = "x86_64:extra", version = "5.1.0-3", file = "python-jaraco.collections-5.1.0-3-any.pkg.tar.zst", sha256 = "6458833d521549d9db4e7157eba5cb5d0258f2f9c46baadb794c925d3dcbbbff" }
+"python-jaraco.context" = { repo = "x86_64:extra", version = "6.1.2-1", file = "python-jaraco.context-6.1.2-1-any.pkg.tar.zst", sha256 = "97b5709a7f0c1b8192756b3f9a414100b9438f9eff0d85df4b37fd0fb293f25a" }
+"python-jaraco.functools" = { repo = "x86_64:extra", version = "4.1.0-3", file = "python-jaraco.functools-4.1.0-3-any.pkg.tar.zst", sha256 = "b6fde8d3fef8e1338d92aa59c85b3179e4d35a67029b123a74ee23f62bd86344" }
+"python-jaraco.text" = { repo = "x86_64:extra", version = "4.0.0-4", file = "python-jaraco.text-4.0.0-4-any.pkg.tar.zst", sha256 = "df57d9e62cb16d23c45f10ae4658150db3e6a4059e41f9fbc4d5e5db05388e25" }
+python-jinja = { repo = "x86_64:extra", version = "1:3.1.6-3", file = "python-jinja-1:3.1.6-3-any.pkg.tar.zst", sha256 = "a09284358e1273d08b02b8743296c4830b77c66a67b80b6a0b9fe9b837c10a70" }
+python-libevdev = { repo = "x86_64:extra", version = "0.13.1-1", file = "python-libevdev-0.13.1-1-any.pkg.tar.zst", sha256 = "d263c9a9ac8361850cc0dab1f15e04da79d19a2b826b95733432321296ae3c28" }
+python-magic = { repo = "x86_64:extra", version = "1:0.4.27-6", file = "python-magic-1:0.4.27-6-any.pkg.tar.zst", sha256 = "5bb9daa2a42023f9b7469697c300d0d4ab16d2d99eaffcb2236ebeb0c7f55151" }
+python-mako = { repo = "x86_64:extra", version = "1.4.3-1", file = "python-mako-1.4.3-1-any.pkg.tar.zst", sha256 = "3e3fbef071bf47aa4945037b600e31e7bcc7f993dfa8ab384546ab56e86e7954" }
+python-markdown = { repo = "x86_64:extra", version = "3.11.3-1", file = "python-markdown-3.11.3-1-any.pkg.tar.zst", sha256 = "b0e3cbd763dff9c4432cec767e5b82acffbe3ca0395148d5a283e93fd9a1ffa2" }
+python-mccabe = { repo = "x86_64:extra", version = "0.7.0-9", file = "python-mccabe-0.7.0-9-any.pkg.tar.zst", sha256 = "bdc43e202056f4eb5075b218ebb0be2df188a5d21812b8040d26ca95e21d26f1" }
+python-more-itertools = { repo = "x86_64:extra", version = "11.2.1-1", file = "python-more-itertools-11.2.1-1-any.pkg.tar.zst", sha256 = "f16b566f45419a43acbc078cf6ff32b56df75dba67d9fe6c9dd48bfa43b5745d" }
+python-mypy_extensions = { repo = "x86_64:extra", version = "1.1.0-2", file = "python-mypy_extensions-1.1.0-2-any.pkg.tar.zst", sha256 = "16b83831e1815f0133dd908015ff914d5577e70b8cbb4b01ae40ac58833f7451" }
+python-packaging = { repo = "x86_64:extra", version = "26.3-1", file = "python-packaging-26.3-1-any.pkg.tar.zst", sha256 = "b6020d9f99a21fe3b209c7e4253c33ba36e644e8d75a9cac6af5ca0fe4fb1e6c" }
+python-pathspec = { repo = "x86_64:extra", version = "1.1.1-1", file = "python-pathspec-1.1.1-1-any.pkg.tar.zst", sha256 = "294c57c93df7eb12e9a20e7ae669f630f88cc39e3a8a83b83113ee8d7c51ca2a" }
+python-pkgconfig = { repo = "x86_64:extra", version = "1.6.0-1", file = "python-pkgconfig-1.6.0-1-any.pkg.tar.zst", sha256 = "9da2831e5cfe5506302ab6d4740568d27c76e945b86ebddd760a978a1ed583b4" }
+python-platformdirs = { repo = "x86_64:extra", version = "4.14.3-1", file = "python-platformdirs-4.14.3-1-any.pkg.tar.zst", sha256 = "d75f13e4b1fd4f4d8e79d6eb6a75980d6a24105a01bec6503cd130679559db0f" }
+python-pluggy = { repo = "x86_64:extra", version = "1.7.0-1", file = "python-pluggy-1.7.0-1-any.pkg.tar.zst", sha256 = "0ac0cbe11658341955a9997e9078bc0c57b41cb45b8c5effb3e325b94ee1bedf" }
+python-ply = { repo = "x86_64:extra", version = "3.11-17", file = "python-ply-3.11-17-any.pkg.tar.zst", sha256 = "1370d09b278eeb1387b3a2276dc56fc0138ee2b2c3696fabf6cd53c78e06500b" }
+python-pycodestyle = { repo = "x86_64:extra", version = "2.15.0-1", file = "python-pycodestyle-2.15.0-1-any.pkg.tar.zst", sha256 = "b02c1a43d13e53e0d4d0a851c3dc0a597c537a6f40b5487bd9fc7c397d2bdeb8" }
+python-pycparser = { repo = "x86_64:extra", version = "3.12-1", file = "python-pycparser-3.12-1-any.pkg.tar.zst", sha256 = "dd8f407a64445e2854ddb05235a0f372918d6e84e66499741511e11b084e6ec8" }
+python-pyflakes = { repo = "x86_64:extra", version = "4.1.0-1", file = "python-pyflakes-4.1.0-1-any.pkg.tar.zst", sha256 = "e5ef61829344a34aea494774bddd6df3a71cbf2eed8f3a609f959ae684ee25d2" }
+python-pygments = { repo = "x86_64:extra", version = "2.21.0-1", file = "python-pygments-2.21.0-1-any.pkg.tar.zst", sha256 = "a9b41640ce170eb5113412f8399e3ab18fcf65bd1c5bef77607ff5a593e607a8" }
+python-pylint = { repo = "x86_64:extra", version = "4.0.7-1", file = "python-pylint-4.0.7-1-any.pkg.tar.zst", sha256 = "f5773693a9d4e262b4b118c7acd38a9018a406e8623a8d257fa331800eb22784" }
+python-pyparsing = { repo = "x86_64:extra", version = "3.3.3-1", file = "python-pyparsing-3.3.3-1-any.pkg.tar.zst", sha256 = "575782fca7cb13a47e2535f7a50b26509bf15fe42b7edd4e8cc49956a6f1ea0d" }
+python-pyproject-hooks = { repo = "x86_64:extra", version = "1.3.3-1", file = "python-pyproject-hooks-1.3.3-1-any.pkg.tar.zst", sha256 = "dabe1aa4d54477e8d43e9b93f728deb8c5f195e2e76d3a8943e7df70341cbfab" }
+python-pyproject-metadata = { repo = "x86_64:extra", version = "0.9.0-3", file = "python-pyproject-metadata-0.9.0-3-any.pkg.tar.zst", sha256 = "064ce24167d5561b698716ff4bdfb184d6c6a3f58b09851e3b39e2487be8317d" }
+python-pytest = { repo = "x86_64:extra", version = "1:9.2.0-1", file = "python-pytest-1:9.2.0-1-any.pkg.tar.zst", sha256 = "0e5bc47d89c7f9add6d8ba2da51dde40b04ff3606cdd8f49bb7e3e580072c3f1" }
+python-pytokens = { repo = "x86_64:extra", version = "0.4.1-1", file = "python-pytokens-0.4.1-1-any.pkg.tar.zst", sha256 = "d4d17e23f3b3a5d5c1697fc21fb4f90a729e2e193073aa0c67cdc667ad6c625e" }
+python-pytz = { repo = "x86_64:extra", version = "2026.1-1", file = "python-pytz-2026.1-1-any.pkg.tar.zst", sha256 = "e9c5e927fa574bba9364f13230fb6d6048f52fae30e05e93bf7d063b1a341cd3" }
+python-pyudev = { repo = "x86_64:extra", version = "0.24.4-1", file = "python-pyudev-0.24.4-1-any.pkg.tar.zst", sha256 = "068bb5f9beefde78878f2401d56e5b0eb6072830b61320dce653567768a710a1" }
+python-rdflib = { repo = "x86_64:extra", version = "7.6.0-1", file = "python-rdflib-7.6.0-1-any.pkg.tar.zst", sha256 = "b5df5697b76d6523ff0166d3cdf693502edcf4ad8b8f4c9a5f4c4f93be2b5be4" }
+python-requests = { repo = "x86_64:extra", version = "2.34.2-1", file = "python-requests-2.34.2-1-any.pkg.tar.zst", sha256 = "bb58c7d57e0052210fcca14f0efe7fa6ab9ba1b5af3d664ee7dc5c1caf2d3679" }
+python-roman-numerals-py = { repo = "x86_64:extra", version = "4.1.0-1", file = "python-roman-numerals-py-4.1.0-1-any.pkg.tar.zst", sha256 = "339408fbeb6ebaa48bda12bed46a7ca3a25a5a6fa42245f7ceaffffbdc748848" }
+python-setuptools = { repo = "x86_64:extra", version = "1:84.2.1-1", file = "python-setuptools-1:84.2.1-1-any.pkg.tar.zst", sha256 = "14704478fd82e03078497f5be3235607d0937650dd5cdcca86bda347271ba9dc" }
+python-setuptools-scm = { repo = "x86_64:extra", version = "10.3.4-1", file = "python-setuptools-scm-10.3.4-1-any.pkg.tar.zst", sha256 = "3449fae8388b1644039dde0eaa0e587e1a5d6404c3cfc413f74264e44076ede6" }
+python-smartypants = { repo = "x86_64:extra", version = "2.0.2-2", file = "python-smartypants-2.0.2-2-any.pkg.tar.zst", sha256 = "9795c0018b4f33ca63c63cd0731bb9abb274c59c3882df87180aa317f86e826f" }
+python-snowballstemmer = { repo = "x86_64:extra", version = "3.1.1-1", file = "python-snowballstemmer-3.1.1-1-any.pkg.tar.zst", sha256 = "6bf9b09b72570db31b95cab3f861fe410feb9adb813a72bb1d67cbc58a5a3e83" }
+python-sphinx = { repo = "x86_64:extra", version = "9.1.0-1", file = "python-sphinx-9.1.0-1-any.pkg.tar.zst", sha256 = "8cc17b44ad0045545305d98b7aa9aa85edcfc95a29917f3cc9c8acb1eedc2e84" }
+python-sphinx-alabaster-theme = { repo = "x86_64:extra", version = "1.0.0-6", file = "python-sphinx-alabaster-theme-1.0.0-6-any.pkg.tar.zst", sha256 = "cdd3260607596ef1e4000dc7123d566a8de3ec8f229ac50c35a670ef99ff4a8b" }
+python-sphinx-lv2-theme = { repo = "x86_64:extra", version = "1.4.6-2", file = "python-sphinx-lv2-theme-1.4.6-2-any.pkg.tar.zst", sha256 = "976c6e4a3f43a10cc9381803b15b64e2af5648ca37d20fd0267ef12f87152070" }
+python-sphinx_rtd_theme = { repo = "x86_64:extra", version = "3.1.0-1", file = "python-sphinx_rtd_theme-3.1.0-1-any.pkg.tar.zst", sha256 = "1540ec8c18270a84601ed2477990d42c3fcbb05aed2fe3478978061993c8dfda" }
+python-sphinxcontrib-applehelp = { repo = "x86_64:extra", version = "2.0.0-5", file = "python-sphinxcontrib-applehelp-2.0.0-5-any.pkg.tar.zst", sha256 = "287d2fdc48e85e5345b0c5b5a2269620474d95c0600956f9bb6f700f70981220" }
+python-sphinxcontrib-devhelp = { repo = "x86_64:extra", version = "2.0.0-6", file = "python-sphinxcontrib-devhelp-2.0.0-6-any.pkg.tar.zst", sha256 = "5ca9acb314b3789dd0e1b769d36042547392b818a7c1d5997fd5b8a0abca67e1" }
+python-sphinxcontrib-htmlhelp = { repo = "x86_64:extra", version = "2.1.0-5", file = "python-sphinxcontrib-htmlhelp-2.1.0-5-any.pkg.tar.zst", sha256 = "bb6a1ad053e18dd9388a3dd801aba1d387e917be87e0fb008cbd8e4624d77948" }
+python-sphinxcontrib-jquery = { repo = "x86_64:extra", version = "4.1-5", file = "python-sphinxcontrib-jquery-4.1-5-any.pkg.tar.zst", sha256 = "7c2f040420b7982ae749aa2264889a047339199a86c0d54ea298a331fa72d5e4" }
+python-sphinxcontrib-jsmath = { repo = "x86_64:extra", version = "1.0.1-21", file = "python-sphinxcontrib-jsmath-1.0.1-21-any.pkg.tar.zst", sha256 = "cb15a5d15475751b2ab97f7b17d2fba00ad9aa19918b3b91af147b596db2dcbd" }
+python-sphinxcontrib-qthelp = { repo = "x86_64:extra", version = "2.0.0-5", file = "python-sphinxcontrib-qthelp-2.0.0-5-any.pkg.tar.zst", sha256 = "f99820724817a68ff39f20502f9f8e7e41f3a023337453b395d38a6a35c330f7" }
+python-sphinxcontrib-serializinghtml = { repo = "x86_64:extra", version = "2.0.0-5", file = "python-sphinxcontrib-serializinghtml-2.0.0-5-any.pkg.tar.zst", sha256 = "f9af753eaffabef57e059c5196d69fb9edb98145500ca46b89c4db9be18f284c" }
+python-sphinxygen = { repo = "x86_64:extra", version = "1.0.12-2", file = "python-sphinxygen-1.0.12-2-any.pkg.tar.zst", sha256 = "a8899080e57788d0868508641ee6041858701563fdcda43b5ab7ce38a7de62ca" }
+python-tomli = { repo = "x86_64:extra", version = "2.5.0-1", file = "python-tomli-2.5.0-1-any.pkg.tar.zst", sha256 = "5c0ab5c573c417d87a4b75912a33c99b4da27e49261ec18948c223b1a5b09fd7" }
+python-tomlkit = { repo = "x86_64:extra", version = "0.15.2-1", file = "python-tomlkit-0.15.2-1-any.pkg.tar.zst", sha256 = "66fa52b8386c79a0785030a37458d4c714e4f2b770325df4d10e0b138d0a9509" }
+python-tqdm = { repo = "x86_64:extra", version = "4.70.1-1", file = "python-tqdm-4.70.1-1-any.pkg.tar.zst", sha256 = "92c4b146a00e268855373e9c93e974d162ae5b580d37a3a138f36ca8d8ae581b" }
+python-trove-classifiers = { repo = "x86_64:extra", version = "2026.9.21.13-1", file = "python-trove-classifiers-2026.9.21.13-1-any.pkg.tar.zst", sha256 = "cee61463da75f47cdb7e37637b67c7fdcf0126363b7079df3ca22bf04f75e4f9" }
+python-typogrify = { repo = "x86_64:extra", version = "2.1.0-2", file = "python-typogrify-2.1.0-2-any.pkg.tar.zst", sha256 = "b514e9d927a94b1384b9811deb5514205b6e0f709d654d602ba3c52472af1f87" }
+python-urllib3 = { repo = "x86_64:extra", version = "2.8.0-1", file = "python-urllib3-2.8.0-1-any.pkg.tar.zst", sha256 = "c40a90730dd847ee6c79b2c049f8097e5b3e888a5add85a114775b424beca0de" }
+python-vcs-versioning = { repo = "x86_64:extra", version = "2.6.0-1", file = "python-vcs-versioning-2.6.0-1-any.pkg.tar.zst", sha256 = "1c1d39aad06a9b82ef13e84250d4abd246c45516a5ab59d9fdc6b777e0e8aed8" }
+python-wheel = { repo = "x86_64:extra", version = "0.48.0-1", file = "python-wheel-0.48.0-1-any.pkg.tar.zst", sha256 = "e2ff0c0129c86523b95a8d2adf0feb58309d556eb2360cae11a040fe15b80c12" }
 qpdf = { repo = "extra", version = "11.9.1-1.0", file = "qpdf-11.9.1-1.0-i686.pkg.tar.zst", sha256 = "7890c9b5bc2680496435c157e76b6e6394769e7ce229d131f44e10101e5c5eb8" }
 ragel = { repo = "extra", version = "6.10-4.0", file = "ragel-6.10-4.0-i686.pkg.tar.zst", sha256 = "34c6564cb408dcae95ab640d6f15c0150386f6e4569e414af3a55dd75755f63f" }
 rav1e = { repo = "extra", version = "0.6.6-1.0", file = "rav1e-0.6.6-1.0-i686.pkg.tar.zst", sha256 = "58dc89e55d0887a1611a874b5fac3660623f3e3bf6ba8ef414b75856e635b956" }
@@ -1245,7 +1238,6 @@ shadow = { repo = "core", version = "4.18.0-1.3", file = "shadow-4.18.0-1.3-i686
 shared-mime-info = { repo = "extra", version = "2.5.1-2.0", file = "shared-mime-info-2.5.1-2.0-i686.pkg.tar.zst", sha256 = "d035aabfab8c9d5e5789d981e2ef0c3d2d2706f4a613a94eeca18816d31539c3" }
 slang = { repo = "extra", version = "2.3.3-4.0", file = "slang-2.3.3-4.0-i686.pkg.tar.zst", sha256 = "57e3778d13f66fa7b6c2cab691712133770bea13a0c58166cbe92cc0e201d041" }
 sord = { repo = "extra", version = "0.16.22-1.0", file = "sord-0.16.22-1.0-i686.pkg.tar.zst", sha256 = "02031f2e4342d0faaafd6e78b55860237c3a4d9ecd4f64ea8e1f0ceacee891b4" }
-source-highlight = { repo = "extra", version = "3.1.9-12.0", file = "source-highlight-3.1.9-12.0-i686.pkg.tar.zst", sha256 = "840474c297ac89d3c0a48c4154ea6e43fbba70b88dae2693d17ba76a358803a1" }
 spandsp = { repo = "extra", version = "0.0.6-7.0", file = "spandsp-0.0.6-7.0-i686.pkg.tar.zst", sha256 = "1b25a38c345d68c76ab34e2580f495b115681fcfe32ea2681651494cbab5ad6a" }
 spirv-tools = { repo = "extra", version = "1:1.4.341.0-2.0", file = "spirv-tools-1:1.4.341.0-2.0-i686.pkg.tar.zst", sha256 = "47a7f3341981d1596b66e0ad84838d2a29d95fd7a1c6374a1aebfeed54278fee" }
 sqlite = { repo = "core", version = "3.53.4-1.0", file = "sqlite-3.53.4-1.0-i686.pkg.tar.zst", sha256 = "ab0e35e3e6a92470bc053262254f3e901044c409b4f4d4e416fea6200237cbd1" }
@@ -1260,15 +1252,14 @@ tcl = { repo = "extra", version = "8.6.16-1.0", file = "tcl-8.6.16-1.0-i686.pkg.
 texlive-basic = { repo = "extra", version = "2026.1-1.0", file = "texlive-basic-2026.1-1.0-any.pkg.tar.zst", sha256 = "ef721b1ef563843b409335a90cfbda4f77e60555c49e6b4895149044cff1244a" }
 texlive-bin = { repo = "extra", version = "2024.2-2.0", file = "texlive-bin-2024.2-2.0-i686.pkg.tar.zst", sha256 = "c2be785dd04d689901a0e6f38e7ac3a208427f7db67f7ac52f9afd8b7b716a14" }
 texlive-binextra = { repo = "extra", version = "2026.1-1.0", file = "texlive-binextra-2026.1-1.0-any.pkg.tar.zst", sha256 = "06fb21e1a9370c9daba1cbf4477931bb614f7f3ebdcc63c6bc3cd7fdf559c870" }
-texlive-core = { repo = "extra", version = "2023.66594-7.0", file = "texlive-core-2023.66594-7.0-any.pkg.tar.zst", sha256 = "727d3dd72e0c832115993f9b31baa848cf6dd2338b27e25d84882170d04d867c" }
 texlive-fontsrecommended = { repo = "extra", version = "2026.1-1.0", file = "texlive-fontsrecommended-2026.1-1.0-any.pkg.tar.zst", sha256 = "c826f9c5f05d8b46d994b5f04b476d0d27c31087ef9c0e88b4141ddc17201aa1" }
 texlive-formatsextra = { repo = "extra", version = "2026.1-1.0", file = "texlive-formatsextra-2026.1-1.0-any.pkg.tar.zst", sha256 = "563c5bdae7bf0f81c676661a5901a3a2f22c0718556df8bea6696667ce1eaf00" }
 texlive-latex = { repo = "extra", version = "2026.1-1.0", file = "texlive-latex-2026.1-1.0-any.pkg.tar.zst", sha256 = "db747d56d455b7946ba60b018a3c829df41fa6eccbd599d12366c79e5ce76a11" }
 texlive-latexextra = { repo = "extra", version = "2026.1-1.0", file = "texlive-latexextra-2026.1-1.0-any.pkg.tar.zst", sha256 = "062f37d111c5655c06991a97d4d408bcde4370dc36395996bce975350086f14b" }
 texlive-latexrecommended = { repo = "extra", version = "2026.1-1.0", file = "texlive-latexrecommended-2026.1-1.0-any.pkg.tar.zst", sha256 = "834b811eac90e8fd2444805fd39b730634d443e03450fe77135973fd97738972" }
+texlive-mathscience = { repo = "extra", version = "2026.1-1.0", file = "texlive-mathscience-2026.1-1.0-any.pkg.tar.zst", sha256 = "01c5e53415b9649ce80a557079920bda7547629fc8e6af6ec6cfe9359974d669" }
 texlive-pictures = { repo = "extra", version = "2026.1-1.0", file = "texlive-pictures-2026.1-1.0-any.pkg.tar.zst", sha256 = "c99b29cfccbe4dcddc5b6ccd35f50945dd21994a66a7ae52e5bb25e0903eb6c2" }
 texlive-plaingeneric = { repo = "extra", version = "2026.1-1.0", file = "texlive-plaingeneric-2026.1-1.0-any.pkg.tar.zst", sha256 = "46ed69354d18cde2d60d51f119319ef4d7c49694c2f9b64a56907167f9e9ec60" }
-texlive-science = { repo = "extra", version = "2023.66594-7.0", file = "texlive-science-2023.66594-7.0-any.pkg.tar.zst", sha256 = "233811e49afb9c838c2f7dfaf040f9f5eeb893b8573de9aeb1cc3f3eeee5ee5b" }
 texlive-xetex = { repo = "extra", version = "2026.1-1.0", file = "texlive-xetex-2026.1-1.0-any.pkg.tar.zst", sha256 = "2043c88d5c9b36b012203051dc8425bf78d65a8a59cdb0a4d850f5ec25e3af37" }
 thin-provisioning-tools = { repo = "core", version = "1.2.0-1.0", file = "thin-provisioning-tools-1.2.0-1.0-i686.pkg.tar.zst", sha256 = "817dcec9ad29cbce0384e494105bea05532d3ba1fe7be26cf2e34803657f9620" }
 tinycompress = { repo = "extra", version = "1.2.8-1.1", file = "tinycompress-1.2.8-1.1-i686.pkg.tar.zst", sha256 = "49c0d89ea5c74c6a0aefa2775a295072677648df050a8e5e398cb24c275b0020" }
@@ -1298,6 +1289,7 @@ wayland-protocols = { repo = "extra", version = "1.49-1.0", file = "wayland-prot
 webrtc-audio-processing-1 = { repo = "extra", version = "1.3-5.0", file = "webrtc-audio-processing-1-1.3-5.0-i686.pkg.tar.zst", sha256 = "1acc04a8595c7090c300367909733ebeec31dc0aa0ac54509ca3e155ccfd320a" }
 which = { repo = "core", version = "2.25-1.0", file = "which-2.25-1.0-i686.pkg.tar.zst", sha256 = "ca456224f39197c2d6194eeb295d48743698b3a3cbc0edf03c223b00c14385f7" }
 wireplumber = { repo = "extra", version = "0.4.14-1.1", file = "wireplumber-0.4.14-1.1-i686.pkg.tar.zst", sha256 = "08c315c691d2f7bdae81fbb82afc7c8606c40687f1805758813f64115598cc45" }
+wlr-randr = { repo = "extra", version = "0.5.0-1.0", file = "wlr-randr-0.5.0-1.0-i686.pkg.tar.zst", sha256 = "4e6c831780661b02f77b50d0e6f1a96284aaee33069bd4042dd5d1c7c0b9bcbd" }
 wlroots = { repo = "extra", version = "0.16.1-2.0", file = "wlroots-0.16.1-2.0-i686.pkg.tar.zst", sha256 = "7d228fff84ead3c08022a848f65a0d6011129a3158f715b9f69488ac53848369" }
 woff2 = { repo = "extra", version = "1.0.2-6.0", file = "woff2-1.0.2-6.0-i686.pkg.tar.zst", sha256 = "fd89a8bae272e4892e1c6171073b525c4ba8c2e59d2d9c0a2b0a1b726a7b62f0" }
 x265 = { repo = "extra", version = "3.5-3.1", file = "x265-3.5-3.1-i686.pkg.tar.zst", sha256 = "78545c5f4581bd40024d8fd753ebf01cf5bdfe8e1f253c204ccbb6895ab612ef" }
@@ -1322,10 +1314,9 @@ xorgproto = { repo = "extra", version = "2026.1-1.0", file = "xorgproto-2026.1-1
 xtrans = { repo = "extra", version = "1.6.0-1.0", file = "xtrans-1.6.0-1.0-any.pkg.tar.zst", sha256 = "4ea608137534dcc69e618aa316ce915e6fe1862a74b0972f951b32ed40d73cbd" }
 xxhash = { repo = "extra", version = "0.8.4-1.0", file = "xxhash-0.8.4-1.0-i686.pkg.tar.zst", sha256 = "7c7a8e14a31b6b5822846d04c79683a8d831e5f21380864892d4a0ba15011250" }
 xz = { repo = "core", version = "5.8.4-1.0", file = "xz-5.8.4-1.0-i686.pkg.tar.zst", sha256 = "7f6516c0d9a228b23198330ba34a7bb7c30227e9c20133bb9d7e4583a5d9a176" }
-yelp-tools = { repo = "extra", version = "42.1-2.0", file = "yelp-tools-42.1-2.0-any.pkg.tar.zst", sha256 = "b5642aef6cb065b612d54c1b55658a09ef096f6f9db9beb59e6da5985e018c3c" }
+yelp-tools = { repo = "x86_64:extra", version = "42.1-2", file = "yelp-tools-42.1-2-any.pkg.tar.zst", sha256 = "7b1850b4afa3729636959ae6b3db5e2448f715ba5d88c103a3dc9d5effcf5046" }
 yelp-xsl = { repo = "extra", version = "49.0-1.0", file = "yelp-xsl-49.0-1.0-any.pkg.tar.zst", sha256 = "698402ba45e379b145609d4c2ea2755ab7061494062d7481cda904807ca69964" }
 yyjson = { repo = "extra", version = "0.13.0-1.0", file = "yyjson-0.13.0-1.0-i686.pkg.tar.zst", sha256 = "080c7edcff188e3c915bf6e2cdfa3f3a83661c50eba4d0ed8644d26d1944ab56" }
-zip = { repo = "extra", version = "3.0-14.0", file = "zip-3.0-14.0-i686.pkg.tar.zst", sha256 = "1a8202418abf08ebc83438966c4da541c75f7420f66e04ef503e800fb2831e91" }
 zix = { repo = "extra", version = "0.8.2-1.0", file = "zix-0.8.2-1.0-i686.pkg.tar.zst", sha256 = "20b3b3ecff47cb3743324af80a843a2ab0266fd243ce416abdf8277956a98f09" }
 zlib = { repo = "core", version = "1:1.3.2-3.0", file = "zlib-1:1.3.2-3.0-i686.pkg.tar.zst", sha256 = "ddec6878082a45ecf5f88f43e961d73089c8ae525a1aa5612b1c90b89daa62a2" }
 zlib-ng = { repo = "extra", version = "2.3.3-1.0", file = "zlib-ng-2.3.3-1.0-i686.pkg.tar.zst", sha256 = "f683b290a1fe39277699fd42c7dada7c52b807eb70735e045b46a38fee1fe081" }
@@ -1334,6 +1325,7 @@ zstd = { repo = "core", version = "1.5.7-3.0", file = "zstd-1.5.7-3.0-i686.pkg.t
 zziplib = { repo = "extra", version = "0.13.80-1.0", file = "zziplib-0.13.80-1.0-i686.pkg.tar.zst", sha256 = "6471ab4bc1230871b8e306f72ce0755ffcf176d0f9cc7d741d004c507ed37d97" }
 
 [buildroot-aarch64]
+7zip = { repo = "extra", version = "26.06-1", file = "7zip-26.06-1-aarch64.pkg.tar.xz", sha256 = "7cc60b39b6ae8211622a39cf232e5e65699e9c63120bf4e91fa3903109ac8c91" }
 a52dec = { repo = "extra", version = "0.8.0-3", file = "a52dec-0.8.0-3-aarch64.pkg.tar.xz", sha256 = "22241fc7f47ed38b706fc3341ed596170a847423df02d01702b7b4fef4faa608" }
 abseil-cpp = { repo = "extra", version = "20260817.0-2", file = "abseil-cpp-20260817.0-2-aarch64.pkg.tar.xz", sha256 = "c003392fa0d87f66c08b202e49835c20f03d5e8c4e3e61e510c8839242293775" }
 acl = { repo = "core", version = "2.4.0-1", file = "acl-2.4.0-1-aarch64.pkg.tar.xz", sha256 = "8d400d781a3fd765f0f7c98183492850f830da3d3efb05518b5927b446387350" }
@@ -1358,6 +1350,7 @@ bash-completion = { repo = "extra", version = "2.18.0-1", file = "bash-completio
 binutils = { repo = "core", version = "2.46+r70+g155188ea10a7-1", file = "binutils-2.46+r70+g155188ea10a7-1-aarch64.pkg.tar.xz", sha256 = "1acb6074f546ee662f29937897ab80bd87b0dcdd66c714381e8488d79cd53fcc" }
 bison = { repo = "core", version = "3.8.2-8", file = "bison-3.8.2-8-aarch64.pkg.tar.xz", sha256 = "a53f8b72c6d58715a822754311ab20dd4fc8468183bb3ab459cf564503dbbe8c" }
 bluez-libs = { repo = "extra", version = "5.87-2", file = "bluez-libs-5.87-2-aarch64.pkg.tar.xz", sha256 = "8c8be9961b8a952aeaf99b56a623d541977b563d0586512e881179eab1b12728" }
+boost = { repo = "extra", version = "1.92.0-1", file = "boost-1.92.0-1-aarch64.pkg.tar.xz", sha256 = "a7dd5b98a65286e714940f3a080880585cd704bb02338380518e5fa008e1bb85" }
 boost-libs = { repo = "extra", version = "1.92.0-1", file = "boost-libs-1.92.0-1-aarch64.pkg.tar.xz", sha256 = "0a0e6f37821cfd34b077658e6e5ba6a73c648e2094ccd74eb489180ba455fead" }
 brotli = { repo = "core", version = "1.2.1-1", file = "brotli-1.2.1-1-aarch64.pkg.tar.xz", sha256 = "4ecc05235d5625e9adade827fbf775d28176679048aec072ee70d10f113db693" }
 bubblewrap = { repo = "extra", version = "0.13.1-1", file = "bubblewrap-0.13.1-1-aarch64.pkg.tar.xz", sha256 = "d00ed77381839a07ba254c096242466c46aebe93e4f411842baf72fb24da5329" }
@@ -1365,6 +1358,7 @@ bzip2 = { repo = "core", version = "1.0.8-6", file = "bzip2-1.0.8-6-aarch64.pkg.
 ca-certificates = { repo = "core", version = "20240618-1", file = "ca-certificates-20240618-1-any.pkg.tar.xz", sha256 = "09cfa7af79ca8120572e737c34080580ddc50c5e33a03a686c5c55032f02b575" }
 ca-certificates-mozilla = { repo = "core", version = "3.133-1", file = "ca-certificates-mozilla-3.133-1-aarch64.pkg.tar.xz", sha256 = "a8785dbaec559ae39db22032219746b41e0b1c05efaac92ea4c9664386718331" }
 ca-certificates-utils = { repo = "core", version = "20240618-1", file = "ca-certificates-utils-20240618-1-any.pkg.tar.xz", sha256 = "c60483cb5fb3002acfe4cbee8966e9c13936ea9bff3db9db360d8d638f013c8b" }
+cabextract = { repo = "extra", version = "1.11-3", file = "cabextract-1.11-3-aarch64.pkg.tar.xz", sha256 = "87fe375a22de1519982234ce99f909ae13c06500784baaa1e8d7a0c0be0d14ee" }
 cairo = { repo = "extra", version = "1.18.6-1", file = "cairo-1.18.6-1-aarch64.pkg.tar.xz", sha256 = "8c5a5c0470ff369386a3597d1e414c79c951a18d03313c162e5fff3d91989773" }
 cargo-c = { repo = "extra", version = "0.10.26-1", file = "cargo-c-0.10.26-1-aarch64.pkg.tar.xz", sha256 = "f0007eb4f8bd4391c699b6636a16ef268992c42b2870b2db221b0eea09d35846" }
 ccache = { repo = "extra", version = "4.14.1-1", file = "ccache-4.14.1-1-aarch64.pkg.tar.xz", sha256 = "3cd0391ce867e2e699248083d9b71bc205d59614edf119ecb497164cb2c92012" }
@@ -1451,12 +1445,10 @@ gnulib-l10n = { repo = "core", version = "20241231-1", file = "gnulib-l10n-20241
 gnupg = { repo = "core", version = "2.4.9-4", file = "gnupg-2.4.9-4-aarch64.pkg.tar.xz", sha256 = "14b9aed89ac41e33a0045d85198f0263f95d6c328afc5187ce2b59cfeef4b0e2" }
 gnutls = { repo = "core", version = "3.8.13-3", file = "gnutls-3.8.13-3-aarch64.pkg.tar.xz", sha256 = "aa74e78dc3f954e2b5399e1da8f89e926190aa64ffd57cf30006b3c1e2e037b1" }
 go = { repo = "extra", version = "2:1.27.3-1", file = "go-2:1.27.3-1-aarch64.pkg.tar.xz", sha256 = "f82a78981a168b6a9cba527b50889212b5600b5a84ccf2e86d7127dfa9b35d0f" }
-gobject-introspection = { repo = "extra", version = "1.86.0-2", file = "gobject-introspection-1.86.0-2-aarch64.pkg.tar.xz", sha256 = "3717cf219abb588df905ea804b87ae2f6892af8b498e838ac6cbbeadd405ffc6" }
 gobject-introspection-runtime = { repo = "extra", version = "1.86.0-2", file = "gobject-introspection-runtime-1.86.0-2-aarch64.pkg.tar.xz", sha256 = "fe0d6a936340bf8b6752d96f198f130ad0fdbc39521dd71257346f297a0287ae" }
 gperf = { repo = "extra", version = "3.3-2", file = "gperf-3.3-2-aarch64.pkg.tar.xz", sha256 = "8e6dd83edfd4355fa30b9630122a5eb0b1f28118bf354c8e154356c1be97782e" }
 gperftools = { repo = "extra", version = "2.19.2-1", file = "gperftools-2.19.2-1-aarch64.pkg.tar.xz", sha256 = "d0dce83da5e11db74095407f0104ec6b14b8dbbc195ddc0e211670b52dd9b76d" }
 gpgme = { repo = "core", version = "2.2.0-1", file = "gpgme-2.2.0-1-aarch64.pkg.tar.xz", sha256 = "7e7f7277f8ddc618499cfeb105f67d3f7be1caa32aec561c744b2a3b5063785f" }
-gpgmepp = { repo = "extra", version = "2.2.0-1", file = "gpgmepp-2.2.0-1-aarch64.pkg.tar.xz", sha256 = "e2e058b9eb3fdf64e3be23be25a0959af815bf919b714252017bef600e6bf2cb" }
 graphene = { repo = "extra", version = "1.10.8-2.1", file = "graphene-1.10.8-2.1-aarch64.pkg.tar.xz", sha256 = "2f928a829385d79626cba58fcc111f8f930d1ae951d83f405813a3886ab9ec7b" }
 graphite = { repo = "extra", version = "1:1.3.15-1", file = "graphite-1:1.3.15-1-aarch64.pkg.tar.xz", sha256 = "87c700c71585c7f44f951928184deb690a78d39ad36ea9b6c07c59d7592e4c92" }
 graphviz = { repo = "extra", version = "16.1.1-1", file = "graphviz-16.1.1-1-aarch64.pkg.tar.xz", sha256 = "4b45a699a98839f03848046743e1fd5b7f5d904fe069ba4ec5c8966d62917e23" }
@@ -1671,8 +1663,6 @@ netpbm = { repo = "extra", version = "10.86.51-2", file = "netpbm-10.86.51-2-aar
 nettle = { repo = "core", version = "4.0-1", file = "nettle-4.0-1-aarch64.pkg.tar.xz", sha256 = "0912dee3f6f20361e607e7101f39345af7ca9fe7bc51a4ba34620468f8949300" }
 ninja = { repo = "extra", version = "1.13.2-3", file = "ninja-1.13.2-3-aarch64.pkg.tar.xz", sha256 = "4455a6c92fb38e8d5d0172176bb19d9ee6e9f2c6acae9aced5d65752fdd47290" }
 npth = { repo = "core", version = "1.8-1", file = "npth-1.8-1-aarch64.pkg.tar.xz", sha256 = "195fb844c1a24b3f38353b4331ce460ddd3fd57ac053ab4ff2567da175f17a98" }
-nspr = { repo = "core", version = "4.40-1", file = "nspr-4.40-1-aarch64.pkg.tar.xz", sha256 = "49a71ff0951c6596b66848381f89273d8c40166731561f716c592c9899b2af30" }
-nss = { repo = "core", version = "3.133-1", file = "nss-3.133-1-aarch64.pkg.tar.xz", sha256 = "d90dedad8a704dc0205ddc05e8e022b08b441d99a8a462ca4e6484feb154f315" }
 onetbb = { repo = "extra", version = "2023.2.0-1", file = "onetbb-2023.2.0-1-aarch64.pkg.tar.xz", sha256 = "54cd693870bfa5acc43dd4f88f52fbae4fb8dd7130af2fcd5cc822d2031fb79e" }
 openal = { repo = "extra", version = "1.25.2-2", file = "openal-1.25.2-2-aarch64.pkg.tar.xz", sha256 = "5346124d1da6b462b9b284a42d5cf018d93cf02737262167a27bd7c0f4ee8664" }
 openh264 = { repo = "extra", version = "2.7.0-1", file = "openh264-2.7.0-1-aarch64.pkg.tar.xz", sha256 = "75c0871481eeefd7e6a717acb53b3a7dc26657c9c4a6620a740861a51d8d1e3d" }
@@ -1722,10 +1712,9 @@ pixman = { repo = "extra", version = "0.46.4-1.1", file = "pixman-0.46.4-1.1-aar
 pkgconf = { repo = "core", version = "3.0.10-1", file = "pkgconf-3.0.10-1-aarch64.pkg.tar.xz", sha256 = "402d9162ed197b648b416ba3bef587642fba6bd8e5445929dc6ca91be145a78f" }
 po4a = { repo = "extra", version = "0.74-1", file = "po4a-0.74-1-any.pkg.tar.xz", sha256 = "17a6ed3a08787d19ca06c0aaf574cb55cd214dcebcf980ef325523b64b930794" }
 polkit = { repo = "extra", version = "128-1", file = "polkit-128-1-aarch64.pkg.tar.xz", sha256 = "3065a1dc689619ba12ac697d03cf09b2f82286a38183b27c46e06848a71c094e" }
-poppler = { repo = "extra", version = "26.10.0-2", file = "poppler-26.10.0-2-aarch64.pkg.tar.xz", sha256 = "acde57d57d59f5435e83fbde3cdd1f29f6c9759cfefbcc7b4676214571e8c79d" }
 poppler-data = { repo = "extra", version = "0.4.12-2", file = "poppler-data-0.4.12-2-any.pkg.tar.xz", sha256 = "33133fcac9cc23446a328260baff65e44b75311a3fcd25f06aabdd7ac3d9cfbf" }
-poppler-glib = { repo = "extra", version = "26.10.0-2", file = "poppler-glib-26.10.0-2-aarch64.pkg.tar.xz", sha256 = "3981cc449cc677875998bc3e176efd8bc4d9bd91bac699173c190b5d8cfaa363" }
 popt = { repo = "core", version = "1.19-2", file = "popt-1.19-2-aarch64.pkg.tar.xz", sha256 = "92da201e571426ab38ac690107e97e870862c005be9b1ecb3e1ab699ac20a022" }
+psmisc = { repo = "core", version = "23.7-2", file = "psmisc-23.7-2-aarch64.pkg.tar.xz", sha256 = "53d210ce6f840aa3c02f1b7ee32effcc1dc3584674cfbc254a1582845a04476c" }
 python = { repo = "core", version = "3.14.9-1", file = "python-3.14.9-1-aarch64.pkg.tar.xz", sha256 = "6546b1488434619a68ea3a0b6cb16a9d578b029b120bc2c0b82491bcc273dcb8" }
 python-autocommand = { repo = "extra", version = "2.2.2-9", file = "python-autocommand-2.2.2-9-any.pkg.tar.xz", sha256 = "1db72f5bbb84c8fd577f6cde2c83620ff7a6fb3371b13a0716c8b21b15fb3bce" }
 python-babel = { repo = "extra", version = "2.18.0-1", file = "python-babel-2.18.0-1-any.pkg.tar.xz", sha256 = "a1a3eb4d7ed0d8e279a06b1895685478c509587840764e58681a9e42a3efdc67" }
@@ -1733,7 +1722,9 @@ python-breathe = { repo = "extra", version = "5.1.0-1", file = "python-breathe-5
 python-certifi = { repo = "extra", version = "2026.10.23-1", file = "python-certifi-2026.10.23-1-any.pkg.tar.xz", sha256 = "f83158bba856d2b19d92af153d978f836a2e388ffff75792fd8520f5bb491113" }
 python-charset-normalizer = { repo = "extra", version = "3.5.1-1", file = "python-charset-normalizer-3.5.1-1-any.pkg.tar.xz", sha256 = "15af9917630e1b2791773efd2e95ce4b9c4a4e0fa72c883d91c3b7817c104cba" }
 python-dbus = { repo = "extra", version = "1.5.1-1", file = "python-dbus-1.5.1-1-aarch64.pkg.tar.xz", sha256 = "f18808873f81441bb21db083d5bce382e4623c78c44504efe41a6949075d6318" }
+python-distro = { repo = "extra", version = "1.9.0-4", file = "python-distro-1.9.0-4-any.pkg.tar.xz", sha256 = "3dae53a86888f1bf3c9b6d98e7928c705399a98a22bb01f6ec2471668cdcfdb5" }
 python-docutils = { repo = "extra", version = "1:0.23-1", file = "python-docutils-1:0.23-1-any.pkg.tar.xz", sha256 = "edec9b20486f00a7134dbf3ac86818016e9ec38cbf9eda636e96f649f32eb9ae" }
+python-evdev = { repo = "extra", version = "2.0.0-1", file = "python-evdev-2.0.0-1-aarch64.pkg.tar.xz", sha256 = "57cd2f50cd45cb3900b401c1e77775c760dd7a6e99c3e0dc8a228150c06ced94" }
 python-gobject = { repo = "extra", version = "3.58.1-1", file = "python-gobject-3.58.1-1-aarch64.pkg.tar.xz", sha256 = "49b8991906522d676aafc7588c6a1760dfe5b2316e3c4168ac8a62ea01bf7d1f" }
 python-idna = { repo = "extra", version = "3.20-1", file = "python-idna-3.20-1-any.pkg.tar.xz", sha256 = "29a87103ca53b3723444801e7bdbecab0dbbbbee05aff3b60a89dc09e5280592" }
 python-imagesize = { repo = "extra", version = "2.0.1-1", file = "python-imagesize-2.0.1-1-any.pkg.tar.xz", sha256 = "4980bddfbdfebcdbdc088e1b3ebc07abd165ceb178c2ebfb103c6e745213edad" }
@@ -1809,6 +1800,7 @@ tinyxml2 = { repo = "extra", version = "11.0.0-2", file = "tinyxml2-11.0.0-2-aar
 tllist = { repo = "extra", version = "1.1.0-2", file = "tllist-1.1.0-2-aarch64.pkg.tar.xz", sha256 = "e36bb18bbd85cb9dbbb15fc40ed77e57cafac63dac3dd00d919c771c2f7f44a4" }
 tpm2-tss = { repo = "core", version = "4.2.0-2", file = "tpm2-tss-4.2.0-2-aarch64.pkg.tar.xz", sha256 = "90f527d90d490e1436c696a81df7b0c6da5fa18dfdb87fb92813f35ac86c7c1b" }
 tzdata = { repo = "core", version = "2026f-1", file = "tzdata-2026f-1-aarch64.pkg.tar.xz", sha256 = "2483a989770b42669a14b195dca1e75d6cc17d174094582a72ecfc99f3887118" }
+unzip = { repo = "extra", version = "6.0-23", file = "unzip-6.0-23-aarch64.pkg.tar.xz", sha256 = "edc91c7e4e400f20345439744262d1ceded104c78d940659a6b9876076ef33fc" }
 uthash = { repo = "extra", version = "2.3.0-2", file = "uthash-2.3.0-2-any.pkg.tar.xz", sha256 = "4e95c15737f88833dbb4b65acdfd8c4c66cef6da03a52c22a388ec607239dbac" }
 util-linux = { repo = "core", version = "2.42.4-1", file = "util-linux-2.42.4-1-aarch64.pkg.tar.xz", sha256 = "a9ab17512f0f4d1cf7614574e8407561bebd632a50e568111199da0633955046" }
 util-linux-libs = { repo = "core", version = "2.42.4-1", file = "util-linux-libs-2.42.4-1-aarch64.pkg.tar.xz", sha256 = "fc33959229b44ee81ab4c66177783b65cae4390868552a81493dc94be0cf9c60" }
@@ -1819,6 +1811,7 @@ wayland = { repo = "extra", version = "1.26.0-1", file = "wayland-1.26.0-1-aarch
 wayland-protocols = { repo = "extra", version = "1.50-1", file = "wayland-protocols-1.50-1-any.pkg.tar.xz", sha256 = "f80768571ee75bb4676d3d28acc4955942c52b891d520a2edb4467cf00d75c70" }
 webrtc-audio-processing-1 = { repo = "extra", version = "1.3-6", file = "webrtc-audio-processing-1-1.3-6-aarch64.pkg.tar.xz", sha256 = "61705f84bda794447f5f3a55b6c2bff3d27f80fa9e8ad4c0983e9c3120c95787" }
 which = { repo = "core", version = "2.25-1", file = "which-2.25-1-aarch64.pkg.tar.xz", sha256 = "f42abbf2990fa1c1dc5bfdf3ea0d14481429e3d913b7fa24a91bad4e0e5da999" }
+wlr-randr = { repo = "extra", version = "0.5.0-1", file = "wlr-randr-0.5.0-1-aarch64.pkg.tar.xz", sha256 = "58c3651c6a15dc8f95a310c7e225f759aa766be2fb3c0981a9a8b567854675b3" }
 "wlroots0.20" = { repo = "extra", version = "0.20.2-1", file = "wlroots0.20-0.20.2-1-aarch64.pkg.tar.xz", sha256 = "31bf5f2ea29001643fffd3df21930e4254e51f30bc1a1684c476449d4ebdedc3" }
 x264 = { repo = "extra", version = "3:0.165.r3222.b35605a-2", file = "x264-3:0.165.r3222.b35605a-2-aarch64.pkg.tar.xz", sha256 = "ef95679c4ecf842fd08d1e49c61977c39fb38f0c2c67384130e9aba860229f70" }
 x265 = { repo = "extra", version = "4.3-1", file = "x265-4.3-1-aarch64.pkg.tar.xz", sha256 = "dbdde57f05a0c77eaa5fe5e74edba74b19c072cd98350ea1d7ae8a8f50089898" }
@@ -1843,6 +1836,7 @@ zlib-ng = { repo = "extra", version = "2.3.3-1", file = "zlib-ng-2.3.3-1-aarch64
 zstd = { repo = "core", version = "1.5.7-3", file = "zstd-1.5.7-3-aarch64.pkg.tar.xz", sha256 = "c3b907c36049b338bda0c6d85260251e48d17e2be6c0e11ddc0dfd4cf9d2e89a" }
 
 [buildroot-x86_64]
+7zip = { repo = "extra", version = "26.06-1", file = "7zip-26.06-1-x86_64.pkg.tar.zst", sha256 = "8f96a9d1c57ae8004a084ddc639e4cc6d7d8d41071fb818299ffff5eb18515dd" }
 a52dec = { repo = "extra", version = "0.8.0-3", file = "a52dec-0.8.0-3-x86_64.pkg.tar.zst", sha256 = "2e5f24ea855afafd68965247551ab4cc710e8df2b4541a8964b7f2a50e3d07f2" }
 abseil-cpp = { repo = "extra", version = "20260817.0-2", file = "abseil-cpp-20260817.0-2-x86_64.pkg.tar.zst", sha256 = "4ecd2e4e2cf7096edfad8522df68d0d9adbe41ce7a6689c1915905342ae6a016" }
 acl = { repo = "core", version = "2.4.0-1", file = "acl-2.4.0-1-x86_64.pkg.tar.zst", sha256 = "dca9ec50cf51243b86a67367a55e78b1851d31240b1edaf9c011f8511765d999" }
@@ -1869,6 +1863,7 @@ bash-completion = { repo = "extra", version = "2.18.0-1", file = "bash-completio
 binutils = { repo = "core", version = "2.47-4", file = "binutils-2.47-4-x86_64.pkg.tar.zst", sha256 = "d9508ad848fd6c31473ac0925cf8c3ec0d2a71bbbb5c7e39274186338a285660" }
 bison = { repo = "core", version = "3.8.2-8", file = "bison-3.8.2-8-x86_64.pkg.tar.zst", sha256 = "417f8e94f7088e6de69cd36d7927d82988266f298e8d4fed3166abb13e971941" }
 bluez-libs = { repo = "extra", version = "5.88-1", file = "bluez-libs-5.88-1-x86_64.pkg.tar.zst", sha256 = "1d2815b9e414048ce8d054a6570b512228d3e3035183902ef549048a29de16a6" }
+boost = { repo = "extra", version = "1.92.0-2", file = "boost-1.92.0-2-x86_64.pkg.tar.zst", sha256 = "70822c23dacb0921196ca0c449de615179055d5208b99b33b7785bc1cc5b99b7" }
 boost-libs = { repo = "extra", version = "1.92.0-2", file = "boost-libs-1.92.0-2-x86_64.pkg.tar.zst", sha256 = "17ff6bb952bc2432680b050feac2ae61c1aec83110b80dd5a7f01c60cdafd14a" }
 brotli = { repo = "core", version = "1.2.1-1", file = "brotli-1.2.1-1-x86_64.pkg.tar.zst", sha256 = "dff80818057da76e93c90045f7d9eef0469c35caa03b153cae02ba47bd3c4db2" }
 bubblewrap = { repo = "extra", version = "0.13.1-1", file = "bubblewrap-0.13.1-1-x86_64.pkg.tar.zst", sha256 = "f0efc4e02138b1b1f0719f37008da58b03213122d4881cfe949681fcbd72b36e" }
@@ -1876,6 +1871,7 @@ bzip2 = { repo = "core", version = "1.0.8-6", file = "bzip2-1.0.8-6-x86_64.pkg.t
 ca-certificates = { repo = "core", version = "20240618-1", file = "ca-certificates-20240618-1-any.pkg.tar.zst", sha256 = "982005bd5ecc998c05f561b57bb58b4457407779727e3c3d59e926d34a8b0712" }
 ca-certificates-mozilla = { repo = "core", version = "3.133-1", file = "ca-certificates-mozilla-3.133-1-x86_64.pkg.tar.zst", sha256 = "79cd453f56263cc36e0708c19f60dabad7ab6b2f5f9ba3c2437238e8f9b165c4" }
 ca-certificates-utils = { repo = "core", version = "20240618-1", file = "ca-certificates-utils-20240618-1-any.pkg.tar.zst", sha256 = "aabd5b2b7030716ccdd465d607e734e851fe4a01adf8293a3968fe22eb89ce9b" }
+cabextract = { repo = "extra", version = "1.11-3", file = "cabextract-1.11-3-x86_64.pkg.tar.zst", sha256 = "89f90aa1aefd7215d4d78e656454dde49b29ca5d4526cdc4a8f1be1e07ac9a65" }
 cairo = { repo = "extra", version = "1.18.6-1", file = "cairo-1.18.6-1-x86_64.pkg.tar.zst", sha256 = "0df806e0edf067d62b417c77d978a7577c4d6e11a724db3c12adea1a425666a1" }
 cargo-c = { repo = "extra", version = "0.10.26-2", file = "cargo-c-0.10.26-2-x86_64.pkg.tar.zst", sha256 = "a72202f5f6ed2ae84c1549e44f5ecff52ed5e084a4670b1da17ca779be778f76" }
 ccache = { repo = "extra", version = "4.14.1-1", file = "ccache-4.14.1-1-x86_64.pkg.tar.zst", sha256 = "fefc984b335b224b0ad24e85f7d95613683b8cf34980642fcc75e3664c13cda9" }
@@ -1961,12 +1957,10 @@ gnulib-l10n = { repo = "core", version = "20241231-1", file = "gnulib-l10n-20241
 gnupg = { repo = "core", version = "2.4.9-4", file = "gnupg-2.4.9-4-x86_64.pkg.tar.zst", sha256 = "5c52520b4856eea5e12fc9f70eab9eafb5586725cce8ffc1ae3746cfce115dc1" }
 gnutls = { repo = "core", version = "3.8.13-3", file = "gnutls-3.8.13-3-x86_64.pkg.tar.zst", sha256 = "a61d5d908aa83ad2ed6ddffda70ae2ddb5a81852dddcbf68ec42c1744e8a8ee9" }
 go = { repo = "extra", version = "2:1.27.3-1", file = "go-2:1.27.3-1-x86_64.pkg.tar.zst", sha256 = "1cc9224a66d5d9a65fe7e2f871e8d683a5feddd8334502f9f4c664f437277aa2" }
-gobject-introspection = { repo = "extra", version = "1.86.0-2", file = "gobject-introspection-1.86.0-2-x86_64.pkg.tar.zst", sha256 = "03b932edc9e8bfaced0fc2a0970ccf2879c5d03961109664f96deb9ac8d9440b" }
 gobject-introspection-runtime = { repo = "extra", version = "1.86.0-2", file = "gobject-introspection-runtime-1.86.0-2-x86_64.pkg.tar.zst", sha256 = "68495be23fc8b012e67f6107b415e73b383a99d715d38ab192620a2e380af307" }
 gperf = { repo = "extra", version = "3.3-2", file = "gperf-3.3-2-x86_64.pkg.tar.zst", sha256 = "87c8fb6323a2609b77767d2820f26b4c0d3337367a753d0b84180a983a6a1aa3" }
 gperftools = { repo = "extra", version = "2.19.2-1", file = "gperftools-2.19.2-1-x86_64.pkg.tar.zst", sha256 = "0170f1ae1e3fa773291c4976f34de27bb0f54f0074c6ce4663257575ee0838f6" }
 gpgme = { repo = "core", version = "2.2.0-1", file = "gpgme-2.2.0-1-x86_64.pkg.tar.zst", sha256 = "d720cb9773612a993581e0478724ac0249087236b3e899d7dadc50ee143b279b" }
-gpgmepp = { repo = "extra", version = "2.2.0-1", file = "gpgmepp-2.2.0-1-x86_64.pkg.tar.zst", sha256 = "d0e2be1c05328d397b3d4b7a4e89b4eefdaf3caf23c364bb08ae4037f7aefb28" }
 graphene = { repo = "extra", version = "1.10.8-2", file = "graphene-1.10.8-2-x86_64.pkg.tar.zst", sha256 = "6965123514a90c62c2ff20077c80000075b4f42f69759a2d84fcf0981b540a21" }
 graphite = { repo = "extra", version = "1:1.3.15-1", file = "graphite-1:1.3.15-1-x86_64.pkg.tar.zst", sha256 = "b3bd9b30b0715c36b5cfd997ca35ada9c559b1f89f3c386cae7847714c7a5ea2" }
 graphviz = { repo = "extra", version = "16.1.1-1", file = "graphviz-16.1.1-1-x86_64.pkg.tar.zst", sha256 = "dc42e262243556d21057107fdaf2bb276deb6933432258f02747e83c7f656274" }
@@ -2180,8 +2174,6 @@ netpbm = { repo = "extra", version = "10.86.51-2", file = "netpbm-10.86.51-2-x86
 nettle = { repo = "core", version = "4.0-1", file = "nettle-4.0-1-x86_64.pkg.tar.zst", sha256 = "679138a8405ca383aba7836d54fdc282db9394b7dc23c097b8965f70119adf13" }
 ninja = { repo = "extra", version = "1.13.2-3", file = "ninja-1.13.2-3-x86_64.pkg.tar.zst", sha256 = "19e12c1a169d27e427c3fa678ed3573825ac2a1043c6d47dd96e76ec3d34236c" }
 npth = { repo = "core", version = "1.8-1", file = "npth-1.8-1-x86_64.pkg.tar.zst", sha256 = "2f045edab9f7fd2c04667c5ba7f70c47da7b6fcfe87a99a857ab7ef5a12f39b4" }
-nspr = { repo = "core", version = "4.40-1", file = "nspr-4.40-1-x86_64.pkg.tar.zst", sha256 = "00c276c71d748e5220757f26776f4ad340b1cb477eb835de0d088f9b36277ad7" }
-nss = { repo = "core", version = "3.133-1", file = "nss-3.133-1-x86_64.pkg.tar.zst", sha256 = "00b84d9ed00073122197f078637a622d024cf3b08ec226420652124079afb694" }
 onetbb = { repo = "extra", version = "2023.2.0-1", file = "onetbb-2023.2.0-1-x86_64.pkg.tar.zst", sha256 = "57ea5d3abfd19b03c891de8bb1902a5c07ea4dc700d0b36bb118e32c7d0aacda" }
 openal = { repo = "extra", version = "1.25.2-2", file = "openal-1.25.2-2-x86_64.pkg.tar.zst", sha256 = "f836d5ee3aa0fc4b46800ac41840e8aa35d076de93114fd07d0de43546c1bd07" }
 openh264 = { repo = "extra", version = "2.7.0-1", file = "openh264-2.7.0-1-x86_64.pkg.tar.zst", sha256 = "c0635a401aada4bc8d2811241c649ed114b834193fe51759c43af12a9c9cebac" }
@@ -2232,10 +2224,9 @@ pixman = { repo = "extra", version = "0.46.4-1", file = "pixman-0.46.4-1-x86_64.
 pkgconf = { repo = "core", version = "3.0.10-1", file = "pkgconf-3.0.10-1-x86_64.pkg.tar.zst", sha256 = "ebc5c0d48f84b21c5b4fe80c9ee4106ad5944a0b32dbb61a30edbd154b398e92" }
 po4a = { repo = "extra", version = "0.74-1", file = "po4a-0.74-1-any.pkg.tar.zst", sha256 = "900f1e5b13a0601832953b866513f65e4d5c173d95249b62887eff3b3b0d8515" }
 polkit = { repo = "extra", version = "128-1", file = "polkit-128-1-x86_64.pkg.tar.zst", sha256 = "27a25617077c39f430ab5fe7aa8c9dd913711bd0f39745af123da0bf3fb1de07" }
-poppler = { repo = "extra", version = "26.10.0-2", file = "poppler-26.10.0-2-x86_64.pkg.tar.zst", sha256 = "6f37670b2fec9cab3cc6e5ee96f1f8a20a25af0c6c43607b61c74f8c60aac1db" }
 poppler-data = { repo = "extra", version = "0.4.12-2", file = "poppler-data-0.4.12-2-any.pkg.tar.zst", sha256 = "46d69cf3aca08e7f4edf6fa0ea7003aab50b740898bafb4e76ceb72da705aaf2" }
-poppler-glib = { repo = "extra", version = "26.10.0-2", file = "poppler-glib-26.10.0-2-x86_64.pkg.tar.zst", sha256 = "b3b7e7f81239ea9ed67eb65104ca1de33c2cac83c9a0a05e68ee1be04f3b23b3" }
 popt = { repo = "core", version = "1.19-2", file = "popt-1.19-2-x86_64.pkg.tar.zst", sha256 = "877635962b604efa79409c3d423f4fdffc4868776af3e0e804cc94a0b57ca151" }
+psmisc = { repo = "core", version = "23.7-2", file = "psmisc-23.7-2-x86_64.pkg.tar.zst", sha256 = "b6722605ae0f2912d7498e87839c702275bfd9280b076e92e80474a847561bd4" }
 python = { repo = "core", version = "3.14.10-1", file = "python-3.14.10-1-x86_64.pkg.tar.zst", sha256 = "1e40927a3a91c0684e2dfe390eea5368d02cbc43371d6ac220e18dafbf6ec2a6" }
 python-autocommand = { repo = "extra", version = "2.2.2-9", file = "python-autocommand-2.2.2-9-any.pkg.tar.zst", sha256 = "17b5712b2fd15f1202c72861998da29c4d25696f22cb4d1a704373fcf7926043" }
 python-babel = { repo = "extra", version = "2.18.0-1", file = "python-babel-2.18.0-1-any.pkg.tar.zst", sha256 = "c77addf5936a5624dfb749b0361b1d5b3f8c1aa4246775d8ff4e82bb3ab5c7a7" }
@@ -2243,7 +2234,9 @@ python-breathe = { repo = "extra", version = "5.1.0-1", file = "python-breathe-5
 python-certifi = { repo = "extra", version = "2026.10.23-1", file = "python-certifi-2026.10.23-1-any.pkg.tar.zst", sha256 = "b60a590b11254f1445d64d8b6fc54d47ff20fcacc7ad3001f686b5173ff71a18" }
 python-charset-normalizer = { repo = "extra", version = "3.5.1-1", file = "python-charset-normalizer-3.5.1-1-any.pkg.tar.zst", sha256 = "10905c5019f4ec7a096b19dafb0027fd310adbf8e987db0fb376839893c122f1" }
 python-dbus = { repo = "extra", version = "1.5.1-1", file = "python-dbus-1.5.1-1-x86_64.pkg.tar.zst", sha256 = "f1760d9c4494efb278e53cc16dcfcbff43c98422f23752b12ced16465a83dad3" }
+python-distro = { repo = "extra", version = "1.9.0-4", file = "python-distro-1.9.0-4-any.pkg.tar.zst", sha256 = "709426d44273d59cf5c68c47f0bd4a8b6e9c76cc1f8656e20223b4fd91633504" }
 python-docutils = { repo = "extra", version = "1:0.23-1", file = "python-docutils-1:0.23-1-any.pkg.tar.zst", sha256 = "b4cf3122bdc83f1b47f65dccb06ad27cc56f687388fe1e2e464f07269503414e" }
+python-evdev = { repo = "extra", version = "2.0.0-1", file = "python-evdev-2.0.0-1-x86_64.pkg.tar.zst", sha256 = "ac7bd3928ca3485254457a09f2b3297c9f5e82d1b62775f12e62c310588e7f1c" }
 python-gobject = { repo = "extra", version = "3.58.1-1", file = "python-gobject-3.58.1-1-x86_64.pkg.tar.zst", sha256 = "99e80d704d3033511ed75a2615adb0ebbf5d9e292600e080ba5bbca2f0908c5c" }
 python-idna = { repo = "extra", version = "3.20-1", file = "python-idna-3.20-1-any.pkg.tar.zst", sha256 = "b7d5bcfc85f987724594d26a5cb1efe95035993cda6f9cca61ed1f850e301596" }
 python-imagesize = { repo = "extra", version = "2.0.1-1", file = "python-imagesize-2.0.1-1-any.pkg.tar.zst", sha256 = "620f393363d3cd34ea8da698a01d4923efed328fc864483560f9b4a50db514a5" }
@@ -2320,6 +2313,7 @@ tinyxml2 = { repo = "extra", version = "11.0.0-2", file = "tinyxml2-11.0.0-2-x86
 tllist = { repo = "extra", version = "1.1.0-2", file = "tllist-1.1.0-2-x86_64.pkg.tar.zst", sha256 = "f7c009f0f594f4a876375cf6a4aa5bcabc386f97f2182d123d808f08b97e63fc" }
 tpm2-tss = { repo = "core", version = "4.2.1-2", file = "tpm2-tss-4.2.1-2-x86_64.pkg.tar.zst", sha256 = "73c1906fb81637a4f08cbb5e1ba806c7b570535e340e02ee3ddaf53b32db88a1" }
 tzdata = { repo = "core", version = "2026f-1", file = "tzdata-2026f-1-x86_64.pkg.tar.zst", sha256 = "01436856cacfbac7eb539a25a91570f6c6a806d3bd2bfb2bcdf79e8bc49af5f4" }
+unzip = { repo = "extra", version = "6.0-23", file = "unzip-6.0-23-x86_64.pkg.tar.zst", sha256 = "12afd31b30f4335ed56cda717fc2ea0e817ee8d13e0562177ddbb20bd2dc937a" }
 uthash = { repo = "extra", version = "2.3.0-3", file = "uthash-2.3.0-3-any.pkg.tar.zst", sha256 = "d4bfd007bf5dde773f13fa91fe0116b12ebd1cc2f91ddd9239a81bc12ce860d4" }
 util-linux = { repo = "core", version = "2.42.4-1", file = "util-linux-2.42.4-1-x86_64.pkg.tar.zst", sha256 = "95b7096bf4b45274645f6bb96f5b5508af6ea80e5fccba29244abaa53a341962" }
 util-linux-libs = { repo = "core", version = "2.42.4-1", file = "util-linux-libs-2.42.4-1-x86_64.pkg.tar.zst", sha256 = "56075bc7da9be4470da36a040195f98aac0afbc1edcc7e4f27e6d267dcaf9f37" }
@@ -2330,6 +2324,7 @@ wayland = { repo = "extra", version = "1.26.0-1", file = "wayland-1.26.0-1-x86_6
 wayland-protocols = { repo = "extra", version = "1.50-1", file = "wayland-protocols-1.50-1-any.pkg.tar.zst", sha256 = "9fc5d6f59513343bf20a994037591373e3d473f005c58c33ed089b01f52a9c84" }
 webrtc-audio-processing-1 = { repo = "extra", version = "1.3-6", file = "webrtc-audio-processing-1-1.3-6-x86_64.pkg.tar.zst", sha256 = "6a3096ee762546c6ee0435ccb5471aa98324b4d72448b2a746a53e0f3a8e3761" }
 which = { repo = "core", version = "2.25-1", file = "which-2.25-1-x86_64.pkg.tar.zst", sha256 = "f9a30aca3eba69a4ad5e9b0117f8fcc60a33770e4ed435634b8d4c167363fe4f" }
+wlr-randr = { repo = "extra", version = "0.5.0-1", file = "wlr-randr-0.5.0-1-x86_64.pkg.tar.zst", sha256 = "cbefba7fd65a384eb44b12df6fbd36d871782827f21a4c793bff171a298887c9" }
 "wlroots0.20" = { repo = "extra", version = "0.20.2-1", file = "wlroots0.20-0.20.2-1-x86_64.pkg.tar.zst", sha256 = "8b1da3fbf29cc45908d8de771bd22a5813b298a9049462df5b8952f23c3ffb8f" }
 x264 = { repo = "extra", version = "3:0.165.r3222.b35605a-2", file = "x264-3:0.165.r3222.b35605a-2-x86_64.pkg.tar.zst", sha256 = "c448740d7be83a63d52f1573984d3f878afec7eab21c4424727c72c639922bb7" }
 x265 = { repo = "extra", version = "4.3-1", file = "x265-4.3-1-x86_64.pkg.tar.zst", sha256 = "d798aef9f851c07693b08dee578a1906d2af418f64e611cb96aa433ed4489c27" }
@@ -2443,12 +2438,10 @@ gnupg = { repo = "core", version = "2.4.9-4", file = "gnupg-2.4.9-4-aarch64.pkg.
 gnutls = { repo = "core", version = "3.8.13-3", file = "gnutls-3.8.13-3-aarch64.pkg.tar.xz", sha256 = "aa74e78dc3f954e2b5399e1da8f89e926190aa64ffd57cf30006b3c1e2e037b1" }
 goaccess = { repo = "extra", version = "1.12-1", file = "goaccess-1.12-1-aarch64.pkg.tar.xz", sha256 = "54ef8fa8b376f46ce59f7d34a0abea3ca0cd5ed64739f175bd66ba3b889604d2" }
 gpgme = { repo = "core", version = "2.2.0-1", file = "gpgme-2.2.0-1-aarch64.pkg.tar.xz", sha256 = "7e7f7277f8ddc618499cfeb105f67d3f7be1caa32aec561c744b2a3b5063785f" }
-gpgmepp = { repo = "extra", version = "2.2.0-1", file = "gpgmepp-2.2.0-1-aarch64.pkg.tar.xz", sha256 = "e2e058b9eb3fdf64e3be23be25a0959af815bf919b714252017bef600e6bf2cb" }
 gpm = { repo = "core", version = "1.20.7.r38.ge82d1a6-7", file = "gpm-1.20.7.r38.ge82d1a6-7-aarch64.pkg.tar.xz", sha256 = "bb43865ef5175a607337bbe4d90c3e05a3b7b216c8284c6b5a4625b0caadfaf4" }
 graphene = { repo = "extra", version = "1.10.8-2.1", file = "graphene-1.10.8-2.1-aarch64.pkg.tar.xz", sha256 = "2f928a829385d79626cba58fcc111f8f930d1ae951d83f405813a3886ab9ec7b" }
 graphite = { repo = "extra", version = "1:1.3.15-1", file = "graphite-1:1.3.15-1-aarch64.pkg.tar.xz", sha256 = "87c700c71585c7f44f951928184deb690a78d39ad36ea9b6c07c59d7592e4c92" }
 grep = { repo = "core", version = "3.12-2", file = "grep-3.12-2-aarch64.pkg.tar.xz", sha256 = "7578277966710eeba59f82665ab6f33984ca11d6c2ab74deccc6f681d61c2027" }
-grim = { repo = "extra", version = "1.5.0-2", file = "grim-1.5.0-2-aarch64.pkg.tar.xz", sha256 = "d4acbdb9a4001587f6edb5f8019908cc8ea3290926862509b445b46286d24b77" }
 gtest = { repo = "extra", version = "1.18.0-1", file = "gtest-1.18.0-1-aarch64.pkg.tar.xz", sha256 = "b89d9d236da04689bf776e8639976a7568957ea4cd11b5035204daf5211f3d7a" }
 gzip = { repo = "core", version = "1.15-1", file = "gzip-1.15-1-aarch64.pkg.tar.xz", sha256 = "d92848bfc4994638a500ebb761a9a568017bd0e4104ce80c506a3ee95ad93d0f" }
 hiredis = { repo = "extra", version = "1.4.1-1", file = "hiredis-1.4.1-1-aarch64.pkg.tar.xz", sha256 = "5aa840851191ae4f956b9fdf6074f4fb785ecdc23f27cc103f401a4e0a95dbc4" }
@@ -2562,6 +2555,8 @@ libxau = { repo = "extra", version = "1.0.12-1", file = "libxau-1.0.12-1-aarch64
 libxcb = { repo = "extra", version = "1.17.0-1", file = "libxcb-1.17.0-1-aarch64.pkg.tar.xz", sha256 = "329a41249a09b4bb7f9b5f9694c1848c971188243cc1c0a479df4227800214c0" }
 libxcrypt = { repo = "core", version = "4.5.2-1", file = "libxcrypt-4.5.2-1-aarch64.pkg.tar.xz", sha256 = "e699156589561ac0c6bfc7da42891e3945647ecdd178b907f7742696fb01a0c5" }
 libxdmcp = { repo = "extra", version = "1.1.5-2", file = "libxdmcp-1.1.5-2-aarch64.pkg.tar.xz", sha256 = "aaf3575b4139a0ee675cbc15c03324d09892ded2188ac7cc326a8b36ef308496" }
+libxslt = { repo = "extra", version = "1.1.45-2", file = "libxslt-1.1.45-2-aarch64.pkg.tar.xz", sha256 = "dd508d0060063ed5d833001a125d6b427c8a623d669758c44ac10cc84a92392f" }
+libyaml = { repo = "extra", version = "0.2.5-3", file = "libyaml-0.2.5-3-aarch64.pkg.tar.xz", sha256 = "f96d25c8898b27d3364034336630363bcf48eb968c90d5d5c240e4b237ae153b" }
 lilv = { repo = "extra", version = "0.28.0-1", file = "lilv-0.28.0-1-aarch64.pkg.tar.xz", sha256 = "9e83a52165a501988ce86ce6dbe0dffde94a1b3607b5669a0a83a3d8a9207c68" }
 linux-api-headers = { repo = "core", version = "7.3-1", file = "linux-api-headers-7.3-1-aarch64.pkg.tar.xz", sha256 = "134ec46c9c6f5f639a2090d9b2e4b854cdab30444cdc2ba5bc104f84d86c075e" }
 linux-firmware-atheros = { repo = "core", version = "20261019-1", file = "linux-firmware-atheros-20261019-1-any.pkg.tar.xz", sha256 = "0f7e58015f6bcd32b713c1a0238ff3df1b22dd2cf8b64d573835d37b50a7aba6" }
@@ -2591,8 +2586,6 @@ ncdu = { repo = "extra", version = "2.9.2-1", file = "ncdu-2.9.2-1-aarch64.pkg.t
 nettle = { repo = "core", version = "4.0-1", file = "nettle-4.0-1-aarch64.pkg.tar.xz", sha256 = "0912dee3f6f20361e607e7101f39345af7ca9fe7bc51a4ba34620468f8949300" }
 nftables = { repo = "extra", version = "1:1.1.7-3", file = "nftables-1:1.1.7-3-aarch64.pkg.tar.xz", sha256 = "5d4a783ce3d7eb2b58b882a5e5ae5463f35af02bb580eaa90255dfbb1ff56c10" }
 npth = { repo = "core", version = "1.8-1", file = "npth-1.8-1-aarch64.pkg.tar.xz", sha256 = "195fb844c1a24b3f38353b4331ce460ddd3fd57ac053ab4ff2567da175f17a98" }
-nspr = { repo = "core", version = "4.40-1", file = "nspr-4.40-1-aarch64.pkg.tar.xz", sha256 = "49a71ff0951c6596b66848381f89273d8c40166731561f716c592c9899b2af30" }
-nss = { repo = "core", version = "3.133-1", file = "nss-3.133-1-aarch64.pkg.tar.xz", sha256 = "d90dedad8a704dc0205ddc05e8e022b08b441d99a8a462ca4e6484feb154f315" }
 ntfs-3g = { repo = "extra", version = "2026.9.28-1", file = "ntfs-3g-2026.9.28-1-aarch64.pkg.tar.xz", sha256 = "142f070ebb9ab78ce20f3be9acd53b055e535e22596df534fc63dad200462af7" }
 onetbb = { repo = "extra", version = "2023.2.0-1", file = "onetbb-2023.2.0-1-aarch64.pkg.tar.xz", sha256 = "54cd693870bfa5acc43dd4f88f52fbae4fb8dd7130af2fcd5cc822d2031fb79e" }
 openal = { repo = "extra", version = "1.25.2-2", file = "openal-1.25.2-2-aarch64.pkg.tar.xz", sha256 = "5346124d1da6b462b9b284a42d5cf018d93cf02737262167a27bd7c0f4ee8664" }
@@ -2613,12 +2606,21 @@ picocom = { repo = "extra", version = "3.1-4", file = "picocom-3.1-4-aarch64.pkg
 pinentry = { repo = "core", version = "1.3.3-1", file = "pinentry-1.3.3-1-aarch64.pkg.tar.xz", sha256 = "a4e7aea581effe0bcd2c90ad7062597ac83bab88116cf31cda21940ca626a1c1" }
 pixman = { repo = "extra", version = "0.46.4-1.1", file = "pixman-0.46.4-1.1-aarch64.pkg.tar.xz", sha256 = "4d20f22998a75c9fe1d38c86cd6f4324120fc2bb02f4a749e4794daac6b87dd2" }
 pkgconf = { repo = "core", version = "3.0.10-1", file = "pkgconf-3.0.10-1-aarch64.pkg.tar.xz", sha256 = "402d9162ed197b648b416ba3bef587642fba6bd8e5445929dc6ca91be145a78f" }
-poppler = { repo = "extra", version = "26.10.0-2", file = "poppler-26.10.0-2-aarch64.pkg.tar.xz", sha256 = "acde57d57d59f5435e83fbde3cdd1f29f6c9759cfefbcc7b4676214571e8c79d" }
-poppler-glib = { repo = "extra", version = "26.10.0-2", file = "poppler-glib-26.10.0-2-aarch64.pkg.tar.xz", sha256 = "3981cc449cc677875998bc3e176efd8bc4d9bd91bac699173c190b5d8cfaa363" }
 popt = { repo = "core", version = "1.19-2", file = "popt-1.19-2-aarch64.pkg.tar.xz", sha256 = "92da201e571426ab38ac690107e97e870862c005be9b1ecb3e1ab699ac20a022" }
 procps-ng = { repo = "core", version = "4.0.7-1", file = "procps-ng-4.0.7-1-aarch64.pkg.tar.xz", sha256 = "2041c460f7a25e9c33c52b420c4c0b50dc4652b01a6690397ef3b870b7d89cfc" }
 psmisc = { repo = "core", version = "23.7-2", file = "psmisc-23.7-2-aarch64.pkg.tar.xz", sha256 = "53d210ce6f840aa3c02f1b7ee32effcc1dc3584674cfbc254a1582845a04476c" }
 python = { repo = "core", version = "3.14.9-1", file = "python-3.14.9-1-aarch64.pkg.tar.xz", sha256 = "6546b1488434619a68ea3a0b6cb16a9d578b029b120bc2c0b82491bcc273dcb8" }
+python-certifi = { repo = "extra", version = "2026.10.23-1", file = "python-certifi-2026.10.23-1-any.pkg.tar.xz", sha256 = "f83158bba856d2b19d92af153d978f836a2e388ffff75792fd8520f5bb491113" }
+python-charset-normalizer = { repo = "extra", version = "3.5.1-1", file = "python-charset-normalizer-3.5.1-1-any.pkg.tar.xz", sha256 = "15af9917630e1b2791773efd2e95ce4b9c4a4e0fa72c883d91c3b7817c104cba" }
+python-dbus = { repo = "extra", version = "1.5.1-1", file = "python-dbus-1.5.1-1-aarch64.pkg.tar.xz", sha256 = "f18808873f81441bb21db083d5bce382e4623c78c44504efe41a6949075d6318" }
+python-distro = { repo = "extra", version = "1.9.0-4", file = "python-distro-1.9.0-4-any.pkg.tar.xz", sha256 = "3dae53a86888f1bf3c9b6d98e7928c705399a98a22bb01f6ec2471668cdcfdb5" }
+python-evdev = { repo = "extra", version = "2.0.0-1", file = "python-evdev-2.0.0-1-aarch64.pkg.tar.xz", sha256 = "57cd2f50cd45cb3900b401c1e77775c760dd7a6e99c3e0dc8a228150c06ced94" }
+python-gobject = { repo = "extra", version = "3.58.1-1", file = "python-gobject-3.58.1-1-aarch64.pkg.tar.xz", sha256 = "49b8991906522d676aafc7588c6a1760dfe5b2316e3c4168ac8a62ea01bf7d1f" }
+python-idna = { repo = "extra", version = "3.20-1", file = "python-idna-3.20-1-any.pkg.tar.xz", sha256 = "29a87103ca53b3723444801e7bdbecab0dbbbbee05aff3b60a89dc09e5280592" }
+python-lxml = { repo = "extra", version = "6.1.3_1-1", file = "python-lxml-6.1.3_1-1-aarch64.pkg.tar.xz", sha256 = "2a0137777140080e9bc3a2f69d1dc050fffe5f373a0eb32dddf7608dfbdbdac2" }
+python-requests = { repo = "extra", version = "2.34.2-1", file = "python-requests-2.34.2-1-any.pkg.tar.xz", sha256 = "45df09536475e0e66ca23fea0249e879e98ac2c87b679857d1f9031543aecf1f" }
+python-urllib3 = { repo = "extra", version = "2.8.0-1", file = "python-urllib3-2.8.0-1-any.pkg.tar.xz", sha256 = "597b224c55febc5d21537c6d4574c8e843cb72e155836f0bd693ce38830ae96c" }
+python-yaml = { repo = "extra", version = "6.0.3-2", file = "python-yaml-6.0.3-2-aarch64.pkg.tar.xz", sha256 = "35d1d9aad13879b1e300719a41b74357974e4372c7543694d08b84f46e22f014" }
 raspberrypi-bootloader = { repo = "alarm", version = "20261102-1", file = "raspberrypi-bootloader-20261102-1-any.pkg.tar.xz", sha256 = "3380853118b993d031c1960b0383e3daad7c0f62229e90ed493fc00be14ef1b2" }
 readline = { repo = "core", version = "8.3.6-1", file = "readline-8.3.6-1-aarch64.pkg.tar.xz", sha256 = "6e81d2cf14bf0309761d4c65a0a46f181f61c5a6b83aa64928f1ab12cf6f5797" }
 ripgrep = { repo = "extra", version = "15.2.0-1", file = "ripgrep-15.2.0-1-aarch64.pkg.tar.xz", sha256 = "458f1c725cc64502616bfeed1d795cbce4f5479321b06d4b8fd91fa3b125b628" }
@@ -2660,6 +2662,7 @@ wayland-protocols = { repo = "extra", version = "1.50-1", file = "wayland-protoc
 webrtc-audio-processing-1 = { repo = "extra", version = "1.3-6", file = "webrtc-audio-processing-1-1.3-6-aarch64.pkg.tar.xz", sha256 = "61705f84bda794447f5f3a55b6c2bff3d27f80fa9e8ad4c0983e9c3120c95787" }
 which = { repo = "core", version = "2.25-1", file = "which-2.25-1-aarch64.pkg.tar.xz", sha256 = "f42abbf2990fa1c1dc5bfdf3ea0d14481429e3d913b7fa24a91bad4e0e5da999" }
 wireless-regdb = { repo = "core", version = "2026.09.03-1", file = "wireless-regdb-2026.09.03-1-any.pkg.tar.xz", sha256 = "a9c4c44dc6aa478ef2b6e6d82a78934134d46df4ae7b66ba84e0cbf2ee06fd47" }
+wlr-randr = { repo = "extra", version = "0.5.0-1", file = "wlr-randr-0.5.0-1-aarch64.pkg.tar.xz", sha256 = "58c3651c6a15dc8f95a310c7e225f759aa766be2fb3c0981a9a8b567854675b3" }
 xcb-util-wm = { repo = "extra", version = "0.4.2-2", file = "xcb-util-wm-0.4.2-2-aarch64.pkg.tar.xz", sha256 = "cca68248ca0d4a83382cac35fec66e8965e121d792ab2cb54a048fd7f514b92e" }
 xcursor-vanilla-dmz = { repo = "extra", version = "0.4.5.3-1", file = "xcursor-vanilla-dmz-0.4.5.3-1-any.pkg.tar.xz", sha256 = "a9ed680c5023556adf831e4d7628769dd6f65af2f913d388c26fd2a5eb1793e7" }
 xkeyboard-config = { repo = "extra", version = "2.49-1", file = "xkeyboard-config-2.49-1-any.pkg.tar.xz", sha256 = "56e9d10d3beaa0f868c88af397818ff8bd080a7563e39dfdf748d76168e89f7f" }
@@ -2762,12 +2765,10 @@ gnupg = { repo = "core", version = "2.4.9-4", file = "gnupg-2.4.9-4-x86_64.pkg.t
 gnutls = { repo = "core", version = "3.8.13-3", file = "gnutls-3.8.13-3-x86_64.pkg.tar.zst", sha256 = "a61d5d908aa83ad2ed6ddffda70ae2ddb5a81852dddcbf68ec42c1744e8a8ee9" }
 goaccess = { repo = "extra", version = "1.12-2", file = "goaccess-1.12-2-x86_64.pkg.tar.zst", sha256 = "ec505de586a1d46774e565f33c380c5c898a412dd502a2cb21c2d4c615db9008" }
 gpgme = { repo = "core", version = "2.2.0-1", file = "gpgme-2.2.0-1-x86_64.pkg.tar.zst", sha256 = "d720cb9773612a993581e0478724ac0249087236b3e899d7dadc50ee143b279b" }
-gpgmepp = { repo = "extra", version = "2.2.0-1", file = "gpgmepp-2.2.0-1-x86_64.pkg.tar.zst", sha256 = "d0e2be1c05328d397b3d4b7a4e89b4eefdaf3caf23c364bb08ae4037f7aefb28" }
 gpm = { repo = "core", version = "1.20.7.r38.ge82d1a6-7", file = "gpm-1.20.7.r38.ge82d1a6-7-x86_64.pkg.tar.zst", sha256 = "c13146ba90f58ad4b561ffb15ae7d667718acca7865eb752b83d1530f3e67689" }
 graphene = { repo = "extra", version = "1.10.8-2", file = "graphene-1.10.8-2-x86_64.pkg.tar.zst", sha256 = "6965123514a90c62c2ff20077c80000075b4f42f69759a2d84fcf0981b540a21" }
 graphite = { repo = "extra", version = "1:1.3.15-1", file = "graphite-1:1.3.15-1-x86_64.pkg.tar.zst", sha256 = "b3bd9b30b0715c36b5cfd997ca35ada9c559b1f89f3c386cae7847714c7a5ea2" }
 grep = { repo = "core", version = "3.12-2", file = "grep-3.12-2-x86_64.pkg.tar.zst", sha256 = "9dd8a5dad99e8d388b1fb1406919de218d30c7e49924f615a12d3f2deaaecfe2" }
-grim = { repo = "extra", version = "1.5.0-2", file = "grim-1.5.0-2-x86_64.pkg.tar.zst", sha256 = "2cbddb88d4a3316c61e8984203bbdca81cbf089c323e5db09c4e1648c483c8a6" }
 gtest = { repo = "extra", version = "1.18.0-1", file = "gtest-1.18.0-1-x86_64.pkg.tar.zst", sha256 = "a056289240aebf743810c69a9dc3a8503edf9ae98b5be167fddd66598236ebe5" }
 gzip = { repo = "core", version = "1.15-1", file = "gzip-1.15-1-x86_64.pkg.tar.zst", sha256 = "4a2d1fd90458bf9751b9aca418f8e8ae6d570cb4a406bd7dc646ad7162a720fa" }
 hiredis = { repo = "extra", version = "1.4.1-1", file = "hiredis-1.4.1-1-x86_64.pkg.tar.zst", sha256 = "9bacc58ce0196995e154313164d28730eb25dd745590accbde8d85e9a72a1b37" }
@@ -2883,6 +2884,8 @@ libxau = { repo = "extra", version = "1.0.12-1", file = "libxau-1.0.12-1-x86_64.
 libxcb = { repo = "extra", version = "1.17.0-1", file = "libxcb-1.17.0-1-x86_64.pkg.tar.zst", sha256 = "2b2e7ac64b1d56c08a227c10bcab179605f2773f31db0a8c89f49f4e5b2f1292" }
 libxcrypt = { repo = "core", version = "4.5.2-1", file = "libxcrypt-4.5.2-1-x86_64.pkg.tar.zst", sha256 = "7d324b88963786491391468203701efd2c812798a9c3fbcc4ff8a4ddb2d9f276" }
 libxdmcp = { repo = "extra", version = "1.1.5-2", file = "libxdmcp-1.1.5-2-x86_64.pkg.tar.zst", sha256 = "623c957c2fd4b427a0f5a531da44931f9f66521391ee0bd0e635479947036b65" }
+libxslt = { repo = "extra", version = "1.1.45-2", file = "libxslt-1.1.45-2-x86_64.pkg.tar.zst", sha256 = "05777116162528f360cf50c411c232176f64dc856c2199f6eb5199af77362c6a" }
+libyaml = { repo = "extra", version = "0.2.5-3", file = "libyaml-0.2.5-3-x86_64.pkg.tar.zst", sha256 = "cd2385982a050dfce2ef0ac435b36e9574ece347bdf4ad016ee5ea78e30b4940" }
 lilv = { repo = "extra", version = "0.28.0-1", file = "lilv-0.28.0-1-x86_64.pkg.tar.zst", sha256 = "d8b6e7aea382261114d383eb0ea93249a1172e28a1bc25613c5cd2a737511c7c" }
 linux-api-headers = { repo = "core", version = "7.3-1", file = "linux-api-headers-7.3-1-x86_64.pkg.tar.zst", sha256 = "a5a6f5fc8922ef454c54e65e321906183e6606acaadaf416896dcbc44f2194ed" }
 linux-firmware-amdgpu = { repo = "core", version = "20261019-1", file = "linux-firmware-amdgpu-20261019-1-any.pkg.tar.zst", sha256 = "3809f365db7bc136d53d7a8330f4ca59205ca9d51aac535e721822e28b86b79f" }
@@ -2918,8 +2921,6 @@ ncdu = { repo = "extra", version = "2.9.2-1", file = "ncdu-2.9.2-1-x86_64.pkg.ta
 nettle = { repo = "core", version = "4.0-1", file = "nettle-4.0-1-x86_64.pkg.tar.zst", sha256 = "679138a8405ca383aba7836d54fdc282db9394b7dc23c097b8965f70119adf13" }
 nftables = { repo = "extra", version = "1:1.1.7-3", file = "nftables-1:1.1.7-3-x86_64.pkg.tar.zst", sha256 = "5a25cfdb19c370d01cfe81ce8c1e2e1fa9a2e05d51d1417578e8c425893a5b29" }
 npth = { repo = "core", version = "1.8-1", file = "npth-1.8-1-x86_64.pkg.tar.zst", sha256 = "2f045edab9f7fd2c04667c5ba7f70c47da7b6fcfe87a99a857ab7ef5a12f39b4" }
-nspr = { repo = "core", version = "4.40-1", file = "nspr-4.40-1-x86_64.pkg.tar.zst", sha256 = "00c276c71d748e5220757f26776f4ad340b1cb477eb835de0d088f9b36277ad7" }
-nss = { repo = "core", version = "3.133-1", file = "nss-3.133-1-x86_64.pkg.tar.zst", sha256 = "00b84d9ed00073122197f078637a622d024cf3b08ec226420652124079afb694" }
 ntfs-3g = { repo = "extra", version = "2026.9.28-1", file = "ntfs-3g-2026.9.28-1-x86_64.pkg.tar.zst", sha256 = "59c68592cb7fde9450ecbdf9f0ae6f74a495c75db8f4ca2636c334a7752a341a" }
 onetbb = { repo = "extra", version = "2023.2.0-1", file = "onetbb-2023.2.0-1-x86_64.pkg.tar.zst", sha256 = "57ea5d3abfd19b03c891de8bb1902a5c07ea4dc700d0b36bb118e32c7d0aacda" }
 openal = { repo = "extra", version = "1.25.2-2", file = "openal-1.25.2-2-x86_64.pkg.tar.zst", sha256 = "f836d5ee3aa0fc4b46800ac41840e8aa35d076de93114fd07d0de43546c1bd07" }
@@ -2941,12 +2942,21 @@ picocom = { repo = "extra", version = "3.1-4", file = "picocom-3.1-4-x86_64.pkg.
 pinentry = { repo = "core", version = "1.3.3-1", file = "pinentry-1.3.3-1-x86_64.pkg.tar.zst", sha256 = "16dfcc18fc60f8c654687970a9b7253ce17a987c44119fe2ee37c760460fc557" }
 pixman = { repo = "extra", version = "0.46.4-1", file = "pixman-0.46.4-1-x86_64.pkg.tar.zst", sha256 = "e87e665d25a2230a178d8490202e1d677fde5908f68ebedf7d987308fc26fcb6" }
 pkgconf = { repo = "core", version = "3.0.10-1", file = "pkgconf-3.0.10-1-x86_64.pkg.tar.zst", sha256 = "ebc5c0d48f84b21c5b4fe80c9ee4106ad5944a0b32dbb61a30edbd154b398e92" }
-poppler = { repo = "extra", version = "26.10.0-2", file = "poppler-26.10.0-2-x86_64.pkg.tar.zst", sha256 = "6f37670b2fec9cab3cc6e5ee96f1f8a20a25af0c6c43607b61c74f8c60aac1db" }
-poppler-glib = { repo = "extra", version = "26.10.0-2", file = "poppler-glib-26.10.0-2-x86_64.pkg.tar.zst", sha256 = "b3b7e7f81239ea9ed67eb65104ca1de33c2cac83c9a0a05e68ee1be04f3b23b3" }
 popt = { repo = "core", version = "1.19-2", file = "popt-1.19-2-x86_64.pkg.tar.zst", sha256 = "877635962b604efa79409c3d423f4fdffc4868776af3e0e804cc94a0b57ca151" }
 procps-ng = { repo = "core", version = "4.0.7-1", file = "procps-ng-4.0.7-1-x86_64.pkg.tar.zst", sha256 = "7a0b17ee89ad1a04f7c6c86be69c9c816ac2c14da9648dfdefb7ccf4b22c14d3" }
 psmisc = { repo = "core", version = "23.7-2", file = "psmisc-23.7-2-x86_64.pkg.tar.zst", sha256 = "b6722605ae0f2912d7498e87839c702275bfd9280b076e92e80474a847561bd4" }
 python = { repo = "core", version = "3.14.10-1", file = "python-3.14.10-1-x86_64.pkg.tar.zst", sha256 = "1e40927a3a91c0684e2dfe390eea5368d02cbc43371d6ac220e18dafbf6ec2a6" }
+python-certifi = { repo = "extra", version = "2026.10.23-1", file = "python-certifi-2026.10.23-1-any.pkg.tar.zst", sha256 = "b60a590b11254f1445d64d8b6fc54d47ff20fcacc7ad3001f686b5173ff71a18" }
+python-charset-normalizer = { repo = "extra", version = "3.5.1-1", file = "python-charset-normalizer-3.5.1-1-any.pkg.tar.zst", sha256 = "10905c5019f4ec7a096b19dafb0027fd310adbf8e987db0fb376839893c122f1" }
+python-dbus = { repo = "extra", version = "1.5.1-1", file = "python-dbus-1.5.1-1-x86_64.pkg.tar.zst", sha256 = "f1760d9c4494efb278e53cc16dcfcbff43c98422f23752b12ced16465a83dad3" }
+python-distro = { repo = "extra", version = "1.9.0-4", file = "python-distro-1.9.0-4-any.pkg.tar.zst", sha256 = "709426d44273d59cf5c68c47f0bd4a8b6e9c76cc1f8656e20223b4fd91633504" }
+python-evdev = { repo = "extra", version = "2.0.0-1", file = "python-evdev-2.0.0-1-x86_64.pkg.tar.zst", sha256 = "ac7bd3928ca3485254457a09f2b3297c9f5e82d1b62775f12e62c310588e7f1c" }
+python-gobject = { repo = "extra", version = "3.58.1-1", file = "python-gobject-3.58.1-1-x86_64.pkg.tar.zst", sha256 = "99e80d704d3033511ed75a2615adb0ebbf5d9e292600e080ba5bbca2f0908c5c" }
+python-idna = { repo = "extra", version = "3.20-1", file = "python-idna-3.20-1-any.pkg.tar.zst", sha256 = "b7d5bcfc85f987724594d26a5cb1efe95035993cda6f9cca61ed1f850e301596" }
+python-lxml = { repo = "extra", version = "6.1.3_1-1", file = "python-lxml-6.1.3_1-1-x86_64.pkg.tar.zst", sha256 = "f3aa12ff48ea4ad42c38d67696ddacc5b0682091b6f2f232edb2dba709165d73" }
+python-requests = { repo = "extra", version = "2.34.2-1", file = "python-requests-2.34.2-1-any.pkg.tar.zst", sha256 = "bb58c7d57e0052210fcca14f0efe7fa6ab9ba1b5af3d664ee7dc5c1caf2d3679" }
+python-urllib3 = { repo = "extra", version = "2.8.0-1", file = "python-urllib3-2.8.0-1-any.pkg.tar.zst", sha256 = "c40a90730dd847ee6c79b2c049f8097e5b3e888a5add85a114775b424beca0de" }
+python-yaml = { repo = "extra", version = "6.0.3-2", file = "python-yaml-6.0.3-2-x86_64.pkg.tar.zst", sha256 = "2d7a34423bff947fb00c37d8d38c9595440d370cb07710be60c0d373709a25b2" }
 readline = { repo = "core", version = "8.3.6-1", file = "readline-8.3.6-1-x86_64.pkg.tar.zst", sha256 = "016b2aeebfbe9dfb89283c52bb49487d95ea23a875d477da42d000a793613020" }
 ripgrep = { repo = "extra", version = "15.2.0-1", file = "ripgrep-15.2.0-1-x86_64.pkg.tar.zst", sha256 = "4ab540861ee43dfe6974403dd3f03830615fd4b53971736f5c4fc7aa82133a21" }
 rsync = { repo = "extra", version = "3.5.2-3", file = "rsync-3.5.2-3-x86_64.pkg.tar.zst", sha256 = "189c02261bb3cfc6d7b41f8bc750ce1d6c356032e22ea7176d747e7fcc485807" }
@@ -2989,6 +2999,7 @@ wayland-protocols = { repo = "extra", version = "1.50-1", file = "wayland-protoc
 webrtc-audio-processing-1 = { repo = "extra", version = "1.3-6", file = "webrtc-audio-processing-1-1.3-6-x86_64.pkg.tar.zst", sha256 = "6a3096ee762546c6ee0435ccb5471aa98324b4d72448b2a746a53e0f3a8e3761" }
 which = { repo = "core", version = "2.25-1", file = "which-2.25-1-x86_64.pkg.tar.zst", sha256 = "f9a30aca3eba69a4ad5e9b0117f8fcc60a33770e4ed435634b8d4c167363fe4f" }
 wireless-regdb = { repo = "core", version = "2026.09.03-1", file = "wireless-regdb-2026.09.03-1-any.pkg.tar.zst", sha256 = "e2649b989481da296a5a1793c3375d136ea27ed3faa4025b898a7119b213f823" }
+wlr-randr = { repo = "extra", version = "0.5.0-1", file = "wlr-randr-0.5.0-1-x86_64.pkg.tar.zst", sha256 = "cbefba7fd65a384eb44b12df6fbd36d871782827f21a4c793bff171a298887c9" }
 xcb-util-wm = { repo = "extra", version = "0.4.2-2", file = "xcb-util-wm-0.4.2-2-x86_64.pkg.tar.zst", sha256 = "aa4becb215290dc33fcf2938b4e5604fceaf1189e4d2d5688861001413fc888c" }
 xcursor-vanilla-dmz = { repo = "extra", version = "0.4.5.3-1", file = "xcursor-vanilla-dmz-0.4.5.3-1-any.pkg.tar.zst", sha256 = "de7f1c2f4549b6ba30707d4a6ecd37155e33d8755892f611b97b92128e1e1ed0" }
 xkeyboard-config = { repo = "extra", version = "2.49-1", file = "xkeyboard-config-2.49-1-any.pkg.tar.zst", sha256 = "79827e026c2d0fd52a8d3dfa3fa75d990cf5ff3b93b73ff95c9d6b19037df340" }
@@ -3043,6 +3054,7 @@ cairo = { version = "1.18.6-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 cargo-c = { version = "0.10.26-1", nvchecker = "[cargo-c]\nsource = \"git\"\ngit = \"https://github.com/lu-zero/cargo-c.git\"\nprefix = \"v\"\n" }
 ccache = { version = "4.14.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[ccache]\nsource = \"git\"\ngit = \"https://github.com/ccache/ccache.git\"\nprefix = \"v\"\n" }
 chafa = { version = "1.18.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[chafa]\nsource = \"git\"\ngit = \"https://github.com/hpjansson/chafa.git\"\n" }
+cmake = { version = "4.4.5-1", nvchecker = "[cmake]\nsource = 'gitlab'\ngitlab = 'cmake/cmake'\nhost = 'gitlab.kitware.com'\nuse_max_tag = true\nprefix = 'v'\nexclude_regex = '.*rc.*'\n" }
 colord = { version = "1.4.8-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[colord]\nsource = \"git\"\ngit = \"https://github.com/hughsie/colord.git\"\n" }
 confuse = { version = "3.4-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[confuse]\nsource = \"git\"\ngit = \"https://github.com/libconfuse/libconfuse.git\"\nprefix = \"v\"\n" }
 coreutils = { version = "9.12-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[coreutils]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/coreutils.git\"\nprefix = \"v\"\n" }
@@ -3050,6 +3062,7 @@ cryptsetup = { version = "2.8.8-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761
 cups = { version = "2:2.4.20-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[cups]\nsource = \"github\"\ngithub = \"OpenPrinting/cups\"\nuse_max_tag = true\nprefix = \"v\"\n" }
 cups-filters = { version = "2.0.1-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[cups-filters]\nsource = \"github\"\ngithub = \"OpenPrinting/cups-filters\"\nuse_max_tag = true\nprefix = \"v\"\n" }
 curl = { version = "8.23.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[curl]\nsource = 'git'\ngit = 'https://github.com/curl/curl.git'\nprefix = 'curl-'\nfrom_pattern = '_'\nto_pattern = '.'\nexclude_regex = \".*(tiny|beta).*\"\n" }
+cython = { version = "3.3.1-1", nvchecker = "[cython]\nsource = 'pypi'\npypi = 'cython'\n" }
 dav1d = { version = "1.5.4-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[dav1d]\nsource = \"git\"\ngit = \"https://code.videolan.org/videolan/dav1d.git\"\n" }
 dbus = { version = "1.16.2-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[dbus]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/dbus/dbus.git\"\ninclude_regex = 'dbus-\\d+\\.\\d*[02468]\\.\\d+'\nprefix = \"dbus-\"\n" }
 dbus-broker = { version = "37-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[dbus-broker]\nsource = \"git\"\ngit = \"https://github.com/bus1/dbus-broker.git\"\nprefix = \"v\"\n" }
@@ -3291,6 +3304,7 @@ libxslt = { version = "1.1.45-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761ea
 libxt = { version = "1.3.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libxt]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXt\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXt-.*\"\nuse_max_tag = true\nprefix = \"libXt-\"\n" }
 libxtst = { version = "1.2.6-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libxtst]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXtst\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXtst-.*\"\nuse_max_tag = true\nprefix = \"libXtst-\"\n" }
 libxxf86vm = { version = "1.1.7-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[libxxf86vm]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXxf86vm\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXxf86vm-.*\"\nuse_max_tag = true\nprefix = \"libXxf86vm-\"\n" }
+libyaml = { version = "0.2.5-3" }
 libyuv = { version = "r2921+644251f25-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 licenses = { version = "20240728-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 lilv = { version = "0.28.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[lilv]\nsource = \"git\"\ngit = \"https://gitlab.com/lv2/lilv\"\nprefix = \"v\"\n" }
@@ -3373,6 +3387,17 @@ pulseaudio = { version = "17.0+r134+g77d25a1e6-1", a32 = "aee39c468775915b9a4b26
 pygobject = { version = "3.58.1-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[pygobject]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/pygobject.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
 python = { version = "3.14.10-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[python]\nsource = \"git\"\ngit = \"https://github.com/python/cpython.git\"\nprefix = \"v\"\nexclude_regex = \".*(a|b|rc).*\"\n" }
 python-cairo = { version = "1.29.2-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[python-cairo]\nsource = \"github\"\ngithub = \"pygobject/pycairo\"\nprefix = \"v\"\nuse_max_tag = true\n" }
+python-certifi = { version = "2026.10.23-1", nvchecker = "[python-certifi]\nsource = \"git\"\ngit = \"https://github.com/certifi/python-certifi\"\n" }
+python-charset-normalizer = { version = "3.5.1-1", nvchecker = "[python-charset-normalizer]\nsource = \"git\"\ngit = \"https://github.com/Ousret/charset_normalizer.git\"\n" }
+python-distro = { version = "1.9.0-4", nvchecker = "[python-distro]\nsource = \"git\"\ngit = \"https://github.com/python-distro/distro.git\"\nprefix = \"v\"\n" }
+python-evdev = { version = "2.0.0-1", nvchecker = "[python-evdev]\nsource = \"git\"\ngit = \"https://github.com/gvalkov/python-evdev.git\"\nprefix = \"v\"\n" }
+python-idna = { version = "3.20-1", nvchecker = "[python-idna]\nsource = \"git\"\ngit = \"https://github.com/kjd/idna.git\"\nprefix = \"v\"\n" }
+python-lxml = { version = "6.1.3_1-1", nvchecker = "[python-lxml]\nsource = \"git\"\ngit = \"https://github.com/lxml/lxml.git\"\nprefix=\"lxml-\"\nfrom_pattern = \"-\"\nto_pattern = \"_\"\nexclude_regex = \".*(a|b).*\"\n" }
+python-markupsafe = { version = "3.0.4-1", nvchecker = "[python-markupsafe]\nsource = \"git\"\ngit = \"https://github.com/pallets/markupsafe.git\"\n" }
+python-numpy = { version = "2.5.4-1", nvchecker = "[python-numpy]\nsource = \"git\"\ngit = \"https://github.com/numpy/numpy.git\"\nprefix = \"v\"\nexclude_regex = \".*(dev|pre|a|alpha|b|beta|rc).*\"\n" }
+python-requests = { version = "2.34.2-1", nvchecker = "[python-requests]\nsource = \"git\"\ngit = \"https://github.com/psf/requests.git\"\nprefix = \"v\"\nexclude_regex = \".*(weekly|rc|alpha|beta|dev).*\"\n" }
+python-urllib3 = { version = "2.8.0-1", nvchecker = "[python-urllib3]\nsource = \"git\"\ngit = \"https://github.com/urllib3/urllib3.git\"\nprefix = \"v\"\n" }
+python-yaml = { version = "6.0.3-2", nvchecker = "[python-yaml]\nsource = \"pypi\"\npypi = \"pyyaml\"\n" }
 rav1e = { version = "0.8.1-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[rav1e]\nsource = \"git\"\ngit = \"https://github.com/xiph/rav1e.git\"\ninclude_regex = \"v[\\\\d\\\\.]+\"\nprefix = \"v\"\n" }
 readline = { version = "8.3.6-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[\"readline:base\"]\nsource = \"htmlparser\"\nurl = \"https://cgit.git.savannah.gnu.org/cgit/readline.git/commit/\"\nxpath = \"//div[@class='commit-subject']\"\nfrom_pattern = '[rR]eadline-([\\d.]+)(\\s+patch\\s+(\\d+))?.*'\nto_pattern = '\\1\\2'\n\n[readline]\nsource = \"combiner\"\nfrom = [\"readline:base\"]\nformat = \"$1\"\nfrom_pattern = \" patch \"\nto_pattern = \".\"\n" }
 ripgrep = { version = "15.2.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[ripgrep]\nsource = \"git\"\ngit = \"https://github.com/BurntSushi/ripgrep.git\"\n" }
@@ -3431,6 +3456,7 @@ webrtc-audio-processing-1 = { version = "1.3-6", a32 = "aee39c468775915b9a4b2660
 which = { version = "2.25-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[which]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/which/'\nregex = 'which-([\\d.]+).tar'\n" }
 wireless-regdb = { version = "2026.09.03-1", nvchecker = "[wireless-regdb]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git\"\nprefix = \"master-\"\n" }
 wireplumber = { version = "0.5.18-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[wireplumber]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pipewire/wireplumber.git\"\ninclude_regex = '\\d+\\.\\d+\\.[1-7]?\\d'\n" }
+wlr-randr = { version = "0.5.0-1", nvchecker = "[wlr-randr]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/emersion/wlr-randr.git\"\nprefix = \"v\"\nexclude_regex = \".*(pre|a|alpha|b|beta|r|rc).*\"\n" }
 x264 = { version = "3:0.165.r3222.b35605a-2", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 x265 = { version = "4.3-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[x265]\nsource = \"git\"\ngit = \"https://github.com/Multicorewareinc/x265.git\"\n" }
 xcb-util-wm = { version = "0.4.2-2", nvchecker = "[xcb-util-wm]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libxcb-wm\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*xcb-util-wm-.*\"\nuse_max_tag = true\nprefix = \"xcb-util-wm-\"\n" }
