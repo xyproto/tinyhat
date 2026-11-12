@@ -1,0 +1,293 @@
+diff --git a/lutris/game.py b/lutris/game.py
+index 8edc57f..43b2f95 100644
+--- a/lutris/game.py
++++ b/lutris/game.py
+@@ -579,7 +579,11 @@ class Game:
+                 logger.warning("Selected display %s not found", display)
+                 display = ""
+         if display:
+-            turn_off_except(display)
++            display_manager = get_display_manager()
++            if hasattr(display_manager, "turn_off_except"):
++                display_manager.turn_off_except(display)
++            else:
++                turn_off_except(display)
+             time.sleep(3)
+             return True
+         return False
+diff --git a/lutris/runtime.py b/lutris/runtime.py
+index 4359d3a..e6edc11 100644
+--- a/lutris/runtime.py
++++ b/lutris/runtime.py
+@@ -28,7 +28,7 @@ from lutris.util.wine.dxvk import DXVKManager
+ from lutris.util.wine.dxvk_nvapi import DXVKNVAPIManager
+ from lutris.util.wine.vkd3d import VKD3DManager
+ 
+-RUNTIME_DISABLED = os.environ.get("LUTRIS_RUNTIME", "").casefold() in ("0", "off")
++RUNTIME_DISABLED = os.environ.get("LUTRIS_RUNTIME", "0").casefold() in ("0", "off")
+ DEFAULT_RUNTIME = "Ubuntu-18.04"
+ 
+ DLL_MANAGERS = {
+diff --git a/lutris/services/base.py b/lutris/services/base.py
+index 844bc41..22aacab 100644
+--- a/lutris/services/base.py
++++ b/lutris/services/base.py
+@@ -16,7 +16,11 @@ from lutris.database.games import add_game, get_game_by_field, get_game_for_serv
+ from lutris.database.services import ServiceGameCollection
+ from lutris.game import GAME_UPDATED, Game
+ from lutris.gui.dialogs import NoticeDialog
+-from lutris.gui.dialogs.webconnect_dialog import WebConnectDialog
++
++try:
++    from lutris.gui.dialogs.webconnect_dialog import WebConnectDialog
++except (ImportError, ValueError):
++    WebConnectDialog = None  # type: ignore[assignment,misc]
+ from lutris.gui.views.media_loader import download_media
+ from lutris.gui.widgets import NotificationSource
+ from lutris.gui.widgets.utils import BANNER_SIZE, ICON_SIZE
+@@ -478,6 +482,9 @@ class OnlineService(BaseService):
+             application.show_lutris_installer_window(game_slug=self.client_installer)
+             return
+         logger.debug("Connecting to %s", self.name)
++        if WebConnectDialog is None:
++            NoticeDialog(_("Logging in to %s needs WebKitGTK 6.0, which is not installed.") % self.name)
++            return
+         dialog = WebConnectDialog(self, parent)
+         dialog.run()
+ 
+diff --git a/lutris/services/dolphin.py b/lutris/services/dolphin.py
+index 9e9cdba..0e8ee7b 100644
+--- a/lutris/services/dolphin.py
++++ b/lutris/services/dolphin.py
+@@ -2,7 +2,10 @@ import json
+ import os
+ from gettext import gettext as _
+ 
+-from PIL import Image
++try:
++    from PIL import Image
++except ImportError:
++    Image = None
+ 
+ from lutris import settings
+ from lutris.runners.dolphin import PLATFORMS
+@@ -109,7 +112,7 @@ class DolphinGame(ServiceGame):
+             return banner_path
+ 
+         (width, height), data = cache_entry["volume_banner"]
+-        if data:
++        if data and Image is not None:
+             img = Image.frombytes("RGB", (width, height), data, "raw", ("BGRX"))
+             # 96x32 is a bit small, maybe 2x scale?
+             # img.resize((width * 2, height * 2))
+diff --git a/lutris/sysoptions.py b/lutris/sysoptions.py
+index 0b1aaa4..2ab3744 100644
+--- a/lutris/sysoptions.py
++++ b/lutris/sysoptions.py
+@@ -16,6 +16,10 @@ if TYPE_CHECKING:
+     from lutris.config import LutrisConfig
+ 
+ 
++def can_switch_display_modes() -> bool:
++    return is_display_x11() or type(get_display_manager()).__name__ == "WlrDisplayManager"
++
++
+ def get_resolution_choices() -> list[tuple[str, str]]:
+     """Return list of available resolutions as label, value tuples
+     suitable for inclusion in drop-downs.
+@@ -190,7 +194,7 @@ system_options: list[dict[str, Any]] = [  # pylint: disable=invalid-name
+         "type": "bool",
+         "label": _("Restore resolution on game exit"),
+         "default": False,
+-        "available": is_display_x11,
++        "available": can_switch_display_modes,
+         "advanced": True,
+         "help": _(
+             "Some games don't restore your screen resolution when \n"
+@@ -241,7 +245,7 @@ system_options: list[dict[str, Any]] = [  # pylint: disable=invalid-name
+         "label": _("Turn off monitors except"),
+         "choices": get_output_choices,
+         "default": "off",
+-        "available": is_display_x11,
++        "available": can_switch_display_modes,
+         "advanced": True,
+         "help": _(
+             "Only keep the selected screen active while the game is "
+@@ -256,7 +260,7 @@ system_options: list[dict[str, Any]] = [  # pylint: disable=invalid-name
+         "type": "choice",
+         "label": _("Switch resolution to"),
+         "advanced": True,
+-        "available": is_display_x11,
++        "available": can_switch_display_modes,
+         "choices": get_resolution_choices,
+         "default": "off",
+         "help": _("Switch to this screen resolution while the game is running."),
+diff --git a/lutris/util/display.py b/lutris/util/display.py
+index a69d95c..89a63b1 100644
+--- a/lutris/util/display.py
++++ b/lutris/util/display.py
+@@ -119,6 +119,14 @@ def get_display_manager() -> DisplayManager:
+     from lutris.util.graphics.displayconfig import MutterDisplayManager
+     from lutris.util.graphics.xrandr import LegacyDisplayManager
+ 
++    if not is_display_x11():
++        from lutris.util.graphics.wlrandr import WlrDisplayManager
++
++        try:
++            return WlrDisplayManager()
++        except RuntimeError as ex:
++            logger.debug("Not using wlr-randr: %s", ex)
++
+     if DBUS_AVAILABLE:
+         try:
+             return MutterDisplayManager()
+diff --git a/lutris/util/graphics/wlrandr.py b/lutris/util/graphics/wlrandr.py
+new file mode 100644
+index 0000000..594bb5a
+--- /dev/null
++++ b/lutris/util/graphics/wlrandr.py
+@@ -0,0 +1,107 @@
++"""Display management for wlroots compositors, through wlr-randr"""
++
++import json
++import subprocess
++from collections import namedtuple
++from collections.abc import Iterable
++from typing import Any
++
++from lutris.settings import DEFAULT_RESOLUTION_HEIGHT, DEFAULT_RESOLUTION_WIDTH
++from lutris.util.display import DisplayManager
++from lutris.util.log import logger
++from lutris.util.system import find_executable
++
++Output = namedtuple("Output", ("name", "mode", "position", "rotation", "primary", "rate", "preferred_mode"))
++
++
++def _query(command: str) -> list[dict[str, Any]]:
++    try:
++        result = subprocess.run([command, "--json"], capture_output=True, text=True, timeout=5, check=True)
++        return [o for o in json.loads(result.stdout) if o.get("enabled")]
++    except (OSError, subprocess.SubprocessError, ValueError) as ex:
++        logger.debug("wlr-randr is not usable: %s", ex)
++        return []
++
++
++def _mode(output: dict[str, Any], key: str) -> dict[str, Any] | None:
++    return next((m for m in output.get("modes", []) if m.get(key)), None)
++
++
++def _name(mode: dict[str, Any] | None) -> str | None:
++    return "%sx%s" % (mode["width"], mode["height"]) if mode else None
++
++
++class WlrDisplayManager(DisplayManager):
++    """Display manager for compositors with wlr-output-management, like dwl, Sway and labwc"""
++
++    def __init__(self) -> None:
++        command = find_executable("wlr-randr")
++        if not command:
++            raise RuntimeError("wlr-randr is not installed")
++        self.command: str = command
++        if not _query(command):
++            raise RuntimeError("The compositor does not support wlr-output-management")
++
++    def get_outputs(self) -> list[Output]:
++        outputs = []
++        for index, output in enumerate(_query(self.command)):
++            current = _mode(output, "current")
++            if not current:
++                continue
++            position = output.get("position", {})
++            outputs.append(
++                Output(
++                    name=output["name"],
++                    mode=_name(current),
++                    position="%s,%s" % (position.get("x", 0), position.get("y", 0)),
++                    rotation=output.get("transform", "normal"),
++                    primary=index == 0,
++                    rate="%.3f" % current.get("refresh", 60),
++                    preferred_mode=_name(_mode(output, "preferred")),
++                )
++            )
++        return outputs
++
++    def get_display_names(self) -> list[str]:
++        return [output.name for output in self.get_outputs()]
++
++    def get_resolutions(self) -> list[str]:
++        resolutions = {_name(m) for o in _query(self.command) for m in o.get("modes", [])}
++        resolutions.discard(None)
++        if not resolutions:
++            return ["%sx%s" % (DEFAULT_RESOLUTION_WIDTH, DEFAULT_RESOLUTION_HEIGHT)]
++        return sorted(resolutions, key=lambda r: [int(n) for n in r.split("x")], reverse=True)
++
++    def get_current_resolution(self) -> tuple[str, str]:
++        outputs = self.get_outputs()
++        if not outputs:
++            return str(DEFAULT_RESOLUTION_WIDTH), str(DEFAULT_RESOLUTION_HEIGHT)
++        width, height = outputs[0].mode.split("x")
++        return width, height
++
++    def set_resolution(self, resolution: str | Iterable[Output]) -> None:
++        if not resolution:
++            return
++        if isinstance(resolution, str):
++            outputs = self.get_outputs()
++            if not outputs or resolution not in self.get_resolutions():
++                logger.warning("Resolution %s doesn't exist.", resolution)
++                return
++            commands = [[self.command, "--output", outputs[0].name, "--mode", resolution]]
++        else:
++            commands = [
++                [self.command, "--output", o.name, "--on", "--mode", "%s@%sHz" % (o.mode, o.rate), "--pos", o.position,
++                 "--transform", o.rotation or "normal"]
++                for o in resolution
++            ]
++        for command in commands:
++            logger.info("Changing the display mode: %s", " ".join(command))
++            subprocess.run(command, check=False)
++
++    def get_config(self) -> list[Output]:
++        return self.get_outputs()
++
++    def turn_off_except(self, display: str) -> None:
++        for output in self.get_outputs():
++            if output.name != display:
++                subprocess.run([self.command, "--output", output.name, "--off"], check=False)
+diff --git a/lutris/util/linux.py b/lutris/util/linux.py
+index c2b4ba6..51e2346 100644
+--- a/lutris/util/linux.py
++++ b/lutris/util/linux.py
+@@ -29,6 +29,7 @@ except ImportError:
+ SYSTEM_COMPONENTS = {
+     "COMMANDS": [
+         "xrandr",
++        "wlr-randr",
+         "fuser",
+         "glxinfo",
+         "vulkaninfo",
+diff --git a/lutris/util/wine/extract_icon.py b/lutris/util/wine/extract_icon.py
+index d062fde..7f7390b 100644
+--- a/lutris/util/wine/extract_icon.py
++++ b/lutris/util/wine/extract_icon.py
+@@ -29,7 +29,10 @@ import logging
+ import struct
+ from io import BytesIO
+ 
+-from PIL import Image
++try:
++    from PIL import Image
++except ImportError:
++    Image = None
+ 
+ try:
+     import pefile
+@@ -161,6 +164,8 @@ class IconExtractor:
+ 
+         Returns PIL Image object or None if extraction fails
+         """
++        if Image is None:
++            return None
+         icons = self._get_icon()
+         best_score = -1
+         icon = None

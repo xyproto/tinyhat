@@ -1,0 +1,18 @@
+pkgbase = python-charset-normalizer
+	pkgdesc = Encoding and language detection alternative to chardet
+	pkgver = 3.5.1
+	pkgrel = 1
+	url = https://github.com/Ousret/charset_normalizer
+	arch = any
+	license = MIT
+	checkdepends = python-pytest
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	makedepends = python-wheel
+	depends = python
+	source = git+https://github.com/Ousret/charset_normalizer.git#tag=3.5.1
+	b2sums = 6c051591dcc7e884a26600da732178cc6060427da5efc7c40e65d74cc0455e1dbb5b131462b7c6e9cfe0c855acd2bc00e465fae4b86de75efa04b97189811099
+
+pkgname = python-charset-normalizer

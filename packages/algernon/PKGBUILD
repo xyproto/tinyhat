@@ -1,8 +1,9 @@
 # Maintainer: Alexander F. Rødseth <xyproto@archlinux.org>
 
 pkgname=algernon
-pkgver=1.17.13
-pkgrel=2
+pkgver=1.17.13.r5.g12ea2d9
+pkgrel=1
+_commit=12ea2d92720eb73ec2e70db2d403017a5f4b1f68
 pkgdesc='Web server with Lua, Markdown, QUIC, Redis and PostgreSQL support'
 arch=(i686)
 url='https://algernon.roboticoverlords.org/'
@@ -15,7 +16,7 @@ optdepends=('mariadb: For using the MariaDB/MySQL database backend'
             'redis: For using the Redis database backend'
             'valkey: For using the Redis database backend')
 options=(docs)
-source=("git+https://github.com/xyproto/algernon#tag=v$pkgver")
+source=("git+https://github.com/xyproto/algernon#commit=$_commit")
 b2sums=('SKIP')
 
 prepare() {

@@ -1,0 +1,80 @@
+diff --git a/dwl.c b/dwl.c
+index 08ed95b..9f43b68 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -356,6 +356,8 @@ static void focusmon(const Arg *arg);
+ static void altab(const Arg *arg);
+ static void drawtasks(Monitor *m, int x, int w);
+ static void drawpill(Monitor *m, int x, int y, int w, int h, int r);
++static void roundtop(Monitor *m, int x, int y, int w, int r);
++static void drawroundtag(Monitor *m, int x, int w, const char *text);
+ static void minimize(const Arg *arg);
+ static void showdesktop(const Arg *arg);
+ static void taskclick(const Arg *arg);
+@@ -2370,6 +2372,11 @@ drawbar(Monitor *m)
+ 	x += m->lrpad / 2;
+ 	for (i = 0; i < LENGTH(tags); i++) {
+ 		w = TEXTW(m, tags[i]);
++		if (m->tagset[m->seltags] & 1 << i && !(urg & 1 << i)) {
++			drawroundtag(m, x, w, tags[i]);
++			x += w;
++			continue;
++		}
+ 		drwl_setscheme(m->drw, colors[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+ 		drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, tags[i], urg & 1 << i);
+ 		if (occ & 1 << i)
+@@ -2496,12 +2503,52 @@ blendcolor(uint32_t a, uint32_t b, int cov)
+ void
+ drawpill(Monitor *m, int x, int y, int w, int h, int r)
+ {
+-	uint32_t norm = colors[SchemeNorm][ColBg], sel = colors[SchemeSel][ColBg];
+-	pixman_color_t clr = convert_color(sel);
++	pixman_color_t clr = convert_color(colors[SchemeSel][ColBg]);
+ 
+ 	r = MAX(0, MIN(r, MIN(w / 2, h)));
+ 	pixman_image_fill_rectangles(PIXMAN_OP_SRC, m->drw->image, &clr, 2, (pixman_rectangle16_t[2]){
+ 		{ x + r, y, w - 2 * r, r }, { x, y + r, w, h - r }});
++	roundtop(m, x, y, w, r);
++}
++
++void
++drawroundtag(Monitor *m, int x, int w, const char *text)
++{
++	uint32_t norm = colors[SchemeNorm][ColBg], sel = colors[SchemeSel][ColBg];
++	int h = m->b.height - 1, pad = MAX(2, m->b.height / 8), d = h - 2 * pad;
++	int tw = drwl_font_getwidth(m->drw, text), fh = m->drw->font->height;
++	int sw = MIN(w, MAX(d, tw + d / 2)), sx = x + (w - sw) / 2;
++	double r = d / 2.0;
++	pixman_color_t clr;
++
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++	for (int j = 0; j < d; j++)
++		for (int i = 0; i < sw; i++) {
++			int cov = 0;
++			for (int sy = 0; sy < 4; sy++)
++				for (int s = 0; s < 4; s++) {
++					double px = i + (s + 0.5) / 4, py = j + (sy + 0.5) / 4;
++					double cx = MAX(r, MIN(sw - r, px));
++					cov += (px - cx) * (px - cx) + (py - r) * (py - r) <= r * r;
++				}
++			if (!cov)
++				continue;
++			clr = convert_color(blendcolor(norm, sel, cov));
++			pixman_image_fill_rectangles(PIXMAN_OP_SRC, m->drw->image, &clr, 1,
++				&(pixman_rectangle16_t){ sx + i, pad + j, 1, 1 });
++		}
++	drwl_setscheme(m->drw, colors[SchemeSel]);
++	drwl_text(m->drw, x + (w - tw) / 2, (m->b.height - fh) / 2, tw, fh, 0, text, 0);
++}
++
++void
++roundtop(Monitor *m, int x, int y, int w, int r)
++{
++	uint32_t norm = colors[SchemeNorm][ColBg], sel = colors[SchemeSel][ColBg];
++	pixman_color_t clr;
++
++	r = MAX(0, MIN(r, w / 2));
+ 	for (int j = 0; j < r; j++)
+ 		for (int i = 0; i < r; i++) {
+ 			int cov = 0;

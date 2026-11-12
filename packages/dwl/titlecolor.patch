@@ -1,5 +1,5 @@
 diff --git a/dwl.c b/dwl.c
-index 3c1da86..1f45581 100644
+index 3c1da86..6efae30 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -355,6 +355,7 @@ static void focusclient(Client *c, int lift);
@@ -20,7 +20,7 @@ index 3c1da86..1f45581 100644
 +		int r = bh / 3, margin = MAX(r, m->lrpad);
 +		int pw = MIN(tw + 2 * margin, MIN(aw, m->b.height * 20));
 +		int px = m->taskx[n] + gap + (aw - pw) / 2;
-+		drawpill(m, px, pad, pw, bh, r);
++		drawpill(m, px, pad, pw, m->b.height - 1 - pad, r);
 +		drwl_setscheme(m->drw, colors[SchemeSel]);
 +		drwl_text(m->drw, px + margin, pad, pw - 2 * margin, bh, tw < pw - 2 * margin ? (pw - 2 * margin - tw) / 2 : 0, title, 0);
  	}

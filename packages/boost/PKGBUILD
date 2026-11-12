@@ -192,4 +192,8 @@ eval "$(
     '
 )"
 
+makedepends=(${makedepends[@]/openmpi})
+eval "$(declare -f build | sed '/using mpi/d')"
+eval "$(declare -f package_boost-libs | sed -e 's/libboost_mpi[^ ]*\.so//' -e '/mpi\.so/d' -e "/optdepends=('openmpi/d")"
+
 unset -f pkgver

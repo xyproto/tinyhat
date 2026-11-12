@@ -14,7 +14,7 @@ pkgbase = grim
 	makedepends = pango
 	makedepends = scdoc
 	makedepends = wayland-protocols
-	depends = cairo
+	depends = libcairo.so
 	depends = libjpeg-turbo
 	depends = wayland
 	source = git+https://gitlab.freedesktop.org/emersion/grim#tag=v1.5.0

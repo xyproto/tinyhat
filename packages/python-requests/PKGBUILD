@@ -1,0 +1,70 @@
+# Maintainer: Levente Polyak <anthraxx[at]archlinux[dot]org>
+# Maintainer: Daniel M. Capella <polyzen@archlinux.org>
+# Contributor: Felix Yan <felixonmars@archlinux.org>
+# Contributor: Massimiliano Torromeo <massimiliano.torromeo@gmail.com>
+
+pkgname=python-requests
+pkgver=2.34.2
+pkgrel="1"
+pkgdesc='Python HTTP for Humans'
+arch=(any)
+url=https://requests.readthedocs.io/
+license=(Apache-2.0)
+depends=(
+  ca-certificates
+  python
+  python-charset-normalizer
+  python-idna
+  python-urllib3
+  python-certifi
+)
+makedepends=(
+  git
+  python-build
+  python-installer
+  python-setuptools
+  python-wheel
+)
+checkdepends=(
+  python-pysocks
+  python-pytest-httpbin
+  python-trustme
+)
+optdepends=(
+  'python-chardet: alternative character encoding library'
+  'python-pysocks: SOCKS proxy support'
+)
+source=("$pkgname::git+https://github.com/psf/requests#tag=v$pkgver")
+sha512sums=('f1e6feb53d7385f8e81fae929c340be2391ba8c7e6213d3b6c9f5b9b1bd02ef16cc47c2959f17b306bb7fce9bd71d53a7fded1fe581bc7e8d641cea458cca1ac')
+b2sums=('e2ed45b76fa140ec7e2bb70fa65f8ce4efd0c0a3cf1f8714d14708e85eeeac093bdb7230c6b903dc095d5a94ea235350ea6f7bd6d8e9327b1312271bf3028f89')
+validpgpkeys=(87227E29AD9CFF5CFAC3EA6A44D3FF97B80DC864) # Nathanael Prewitt <nate.prewitt@gmail.com>
+
+build() {
+  cd "$pkgname"
+  python -m build --wheel --no-isolation
+}
+
+check() {
+  cd "$pkgname"
+
+  pytest_options=(
+    -v tests
+    # test_unicode_header_name hangs
+    --deselect tests/test_requests.py::TestRequests::test_unicode_header_name
+    # [Errno 111] Connection refused
+    --deselect 'tests/test_requests.py::TestTimeout::test_connect_timeout[timeout0]'
+    --deselect 'tests/test_requests.py::TestTimeout::test_connect_timeout[timeout1]'
+    --deselect 'tests/test_requests.py::TestTimeout::test_total_timeout_connect[timeout0]'
+    --deselect 'tests/test_requests.py::TestTimeout::test_total_timeout_connect[timeout1]'
+  )
+  PYTHONPATH="$PWD/src" pytest "${pytest_options[@]}"
+}
+
+package() {
+  cd "$pkgname"
+  python -m installer --destdir="$pkgdir" dist/*.whl
+}
+
+# vim: ts=2 sw=2 et:
+
+unset -f pkgver

@@ -1,0 +1,22 @@
+pkgname=tinyhat-guru
+pkgver=1
+pkgrel=1
+pkgdesc="Tiny Hat crash screen, with a QR code for reporting the crash"
+arch=(i686 x32)
+url="https://github.com/xyproto/tinyhat"
+license=(BSD-3-Clause MIT)
+depends=(glibc)
+_qr=1.8.0
+source=(tinyhat-guru.c
+        "QR-Code-generator-$_qr.tar.gz::https://github.com/nayuki/QR-Code-generator/archive/refs/tags/v$_qr.tar.gz")
+sha256sums=(SKIP
+            '2ec0a4d33d6f521c942eeaf473d42d5fe139abcfa57d2beffe10c5cf7d34ae60')
+
+build() {
+  cc -std=c11 $CFLAGS -IQR-Code-generator-$_qr/c -o tinyhat-guru tinyhat-guru.c QR-Code-generator-$_qr/c/qrcodegen.c $LDFLAGS
+}
+
+package() {
+  install -Dm755 tinyhat-guru "$pkgdir/usr/bin/tinyhat-guru"
+  install -Dm644 QR-Code-generator-$_qr/Readme.markdown "$pkgdir/usr/share/licenses/$pkgname/QR-Code-generator.md"
+}

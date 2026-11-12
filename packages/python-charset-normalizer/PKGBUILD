@@ -1,0 +1,52 @@
+# Maintainer: Daniel M. Capella <polyzen@archlinux.org>
+# Contributor: Maxime Gauduin <alucryd@archlinux.org>
+# Contributor: lilydjwg <lilydjwg@gmail.com>
+# Contributor: lilac <lilac@build.archlinuxcn.org>
+# Contributor: Dimitris Kiziridis <ragouel@outlook.com>
+
+_name=charset_normalizer
+pkgname=python-charset-normalizer
+pkgver=3.5.1
+pkgrel="1"
+pkgdesc='Encoding and language detection alternative to chardet'
+arch=(any)
+url=https://github.com/Ousret/charset_normalizer
+license=(MIT)
+depends=(python)
+makedepends=(
+  git
+  mypy
+  python-build
+  python-installer
+  python-setuptools
+  python-wheel
+)
+checkdepends=(python-pytest)
+source=("git+$url.git#tag=$pkgver")
+b2sums=('6c051591dcc7e884a26600da732178cc6060427da5efc7c40e65d74cc0455e1dbb5b131462b7c6e9cfe0c855acd2bc00e465fae4b86de75efa04b97189811099')
+
+build() {
+  cd $_name
+  export CHARSET_NORMALIZER_USE_MYPYC=1
+  python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+check() {
+  cd $_name
+  PYTHONPATH=src pytest
+}
+
+package() {
+  local site_packages=$(python -c "import site; print(site.getsitepackages()[0])")
+  install -d "$pkgdir"/usr/share/licenses/$pkgname
+  ln -s "$site_packages"/$_name-$pkgver.dist-info/licenses/LICENSE \
+    "$pkgdir"/usr/share/licenses/$pkgname
+
+  cd $_name
+  python -m installer --destdir="$pkgdir" dist/*.whl
+}
+
+makedepends=(${makedepends[@]/mypy})
+eval "$(declare -f build | sed '/CHARSET_NORMALIZER_USE_MYPYC/d')"
+
+unset -f pkgver

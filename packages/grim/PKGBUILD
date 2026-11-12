@@ -23,4 +23,6 @@ package() {
   install -Dm644 $pkgname/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }
 
+depends=($(printf '%s\n' "${depends[@]}" | sed 's/^cairo$/libcairo.so/'))
+
 unset -f pkgver

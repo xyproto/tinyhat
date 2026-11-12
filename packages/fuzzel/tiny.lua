@@ -14,7 +14,7 @@ return {
     "95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b",
     "0562d17389f2c0a09ade45f26823fbffb729823616c6759916f4712535143267",
   },
-  depends = { "cairo", "fcft", "libpng", "libutf8proc", "libxkbcommon", "pixman", "wayland" },
+  depends = { "libcairo.so", "fcft", "libpng", "libutf8proc", "libxkbcommon", "pixman", "wayland" },
   makedepends = { "meson", "ninja", "scdoc" },
   libdepends = { "tllist", "wayland-protocols" },
   build_dir = "fuzzel",

@@ -1,0 +1,24 @@
+pkgbase = cython
+	pkgdesc = C-Extensions for Python
+	pkgver = 3.3.1
+	pkgrel = 1
+	url = https://cython.org
+	arch = i686
+	arch = x32
+	license = Apache-2.0
+	checkdepends = gdb
+	checkdepends = python-interpreters-pep-734
+	checkdepends = python-pytest
+	checkdepends = python-tests
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-wheel
+	depends = glibc
+	depends = python
+	depends = python-pygments
+	depends = python-setuptools
+	source = git+https://github.com/cython/cython#tag=3.3.1
+	sha256sums = 3b7972f370ee510778ce68a66b27f6a1ebb830b4889d3f7a207476aae6ab1e24
+
+pkgname = cython

@@ -10,7 +10,7 @@ return {
   b2 = {
     "fcb867a416bcc1acad28e35ab1a2e1aeea4d5c04196ee74b7ad372256ef780ab77bb2afd93badb8c203c0a320ea7b229a999dfd9faa575c8c42150e5fcbcbd9a",
   },
-  depends = { "cairo", "libjpeg-turbo", "wayland" },
+  depends = { "libcairo.so", "libjpeg-turbo", "wayland" },
   makedepends = { "git", "meson", "ninja", "scdoc" },
   libdepends = { "bash-completion", "fish", "pango", "wayland-protocols" },
   build_dir = "grim",

@@ -1,0 +1,308 @@
+diff --git a/dwl.c b/dwl.c
+index 6b8c94c..81e5203 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -265,6 +265,8 @@ struct Monitor {
+ 	int taskx[33], ntasks, taskhover;
+ 	int volx0, volx1;
+ 	int launchx[9], nlaunch;
++	int tipx[8][2], ntips;
++	char tips[8][128];
+ 	int asleep;
+ 	Drwl *drw;
+ 	Buffer *pool[2];
+@@ -373,6 +375,7 @@ static void showdesktop(const Arg *arg);
+ static void taskclick(const Arg *arg);
+ static void taskclose(const Arg *arg);
+ static void taskhover(void);
++static void tipupdate(void);
+ static void wallupdate(void);
+ static void togglelayout(const Arg *arg);
+ static void focusstack(const Arg *arg);
+@@ -2746,6 +2749,14 @@ inflame(double x, double y, double cx, double base, double r, double tip)
+ }
+ 
+ /* The color of the status icon at (x, y), in units of the icon height, or 0 where it is see-through */
++static double
++segdist(double x, double y, double x0, double y0, double x1, double y1)
++{
++	double vx = x1 - x0, vy = y1 - y0, t = ((x - x0) * vx + (y - y0) * vy) / (vx * vx + vy * vy);
++	t = MAX(0, MIN(1, t));
++	return hypot(x - x0 - t * vx, y - y0 - t * vy);
++}
++
+ static uint32_t
+ iconpixel(int kind, int arg, double x, double y)
+ {
+@@ -2803,6 +2814,28 @@ iconpixel(int kind, int arg, double x, double y)
+ 			return colors[SchemeStatus][2];
+ 		return 0;
+ 	}
++	case 'W':
++		dx = x - 0.575;
++		dy = 0.86 - y;
++		d = hypot(dx, dy);
++		if (d < 0.1)
++			return fg;
++		return dy > 0 && fabs(dx) <= dy * 1.05 && (fabs(d - 0.42) < 0.075 || fabs(d - 0.74) < 0.075) ? fg : 0;
++	case 'S':
++		dx = x - 0.5;
++		dy = y - 0.5;
++		d = hypot(dx, dy);
++		if (fabs(d - 0.42) < 0.06)
++			return fg;
++		if (d < 0.42 && (fabs(dy) < 0.035 || fabs(hypot(dx / 0.2, dy / 0.42) - 1) < 0.16))
++			return fg;
++		return 0;
++	case 'K':
++		if (x >= 0.04 && x < 1.26 && y >= 0.12 && y < 0.88 && !(x >= 0.11 && x < 1.19 && y >= 0.19 && y < 0.81))
++			return fg;
++		if (segdist(x, y, 0.28, 0.33, 0.52, 0.5) < 0.05 || segdist(x, y, 0.52, 0.5, 0.28, 0.67) < 0.05)
++			return fg;
++		return x >= 0.62 && x < 0.95 && y >= 0.62 && y < 0.69 ? fg : 0;
+ 	case 'H':
+ 		if (inflame(x, y, 0.40, 0.78, 0.13, 0.50))
+ 			return 0xffe066ff;
+@@ -2819,7 +2852,8 @@ static int
+ iconpx(Monitor *m, int kind)
+ {
+ 	int s = m->b.height * 5 / 8;
+-	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : kind == 'G' ? 1.0 : 1.08));
++	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : kind == 'G' || kind == 'S' ? 1.0
++		: kind == 'W' ? 1.15 : kind == 'K' ? 1.3 : 1.08));
+ }
+ 
+ /* Draw a status icon straight into the bar, antialiased with 4x4 samples per pixel */
+@@ -2846,15 +2880,10 @@ drawicon(Monitor *m, int x, int kind, int arg)
+ 		}
+ }
+ 
+-/* Status items that start with an icon: V/M volume (muted), B/C battery (charging), H too hot */
+ static int
+-iconkind(const char *s, const char *p)
++statuskind(const char *item)
+ {
+-	if (!*p || !strchr("VMBCH", *p) || !(p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3))))
+-		return 0;
+-	if (*p == 'H')
+-		return !p[1] || !strncmp(p + 1, " | ", 3) ? 'H' : 0;
+-	return p[1] == ' ' && p[2] >= '0' && p[2] <= '9' ? *p : 0;
++	return item[0] && strchr("VMBCHWSK", item[0]) && (!item[1] || item[1] == ' ') ? item[0] : 0;
+ }
+ 
+ static int
+@@ -2915,63 +2944,81 @@ drawlaunchers(Monitor *m, int x)
+ }
+ 
+ static int
+-stextw(Monitor *m, char *s)
++statusitems(Monitor *m, int x, char *s, int draw)
+ {
+-	int w = 0;
+-	char *seg = s;
+-	for (char *p = s; *p; p++) {
+-		int kind = iconkind(s, p);
+-		if (!kind)
+-			continue;
+-		*p = '\0';
+-		w += drwl_font_getwidth(m->drw, seg) + iconw(m, kind);
+-		*p = kind;
+-		seg = p + 1;
+-		while (*seg == ' ')
+-			seg++;
+-		while (*seg >= '0' && *seg <= '9')
+-			seg++;
+-		if (*seg == '%')
+-			seg++;
++	int gap = drwl_font_getwidth(m->drw, "  "), space = drwl_font_getwidth(m->drw, " ");
++	int launched = !conf.nlaunch, sep = 0;
++	char *item = s, *next;
++
++	for (int first = 1; item && *item; item = next, first = 0) {
++		const char *text;
++		int kind;
++		if ((next = strchr(item, '\t')))
++			*next++ = '\0';
++		kind = statuskind(item);
++		if (!launched && (kind || !next || !*next)) {
++			if (!first)
++				x += gap;
++			x = draw ? drawlaunchers(m, x) : x + launchw(m);
++			launched = sep = 1;
++		}
++		if (!first && !sep)
++			x += gap;
++		sep = 0;
++		text = kind ? item + 1 + (item[1] == ' ') : item;
++		if (kind) {
++			if (draw && (kind == 'V' || kind == 'M'))
++				m->volx0 = x;
++			if (draw)
++				drawicon(m, x, kind, atoi(text));
++			if (draw && m->ntips < (int)LENGTH(m->tips)) {
++				char *t = m->tips[m->ntips];
++				switch (kind) {
++				case 'W': snprintf(t, sizeof(m->tips[0]), "Wi-Fi: %s", text); break;
++				case 'V': snprintf(t, sizeof(m->tips[0]), "Volume %s", text); break;
++				case 'M': snprintf(t, sizeof(m->tips[0]), "Volume %s (muted)", text); break;
++				case 'B': snprintf(t, sizeof(m->tips[0]), "Battery %s", text); break;
++				case 'C': snprintf(t, sizeof(m->tips[0]), "Battery %s, charging", text); break;
++				case 'H': snprintf(t, sizeof(m->tips[0]), "The computer is too hot"); break;
++				case 'K': snprintf(t, sizeof(m->tips[0]), "The SSH server is running"); break;
++				default: t[0] = '\0';
++				}
++				if (t[0]) {
++					m->tipx[m->ntips][0] = x;
++					m->tipx[m->ntips][1] = x + iconw(m, kind);
++					m->ntips++;
++				}
++			}
++			x += iconw(m, kind);
++			if (draw && (kind == 'V' || kind == 'M'))
++				m->volx1 = x;
++			if (strchr("VMBCW", kind))
++				text = "";
++			else if (*text)
++				x += space;
++		}
++		if (*text)
++			x = draw ? drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, text), m->b.height, 0, text, 0)
++				: x + (int)drwl_font_getwidth(m->drw, text);
++		if (next)
++			next[-1] = '\t';
+ 	}
+-	return w + drwl_font_getwidth(m->drw, seg) + launchw(m);
++	if (!launched)
++		x = draw ? drawlaunchers(m, x) : x + launchw(m);
++	return x;
++}
++
++static int
++stextw(Monitor *m, char *s)
++{
++	return statusitems(m, 0, s, 0);
+ }
+ 
+ static int
+ drawstext(Monitor *m, int x, char *s)
+ {
+-	char *seg = s;
+-	int launched = 0;
+-	for (char *p = s; *p; p++) {
+-		int kind = iconkind(s, p), vol = kind == 'V' || kind == 'M';
+-		if (!kind)
+-			continue;
+-		*p = '\0';
+-		if (*seg)
+-			x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+-		*p = kind;
+-		if (!launched++)
+-			x = drawlaunchers(m, x);
+-		if (vol)
+-			m->volx0 = x;
+-		drawicon(m, x, kind, atoi(p + 1));
+-		drwl_setscheme(m->drw, colors[SchemeStatus]);
+-		x += iconw(m, kind);
+-		if (vol)
+-			m->volx1 = x;
+-		seg = p + 1;
+-		while (*seg == ' ')
+-			seg++;
+-		while (*seg >= '0' && *seg <= '9')
+-			seg++;
+-		if (*seg == '%')
+-			seg++;
+-	}
+-	if (!launched)
+-		x = drawlaunchers(m, x);
+-	if (*seg)
+-		x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
+-	return x;
++	m->ntips = 0;
++	return statusitems(m, x, s, 1);
+ }
+ 
+ typedef struct {
+@@ -3038,6 +3085,66 @@ wallplace(WallBuffer *b, Monitor *m, double x, double y)
+ 	wlr_scene_node_set_position(&sb->node, m->m.x + (int)(x / s), m->m.y + (int)(y / s));
+ }
+ 
++static struct wlr_scene_buffer *tipnode;
++static char tipshown[128];
++
++void
++tipupdate(void)
++{
++	Monitor *m, *hm = NULL;
++	const char *text = NULL;
++	int ix0 = 0, ix1 = 0;
++
++	wl_list_for_each(m, &mons, link) {
++		int cx;
++		if (!m->wlr_output->enabled || !m->scene_buffer->node.enabled || m != selmon
++				|| cursor->x < m->m.x || cursor->x >= m->m.x + m->m.width
++				|| cursor->y < m->m.y + (topbar ? 0 : m->m.height - m->b.real_height)
++				|| cursor->y >= m->m.y + (topbar ? m->b.real_height : m->m.height))
++			continue;
++		cx = (int)((cursor->x - m->m.x) * m->wlr_output->scale);
++		for (int i = 0; i < m->ntips; i++)
++			if (cx >= m->tipx[i][0] && cx < m->tipx[i][1]) {
++				hm = m;
++				text = m->tips[i];
++				ix0 = m->tipx[i][0];
++				ix1 = m->tipx[i][1];
++			}
++	}
++	if (text && tipnode && !strcmp(text, tipshown))
++		return;
++	if (tipnode) {
++		wlr_scene_node_destroy(&tipnode->node);
++		tipnode = NULL;
++		tipshown[0] = '\0';
++	}
++	if (!text)
++		return;
++	{
++		double s = hm->wlr_output->scale;
++		int pad = hm->lrpad / 2, tw = (int)drwl_font_getwidth(hm->drw, text);
++		int bw = tw + 2 * pad + 2, bh = hm->b.height, x, y;
++		uint32_t scheme[3] = { colors[SchemeNorm][ColFg], colors[SchemeNorm][ColBg], colors[SchemeNorm][ColBorder] };
++		WallBuffer *b = wallbuffer(bw, bh, 0);
++		Drwl d = { 0 };
++		d.font = hm->drw->font;
++		drwl_setimage(&d, b->image);
++		drwl_setscheme(&d, (uint32_t[3]){ scheme[2], scheme[2], 0 });
++		drwl_rect(&d, 0, 0, bw, bh, 1, 0);
++		drwl_setscheme(&d, scheme);
++		drwl_text(&d, 1, 1, bw - 2, bh - 2, pad, text, 0);
++		x = MAX(0, MIN((ix0 + ix1) / 2 - bw / 2, hm->b.width - bw));
++		y = topbar ? hm->b.height : (int)(hm->m.height * s) - 2 * hm->b.height;
++		tipnode = wlr_scene_buffer_create(layers[LyrOverlay], &b->base);
++		wlr_buffer_drop(&b->base);
++		if (!tipnode)
++			return;
++		wlr_scene_buffer_set_dest_size(tipnode, (int)(bw / s + 0.5), (int)(bh / s + 0.5));
++		wlr_scene_node_set_position(&tipnode->node, hm->m.x + (int)(x / s), hm->m.y + (int)(y / s));
++		snprintf(tipshown, sizeof(tipshown), "%s", text);
++	}
++}
++
+ static pixman_color_t
+ wallcolor(uint32_t rgb)
+ {
+@@ -3761,6 +3868,7 @@ taskhover(void)
+ 			drawbar(m);
+ 		}
+ 	}
++	tipupdate();
+ }
+ 
+ void
+@@ -5299,6 +5407,7 @@ statusin(int fd, unsigned int mask, void *data)
+ 	if (wallchanged)
+ 		wallupdate();
+ 	drawbars();
++	tipupdate();
+ 
+ 	return 0;
+ }

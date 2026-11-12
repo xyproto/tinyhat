@@ -1,7 +1,7 @@
 pkgbase = cairo
 	pkgdesc = 2D graphics library with support for multiple output devices
 	pkgver = 1.18.6
-	pkgrel = 2
+	pkgrel = 1
 	url = https://cairographics.org/
 	arch = i686
 	arch = x32
@@ -16,22 +16,15 @@ pkgbase = cairo
 	depends = glib2
 	depends = glibc
 	depends = libpng
-	depends = libx11
-	depends = libxcb
-	depends = libxext
-	depends = libxrender
 	depends = lzo
 	depends = pixman
 	depends = zlib
+	conflicts = cairo
 	source = git+https://gitlab.freedesktop.org/cairo/cairo.git#tag=1.18.6
 	b2sums = 131350b2dbb42b957131a1fa46dbce65eac33b7680f65e59a9087296802bbe301d949ce6574efeac84140e34fec86748e2cb1a0ea9dc352b251c627cfc73252a
 
-pkgname = cairo
+pkgname = cairo-wayland
 	provides = libcairo-gobject.so
 	provides = libcairo-script-interpreter.so
 	provides = libcairo.so
 	options = !emptydirs
-
-pkgname = cairo-docs
-	pkgdesc = 2D graphics library with support for multiple output devices (documentation)
-	depends = 
