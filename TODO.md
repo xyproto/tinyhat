@@ -1,5 +1,6 @@
 ## Plans
 
+- [ ] When booting straight into Orbiton, ctrl-q should play the shutdown animation and reboot, instead of just shutting down.
 - [ ] Let all QEMU tests etc. specify the keyboard layout before sending keypresses, for instance ctrl-alt-k "English (US)".
 - [ ] altgr+4 to draw "$" no longer works with the Norwegian keyboard layout!
 - [ ] Let the help text background frame be centered vertically (minus the status bar height)
