@@ -426,10 +426,15 @@ VERSION_OF = {}
 NAME_BASE = {}
 
 
+VER_WRITTEN = {}
+
+
 def ver_file(kind, name, version):
     d = os.path.join(VERS, kind)
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, name)
+    if VER_WRITTEN.setdefault(path, version) != version:
+        sys.exit(f"mkpkgs.py: {kind}/{name} is both {VER_WRITTEN[path]} and {version}; its version stamp would change on every run")
     fresh = not os.path.exists(path)
     distro.write_if_changed(path, f"{version}\n")
     if fresh:
@@ -447,7 +452,7 @@ def declared(info, lockname):
             continue
         base = NAME_BASE.get(kind, {}).get(name)
         if base is not None and (kind, base) in VERSION_OF:
-            out.append(ver_file(kind, name, VERSION_OF[(kind, base)]))
+            out.append(ver_file(f"base-{kind}", base, VERSION_OF[(kind, base)]))
         elif name in seeded:
             out.append(ver_file(kind, name, seeded[name]))
     return out
@@ -458,7 +463,7 @@ def dep_prereqs(prereqs):
     for p in prereqs:
         m = re.match(r"^\$\(B\)/pkg/(i686|x32|boot|aarch64|x86_64)/(.+)$", p)
         if m and (m.group(1), m.group(2)) in VERSION_OF:
-            vers.append(ver_file(m.group(1), m.group(2), VERSION_OF[(m.group(1), m.group(2))]))
+            vers.append(ver_file(f"base-{m.group(1)}", m.group(2), VERSION_OF[(m.group(1), m.group(2))]))
             order.append(p)
         else:
             vers.append(p)
@@ -570,6 +575,10 @@ def cmd_mk():
             VERSION_OF[(kind, info["base"])] = f"{info['version']}-{info['release']}"
             for n in info["pkgnames"]:
                 NAME_BASE.setdefault(kind, {})[n] = info["base"]
+        for kind in ("i686", "x32", "boot"):
+            for n in info["pkgnames"]:
+                for pv in info["provides"][n]:
+                    NAME_BASE[kind].setdefault(pv, info["base"])
     for b in prebuilt:
         VERSION_OF[("i686", b)] = "prebuilt " + " ".join(
             f"{n}={seed[0][n]['version']}" for n in sorted(by_base[b]["pkgnames"]) if n in seed[0])
@@ -718,6 +727,10 @@ def arch_rules(lines, arch, by_base, prefs):
         VERSION_OF[(arch, info["base"])] = f"{info['version']}-{info['release']}"
         for n in info["pkgnames"]:
             NAME_BASE.setdefault(arch, {})[n] = info["base"]
+    for info in built:
+        for n in info["pkgnames"]:
+            for pv in info["provides"][n]:
+                NAME_BASE[arch].setdefault(pv, info["base"])
     for info in built:
         deps = plans[info["base"]][0]
         target = stamp(arch, info["base"])
