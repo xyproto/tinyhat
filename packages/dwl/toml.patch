@@ -4,7 +4,7 @@ index 08a3370..b0133c5 100644
 +++ b/Makefile
 @@ -17,11 +17,13 @@ DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEV
  LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
- 
+
  all: dwl
 -dwl: dwl.c client.h config.h ime.h util.h config.mk cursor-shape-v1-protocol.h \
 +dwl: dwl.c tomlc17.o tomlc17.h client.h config.h ime.h util.h config.mk cursor-shape-v1-protocol.h \
@@ -15,7 +15,7 @@ index 08a3370..b0133c5 100644
 +	$(CC) dwl.c tomlc17.o $(DWLCFLAGS) $(LDFLAGS) $(LDLIBS) -o $@
 +tomlc17.o: tomlc17.c tomlc17.h
 +	$(CC) $(CFLAGS) -c tomlc17.c -o $@
- 
+
  # wayland-scanner is a tool which generates C headers and rigging for Wayland
  # protocols, which are specified in XML. wlroots requires you to rig these up
 diff --git a/dwl.c b/dwl.c
@@ -33,7 +33,7 @@ index 3755b1a..28a1cdb 100644
  #include <limits.h>
  #include <linux/input-event-codes.h>
 @@ -82,6 +85,11 @@
- 
+
  #include "xdg-shell-protocol.h"
  #include "util.h"
 +#include "tomlc17.h"
@@ -43,7 +43,7 @@ index 3755b1a..28a1cdb 100644
 +#endif
  #include "drwl.h"
  #include <png.h>
- 
+
 @@ -256,6 +264,7 @@ struct Monitor {
  	Client *tasks[32];
  	int taskx[33], ntasks, taskhover;
@@ -63,7 +63,7 @@ index 3755b1a..28a1cdb 100644
 @@ -565,6 +575,851 @@ static struct wlr_xwayland *xwayland;
  /* configuration, allows nested code to access above variables */
  #include "config.h"
- 
+
 +typedef struct {
 +	Key key;
 +	char *argv[4];
@@ -309,7 +309,7 @@ index 3755b1a..28a1cdb 100644
 +		f = fopen(path, "r");
 +	}
 +	if (!f) {
-+		snprintf(notice, sizeof(notice), "desktop.toml: %s not found", name);
++		snprintf(notice, sizeof(notice), "dwl.toml: %s not found", name);
 +		drawbars();
 +		return;
 +	}
@@ -673,7 +673,7 @@ index 3755b1a..28a1cdb 100644
 +	if (conf.kboptions && *conf.kboptions)
 +		names->options = conf.kboptions;
 +	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
-+	confpath(user, sizeof(user), "/tinyhat/desktop.toml");
++	confpath(user, sizeof(user), "/tinyhat/dwl.toml");
 +	if (stat(path, &kst) || (conf.kblayout && *conf.kblayout && !stat(user, &ust) && ust.st_mtime > kst.st_mtime) || !(f = fopen(path, "r")))
 +		return 0;
 +	if (!fgets(buf, (int)len, f))
@@ -806,10 +806,10 @@ index 3755b1a..28a1cdb 100644
 +	int sys, usr;
 +
 +	confunset(&c);
-+	confpath(user, sizeof(user), "/tinyhat/desktop.toml");
-+	sys = !access(SYSCONFDIR "/desktop.toml", F_OK);
++	confpath(user, sizeof(user), "/tinyhat/dwl.toml");
++	sys = !access(SYSCONFDIR "/tinyhat/dwl.toml", F_OK);
 +	usr = !access(user, F_OK);
-+	if ((sys && !confparse(&c, SYSCONFDIR "/desktop.toml", err, sizeof(err)) && (bad = SYSCONFDIR "/desktop.toml"))
++	if ((sys && !confparse(&c, SYSCONFDIR "/tinyhat/dwl.toml", err, sizeof(err)) && (bad = SYSCONFDIR "/tinyhat/dwl.toml"))
 +			|| (usr && !confparse(&c, user, err, sizeof(err)) && (bad = user))) {
 +		const char *home = getenv("HOME");
 +		size_t hl = home ? strlen(home) : 0;
@@ -839,7 +839,7 @@ index 3755b1a..28a1cdb 100644
 +		if (conf.launch[i].icon && conf.launch[i].icon[0] == '/')
 +			conf.launch[i].img = wallload(conf.launch[i].icon);
 +	confhelp();
-+	if (strstr(notice, "desktop.toml: "))
++	if (strstr(notice, "dwl.toml: "))
 +		notice[0] = '\0';
 +	if (applywall)
 +		bgapply();
@@ -851,7 +851,7 @@ index 3755b1a..28a1cdb 100644
 +	char dir[PATH_MAX];
 +	if (conffd < 0)
 +		return;
-+	inotify_add_watch(conffd, SYSCONFDIR, IN_CLOSE_WRITE | IN_MOVED_TO | IN_DELETE | IN_CREATE);
++	inotify_add_watch(conffd, SYSCONFDIR "/tinyhat", IN_CLOSE_WRITE | IN_MOVED_TO | IN_DELETE | IN_CREATE);
 +	confpath(dir, sizeof(dir), "");
 +	inotify_add_watch(conffd, dir, IN_CREATE | IN_MOVED_TO | IN_ONLYDIR);
 +	confpath(dir, sizeof(dir), "/tinyhat");
@@ -868,7 +868,7 @@ index 3755b1a..28a1cdb 100644
 +	while ((n = read(fd, buf, sizeof(buf))) > 0) {
 +		for (char *p = buf; p < buf + n; p += sizeof(struct inotify_event) + ((struct inotify_event *)p)->len) {
 +			struct inotify_event *e = (struct inotify_event *)p;
-+			if (e->len && (!strcmp(e->name, "desktop.toml") || !strcmp(e->name, "tinyhat")))
++			if (e->len && (!strcmp(e->name, "dwl.toml") || !strcmp(e->name, "tinyhat")))
 +				reload = 1;
 +		}
 +	}
@@ -911,11 +911,11 @@ index 3755b1a..28a1cdb 100644
 +
  /* attempt to encapsulate suck into one file */
  #include "client.h"
- 
+
 @@ -614,7 +1469,14 @@ applyrules(Client *c)
  	appid = client_get_appid(c);
  	title = client_get_title(c);
- 
+
 -	for (r = rules; r < END(rules); r++) {
 +	for (i = 0; confloaded && i < conf.nrules; i++) {
 +		if ((!conf.rules[i].title || strstr(title, conf.rules[i].title))
@@ -946,10 +946,10 @@ index 3755b1a..28a1cdb 100644
  	struct xkb_keymap *keymap;
 +	struct xkb_rule_names names;
 +	char kbline[256];
- 
+
  	group->wlr_group = wlr_keyboard_group_create();
  	group->wlr_group->data = group;
- 
+
  	/* Prepare an XKB keymap and assign it to the keyboard group. */
 +	confkeymap(&names, kbline, sizeof(kbline));
  	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
@@ -958,14 +958,14 @@ index 3755b1a..28a1cdb 100644
 +	if (!(keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))
 +			&& !(keymap = xkb_keymap_new_from_names(context, &xkb_rules, XKB_KEYMAP_COMPILE_NO_FLAGS)))
  		die("failed to compile keymap");
- 
+
  	wlr_keyboard_set_keymap(&group->wlr_group->keyboard, keymap);
 @@ -1460,6 +2330,7 @@ createmon(struct wl_listener *listener, void *data)
  			break;
  		}
  	}
 +	confmon(m);
- 
+
  	/* The mode is a tuple of (width, height, refresh rate), and each
  	 * monitor supports only a specific set of modes. We just pick the
 @@ -1563,39 +2434,11 @@ createpointer(struct wlr_pointer *pointer)
@@ -1011,7 +1011,7 @@ index 3755b1a..28a1cdb 100644
 +		LISTEN(&pointer->base.events.destroy, &p->destroy, destroypointerdev);
 +		configpointer(device);
  	}
- 
+
  	wlr_cursor_attach_input_device(cursor, &pointer->base);
 @@ -1948,6 +2791,17 @@ iconpixel(int kind, int arg, double x, double y)
  			return level <= 1 && kind != 'C' ? red : fg;
@@ -1038,12 +1038,12 @@ index 3755b1a..28a1cdb 100644
 -	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : 1.08));
 +	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : kind == 'G' ? 1.0 : 1.08));
  }
- 
+
  /* Draw a status icon straight into the bar, antialiased with 4x4 samples per pixel */
 @@ -2008,6 +2862,57 @@ iconw(Monitor *m, int kind)
  	return iconpx(m, kind) + 2;
  }
- 
+
 +static void
 +drawpng(Monitor *m, int x, pixman_image_t *src)
 +{
@@ -1105,7 +1105,7 @@ index 3755b1a..28a1cdb 100644
 -	return w + drwl_font_getwidth(m->drw, seg);
 +	return w + drwl_font_getwidth(m->drw, seg) + launchw(m);
  }
- 
+
  static int
  drawstext(Monitor *m, int x, char *s)
  {
@@ -1135,7 +1135,7 @@ index 3755b1a..28a1cdb 100644
 @@ -2249,7 +3159,8 @@ wallhelp(Monitor *m)
  	FILE *f;
  	int bw, bh, lineh;
- 
+
 -	if (!(f = fopen(helppath, "r")))
 +	if (!strcmp(helppath, "on") ? !helptextbuf || !(f = fmemopen(helptextbuf, strlen(helptextbuf), "r"))
 +			: !(f = fopen(helppath, "r")))
@@ -1163,7 +1163,7 @@ index 3755b1a..28a1cdb 100644
  	struct xkb_context *context;
  	struct xkb_keymap *keymap;
 -	FILE *f;
- 
+
 -	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
 -	if ((f = fopen(path, "r"))) {
 -		if (!fgets(line, sizeof(line), f))
@@ -1206,14 +1206,14 @@ index 3755b1a..28a1cdb 100644
  	wl_list_init(&clients);
 +	confinit();
  	wl_list_init(&fstack);
- 
+
  	xdg_shell = wlr_xdg_shell_create(dpy, 6);
 @@ -4581,7 +5490,6 @@ updatemons(struct wl_listener *listener, void *data)
- 
+
  	wlr_scene_node_set_position(&root_bg->node, sgeom.x, sgeom.y);
  	wlr_scene_rect_set_size(root_bg, sgeom.width, sgeom.height);
 -	wallupdate();
- 
+
  	/* Make sure the clients are hidden when dwl is locked */
  	wlr_scene_node_set_position(&locked_bg->node, sgeom.x, sgeom.y);
 @@ -4625,6 +5533,7 @@ updatemons(struct wl_listener *listener, void *data)
@@ -1221,13 +1221,13 @@ index 3755b1a..28a1cdb 100644
  		}
  	}
 +	wallupdate();
- 
+
  	if (selmon && selmon->wlr_output->enabled) {
  		wl_list_for_each(c, &clients, link) {
 @@ -4977,8 +5886,21 @@ main(int argc, char *argv[])
  	char *startup_cmd = NULL;
  	int c;
- 
+
 -	while ((c = getopt(argc, argv, "s:hdv")) != -1) {
 -		if (c == 's')
 +	while ((c = getopt(argc, argv, "s:hdvp")) != -1) {
@@ -1250,7 +1250,7 @@ index 3755b1a..28a1cdb 100644
  			log_level = WLR_DEBUG;
 @@ -4999,5 +5921,5 @@ main(int argc, char *argv[])
  	return EXIT_SUCCESS;
- 
+
  usage:
 -	die("Usage: %s [-v] [-d] [-s startup command]", argv[0]);
 +	die("Usage: %s [-v] [-d] [-p] [-s startup command]", argv[0]);

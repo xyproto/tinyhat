@@ -1,7 +1,7 @@
 pkgbase = dwl
 	pkgdesc = dwm for Wayland, with the Tiny Hat patches
 	pkgver = 0.9
-	pkgrel = 9
+	pkgrel = 10
 	url = https://codeberg.org/dwl/dwl
 	arch = i686
 	arch = x32
