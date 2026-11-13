@@ -3048,6 +3048,7 @@ brotli = { version = "1.2.0-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf"
 bubblewrap = { version = "0.13.1-1", nvchecker = "[bubblewrap]\nsource = \"git\"\ngit = \"https://github.com/containers/bubblewrap.git\"\nprefix = \"v\"\n" }
 busybox = { version = "1.36.1-4", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[busybox]\nsource = \"git\"\ngit = \"https://git.busybox.net/busybox/\"\ninclude_regex = \"1_\\\\d*[02468]_\\\\d+\"\nfrom_pattern = \"_\"\nto_pattern = \".\"\n" }
 bzip2 = { version = "1.0.8-6", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
+c3c = { version = "0.8.6-1", nvchecker = "[c3c]\nsource = \"git\"\ngit = \"https://github.com/c3lang/c3c.git\"\nprefix = \"v\"\n" }
 ca-certificates = { version = "20240618-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf" }
 cabextract = { version = "1.11-3", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[cabextract]\nsource = \"git\"\ngit = \"https://github.com/kyz/libmspack.git\"\nprefix = \"v\"\n" }
 cairo = { version = "1.18.6-1", a32 = "aee39c468775915b9a4b26602f00c7e3ab761eaf", nvchecker = "[cairo]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/cairo/cairo.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d*[02468]'\n" }
