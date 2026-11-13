@@ -15,7 +15,7 @@ bneturl='https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE
 doas systemctl start tinyhat-pacman-init.service
 pm -Sy --noconfirm || fail "Could not update the package database."
 pm -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) || fail "Could not update the pacman keyrings."
-pm -S --needed --noconfirm --ask 4 wine-staging winetricks wine-gecko wine-mono gnutls alsa-lib alsa-plugins cabextract unzip || fail "Could not install Wine."
+pm -S --needed --noconfirm --ask 4 wine-staging winetricks wine-gecko wine-mono gnutls alsa-lib alsa-plugins cabextract unzip innoextract vulkan-icd-loader || fail "Could not install Wine."
 doas modprobe binfmt_misc
 doas modprobe ntsync 2>/dev/null
 doas systemctl restart systemd-binfmt.service || fail "Could not register Windows programs with binfmt_misc."
@@ -35,7 +35,7 @@ reg 'HKCU\Software\Wine\AppDefaults\StarCraft.exe\DllOverrides' /v ddraw /d nati
 printf '\nInstalling the Microsoft core fonts and the Visual C++ 6 runtime...\n'
 winetricks -q corefonts vcrun6 || printf '\nCould not install the core fonts or the Visual C++ 6 runtime. Try again later with "winetricks corefonts vcrun6".\n'
 
-printf '\nInstalling cnc-ddraw, for StarCraft 1.16.1 and other DirectDraw games...\n'
+printf '\nInstalling cnc-ddraw, for older DirectDraw games...\n'
 sys=$WINEPREFIX/drive_c/windows/syswow64
 [ -d "$sys" ] || sys=$WINEPREFIX/drive_c/windows/system32
 tmp=$(mktemp -d) || exit 1
@@ -50,7 +50,7 @@ if curl -fsSL --max-time 120 -o "$tmp/cnc-ddraw.zip" "$cncurl" && echo "$cncsum 
 	rm -rf "$sys/Shaders"
 	\cp -rf "$tmp/c/Shaders" "$sys/Shaders"
 else
-	printf '\nCould not download cnc-ddraw. StarCraft 1.16.1 may show wrong colours or a white window.\n'
+	printf '\nCould not download cnc-ddraw. Older DirectDraw games may show wrong colours or a white window.\n'
 fi
 
 if [ "$(uname -m)" = x86_64 ]; then
@@ -72,7 +72,7 @@ if [ "$(uname -m)" = x86_64 ]; then
 EOF
 	launcher="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
 	if [ ! -f "$launcher" ]; then
-		printf '\nInstall Battle.net too, for StarCraft Remastered and the free StarCraft? [y/N] '
+		printf '\nInstall Battle.net too? [y/N] '
 		read -r answer
 		case $answer in
 		[yY]*)
@@ -93,7 +93,7 @@ EOF
 [Desktop Entry]
 Type=Application
 Name=Battle.net
-Comment=Blizzard's launcher for StarCraft Remastered, running in Wine
+Comment=Blizzard's game launcher, running in Wine
 Icon=applications-games
 Exec=env WINEDEBUG=-all wine "${launcher%/*}/Battle.net.exe" --in-process-gpu
 Terminal=false
@@ -101,11 +101,10 @@ Categories=Game;
 EOF
 	fi
 else
-	printf '\nBattle.net and StarCraft Remastered need 64-bit Windows, so they need the 64-bit Tiny Hat image.\n'
+	printf '\nBattle.net needs 64-bit Windows, so it needs the 64-bit Tiny Hat image.\n'
 fi
 wineserver -w
 
 printf '\nWine is ready. Start Windows programs with "wine program.exe", or run .exe files directly.\n'
-printf 'StarCraft 1.16.1: run the installer from the CD with wine, then the 1.16.1 patch. It runs with cnc-ddraw.\n'
 printf 'Press Enter to close.\n'
 read -r _
