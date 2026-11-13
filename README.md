@@ -4,7 +4,9 @@
 
 This is a Linux distro based on Arch Linux, [archlinux32](https://archlinux32.org/) and Arch Linux ARM, with a few custom packages on top.
 
-Please [recommend Tiny Hat on DistroWatch](https://distrowatch.com/dwres.php?resource=links#new) if you found it fun. :)
+<img width="1280" height="800" alt="Tiny Hat 1 0 7" src="https://github.com/user-attachments/assets/dbc46fa9-a330-46a1-9eb2-efa562b9cfd3" />
+
+Please [recommend Tiny Hat on DistroWatch](https://distrowatch.com/dwres.php?resource=links#new) if you find it fun. :)
 
 ### Goals
 
