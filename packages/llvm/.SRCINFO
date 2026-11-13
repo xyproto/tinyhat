@@ -34,3 +34,7 @@ pkgname = clang
 	pkgdesc = C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU
 	depends = llvm-libs=23.1.5
 	depends = gcc
+
+pkgname = lld
+	pkgdesc = Linker from the LLVM project, with its static libraries for programs that embed it
+	depends = llvm-libs=23.1.5

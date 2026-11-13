@@ -1,5 +1,5 @@
 pkgbase=llvm
-pkgname=(llvm-libs llvm clang)
+pkgname=(llvm-libs llvm clang lld)
 pkgver=23.1.5
 pkgrel="1"
 arch=(i686 x32)
@@ -16,7 +16,7 @@ build() {
     -DCMAKE_CXX_FLAGS_RELEASE="-Os -DNDEBUG" \
     -DCMAKE_INSTALL_PREFIX=/usr \
     -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
-    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra" \
+    -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld" \
     -DLLVM_BUILD_LLVM_DYLIB=ON \
     -DLLVM_LINK_LLVM_DYLIB=ON \
     -DLLVM_ENABLE_RTTI=ON \
@@ -50,6 +50,8 @@ package_llvm() {
   rm -f "$pkgdir"/usr/lib/lib{LLVM,LTO,Remarks,clang-cpp}*.so*
   rm -rf "$pkgdir/usr/lib/clang"
   rm -f "$pkgdir"/usr/bin/{clang,"clang-${pkgver%%.*}",clang++,clangd,clang-format}
+  rm -f "$pkgdir"/usr/bin/{lld,ld.lld,ld64.lld,lld-link,wasm-ld} "$pkgdir"/usr/lib/liblld*.a
+  rm -rf "$pkgdir"/usr/include/lld "$pkgdir"/usr/lib/cmake/lld
   install -Dm644 "$srcdir/llvm-project-$pkgver.src/llvm/LICENSE.TXT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.TXT"
 }
 
@@ -71,4 +73,23 @@ package_clang() {
   rm -rf */include/wasm* */include/__clang_cuda* */include/__clang_hip* */include/cuda_wrappers
   rm -rf */include/openmp_wrappers */include/ppc_wrappers */include/llvm_libc_wrappers */include/altivec.h
   install -Dm644 "$srcdir/llvm-project-$pkgver.src/clang/LICENSE.TXT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.TXT"
+}
+
+package_lld() {
+  pkgdesc="Linker from the LLVM project, with its static libraries for programs that embed it"
+  depends=("llvm-libs=$pkgver")
+  local root="$srcdir/lld-install"
+  rm -rf "$root"
+  DESTDIR="$root" cmake --install build
+  mkdir -p "$pkgdir/usr/bin" "$pkgdir/usr/lib/cmake" "$pkgdir/usr/include"
+  for b in lld ld.lld ld64.lld lld-link wasm-ld; do
+    if [ -e "$root/usr/bin/$b" ] || [ -L "$root/usr/bin/$b" ]; then
+      cp -a "$root/usr/bin/$b" "$pkgdir/usr/bin/"
+    fi
+  done
+  cp -a "$root"/usr/lib/liblld*.a "$pkgdir/usr/lib/"
+  cp -a "$root/usr/lib/cmake/lld" "$pkgdir/usr/lib/cmake/"
+  cp -a "$root/usr/include/lld" "$pkgdir/usr/include/"
+  rm -rf "$root"
+  install -Dm644 "$srcdir/llvm-project-$pkgver.src/lld/LICENSE.TXT" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.TXT"
 }
