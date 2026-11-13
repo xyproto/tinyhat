@@ -1,6 +1,6 @@
 pkgname=dwl
 pkgver=0.9
-pkgrel=9
+pkgrel=10
 _tomlc17=R261109
 pkgdesc="dwm for Wayland, with the Tiny Hat patches"
 arch=(i686 x32)
