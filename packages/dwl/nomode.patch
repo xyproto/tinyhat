@@ -1,5 +1,5 @@
 diff --git a/dwl.c b/dwl.c
-index c02d1cd..499a7f4 100644
+index 251d308..3f32e66 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -328,6 +328,7 @@ static KeyboardGroup *createkeyboardgroup(void);
@@ -10,10 +10,11 @@ index c02d1cd..499a7f4 100644
  static void createnotify(struct wl_listener *listener, void *data);
  static void createpointer(struct wlr_pointer *pointer);
  static void createpointerconstraint(struct wl_listener *listener, void *data);
-@@ -1465,6 +1466,14 @@ createmon(struct wl_listener *listener, void *data)
+@@ -1465,7 +1466,14 @@ createmon(struct wl_listener *listener, void *data)
+ 	 * monitor supports only a specific set of modes. We just pick the
  	 * monitor's preferred mode; a more sophisticated compositor would let
  	 * the user configure it. */
- 	wlr_output_state_set_mode(&state, wlr_output_preferred_mode(wlr_output));
+-	wlr_output_state_set_mode(&state, wlr_output_preferred_mode(wlr_output));
 +	wlr_output_state_set_enabled(&state, 1);
 +	if (!usablemode(wlr_output, &state)) {
 +		wlr_log(WLR_ERROR, "no usable mode for output %s, leaving it off", wlr_output->name);
@@ -25,7 +26,7 @@ index c02d1cd..499a7f4 100644
  
  	/* Set up event listeners */
  	LISTEN(&wlr_output->events.frame, &m->frame, rendermon);
-@@ -1510,6 +1519,23 @@ createmon(struct wl_listener *listener, void *data)
+@@ -1511,6 +1519,35 @@ createmon(struct wl_listener *listener, void *data)
  		wlr_output_layout_add(output_layout, wlr_output, m->m.x, m->m.y);
  }
  
@@ -33,11 +34,23 @@ index c02d1cd..499a7f4 100644
 +usablemode(struct wlr_output *wlr_output, struct wlr_output_state *state)
 +{
 +	static const int sizes[][2] = { { 1280, 800 }, { 1024, 768 }, { 800, 600 }, { 640, 480 } };
++	struct wlr_output_mode *preferred = wlr_output_preferred_mode(wlr_output), *mode;
 +
-+	if (wlr_output_test_state(wlr_output, state))
++	if (preferred) {
++		wlr_output_state_set_mode(state, preferred);
++		if (wlr_output_test_state(wlr_output, state))
++			return 1;
++	}
++	wl_list_for_each(mode, &wlr_output->modes, link) {
++		if (mode == preferred)
++			continue;
++		wlr_output_state_set_mode(state, mode);
++		if (wlr_output_test_state(wlr_output, state))
++			return 1;
++	}
++	state->committed &= ~WLR_OUTPUT_STATE_MODE;
++	if (wlr_output->width > 0 && wlr_output->height > 0 && wlr_output_test_state(wlr_output, state))
 +		return 1;
-+	if (wlr_output_preferred_mode(wlr_output))
-+		return 0;
 +	for (size_t i = 0; i < LENGTH(sizes); i++) {
 +		wlr_output_state_set_custom_mode(state, sizes[i][0], sizes[i][1], 0);
 +		if (wlr_output_test_state(wlr_output, state))
@@ -49,7 +62,7 @@ index c02d1cd..499a7f4 100644
  void
  createnotify(struct wl_listener *listener, void *data)
  {
-@@ -3544,6 +3570,8 @@ outputmgrapplyortest(struct wlr_output_configuration_v1 *config, int test)
+@@ -3579,6 +3616,8 @@ outputmgrapplyortest(struct wlr_output_configuration_v1 *config, int test)
  		struct wlr_output *wlr_output = config_head->state.output;
  		Monitor *m = wlr_output->data;
  
