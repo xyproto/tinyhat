@@ -251,13 +251,12 @@ lock-check:
 	@if cmp -s distro.lock $(B)/distro.lock.before; then echo "distro.lock is up to date"; \
 	else cp $(B)/distro.lock.before distro.lock; echo "distro.lock is stale, run make lock" >&2; exit 1; fi
 
-$(B)/theme.toml: distro.toml scripts/distro.py
-	@mkdir -p $(B)
-	python3 scripts/distro.py view theme $@
+$(B)/theme.toml $(B)/image.toml: $(B)/%.toml: $(B)/.%.toml.stamp ;
 
-$(B)/image.toml: distro.toml scripts/distro.py
+$(B)/.theme.toml.stamp $(B)/.image.toml.stamp: $(B)/.%.toml.stamp: distro.toml scripts/distro.py
 	@mkdir -p $(B)
-	python3 scripts/distro.py view image $@
+	python3 scripts/distro.py view $* $(B)/$*.toml
+	@touch $@
 
 $(B)/buildroot.lock: distro.lock scripts/distro.py
 	@mkdir -p $(B)

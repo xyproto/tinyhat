@@ -18,7 +18,8 @@ KEYS = {" ": "spc", "\n": "ret", "-": "minus", "=": "equal", "/": "slash", ".": 
         ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon",
         "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4", "~": "shift-grave_accent"}
 REPORT = ("/usr/lib/tinyhat/startcheck >/tmp/th-start.txt 2>&1; doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain --no-pager; echo TH-MEMORY; free -m; "
-          "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-COMPILE; R=/usr/share/tinyhat-bootsplash; "
+          "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-BOOT; systemd-analyze | head -1; "
+          "systemd-analyze blame --no-pager | head -8; systemd-analyze critical-chain --no-pager | tail -n +3 | head -12; echo TH-COMPILE; R=/usr/share/tinyhat-bootsplash; "
           "for c in cc tcc; do command -v $c >/dev/null || continue; $c -o /tmp/th-$c -I$R/runtime $R/templates/basic/anim.c "
           "$R/runtime/draw.c $R/runtime/main.c -lm >/dev/null 2>&1 && echo $c=ok || echo $c=failed; done; "
           "echo TH-START; cat /tmp/th-start.txt; echo TH-END) >/dev/{tty} 2>&1'\n")
@@ -84,7 +85,7 @@ def qemu_command(img, disk, uefi, serial, sock):
         shutil.copyfile(OVMF_X64_VARS, vars_copy)
         firmware = ["-machine", "q35", "-drive", f"if=pflash,format=raw,readonly=on,file={OVMF_X64}",
                     "-drive", f"if=pflash,format=raw,file={vars_copy}"]
-    return [qemu, "-enable-kvm", "-cpu", "host", "-smp", "2", "-m", "1024"] + firmware + [
+    return [qemu, "-enable-kvm", "-cpu", "host", "-smp", "2", "-m", os.environ.get("QEMU_MEM", "1024")] + firmware + [
         "-drive", f"if=none,id=stick,file={disk},format=raw",
         "-device", "qemu-xhci", "-device", "usb-storage,drive=stick,bootindex=0",
         "-device", "usb-tablet", "-vga", "std",
@@ -105,18 +106,18 @@ def type_text(sock, text):
 
 def health(serial):
     text = open(serial, errors="replace").read() if os.path.exists(serial) else ""
-    text = re.sub(r"(?i)\bth-(failed|memory|processes|compile|start|end)\b", lambda m: "TH-" + m.group(1).upper(), text)
+    text = re.sub(r"(?i)\bth-(failed|memory|processes|boot|compile|start|end)\b", lambda m: "TH-" + m.group(1).upper(), text)
     m = text.rfind("TH-FAILED")
     if m < 0 or "TH-END" not in text[m:]:
         return None
     block = text[m:text.index("TH-END", m)].replace("\r", "")
     sections = {}
-    for name in ("TH-FAILED", "TH-MEMORY", "TH-PROCESSES", "TH-COMPILE", "TH-START"):
+    for name in ("TH-FAILED", "TH-MEMORY", "TH-PROCESSES", "TH-BOOT", "TH-COMPILE", "TH-START"):
         if name not in block:
             sections[name] = []
             continue
         start = block.index(name) + len(name)
-        ends = [block.index(n) for n in ("TH-MEMORY", "TH-PROCESSES", "TH-COMPILE", "TH-START") if n in block and block.index(n) > start]
+        ends = [block.index(n) for n in ("TH-MEMORY", "TH-PROCESSES", "TH-BOOT", "TH-COMPILE", "TH-START") if n in block and block.index(n) > start]
         sections[name] = [l for l in block[start:min(ends) if ends else len(block)].splitlines() if l.strip()]
     return sections
 
@@ -191,7 +192,7 @@ def main():
     start = time.time()
     try:
         while time.time() - start < limit and proc.poll() is None:
-            time.sleep(3)
+            time.sleep(1)
             if not os.path.exists(sock):
                 continue
             monitor(sock, f"screendump {shot}")
@@ -200,10 +201,10 @@ def main():
                 up = int(time.time() - start)
                 break
             if desktop_up(shot):
+                up = int(time.time() - start)
                 time.sleep(5)
                 monitor(sock, f"screendump {shot}")
                 ok = True
-                up = int(time.time() - start)
                 if k == "rpi4":
                     break
                 slow = k == "aarch64"
@@ -249,6 +250,8 @@ def main():
             mem = next((l.split() for l in report["TH-MEMORY"] if l.startswith("Mem:")), None)
             if mem:
                 print(f"qemutest: memory used {mem[2]} MiB of {mem[1]} MiB")
+            for line in report["TH-BOOT"]:
+                print(f"qemutest: boot: {line.strip()}")
             print("qemutest: largest processes (RSS KiB):")
             for line in report["TH-PROCESSES"][:12]:
                 print("  " + line.strip())
