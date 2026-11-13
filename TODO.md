@@ -2,12 +2,12 @@
 
 - [ ] alt-left and alt-right should work in NetSurfy to go back/forward.
 - [ ] Just "ls" should not list with details, by default.
+- [ ] c3c should also be included, to include a modern compiler that is not as large as Go/Rust/Zig
 
 ### Various
 
 - [ ] When booting straight into Orbiton, ctrl-q should play the shutdown animation and reboot, instead of just shutting down.
 - [ ] Let all QEMU tests etc. specify the keyboard layout before sending keypresses, for instance ctrl-alt-k "English (US)".
-- [x] altgr+4 to draw "$" no longer works with the Norwegian keyboard layout!
 - [ ] Let the help text background frame be centered vertically (minus the status bar height)
 - [ ] When drawing with the left mouse button on the desktop background, draw a performant version of the compiz flame effect.
 - [ ] Also mention win-f and alt-shift-f to toggle maximized on the help background.
