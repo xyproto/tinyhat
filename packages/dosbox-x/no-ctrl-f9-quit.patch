@@ -1,0 +1,11 @@
+--- a/src/gui/sdlmain.cpp	2026-11-14 00:27:32.423354058 +0100
++++ b/src/gui/sdlmain.cpp	2026-11-14 00:27:32.426217349 +0100
+@@ -4033,7 +4033,7 @@
+ #endif
+ 
+ #if !defined(C_EMSCRIPTEN)//FIXME: Shutdown causes problems with Emscripten
+-    MAPPER_AddHandler(KillSwitch,MK_f9,MMOD1,"shutdown","Quit from DOSBox-X", &item); /* KEEP: Most DOSBox-X users may have muscle memory for this */
++    MAPPER_AddHandler(KillSwitch,MK_nothing,0,"shutdown","Quit from DOSBox-X", &item);
+     item->set_text("Quit from DOSBox-X");
+ #endif
+ 
