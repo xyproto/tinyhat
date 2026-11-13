@@ -58,7 +58,7 @@ Also:
 - [ ] dwl: rounded workspace indicator, and no crash when a screen has no modes (VirtualBox with 3D on).
 - [ ] `DRAW_USE_LLVM=0` only for hardware renderers: retest kitty and OpenGL 4.6 on llvmpipe.
 - [ ] Battle.net: test whether Wine honours Image File Execution Options, to add `--in-process-gpu` without menu entries.
-- [ ] Software Vulkan (lavapipe) finds no device in the VM; find out why.
+- [x] Software Vulkan (lavapipe) works once `vulkan-swrast` is installed: the loader picks llvmpipe. `vulkaninfo --summary` aborts on its X11 test surfaces under Wayland-only dwl, which made it look like there was no device.
 - [ ] Build sandboxes install exactly the versions the plan names, not the newest file in `build/repo`.
 - [ ] A pre-flight that verifies the source checksums of all recipes before a build starts.
 - [ ] Resolve `provides` in one place instead of separately in several scripts.
@@ -81,12 +81,12 @@ Also:
 - [ ] x32 builds of DOSBox-X, ZSNES, ScummVM, mGBA and VICE for tinyhat64x32.
 - [ ] Patch OpenTTD to SDL3, then consider including it.
 - [ ] A Pyxel-based turtle module, since Python is built without tkinter (undecided).
-- [ ] innoextract and vulkan-icd-loader as on-demand additions to the Wine installer.
-- [ ] Measure boot time on the retro PC.
-- [ ] `wget` as a fish alias for `curl -fLO` (wurl removed), `WINETRICKS_DOWNLOADER=curl` everywhere.
-- [ ] Teal window title in the status bar.
-- [ ] No percentages for volume and battery in the status bar.
-- [ ] glfw-wayland (the glfw recipe provides it).
-- [ ] Python REPL colours.
-- [ ] Space for PgDn in NetSurfy, and delayed URL suggestions.
+- [x] innoextract and vulkan-icd-loader as on-demand additions to the Wine installer.
+- [x] Measure boot time: QEMU/KVM reaches the desktop in 22 s (GRUB menu 4 s, kernel 3 s); `scripts/qemutest.py` reports it with `systemd-analyze`.
+- [x] `wget` as a fish alias for `curl -fLO` (wurl removed), `WINETRICKS_DOWNLOADER=curl` everywhere.
+- [x] Teal window title in the status bar.
+- [x] No percentages for volume and battery in the status bar.
+- [x] glfw-wayland (the glfw recipe provides it).
+- [x] Python REPL colours.
+- [x] Space for PgDn in NetSurfy, and delayed URL suggestions.
 - [ ] OVA with guest additions and 3D acceleration.
