@@ -1,6 +1,18 @@
 ## Plans
 
-- [ ] alt-left and alt-right should work in NetSurfy to go back/forward.
+### Fix these known issues
+
+    The "Boot Animations" gallery / selector is currently not working as intended.
+    The included program for playing Go (monkeyjumpgo) has no indication of keybindings, score or who won.
+    When launching C64 programs from Orbiton, the VICE64 emulator returns some output that is not needed to show in Orbiton once the execution has completed.
+    The turtle package is not available from Python.
+    alt-left and alt-right to go forward and backward are not implemented in the NetSurfy browser yet.
+    The top statusbar buttons for switching between windows has odd behavior when it comes to showing/hiding windows. Switching between them works fine, though.
+    The search for the ctrl-alt-m homebrew game launcher has become worse, for some reason. Need to investigate.
+    The FreeDOS menu option does not work as intended, it should be a smoother experience.
+
+Also:
+
 - [ ] Just "ls" should not list with details, by default.
 - [ ] c3c should also be included, to include a modern compiler that is not as large as Go/Rust/Zig
 
