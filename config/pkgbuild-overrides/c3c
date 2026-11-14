@@ -1,5 +1,0 @@
-depends=(curl glibc libstdc++ llvm-libs)
-makedepends+=(lld)
-prepare() {
-  sed -i 's/liblld\([A-Za-z]*\)\.so/liblld\1.a/g' $pkgname/CMakeLists.txt
-}
