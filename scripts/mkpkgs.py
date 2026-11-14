@@ -703,6 +703,14 @@ def arch_rules(lines, arch, by_base, prefs):
     """Rules for the recipes that "make lock-ARCH" decided to build for another architecture ([build-ARCH] in
     distro.lock). Each one gets the other recipes built for that architecture that it needs."""
     built = [by_base[b] for b in sorted(distro.lock().get(f"build-{arch}", {})) if b in by_base]
+    forced = {n: b for b, e in PKGCONF.items() if e.get("build_from_source") and b in by_base
+              for n in by_base[b]["pkgnames"]}
+    stale = sorted({f"{info['base']} needs {forced[d]}" for info in built for n in info["pkgnames"]
+                    for d in info["depends"].get(n, [])
+                    if d in forced and forced[d] not in {i["base"] for i in built}})
+    if stale:
+        sys.exit(f"mkpkgs.py: distro.lock [build-{arch}] is out of date ({', '.join(stale)}), "
+                 f"run \"make lock-{arch}\"")
     names, provided = {}, {}
     for info in built:
         for name in info["pkgnames"]:
