@@ -1,7 +1,7 @@
 pkgbase = kmod
 	pkgdesc = Linux kernel module management tools and library
-	pkgver = 34.2
-	pkgrel = 1
+	pkgver = 34.3
+	pkgrel = 2
 	url = https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
 	arch = i686
 	arch = x32
@@ -18,12 +18,12 @@ pkgbase = kmod
 	depends = zstd
 	provides = libkmod.so
 	options = strip
-	source = git+https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git#tag=v34.2?signed
+	source = git+https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git#tag=v34.3?signed
 	source = depmod-search.conf
 	source = depmod.hook
 	source = depmod.script
 	validpgpkeys = EAB33C9690013C733916AC839BA2A5A630CBEA53
-	sha256sums = 7eef327c5cbe2a4649b2487b7a5bec6787cd26c9488bdbb2f35beb15305455b1
+	sha256sums = 29ec295f26790ba5d9298429a7c4f1ebf451730b098ea6ce52facd2fce418053
 	sha256sums = 1a92bfeae870f61ce814577e69d2a147a9c0caf6aed1131243e4179241fcc4a8
 	sha256sums = c11c2a0f66ea405493e8617689ca10818dc81dd1dddc19bdb220c8b2917119c1
 	sha256sums = 18661aa40c25580f04d2ac3f32e54c2997c0994d1c829905537b413a9d291ac6

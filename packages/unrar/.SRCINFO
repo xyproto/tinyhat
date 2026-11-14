@@ -1,5 +1,5 @@
 pkgbase = unrar
-	pkgver = 7.3.1
+	pkgver = 7.3.2
 	pkgrel = 1
 	epoch = 1
 	url = https://www.rarlab.com/rar_add.htm
@@ -9,8 +9,8 @@ pkgbase = unrar
 	depends = glibc
 	depends = libgcc
 	depends = libstdc++
-	source = https://www.rarlab.com/rar/unrarsrc-7.3.1.tar.gz
-	sha256sums = 634900842a3737d9cc15bbcc71d4c74cc713437e0bca296a573424fe5f2660ab
+	source = https://www.rarlab.com/rar/unrarsrc-7.3.2.tar.gz
+	sha256sums = f61a1160d6e2ebbda2ad353c8e82f62ab4312f97fde23c6c2c982d25e0014f99
 
 pkgname = libunrar
 	pkgdesc = Library and header file for applications that use libunrar

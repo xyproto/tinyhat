@@ -7,7 +7,7 @@ pkgname=(
   libp11-kit
   p11-kit-docs
 )
-pkgver=0.26.5
+pkgver=0.26.6
 pkgrel="1"
 pkgdesc="Loads and enumerates PKCS#11 modules"
 url="https://p11-glue.freedesktop.org"
@@ -33,7 +33,7 @@ source=(
   "git+https://github.com/p11-glue/p11-kit?signed#tag=$pkgver"
   git+https://github.com/p11-glue/pkcs11-json
 )
-b2sums=('2b2a785307cac88ab347e8a75aecfdafd933d9dbca6977368eca4c74e0a14bdcbdffd138e9dd86d390f6c1bcf044f1c9763f197ca79bd0877f26d0e00f0712c7'
+b2sums=('bb8ece013eb831a718de86109037b3cd011955b476fc1e744b6755dee1038910036d74d54b939220fce9ce6e501731256e0c0b9addece2db48adae73dc6dcdf0'
         'SKIP')
 validpgpkeys=(
   C0F67099B808FB063E2C81117BFB1108D92765AF  # Stef Walter <stef@thewalter.net>

@@ -1,6 +1,6 @@
 pkgbase = exfatprogs
 	pkgdesc = exFAT filesystem userspace utilities for the Linux Kernel exfat driver
-	pkgver = 1.4.3
+	pkgver = 1.4.4
 	pkgrel = 1
 	url = https://github.com/exfatprogs/exfatprogs
 	arch = i686
@@ -9,7 +9,7 @@ pkgbase = exfatprogs
 	depends = glibc
 	provides = exfat-utils
 	conflicts = exfat-utils
-	source = https://github.com/exfatprogs/exfatprogs/archive/1.4.3/exfatprogs-1.4.3.tar.gz
-	b2sums = 703e873aad763e8e8aaea92e99519fafed469a2d24a62befd93ab665ac28036fc9abc510972e2a6893927204910f6946147c465966e1464c2784b21b8a026232
+	source = https://github.com/exfatprogs/exfatprogs/archive/1.4.4/exfatprogs-1.4.4.tar.gz
+	b2sums = f8675d3ec41b2de09e9c0e4f795582adf0a5286cf3e51539c0f5b6ba4bc1101d11ec1e210f22c9aa2c3014734d5c0a4300e4d9d99df5a15b64b693d1004e7d44
 
 pkgname = exfatprogs

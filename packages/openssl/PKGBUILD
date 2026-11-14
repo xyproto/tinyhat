@@ -1,7 +1,7 @@
 # Maintainer: Pierre Schmitz <pierre@archlinux.de>
 
 pkgname=openssl
-pkgver=3.6.5
+pkgver=4.1.0
 pkgrel="1"
 pkgdesc='The Open Source toolkit for cryptography and Transport Layer Security'
 arch=(i686 x32)
@@ -15,7 +15,7 @@ provides=('libcrypto.so' 'libssl.so')
 backup=('etc/ssl/openssl.cnf')
 source=("https://github.com/${pkgname}/${pkgname}/releases/download/${pkgname}-${pkgver}/${pkgname}-${pkgver}.tar.gz"{,.asc}
         'ca-dir.patch')
-sha256sums=('a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98'
+sha256sums=('50c17baf54cb008f6ce42d50deb4b28050a1aad711636cabd4b241c7e90cc2fd'
             'SKIP'
             '0a32d9ca68e8d985ce0bfef6a4c20b46675e06178cc2d0bf6d91bd6865d648b7')
 validpgpkeys=('EFC0A467D613CB83C7ED6D30D894E2CE8B3D79F5'

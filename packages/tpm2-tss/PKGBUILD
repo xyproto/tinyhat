@@ -4,7 +4,7 @@
 # Contributor: Bruno Pagani <archange@archlinux.org>
 
 pkgname=tpm2-tss
-pkgver=4.2.0
+pkgver=4.2.1
 pkgrel="2"
 pkgdesc='Implementation of the TCG Trusted Platform Module 2.0 Software Stack (TSS2)'
 arch=(i686 x32)
@@ -61,7 +61,7 @@ source=(
   0001-dist-Fully-lock-the-tss-system-user.patch
   $pkgname.tmpfiles
 )
-b2sums=('b7b6ae373034b6dd8751c83e7f68585928de8e9ff96f317bafc5c0f6e6f008bf62b3be9e3fd2afa116366955605414e2d6e62c2ffb35bcc3fa812bad30ff3515'
+b2sums=('30a682504466ea4a1e966f6eb5a675cb93af87df59f82b7a30bdf21ea328eefbac7bee39e66814cd355c7e55fbf094d435c09cc8427918f44d8c36ec2b83bcfe'
         '62553b08cae6c90b3ce2244b2440e51228ce31104fd22f84f1e784b170e184745933994a678057afc1834fa48c4bab00b07299d7ff060469e6a7f0458a5a5efa'
         '5615dc60cbed1a2b4b8c6fbb103aa33a81a73bb910c2afca8eaf84ed96fac4a78ae6767b97f93548326cb0366d5475605f547f28c21a06b739c33264c3cf2492')
 validpgpkeys=(

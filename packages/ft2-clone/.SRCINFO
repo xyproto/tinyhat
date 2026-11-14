@@ -1,6 +1,6 @@
 pkgbase = ft2-clone
 	pkgdesc = Portable Fasttracker II clone
-	pkgver = 2.28
+	pkgver = 2.29
 	pkgrel = 1
 	url = https://16-bits.org/ft2.php
 	arch = i686
@@ -19,11 +19,11 @@ pkgbase = ft2-clone
 	depends = alsa-lib
 	depends = sdl3
 	depends = hicolor-icon-theme
-	source = ft2-clone::git+https://github.com/8bitbubsy/ft2-clone#tag=v2.28
+	source = ft2-clone::git+https://github.com/8bitbubsy/ft2-clone#tag=v2.29
 	source = sdl3.patch
-	sha512sums = fdf4a8711a2f0e0c6b3d7673b1663f3eaf3c18edbdb81d8f30bc6b647c1b1d24b5eeeb4d129c4ab9996aedbd11aa9be1b860dc727248ca9f5a4ba9ba8c26c63d
+	sha512sums = 181ac5b106e52beebb6780226123a3ff1812657e127135efdff57b932650ee3066e0f3e99e0ac08640532df105ae442897855df67cb3f5321925fc3a11fc9905
 	sha512sums = aedf554233699296243a98dc7cce32511b257c1183006dab4b303e366d75e2544e833a1bb3d83a12bc1ef28d21049ab8daac4a27917cbdf8909cccab89b7c65e
-	b2sums = 08fefc57ce7112f9b4d1bd320db38634baf70896c48f2f0da071b8ae8104a9b5fccb47fdf9a92b1597447a9b3453e7cb2e353d68be2d6db8757fbc400d446d85
+	b2sums = 26888f1feace35ed50be84a68d6a5e07a341ee6abeb80088fa88e81bbb470af0625065a688b845fa8423d1c8ac6b932e4622b863e1d7dafb83a95efc25508593
 	b2sums = 1b9d108081fe87028a94cc3f16421fc8657ef528b87a1f403756774493de4acc1f4e1f227ab6db90bd85df9abf3e69b2916ae24d6e505b9e5336a4f9379e37a5
 
 pkgname = ft2-clone

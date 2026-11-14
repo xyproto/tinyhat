@@ -2,8 +2,8 @@
 # Contributor: drakkan <nicola.murino at gmail dot com>
 
 pkgname=openh264
-pkgver=2.6.0
-pkgrel="2"
+pkgver=2.7.0
+pkgrel="1"
 _gtestver=1.8.1
 pkgdesc='H.264 encoder and decoder'
 arch=(i686 x32)
@@ -18,7 +18,7 @@ makedepends=(
 provides=('libopenh264.so')
 source=("https://github.com/cisco/openh264/archive/v${pkgver}/${pkgname}-${pkgver}.tar.gz"
         "https://github.com/google/googletest/archive/release-${_gtestver}/googletest-${_gtestver}.tar.gz")
-sha256sums=('558544ad358283a7ab2930d69a9ceddf913f4a51ee9bf1bfb9e377322af81a69'
+sha256sums=('5178775c8b440073e70920e97d195efff721c0e56d0a78cc82c919e95d54924d'
             '9bf1fe5182a604b4135edc1a425ae356c9ad15e9b23f9f12a02e80184c3a249c')
 
 prepare() {

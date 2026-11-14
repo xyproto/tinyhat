@@ -2,8 +2,8 @@
 
 pkgname=lz4
 epoch=1
-pkgver=1.10.0
-pkgrel="2"
+pkgver=1.11.1
+pkgrel="1"
 pkgdesc='Extremely fast compression algorithm'
 arch=(i686 x32)
 url='https://lz4.github.io/lz4/'
@@ -13,7 +13,7 @@ checkdepends=('diffutils')
 depends=('glibc')
 provides=('liblz4.so')
 source=("git+https://github.com/lz4/lz4.git#tag=v$pkgver")
-sha256sums=('487f9bc24fdaf589e2f4bb23dd98b1f21a71b643db09251145616587c9468555')
+sha256sums=('aa0cfb1377f46ae4697892f16ac6b5ebda4f3ad66cc6db13b45682b20a4a65cf')
 
 build() {
   meson setup --prefix=/usr --buildtype=plain lz4/build/meson build

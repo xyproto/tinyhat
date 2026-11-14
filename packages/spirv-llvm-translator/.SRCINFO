@@ -1,6 +1,6 @@
 pkgbase = spirv-llvm-translator
 	pkgdesc = LLVM <-> SPIR-V converter for compilers targeting SPIR-V
-	pkgver = 23.1.2
+	pkgver = 23.1.3
 	pkgrel = 1
 	url = https://www.khronos.org/spirv/
 	arch = i686
@@ -17,7 +17,7 @@ pkgbase = spirv-llvm-translator
 	depends = libstdc++
 	depends = llvm-libs
 	depends = spirv-tools
-	source = git+https://github.com/KhronosGroup/SPIRV-LLVM-Translator#tag=v23.1.2
-	b2sums = de830357b3ce992a14703b5c70f3f41173de4c1798ad64b684b547a0f9f7fbedeed4b72afcd0f5f10c80d97ce93cc111df546b8e07050fbe90130f0f08cf0d0c
+	source = git+https://github.com/KhronosGroup/SPIRV-LLVM-Translator#tag=v23.1.3
+	b2sums = 41f5c9570f89c00951a967ef00bb0401df3030fde81831989ad740a9bef4a8ce8e843436c969b2a9450906abccdc5279c9d2edc56259ce0f8508de07459b6108
 
 pkgname = spirv-llvm-translator

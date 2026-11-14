@@ -1,13 +1,13 @@
 pkgbase = intel-ucode
 	pkgdesc = Microcode update files for Intel CPUs
-	pkgver = 20260925
+	pkgver = 20261110
 	pkgrel = 1
 	url = https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files
 	arch = any
 	license = custom
 	makedepends = iucode-tool
 	replaces = microcode_ctl
-	source = https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/archive/refs/tags/microcode-20260925.tar.gz
-	sha256sums = 0ec19023dad1e6dd0c5909174b8dff2555b91cf01671e36271a1ef36655c0cfc
+	source = https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files/archive/refs/tags/microcode-20261110.tar.gz
+	sha256sums = 989a5cd345808babee491da69ed80ae5741697bc87743a71d0ba611f3fd6afa5
 
 pkgname = intel-ucode

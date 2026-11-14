@@ -1,5 +1,5 @@
 pkgname=xfsprogs
-pkgver=7.2.1
+pkgver=7.3.0
 pkgrel="1"
 pkgdesc="XFS filesystem utilities"
 arch=(i686 x32)
@@ -27,7 +27,7 @@ source=(
   xfsprogs-toml-config.patch
   xfsprogs-32bit.patch
 )
-b2sums=('SKIP'
+b2sums=('a3751f47e837025346aaa4f3fb340fd15362b13c791b1d12c88000446239d5be7f3241d64361f9f0771e0adcc84ace2862094f43835f65f58a61fff8dc6b624f'
         '68221b6d8b01aaf4a6d93d2191fc86ae0516ce2c14c5512305d087f4c8584e16b4a000bfd7a5d80f9f3bb4b8bafc2089c74ab03c7f14077a7bdc752f285fed73'
         'e50cdc207d7db0270cc86b8604de132244a7ccf4322dea6aa06a5672109f5ea9b88c66566eb20d64b88e613d9ff460ebf9ec792b43440bcfa770c7468493bb1c')
 validpgpkeys=(

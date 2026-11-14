@@ -1,7 +1,7 @@
 pkgbase = python
 	pkgdesc = The Python programming language
-	pkgver = 3.14.10
-	pkgrel = 2
+	pkgver = 3.15.2
+	pkgrel = 1
 	url = https://www.python.org/
 	arch = i686
 	arch = x32
@@ -18,8 +18,8 @@ pkgbase = python
 	depends = mpdecimal
 	depends = zstd
 	depends = sqlite
-	provides = python3=3.14.10
-	source = https://www.python.org/ftp/python/3.14.10/Python-3.14.10.tar.xz
-	sha512sums = 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a
+	provides = python3=3.15.2
+	source = https://www.python.org/ftp/python/3.15.2/Python-3.15.2.tar.xz
+	sha512sums = ee1040e04ad163ece3493a698d49c4e899be2ed4360e0409734f4bfbb67afe9e583a69aec4fd1534834eea71f3e601545d22f2be87220b8ba6ca2d8355c2f321
 
 pkgname = python
