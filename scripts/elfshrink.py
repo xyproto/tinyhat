@@ -34,6 +34,30 @@ def executable(path):
     return etype == 2 or (etype == 3 and 3 in types)
 
 
+def no_upx_files(root):
+    """The files of installed packages that were built with the !upx option (xdata upx=no)."""
+    out = set()
+    local = os.path.join(root, "var", "lib", "pacman", "local")
+    for entry in os.listdir(local) if os.path.isdir(local) else ():
+        try:
+            desc = open(os.path.join(local, entry, "desc"), encoding="utf-8").read().split("\n\n")
+        except OSError:
+            continue
+        if not any(block.startswith("%XDATA%\n") and "\nupx=no" in "\n" + block for block in desc):
+            continue
+        try:
+            files = open(os.path.join(local, entry, "files"), encoding="utf-8").read().split("\n\n")
+        except OSError:
+            continue
+        for block in files:
+            if block.startswith("%FILES%\n"):
+                out.update(line for line in block.split("\n")[1:] if line and not line.endswith("/"))
+    return out
+
+
+NO_UPX = no_upx_files(root)
+
+
 def packed(path):
     with open(path, "rb") as f:
         return b"UPX!" in f.read(4096)
@@ -59,6 +83,7 @@ for top in ("usr/bin", "usr/lib"):
                 continue
             before = st.st_size
             if (HAVE["upx"] and top == "usr/bin" and before >= UPX_MIN and st.st_nlink == 1 and name not in UPX_SKIP
+                    and os.path.relpath(path, root) not in NO_UPX
                     and subprocess.run(["upx", "-q", "-q", "--lzma", path], capture_output=True).returncode == 0):
                 saved["upx"] += before - os.path.getsize(path)
                 os.chmod(path, st.st_mode & 0o7777)

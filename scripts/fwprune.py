@@ -7,13 +7,32 @@ import subprocess
 import sys
 
 root = sys.argv[1]
-OWNERS = {"amdgpu": ["amdgpu"], "xe": ["xe"], "cirrus": ["snd-hda-scodec-cs35l41*", "snd-hda-scodec-cs35l56*"]}
+# Firmware (glob patterns under usr/lib/firmware) and the modules that load it. Firmware that no module in the
+# image loads is removed, such as the firmware for 64-bit era hardware that the i686 kernel has no drivers for
+OWNERS = {
+    "amdgpu": ["amdgpu"],
+    "xe": ["xe"],
+    "cirrus": ["snd-hda-scodec-cs35l41*", "snd-hda-scodec-cs35l56*"],
+    "intel/sof*": ["snd-sof"],
+    "ath10k": ["ath10k_core"],
+    "ath11k": ["ath11k"],
+    "ath12k": ["ath12k"],
+    "rtw89": ["rtw89_core"],
+    "mediatek/mt7996": ["mt7996e"],
+    "mediatek/WIFI_MT7925*": ["mt7925-common"],
+    "mediatek/WIFI_MT7922*": ["mt7921-common"],
+    "mediatek/WIFI_MT7961*": ["mt7921-common"],
+}
 for d, names in OWNERS.items():
-    path = os.path.join(root, "usr/lib/firmware", d)
     found = [m for n in names for m in glob.glob(os.path.join(root, "usr/lib/modules/*/kernel/**", n + ".ko*"), recursive=True)]
-    if os.path.isdir(path) and not found:
-        shutil.rmtree(path)
-        print(f"fwprune.py: removed usr/lib/firmware/{d}, since no module in this image uses it")
+    if found:
+        continue
+    for path in glob.glob(os.path.join(root, "usr/lib/firmware", d)):
+        if os.path.isdir(path) and not os.path.islink(path):
+            shutil.rmtree(path)
+        else:
+            os.remove(path)
+        print(f"fwprune.py: removed {os.path.relpath(path, root)}, since no module in this image uses it")
 i915dir = os.path.join(root, "usr/lib/firmware/i915")
 i915mods = glob.glob(os.path.join(root, "usr/lib/modules/*/kernel/drivers/gpu/drm/i915/i915.ko*"))
 if os.path.isdir(i915dir) and i915mods:
@@ -40,6 +59,9 @@ fwdir = os.path.join(root, "usr/lib/firmware/intel/iwlwifi")
 mods = glob.glob(os.path.join(root, "usr/lib/modules/*/kernel/drivers/net/wireless/intel/iwlwifi/iwlwifi.ko*"))
 if not os.path.isdir(fwdir) or not mods:
     sys.exit(0)
+# The modules of the older chips (iwldvm, iwlmvm, and iwl3945 and iwl4965 in iwlegacy) declare firmware too
+mods += glob.glob(os.path.join(root, "usr/lib/modules/*/kernel/drivers/net/wireless/intel/iwl*/**/*.ko*"), recursive=True)
+mods = sorted(set(mods))
 pat = re.compile(r"(.*)-(c?)(\d+)\.ucode(\.[a-z]+)?$")
 wanted = {}
 for mod in mods:
@@ -62,6 +84,13 @@ freed = 0
 for chip, versions in files.items():
     cap = wanted.get(chip, family.get(("-".join(chip[0].split("-")[:2]), chip[1])))
     usable = [v for v in versions if cap is not None and v[0] <= cap]
+    if cap is None:
+        # No driver in this kernel handles this chip (iwlmvm is left out of the i686 kernel)
+        for v in versions:
+            path = os.path.join(fwdir, v[1])
+            freed += os.path.getsize(path)
+            os.remove(path)
+        continue
     if not usable:
         continue
     keep = max(usable)
@@ -70,6 +99,12 @@ for chip, versions in files.items():
             path = os.path.join(fwdir, v[1])
             freed += os.path.getsize(path)
             os.remove(path)
+for f in os.listdir(fwdir):
+    stem = re.sub(r"\.pnvm(\.[a-z]+)?$", "", f)
+    if stem != f and not any(name.startswith(stem) for name, _ in wanted):
+        path = os.path.join(fwdir, f)
+        freed += 0 if os.path.islink(path) else os.path.getsize(path)
+        os.remove(path)
 top = os.path.join(root, "usr/lib/firmware")
 for d, f in [(fwdir, f) for f in os.listdir(fwdir)] + [(top, f) for f in os.listdir(top) if f.startswith("iwlwifi-")]:
     path = os.path.join(d, f)

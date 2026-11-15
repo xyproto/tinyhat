@@ -5,7 +5,7 @@ out=$2
 size=$3
 [ -f "$img" ] && [ -n "$out" ] || exit 2
 
-name=${out%.tar.gz}
+name=$(basename "$out" .tar.gz)
 work="$out.work"
 rm -rf "$work" "$out.tmp"
 mkdir -p "$work/$name"

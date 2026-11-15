@@ -12,7 +12,7 @@ REPO = os.path.join(TOP, "build", "repo")
 META = [".PKGINFO", ".BUILDINFO", ".MTREE", ".INSTALL", ".CHANGELOG"]
 
 
-def recipe_version(name):
+def build_version(name):
     fields = {}
     with open(os.path.join(TOP, "packages", name, ".SRCINFO")) as f:
         for line in f:
@@ -25,7 +25,7 @@ def recipe_version(name):
 
 def built(name):
     path = pkg.arch_files(REPO, "i686").get(name)
-    if path and pkg.pkginfo(path)["pkgver"][0] == recipe_version(name):
+    if path and pkg.pkginfo(path)["pkgver"][0] == build_version(name):
         return path
     return None
 
@@ -44,7 +44,7 @@ def main():
             os.makedirs(os.path.dirname(log), exist_ok=True)
             print(f"localroot.py: building {name} for the build environment", file=sys.stderr)
             with open(log, "w") as out:
-                r = subprocess.run([os.path.join(TOP, "scripts", "makepkg.sh"), os.path.join(TOP, "packages", name)]
+                r = subprocess.run([os.path.join(TOP, "scripts", "buildpackage.sh"), os.path.join(TOP, "packages", name)]
                                    + [f"i686/{d}" for d in done], stdout=out, stderr=subprocess.STDOUT, cwd=TOP)
             if r.returncode != 0:
                 with open(log) as f:
@@ -52,7 +52,7 @@ def main():
                 sys.exit(f"localroot.py: building {name} failed, see {log}")
             path = built(name)
             if path is None:
-                sys.exit(f"localroot.py: {name} {recipe_version(name)} is not in {REPO} after building it")
+                sys.exit(f"localroot.py: {name} {build_version(name)} is not in {REPO} after building it")
             stamp = os.path.join(TOP, "build", "pkg", "i686", name)
             os.makedirs(os.path.dirname(stamp), exist_ok=True)
             with open(stamp, "a"):

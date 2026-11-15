@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import difflib
 import io
 import json
 import os
@@ -20,10 +21,9 @@ os.umask(0o022)
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GITLAB = os.environ.get("ARCH_GITLAB", "https://gitlab.archlinux.org/archlinux/packaging/packages")
 API = f"{re.match(r'https?://[^/]+', GITLAB).group(0)}/api/v4"
-A32 = os.environ.get("A32_PACKAGES", "https://git.archlinux32.org/archlinux32/packages.git")
-CACHE = os.path.join(TOP, "build", "cache", "a32packages")
+MAKEFISH = os.path.join(TOP, "packages", "makefish", "root", "usr", "bin", "makefish")
+MAKEFISH_CONF = os.path.join(TOP, "packages", "makefish", "root", "etc", "makefish.conf")
 PKGCONF = distro.DISTRO
-OVERRIDES = os.path.join(TOP, "config", "pkgbuild-overrides")
 DROP = {".SRCINFO", "REUSE.toml", ".gitignore", ".gitlab-ci.yml", "LICENSES", "keys"}
 NV_CHECKER = ".nvchecker.toml"
 GROUP = urllib.parse.urlparse(GITLAB).path.strip("/")
@@ -83,53 +83,8 @@ def fetch_upstream(base, version, tag=None):
     return files
 
 
-def a32_repo():
-    if not os.path.isdir(os.path.join(CACHE, ".git")):
-        os.makedirs(os.path.dirname(CACHE), exist_ok=True)
-        subprocess.run(["git", "clone", "-q", A32, CACHE], check=True)
-    return CACHE
-
-
-def git(*args):
-    return subprocess.run(["git", "-C", a32_repo(), *args], check=True, capture_output=True, text=True).stdout
-
-
-def a32_commit(builddate):
-    return git("rev-list", "-1", f"--before={builddate}", "origin/HEAD").strip()
-
-
-def fetch_overlay(base, commit):
-    if commit == "-":
-        return {}
-    files = {}
-    for repo in ("core", "extra", "build-support"):
-        prefix = f"{repo}/{base}/"
-        listing = git("ls-tree", "-r", "--full-tree", commit, prefix)
-        for line in listing.splitlines():
-            meta, path = line.split("\t", 1)
-            mode, kind, obj = meta.split()
-            if kind != "blob":
-                continue
-            data = subprocess.run(["git", "-C", a32_repo(), "cat-file", "blob", obj], check=True, capture_output=True).stdout
-            rel = path[len(prefix):]
-            if mode == "120000":
-                files[rel] = (None, data.decode())
-            else:
-                files[rel] = (data, 0o111 if mode == "100755" else 0)
-        if files:
-            break
-    return files
-
-
 def packages():
     return distro.packages()
-
-
-DEFAULT_BUILD_FOR = ["i686", "x32"]
-
-
-def build_for(pkgs):
-    return {name: e["build_for"] for name, e in pkgs.items() if "build_for" in e}
 
 
 key = distro.key
@@ -164,19 +119,19 @@ def write_blocks(pre, kept):
 
 def upsert(base, fields):
     table = dict(distro.tables().get(base, {}))
-    recipe = dict(distro.lock().get("recipes", {}).get(base, {}))
+    entry = dict(distro.lock().get("imports", {}).get(base, {}))
     changed = False
     for k, v in fields:
         v = tomllib.loads(f"{k} = {v}")[k]
         if k in distro.FACTS and k not in table:
-            recipe[k] = v
+            entry[k] = v
         elif table.get(k, "arch" if k == "source" else None) != v:
             table[k] = v
             changed = True
-    if recipe:
-        recipes = dict(distro.lock().get("recipes", {}))
-        recipes[base] = recipe
-        distro.write_lock(recipes=recipes)
+    if entry:
+        imports = dict(distro.lock().get("imports", {}))
+        imports[base] = entry
+        distro.write_lock(imports=imports)
     if changed:
         pre, names, blocks = split_blocks(open(PKGCONF).read())
         kept = [(n, b) for n, b in zip(names, blocks) if n != base]
@@ -185,24 +140,10 @@ def upsert(base, fields):
 
 
 def assign_nvcheckers(map):
-    recipes = {n: dict(r) for n, r in distro.lock().get("recipes", {}).items()}
+    imports = {n: dict(r) for n, r in distro.lock().get("imports", {}).items()}
     for n, text in map.items():
-        recipes.setdefault(n, {})["nvchecker"] = text
-    distro.write_lock(recipes=recipes)
-
-
-def mangle(text, pkgrel, base, targets):
-    def arch(m):
-        items = m.group(2).replace("'", " ").replace('"', " ").split()
-        if "any" in items:
-            return f"{m.group(1)}arch=(any)"
-        return f"{m.group(1)}arch=({' '.join(targets.get(base, DEFAULT_BUILD_FOR))})"
-
-    text = re.sub(r"^(\s*)arch=\(([^)\n]*)\)[^\n]*", arch, text, flags=re.M)
-    text = mangle_depends(text)
-    if pkgrel is not None:
-        text = re.sub(r"^(\s*pkgrel=)['\"]?[0-9]+(\.[0-9.]*)?['\"]?\s*(#.*)?$", lambda m: f'{m.group(1)}"{pkgrel}"', text, flags=re.M)
-    return text
+        imports.setdefault(n, {})["nvchecker"] = text
+    distro.write_lock(imports=imports)
 
 
 def array_end(text, start):
@@ -224,22 +165,6 @@ def array_end(text, start):
     return len(text)
 
 
-def mangle_depends(text):
-    out, pos = [], 0
-    for m in re.finditer(r"^\s*(make|check|opt|)depends(_[^=\s]+)?=\(", text, re.M):
-        if m.start() < pos:
-            continue
-        end = array_end(text, m.end())
-        body = text[m.end() - 1:end]
-        body = re.sub(r"(['\"(\s])lib32-", r"\1", body)
-        body = re.sub(r"(['\"(\s])gcc-multilib(?=['\")\s])", r"\1gcc", body)
-        body = re.sub(r"((?:^|['\"(\s])[^\s$'\"()]+[<=>]+[^\s'\"()-]+)-[^:'\")\s]+(?=[:'\")\s])", r"\1", body)
-        out.append(text[pos:m.end() - 1] + body)
-        pos = end
-    out.append(text[pos:])
-    return "".join(out)
-
-
 def write_tree(dest, files):
     shutil.rmtree(dest, ignore_errors=True)
     for rel, (data, extra) in sorted(files.items()):
@@ -254,29 +179,12 @@ def write_tree(dest, files):
 
 
 def srcinfo(dest):
-    with tempfile.NamedTemporaryFile("w", suffix=".conf", delete=False) as conf:
-        conf.write('CARCH="i686"\nCHOST="i686-pc-linux-gnu"\nPKGEXT=".pkg.tar.zst"\nSRCEXT=".src.tar.gz"\n')
-    try:
-        out = subprocess.run(["makepkg", "--config", conf.name, "--printsrcinfo"], cwd=dest, check=True,
-                             capture_output=True, text=True, env=dict(os.environ, LC_ALL="C")).stdout
-    finally:
-        os.unlink(conf.name)
+    """Write DEST/.SRCINFO from DEST/TINYBUILD, and return it."""
+    out = subprocess.run(["fish", MAKEFISH, "-C", dest, "--srcinfo"], check=True, capture_output=True, text=True,
+                         env=dict(os.environ, LC_ALL="C", MAKEFISH_CONF=MAKEFISH_CONF)).stdout
     with open(os.path.join(dest, ".SRCINFO"), "w") as f:
         f.write(out)
     return out
-
-
-def check_version(base, version, info):
-    epoch, pkgver, pkgrel = split_version(version)
-    got = {}
-    for line in info.splitlines():
-        if line.startswith("\t") and " = " in line:
-            k, _, v = line.strip().partition(" = ")
-            if k in ("pkgver", "pkgrel", "epoch") and k not in got:
-                got[k] = v
-    want = {"pkgver": pkgver, "pkgrel": pkgrel, "epoch": epoch}
-    if any(got.get(k, "") != v for k, v in want.items()):
-        print(f"  warning: {base}: PKGBUILD gives {got}, wanted {version}", file=sys.stderr)
 
 
 def pkgbuild_version(text):
@@ -308,54 +216,90 @@ def latest_version(base):
     return pkgbuild_version(upstream["PKGBUILD"][0].decode()), upstream, tags[0]["name"]
 
 
-def import_one(base, entry, src, targets):
+def bump_tinybuild(base, pkgver, pkgrel="1"):
+    """Set pkgver and pkgrel in packages/BASE/TINYBUILD and write the checksums of the new sources into it."""
+    d = os.path.join(TOP, "packages", base)
+    path = os.path.join(d, "TINYBUILD")
+    text = open(path).read()
+    for k, v in (("pkgver", pkgver), ("pkgrel", pkgrel)):
+        text, n = re.subn(rf"^set {k} .*$", f"set {k} {v}", text, count=1, flags=re.M)
+        if n != 1:
+            raise ValueError(f"{base}: no top-level 'set {k}' line in the TINYBUILD")
+    with open(path, "w") as f:
+        f.write(text)
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["fish", MAKEFISH, "-C", d, "-s", tmp, "--updsums"], check=True,
+                       env=dict(os.environ, MAKEFISH_CONF=MAKEFISH_CONF))
+    return srcinfo(d)
+
+
+def _without_version(text):
+    """A PKGBUILD without its pkgver, pkgrel and checksum lines, to see whether anything else changed."""
+    text = re.sub(r"^\s*(pkgver|pkgrel)=.*$", "", text, flags=re.M)
+    out, pos = [], 0
+    for m in re.finditer(r"^\s*(md5|sha1|sha224|sha256|sha384|sha512|b2|ck)sums(_\w+)?=\(", text, re.M):
+        if m.start() < pos:
+            continue
+        out.append(text[pos:m.start()])
+        pos = array_end(text, m.end())
+    out.append(text[pos:])
+    return re.sub(r"\n\s*\n+", "\n", "".join(out))
+
+
+def ported_diff(base, new):
+    """For an Arch PKGBUILD ported to a TINYBUILD: when Arch only changed the version and checksums since the version
+    it was ported from, bump the TINYBUILD; otherwise print Arch's changes, to port by hand."""
+    old = distro.lock().get("imports", {}).get(base, {}).get("version")
+    if not old or old == new:
+        print(f"{base}: TINYBUILD, already ported from Arch {new}", file=sys.stderr)
+        return
+    before, after = fetch_upstream(base, old) or {}, fetch_upstream(base, new) or {}
+    a = before.pop("PKGBUILD", (b"", 0))[0].decode(errors="replace")
+    b = after.pop("PKGBUILD", (b"", 0))[0].decode(errors="replace")
+    o, n = split_version(old), split_version(new)
+    if a and b and o[0] == n[0] and before == after and _without_version(a) == _without_version(b):
+        bump_tinybuild(base, n[1], n[2])
+        imports = dict(distro.lock().get("imports", {}))
+        imports[base] = dict(imports[base], version=new)
+        distro.write_lock(imports=imports)
+        print(f"{base}: TINYBUILD bumped from Arch {old} to {new} (only the version and checksums changed)",
+              file=sys.stderr)
+        return
+    print(f"{base}: TINYBUILD ported from Arch {old}; Arch has {new}. Port these changes by hand:", file=sys.stderr)
+    sys.stdout.writelines(difflib.unified_diff(a.splitlines(True), b.splitlines(True), f"PKGBUILD {old}", f"PKGBUILD {new}"))
+    for rel in sorted(set(before) | set(after)):
+        if before.get(rel) != after.get(rel):
+            print(f"  {rel} changed too", file=sys.stderr)
+
+
+def import_one(base, entry, src):
+    """A package directory with a TINYBUILD is bumped or gets Arch's changes printed (ported_diff). A new one gets
+    Arch's files for the version, as the starting point for writing its TINYBUILD."""
+    if os.path.isfile(os.path.join(TOP, "packages", base, "TINYBUILD")):
+        version = entry.get("version", "latest")
+        ported_diff(base, latest_version(base)[0] if version == "latest" else version)
+        return
     if src != "arch":
         die(f"{base}: importing packages from source '{src}' is not implemented yet")
-    version = entry.get("version", "latest")
-    tag = None
-    upstream = None
-    if version == "latest":
-        version, upstream, tag = latest_version(base)
-    elif version == "main":
-        tag = "main"
-    else:
-        tag = upstream_tag(version)
-        upstream = fetch_upstream(base, version)
-    commit = entry.get("a32", "-")
-    overlay = fetch_overlay(base, commit)
-    if upstream is None and "PKGBUILD" in overlay and not re.search(rb"^pkg(name|base)=", overlay["PKGBUILD"][0], re.M):
-        tag = "main"
-        upstream = fetch_upstream(base, version, tag)
-    if upstream is None and "PKGBUILD" not in overlay:
-        die(f"{base} {version}: no upstream tag {tag} and no archlinux32 PKGBUILD")
-    files = dict(upstream or {})
-    pkgbuild = b""
-    if upstream is not None:
-        pkgbuild = files.pop("PKGBUILD")[0] + b"\n"
-        if "LICENSE" in files and b"LICENSE" not in pkgbuild:
-            del files["LICENSE"]
-    if "PKGBUILD" in overlay:
-        pkgbuild += overlay.pop("PKGBUILD")[0] + b"\n"
-    override = os.path.join(OVERRIDES, base)
-    if os.path.exists(override):
-        with open(override, "rb") as f:
-            pkgbuild += f.read() + b"\n"
-    pkgbuild += b"unset -f pkgver\n"
-    files.update(overlay)
-    nvc = files.pop(NV_CHECKER, None)
-    rel = None if version == "main" else split_version(version)[2]
-    files["PKGBUILD"] = (mangle(pkgbuild.decode(), rel, base, targets).encode(), 0)
     dest = os.path.join(TOP, "packages", base)
+    if os.path.exists(dest):
+        die(f"packages/{base} exists, but has no TINYBUILD")
+    version = entry.get("version", "latest")
+    if version == "latest":
+        version, files, tag = latest_version(base)
+    else:
+        tag = "main" if version == "main" else upstream_tag(version)
+        files = fetch_upstream(base, version, tag)
+    if files is None or "PKGBUILD" not in files:
+        die(f"{base} {version}: no Arch PKGBUILD for tag {tag}")
+    nvc = files.pop(NV_CHECKER, None)
     write_tree(dest, files)
-    info = srcinfo(dest)
-    if version != "main":
-        check_version(base, version, info)
     if nvc is not None and nvc[0]:
         e = dict(entry)
         e["nvchecker"] = nvc[0].decode("utf-8", "replace")
         upsert(base, fields_for(e))
-    print(f"{base} {version} ({'upstream ' + tag if upstream is not None else 'archlinux32 only'}, overlay {commit[:12]})",
-          file=sys.stderr)
+    print(f"packages/{base}: Arch's files for {version}. Write packages/{base}/TINYBUILD from the PKGBUILD "
+          f"(with 'set flags arch'), then delete the PKGBUILD", file=sys.stderr)
 
 
 def entries():
@@ -395,7 +339,7 @@ def backfill_nvcheckers():
 def main():
     args = sys.argv[1:]
     if not args:
-        die("usage: importpkg.py all | BASE... | add BASE VERSION [BUILDDATE] | update BASE... | nvchecker | srcinfo DIR...")
+        die("usage: importpkg.py all | BASE... | add BASE VERSION | update BASE... | nvchecker | srcinfo DIR...")
     if args[0] == "srcinfo":
         for d in args[1:]:
             srcinfo(d)
@@ -405,35 +349,29 @@ def main():
         return
     if args[0] == "add":
         base, version = args[1:3]
-        builddate = args[3] if len(args) > 3 else None
         if os.path.isdir(os.path.join(TOP, "packages", base)):
             die(f"packages/{base} already exists")
-        fields = [("source", fmt_value("arch")), ("version", fmt_value(version))]
-        if builddate is not None:
-            git("fetch", "-q", "origin")
-            fields.append(("a32", fmt_value(a32_commit(f"@{builddate}"))))
-        upsert(base, fields)
-        pkgs = packages()
-        import_one(base, pkgs[base], pkgs[base].get("source", "arch"), build_for(pkgs))
+        upsert(base, [("source", fmt_value("arch")), ("version", fmt_value(version))])
+        import_one(base, packages()[base], "arch")
         return
     if args[0] == "update":
         for base in args[1:]:
             e = packages().get(base)
             if e is None or e.get("source") != "arch" or not e.get("version"):
-                die(f"{base}: not an imported Arch recipe")
+                die(f"{base}: not an imported Arch PKGBUILD")
             if "version" in distro.tables().get(base, {}):
                 print(f"{base}: version is pinned in distro.toml", file=sys.stderr)
                 continue
-            upsert(base, [("version", fmt_value(latest_version(base)[0]))])
-            import_one(base, packages()[base], "arch", build_for(packages()))
+            if not os.path.isfile(os.path.join(TOP, "packages", base, "TINYBUILD")):
+                die(f"{base}: no TINYBUILD")
+            ported_diff(base, latest_version(base)[0])
         return
-    targets = build_for(packages())
     wanted = None if args == ["all"] else set(args)
     failed = []
     for base, e, src in entries():
         if wanted is None or base in wanted:
             try:
-                import_one(base, e, src, targets)
+                import_one(base, e, src)
             except (subprocess.CalledProcessError, SystemExit, ValueError, KeyError) as err:
                 print(f"  error: {base}: {err}", file=sys.stderr)
                 failed.append(base)

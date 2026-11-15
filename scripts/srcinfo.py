@@ -35,7 +35,8 @@ def refresh(d):
 def main():
     dirs = sys.argv[1:] or [os.path.join(TOP, "packages", base)
                             for base in sorted(os.listdir(os.path.join(TOP, "packages")))]
-    todo = [d.rstrip("/") for d in dirs if os.path.isfile(os.path.join(d, "PKGBUILD")) and (sys.argv[1:] or stale(d))]
+    todo = [d.rstrip("/") for d in dirs
+            if os.path.isfile(os.path.join(d, "TINYBUILD")) and (sys.argv[1:] or stale(d))]
     failed = False
     with ThreadPoolExecutor(os.cpu_count()) as ex:
         for d, result in ex.map(refresh, todo):

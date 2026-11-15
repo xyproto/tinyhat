@@ -21,7 +21,7 @@ cp "$initrd" "$work/boot/initramfs.img"
 cp "$sfs" "$work/root/tinyhat/root.sfs"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${boot_mib}M" "$work/boot.img"
-"$top/scripts/chroot.sh" "$top/build/buildroot" --bind "$work" /img \
+"$top/scripts/inbuildroot.sh" "$top/build/buildroot" --bind "$work" /img \
   /bin/sh -ec 'mkfs.fat --invariant -F 32 -n TINYHATBOOT /img/boot.img >/dev/null; mcopy -s -m -i /img/boot.img /img/boot/* ::/'
 rm -f "$out.tmp"
 "$top/scripts/mkdisk.sh" "$out.tmp" "$work/root" "$work/boot.img" c "$boot_mib"

@@ -15,7 +15,14 @@ if [ "$arch" = aarch64 ]; then
 fi
 rm -rf "$work"
 mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/newroot"
-pkgfile() { python3 "$top/scripts/pkg.py" repofile "$1" "$arch" "$2"; }
+# With TINYHAT_OWN=1, only packages that our TINYBUILDs build, in the versions they give, never prebuilt ones
+pkgfile() {
+  if [ -n "${TINYHAT_OWN-}" ]; then
+    python3 "$top/scripts/buildplan.py" pkgfile "$1" "$arch" "$2"
+  else
+    python3 "$top/scripts/pkg.py" repofile "$1" "$arch" "$2"
+  fi
+}
 x() {
   p=$1
   shift
@@ -31,7 +38,6 @@ x util-linux usr/bin/sfdisk usr/bin/partx usr/bin/wipefs
 x util-linux-libs 'usr/lib/libblkid.so.1*' 'usr/lib/libfdisk.so.1*' 'usr/lib/libsmartcols.so.1*' 'usr/lib/libuuid.so.1*'
 x xfsprogs usr/bin/mkfs.xfs
 x glibc usr/lib/libc.so.6 "$ld"
-x libinih 'usr/lib/libinih.so.0*'
 x liburcu 'usr/lib/liburcu.so.8*' 'usr/lib/liburcu-common.so.8*'
 x ncurses 'usr/lib/libncursesw.so.6*'
 x readline 'usr/lib/libreadline.so.8*'

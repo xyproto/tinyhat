@@ -5,10 +5,11 @@ top=$(dirname "$(dirname "$(readlink -f "$0")")")
 nobuild=
 arch=i686
 bootstrap=
+cross=
 while :; do
   case ${1-} in
     --nobuild)
-      nobuild=-o
+      nobuild=--nobuild
       shift
       ;;
     --arch)
@@ -19,22 +20,26 @@ while :; do
       bootstrap=1
       shift
       ;;
+    --cross)
+      # i686 packages built in the x86_64 build environment with the i686-cross toolchain, so that no
+      # prebuilt i686 package is needed: i686/NAME dependencies go into the toolchain's sysroot
+      cross=1
+      shift
+      ;;
     *) break ;;
   esac
 done
 dir=$(readlink -f "$1")
 shift
 base=${dir##*/}
-if [ "$(python3 "$top/scripts/distro.py" source "$base")" = sources ]; then
-  conf=/tinyhat/config/makepkg-tinyhat.conf
-else
-  conf=/tinyhat/config/makepkg.conf
-fi
+[ -f "$dir/TINYBUILD" ] || { echo "$0: no TINYBUILD in $dir" >&2; exit 1; }
+themeenv=$(python3 "$top/scripts/distro.py" theme-env "$base")
 seed=$top/build/buildroot
 repo=$top/build/repo
 boot=$top/build/bootstrap
 dest=$repo
 work=$top/build/chroot/$arch-$base
+[ -z "$cross" ] || work=$top/build/chroot/cross-$base
 if [ -n "$bootstrap" ]; then
   dest=$boot
   work=$top/build/chroot/boot-$base
@@ -55,7 +60,6 @@ case $arch in
     ;;
   aarch64)
     seed=$top/build/buildroot-aarch64
-    conf=${conf%.conf}-aarch64.conf
     personality=
     ignorearch=--ignorearch
     case $(uname -m) in x86_64) rustcross=1 path=/opt/tinyhat-rust/bin:$path ;; esac
@@ -66,12 +70,24 @@ case $arch in
     ;;
   x86_64)
     seed=$top/build/buildroot-x86_64
-    conf=${conf%.conf}-x86_64.conf
     personality=
     ignorearch=--ignorearch
     ;;
 esac
+if [ -n "$cross" ]; then
+  [ "$arch" = i686 ] || { echo "buildpackage.sh: --cross is only for i686" >&2; exit 1; }
+  seed=$top/build/buildroot-x86_64
+  tc=i686-tinyhat-linux-gnu
+  path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
+  # i686 programs that are built and run during the build find their libraries in the sysroot; 64-bit
+  # programs skip those libraries, since they are 32-bit
+  libpath=/usr/$tc/sysroot/usr/lib
+  personality=i686
+  ignorearch=
+fi
 case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
+rootarch=$arch
+[ -z "$cross" ] || rootarch=x86_64
 mkdir -p "$repo" "$boot" "$dest/.cache" "$top/vendor/src" "$HOME/.ccache"
 
 lookup() {
@@ -80,6 +96,8 @@ lookup() {
   [ $# -gt 0 ] || return 0
   case $kind in
     i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
+    # Our own builds of the packages and what they need at run time, never prebuilt ones
+    cross) out=$(python3 "$top/scripts/buildplan.py" pkgfiles "$repo" i686 "$@") ;;
     x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
     aarch64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" aarch64 "$@") ;;
     x86_64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x86_64 "$@") ;;
@@ -97,11 +115,16 @@ for d in "$@"; do
     aarch64/*) want_aarch64="$want_aarch64 ${d#*/}" ;;
     x86_64/*) want_x86_64="$want_x86_64 ${d#*/}" ;;
     *)
-      echo "makepkg.sh: bad dependency $d" >&2
+      echo "buildpackage.sh: bad dependency $d" >&2
       exit 1
       ;;
   esac
 done
+crossdeps=
+if [ -n "$cross" ]; then
+  crossdeps=$(lookup cross $want_i686)
+  want_i686=
+fi
 i686deps=$(
   lookup i686 $want_i686
   lookup aarch64 $want_aarch64
@@ -111,12 +134,11 @@ x32deps="$(lookup x32 $want_x32) $(lookup boot $want_boot)"
 sysdeps=$(lookup sysroot $want_sysroot)
 
 key=$({
-  echo "$arch $bootstrap $nobuild"
+  echo "$arch $bootstrap $nobuild${cross:+ cross}"
+  printf '%s\n' "$themeenv"
   (cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
-  cat "$top/config/makepkg.conf" "$top/config/makepkg-tinyhat.conf"
-  [ "$arch" != aarch64 ] || cat "$top/config/makepkg-aarch64.conf" "$top/config/makepkg-tinyhat-aarch64.conf"
-  [ "$arch" != x86_64 ] || cat "$top/config/makepkg-x86_64.conf" "$top/config/makepkg-tinyhat-x86_64.conf"
-  for f in $i686deps $x32deps $sysdeps; do echo "${f##*/}"; done
+  env -i PATH="$PATH" MAKEFISH_CONF="$top/packages/makefish/root/etc/makefish.conf" fish "$top/packages/makefish/root/usr/bin/makefish" --print-config -a "$arch"
+  for f in $i686deps $x32deps $sysdeps $crossdeps; do echo "${f##*/}"; done
 } | sha256sum | cut -d' ' -f1)
 cache=$dest/.cache/$arch-$base
 if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; then
@@ -128,6 +150,18 @@ if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; 
     echo "$base ($arch): up to date"
     exit 0
   fi
+fi
+
+load=${PKG_LOAD-}
+prio=10
+# A heavy build waits for its turn before it takes a build slot, so that
+# waiting heavy builds never hold slots that small builds could use
+if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
+  mkdir -p "$top/build/chroot"
+  exec 6> "$top/build/chroot/.heavy"
+  flock 6
+  load=
+  prio=0
 fi
 
 # At most PKG_JOBS packages build at once, to limit the disk space used by build trees
@@ -146,16 +180,6 @@ if [ "${PKG_JOBS:-0}" -gt 0 ]; then
   done
 fi
 
-load=${PKG_LOAD-}
-prio=10
-if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
-  mkdir -p "$top/build/chroot"
-  exec 6> "$top/build/chroot/.heavy"
-  flock 6
-  load=
-  prio=0
-fi
-
 [ -z "$rustcross" ] || "$top/scripts/rust-cross.sh"
 if [ -n "$crosscc" ] && { [ ! -x "$top/build/cross-cc/launch" ] || [ "$top/scripts/cross-launch.c" -nt "$top/build/cross-cc/launch" ]; }; then
   mkdir -p "$top/build/cross-cc"
@@ -168,15 +192,12 @@ cleanup() {
   rm -rf "$work"
 }
 cleanup
-trap cleanup EXIT
+# KEEP_WORK=1 keeps the build tree after the build, to look into a failure
+[ -n "${KEEP_WORK-}" ] || trap cleanup EXIT
 mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
 cp -rL "$dir" "$work/pkg/$base"
 
 jobs=${PKG_MAKE_JOBS:-$(nproc)}
-echo "source $conf" > "$work/makepkg.conf"
-if [ -n "$crosscc" ]; then
-  printf '%s\n' "BUILDENV=(!distcc color !ccache !check !sign)" "MAKEFLAGS=\"-j$jobs\"" "NINJAFLAGS=\"-j$jobs\"" >> "$work/makepkg.conf"
-fi
 
 sandbox() {
   tries=0
@@ -211,6 +232,7 @@ bwrap_run() {
     --setenv SOURCE_DATE_EPOCH "$epoch" \
     --setenv TINYHAT_ARCH "$arch" \
     --setenv TINYHAT_BOOTSTRAP "$bootstrap" \
+    ${cross:+--setenv PKG_CONFIG_SYSROOT_DIR /usr/$tc/sysroot --setenv PKG_CONFIG_LIBDIR /usr/$tc/sysroot/usr/lib/pkgconfig:/usr/$tc/sysroot/usr/share/pkgconfig} \
     ${rustcross:+--ro-bind /usr /host/usr --ro-bind /usr/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2} \
     ${rustcross:+--ro-bind $top/build/rust-cross /opt/tinyhat-rust/toolchain --ro-bind $top/scripts/rust-cross /opt/tinyhat-rust/bin} \
     ${crosscc:+--ro-bind $top/scripts/cross-cc /opt/tinyhat-cc/bin --ro-bind $top/build/cross-cc/launch /opt/tinyhat-cc/launch} \
@@ -221,7 +243,7 @@ bwrap_run() {
 sandbox --uid 0 --gid 0 --ro-bind "$repo" /repo --ro-bind "$boot" /bootstrap \
   /bin/sh -euc '
 exec 2>&9 9>&-
-arch=$1 tc=$2 i686deps=$3 x32deps=$4 sysdeps=$5
+arch=$1 tc=$2 i686deps=$3 x32deps=$4 sysdeps=$5 crossdeps=$6
 meta="--exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG"
 mkdir -p /var/lib/pacman/local /build /startdir /srcdest /tinyhat /ccache /repo
 [ -f /var/lib/pacman/local/ALPM_DB_VERSION ] || echo 9 >/var/lib/pacman/local/ALPM_DB_VERSION
@@ -245,6 +267,14 @@ if [ -n "$sysdeps" ]; then
   ln -sfn lib "$s/usr/libx32"
   ln -sfn usr/lib "$s/libx32"
 fi
+if [ "$tc" = i686-tinyhat-linux-gnu ]; then
+  s=/usr/$tc/sysroot
+  for f in $crossdeps; do
+    # Owners do not matter in a sysroot, and the sandbox has only one group to give files
+    bsdtar --no-xattrs --no-acls --no-fflags --no-same-owner -xpf "$f" -C "$s" $meta
+  done
+  ln -sfn "$s/usr/lib/ld-linux.so.2" /usr/lib/ld-linux.so.2
+fi
 if [ "$arch" = x32 ]; then
   mkdir -p /usr/lib32
   find /usr/lib -maxdepth 1 ! -type d \( -name "*.so" -o -name "*.so.*" -o -name "*.a" -o -name "*.o" \) \
@@ -264,19 +294,17 @@ if [ "$arch" = x32 ]; then
     bsdtar --no-xattrs --no-acls --no-fflags -xpf "$f" -C / $meta $ex
   done
 fi
-' sh "$arch" "$tc" "$i686deps" "$x32deps" "$sysdeps"
+' sh "$rootarch" "$tc" "$i686deps" "$x32deps" "$sysdeps" "$crossdeps"
 
-mkp=makepkg
-[ -z "$crosscc" ] || mkp="/lib64/ld-linux-x86-64.so.2 --library-path /host/usr/lib --argv0 bash /host/usr/bin/bash /usr/bin/makepkg"
-
+# run [--nobuild | --packagelist]: makefish on the TINYBUILD in the build environment
 run() {
+  set -- -C /startdir -o /repo -s /srcdest -a "$arch" "$@"
   sandbox --uid 1000 --gid 1000 --share-net \
     --bind "$work/pkg/$base" /startdir \
     --bind "$dest" /repo \
     --bind "$top/vendor/src" /srcdest \
     --bind "$HOME/.ccache" /ccache \
     --ro-bind "$top" /tinyhat \
-    --ro-bind "$work/makepkg.conf" /etc/makepkg-build.conf \
     --setenv HOME /build \
     --setenv USER builder \
     --setenv CCACHE_DIR /ccache \
@@ -284,19 +312,21 @@ run() {
     --setenv TINYHAT_JOBS "$jobs" \
     --setenv TINYHAT_LOAD "$load" \
     --setenv CARGO_BUILD_JOBS "${PKG_CARGO_JOBS:-$(nproc)}" \
-    --setenv FAKEROOTDONTTRYCHOWN 1 \
     --setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
-    --setenv TINYHAT_MAKEPKG "$mkp" \
+    --setenv TINYHAT_THEMEENV "$themeenv" \
+    --setenv MAKEFISH_CONF /tinyhat/packages/makefish/root/etc/makefish.conf \
+    --setenv MAKEFISH_FETCH /tinyhat/scripts/fetch.sh \
+    --setenv MAKEFLAGS "-j$jobs${load:+ -l$load}" \
     --chdir /startdir \
-    /bin/sh -c 'exec 2>&9 9>&-; exec $TINYHAT_MAKEPKG "$@"' sh --config /etc/makepkg-build.conf -d --noconfirm --skippgpcheck --holdver $ignorearch "$@"
+    /bin/sh -c 'exec 2>&9 9>&-; eval "$TINYHAT_THEMEENV"; exec fish /tinyhat/packages/makefish/root/usr/bin/makefish '"$ignorearch"' "$@"' sh "$@"
 }
 
 exec 8> "$top/vendor/src/.lock"
 flock 8
-run --verifysource -f
+run --nobuild
 flock -u 8
 exec 8>&-
-run -f $nobuild
+run $nobuild
 if [ -z "$nobuild" ]; then
   {
     echo "$key"

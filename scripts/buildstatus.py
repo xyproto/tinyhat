@@ -51,7 +51,7 @@ def running():
     jobs = []
     for line in out.splitlines():
         parts = line.split()
-        if len(parts) >= 4 and parts[1] == "/bin/sh" and parts[2] == "scripts/makepkg.sh":
+        if len(parts) >= 4 and parts[1] == "/bin/sh" and parts[2] == "scripts/buildpackage.sh":
             args = [a for a in parts[3:] if not a.startswith("--") and a not in ("x32",)]
             arch = "boot" if "--bootstrap" in parts else "x32" if "--arch" in parts and "x32" in parts else "i686"
             jobs.append((int(parts[0]), arch, os.path.basename(args[0]) if args else "?"))
@@ -87,7 +87,7 @@ def minutes(s):
 
 
 def main():
-    target = sys.argv[1] if len(sys.argv) > 1 else "tinyhat32.img"
+    target = sys.argv[1] if len(sys.argv) > 1 else "build/tinyhat32.img"
     needed, prebuilt = graph(target)
     done = {k for k in needed if os.path.exists(os.path.join(B, "pkg", k))}
     todo = needed - done
