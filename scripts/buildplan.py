@@ -73,41 +73,30 @@ def load():
     return out
 
 
-def local_index(infos, subs=("tinyhat",)):
-    names, provided, base_of = {}, {}, {}
+def package_index(infos, subs=("tinyhat",), arches=("i686", "any")):
+    """The packages that the TINYBUILDs in subs make for arches, each mapped to its package directory."""
+    idx = pkg.Index.new()
     for info in infos:
         if info["sub"] not in subs:
             continue
         for name in info["pkgnames"]:
-            if not set(info["arch"][name]) & {"i686", "any"}:
+            if arches and not set(info["arch"][name]) & set(arches):
                 continue
-            names[name] = info
-            base_of[name] = info["base"]
-            for pv in info["provides"].get(name, []):
-                provided.setdefault(pv, name)
-    return names, provided, base_of
+            idx.add(name, info, info["provides"].get(name, []))
+    return idx
 
 
-def resolve_local(wanted, names, provided, own):
-    out, queue = [], list(wanted)
-    while queue:
-        dep = queue.pop(0)
-        name = dep if dep in names else provided.get(dep)
-        if name is None or name in own or name in out:
-            continue
-        out.append(name)
-        queue.extend(names[name]["depends"].get(name, []))
-    return out
+def runtime_deps(idx):
+    return lambda name: idx.pkgs[name]["depends"].get(name, [])
 
 
 def exact_local(wanted, full, tinyhat):
     out = []
-    names, provided, _ = full
     for dep in wanted:
-        name = dep if dep in names else provided.get(dep)
+        name = full.resolve(dep)
         if name is not None and name not in out:
             out.append(name)
-    for name in resolve_local([n for n in out if n in tinyhat[0]], *tinyhat[:2], set()):
+    for name in tinyhat.closure([n for n in out if n in tinyhat.pkgs], runtime_deps(tinyhat)):
         if name not in out:
             out.append(name)
     return out
@@ -117,7 +106,7 @@ def seed_index():
     try:
         return pkg.load_db()
     except SystemExit:
-        return {}, {}
+        return pkg.Index.new()
 
 
 def rpmvercmp(a, b):
@@ -211,7 +200,7 @@ def seed_closure(seed, name, prefs, cache):
                 continue
             out.add(n)
             for d in seed[0].get(n, {}).get("depends", []):
-                m = pkg.lookup(seed, d, prefs, set())
+                m = seed.resolve(d, prefs)
                 if m is not None:
                     queue.append(m)
         cache[name] = out
@@ -226,8 +215,8 @@ def local_first(idx, name):
 def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozenset(), image=frozenset()):
     hard, soft = [], []
     for dep in all_deps(info):
-        seedname = pkg.lookup(seed, dep, prefs, set())
-        localname = pkg.lookup(idx["i686"], dep, prefs, set())
+        seedname = seed.resolve(dep, prefs)
+        localname = idx["i686"].resolve(dep, prefs)
         wants = info["constraints"].get(dep)
         too_old = bool(wants and seedname in seed[0] and localname is not None
                        and not satisfies(seed[0][seedname]["version"], wants))
@@ -236,7 +225,7 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
         if seedname is None or local_first(idx, localname) or too_old:
             wanted, out = [localname], hard
         else:
-            wanted, out = [pkg.lookup(idx["i686"], n, prefs, set()) or n
+            wanted, out = [idx["i686"].resolve(n, prefs) or n
                            for n in sorted(seed_closure(seed, seedname, prefs, cache) & broken)], hard
             if localname in image and localname not in SEED_ONLY and localname in versions["local"] and seedname in versions["seed"] and \
                     newer(versions["local"][localname], versions["seed"][seedname]):
@@ -247,7 +236,7 @@ def auto_local(info, seed, idx, prefs, broken, cache, versions, prebuilt=frozens
     pkgs = idx["i686"][0]
     bases = {pkgs[n]["base"] for n in hard}
     for dep in all_deps(info):
-        name = pkg.lookup(idx["i686"], dep, prefs, set())
+        name = idx["i686"].resolve(dep, prefs)
         if name in pkgs and pkgs[name]["base"] in bases and name not in info["pkgnames"] and name not in hard:
             hard.append(name)
     soft = [n for n in soft if n in pkgs and n not in info["pkgnames"] and n not in hard]
@@ -261,7 +250,7 @@ def prune_runtime(plans, base_of, idx, prefs):
             continue
         for b in comp:
             info, hard, soft = plans[b]
-            build = {pkg.lookup(idx["i686"], d, prefs, set()) for d in info["makedepends"]}
+            build = {idx["i686"].resolve(d, prefs) for d in info["makedepends"]}
             plans[b] = (info, [d for d in hard if base_of[d] not in comp or d in build], soft)
 
 
@@ -330,7 +319,7 @@ def base_arches(info):
 
 
 def indexes(infos):
-    idx = {"i686": ({}, {}), "x32": ({}, {})}
+    idx = {"i686": pkg.Index.new(), "x32": pkg.Index.new()}
     for info in infos:
         for name in info["pkgnames"]:
             parch = info["arch"][name]
@@ -338,9 +327,8 @@ def indexes(infos):
                 label = "any" if "any" in parch else a if a in parch else None
                 if label is None:
                     continue
-                pkg.add_pkg(idx[a][0], idx[a][1], {"name": name, "arch": label, "base": info["base"],
-                                                    "sub": info["sub"], "depends": info["depends"][name]},
-                            info["provides"][name])
+                idx[a].add(name, {"name": name, "arch": label, "base": info["base"], "sub": info["sub"],
+                                  "depends": info["depends"][name]}, info["provides"][name])
     return idx
 
 
@@ -353,7 +341,6 @@ def stamp(kind, base):
 
 
 def x32_deps(info, idx, prefs, libs, local):
-    names, provided, _ = local
     x32, tools, seen = [], [], set()
     queue = all_deps(info)
     while queue:
@@ -361,10 +348,10 @@ def x32_deps(info, idx, prefs, libs, local):
         if dep in seen:
             continue
         seen.add(dep)
-        name = pkg.lookup(idx["x32"], dep, prefs, set())
+        name = idx["x32"].resolve(dep, prefs)
         p = idx["x32"][0].get(name) if name else None
         if p is None or p["arch"] != "x32":
-            if p is None and (dep in names or dep in provided):
+            if p is None and local.resolve(dep) is not None:
                 tools.append(dep)
             continue
         if p["base"] == info["base"] or name in x32:
@@ -375,7 +362,7 @@ def x32_deps(info, idx, prefs, libs, local):
             continue
         x32.append(name)
         queue.extend(p["depends"])
-    tools = resolve_local(tools, names, provided, set(info["pkgnames"]))
+    tools = local.closure(tools, runtime_deps(local), set(info["pkgnames"]))
     return x32, tools
 
 
@@ -434,7 +421,7 @@ def ver_file(kind, name, version):
     os.makedirs(d, exist_ok=True)
     path = os.path.join(d, name)
     if VER_WRITTEN.setdefault(path, version) != version:
-        sys.exit(f"mkpkgs.py: {kind}/{name} is both {VER_WRITTEN[path]} and {version}; its version stamp would change on every run")
+        sys.exit(f"buildplan.py: {kind}/{name} is both {VER_WRITTEN[path]} and {version}; its version stamp would change on every run")
     fresh = not os.path.exists(path)
     distro.write_if_changed(path, f"{version}\n")
     if fresh:
@@ -473,10 +460,13 @@ def dep_prereqs(prereqs):
 def rule(lines, target, info, prereqs, args, log, buildroot="$(B)/.buildroot", lockname="buildroot"):
     vers, order = dep_prereqs(prereqs)
     vers += declared(info, lockname)
-    inputs = f"$(filter-out %/tiny.lua,$(wildcard {info['dir']}/*))"
+    if distro.tables().get(info["base"], {}).get("theme"):
+        vers.append("$(B)/theme.toml")
+    nested = any(os.path.isdir(os.path.join(TOP, info["dir"], e)) for e in os.listdir(os.path.join(TOP, info["dir"])))
+    inputs = f"$(shell find {info['dir']} -type f ! -name .SRCINFO)" if nested else f"$(wildcard {info['dir']}/*)"
     lines.append(f"{target}: {inputs} {' '.join(sorted(set(vers)))} | {buildroot} {' '.join(sorted(set(order)))}".rstrip())
     lines.append("\t@mkdir -p $(B)/log $(@D)")
-    lines.append(f"\tscripts/makepkg.sh {' '.join(args)} >$(B)/log/{log}.log 2>&1 || "
+    lines.append(f"\tscripts/buildpackage.sh {' '.join(args)} >$(B)/log/{log}.log 2>&1 || "
                  f"{{ tail -40 $(B)/log/{log}.log; exit 1; }}")
     lines.append("\t@touch $@")
     lines.append("")
@@ -492,10 +482,9 @@ def stamps_for(sel):
 def cmd_mk():
     infos = load()
     by_base = {i["base"]: i for i in infos}
-    local = local_index(infos)
-    names, provided, _ = local
-    full = local_index(infos, ("arch", "tinyhat"))
-    base_of = full[2]
+    local = package_index(infos)
+    full = package_index(infos, ("arch", "tinyhat"))
+    base_of = {n: info["base"] for n, info in full.pkgs.items()}
     prefs = distro.providers()
     libs = read_libs()
     idx = indexes(infos)
@@ -515,7 +504,7 @@ def cmd_mk():
     rootfs_i686 = pkg.resolve_targets(targets, idx, "i686", lprefs, skip)
     image = {p["name"] for p in rootfs_i686}
     for n in sorted(too_old & image):
-        print(f"mkpkgs.py: avoiding prebuilt {n} {seed[0][n]['version']} ([image] deny), building it", file=sys.stderr)
+        print(f"buildplan.py: avoiding prebuilt {n} {seed[0][n]['version']} ([image] deny), building it", file=sys.stderr)
     listed = distro.prebuilt_listed()
     force_build = {b for b, e in PKGCONF.items() if e.get("build_from_source")}
     candidates = [b for b in listed if b not in force_build]
@@ -524,12 +513,13 @@ def cmd_mk():
                     and i["base"] not in force_build]
         candidates += all_arch
     local_pkgs, local_provides = idx["i686"]
+    with_metadata = lambda metadata: pkg.Index(metadata, local_provides)
 
     def choose(image, metadata):
         wanted_by = {}
         for n in image:
             for d in metadata.get(n, {}).get("depends", []):
-                m = pkg.lookup((metadata, local_provides), d, lprefs, set())
+                m = with_metadata(metadata).resolve(d, lprefs)
                 if m:
                     wanted_by.setdefault(m, set()).add(n)
         roots = set(distro.section("image").get("packages", []))
@@ -541,11 +531,11 @@ def cmd_mk():
             if base in listed:
                 available = set(own) & set(seed[0])
             else:
-                available = needed and all(pkg.lookup(seed, n, prefs, set()) is not None for n in needed)
-            deps = {pkg.lookup(seed, d, prefs, set()) for n in needed if n in seed[0] for d in seed[0][n]["depends"]}
+                available = needed and all(seed.resolve(n, prefs) is not None for n in needed)
+            deps = {seed.resolve(d, prefs) for n in needed if n in seed[0] for d in seed[0][n]["depends"]}
             if not available:
                 note = f"{base} is not available prebuilt, building it"
-            elif (set(info["pkgnames"]) | {pkg.lookup(seed, n, prefs, set()) for n in needed}) & broken:
+            elif (set(info["pkgnames"]) | {seed.resolve(n, prefs) for n in needed}) & broken:
                 note = f"prebuilt {base} is broken in the seed, building it"
             elif deps & broken:
                 note = f"prebuilt {base} needs {' '.join(sorted(deps & broken))}, which is broken in the seed, building it"
@@ -562,13 +552,13 @@ def cmd_mk():
         prebuilt_names = {n for b in prebuilt for n in by_base[b]["pkgnames"]}
         as_built = {n: dict(p, depends=seed[0][n]["depends"]) if n in prebuilt_names and n in seed[0] else p
                     for n, p in local_pkgs.items()}
-        rootfs_i686 = pkg.resolve_targets(targets, {"i686": (as_built, local_provides)}, "i686", lprefs, skip)
+        rootfs_i686 = pkg.resolve_targets(targets, {"i686": with_metadata(as_built)}, "i686", lprefs, skip)
         new_image = {p["name"] for p in rootfs_i686}
         if new_image == image and metadata is as_built:
             break
         image, metadata = new_image, as_built
     for note in notes:
-        print(f"mkpkgs.py: {note}", file=sys.stderr)
+        print(f"buildplan.py: {note}", file=sys.stderr)
 
     for info in infos:
         for kind in ("i686", "x32", "boot"):
@@ -610,7 +600,7 @@ def cmd_mk():
     prune_runtime(i686_plans, base_of, idx, prefs)
     prune_seeded(i686_plans, base_of, {p["name"] for p in distro.locked("buildroot")})
     for comp in prune_soft(i686_plans, base_of):
-        print(f"mkpkgs.py: dependency cycle: {' '.join(sorted(comp))}", file=sys.stderr)
+        print(f"buildplan.py: dependency cycle: {' '.join(sorted(comp))}", file=sys.stderr)
 
     for info, deps, soft in i686_plans.values():
         deps = deps + soft
@@ -676,12 +666,12 @@ def cmd_mk():
 
     x32_index = idx["x32"]
     if x32_only is not None:
-        kept, kept_provides = {}, {}
-        for n, p in idx["x32"][0].items():
+        x32_index = pkg.Index.new()
+        for n, p in idx["x32"].pkgs.items():
             if p["arch"] == "any" or p["base"] in x32_only:
-                pkg.add_pkg(kept, kept_provides, p, [pv for pv, names in idx["x32"][1].items() if n in names])
-        x32_index = (kept, kept_provides)
-    rootfs_x32 = pkg.resolve_targets(targets, {"i686": (as_built, local_provides), "x32": x32_index}, "x32", lprefs, skip)
+                x32_index.add(n, p, idx["x32"].provided_by(n))
+    x32_targets, _, x32_skip = pkg.list_config("image-x32") if "image-x32" in distro.load() else (targets, lprefs, skip)
+    rootfs_x32 = pkg.resolve_targets(x32_targets, {"i686": with_metadata(as_built), "x32": x32_index}, "x32", lprefs, x32_skip)
     aarch64_stamps = arch_rules(lines, "aarch64", by_base, prefs)
     x86_64_stamps = arch_rules(lines, "x86_64", by_base, prefs)
     print("I686_STAMPS := " + " ".join(i686_stamps))
@@ -693,35 +683,23 @@ def cmd_mk():
     print("TINYHAT_PKGS := " + " ".join(sorted(tinyhat)))
     roots = "\n".join([f"ROOTFS_I686_STAMPS := {' '.join(stamps_for(rootfs_i686))}",
                        f"ROOTFS_X32_STAMPS := {' '.join(stamps_for(rootfs_x32))}"] + lines)
-    need = needed_recipes(infos, roots)
+    need = needed_package_dirs(infos, roots)
     print("PACKAGES_STAMPS := " + " ".join(s for s in i686_stamps if s.rsplit("/", 1)[1] in need))
     print()
     print("\n".join(lines))
 
 
 def arch_rules(lines, arch, by_base, prefs):
-    """Rules for the recipes that "make lock-ARCH" decided to build for another architecture ([build-ARCH] in
-    distro.lock). Each one gets the other recipes built for that architecture that it needs."""
+    """Rules for the package directories that "make lock-ARCH" decided to build for another architecture ([build-ARCH] in
+    distro.lock). Each one gets the other packages built for that architecture that it needs."""
     built = [by_base[b] for b in sorted(distro.lock().get(f"build-{arch}", {})) if b in by_base]
-    forced = {n: b for b, e in PKGCONF.items() if e.get("build_from_source") and b in by_base
-              for n in by_base[b]["pkgnames"]}
-    stale = sorted({f"{info['base']} needs {forced[d]}" for info in built for n in info["pkgnames"]
-                    for d in info["depends"].get(n, [])
-                    if d in forced and forced[d] not in {i["base"] for i in built}})
-    if stale:
-        sys.exit(f"mkpkgs.py: distro.lock [build-{arch}] is out of date ({', '.join(stale)}), "
-                 f"run \"make lock-{arch}\"")
-    names, provided = {}, {}
-    for info in built:
-        for name in info["pkgnames"]:
-            names[name] = info
-            for pv in info["provides"][name]:
-                provided.setdefault(pv, name)
+    here = package_index(built, ("arch", "tinyhat"), arches=())
+    names = here.pkgs
     plans = {}
     for info in built:
         own = set(info["pkgnames"])
-        plans[info["base"]] = (resolve_local(all_deps(info), names, provided, own),
-                               resolve_local(info["makedepends"], names, provided, own))
+        plans[info["base"]] = (here.closure(all_deps(info), runtime_deps(here), own),
+                               here.closure(info["makedepends"], runtime_deps(here), own))
     graph = {b: {names[d]["base"] for d in deps} - {b} for b, (deps, _) in plans.items()}
     for comp in sccs(graph):
         for b in comp if len(comp) > 1 else ():
@@ -757,8 +735,26 @@ def image_bases():
         return needed_bases(f.read())
 
 
+def prebuilt_bases():
+    """The package directories that build/pkgs.mk takes prebuilt, from the seed, instead of building them."""
+    path = os.path.join(TOP, "build", "pkgs.mk")
+    if not os.path.exists(path):
+        return set()
+    out, cur = set(), None
+    with open(path) as f:
+        for line in f:
+            m = re.match(r"^\$\(B\)/pkg/i686/([^:\s]+):", line)
+            if m:
+                cur = m.group(1)
+            elif cur and line.startswith("\tpython3 scripts/pkg.py prebuilt "):
+                out.add(cur)
+            elif not line.startswith("\t"):
+                cur = None
+    return out
+
+
 def needed_bases(text):
-    """The recipes (i686 and x32) that the images and the Makefile need, with what it takes to build them,
+    """The package directories (i686 and x32) that the images and the Makefile need, with what it takes to build them,
     from the text of build/pkgs.mk."""
     deps, cur = {}, None
     for line in text.splitlines():
@@ -784,19 +780,19 @@ def needed_bases(text):
     return need
 
 
-def needed_recipes(infos, text):
-    """The recipes needed for the images: the ones the images and the Makefile use (from the text of
-    build/pkgs.mk) and the aarch64 and x86_64 builds, and everything their recipes depend on, at build time or at run
+def needed_package_dirs(infos, text):
+    """The package directories needed for the images: the ones the images and the Makefile use (from the text of
+    build/pkgs.mk) and the aarch64 and x86_64 builds, and everything their TINYBUILDs depend on, at build time or at run
     time, whether or not that ends up built here."""
-    names, provided, base_of = local_index(infos, ("arch", "tinyhat"))
+    full = package_index(infos, ("arch", "tinyhat"))
     by_base = {i["base"]: i for i in infos}
     need = set(needed_bases(text)) | set(distro.lock().get("build-aarch64", {})) | set(distro.lock().get("build-x86_64", {}))
     todo = [b for b in need if b in by_base]
     while todo:
         info = by_base[todo.pop()]
         for dep in all_deps(info):
-            name = dep if dep in names else provided.get(dep)
-            base = base_of.get(name)
+            name = full.resolve(dep)
+            base = full.pkgs[name]["base"] if name else None
             if base is not None and base not in need:
                 need.add(base)
                 todo.append(base)
@@ -806,23 +802,25 @@ def needed_recipes(infos, text):
 def cmd_seed():
     infos = load()
     used = image_bases()
-    names, provided, _ = local_index(infos)
+    local = package_index(infos)
     db = seed_index()
     idx = indexes(infos)
     prefs = distro.providers()
     seed = list(SEED_BASE)
     excluded, wanted_by = distro.excluded(), {}
+    # A package that is taken prebuilt is never built, so what it takes to build it is not needed
+    prebuilt = prebuilt_bases()
     for info in infos:
-        if used is not None and info["base"] not in used:
+        if used is not None and info["base"] not in used or info["base"] in prebuilt:
             continue
         skip = set(info["pkgnames"])
         for dep in all_deps(info):
-            if info["sub"] == "tinyhat" and (dep in names or dep in provided):
+            if info["sub"] == "tinyhat" and local.resolve(dep) is not None:
                 continue
-            localname = pkg.lookup(idx["i686"], dep, prefs, set())
+            localname = idx["i686"].resolve(dep, prefs)
             if local_first(idx, localname):
                 continue
-            if localname is not None and pkg.lookup(db, dep, prefs, set()) is None:
+            if localname is not None and db.resolve(dep, prefs) is None:
                 continue
             if dep in skip or dep in seed or dep.startswith("lib32-"):
                 continue
@@ -831,7 +829,7 @@ def cmd_seed():
                 continue
             seed.append(dep)
     if wanted_by:
-        sys.exit("mkpkgs.py: recipes need excluded packages in the build environment:\n" +
+        sys.exit("buildplan.py: TINYBUILDs need excluded packages in the build environment:\n" +
                  "\n".join(f"  {d}: needed by {', '.join(sorted(b))}" for d, b in sorted(wanted_by.items())))
     print("\n".join(seed))
 
@@ -864,21 +862,21 @@ def cmd_libs():
     distro.write_lock(libpkgs=sorted(set(out)))
 
 
-def cmd_lock_arch(arch):
+def cmd_lock_arch(arch, check=False):
     """Lock the prebuilt packages of the image for another architecture ([image-ARCH] in distro.toml).
 
     The image is [image] with the packages in remove left out and the ones in add added. Packages come
-    prebuilt (pkg.ARCH_SOURCES), except for the recipes that are built from source:
-    - Tiny Hat's own recipes that the prebuilt repositories lack, that change something (patches or
-      other files next to the PKGBUILD) or that are listed in build,
-    - recipes with a version pinned in distro.toml, when the prebuilt version is different,
-    - recipes for prebuilt packages that would pull in something [image] deny names that the x86 image
+    prebuilt (pkg.ARCH_SOURCES), except for the packages that are built from source:
+    - Tiny Hat's own packages that the prebuilt repositories lack, and the packages listed in build_from_source,
+    - packages with a version pinned in distro.toml, when the prebuilt version is different,
+    - packages whose prebuilt ones would pull in something [image] deny names that the x86 image
       does not have (like X11 or SDL2), repeated until nothing new is pulled in.
     The versions and checksums of the prebuilt packages are written to [image-ARCH] in distro.lock."""
     section = f"image-{arch}"
     conf, base = distro.section(section), distro.section("image")
     targets, prefs, skip = pkg.list_config(section)
-    db, provides = pkg.arch_db(arch)
+    dbidx = pkg.arch_db(arch)
+    db = dbidx.pkgs
     prefs = {k: v for k, v in prefs.items() if k not in db}
     infos = load()
     by_base = {i["base"]: i for i in infos}
@@ -889,8 +887,7 @@ def cmd_lock_arch(arch):
 
     local = set(conf.get("build_from_source", []))
     for info in infos:
-        changed = set(os.listdir(os.path.join(TOP, info["dir"]))) - {"PKGBUILD", ".SRCINFO", "LICENSE"}
-        if info["sub"] == "tinyhat" and (changed or any(n not in db for n in info["pkgnames"])):
+        if info["sub"] == "tinyhat" and any(n not in db for n in info["pkgnames"]):
             local.add(info["base"])
         # A version pinned in distro.toml is pinned for a reason, so build it if the prebuilt one differs
         pin = distro.tables().get(info["base"], {}).get("version")
@@ -899,24 +896,22 @@ def cmd_lock_arch(arch):
     local |= {base_of[t] for t in targets if t not in db and t in base_of}
 
     def resolve():
-        pkgs, provs = {}, {}
+        both = pkg.Index.new()
         for b in sorted(local):
             for name in by_base[b]["pkgnames"]:
-                pkg.add_pkg(pkgs, provs, {"name": name, "base": b, "local": True,
-                                          "depends": by_base[b]["depends"][name]}, by_base[b]["provides"][name])
+                both.add(name, {"name": name, "base": b, "local": True, "depends": by_base[b]["depends"][name]},
+                         by_base[b]["provides"][name])
         for name, p in db.items():
-            pkg.add_pkg(pkgs, provs, p, [])
-        for pv, names in provides.items():
-            have = provs.setdefault(pv, [])
+            both.add(name, p)
+        for pv, names in dbidx.provides.items():
             for n in names:
-                if n not in have:
-                    have.append(n)
-        sel = pkg.resolve_targets(targets, {arch: (pkgs, provs)}, arch, prefs, skip)
+                both.link(pv, n)
+        sel = pkg.resolve_targets(targets, {arch: both}, arch, prefs, skip)
         names = {p["name"] for p in sel}
         users = {}
         for p in sel:
             for d in p["depends"]:
-                users.setdefault(pkg.lookup((pkgs, provs), d, prefs, names), []).append(p)
+                users.setdefault(both.resolve(d, prefs, names), []).append(p)
         bad = {p["name"] for p in sel if p["name"] not in x86 and denied(p["name"], None, name_rules)}
         return sel, users, bad
 
@@ -934,26 +929,41 @@ def cmd_lock_arch(arch):
     for p in sel:
         if p.get("local"):
             built.setdefault(p["base"], []).append(p["name"])
+    tools = package_index(infos, ("arch", "tinyhat"), arches=(arch, "any"))
+    todo = [b for b in built if b in by_base]
+    while todo:
+        for dep in all_deps(by_base[todo.pop()]):
+            name = tools.resolve(dep) if dbidx.resolve(dep, prefs) is None else None
+            if name is not None and tools.pkgs[name]["base"] not in built:
+                info = tools.pkgs[name]
+                built[info["base"]] = [n for n in info["pkgnames"] if set(info["arch"][n]) & {arch, "any"}]
+                todo.append(info["base"])
     built = {b: sorted(names) for b, names in sorted(built.items())}
     prebuilt = {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"], "sha256": p["sha256"]}
                 for p in sel if not p.get("local")}
-    buildroot = arch_buildroot(arch, [by_base[b] for b in built], db, provides, prefs)
-    distro.write_lock(**{section: prebuilt, f"buildroot-{arch}": buildroot,
-                         f"build-{arch}": built})
-    print(f"mkpkgs.py: {section}: {len(prebuilt)} prebuilt packages locked, {len(built)} recipes to build: "
+    buildroot = arch_buildroot(arch, [by_base[b] for b in built], dbidx, prefs)
+    sections = {section: prebuilt, f"buildroot-{arch}": buildroot, f"build-{arch}": built}
+    if check:
+        stale = [s for s, v in sections.items() if distro.lock().get(s, {}) != v]
+        if stale:
+            sys.exit(f"buildplan.py: distro.lock {' '.join(f'[{s}]' for s in stale)} no longer matches the TINYBUILDs "
+                     f"and distro.toml, run \"make lock-{arch}\"")
+        return
+    distro.write_lock(**sections)
+    print(f"buildplan.py: {section}: {len(prebuilt)} prebuilt packages locked, {len(built)} package directories to build: "
           + " ".join(built), file=sys.stderr)
-    print(f"mkpkgs.py: buildroot-{arch}: {len(buildroot)} prebuilt packages locked", file=sys.stderr)
+    print(f"buildplan.py: buildroot-{arch}: {len(buildroot)} prebuilt packages locked", file=sys.stderr)
     for n in sorted(bad):
-        print(f"mkpkgs.py: {section}: {n} ([image] deny) is still pulled in by "
+        print(f"buildplan.py: {section}: {n} ([image] deny) is still pulled in by "
               + " ".join(sorted(u["name"] for u in users.get(n, []))), file=sys.stderr)
     old = sorted(f"{n} {e['version']}" for n, e in prebuilt.items() if denied(n, e["version"], [r for r in rules if r[1]]))
     if old:
-        sys.exit(f"mkpkgs.py: {section}: older than [image] deny allows: {', '.join(old)}")
+        sys.exit(f"buildplan.py: {section}: older than [image] deny allows: {', '.join(old)}")
 
 
-def arch_buildroot(arch, built, db, provides, prefs):
+def arch_buildroot(arch, built, db, prefs):
     """The prebuilt packages of the build environment for another architecture: the [buildroot] packages,
-    makepkg and everything the recipes built for that architecture need, except what those recipes make."""
+    makepkg and everything the packages built for that architecture need, except what those packages are."""
     own = {n for info in built for n in info["pkgnames"]}
     own |= {pv for info in built for n in info["pkgnames"] for pv in info["provides"][n]}
     br = distro.section("buildroot")
@@ -965,13 +975,98 @@ def arch_buildroot(arch, built, db, provides, prefs):
     for dep in wanted:
         if dep in own or dep in skip or dep.startswith("lib32-"):
             continue
-        if pkg.lookup((db, provides), dep, prefs, set()) is None:
-            print(f"mkpkgs.py: buildroot-{arch}: {dep} is not available prebuilt, leaving it out", file=sys.stderr)
+        if db.resolve(dep, prefs) is None:
+            print(f"buildplan.py: buildroot-{arch}: {dep} is not available prebuilt, leaving it out", file=sys.stderr)
             continue
         targets.append(dep)
-    sel = pkg.resolve_targets(targets, {arch: (db, provides)}, arch, prefs, skip)
+    sel = pkg.resolve_targets(targets, {arch: db}, arch, prefs, skip)
     return {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"], "sha256": p["sha256"]}
             for p in sel}
+
+
+def build_version(info, name):
+    """The full version (epoch:pkgver-pkgrel) that a TINYBUILD gives a package."""
+    epoch, _, ver = info["version"].partition(":")
+    v = f"{ver}-{info['release']}"
+    return v if epoch == "0" else f"{epoch}:{v}"
+
+
+def cmd_pkgfile(repodir, arch, name):
+    """The package file that our TINYBUILD builds for NAME, in the version it gives."""
+    infos = load()
+    by_base = {i["base"]: i for i in infos}
+    idx = package_index(infos, ("arch", "tinyhat"))
+    pname = idx.resolve(name)
+    if pname is None:
+        sys.exit(f"buildplan.py: no TINYBUILD makes {name}")
+    info = by_base[idx.pkgs[pname]["base"]]
+    parch = "any" if "any" in info["arch"][pname] else arch
+    path = os.path.join(repodir, f"{pname}-{build_version(info, pname)}-{parch}.pkg.tar.zst")
+    if not os.path.exists(path):
+        sys.exit(f"buildplan.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
+    print(path)
+
+
+def cmd_pkgfiles(repodir, arch, names):
+    """The package files that our TINYBUILDs build for NAMES and everything they need at run time, the versions
+    that they give, never a prebuilt package: for the sysroot of scripts/buildpackage.sh --cross."""
+    infos = load()
+    by_base = {i["base"]: i for i in infos}
+    idx = package_index(infos, ("arch", "tinyhat"))
+    seen, todo, out = set(), list(names), []
+    while todo:
+        dep = todo.pop()
+        name = idx.resolve(dep)
+        if name is None:
+            sys.exit(f"buildplan.py: no TINYBUILD makes {dep}")
+        if name in seen:
+            continue
+        seen.add(name)
+        info = by_base[idx.pkgs[name]["base"]]
+        ver = build_version(info, name)
+        parch = "any" if "any" in info["arch"][name] else arch
+        path = os.path.join(repodir, f"{name}-{ver}-{parch}.pkg.tar.zst")
+        if not os.path.exists(path):
+            sys.exit(f"buildplan.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
+        out.append(path)
+        todo += info["depends"].get(name, [])
+    print("\n".join(sorted(out)))
+
+
+def cmd_cross_plan(roots):
+    """The package directories that the given packages need at run time, in build order, one per line: the package directory
+    and the i686 packages from the same set that its build needs (i686/NAME), for scripts/buildpackage.sh --cross.
+    Cycles are broken where a package needs one that is not built yet; build those twice."""
+    infos = load()
+    by_base = {i["base"]: i for i in infos}
+    idx = package_index(infos, ("arch", "tinyhat"))
+    need, todo = set(), list(roots)
+    while todo:
+        name = idx.resolve(todo.pop())
+        if name is None or name in need:
+            continue
+        need.add(name)
+        todo += by_base[idx.pkgs[name]["base"]]["depends"].get(name, [])
+    bases = {idx.pkgs[n]["base"] for n in need}
+    deps = {}
+    for b in bases:
+        names = set()
+        for d in all_deps(by_base[b]):
+            n = idx.resolve(d)
+            if n and idx.pkgs[n]["base"] in bases and idx.pkgs[n]["base"] != b:
+                names.add(n)
+        deps[b] = names
+    order, built, left = [], set(), set(bases)
+    while left:
+        ready = sorted(b for b in left if {idx.pkgs[n]["base"] for n in deps[b]} <= built)
+        if not ready:
+            ready = [min(left, key=lambda b: (len({idx.pkgs[n]["base"] for n in deps[b]} - built), b))]
+        for b in ready:
+            order.append(b)
+            built.add(b)
+            left.discard(b)
+    for b in order:
+        print(by_base[b]["dir"], " ".join(f"i686/{n}" for n in sorted(deps[b])))
 
 
 def main():
@@ -982,10 +1077,16 @@ def main():
         cmd_seed()
     elif cmd == "libs":
         cmd_libs()
-    elif cmd == "lock-arch" and len(sys.argv) == 3:
-        cmd_lock_arch(sys.argv[2])
+    elif cmd == "pkgfile" and len(sys.argv) == 5:
+        cmd_pkgfile(*sys.argv[2:])
+    elif cmd == "pkgfiles" and len(sys.argv) > 4:
+        cmd_pkgfiles(sys.argv[2], sys.argv[3], sys.argv[4:])
+    elif cmd == "cross-plan" and len(sys.argv) > 2:
+        cmd_cross_plan(sys.argv[2:])
+    elif cmd == "lock-arch" and len(sys.argv) in (3, 4) and sys.argv[3:] in ([], ["--check"]):
+        cmd_lock_arch(sys.argv[2], sys.argv[3:] == ["--check"])
     else:
-        sys.exit("usage: mkpkgs.py mk | seed | libs | lock-arch ARCH")
+        sys.exit("usage: buildplan.py mk | seed | libs | lock-arch ARCH [--check] | cross-plan PACKAGE... | pkgfile REPODIR ARCH NAME | pkgfiles REPODIR ARCH NAME...")
 
 
 if __name__ == "__main__":

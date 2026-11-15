@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Update the distro configuration to newer package versions, without building anything.
 
-1. Imported Arch recipes whose upstream version is newer in the Arch Linux package databases (core and extra)
+1. TINYBUILDs ported from Arch PKGBUILDs whose upstream version is newer in the Arch Linux package databases (core and extra)
    get their pkgver/pkgrel bumped to Arch's version, with checksums regenerated from the upstream sources.
    Releases that only repackage the same upstream version are reported, not applied.
-2. Tiny Hat's own recipes that have an nvchecker entry in distro.toml move to the latest upstream release.
-3. Imported recipes where upstream (nvchecker) is ahead of Arch are only reported.
+2. Tiny Hat's own TINYBUILDs that have an nvchecker entry in distro.toml move to the latest upstream release.
+3. TINYBUILDs ported from Arch where upstream (nvchecker) is ahead of Arch are only reported.
 4. The archlinux32 package databases and the buildroot lock are refreshed (like "make lock").
 
 No requests are sent to gitlab.archlinux.org. Updates that would make the image depend on a package in
-[image] deny (X11, perl, SDL2, GTK2, Qt, ...) are reverted and reported as held back. Bumped recipes keep
-their previous Arch packaging (patches, dependencies); "importpkg.py BASE" brings in Arch's exact recipe.
+[image] deny (X11, perl, SDL2, GTK2, Qt, ...) are reverted and reported as held back. Bumped TINYBUILDs keep
+their previous packaging (patches, dependencies); "importpkg.py update BASE" shows what else Arch changed, to port.
 The report is written to build/autoupdate.md, for use as a pull request description.
 """
 import argparse
@@ -27,7 +27,7 @@ import tomllib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import distro
 import importpkg
-import mkpkgs
+import buildplan
 import pkg
 
 TOP = distro.TOP
@@ -49,30 +49,30 @@ def vercmp(a, b):
 
 
 def image_state():
-    """The packages in the image and their dependency edges, resolved from the recipes' .SRCINFO files.
+    """The packages in the image and their dependency edges, resolved from the .SRCINFO files of the TINYBUILDs.
     Edges to skipped packages (like perl) are kept, since the skip list hides them from the package set."""
-    infos = mkpkgs.load()
+    infos = buildplan.load()
     versions = {n: i["version"] for i in infos for n in i["pkgnames"]}
     targets, prefs, skip = pkg.list_config("image")
-    pkgs = pkg.resolve_targets(targets, mkpkgs.indexes(infos), "i686", prefs, skip)
+    pkgs = pkg.resolve_targets(targets, buildplan.indexes(infos), "i686", prefs, skip)
     names = {p["name"] for p in pkgs}
     return names, {(p["name"], d) for p in pkgs for d in p["depends"]}, {n: versions.get(n) for n in names}
 
 
 def guard(before, after):
     """Return what an update newly pulls into the image that matches [image] deny."""
-    rules = mkpkgs.deny_rules()
+    rules = buildplan.deny_rules()
 
     def found(state):
         names, edges, versions = state
-        out = {f"{n} {versions[n] or ''}".strip() for n in names if mkpkgs.denied(n, versions[n], rules)}
-        return out | {f"{a} → {b}" for a, b in edges if mkpkgs.denied(b, None, rules)}
+        out = {f"{n} {versions[n] or ''}".strip() for n in names if buildplan.denied(n, versions[n], rules)}
+        return out | {f"{a} → {b}" for a, b in edges if buildplan.denied(b, None, rules)}
 
     return sorted(found(after) - found(before))
 
 
 class ManualUpdate(Exception):
-    """The recipe cannot be bumped automatically."""
+    """The TINYBUILD cannot be bumped automatically."""
 
 
 class Snapshot:
@@ -142,31 +142,31 @@ def arch_versions():
 
 
 def unneeded():
-    """The recipes that no image needs (none until build/pkgs.mk exists), which are left as they are."""
+    """The package directories that no image needs (none until build/pkgs.mk exists), which are left as they are."""
     path = os.path.join(TOP, "build", "pkgs.mk")
     if not os.path.exists(path):
         return set()
     with open(path) as f:
-        need = mkpkgs.needed_recipes(mkpkgs.load(), f.read())
+        need = buildplan.needed_package_dirs(buildplan.load(), f.read())
     return set(os.listdir(os.path.join(TOP, "packages"))) - need
 
 
 def arch_updates(report, only):
-    recipes = distro.lock().get("recipes", {})
+    imports = distro.lock().get("imports", {})
     tables = distro.tables()
     skipped = distro.skipped() | unneeded()
-    bases = [b for b, r in sorted(recipes.items())
+    bases = [b for b, r in sorted(imports.items())
              if (not only or b in only) and b not in skipped and tables.get(b, {}).get("source", "arch") == "arch"
              and r.get("version") not in (None, "main", "latest") and "version" not in tables.get(b, {})
              and os.path.isdir(os.path.join(TOP, "packages", b))]
-    log(f"checking {len(bases)} imported recipes against the Arch Linux package databases")
+    log(f"checking {len(bases)} TINYBUILDs ported from Arch against the Arch Linux package databases")
     try:
         arch = arch_versions()
     except (subprocess.CalledProcessError, OSError, tarfile.TarError) as e:
         report["failed"].append(("Arch Linux", "package databases", str(e)))
         return
     for base in bases:
-        old, new = recipes[base]["version"], arch.get(base)
+        old, new = imports[base]["version"], arch.get(base)
         if not new or vercmp(new, old) <= 0:
             continue
         o, n = importpkg.split_version(old), importpkg.split_version(new)
@@ -176,9 +176,9 @@ def arch_updates(report, only):
 
         def change(base=base, new=new, n=n):
             bump(base, n[1], n[2])
-            recipes = dict(distro.lock().get("recipes", {}))
-            recipes[base] = dict(recipes[base], version=new)
-            distro.write_lock(recipes=recipes)
+            imports = dict(distro.lock().get("imports", {}))
+            imports[base] = dict(imports[base], version=new)
+            distro.write_lock(imports=imports)
 
         log(f"{base}: {old} → {new}")
         if apply(base, change, report, f"{old} → {new}"):
@@ -186,7 +186,7 @@ def arch_updates(report, only):
 
 
 def nvchecker_entries():
-    """nvchecker settings per recipe: strings imported from Arch (distro.lock), or tables in distro.toml."""
+    """nvchecker settings per package directory: strings imported from Arch (distro.lock), or tables in distro.toml."""
     out = {}
     for base, e in distro.packages().items():
         conf = e.get("nvchecker")
@@ -229,7 +229,7 @@ def run_nvchecker(entries):
         cfg = os.path.join(tmp, "nvchecker.toml")
         with open(cfg, "w") as f:
             f.write("\n".join(lines) + "\n")
-        log(f"running nvchecker for {len(entries)} recipes")
+        log(f"running nvchecker for {len(entries)} package directories")
         r = subprocess.run(["nvchecker", "-c", cfg, "--logger", "json"], capture_output=True, text=True, timeout=3600)
     out = {}
     for line in r.stdout.splitlines():
@@ -243,27 +243,20 @@ def run_nvchecker(entries):
 
 
 def bump(base, new, pkgrel="1"):
-    """Move a recipe to a new upstream version and regenerate its checksums from the upstream sources."""
+    """Move a TINYBUILD to a new upstream version and regenerate its checksums from the upstream sources."""
     d = os.path.join(TOP, "packages", base)
-    path = os.path.join(d, "PKGBUILD")
-    text = open(path).read()
-    if re.search(r"^_(commit|tag|rev)=", text, re.M):
-        raise ManualUpdate("the recipe pins a commit")
-    srcinfo = open(os.path.join(d, ".SRCINFO")).read()
-    if FORBIDDEN_HOST in srcinfo:
+    if re.search(r"^set (-g )?_(commit|tag|rev) ", open(os.path.join(d, "TINYBUILD")).read(), re.M):
+        raise ManualUpdate("the TINYBUILD pins a commit")
+    if FORBIDDEN_HOST in open(os.path.join(d, ".SRCINFO")).read():
         raise ManualUpdate(f"sources on {FORBIDDEN_HOST}")
-    text = re.sub(r"^pkgver=.*$", f"pkgver={new}", text, count=1, flags=re.M)
-    text = re.sub(r"^pkgrel=.*$", f'pkgrel="{pkgrel}"', text, count=1, flags=re.M)
-    with open(path, "w") as f:
-        f.write(text)
-    with tempfile.TemporaryDirectory() as tmp:
-        conf = os.path.join(tmp, "makepkg.conf")
-        with open(conf, "w") as f:
-            f.write(open("/etc/makepkg.conf").read() + f'\nCARCH="i686"\nCHOST="i686-pc-linux-gnu"\nSRCDEST="{tmp}"\n')
-        r = subprocess.run(["updpkgsums"], cwd=d, capture_output=True, text=True, env=dict(os.environ, MAKEPKG_CONF=conf))
-        if r.returncode != 0:
-            raise RuntimeError(f"updpkgsums: {((r.stderr or r.stdout).strip().splitlines() or ['failed'])[-1]}")
-    info = importpkg.srcinfo(d)
+    try:
+        info = importpkg.bump_tinybuild(base, new, pkgrel)
+    except subprocess.CalledProcessError as e:
+        raise RuntimeError(f"makefish --updsums failed with status {e.returncode}")
+    check_source_version(base, new, info)
+
+
+def check_source_version(base, new, info):
     forms = {new, new.replace(".", "_"), new.replace(".", "-"), new.replace(".", "")}
     if not any(re.match(r"\s*source(_\w+)? = .*://", l) and any(f in l for f in forms) for l in info.splitlines()):
         raise ManualUpdate(f"no source URL contains {new}")
@@ -286,7 +279,8 @@ def upstream_updates(report, only, apply_bumps):
         if not new:
             continue
         if e.get("source") == "sources":
-            m = re.search(r"^pkgver=['\"]?([^'\"\s#]+)", open(os.path.join(TOP, "packages", base, "PKGBUILD")).read(), re.M)
+            tinybuild = os.path.join(TOP, "packages", base, "TINYBUILD")
+            m = re.search(r"^set pkgver ['\"]?([^'\"\s#]+)", open(tinybuild).read(), re.M)
             old = m.group(1) if m else ""
             if not old or vercmp(new, old) <= 0:
                 continue
@@ -310,8 +304,8 @@ def refresh_lock(report):
     seed = os.path.join(TOP, "build", "seed.txt")
     try:
         with open(seed, "w") as f:
-            subprocess.run([sys.executable, "scripts/mkpkgs.py", "seed"], cwd=TOP, env=env, stdout=f, check=True)
-        subprocess.run([sys.executable, "scripts/mkpkgs.py", "libs"], cwd=TOP, env=env, check=True)
+            subprocess.run([sys.executable, "scripts/buildplan.py", "seed"], cwd=TOP, env=env, stdout=f, check=True)
+        subprocess.run([sys.executable, "scripts/buildplan.py", "libs"], cwd=TOP, env=env, check=True)
         subprocess.run([sys.executable, "scripts/pkg.py", "lock", "buildroot", seed], cwd=TOP, env=env, check=True)
     except subprocess.CalledProcessError as e:
         report["failed"].append(("archlinux32", "buildroot lock", str(e)))
@@ -333,7 +327,7 @@ def write_report(report):
     parts = ["Automatic package updates. Nothing has been built: build and test before merging.\n"]
     sections = [
         ("arch", "Updated to the version in Arch Linux (pkgver bumped, previous Arch packaging kept)", ["Package", "Old", "New"]),
-        ("bumped", "Updated to the latest upstream release (Tiny Hat recipes)", ["Package", "Old", "New"]),
+        ("bumped", "Updated to the latest upstream release (Tiny Hat TINYBUILDs)", ["Package", "Old", "New"]),
         ("held", "Held back by the [image] deny list", ["Package", "Update", "Would pull in"]),
         ("manual", "Needs a manual update, left unchanged", ["Package", "Update", "Reason"]),
         ("failed", "Failed, left unchanged", ["Package", "Step", "Error"]),
@@ -354,10 +348,10 @@ def write_report(report):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("packages", nargs="*", help="only check these recipes")
+    ap.add_argument("packages", nargs="*", help="only check these package directories")
     ap.add_argument("--no-arch", action="store_true", help="do not check the Arch Linux package databases")
     ap.add_argument("--no-upstream", action="store_true", help="do not run nvchecker")
-    ap.add_argument("--no-bump", action="store_true", help="only report new upstream releases of Tiny Hat recipes")
+    ap.add_argument("--no-bump", action="store_true", help="only report new upstream releases of Tiny Hat TINYBUILDs")
     ap.add_argument("--no-lock", action="store_true", help="do not refresh the archlinux32 lock")
     args = ap.parse_args()
     only = set(args.packages)

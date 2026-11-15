@@ -42,7 +42,7 @@ done
 case $mode in
   base)
     rm -rf "$root"
-    rm -f "$root.overlay.list"
+    rm -f "$root.etc.list"
     mkdir -p "$root"
     python3 scripts/pkg.py extract "$lock" "$repo" "$root" "$section"
     pkgfile() { echo "$repo/$(awk -v p="$1" '$2 == p && $1 != "lib32" { print $4 }' "$lock")"; }
@@ -101,6 +101,8 @@ case $mode in
     rm -rf "$root"/usr/share/wayland-sessions
     rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
     find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
+    # Python only reads .opt-1.pyc and .opt-2.pyc when it runs with -O or -OO
+    find "$root/usr/lib" -path "$root/usr/lib/python3*" -name "*.opt-[12].pyc" -delete
     for f in zsnes-bin dosbox-x scummvm dwl fuzzel grafx2-sdl3 algernon; do
       [ ! -e "$root/usr/bin/$f" ] || sstrip "$root/usr/bin/$f"
     done
@@ -193,28 +195,26 @@ EOF
     grep -q "^Architecture = $arch$" "$root/etc/pacman.conf"
     ;;
   finalize)
-    manifest=$root.overlay.list
-    (cd config/overlay && find . -mindepth 1 ! -type d | LC_ALL=C sort) > "$manifest.new"
+    manifest=$root.etc.list
+    (cd config/etc && find . -mindepth 1 ! -type d | LC_ALL=C sort) > "$manifest.new"
     if [ -f "$manifest" ]; then
       comm -23 "$manifest" "$manifest.new" | while IFS= read -r p; do
-        rm -rf "$root/$p"
+        rm -rf "$root/etc/$p"
       done
     fi
     mv "$manifest.new" "$manifest"
-    cp -a config/overlay/. "$root/"
+    cp -a config/etc/. "$root/etc/"
     if [ -n "${TINYHAT_VERSION-}" ]; then
       sed -i "/^ID_LIKE=/a VERSION=\"$TINYHAT_VERSION\"\nVERSION_ID=$TINYHAT_VERSION" "$root/etc/os-release"
       sed -i "s/^title = \"Tiny Hat\"\$/title = \"Tiny Hat $TINYHAT_VERSION\"/" "$root/etc/tinyhat/dwl.toml"
     fi
-    (cd config/overlay && find . -mindepth 1) | while IFS= read -r p; do
-      if [ -d "config/overlay/$p" ] || [ -x "config/overlay/$p" ]; then
-        chmod 755 "$root/$p"
+    (cd config/etc && find . -mindepth 1) | while IFS= read -r p; do
+      if [ -d "config/etc/$p" ]; then
+        chmod 755 "$root/etc/$p"
       else
-        chmod 644 "$root/$p"
+        chmod 644 "$root/etc/$p"
       fi
     done
-    [ "$arch" != aarch64 ] || rm -f "$root/usr/bin/tinyhat-watcom" "$root/usr/share/applications/tinyhat-watcom.desktop" "$root/etc/profile.d/watcom.sh" "$root/usr/bin/tinyhat-wine" "$root/usr/share/applications/tinyhat-wine.desktop"
-    [ "$arch" = x32 ] || rm -f "$root/usr/bin/tinyhat-steam" "$root/usr/share/applications/tinyhat-steam.desktop" "$root/usr/lib/tinyhat/steam-install"
     mkdir -p "$root/usr/share/licenses/tinyhat"
     cp -a "$licdir/." "$root/usr/share/licenses/tinyhat/"
 
@@ -231,9 +231,8 @@ EOF
     term=$(sed -n 's/^term=//p' "$root/etc/xdg/foot/foot.ini")
     [ -f "$root/usr/share/terminfo/${term%"${term#?}"}/$term" ]
     chmod 4755 "$root/usr/bin/doas"
-    chmod 0400 "$root/etc/doas.conf"
 
-    scripts/inroot.sh "$root" /bin/sh -eu -c '
+    scripts/inrootfs.sh "$root" /bin/sh -eu -c '
 ldconfig
 for d in /usr/lib/modules/*/; do
   [ ! -d "$d" ] || [ -f "${d}modules.dep" ] || depmod "$(basename "$d")"
@@ -282,7 +281,7 @@ systemctl set-default multi-user.target
     python3 scripts/forbidcheck.py "$root"
     python3 scripts/sonamecheck.py "$root" "$lock" "$arch"
     python3 scripts/elfcheck.py "$root"
-    scripts/inroot.sh "$root" /bin/sh -c "$(cat scripts/symcheck.sh)"
+    scripts/inrootfs.sh "$root" /bin/sh -c "$(cat scripts/symcheck.sh)"
 
     find "$root/usr/share/man" -type l -name "*.gz" | while IFS= read -r l; do
       t=$(readlink "$l")

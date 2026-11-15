@@ -28,7 +28,7 @@ cp "$top/config/grub-early.cfg" "$work/early.cfg"
 theme=$work/root/boot/grub/themes/tinyhat
 python3 "$top/scripts/mkgrubtheme.py" "$theme" "$work/kbd/usr/share/kbd/consolefonts/default8x16.psfu.gz"
 for size in 16 32; do
-  "$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+  "$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
     /img/grub/usr/bin/grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
   rm -f "$theme/vga-$size.bdf"
 done
@@ -37,12 +37,12 @@ mkdir -p "$work/efi/EFI/BOOT" "$work/efi/tinyhat"
   echo "# GRUB Environment Block"
   head -c $((1024 - 25)) /dev/zero | tr '\0' '#'
 } > "$work/efi/tinyhat/grubenv"
-"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+"$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
   /img/grub/usr/bin/grub-mkimage -d /img/grubarm/usr/lib/grub/arm64-efi -O arm64-efi -o /img/efi/EFI/BOOT/BOOTAA64.EFI -c /img/early.cfg -p /boot/grub $efi_modules
 rm -rf "$work/grub" "$work/grubarm" "$work/kbd"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
-"$top/scripts/chroot.sh" "$br" --bind "$work" /img \
+"$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
   /bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI; mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat'
 rm -f "$out.tmp"
 "$top/scripts/mkdisk.sh" "$out.tmp" "$work/root" "$work/esp.img" ef "$esp_mib"

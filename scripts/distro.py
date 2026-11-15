@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 import json
 import os
+import shlex
 import sys
 import tomllib
 
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DISTRO = os.path.join(TOP, "distro.toml")
 LOCK = os.path.join(TOP, "distro.lock")
-SECTIONS = ["image", "image-aarch64", "image-x86_64", "buildroot", "providers", "mirrors", "sources"]
-FACTS = ("version", "a32", "nvchecker")
+SECTIONS = ["image", "image-x32", "image-aarch64", "image-x86_64", "buildroot", "providers", "mirrors", "sources"]
+FACTS = ("version", "nvchecker")
 THEME = ("name", "hat_color", "hat_highlight_color")
 
 _cache = {}
@@ -39,9 +40,9 @@ def tables():
 
 
 def packages():
-    recipes, tabs = lock().get("recipes", {}), tables()
-    return {base: {"source": "arch", **recipes.get(base, {}), **tabs.get(base, {})}
-            for base in sorted(set(tabs) | set(recipes))}
+    imports, tabs = lock().get("imports", {}), tables()
+    return {base: {"source": "arch", **imports.get(base, {}), **tabs.get(base, {})}
+            for base in sorted(set(tabs) | set(imports))}
 
 
 def section(name):
@@ -157,8 +158,16 @@ def view(name):
     if name == "theme":
         return "".join(f"{k} = {value(d[k])}\n" for k in THEME if k in d)
     if name == "image":
-        return f"image = {value(section('image'))}\nproviders = {value(providers())}\n"
+        return f"image = {value(section('image'))}\nimage-x32 = {value(section('image-x32'))}\nproviders = {value(providers())}\n"
     sys.exit(f"distro.py: unknown view {name}")
+
+
+def theme_env(base):
+    """Shell exports of the theme for a package directory that sets theme = true in distro.toml, as TINYHAT_THEME_KEY."""
+    if not tables().get(base, {}).get("theme"):
+        return ""
+    d = load()
+    return "".join(f"export TINYHAT_THEME_{k.upper()}={shlex.quote(str(d[k]))}\n" for k in THEME if k in d)
 
 
 def main():
@@ -183,10 +192,12 @@ def main():
         print(" ".join(section(args[0]).get("local", [])))
     elif cmd == "heavy":
         print(1 if tables().get(args[0], {}).get("heavy") else 0)
+    elif cmd == "theme-env":
+        sys.stdout.write(theme_env(args[0]))
     elif cmd == "caps":
         print("\n".join(caps(args[0])))
     else:
-        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE | local SECTION")
+        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE | local SECTION | theme-env BASE")
 
 
 if __name__ == "__main__":

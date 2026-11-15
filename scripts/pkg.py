@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from typing import NamedTuple
 import fcntl
 import fnmatch
 import hashlib
@@ -134,16 +135,61 @@ def parse_pkginfo(text):
     return info
 
 
-def add_pkg(pkgs, provides, p, provs):
-    if p["name"] in pkgs:
-        return
-    pkgs[p["name"]] = p
-    for pv in provs:
-        provides.setdefault(strip_ver(pv), []).append(p["name"])
+class Index(NamedTuple):
+    """Packages by name, and for each provided name the packages that provide it."""
+    pkgs: dict
+    provides: dict
+
+    @classmethod
+    def new(cls):
+        return cls({}, {})
+
+    def add(self, name, value, provs=()):
+        if name in self.pkgs:
+            return
+        self.pkgs[name] = value
+        for pv in provs:
+            self.link(pv, name)
+
+    def link(self, pv, name):
+        names = self.provides.setdefault(strip_ver(pv), [])
+        if name not in names:
+            names.append(name)
+
+    def remove(self, name):
+        self.pkgs.pop(name, None)
+        for names in self.provides.values():
+            while name in names:
+                names.remove(name)
+
+    def provided_by(self, name):
+        return [pv for pv, names in self.provides.items() if name in names]
+
+    def resolve(self, dep, prefs=None, chosen=()):
+        """The package that satisfies dep: the preferred provider, the package itself, a provider already
+        chosen, or else the first provider by name."""
+        dep = strip_ver(dep)
+        if prefs and dep in prefs and prefs[dep] in self.pkgs:
+            return prefs[dep]
+        if dep in self.pkgs:
+            return dep
+        cands = sorted(self.provides.get(dep, ()))
+        return next((c for c in cands if c in chosen), cands[0] if cands else None)
+
+    def closure(self, wanted, deps_of, skip=()):
+        """The packages that wanted resolves to, and what they need, in breadth-first order."""
+        out, queue = [], list(wanted)
+        while queue:
+            name = self.resolve(queue.pop(0))
+            if name is None or name in skip or name in out:
+                continue
+            out.append(name)
+            queue.extend(deps_of(name))
+        return out
 
 
 def load_db(dbdir=DBDIR, repos=None):
-    pkgs, provides = {}, {}
+    idx = Index.new()
     for repo in repos or REPOS:
         path = os.path.join(dbdir, f"{repo}.db")
         if not os.path.exists(path):
@@ -159,7 +205,7 @@ def load_db(dbdir=DBDIR, repos=None):
         for fields in entries.values():
             if "NAME" not in fields:
                 continue
-            add_pkg(pkgs, provides, {
+            idx.add(fields["NAME"][0], {
                 "name": fields["NAME"][0],
                 "repo": repo,
                 "version": fields["VERSION"][0],
@@ -168,7 +214,7 @@ def load_db(dbdir=DBDIR, repos=None):
                 "depends": [strip_ver(d) for d in fields.get("DEPENDS", [])],
                 "provides_full": fields.get("PROVIDES", []),
             }, fields.get("PROVIDES", []))
-    return pkgs, provides
+    return idx
 
 
 def pkginfo(path):
@@ -186,19 +232,65 @@ def split_filename(fn):
     return m.group(1), f"{m.group(2)}-{m.group(3)}", m.group(4)
 
 
+_PLANNED = None
+
+
+def planned_versions():
+    """The version of each package that the build plan uses, by name, as in package file names: the version
+    its TINYBUILD makes, or the pinned prebuilt version (vendor/archlinux32/pkg.lock, else the seed) when buildplan.py
+    decided to take it prebuilt."""
+    global _PLANNED
+    if _PLANNED is None:
+        _PLANNED = {}
+        seeded = {p["name"]: p["version"] for p in distro.locked("buildroot")}
+        pinned = os.path.join(TOP, "vendor", "archlinux32", "pkg.lock")
+        if os.path.exists(pinned):
+            seeded.update({p["name"]: p["version"] for p in read_lock(pinned)})
+        for d in os.listdir(os.path.join(TOP, "packages")):
+            path = os.path.join(TOP, "packages", d, ".SRCINFO")
+            if not os.path.exists(path):
+                continue
+            base, names = {}, []
+            with open(path) as f:
+                for line in f:
+                    k, _, v = line.strip().partition(" = ")
+                    if k == "pkgname":
+                        names.append(v)
+                    elif not names and k in ("pkgver", "pkgrel", "epoch"):
+                        base[k] = v
+            if "pkgver" in base and "pkgrel" in base:
+                ver = (base["epoch"] + ":" if base.get("epoch") else "") + f"{base['pkgver']}-{base['pkgrel']}"
+                mode = os.path.join(TOP, "build", "pkg", "mode", d)
+                prebuilt = os.path.exists(mode) and open(mode).read().strip() == "prebuilt"
+                for n in names:
+                    _PLANNED[n] = seeded.get(n) if prebuilt else ver
+    return _PLANNED
+
+
 def repo_files(repodir):
-    newest = {}
+    """The package file for each (name, arch) in repodir: the version its TINYBUILD plans if that was built,
+    or else the newest file (a prebuilt package)."""
+    chosen = {}
     if not os.path.isdir(repodir):
-        return newest
+        return chosen
+    planned = planned_versions()
     for fn in os.listdir(repodir):
         parts = split_filename(fn)
         if parts is None:
             continue
         key = (parts[0], parts[2])
         path = os.path.join(repodir, fn)
-        if key not in newest or os.path.getmtime(path) > os.path.getmtime(newest[key]):
-            newest[key] = path
-    return newest
+        old = chosen.get(key)
+        if old is None:
+            chosen[key] = path
+            continue
+        want = planned.get(parts[0])
+        if (split_filename(os.path.basename(old))[1] == want) != (parts[1] == want):
+            if parts[1] == want:
+                chosen[key] = path
+        elif os.path.getmtime(path) > os.path.getmtime(old):
+            chosen[key] = path
+    return chosen
 
 
 def arch_files(repodir, arch):
@@ -210,10 +302,10 @@ def arch_files(repodir, arch):
 
 
 def load_repo(repodir, arch="i686"):
-    pkgs, provides = {}, {}
+    idx = Index.new()
     for name, path in sorted(arch_files(repodir, arch).items()):
         info = pkginfo(path)
-        add_pkg(pkgs, provides, {
+        idx.add(info["pkgname"][0], {
             "name": info["pkgname"][0],
             "arch": info["arch"][0],
             "repo": "tinyhat",
@@ -222,19 +314,7 @@ def load_repo(repodir, arch="i686"):
             "sha256": sha256(path),
             "depends": [strip_ver(d) for d in info.get("depend", [])],
         }, info.get("provides", []))
-    return pkgs, provides
-
-
-def lookup(index, dep, prefs, chosen):
-    pkgs, provides = index
-    if dep in prefs and prefs[dep] in pkgs:
-        return prefs[dep]
-    if dep in pkgs:
-        return dep
-    if dep in provides:
-        cands = sorted(provides[dep])
-        return next((c for c in cands if c in chosen), cands[0])
-    return None
+    return idx
 
 
 def resolve_targets(targets, indexes, arch, prefs, skip):
@@ -246,7 +326,7 @@ def resolve_targets(targets, indexes, arch, prefs, skip):
         seen.add((dep, ctx))
         p = None
         for a in ([ctx, "i686"] if ctx == "x32" else [ctx]):
-            name = lookup(indexes[a], dep, prefs, names)
+            name = indexes[a].resolve(dep, prefs, names)
             if name is not None:
                 p = indexes[a][0][name]
                 break
@@ -298,31 +378,25 @@ def i686_with_arch_any():
     """The archlinux32 index, with the noarch Python packages taken from Arch Linux, since those are built for
     the latest Python and the archlinux32 ones for an old one. Arch Linux noarch packages that archlinux32 lacks
     are added too."""
-    pkgs, provides = load_db()
-    other, other_provides = arch_db("x86_64")
+    idx = load_db()
+    other = arch_db("x86_64")
     provs = {}
-    for pv, names in other_provides.items():
+    for pv, names in other.provides.items():
         for n in names:
             provs.setdefault(n, []).append(pv)
-    for name, p in other.items():
+    for name, p in other.pkgs.items():
         if not ANY_RE.search(p["filename"]):
             continue
-        mine = pkgs.get(name)
+        mine = idx.pkgs.get(name)
         if mine is not None and not (ANY_RE.search(mine["filename"]) and python_bound(mine)):
             continue
         if mine is not None:
-            del pkgs[name]
-            for names in provides.values():
-                while name in names:
-                    names.remove(name)
-        add_pkg(pkgs, provides, dict(p, repo=f"x86_64:{p['repo']}"), provs.get(name, []))
-    for name, p in list(pkgs.items()):
+            idx.remove(name)
+        idx.add(name, dict(p, repo=f"x86_64:{p['repo']}"), provs.get(name, []))
+    for name, p in list(idx.pkgs.items()):
         if ":" not in p["repo"] and ANY_RE.search(p["filename"]) and python_bound(p):
-            del pkgs[name]
-            for names in provides.values():
-                while name in names:
-                    names.remove(name)
-    return pkgs, provides
+            idx.remove(name)
+    return idx
 
 
 def resolve(name, extra=(), repodir=None, arch="i686"):
@@ -370,12 +444,13 @@ def parse_lock_line(line):
 
 def write_lock(sel, lockfile):
     native = {p["name"] for p in sel if p.get("arch") == "x32"}
-    with open(lockfile, "w") as f:
-        for p in sel:
-            repo = p["repo"]
-            if native and p.get("arch") == "i686":
-                repo = "lib32" if p["name"] in native else "i686"
-            f.write(lock_line(p, repo))
+    lines = []
+    for p in sel:
+        repo = p["repo"]
+        if native and p.get("arch") == "i686":
+            repo = "lib32" if p["name"] in native else "i686"
+        lines.append(lock_line(p, repo))
+    distro.write_if_changed(lockfile, "".join(lines))
     print(f"{lockfile}: {len(sel)} packages", file=sys.stderr)
 
 
@@ -387,14 +462,13 @@ def arch_db(arch):
         path = os.path.join(src["dbdir"], f"{repo}.db")
         if os.environ.get("REFRESH") or not os.path.exists(path):
             download_any([f"{repo_url(arch, m, repo)}/{repo}.db" for m in src["mirrors"]], path)
-    pkgs, provides = load_db(src["dbdir"], src["repos"])
+    idx = load_db(src["dbdir"], src["repos"])
     if "any_from" in src:
-        other, other_provides = arch_db(src["any_from"])
-        for name, p in other.items():
-            if name not in pkgs and re.search(r"-any\.pkg\.tar\.[a-z0-9]+$", p["filename"]):
-                add_pkg(pkgs, provides, dict(p, repo=f"{src['any_from']}:{p['repo']}"),
-                        [pv for pv, names in other_provides.items() if name in names])
-    return pkgs, provides
+        other = arch_db(src["any_from"])
+        for name, p in other.pkgs.items():
+            if name not in idx.pkgs and re.search(r"-any\.pkg\.tar\.[a-z0-9]+$", p["filename"]):
+                idx.add(name, dict(p, repo=f"{src['any_from']}:{p['repo']}"), other.provided_by(name))
+    return idx
 
 
 def cmd_lock(name, *extra):
@@ -415,6 +489,8 @@ def cmd_lock(name, *extra):
 
 
 def cmd_local(name, lockfile, repodir, arch="i686"):
+    if arch != "i686" and f"{name}-{arch}" in distro.load():
+        name = f"{name}-{arch}"
     write_lock(resolve(name, repodir=repodir, arch=arch), lockfile)
 
 
@@ -440,30 +516,28 @@ def base_files(files, *names, seed=None):
     """The files of all packages with the same pkgbase as the requested names, plus the transitive closure
     of their dependencies that exist in the repo, in sorted order.
 
-    Needed because makepkg.sh only installs the explicitly listed packages: without this, a package would
+    Needed because buildpackage.sh only installs the explicitly listed packages: without this, a package would
     build against prebuilt versions of its dependencies even when locally built (newer) ones are in the
     repo, breaking pkg-config chains like pango -> harfbuzz, or against stale sibling versions of split
     packages whose shared files (like the gobject-introspection .pc files) moved to other subpackages."""
     def needs(info):
         """The dependency fields of a (7.x) pkginfo, so also 'depends' of makepkg <= 6."""
         return [d for k in info for d in info[k] if k in ("depend", "depends")]
-    infos, provides, bybase = {}, {}, {}
+    infos, bybase, idx = {}, {}, Index.new()
     for name, path in files.items():
         info = repo_info(path)
         infos[name] = info
         bybase.setdefault(info.get("pkgbase", (name,))[0], []).append(name)
-        for pv in info.get("provides", []):
-            provides.setdefault(strip_ver(pv), []).append(name)
+        idx.add(name, info, info.get("provides", []))
     todo, seen = list(names), set()
     while todo:
         short = strip_ver(todo.pop())
         depname = short.split("=", 1)[0]
         if depname.startswith("/"):
             continue  # a file dependency, not a package name (the chroot seed provides it)
-        if depname not in infos:
-            depname = next((n for n in provides.get(depname, []) if n in infos), None)  # maybe a provide
-            if depname is None:
-                continue  # not in the repo: the prebuilt version in the chroot seed is fine
+        depname = idx.resolve(depname)
+        if depname is None:
+            continue  # not in the repo: the prebuilt version in the chroot seed is fine
         if depname in seen:
             continue
         if seed and depname not in names and seed.get(depname) == repo_info(files[depname]).get("pkgver", ("",))[0]:
@@ -506,7 +580,7 @@ def read_lock(lockfile):
 
 def link(src, dest):
     """Point dest at src with a relative symlink instead of storing a second copy. The sandboxes in
-    makepkg.sh mount vendor/ at /vendor, so links from build/repo resolve inside them too."""
+    buildpackage.sh mount vendor/ at /vendor, so links from build/repo resolve inside them too."""
     tmp = f"{dest}.{os.getpid()}.tmp"
     os.symlink(os.path.relpath(os.path.realpath(src), os.path.dirname(os.path.abspath(dest))), tmp)
     os.replace(tmp, dest)
@@ -618,14 +692,15 @@ def current_db(max_age=6 * 3600):
 
 
 def cmd_archrepo(arch, repodir, lockfile, variant=None):
-    """Fill repodir with the prebuilt packages of [image-ARCH] and the packages built for ARCH that the image
-    uses ([build-ARCH] in distro.lock), and write the lock file for the root file system of that image.
+    """Fill repodir with the prebuilt packages of [image-ARCH] and the packages built for ARCH ([build-ARCH] in
+    distro.lock), and write the lock file for the root file system of that image, with only the packages that
+    the image packages need, since [build-ARCH] also holds what is only needed for building.
 
     [image-ARCH] can list packages for one variant of the image under a variant key (VARIANTS). The lock holds
-    the packages of all variants; with a variant, the root file system lock keeps only the packages that the
-    shared packages and that variant's packages need."""
+    the packages of all variants; with a variant, the root file system keeps only what the shared packages and
+    that variant's packages need."""
     os.makedirs(repodir, exist_ok=True)
-    sel, built_names = [], []
+    sel = []
     for e in distro.locked(f"image-{arch}"):
         p = {"repo": e["repo"], "name": e["name"], "version": e["version"], "filename": e["file"], "sha256": e["sha256"]}
         fetch_pkg(p, repodir, arch)
@@ -639,33 +714,22 @@ def cmd_archrepo(arch, repodir, lockfile, variant=None):
             link(built[name], os.path.join(repodir, fn))
             sel.append({"repo": "tinyhat", "name": name, "version": pkginfo(built[name])["pkgver"][0],
                         "filename": fn, "sha256": sha256(built[name])})
-            built_names.append(name)
-    if variant is not None:
-        conf = distro.section(f"image-{arch}")
-        if variant not in VARIANTS:
-            die(f"unknown image variant {variant} (expected one of {' '.join(VARIANTS)})")
-        others = {t for v in VARIANTS if v != variant for t in conf.get(v, [])}
-        roots = [t for t in list_config(f"image-{arch}")[0] if t not in others] + built_names
-        sel = reachable(sel, repodir, roots)
+    if variant is not None and variant not in VARIANTS:
+        die(f"unknown image variant {variant} (expected one of {' '.join(VARIANTS)})")
+    conf = distro.section(f"image-{arch}")
+    others = {t for v in VARIANTS if v != variant for t in conf.get(v, [])}
+    roots = [t for t in list_config(f"image-{arch}")[0] if t not in others]
+    sel = reachable(sel, repodir, roots)
     write_lock(sorted(sel, key=lambda p: p["name"]), lockfile)
 
 
 def reachable(sel, repodir, roots):
     """The packages of sel that the roots need, following depends and provides."""
-    infos, provides = {}, {}
+    idx = Index.new()
     for p in sel:
         info = repo_info(os.path.join(repodir, p["filename"]))
-        infos[p["name"]] = info
-        for pv in info.get("provides", []):
-            provides.setdefault(strip_ver(pv), p["name"])
-    keep, todo = set(), list(roots)
-    while todo:
-        dep = strip_ver(todo.pop())
-        name = dep if dep in infos else provides.get(dep)
-        if name is None or name in keep:
-            continue
-        keep.add(name)
-        todo += [d for k in ("depend", "depends") for d in infos[name].get(k, [])]
+        idx.add(p["name"], info, info.get("provides", []))
+    keep = idx.closure(roots, lambda n: [d for k in ("depend", "depends") for d in idx.pkgs[n].get(k, [])])
     return [p for p in sel if p["name"] in keep]
 
 

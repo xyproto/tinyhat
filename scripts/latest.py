@@ -36,17 +36,21 @@ def main():
     only = set(sys.argv[1:])
     report = {"failed": []}
     entries = {b: c for b, c in autoupdate.nvchecker_entries().items()
-               if (not only or b in only) and os.path.isfile(os.path.join(TOP, "packages", b, "PKGBUILD"))}
+               if (not only or b in only) and os.path.isfile(os.path.join(TOP, "packages", b, "TINYBUILD"))}
     entries = autoupdate.usable_sources(entries, report)
     if not entries:
-        print("latest: no recipes with nvchecker settings", file=sys.stderr)
+        print("latest: no TINYBUILDs with nvchecker settings", file=sys.stderr)
         return 1
     with tempfile.TemporaryDirectory() as tmp:
         for base, conf in entries.items():
             d = os.path.join(tmp, base)
             os.makedirs(d)
-            with open(os.path.join(TOP, "packages", base, "PKGBUILD")) as src, open(os.path.join(d, "PKGBUILD"), "w") as dst:
-                dst.write(src.read())
+            pkgdir = os.path.join(TOP, "packages", base)
+            # pkgctl reads the current version from a PKGBUILD, so it gets a minimal one made from the .SRCINFO
+            with open(os.path.join(pkgdir, ".SRCINFO")) as src:
+                fields = dict(line.strip().split(" = ", 1) for line in src if line.startswith("\tpkgver = "))
+            with open(os.path.join(d, "PKGBUILD"), "w") as dst:
+                dst.write(f"pkgname={base}\npkgver={fields['pkgver']}\n")
             with open(os.path.join(d, ".nvchecker.toml"), "w") as f:
                 f.write(f"[{distro.key(base)}]\n")
                 f.writelines(f"{distro.key(k)} = {distro.value(v)}\n" for k, v in conf.items())
@@ -58,7 +62,7 @@ def main():
             with open(os.path.join(tmp, ".config", "nvchecker", "keyfile.toml"), "w") as f:
                 f.write(f"[keys]\ngithub = {distro.value(token)}\n")
             env["XDG_CONFIG_HOME"] = os.path.join(tmp, ".config")
-        print(f"latest: checking {len(entries)} recipes with pkgctl version check", file=sys.stderr, flush=True)
+        print(f"latest: checking {len(entries)} TINYBUILDs with pkgctl version check", file=sys.stderr, flush=True)
         names = sorted(entries)
         with concurrent.futures.ThreadPoolExecutor(4) as pool:
             batches = pool.map(lambda b: check(tmp, b, env), [names[i:i + 25] for i in range(0, len(names), 25)])
@@ -69,7 +73,7 @@ def main():
     failed += [(b, short(f"{what}: {err}")) for b, what, err in report["failed"]]
     width = max([len(b) for b, _, _ in behind] + [len(b) for b, _ in failed] + [7])
     if behind:
-        print(f"{'recipe':<{width}}  {'local':<20}  upstream")
+        print(f"{'package':<{width}}  {'local':<20}  upstream")
         for base, old, new in behind:
             print(f"{base:<{width}}  {old:<20}  {new}")
     for base, msg in failed:

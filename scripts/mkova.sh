@@ -7,7 +7,7 @@ version=$4
 size=$5
 [ -f "$img" ] && [ -n "$out" ] || exit 2
 
-name="Tiny Hat $version (${img%.img})"
+name="Tiny Hat $version ($(basename "$img" .img))"
 work="$out.work"
 rm -rf "$work" "$out.tmp"
 mkdir -p "$work/home"

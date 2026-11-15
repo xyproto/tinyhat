@@ -9,7 +9,7 @@ for dir in "$top"/packages/*/; do
   [ -e "$1" ] || continue
   base=$(basename "$dir")
   log=$top/build/log/patchcheck-$base.log
-  if "$top/scripts/makepkg.sh" --nobuild "$dir" > "$log" 2>&1; then
+  if "$top/scripts/buildpackage.sh" --nobuild "$dir" > "$log" 2>&1; then
     echo "$base: ok ($# patches)"
   else
     echo "$base: prepare() failed, see $log" >&2
