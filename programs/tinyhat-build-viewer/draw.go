@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math"
+	"path/filepath"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -292,7 +293,7 @@ func (v *viewer) ticker(w float32, dt float32) {
 func rpi4Line(snap *snapshot, i int) string {
 	state := "not checked yet"
 	for _, im := range snap.Images {
-		if im.Name == "tinyhat-rpi4.img" {
+		if filepath.Base(im.Name) == "tinyhat-rpi4.img" {
 			state = im.State
 		}
 	}
@@ -569,7 +570,7 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 		if !ok {
 			c = rgb{0.6, 0.6, 0.6}
 		}
-		v.text(30, y, fmt.Sprintf("%-22s %-12s %s", im.Name, im.State, im.When), 13, c)
+		v.text(30, y, fmt.Sprintf("%-22s %-12s %s", filepath.Base(im.Name), im.State, im.When), 13, c)
 	}
 	y += 30
 	v.text(20, y, "log", 15, accent)

@@ -24,7 +24,7 @@ var (
 	pkgColors   = []rgb{{0.95, 0.55, 0.2}, {0.85, 0.45, 0.85}, {0.3, 0.7, 1}, {0.5, 0.85, 0.4}}
 	kernelDirs  = []string{"linux-7.3.1", "linux-7.3.1-x86_64", "linux-7.3.1-arm64"}
 	kernelOuts  = []string{"vmlinuz", "vmlinuz-x32", "Image-arm64"}
-	imageNames  = []string{"tinyhat32.img", "tinyhat64x32.img", "tinyhat64.img", "tinyhat-aarch64.img", "tinyhat-rpi4.img"}
+	imageNames  = []string{"build/tinyhat32.img", "build/tinyhat64x32.img", "build/tinyhat64.img", "build/tinyhat-aarch64.img", "build/tinyhat-rpi4.img"}
 	rpi4Color   = rgb{0.85, 0.3, 0.4}
 	kernelColor = rgb{0.85, 0.45, 0.9}
 	feedColors  = map[string]rgb{
