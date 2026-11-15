@@ -1,92 +1,40 @@
 ## Plans
 
-### Fix these known issues
-
-    The "Boot Animations" gallery / selector is currently not working as intended.
-    The included program for playing Go (monkeyjumpgo) has no indication of keybindings, score or who won.
-    When launching C64 programs from Orbiton, the VICE64 emulator returns some output that is not needed to show in Orbiton once the execution has completed.
-    The turtle package is not available from Python.
-    alt-left and alt-right to go forward and backward are not implemented in the NetSurfy browser yet.
-    The top statusbar buttons for switching between windows has odd behavior when it comes to showing/hiding windows. Switching between them works fine, though.
-    The search for the ctrl-alt-m homebrew game launcher has become worse, for some reason. Need to investigate.
-    The FreeDOS menu option does not work as intended, it should be a smoother experience.
-
-Also:
-
-- [ ] Just "ls" should not list with details, by default.
-- [ ] c3c should also be included, to include a modern compiler that is not as large as Go/Rust/Zig
-
-### Various
-
-- [ ] When booting straight into Orbiton, ctrl-q should play the shutdown animation and reboot, instead of just shutting down.
-- [ ] Let all QEMU tests etc. specify the keyboard layout before sending keypresses, for instance ctrl-alt-k "English (US)".
-- [ ] Let the help text background frame be centered vertically (minus the status bar height)
-- [ ] When drawing with the left mouse button on the desktop background, draw a performant version of the compiz flame effect.
-- [ ] Also mention win-f and alt-shift-f to toggle maximized on the help background.
-- [ ] When starting monkeyjumpgo, also show a window with the keybindings, the first time it is started + console output.
-- [ ] Add a link to the interactive way to go to the alt-space menu.
-- [ ] Add a shortcut to starting monkeyjumpgo with a 19x19 board to the alt-space menu.
-- [ ] By default, the mouse buttons can go forward/backwards, like now, but it would be fun if the user
-      could configure them to start a desktop shortcut, run a command, adjust the volume,
-      toggle floating/tiled mode etc. This could be configured in the dwl toml config file.
-- [ ] It would be nice if the volume icon tooltip also showed if pipewire was loaded or not.
-- [ ] There is a bit too much horizontal space to the right side of the volume icon. It would be nice
-      if the margin was based on non-transparent pixels in the image, and not just on the image data width.
-- [ ] The boot animation gallery / editor launcher / configurator needs many small improvements.
-      It currently does not work. Consider splitting everything that has to do with boot/shutdown animations
-      out to a separate repository. It would be fun if it worked on Arch Linux too.
-- [ ] Commit by theme once it passes (kernel, Python, dwl, DOS, Wine, build scripts).
-- [ ] Test on real hardware: rounded teal window title, Pyxel on the Radeon (shader fallback),
-      space/focus in NetSurfy, Lutris install without the cairo error.
-- [ ] Test in QEMU: FreeDOS, "Download and run a game...", Turbo Pascal install, Pyxel on Ctrl+Alt+0,
-      Orbiton boot mode, OVA guest additions and 3D.
-- [ ] Retest kitty on the new kernel (llvmpipe only offers OpenGL 3.0 in the VM).
-- [ ] Apply the prepared installer changes: Wine uses Wayland first (`wayland,x11`) and does not install XWayland;
-      Java uses JetBrains Runtime with the Wayland toolkit on 64-bit, so CGoban 3 needs no X11 there.
-- [ ] Test CGoban 3 on JBR under dwl: fullscreen, closing, the KGS login window.
-- [ ] Include Lutris, built from upstream's GTK4 branch with the Tiny Hat patch (wlr-randr display backend,
-      WebKit optional). Disable its 483 MB runtime download by default (`LUTRIS_RUNTIME=0`).
-- [ ] Add what Lutris needs: wlr-randr, cabextract, psmisc, Pillow, and i686 recipes for requests, urllib3,
-      idna, charset-normalizer and certifi.
-- [ ] Then remove cairo's X11 backend and libxext/libxrender from the images again.
-- [ ] Go through the image locks and recipes for anything else that pulls in X11 or GTK3.
-- [ ] Test Wine with StarCraft 1.16.1 (cnc-ddraw) and Battle.net/Remastered on tinyhat64.
-- [ ] Verify in this build round: `sonamecheck.py` (newer libraries than Arch must keep Arch's version too, like
-      libdisplay-info0.3) and `startcheck` in the QEMU test (Python, Lutris, Pyxel, gdb and every menu entry start).
-- [ ] Guru meditation crash screen (`tinyhat-guru`) for dwl crash loops and initramfs rescue, guru-style kernel panic
-      text; test each path, including the QR code on a real text console.
-- [ ] dwl: rounded workspace indicator, and no crash when a screen has no modes (VirtualBox with 3D on).
-- [ ] `DRAW_USE_LLVM=0` only for hardware renderers: retest kitty and OpenGL 4.6 on llvmpipe.
-- [ ] Battle.net: test whether Wine honours Image File Execution Options, to add `--in-process-gpu` without menu entries.
-- [x] Software Vulkan (lavapipe) works once `vulkan-swrast` is installed: the loader picks llvmpipe. `vulkaninfo --summary` aborts on its X11 test surfaces under Wayland-only dwl, which made it look like there was no device.
-- [ ] Build sandboxes install exactly the versions the plan names, not the newest file in `build/repo`.
-- [ ] A pre-flight that verifies the source checksums of all recipes before a build starts.
-- [ ] Resolve `provides` in one place instead of separately in several scripts.
-- [ ] QEMU checks for things found by hand: window title width, space in NetSurfy, the menu installers.
-- [ ] Pilot: cross-build fuzzel, mpg123 and SDL3 for i686 from an x86_64 Arch environment against a sysroot
-      of our own i686 packages, and compare with today's builds.
-- [ ] Build everything that ends up in the image from source, then the sysroot libraries.
-- [ ] Reduce archlinux32 to a one-time bootstrap of the first sysroot, then to nothing.
-- [ ] Delete the heuristics in `mkpkgs.py` as they become dead: broken-in-the-seed, too-old rules,
-      Python-bound packages, the `[buildroot] local` bootstrap.
-- [ ] Move the cross backend forward and pilot it on i686 (see 5).
-- [ ] The converter folds `config/pkgbuild-overrides` and lines appended to PKGBUILDs into `tiny.lua`,
-      so a recipe is one file. Arch's PKGBUILD then only feeds the autoupdate version check.
-- [ ] Per-package checks for all recipes, then emit PKGBUILDs from `tiny.lua`, then convert the simple recipes.
-- [ ] A shared helper for the menu installers (pacman setup, download and verify), with the pins in a data file
-      like `games.tsv` that autoupdate can check.
-- [ ] A small Tiny Hat pacman repo, signed with tinyhat-keyring, carrying cnc-ddraw, JBR and CGoban as recipes,
-      so the menu entries become `pacman -S`. Turbo Pascal keeps downloading at install time.
-- [ ] Decide which of Wine, Battle.net, Lutris and Java are supported and which are best-effort.
-- [ ] x32 builds of DOSBox-X, ZSNES, ScummVM, mGBA and VICE for tinyhat64x32.
-- [ ] Patch OpenTTD to SDL3, then consider including it.
-- [ ] A Pyxel-based turtle module, since Python is built without tkinter (undecided).
-- [x] innoextract and vulkan-icd-loader as on-demand additions to the Wine installer.
-- [x] Measure boot time: QEMU/KVM reaches the desktop in 22 s (GRUB menu 4 s, kernel 3 s); `scripts/qemutest.py` reports it with `systemd-analyze`.
-- [x] `wget` as a fish alias for `curl -fLO` (wurl removed), `WINETRICKS_DOWNLOADER=curl` everywhere.
-- [x] Teal window title in the status bar.
-- [x] No percentages for volume and battery in the status bar.
-- [x] glfw-wayland (the glfw recipe provides it).
-- [x] Python REPL colours.
-- [x] Space for PgDn in NetSurfy, and delayed URL suggestions.
-- [ ] OVA with guest additions and 3D acceleration.
+- [ ] Install exactly the planned package versions in build sandboxes, not the newest file in `build/repo`.
+- [ ] Verify the source checksums of all PKGBUILDs and TINYBUILDs before a build starts.
+- [ ] Use fish instead of bash wherever possible: Tiny Hat's own scripts first, a small POSIX `/bin/sh`, then `pacman-key` and `ldd`. (Packages are TINYBUILDs, built by makefish, since 2026-11-15.)
+- [ ] Cross-build fuzzel, mpg123 and SDL3 for i686 against our own sysroot, and compare with today's builds.
+- [ ] Build everything in the images from source, then the sysroot libraries.
+- [ ] Reduce archlinux32 to a one-time bootstrap, then remove it and the `buildplan.py` heuristics it needs.
+- [ ] Set up a signed Tiny Hat pacman repo for cnc-ddraw, JBR, CGoban and tomlc17.
+- [ ] Release monkeyjump, tinyhat-bootsplash and tinyhat-play, then bump their TINYBUILDs.
+- [ ] Set the keyboard layout first in QEMU tests, and check the window title width, Space in NetSurfy and the menu installers.
+- [ ] Test in QEMU: FreeDOS, "Download and run a game...", Turbo Pascal, Pyxel, Orbiton boot mode and `startcheck`.
+- [ ] Test on real hardware: the window title, Pyxel on the Radeon, NetSurfy focus and the Lutris install.
+- [ ] Remove cairo's X11 backend, libxext, libxrender and anything else that pulls in X11 or GTK3.
+- [ ] Apply the Wayland-first Wine and JBR installer changes, then test CGoban 3 and StarCraft.
+- [ ] Include Lutris from its GTK4 branch, with wlr-randr, cabextract, psmisc, Pillow and the Python request libraries.
+- [ ] Test the guru meditation crash screen on every path, including the QR code on a text console.
+- [ ] Build the OVA with guest additions and 3D acceleration.
+- [ ] Share one helper between the menu installers, with the pins in a data file that autoupdate checks.
+- [ ] Let Ctrl+Q in Orbiton boot mode play the shutdown animation and reboot.
+- [ ] Fix showing and hiding windows with the status bar buttons.
+- [ ] Make `ls` list plain names; keep the details for `ll`, `la` and `dir`.
+- [ ] Use `--color=auto` in the `ls`, `dir` and `tree` aliases, so `ls | grep` gets no escape codes.
+- [ ] Pass the arguments of the `history` wrapper on, so `history search`, `delete` and `clear` work.
+- [ ] Replace the `wget` alias with a function that handles `-O`, `-q`, `-c` and several URLs.
+- [ ] Make `untar` use `tar xvf`, so `.tar.xz` and `.tar.zst` work too.
+- [ ] Make `update` and `cleanup` use Tiny Hat's pacman wrapper, and `cleanup` quiet when there are no orphans.
+- [ ] Give bash the same aliases and environment as fish, for users and programs that start bash.
+- [ ] Add a `sudo` that runs doas, for scripts and instructions that call sudo.
+- [ ] Add sdl2-compat (SDL2 on SDL3), so SDL2 games and tools from pacman run.
+- [ ] Start XWayland on demand for X11-only programs, without having it in the images.
+- [ ] Let `pacman -S` of poppler-glib (evince) work without downgrading Tiny Hat's newer poppler, and make `sonamecheck.py` report only sonames that something depends on.
+- [ ] Let cairo-wayland satisfy `cairo`, so prebuilt packages like Firefox install on tinyhat32.
+- [ ] Stop `pacman -S python-*` from installing modules built for an older Python than 3.14.
+- [ ] Generate `en_US.UTF-8` next to `C.UTF-8` for programs that need a named locale.
+- [ ] Add fontconfig aliases, so programs asking for Arial, Helvetica, Times or Courier get a matching font.
+- [ ] Open `.exe`/`.com`, `.prg`/`.d64`, `.nes`, `.sfc`, `.gba` and `.md` files in the right emulator with `xdg-open`.
+- [ ] Set `TERM` so ssh from foot to machines without foot's terminfo works.
+- [ ] Test in QEMU that AppImages, pip in a venv and `go install` programs run.
+- [ ] Install and start the 50 most installed Arch packages in QEMU, and fix or list what fails.
