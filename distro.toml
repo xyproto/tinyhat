@@ -21,6 +21,8 @@ image = [
     "perl", "perl-*",
     "sdl2-*", "sdl2_*",
     "guile", "portaudio", "libheif", "libavif", "libjxl",
+    # xfsprogs reads its configuration with Tiny Hat's TOML patch instead
+    "libinih",
     "gtk2-*",
     "gtk3-*",
     "qt4", "qt4-*", "qt5-*", "qt6-*", "python-pyqt*", "pyside*",
@@ -29,7 +31,7 @@ image = [
     "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice",
     "xcb-util", "xcb-util-cursor", "xcb-util-errors", "xcb-util-image", "xcb-util-keysyms", "xcb-util-renderutil",
     "qt5-base", "qt6-base", "sdl2", "sdl2_image", "gtk2", "gtk3",
-    # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/mkpkgs.py)
+    # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/buildplan.py)
     "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
     "tk", "tk[0-9]*",
     "python<3.14",
@@ -43,6 +45,7 @@ everywhere = [
     "gtk3",
     "gtkmm",
     "libglade",
+    "librsvg",
     "npm",
     "opencv",
     "python2",
@@ -77,14 +80,14 @@ packages = [
     "the_silver_searcher", "ripgrep",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "lutris", "nomarch", "tinyhat-ultrasnd", "tinyhat-freedos", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
-    "sdl3", "sdl3_image", "sdl3_ttf", "sdl3-man", "raylib", "fluidsynth", "fontconfig", "libxml2",
-    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-play",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-sounds", "tinyhat-splash", "libglvnd-glx", "lsd", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makefish", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "bind", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "lutris", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "goaccess", "tty-solitaire", "jomon", "libresprite", "fennel", "chibi-scheme", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "twolame", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
+    "sdl3", "sdl3_image", "sdl3_ttf", "raylib", "fluidsynth", "fontconfig", "libxml2",
+    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-desktop", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
-    "VIRTUALBOX-GUEST-MODULES", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "pulseaudio", "qt5-base", "qt6-base",
+    "VIRTUALBOX-GUEST-MODULES", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "librsvg", "pulseaudio", "qt5-base", "qt6-base",
     "llvm", "llvm-lit",
 ]
 exclude = [
@@ -433,8 +436,6 @@ exclude = [
     "usr/bin/sqldiff",
     "usr/bin/sqlite3_expert",
     "usr/bin/sqlite3_rsync",
-    "usr/bin/rsvg-convert",
-    "usr/share/man/man1/rsvg-convert.1.gz",
     "usr/share/hwdata/oui.txt",
     "usr/share/hwdata/iab.txt",
     "usr/share/libresprite/data/fonts/font-zh.ttf",
@@ -448,33 +449,37 @@ exclude = [
     "usr/lib/sox/libsox_fmt_wavpack.so",
 ]
 
+[image-x32]
+# The 64-bit x86 image with 32-bit pointers (tinyhat64x32.img): [image] packages with these changes.
+add = ["tinyhat-steam"]
+
 [image-aarch64]
 # The 64-bit ARM images: [image] packages with these changes, plus the uefi packages for the UEFI
 # image (tinyhat-aarch64.img) or the rpi4 packages for the Raspberry Pi 4 image (tinyhat-rpi4.img).
-# Packages come prebuilt from Arch Linux ARM, except the recipes that "make lock-aarch64" decides to build
+# Packages come prebuilt from Arch Linux ARM, except the package directories that "make lock-aarch64" decides to build
 add = ["archlinuxarm-keyring"]
 uefi = []
 rpi4 = ["raspberrypi-bootloader", "firmware-raspberrypi"]
 # Built for the initramfs
-build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "libxml2", "xfsprogs"]
-# Added to the build environment, which otherwise has what the built recipes need
+build_from_source = ["busybox", "tinyhat-splash", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "libxml2", "xfsprogs", "furnace", "fuzzel", "grafx2", "libdisplay-info", "libretro-nestopia", "lutris", "make", "raylib", "scummvm", "sdl3", "sdl3_image", "sdl3_ttf", "swaylock", "vice", "wlroots0.20"]
+# Added to the build environment, which otherwise has what the built PKGBUILDs and TINYBUILDs need
 buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
 exclude = ["boot"]
 remove = [
-    "archlinux32-keyring", "archlinux-keyring",
+    "archlinux32-keyring", "archlinux-keyring", "tinyhat-wine", "tinyhat-watcom",
     # PC hardware
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-amdgpu", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware",
 ]
 
 [image-x86_64]
 # The 64-bit x86 image (tinyhat64.img): [image] packages with these changes. It boots the 64-bit kernel and the
-# initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the recipes that
+# initramfs of tinyhat64x32.img. Packages come prebuilt from Arch Linux, except the package directories that
 # "make lock-x86_64" decides to build
 add = ["virtualbox-guest-utils-nox"]
 remove = ["archlinux32-keyring"]
-build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "zsnes", "xfsprogs"]
-# Added to the build environment, which otherwise has what the built recipes need
+build_from_source = ["libxml2", "wallutils", "gdb", "pipewire", "wireplumber", "orbiton", "jomon", "zsnes", "xfsprogs", "furnace", "fuzzel", "grafx2", "libdisplay-info", "libretro-nestopia", "lutris", "make", "raylib", "scummvm", "sdl3", "sdl3_image", "sdl3_ttf", "swaylock", "vice", "wlroots0.20"]
+# Added to the build environment, which otherwise has what the built PKGBUILDs and TINYBUILDs need
 buildroot = ["go"]
 
 [buildroot]
@@ -488,7 +493,9 @@ packages = [
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
     "expat", "gdbm", "libffi", "libnsl", "libxcrypt", "openssl", "tzdata", "mpdecimal", "sqlite", "libxml2", "libxslt", "libyaml",
 ]
-local = ["python", "cython", "python-markupsafe", "python-lxml"]
+# Built from our PKGBUILDs and TINYBUILDs, over the prebuilt packages: Python 3.14, and the same fish 4 that the TINYBUILDs
+# are run with on x86_64 and aarch64 (the prebuilt one is fish 3, where ? is still a wildcard)
+local = ["python", "cython", "python-markupsafe", "python-lxml", "fish"]
 exclude = ["usr/lib/python3.1[0-3]", "usr/bin/python3.1[0-3]*", "usr/lib/libpython3.1[0-3]*"]
 i686_skip = [
     "python", "cython", "python-markupsafe", "python-lxml", "python-yaml", "python-numpy", "python-gobject", "dbus-python",
@@ -561,6 +568,7 @@ skip = [
     "sdl12-compat",
     "gtk2",
     "gtkmm",
+    "librsvg",
     "pulseaudio",
     "python-pyqt5",
     "python-pyqt5-sip",
@@ -653,14 +661,13 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 "xpadneo-0.10.5.tar.gz" = { url = "https://github.com/atar-axis/xpadneo/archive/refs/tags/v0.10.5.tar.gz", sha256 = "084c1ef57b4567c54cb4e4c01c9ae47b180c59a001457ad1e0ed574fdd09b59b" }
 "soltys-en-v1.0.zip" = { url = "https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip", sha256 = "87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6" }
 
-# Packages: [name] tables. source = "arch" (the default) imports the PKGBUILD from the
-# Arch Linux packaging repos at the version recorded in distro.lock; "sources" means
-# packages/<name>/PKGBUILD is Tiny Hat's own. A version here pins the import; a recipe
-# with no version anywhere is maintained by hand and never re-imported.
-# build_from_source = true builds even if a prebuilt package exists; build_for lists the
-# targets an imported recipe is built for (default ["i686", "x32"]); skip_for_now = true
-# leaves the recipe out of everything; pin* picks the archlinux32 package used in the
-# build environment. Dependencies belong in the PKGBUILD: a build gets the local version
+# Packages: [name] tables. Every package directory has a TINYBUILD. source = "arch" (the default)
+# means the TINYBUILD was ported from Arch's PKGBUILD at the version recorded in distro.lock, and
+# follows Arch's updates (importpkg.py update); "sources" means it is Tiny Hat's own. A version here
+# pins the Arch version; a package directory with no version anywhere is maintained by hand.
+# build_from_source = true builds even if a prebuilt package exists; skip_for_now = true
+# leaves the package directory out of everything; pin* picks the archlinux32 package used in the
+# build environment. Dependencies belong in the TINYBUILD: a build gets the local version
 # of each dependency that is built from source or that the seed lacks or has broken.
 
 [abcmidi]
@@ -671,7 +678,6 @@ source = "sources"
 arch = "i686"
 
 [algernon]
-build_for = ["i686"]
 build_from_source = true
 
 [aquarium]
@@ -692,7 +698,6 @@ build_from_source = true
 prebuilt = true
 
 [bluetui]
-build_for = ["i686"]
 
 [bonzomatic]
 build_from_source = true
@@ -701,7 +706,6 @@ build_from_source = true
 heavy = true
 
 [busybox]
-build_for = ["i686"]
 
 [bwbasic]
 source = "sources"
@@ -742,7 +746,7 @@ source = "sources"
 build_from_source = true
 
 [fish]
-build_for = ["i686"]
+build_from_source = true
 
 [fluidsynth]
 source = "sources"
@@ -771,7 +775,6 @@ source = "sources"
 
 [gcc]
 heavy = true
-build_for = ["i686"]
 prebuilt = true
 
 [gdb]
@@ -818,7 +821,6 @@ build_from_source = true
 source = "sources"
 
 [grub]
-build_for = ["i686"]
 
 [grub-efi64]
 source = "sources"
@@ -836,7 +838,6 @@ build_from_source = true
 prebuilt = true
 
 [impala]
-build_for = ["i686"]
 
 [iproute2]
 build_from_source = true
@@ -886,13 +887,7 @@ source = "sources"
 [libretro-nestopia]
 source = "sources"
 
-[librsvg]
-heavy = true
-build_for = ["i686"]
-build_from_source = true
-
 [libunwind]
-build_for = ["i686"]
 
 [libutf8proc]
 build_from_source = true
@@ -913,14 +908,11 @@ prebuilt = true
 prebuilt_reason = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23"
 
 [love]
-build_for = ["i686"]
 build_from_source = true
 
 [lsd]
-build_for = ["i686"]
 
 [luajit]
-build_for = ["i686"]
 
 [make]
 source = "sources"
@@ -931,6 +923,10 @@ prebuilt = true
 
 [meson]
 build_from_source = true
+
+[metatar]
+source = "sources"
+nvchecker = { source = "github", github = "xyproto/metatar", prefix = "v", use_max_tag = true }
 
 [mgba]
 source = "sources"
@@ -998,7 +994,6 @@ source = "sources"
 build_from_source = true
 
 [rav1e]
-build_for = ["i686"]
 
 [raylib]
 source = "sources"
@@ -1009,7 +1004,6 @@ source = "sources"
 nvchecker = { source = "github", github = "raysan5/rfxgen", use_max_tag = true }
 
 [ripgrep]
-build_for = ["i686"]
 
 [scummvm]
 heavy = true
@@ -1020,9 +1014,6 @@ nvchecker = { source = "github", github = "scummvm/scummvm", prefix = "v", use_l
 source = "sources"
 nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
-[sdl3-man]
-source = "sources"
-nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [sdl3_image]
 source = "sources"
@@ -1046,6 +1037,9 @@ prebuilt = true
 source = "sources"
 nvchecker = { source = "github", github = "swaywm/swaylock", prefix = "v", use_latest_release = true }
 
+[syslinux]
+prebuilt = true
+
 [sysprof]
 prebuilt = true
 
@@ -1054,7 +1048,6 @@ heavy = true
 build_from_source = true
 
 [tcc]
-build_for = ["i686"]
 
 [testcontroller]
 source = "sources"
@@ -1063,6 +1056,12 @@ nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-",
 [tic-80]
 source = "sources"
 nvchecker = { source = "github", github = "nesbox/TIC-80", prefix = "v", use_latest_release = true }
+
+[makefish]
+source = "sources"
+
+[tinyhat-desktop]
+source = "sources"
 
 [tinyhat-files]
 source = "sources"
@@ -1077,6 +1076,9 @@ source = "sources"
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/tinyhat-play", prefix = "v", use_max_tag = true }
 
+[tinyhat-skel]
+source = "sources"
+
 [tinyhat-sounds]
 source = "sources"
 
@@ -1085,11 +1087,18 @@ source = "sources"
 
 [tinyhat-splash]
 source = "sources"
+theme = true
 
 [tinyhat-status]
 source = "sources"
 
 [tinyhat-keyring]
+source = "sources"
+
+[tinyhat-steam]
+source = "sources"
+
+[tinyhat-system]
 source = "sources"
 
 [tinyhat-view]
@@ -1122,9 +1131,19 @@ source = "sources"
 [tinyhat-freedos]
 source = "sources"
 
+[tinyhat-watcom]
+source = "sources"
+
+[tinyhat-wine]
+source = "sources"
+
 [tinyxxd]
 source = "sources"
 nvchecker = { source = "github", github = "xyproto/tinyxxd", prefix = "v", use_max_tag = true }
+
+[tomlc17]
+source = "sources"
+nvchecker = { source = "github", github = "cktan/tomlc17", use_max_tag = true }
 
 [util-linux]
 build_from_source = true
