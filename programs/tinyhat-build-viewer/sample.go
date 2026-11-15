@@ -212,11 +212,11 @@ func (s *sampler) procStart(pid string) float64 {
 	return s.btime + ticks/100
 }
 
-func newest(dir string, skipTiny bool) float64 {
+func newest(dir string) float64 {
 	t := 0.0
 	entries, _ := os.ReadDir(dir)
 	for _, e := range entries {
-		if strings.HasPrefix(e.Name(), ".") || (skipTiny && e.Name() == "tiny.lua") {
+		if strings.HasPrefix(e.Name(), ".") {
 			continue
 		}
 		if info, err := e.Info(); err == nil {
@@ -316,7 +316,7 @@ func (s *sampler) sample() *snapshot {
 				start = t
 			}
 		}
-		if len(a) > 2 && strings.HasSuffix(a[1], "scripts/makepkg.sh") {
+		if len(a) > 2 && strings.HasSuffix(a[1], "scripts/buildpackage.sh") {
 			arch := "i686"
 			pkg := "?"
 			for i, x := range a {
@@ -344,7 +344,7 @@ func (s *sampler) sample() *snapshot {
 				logFiles = append(logFiles, t)
 			}
 		}
-		if len(a) > 2 && strings.HasSuffix(a[1], "scripts/makepkg.sh") {
+		if len(a) > 2 && strings.HasSuffix(a[1], "scripts/buildpackage.sh") {
 			if t := fdTarget(p.pid, 1); t != "" {
 				if mt, ok := mtime(t); ok && mt > jobLogAt {
 					jobLog, jobLogAt = t, mt
@@ -464,16 +464,11 @@ func (s *sampler) sample() *snapshot {
 				break
 			}
 			if m := wildRe.FindStringSubmatch(tok); m != nil {
-				skipTiny := strings.HasPrefix(tok, "$(filter-out")
 				d := filepath.Join(top, m[1])
-				k := d
-				if skipTiny {
-					k += "|tiny"
+				if _, ok := s.src[d]; !ok {
+					s.src[d] = newest(d)
 				}
-				if _, ok := s.src[k]; !ok {
-					s.src[k] = newest(d, skipTiny)
-				}
-				result = s.src[k] > t
+				result = s.src[d] > t
 				continue
 			}
 			if m := stampRe.FindStringSubmatch(tok); m != nil {
