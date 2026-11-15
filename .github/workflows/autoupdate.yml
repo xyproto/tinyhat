@@ -1,6 +1,6 @@
 name: Package updates
 
-# Every day: move recipes and the lock to newer package versions (see scripts/autoupdate.py) and open or
+# Every day: move TINYBUILDs and the lock to newer package versions (see scripts/autoupdate.py) and open or
 # update one pull request with the changes. Updates that would pull X11, perl, SDL2, GTK2, Qt etc. into the
 # image ([image] deny in distro.toml) are held back and listed in the pull request. Nothing is built here.
 on:

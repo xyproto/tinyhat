@@ -3,8 +3,8 @@ KVER := 7.3.1
 
 UNAME := $(shell uname -s)
 
-# On macOS every goal is passed on to the build container, so file goals like tinyhat32.img are phony there too
-.PHONY: help all img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+# On macOS every goal is passed on to the build container, so file goals like build/tinyhat32.img are phony there too
+.PHONY: help all img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -41,7 +41,7 @@ clean distclean: container
 run: container
 	$(IN_CONTAINER) make 32 $(MAKEOVERRIDES)
 	@mkdir -p build
-	cp -c tinyhat32.img build/test-usb.img
+	cp -c build/tinyhat32.img build/test-usb.img
 	dd if=/dev/null of=build/test-usb.img bs=1m seek=4096 2>/dev/null
 	qemu-system-i386 -accel tcg,thread=multi -cpu max -smp 4 -m $(QEMU_MEM) \
 		-drive if=none,id=stick,file=build/test-usb.img,format=raw \
@@ -55,7 +55,7 @@ DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 REPO := $(B)/repo
 SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
-OVERLAY := $(shell find config/overlay)
+ETC_CONFIG := $(shell find config/etc)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
 DISK_SIZE ?= 20G
@@ -78,18 +78,18 @@ export PKG_JOBS PKG_MAKE_JOBS PKG_LOAD PKG_CARGO_JOBS
 export CCACHE_MAXSIZE ?= 20G
 export KEEP_SOURCES ?= 0
 SB_KEYS ?= $(HOME)/.local/share/tinyhat/secureboot
-BOOT_PKGS := $(B)/pkg/i686/grub $(B)/pkg/i686/linux-firmware $(B)/pkg/i686/intel-ucode $(B)/pkg/i686/memtest86+ $(B)/pkg/i686/kbd
+BOOT_PKGS := $(B)/pkg/i686/grub $(B)/pkg/i686/linux-firmware $(B)/pkg/i686/intel-ucode $(B)/pkg/i686/memtest86+ $(B)/pkg/i686/syslinux $(B)/pkg/i686/tinyhat-freedos $(B)/pkg/i686/kbd
 IMG_DEPS := $(B)/theme.toml config/grub.cfg config/grub-early.cfg scripts/mkimg.sh scripts/mkgrubtheme.py scripts/mbr.py scripts/xfsnormalize.py $(BOOT_PKGS)
 
 ifeq (,$(findstring -j,$(MAKEFLAGS)))
 MAKEFLAGS += -j$(shell nproc)
 endif
 
-IMG_I686 := tinyhat32.img
-IMG_X32 := tinyhat64x32.img
-IMG_X86_64 := tinyhat64.img
-IMG_AARCH64 := tinyhat-aarch64.img
-IMG_RPI4 := tinyhat-rpi4.img
+IMG_I686 := $(B)/tinyhat32.img
+IMG_X32 := $(B)/tinyhat64x32.img
+IMG_X86_64 := $(B)/tinyhat64.img
+IMG_AARCH64 := $(B)/tinyhat-aarch64.img
+IMG_RPI4 := $(B)/tinyhat-rpi4.img
 IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64) $(IMG_AARCH64) $(IMG_RPI4)
 ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_X86_64:.img=.iso) $(IMG_AARCH64:.img=.iso)
 X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
@@ -141,8 +141,8 @@ help:
 	$(call target,lock,"update distro.lock")
 	$(call target,lock-check,"check that distro.lock is up to date")
 	$(call target,lock-x86_64,"lock the prebuilt Arch Linux packages for the x86_64 image")
-	$(call target,autoupdate,"update recipes to newer versions")
-	$(call target,latest,"list recipes that are behind upstream (pkgctl version check)")
+	$(call target,autoupdate,"update TINYBUILDs to newer versions")
+	$(call target,latest,"list TINYBUILDs that are behind upstream (pkgctl version check)")
 	$(call target,test,"run the checks")
 	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
 	$(call target,qemutest,"boot the i686$(comma) x32$(comma) x86_64 and aarch64 images in QEMU$(comma) one at a time")
@@ -186,14 +186,16 @@ qemu: $(QEMU_TARS)
 all: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
 
 # Goals that only read or update the configuration do not need build/pkgs.mk (which needs the buildroot)
-ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 lock-x86_64 import srcinfo autoupdate latest sign,$(or $(MAKECMDGOALS),help)))
+ifneq (,$(filter-out help cleantest cleanchroot clean distclean status lock lock-check lock-aarch64 lock-x86_64 import srcinfo autoupdate latest sign fishcheck,$(or $(MAKECMDGOALS),help)))
 include $(B)/pkgs.mk
 endif
 
-$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/mkpkgs.py scripts/pkg.py scripts/distro.py scripts/srcinfo.py distro.toml distro.lock $(wildcard packages/*/*)
+$(B)/pkgs.mk: $(B)/seed-broken.txt scripts/buildplan.py scripts/pkg.py scripts/distro.py scripts/srcinfo.py distro.toml distro.lock $(wildcard packages/*/*)
 	@mkdir -p $(B)
 	python3 scripts/srcinfo.py
-	python3 scripts/mkpkgs.py mk >$@
+	python3 scripts/buildplan.py lock-arch x86_64 --check
+	python3 scripts/buildplan.py lock-arch aarch64 --check
+	python3 scripts/buildplan.py mk >$@
 
 $(IMG_I686): $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
@@ -230,19 +232,19 @@ $(SB_KEYS)/tinyhat.cer:
 lock:
 	@mkdir -p $(B)
 	python3 scripts/srcinfo.py
-	python3 scripts/mkpkgs.py seed >$(B)/seed.txt
-	python3 scripts/mkpkgs.py libs
+	python3 scripts/buildplan.py seed >$(B)/seed.txt
+	python3 scripts/buildplan.py libs
 	python3 scripts/pkg.py lock buildroot $(B)/seed.txt
 
 # Lock the prebuilt Arch Linux ARM packages for the aarch64 and rpi4 images
 lock-aarch64:
 	python3 scripts/srcinfo.py
-	python3 scripts/mkpkgs.py lock-arch aarch64
+	python3 scripts/buildplan.py lock-arch aarch64
 
 # Lock the prebuilt Arch Linux packages for the x86_64 image
 lock-x86_64:
 	python3 scripts/srcinfo.py
-	python3 scripts/mkpkgs.py lock-arch x86_64
+	python3 scripts/buildplan.py lock-arch x86_64
 
 lock-check:
 	@mkdir -p $(B)
@@ -258,16 +260,18 @@ $(B)/.theme.toml.stamp $(B)/.image.toml.stamp: $(B)/.%.toml.stamp: distro.toml s
 	python3 scripts/distro.py view $* $(B)/$*.toml
 	@touch $@
 
-$(B)/buildroot.lock: distro.lock scripts/distro.py
-	@mkdir -p $(B)
-	python3 scripts/distro.py lockfile buildroot $@
 
-$(B)/pkg/i686/tinyhat-splash: $(B)/theme.toml
+$(B)/buildroot.lock $(B)/buildroot-aarch64.lock $(B)/buildroot-x86_64.lock: $(B)/%.lock: $(B)/.%.lock.stamp ;
+$(B)/.buildroot.lock.stamp $(B)/.buildroot-aarch64.lock.stamp $(B)/.buildroot-x86_64.lock.stamp: $(B)/.%.lock.stamp: distro.lock scripts/distro.py
+	@mkdir -p $(B)
+	python3 scripts/distro.py lockfile $* $(B)/$*.lock
+	@touch $@
+
 
 import:
 	python3 scripts/importpkg.py all
 
-# Update recipes and the lock to newer package versions, holding back updates that hit [image] deny
+# Update TINYBUILDs and the lock to newer package versions, holding back updates that hit [image] deny
 autoupdate:
 	python3 scripts/autoupdate.py
 
@@ -286,10 +290,16 @@ sourcecheck:
 fuzzelcheck:
 	scripts/fuzzelcheck.sh
 
-test: patchcheck sourcecheck fuzzelcheck
-	@for f in config/overlay/usr/bin/* scripts/*.sh; do sh -n "$$f" || exit 1; done
+FISH_FILES := packages/makefish/root/usr/bin/makefish packages/makefish/root/etc/makefish.conf $(wildcard packages/makefish/root/etc/makefish.d/*.fish) $(wildcard packages/*/TINYBUILD)
+
+fishcheck:
+	@for f in $(FISH_FILES); do fish -n "$$f" && fish_indent --check "$$f" || { echo "$$f: run fish_indent -w $$f" >&2; exit 1; }; done
+	@echo "fish files: ok"
+
+test: patchcheck sourcecheck fuzzelcheck fishcheck
+	@for f in packages/tinyhat-*/root/usr/bin/* scripts/*.sh; do head -1 "$$f" | grep -q fish || sh -n "$$f" || exit 1; done
 	@echo "shell scripts: ok"
-	@scripts/chroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
+	@scripts/inbuildroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
 	@echo "grub.cfg: ok"
 
 dist: distbuild
@@ -322,19 +332,16 @@ $(B)/.fetched-buildroot: $(B)/buildroot.lock
 
 BUILDROOT_LOCAL := $(shell python3 scripts/distro.py local buildroot)
 
-$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/rust.sh scripts/localroot.py $(RUST_DIST) $(foreach p,$(BUILDROOT_LOCAL),$(filter-out %/tiny.lua %/.SRCINFO,$(wildcard packages/$(p)/*)))
+$(B)/.buildroot: $(B)/.fetched-buildroot scripts/postinstall.sh scripts/installrust.sh scripts/localroot.py $(RUST_DIST) $(foreach p,$(BUILDROOT_LOCAL),$(filter-out %/.SRCINFO,$(wildcard packages/$(p)/*)))
 	chmod -R u+rwX $(B)/buildroot 2>/dev/null || true
 	rm -rf $(B)/buildroot
 	python3 scripts/pkg.py extract $(B)/buildroot.lock vendor/pkg $(B)/buildroot buildroot
 	ldconfig -r $(B)/buildroot
 	scripts/postinstall.sh $(B)/buildroot $(B)/buildroot.lock vendor/pkg
-	scripts/rust.sh $(B)/buildroot $(RUST_DIST)
+	scripts/installrust.sh $(B)/buildroot $(RUST_DIST)
 	python3 scripts/localroot.py $(B)/buildroot
 	@touch $@
 
-$(B)/buildroot-aarch64.lock: distro.lock scripts/distro.py
-	@mkdir -p $(B)
-	python3 scripts/distro.py lockfile buildroot-aarch64 $@
 
 $(B)/.fetched-buildroot-aarch64: $(B)/buildroot-aarch64.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg-aarch64 aarch64
@@ -347,9 +354,6 @@ $(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64 scripts/postinstall.sh
 	scripts/postinstall.sh $(B)/buildroot-aarch64 $(B)/buildroot-aarch64.lock vendor/pkg-aarch64
 	@touch $@
 
-$(B)/buildroot-x86_64.lock: distro.lock scripts/distro.py
-	@mkdir -p $(B)
-	python3 scripts/distro.py lockfile buildroot-x86_64 $@
 
 $(B)/.fetched-buildroot-x86_64: $(B)/buildroot-x86_64.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg-x86_64 x86_64
@@ -373,20 +377,30 @@ aarch64packages: $(AARCH64_STAMPS)
 
 x86_64packages: $(X86_64_STAMPS)
 
-$(B)/rootfs.lock: $(ROOTFS_I686_STAMPS) $(B)/image.toml
-	python3 scripts/pkg.py local image $@ $(REPO)
+$(B)/rootfs.lock: $(B)/.rootfs.lock.stamp ;
+$(B)/.rootfs.lock.stamp: $(ROOTFS_I686_STAMPS) $(B)/image.toml
+	python3 scripts/pkg.py local image $(B)/rootfs.lock $(REPO)
+	@touch $@
 
-$(B)/rootfs-x32.lock: $(ROOTFS_X32_STAMPS) $(B)/image.toml
-	python3 scripts/pkg.py local image $@ $(REPO) x32
+$(B)/rootfs-x32.lock: $(B)/.rootfs-x32.lock.stamp ;
+$(B)/.rootfs-x32.lock.stamp: $(ROOTFS_X32_STAMPS) $(B)/image.toml
+	python3 scripts/pkg.py local image $(B)/rootfs-x32.lock $(REPO) x32
+	@touch $@
 
-$(B)/rootfs-aarch64.lock: $(AARCH64_STAMPS) distro.lock
-	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ uefi
+$(B)/rootfs-aarch64.lock: $(B)/.rootfs-aarch64.lock.stamp ;
+$(B)/.rootfs-aarch64.lock.stamp: $(AARCH64_STAMPS) distro.lock
+	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $(B)/rootfs-aarch64.lock uefi
+	@touch $@
 
-$(B)/rootfs-x86_64.lock: $(X86_64_STAMPS) distro.lock
-	python3 scripts/pkg.py archrepo x86_64 $(B)/repo-x86_64 $@
+$(B)/rootfs-x86_64.lock: $(B)/.rootfs-x86_64.lock.stamp ;
+$(B)/.rootfs-x86_64.lock.stamp: $(X86_64_STAMPS) distro.lock
+	python3 scripts/pkg.py archrepo x86_64 $(B)/repo-x86_64 $(B)/rootfs-x86_64.lock
+	@touch $@
 
-$(B)/rootfs-rpi4.lock: $(AARCH64_STAMPS) distro.lock
-	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $@ rpi4
+$(B)/rootfs-rpi4.lock: $(B)/.rootfs-rpi4.lock.stamp ;
+$(B)/.rootfs-rpi4.lock.stamp: $(AARCH64_STAMPS) distro.lock
+	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $(B)/rootfs-rpi4.lock rpi4
+	@touch $@
 
 $(B)/vmlinuz: $(KERNEL_DEPS) config/kernel-x86.fragment config/kernel-i686.fragment
 	@mkdir -p $(B)
@@ -434,8 +448,8 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inroot.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
-ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(OVERLAY) scripts/forbidcheck.py scripts/sonamecheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
+ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py scripts/mkarchwallpaper.py img/tinyhat.svg scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
+ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(ETC_CONFIG) scripts/forbidcheck.py scripts/sonamecheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
 	$(MKROOTFS) base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
