@@ -1,0 +1,33 @@
+set pkgname fontconfig
+set pkgver 2.18.3
+set pkgrel 1
+set epoch 2
+set -g _meson 1.12.1
+set pkgdesc 'Font configuration library'
+set arch i686 x32
+set url https://www.freedesktop.org/wiki/Software/fontconfig/
+set license 'HPND AND MIT'
+set depends expat freetype2
+set makedepends gperf python ninja
+set provides libfontconfig.so
+set backup etc/fonts/fonts.conf
+set source "https://gitlab.freedesktop.org/api/v4/projects/890/packages/generic/fontconfig/$pkgver/fontconfig-$pkgver.tar.xz" \
+    "https://github.com/mesonbuild/meson/releases/download/$_meson/meson-$_meson.tar.gz"
+set sha256sums 4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3 \
+    ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743
+
+function build
+    python3 meson-$_meson/meson.py setup build fontconfig-$pkgver --prefix=/usr --sysconfdir=/etc --localstatedir=/var --buildtype=minsize \
+        -Ddoc=disabled -Dtests=disabled -Dnls=disabled -Dcache-build=disabled; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    mkdir -p "$pkgdir/usr/share/fontconfig/conf.default"; or return
+    for f in "$pkgdir"/etc/fonts/conf.d/*.conf
+        ln -s "../conf.avail/"(string replace -r '.*/' '' -- $f) "$pkgdir/usr/share/fontconfig/conf.default/"; or return
+        rm "$f"; or return
+    end
+    install -Dm644 fontconfig-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

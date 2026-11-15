@@ -16,7 +16,6 @@ pkgbase = libwebp
 	source = https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz
 	source = https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz.asc
 	source = 0001-cmake-Install-anim-utils.patch
-	validpgpkeys = 6B0E6B70976DE303EDF2F601F9C3D6BDB8232B5D
 	sha256sums = e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564
 	sha256sums = SKIP
 	sha256sums = 72128445371887c81046ad19cdbd1688e6b180e6428aec579cac0df756c2af35

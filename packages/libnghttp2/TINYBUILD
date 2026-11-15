@@ -1,0 +1,51 @@
+set pkgname libnghttp2
+set pkgver 1.70.0
+set pkgrel 1
+set pkgdesc 'Framing layer of HTTP/2 is implemented as a reusable C library'
+set arch i686 x32
+set url https://nghttp2.org/
+set license MIT
+set depends glibc
+set provides libnghttp2.so
+set makedepends git
+set conflicts 'nghttp2<1.20.0-2'
+set source "git+https://github.com/nghttp2/nghttp2.git?signed#tag=v$pkgver" \
+    git+https://github.com/ngtcp2/munit.git \
+    git+https://github.com/mruby/mruby.git \
+    git+https://github.com/tatsuhiro-t/neverbleed.git
+set sha512sums 48f3bf6748abf46e9b1a2cfcfc4053ef8a7d532898da854d508c520c7adcca3a8690f81d2683d14398cf937a3f7c9276000c569ccc1183bbf20d449e64f5c315 \
+    SKIP \
+    SKIP \
+    SKIP
+set flags arch
+
+function prepare
+    cd nghttp2; or return
+    git config --file=.gitmodules submodule.tests/munit.url ../munit/; or return
+    git config --file=.gitmodules submodule.third-party/mruby.url ../mruby/; or return
+    git config --file=.gitmodules submodule.tests/neverbleed.url ../neverbleed/; or return
+    git submodule init; or return
+    git -c protocol.file.allow=always submodule update; or return
+    autoreconf -i; or return
+end
+
+function build
+    cd nghttp2; or return
+    ./configure \
+        --prefix=/usr \
+        --disable-examples \
+        --disable-python-bindings \
+        --enable-lib-only; or return
+    make; or return
+end
+
+function check
+    cd nghttp2; or return
+    make check; or return
+end
+
+function package
+    cd nghttp2/lib; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 ../COPYING "$pkgdir/usr/share/licenses/libnghttp2/COPYING"; or return
+end

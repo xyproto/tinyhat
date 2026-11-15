@@ -1,0 +1,30 @@
+set pkgname opendoas
+set pkgver 6.8.2
+set pkgrel 4
+set pkgdesc 'Run commands as super user or another user'
+set arch i686 x32
+set url https://github.com/Duncaen/OpenDoas
+set license custom:ISC
+set depends pam
+set makedepends git
+set provides doas
+set replaces doas
+set backup etc/pam.d/doas etc/doas.conf
+set source "opendoas::git+https://github.com/Duncaen/OpenDoas.git?signed#tag=v$pkgver" \
+    doas.conf
+set sha256sums 43b4c2de1aaa31aac1d322b98883334b864c606783c4dfb3ddbfa0d88af9332b \
+    072980b6c339ad441268e0653ba0bb5ae721086fc2a414d574f323706bb2d0e4
+set flags arch
+
+function build
+    cd "$pkgname"; or return
+    ./configure --prefix=/usr --with-timestamp; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname"; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -Dm400 ../doas.conf "$pkgdir/etc/doas.conf"; or return
+end

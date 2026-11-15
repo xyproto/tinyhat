@@ -1,0 +1,58 @@
+set pkgname bzip2
+set pkgver 1.0.8
+set pkgrel 6
+set pkgdesc 'A high-quality data compression program'
+set arch i686 x32
+set license BSD
+set url https://sourceware.org/bzip2/
+set depends glibc sh
+set provides libbz2.so
+set flags arch
+set source "https://sourceware.org/pub/bzip2/$pkgname-$pkgver.tar.gz"{,.sig} \
+    bzip2.pc
+set sha256sums ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269 \
+    SKIP \
+    eca9d8cd6376df1fb5442667c603032023fb21d8d183684550da0b96ade39654
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    cp ../bzip2.pc bzip2.pc; or return
+    sed "s|@VERSION@|$pkgver|" -i bzip2.pc; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+
+    make -f Makefile-libbz2_so CC="gcc $CFLAGS $CPPFLAGS $LDFLAGS"; or return
+    make bzip2 bzip2recover CC="gcc $CFLAGS $CPPFLAGS $LDFLAGS"; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make test; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+
+    install -dm755 "$pkgdir"/usr/{bin,lib,include,share/man/man1}; or return
+
+    install -m755 bzip2-shared "$pkgdir"/usr/bin/bzip2; or return
+    install -m755 bzip2recover bzdiff bzgrep bzmore "$pkgdir"/usr/bin; or return
+    ln -sf bzip2 "$pkgdir"/usr/bin/bunzip2; or return
+    ln -sf bzip2 "$pkgdir"/usr/bin/bzcat; or return
+
+    cp -a libbz2.so* "$pkgdir"/usr/lib; or return
+    ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so; or return
+    ln -s libbz2.so.$pkgver "$pkgdir"/usr/lib/libbz2.so.1; or return # For compatibility with some other distros
+
+    install -m644 bzlib.h "$pkgdir"/usr/include/; or return
+
+    install -m644 bzip2.1 "$pkgdir"/usr/share/man/man1/; or return
+    ln -sf bzip2.1 "$pkgdir"/usr/share/man/man1/bunzip2.1; or return
+    ln -sf bzip2.1 "$pkgdir"/usr/share/man/man1/bzcat.1; or return
+    ln -sf bzip2.1 "$pkgdir"/usr/share/man/man1/bzip2recover.1; or return
+
+    install -Dm644 bzip2.pc -t "$pkgdir"/usr/lib/pkgconfig; or return
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
+end

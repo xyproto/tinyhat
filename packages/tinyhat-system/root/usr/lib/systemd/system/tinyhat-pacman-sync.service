@@ -1,0 +1,14 @@
+[Unit]
+Description=Refresh the pacman databases and keyring once online
+After=tinyhat-pacman-init.service tinyhat-persist.service
+
+[Service]
+Type=exec
+Nice=19
+CPUSchedulingPolicy=idle
+IOSchedulingClass=idle
+ExecStart=/usr/lib/tinyhat/pacman-sync
+ExecStopPost=-/usr/bin/gpgconf --homedir /etc/pacman.d/gnupg --kill all
+
+[Install]
+WantedBy=multi-user.target

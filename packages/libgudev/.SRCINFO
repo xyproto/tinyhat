@@ -18,7 +18,7 @@ pkgbase = libgudev
 	depends = libgcc
 	depends = libsystemd
 	source = git+https://gitlab.gnome.org/GNOME/libgudev.git#tag=238
-	b2sums = 6da9512d87154fbd62aae044a39abd84bee451f5a21203180062c369ebedf2ee1bc7672408cf806918111397bc74be58314e6c3155e638137603d11012a4355f
+	sha256sums = SKIP
 
 pkgname = libgudev
 	depends = glib2

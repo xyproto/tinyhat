@@ -9,7 +9,6 @@ pkgbase = ncdu
 	depends = ncurses
 	depends = glibc
 	source = https://dev.yorhel.nl/download/ncdu-1.22.tar.gz
-	validpgpkeys = 74460D32B80810EBA9AFA2E962394C698C2739FA
 	sha256sums = 0ad6c096dc04d5120581104760c01b8f4e97d4191d6c9ef79654fa3c691a176b
 
 pkgname = ncdu

@@ -1,0 +1,22 @@
+set pkgname llhttp
+set pkgver 9.3.1
+set pkgrel 1
+set pkgdesc 'Port of http_parser to llparse'
+set arch i686 x32
+set url https://llhttp.org
+set license MIT
+set depends glibc
+set makedepends cmake
+set source "llhttp-release-v$pkgver.tar.gz::https://github.com/nodejs/llhttp/archive/refs/tags/release/v$pkgver.tar.gz"
+set sha256sums c14a93f287d3dbd6580d08af968294f8bcc61e1e1e3c34301549d00f3cf09365
+set flags arch
+
+function build
+    cmake -B build -S $pkgname-release-v$pkgver -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" $pkgname-release-v$pkgver/LICENSE; or return
+end

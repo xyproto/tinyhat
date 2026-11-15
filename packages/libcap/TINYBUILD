@@ -1,0 +1,37 @@
+set pkgname libcap
+set pkgver 2.78
+set pkgrel 1
+set pkgdesc 'POSIX 1003.1e capabilities'
+set arch i686 x32
+set url https://sites.google.com/site/fullycapable/
+set license 'BSD-3-Clause OR GPL-2.0-only'
+set depends glibc pam
+set makedepends git linux-api-headers
+set provides libcap.so libpsx.so
+set options '!lto'
+set source "git+https://git.kernel.org/pub/scm/libs/libcap/libcap.git?signed#tag=sig-libcap-$pkgver" \
+    libcap-2.73-cgo-flags.patch
+set sha256sums SKIP \
+    c6f7b96ddf8d537a9dc99940b49dee58b541e7da056a7d3731e250f34187749c
+set flags arch
+set -g _common_make_options CGO_CPPFLAGS= CGO_CFLAGS= CGO_CXXFLAGS= CGO_LDFLAGS= CGO_REQUIRED=1 'GOFLAGS=-buildmode=pie -mod=readonly -modcacherw' 'GO_BUILD_FLAGS=-ldflags \'-compressdwarf=false -linkmode=external\'' GOLANG=no
+set -g _url https://git.kernel.org/pub/scm/libs/libcap/libcap.git
+
+function prepare
+    patch -Np1 -d $pkgname -i ../libcap-2.73-cgo-flags.patch; or return
+end
+
+function build
+    set -gx GOPATH "$srcdir"
+    set -l make_options $_common_make_options DYNAMIC=yes KERNEL_HEADERS=/usr/include lib=lib prefix=/usr sbindir=bin -C $pkgname
+    make $make_options; or return
+end
+
+function package
+    set -gx GOPATH "$srcdir"
+    set -l make_options $_common_make_options DESTDIR="$pkgdir" RAISE_SETFCAP=no lib=lib prefix=/usr sbindir=bin install -C $pkgname
+    make $make_options; or return
+    install -vDm 644 $pkgname/{CHANGELOG,README} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+    install -vDm 644 $pkgname/License -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -vDm 644 $pkgname/pam_cap/capability.conf -t "$pkgdir/usr/share/doc/$pkgname/examples/"; or return
+end

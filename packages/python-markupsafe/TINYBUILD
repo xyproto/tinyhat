@@ -1,0 +1,24 @@
+set pkgname python-markupsafe
+set pkgver 3.0.4
+set pkgrel 1
+set pkgdesc 'Implements a XML/HTML/XHTML Markup safe string for Python'
+set arch i686 x32
+set url https://pypi.python.org/pypi/MarkupSafe
+set license BSD-3-Clause
+set depends glibc python
+set makedepends git python-build python-installer python-setuptools python-wheel
+set checkdepends python-pytest
+set source "git+https://github.com/pallets/markupsafe.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    cd markupsafe; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd markupsafe; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE.txt -t "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end

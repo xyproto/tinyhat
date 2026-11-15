@@ -1,0 +1,41 @@
+set pkgname libx11
+set pkgver 1.8.14
+set pkgrel 1
+set pkgdesc 'X11 client-side library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/xorg/lib/libx11
+# keep xorgproto runtime dependency
+# https://lists.archlinux.org/pipermail/arch-dev-public/2019-December/029767.html
+set depends libxcb glibc xorgproto
+set makedepends git xorg-util-macros xtrans
+set license 'MIT AND X11'
+set source "git+https://gitlab.freedesktop.org/xorg/lib/libx11.git?signed#tag=libX11-$pkgver"
+set sha512sums 89b5eb8c53e463b1dd0eab5390cc8e4a45cf16123f9b3c495284ec5a8822fb5e65860fe8f4ccf88ddb8b118ee583b82ff774a7e53fe7d60ed8e697d4f0858774
+set flags arch
+
+function prepare
+    cd libx11; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd libx11; or return
+    ./configure --prefix=/usr \
+        --disable-static \
+        --disable-xf86bigfont; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd libx11; or return
+    make check; or return
+end
+
+function package
+    cd libx11; or return
+    make DESTDIR="$pkgdir" install; or return
+
+    install -d -m755 "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

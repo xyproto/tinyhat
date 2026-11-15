@@ -1,0 +1,27 @@
+set pkgname cython
+set pkgver 3.3.1
+set pkgrel 1
+set pkgdesc 'C-Extensions for Python'
+set arch i686 x32
+set url https://cython.org
+set license Apache-2.0
+set depends glibc python python-pygments python-setuptools
+set makedepends git python-build python-installer python-wheel
+set checkdepends gdb python-interpreters-pep-734 python-pytest python-tests
+set source "git+https://github.com/cython/cython#tag=$pkgver"
+set sha256sums 3b7972f370ee510778ce68a66b27f6a1ebb830b4889d3f7a207476aae6ab1e24
+set flags arch
+
+function build
+    cd cython; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd cython; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    for f in cygdb cython cythonize
+        mv "$pkgdir"/usr/bin/$f "$pkgdir"/usr/bin/{$f}3; or return
+        ln -s {$f}3 "$pkgdir"/usr/bin/$f; or return
+    end
+end

@@ -1,0 +1,24 @@
+set pkgname dnssec-anchors
+# To bump version:
+# 1. run dnssec-anchors-versioned.sh
+# 2. update pkgver to current date
+# 3. update the checksums
+# 4. git add trusted-key-(date +%Y%m%d).notkey
+# 5. release
+set pkgver 20250524
+set -g _trusted_key trusted-key-$pkgver.notkey
+set pkgrel 1
+set pkgdesc 'DNSSEC trust anchors for the root zone'
+set url https://data.iana.org/root-anchors/
+set license custom:none
+set arch any
+set makedepends unbound
+set flags arch
+set source LICENSE trusted-key-$pkgver.notkey
+set sha256sums dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb \
+    2e02119f4f808afd4fed5155ab6b1127a0ada1b6064198097fae5d0096b591a4
+
+function package
+    install -Dm644 $_trusted_key "$pkgdir/etc/trusted-key.key"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

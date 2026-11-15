@@ -36,7 +36,6 @@ pkgbase = mc
 	optdepends = unzip: open zip archives
 	optdepends = rpm-tools: open rpm packages
 	optdepends = zip: uzip extfs
-	options = !emptydirs
 	backup = etc/mc/edit.indent.rc
 	backup = etc/mc/filehighlight.ini
 	backup = etc/mc/mc.ext
@@ -44,6 +43,7 @@ pkgbase = mc
 	backup = etc/mc/mc.menu
 	backup = etc/mc/mcedit.menu
 	backup = etc/mc/sfs.ini
+	options = !emptydirs
 	source = git+https://github.com/MidnightCommander/mc#tag=4.8.33
 	sha256sums = e3b43caa743dfb9466914b90605db332f505dc8ded031882ab1da268e1433e6c
 

@@ -1,0 +1,21 @@
+set pkgname ttf-dejavu
+set pkgver 2.37
+set pkgrel 1
+set epoch 1
+set pkgdesc 'Font family based on the Bitstream Vera Fonts with a wider range of characters'
+set arch any
+set url https://dejavu-fonts.github.io
+set license custom
+set provides ttf-font
+set source "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_"(string replace -a . _ -- $pkgver)"/dejavu-fonts-ttf-$pkgver.tar.bz2"
+set sha256sums fa9ca4d13871dd122f61258a80d01751d603b4d3ee14095d65453b4e846e17d7
+set flags arch
+
+function package
+    cd dejavu-fonts-ttf-$pkgver; or return
+    install -Dm0644 -t "$pkgdir/usr/share/fonts/TTF" ttf/*.ttf; or return
+    install -Dm0644 -t "$pkgdir/usr/share/fontconfig/conf.avail" fontconfig/*.conf; or return
+    mkdir -p "$pkgdir/usr/share/fontconfig/conf.default"; or return
+    ln -srt "$pkgdir/usr/share/fontconfig/conf.default" "$pkgdir"/usr/share/fontconfig/conf.avail/*; or return
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname" LICENSE; or return
+end

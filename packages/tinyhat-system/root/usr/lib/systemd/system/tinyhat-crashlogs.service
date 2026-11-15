@@ -1,0 +1,11 @@
+[Unit]
+Description=Hand kernel crash logs from earlier boots to the crash log viewer
+Wants=systemd-pstore.service
+After=systemd-pstore.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/tinyhat/crashlogs
+
+[Install]
+WantedBy=multi-user.target

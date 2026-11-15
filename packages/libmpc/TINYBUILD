@@ -1,0 +1,30 @@
+set pkgname libmpc
+set pkgver 1.4.1
+set pkgrel 1
+set pkgdesc 'Library for the arithmetic of complex numbers with arbitrarily high precision'
+set arch i686 x32
+set url http://www.multiprecision.org/
+set license LGPL-3.0-only
+set depends glibc gmp mpfr
+set source "https://ftp.gnu.org/gnu/mpc/mpc-$(string replace -a _ - -- $pkgver).tar.xz"{,.sig}
+set sha256sums 91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931 \
+    SKIP
+set flags arch
+
+function build
+    cd mpc-$pkgver; or return
+    ./configure \
+        --prefix=/usr; or return
+    make; or return
+end
+
+function check
+    cd mpc-$pkgver; or return
+    make check; or return
+end
+
+function package
+    cd mpc-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    mv "$pkgdir"/usr/share/info/{mpc,libmpc}.info; or return
+end

@@ -17,7 +17,6 @@ pkgbase = xkeyboard-config
 	replaces = xkbdata
 	source = https://xorg.freedesktop.org/archive/individual/data/xkeyboard-config/xkeyboard-config-2.48.tar.xz
 	source = https://xorg.freedesktop.org/archive/individual/data/xkeyboard-config/xkeyboard-config-2.48.tar.xz.sig
-	validpgpkeys = FFB4CCD275AAA422F5F9808E0661D98FC933A145
 	sha256sums = b77041324f0109f77161ee43743fe04baa485866af8460d31e476ad3f7648fd5
 	sha256sums = SKIP
 

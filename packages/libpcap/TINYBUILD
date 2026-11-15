@@ -1,0 +1,34 @@
+set pkgname libpcap
+set pkgver 1.11.0
+set pkgrel 1
+set pkgdesc 'A system-independent interface for user-level packet capture'
+set arch i686 x32
+set url https://www.tcpdump.org/
+set -g _url https://github.com/the-tcpdump-group/libpcap
+set license BSD-3-Clause
+set depends glibc libnl sh
+set makedepends bluez-libs dbus git
+set provides libpcap.so
+set source "git+$_url?signed#tag=$pkgname-$pkgver"
+set sha512sums a946f5663cd04152f6f2f98051bc8d077b3fb00a47d4fcc508c7bf25ac0fa6ffffeb5110e027cdebc28ed8e2091f2efe8a49383f4807d375e6dd80f540920d4a
+set b2sums fbc2024e40bb19c82f92b03de3a3007b477a9504aa05f62ab0046500384eb5d273b13c1c486fabb12dd0d2cfa2b6d70bf616409515ff0bd66c52b3580b2e485b
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr --enable-ipv6 --enable-bluetooth --enable-usb --with-libnl; or return
+    make; or return
+end
+
+function package
+    set -a depends libdbus-1.so
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -vDm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -vDm 644 {CHANGES,{CONTRIBUTING,README}.md} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+end

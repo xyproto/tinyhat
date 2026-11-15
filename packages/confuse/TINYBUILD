@@ -1,0 +1,37 @@
+set pkgname confuse
+set pkgver 3.4
+set pkgrel 1
+set pkgdesc 'Small configuration file parser library for C'
+set arch i686 x32
+set url https://github.com/libconfuse/libconfuse
+set license ISC
+set depends glibc
+set makedepends git
+set options '!emptydirs'
+set source "$pkgname::git+$url#tag=v$pkgver"
+set sha512sums 358f13f742fc3bf3beb20783159dd2d8d7f8f996866c8d809d23424a830b666a0c3150e9d4d2e40dbeda54fd7be16da08be85af3a17b72941a2e7431501415a4
+set b2sums 737568810f2897ffb573b600a82b5acc336b6560ce3fcb953d9b281964706afef85229a919bb9fbdcf512ec99221d7ef0b499f8e731725a5a13295550b55334f
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -vfi; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr --enable-shared; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    # license
+    install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" LICENSE; or return
+end

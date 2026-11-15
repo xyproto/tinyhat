@@ -1,0 +1,24 @@
+set pkgname zathura-pdf-poppler
+set pkgver 2026.07.18
+set pkgrel 3
+set pkgdesc 'Adds pdf support to zathura by using the poppler engine'
+set arch i686 x32
+set url https://pwmt.org/projects/zathura-pdf-poppler/
+set license Zlib
+set depends poppler-glib zathura
+set makedepends meson ninja desktop-file-utils
+set source "zathura-pdf-poppler-$pkgver.tar.gz::https://github.com/pwmt/zathura-pdf-poppler/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 93003f41d8d2dc4c3c5d5ee076012563d1836ab0043debe741945881fb62d2ca
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    arch-meson build; or return
+    ninja -C build; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm 664 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

@@ -1,0 +1,51 @@
+set -g _name ucx
+set pkgname openucx
+set pkgver 1.20.1
+set pkgrel 3
+set pkgdesc 'Communication framework for data-centric and high-performance applications'
+set arch i686 x32
+set url https://openucx.org/
+set license BSD-3-Clause
+set depends binutils glibc libgcc libgomp libstdc++ zlib zstd
+set makedepends rdma-core cuda rocm-language-runtime
+set optdepends 'rdma-core: for InfiniBand and RDMA support' \
+    'cuda: for CUDA support' \
+    'rocm-language-runtime: for ROCm support'
+set provides libucm.so libucp.so libucs.so libucs_signal.so libuct.so
+set source $pkgname-$pkgver.tar.gz::https://github.com/openucx/$_name/archive/refs/tags/v$pkgver.tar.gz \
+    ucx-conf.patch
+set b2sums f6fd229ebd2984cefc7742fc7cc2ddb1022815ed00efb528e94454493cd734642ae7bf6315abfdc37187649836fa8ddc06087a8fdb51fa9f2b5bd136eb97a694 \
+    2b3b4575ce64b947ecc42c9055934bcd7e5feb30031c6504f8cc3057cfc138b28c2826a6cc55be56d186e09e20c6201dacfc308647d9b62a5d33688348d15a68
+set flags arch
+
+function prepare
+    cd $_name-$pkgver; or return
+    # Do not hijack SIGHUP https://gitlab.archlinux.org/archlinux/packaging/packages/openucx/-/issues/3
+    patch -Np1 -i ../ucx-conf.patch; or return
+end
+
+function build
+    # this uses malloc_usable_size, which is incompatible with fortification level 3
+    set CFLAGS (string replace -- _FORTIFY_SOURCE=3 _FORTIFY_SOURCE=2 $CFLAGS)
+    set CXXFLAGS (string replace -- _FORTIFY_SOURCE=3 _FORTIFY_SOURCE=2 $CXXFLAGS)
+    set -a CFLAGS -Wno-error=discarded-qualifiers -Wno-error=deprecated-openmp
+    cd $_name-$pkgver; or return
+    ./autogen.sh; or return
+    # NOTE: upstream suggests running ./contrib/configure-release instead of
+    # ./configure for maximal performance, but it contains options that would
+    # make debugging much harder
+    ./configure --prefix=/usr --sysconfdir=/etc --with-cuda=/opt/cuda --with-rocm=/opt/rocm --with-verbs --with-rc \
+        --with-ud --with-dc --with-mlx5-dv --enable-mt; or return
+    # prevent excessive overlinking due to libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make V=1; or return
+end
+
+function package
+    # this uses malloc_usable_size, which is incompatible with fortification level 3
+    set CFLAGS (string replace -- _FORTIFY_SOURCE=3 _FORTIFY_SOURCE=2 $CFLAGS)
+    set CXXFLAGS (string replace -- _FORTIFY_SOURCE=3 _FORTIFY_SOURCE=2 $CXXFLAGS)
+    make DESTDIR="$pkgdir" install -C $_name-$pkgver; or return
+    # install the license
+    install -vDm 644 $_name-$pkgver/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

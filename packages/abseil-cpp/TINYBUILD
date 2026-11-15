@@ -1,0 +1,31 @@
+set pkgname abseil-cpp
+set pkgver 20260817.0
+set pkgrel 2
+set pkgdesc 'Collection of C++ library code designed to augment the C++ standard library'
+set arch i686 x32
+set url https://abseil.io
+set license Apache-2.0
+set depends glibc gtest libgcc libstdc++
+set makedepends cmake
+set source "https://github.com/abseil/abseil-cpp/archive/$pkgver/abseil-cpp-$pkgver.tar.gz" \
+    scoped-mock-log.patch
+set sha256sums f7e05179df39c45434cad433f5783840bb3788ef322976f9138bc6b72b3a107d \
+    a6cbc612a2b96fcbd52d081e03e8581107ceb4827edb19d96510a31c568e1396
+set flags arch
+
+function prepare
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    patch -p1 -i ../scoped-mock-log.patch; or return
+end
+
+function build
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    cmake -Bbuild -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_FLAGS="$CXXFLAGS -DNDEBUG" -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_CXX_STANDARD=17 -DBUILD_SHARED_LIBS=ON -DABSL_BUILD_TEST_HELPERS=ON -DABSL_USE_EXTERNAL_GOOGLETEST=ON -DABSL_FIND_GOOGLETEST=ON -DABSL_BUILD_TESTING=OFF; or return
+    cd build; or return
+    cmake --build . --target all; or return
+end
+
+function package
+    cd "$srcdir/$pkgname-$pkgver/build"; or return
+    DESTDIR="$pkgdir" cmake --install .; or return
+end

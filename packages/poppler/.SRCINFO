@@ -31,7 +31,6 @@ pkgbase = poppler
 	options = !emptydirs
 	source = git+https://gitlab.freedesktop.org/poppler/poppler.git#tag=poppler-26.10.0?signed
 	source = test::git+https://gitlab.freedesktop.org/poppler/test.git#commit=48b6219b84fc0a708040cb279d51095cc4e1c603
-	validpgpkeys = CA262C6C83DE4D2FB28A332A3A6A4DB839EAA6D7
 	sha256sums = 2277d28b51721ac7e08a7f82e39fffc2c638700670ecfc8104d27383d7704f0a
 	sha256sums = b4a9235420ac49bd8e7d7b38dad7747b04127051cf6b318bf6de836d9ac97a6a
 

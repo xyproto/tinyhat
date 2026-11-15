@@ -1,0 +1,47 @@
+set pkgname nvi2
+set -g _commit 02acac8f6c8e44bd07297580bcd101c856d4c475
+set pkgver 2.2.2+02acac8
+set pkgrel 1
+set pkgdesc 'Multibyte fork of the nvi editor for BSD, installed as vi'
+set arch i686 x32
+set url https://github.com/lichray/nvi2
+set license BSD-3-Clause
+set depends ncurses libbsd
+set makedepends cmake
+set source "nvi2-$_commit.tar.gz::https://github.com/lichray/nvi2/archive/$_commit.tar.gz" \
+    https://deb.debian.org/debian/pool/main/d/db1-compat/db1-compat_2.1.3.orig.tar.gz \
+    https://deb.debian.org/debian/pool/main/d/db1-compat/db1-compat_2.1.3-27.debian.tar.xz
+set noextract db1-compat_2.1.3-27.debian.tar.xz
+set sha256sums c364b0811a6597ae985113caf4a422ce5895b8cbe6e3ab99e00193db76dc72f6 \
+    b01f560f00a67f921e678586d903969015b0c9cec6c18b1679b7e9fd6d27394e \
+    c659caf72b52f47bc90ebe8b7baa31511d208437601906425072769d164e4816
+
+function prepare
+    mkdir -p db1-debian; or return
+    tar -xJf db1-compat_2.1.3-27.debian.tar.xz -C db1-debian; or return
+    cd db; or return
+    for p in (cat ../db1-debian/debian/patches/series)
+        patch -p1 -i ../db1-debian/debian/patches/$p; or return
+    end
+end
+
+function build
+    cd db; or return
+    printf 'libdb1.a: $(patsubst %%,%%.o,$(libdb1-routines))\n\tar rcs $@ $^\n' >static.mk; or return
+    make -f Makefile -f static.mk libdb1.a CFLAGS="$CFLAGS -Wno-implicit-function-declaration"; or return
+    cd ..; or return
+    cmake -S nvi2-$_commit -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_C_FLAGS="$CFLAGS -D_GNU_SOURCE" -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS -L$srcdir/db" \
+        -DDB_INCLUDE_DIR="$srcdir/db"; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    for l in vi vim ex view
+        ln -s nvi "$pkgdir/usr/bin/$l"; or return
+    end
+    echo 'd /var/tmp/vi.recover 1777 root root -' | install -Dm644 /dev/stdin "$pkgdir/usr/lib/tmpfiles.d/nvi2.conf"; or return
+    install -Dm644 nvi2-$_commit/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+    install -Dm644 db1-debian/debian/copyright "$pkgdir/usr/share/licenses/$pkgname/db1-copyright"; or return
+end

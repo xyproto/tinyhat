@@ -13,7 +13,6 @@ pkgbase = e2fsprogs
 	makedepends = util-linux
 	makedepends = fuse3
 	source = git+https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git#tag=v1.47.4?signed
-	validpgpkeys = 3AB057B7E78D945C8C5591FBD36F769BC11804F0
 	sha256sums = e738cbd6e437988248a5ed143458e33cdbfe17ebfa3818b7f6a6a66264895a66
 
 pkgname = e2fsprogs

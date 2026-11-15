@@ -1,0 +1,21 @@
+set pkgname libde265
+set pkgver 1.1.3
+set pkgrel 1
+set pkgdesc 'Open h.265 video codec implementation'
+set arch i686 x32
+set url https://github.com/strukturag/libde265
+set license LGPL-3.0-or-later
+set depends glibc libgcc libstdc++
+set makedepends cmake git
+set source "git+https://github.com/strukturag/libde265#tag=v$pkgver"
+set sha256sums 15b35cc5ed154a31bd825bb22d033d9bb93663d1f85ba971ff04b41a239c99a3
+set flags arch
+
+function build
+    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_ENCODER=ON; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+end

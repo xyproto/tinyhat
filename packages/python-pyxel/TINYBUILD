@@ -1,0 +1,43 @@
+set pkgname python-pyxel
+set pkgver 3.0.1
+set pkgrel 2
+set pkgdesc 'Retro game engine for Python, built with SDL3'
+set arch i686 x32
+set url https://github.com/kitao/pyxel
+set license MIT
+set depends glibc gcc-libs sdl3 python
+set makedepends cargo clang llvm python
+set source "pyxel-$pkgver.tar.gz::https://github.com/kitao/pyxel/archive/refs/tags/v$pkgver.tar.gz" \
+    sdl3.patch
+set sha256sums 969abc7322a3eb4d6f1ce2038f8c23e034db988428479cc4d32871e6f92696c9 \
+    SKIP
+
+function prepare
+    cd pyxel-$pkgver; or return
+    patch -Np1 -i ../sdl3.patch; or return
+    cd crates; or return
+    cargo fetch --locked --target host-tuple; or return
+end
+
+function build
+    cd pyxel-$pkgver/crates; or return
+    set -l lib /usr/lib
+    if test -d /host/usr/lib
+        set lib /host/usr/lib
+        set -fx LD_LIBRARY_PATH /host/usr/lib $LD_LIBRARY_PATH
+    end
+    set -l libclangs $lib/libclang.so.*
+    set -l libclang (printf '%s\n' $libclangs | string match -r '.*\.so\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+    LIBCLANG_PATH=$libclang PYO3_PYTHON=python3 cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3; or return
+end
+
+function package
+    cd pyxel-$pkgver; or return
+    set -l site "$pkgdir/usr/lib/python3.14/site-packages/pyxel"
+    install -d "$site"; or return
+    cp -r python/pyxel/. "$site/"; or return
+    install -Dm755 crates/target/release/libpyxel_binding.so "$site/pyxel_binding.abi3.so"; or return
+    printf '%s\n' '#!/usr/bin/python3' 'import sys' 'from pyxel.cli import cli' 'sys.exit(cli())' \
+        | install -Dm755 /dev/stdin "$pkgdir/usr/bin/pyxel"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

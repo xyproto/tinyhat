@@ -1,0 +1,24 @@
+set pkgname liburcu
+set pkgver 0.15.7
+set pkgrel 1
+set pkgdesc 'LGPLv2.1 userspace RCU (read-copy-update) library'
+set arch i686 x32
+set url https://lttng.org/urcu
+set license LGPL2.1
+set depends glibc
+set source "https://lttng.org/files/urcu/userspace-rcu-$pkgver.tar.bz2" \
+    "https://lttng.org/files/urcu/userspace-rcu-$pkgver.tar.bz2.asc"
+set sha256sums 2556b83adc0f9b3ac8024e613e17d014d04c4c49110604ce55fcb14eae32edd3 \
+    1e34b4d3ef1b403c3d64a6b1a2ae137a1cdd2c2b8f0f7bae98155a3d72b514dd
+set flags arch
+
+function build
+    cd "$srcdir"/userspace-rcu-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir"/userspace-rcu-$pkgver; or return
+    make install DESTDIR="$pkgdir"; or return
+end

@@ -18,19 +18,16 @@ pkgbase = p11-kit
 	depends = libtasn1
 	source = git+https://github.com/p11-glue/p11-kit?signed#tag=0.26.5
 	source = git+https://github.com/p11-glue/pkcs11-json
-	validpgpkeys = C0F67099B808FB063E2C81117BFB1108D92765AF
-	validpgpkeys = 462225C3B46F34879FC8496CD605848ED7E69871
-	validpgpkeys = 5D46CB0F763405A7053556F47A75A648B3F9220C
 	b2sums = 2b2a785307cac88ab347e8a75aecfdafd933d9dbca6977368eca4c74e0a14bdcbdffd138e9dd86d390f6c1bcf044f1c9763f197ca79bd0877f26d0e00f0712c7
 	b2sums = SKIP
 
 pkgname = p11-kit
-	install = p11-kit.install
 	depends = coreutils
 	depends = glibc
 	depends = libtasn1
 	depends = libp11-kit=0.26.5-1
 	depends = libp11-kit.so
+	install = p11-kit.install
 
 pkgname = libp11-kit
 	pkgdesc = Loads and enumerates PKCS#11 modules (library)

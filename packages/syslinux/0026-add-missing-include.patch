@@ -1,0 +1,22 @@
+From af0194e9705d11cb0e609b2256d6481cc879b9ef Mon Sep 17 00:00:00 2001
+From: Christian Hesse <mail@eworm.de>
+Date: Mon, 30 Sep 2024 10:39:02 +0200
+Subject: [PATCH] add missing include
+
+This fixes a comiler error on missing include.
+---
+ com32/lib/syslinux/debug.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/com32/lib/syslinux/debug.c b/com32/lib/syslinux/debug.c
+index d9ab863f..e8f53d57 100644
+--- a/com32/lib/syslinux/debug.c
++++ b/com32/lib/syslinux/debug.c
+@@ -1,6 +1,7 @@
+ #include <linux/list.h>
+ #include <string.h>
+ #include <stdbool.h>
++#include <stdio.h>
+ 
+ #ifdef DYNAMIC_DEBUG
+ 

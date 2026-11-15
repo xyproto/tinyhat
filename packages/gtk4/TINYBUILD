@@ -1,0 +1,77 @@
+set pkgname gtk4
+set pkgver 4.24.1
+set pkgrel 1
+set epoch 1
+set pkgdesc 'GObject-based multi-platform GUI toolkit'
+set arch i686 x32
+set url https://www.gtk.org/
+set license LGPL-2.1-or-later
+set depends adwaita-icon-theme bash libcairo.so dconf desktop-file-utils fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene harfbuzz iso-codes libegl libepoxy libgcc libjpeg-turbo libpng libtiff libxkbcommon pango shared-mime-info wayland
+set makedepends docbook-xsl gi-docgen git glib2-devel gobject-introspection hicolor-icon-theme libsysprof-capture meson python-docutils python-gobject sassc shaderc vulkan-headers wayland-protocols glib2-introspection
+set source "git+https://gitlab.gnome.org/GNOME/gtk.git#tag=$pkgver" \
+    gtk-update-icon-cache.hook \
+    gtk-update-icon-cache.script \
+    gtk4-querymodules.hook \
+    gtk4-querymodules.script
+set sha256sums SKIP \
+    2d435e3bec8b79b533f00f6d04decb1d7c299c6e89b5b175f20be0459f003fe8 \
+    f1d3a0dbfd82f7339301abecdbe5f024337919b48bd0e09296bb0e79863b2541 \
+    a5074ffc057a3041a4f851b4b4674cfc21f3cb9cc90c5414c3e91816a5d205e9 \
+    92d08db5aa30bda276bc3d718e7ff9dd01dc40dcab45b359182dcc290054e24e
+set flags arch
+set -g _d adwaita-icon-theme bash cairo dconf desktop-file-utils fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene harfbuzz iso-codes libegl libepoxy libgcc libjpeg-turbo libpng libtiff libxkbcommon pango shared-mime-info wayland
+set -g _p xdg-desktop-portal-gtk
+
+function prepare
+    cd gtk; or return
+end
+
+function build
+    set -a CFLAGS -DG_DISABLE_CAST_CHECKS
+    arch-meson gtk build -D x11-backend=false -D broadway-backend=false -D media-gstreamer=disabled -D print-cups=disabled -D print-cpdb=disabled -D vulkan=disabled -D cloudproviders=disabled -D sysprof=disabled -D tracker=disabled -D colord=disabled -D accesskit=disabled -D introspection=enabled -D documentation=false -D man-pages=false -D build-demos=false -D build-testsuite=false -D build-examples=false -D build-tests=false; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_gtk-update-icon-cache
+    set pkgdesc "GTK icon cache updater"
+    set depends bash gdk-pixbuf2 glib2 glibc hicolor-icon-theme
+    mv guic/* "$pkgdir"; or return
+    ln -sr "$pkgdir"/usr/bin/gtk{4,}-update-icon-cache; or return
+    ln -sr "$pkgdir"/usr/share/man/man1/gtk{4,}-update-icon-cache.1; or return
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 gtk-update-icon-cache.hook; or return
+    install -D gtk-update-icon-cache.script "$pkgdir/usr/share/libalpm/scripts/gtk-update-icon-cache"; or return
+end
+
+function package_gtk4
+    set provides libgtk-4.so
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+    printf '%s\n' "[Settings]" "gtk-icon-theme-name = Adwaita" "gtk-theme-name = Adwaita" | install -Dm644 /dev/stdin "$pkgdir/usr/share/gtk-4.0/settings.ini"; or return
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 gtk4-querymodules.hook; or return
+    install -D gtk4-querymodules.script "$pkgdir/usr/share/libalpm/scripts/gtk4-querymodules"; or return
+    rm -f "$pkgdir"/usr/bin/gtk4-update-icon-cache "$pkgdir"/usr/share/man/man1/gtk4-update-icon-cache.1; or return
+end
+
+function package_gtk4-demos
+    set pkgdesc "$pkgdesc (demo applications)"
+    set depends cairo dconf fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene gst-plugins-bad-libs gst-plugins-base-libs gstreamer gtk4 harfbuzz hicolor-icon-theme libcloudproviders libcolord libcups libepoxy libgcc libjpeg-turbo libpng libtiff libx11 libxcursor libxdamage libxext libxfixes libxi libxinerama libxkbcommon libxrandr pango tinysparql vulkan-icd-loader wayland
+    mv demo/* "$pkgdir"; or return
+end
+
+function package_gtk4-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv docs/* "$pkgdir"; or return
+end

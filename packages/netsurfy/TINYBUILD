@@ -1,0 +1,36 @@
+set pkgname netsurfy
+set pkgver 1.1.5
+set pkgrel 1
+set pkgdesc 'Lightweight and fast web browser, forked from NetSurf'
+set arch i686 x32
+set url https://github.com/xyproto/netsurfy
+set license GPL-2.0-only MIT
+set depends bubblewrap curl expat gtk4 libjpeg-turbo libpng libwebp openssl quickjs-ng zlib
+set makedepends bison cmake flex ninja perl perl-html-parser
+set provides netsurf
+set conflicts netsurf
+set replaces netsurf
+set source "$pkgname-$pkgver.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v$pkgver.tar.gz" \
+    netsurfy-sandbox
+set sha256sums 4566fde449e12b1ec7943760f915545225dcc9262b969b71c2d67f25272226b1 \
+    SKIP
+set b2sums c1964270ec49a22d1f25b7fb633bca2b1497832b22741a3439a37089eb265a95bb8e8e0293d12a65537cb32c622bbafef97800eb468add9d03451ea558525bfc \
+    SKIP
+
+function build
+    cmake -B build -S $pkgname-$pkgver -G Ninja \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=None \
+        -DBUILD_TESTING=OFF; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm755 "$pkgdir/usr/bin/$pkgname" "$pkgdir/usr/lib/$pkgname/$pkgname"; or return
+    install -Dm755 netsurfy-sandbox "$pkgdir/usr/bin/$pkgname"; or return
+    cd $pkgname-$pkgver; or return
+    install -Dm644 src/frontends/gtk/res/$pkgname.xpm "$pkgdir/usr/share/pixmaps/$pkgname.xpm"; or return
+    install -Dm644 src/frontends/gtk/res/$pkgname.desktop "$pkgdir/usr/share/applications/$pkgname.desktop"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

@@ -1,0 +1,40 @@
+set pkgname cargo-c
+set pkgver 0.10.26
+set pkgrel 1
+set pkgdesc 'A cargo subcommand to build and install C-ABI compatible dynamic and static libraries'
+set arch i686 x32
+set url https://github.com/lu-zero/cargo-c/
+set license MIT
+set depends cargo curl libcurl.so glibc libgcc libgcc_s.so libgit2 libgit2.so libssh2 libssh2.so openssl libssl.so sqlite
+set flags arch
+set source "https://github.com/lu-zero/cargo-c/archive/v$pkgver/$pkgname-$pkgver.tar.gz" \
+    "$pkgname-$pkgver.Cargo.lock::https://github.com/lu-zero/cargo-c/releases/download/v$pkgver/Cargo.lock"
+set sha256sums 57700786539a322a50f1848332e3465bf15efa5af2fd8b6113f36cbfce46c830 \
+    d3cb865d40625de197b71fa591f1f24c0593b5a24b46b7c126eae7fecf7be315
+
+function cargo_env
+    set -gx RUSTUP_TOOLCHAIN stable
+    set -gx CARGO_TARGET_DIR "$pkgname-$pkgver/target"
+    set -gx LIBSSH2_SYS_USE_PKG_CONFIG 1
+    set -gx LIBSQLITE3_SYS_USE_PKG_CONFIG 1
+end
+
+function prepare
+    ln -sf "../$pkgname-$pkgver.Cargo.lock" "$pkgname-$pkgver/Cargo.lock"; or return
+    cargo fetch --locked --target (rustc --print host-tuple) --manifest-path="$pkgname-$pkgver/Cargo.toml"; or return
+end
+
+function build
+    cargo_env
+    cargo build --release --frozen --manifest-path="$pkgname-$pkgver/Cargo.toml"; or return
+end
+
+function check
+    cargo_env
+    cargo test --frozen --manifest-path="$pkgname-$pkgver/Cargo.toml"; or return
+end
+
+function package
+    find "$pkgname-$pkgver/target/release" -maxdepth 1 -type f -executable -exec install -D -m755 -t "$pkgdir/usr/bin" {} +; or return
+    install -D -m644 "$pkgname-$pkgver/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

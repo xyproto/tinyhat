@@ -1,0 +1,23 @@
+set pkgname libslirp
+set pkgver 4.9.5
+set pkgrel 1
+set pkgdesc 'General purpose TCP-IP emulator'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/slirp/libslirp
+set license BSD MIT
+set depends glib2
+set makedepends meson
+set provides libslirp.so
+set source "https://gitlab.freedesktop.org/slirp/libslirp/-/archive/v$pkgver/libslirp-v$pkgver.tar.gz"
+set sha256sums f43e68b60b580647574ec4a0e2b6c600a56281e6c39f79426510832dc810f483
+set flags arch
+
+function build
+    arch-meson "$pkgname-v$pkgver" build; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" meson install -C build; or return
+    install -vDm 644 "$pkgname-v$pkgver"/COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

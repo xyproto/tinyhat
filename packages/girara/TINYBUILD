@@ -1,0 +1,27 @@
+set pkgname girara
+set pkgver 2026.07.18
+set pkgrel 1
+set pkgdesc 'User interface library focused on simplicity and minimalism'
+set arch i686 x32
+set url https://pwmt.org/projects/girara
+set license Zlib
+set depends glib2 glibc
+set makedepends meson ninja
+set provides girara-gtk3 girara-common
+set conflicts girara-gtk3 girara-common
+set replaces girara-gtk3 girara-common
+set source "girara-$pkgver.tar.gz::https://github.com/pwmt/girara/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 841ca1d6fc33f87ca0065208052dffd7c49489cfd1119ce572176c1d5428a1e0
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    arch-meson build -Ddocs=disabled; or return
+    ninja -C build; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm 664 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

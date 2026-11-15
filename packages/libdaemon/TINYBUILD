@@ -1,0 +1,24 @@
+set pkgname libdaemon
+set pkgver 0.14
+set pkgrel 6
+set pkgdesc 'Lightweight C library that eases the writing of UNIX daemons'
+set url http://0pointer.de/lennart/projects/libdaemon/
+set license LGPL
+set arch i686 x32
+set depends glibc
+set makedepends git
+set source "http://0pointer.de/lennart/projects/libdaemon/libdaemon-$pkgver.tar.gz"
+set sha512sums a96b25c09bd63cc192c1c5f8b5bf34cc6ad0c32d42ac14b520add611423b6ad3d64091a47e0c7ab9a94476a5e645529abccea3ed6b23596567163fba88131ff2
+set flags arch
+
+function build
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    ./bootstrap.sh; or return
+    ./configure --prefix=/usr --localstatedir=/var --disable-lynx; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+end

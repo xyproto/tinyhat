@@ -1,0 +1,31 @@
+set pkgname libwacom
+set pkgver 2.20.0
+set pkgrel 1
+set pkgdesc 'Library to identify Wacom tablets and their features'
+set arch i686 x32
+set url https://github.com/linuxwacom/libwacom/wiki
+set license MIT
+set depends glib2 libevdev libgudev glibc libgcc
+set makedepends libxml2 meson python-pytest python-libevdev python-pyudev
+set optdepends 'python-libevdev: for libwacom-show-stylus' \
+    'python-pyudev: for libwacom-show-stylus'
+set source "https://github.com/linuxwacom/libwacom/releases/download/$pkgname-$pkgver/$pkgname-$pkgver.tar.xz"{,.sig}
+# https://github.com/linuxwacom/libwacom/releases
+set sha256sums 370b45b5e05a91960df0aeb9c9481ae05846aab92ab2d4ec66945a0da4216888 SKIP
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build; or return
+    # Print config
+    meson configure build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -D -m644 $pkgname-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

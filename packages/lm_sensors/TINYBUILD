@@ -1,0 +1,47 @@
+set pkgname lm_sensors
+set pkgver 3.6.2
+set pkgrel 1
+set epoch 1
+set pkgdesc 'Collection of user space tools for general SMBus access and hardware monitoring'
+set arch i686 x32
+set url https://hwmon.wiki.kernel.org/lm_sensors
+set license 'GPL-2.0-only OR LGPL-2.1-only'
+set depends bash glibc
+set makedepends perl
+set optdepends 'perl: for sensor detection and configuration convert'
+set provides libsensors.so
+set backup etc/sensors3.conf etc/healthd.conf etc/conf.d/sensord
+set source "lm_sensors-$pkgver.tar.gz::https://github.com/hramrach/lm-sensors/archive/refs/tags/V3-6-2.tar.gz" \
+    healthd \
+    healthd.conf \
+    healthd.service \
+    sensord.conf
+set sha256sums c6a0587e565778a40d88891928bf8943f27d353f382d5b745a997d635978a8f0 \
+    0ac9afb2a9155dd74ab393756ed552cd542dde1081149beb2ab4ec7ff55b8f4a \
+    5d17a366b175cf9cb4bb0115c030d4b8d91231546f713784a74935b6e533da9f \
+    2638cd363e60f8d36bcac468f414a6ba29a1b5599f40fc651ca953858c8429d7 \
+    23bebef4c250f8c0aaba2c75fd3d2c8ee9473cc91a342161a9f5b3a34ddfa9e5
+set flags arch
+set -g _oifs '$\' \\t\\n\''
+set -g _pkgver 3-6-2
+
+function prepare
+    cd "$srcdir"/lm-sensors*; or return
+    sed -i 's|/etc/sysconfig|/etc/conf.d|' prog/{detect/sensors-detect,init/{sensord,lm_sensors}.service}; or return
+    sed -i 's/EnvironmentFile=/EnvironmentFile=-/' prog/init/lm_sensors.service; or return
+end
+
+function build
+    cd "$srcdir"/lm-sensors*; or return
+    make PREFIX=/usr; or return
+end
+
+function package
+    cd "$srcdir"/lm-sensors*; or return
+    make BUILD_STATIC_LIB=0 PREFIX=/usr SBINDIR=/usr/bin MANDIR=/usr/share/man DESTDIR="$pkgdir" install; or return
+    install -D -m755 "$srcdir/healthd" "$pkgdir/usr/bin/healthd"; or return
+    install -D -m644 "$srcdir/healthd.conf" "$pkgdir/etc/healthd.conf"; or return
+    install -D -m644 "$srcdir/sensord.conf" "$pkgdir/etc/conf.d/sensord"; or return
+    install -D -m644 "$srcdir/healthd.service" "$pkgdir/usr/lib/systemd/system/healthd.service"; or return
+    install -D -m644 prog/init/*.service "$pkgdir/usr/lib/systemd/system/"; or return
+end

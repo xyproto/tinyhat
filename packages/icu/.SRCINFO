@@ -23,9 +23,8 @@ pkgbase = icu
 	source = https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz
 	source = https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz.asc
 	source = ICU-22132.patch
-	validpgpkeys = E52F07877A5805F9AF4AB0ACD46C5610D06E7001
-	sha512sums = 04a49455e1489030c520a4bfd2664fa2171e7938d08f2acdbbcb1fda976639fd8b1f0704f2eec89ba59a7b6d118ceaab6ec5a096e40d9085a0895d91ce225245
-	sha512sums = SKIP
-	sha512sums = 1178062ccfcf7ecc698c64132b3612e73f9c4b0bbfaa668ae2039f3eb4cb2722d0b08a9f45b057da10def7a308d5c8d14c0c644892e7f11092c9cc488c850ab7
+	sha256sums = 3a2e7a47604ba702f345878308e6fefeca612ee895cf4a5f222e7955fabfe0c0
+	sha256sums = a0ae1632af13549a5e8b934eaa4ffc972f32b4a58d0c5d15ba43d8c161551ebc
+	sha256sums = f534b472dd7a6961591466eef542e2c3ad698d3008c9b6af813c66cbc0b4dd8e
 
 pkgname = icu

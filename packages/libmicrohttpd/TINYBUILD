@@ -1,0 +1,47 @@
+set pkgname libmicrohttpd
+set pkgver 1.0.10
+set pkgrel 1
+set pkgdesc 'a small C library that is supposed to make it easy to run an HTTP server as part of another application.'
+set arch i686 x32
+set url https://www.gnu.org/software/libmicrohttpd/
+set license LGPL-2.1-or-later
+set depends glibc gnutls
+set checkdepends curl
+set provides libmicrohttpd.so
+set source "https://ftp.gnu.org/gnu/libmicrohttpd/$pkgname-$pkgver.tar.gz"{,.sig}
+set sha256sums 04bfe8ef75db7d629a33de767599765cecadc56274a39822d5d081030d577685 \
+    SKIP
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+
+    ./configure \
+        --prefix=/usr \
+        --disable-dependency-tracking \
+        --disable-examples \
+        --enable-curl \
+        --enable-https \
+        --enable-largefile \
+        --enable-messages \
+        --with-pic; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+
+    make check; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+
+    make DESTDIR="$pkgdir" install; or return
+end

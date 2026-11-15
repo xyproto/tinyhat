@@ -1,0 +1,44 @@
+set pkgname libclc
+set pkgver 23.1.1
+set pkgrel 2
+set pkgdesc 'Library requirements of the OpenCL C programming language'
+set arch any
+set url https://libclc.llvm.org/
+set license 'Apache-2.0 WITH LLVM-exception'
+set makedepends cmake ninja clang llvm python spirv-llvm-translator
+set source "https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz" \
+    "https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz.sig"
+set sha256sums ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6 \
+    973fe303c2aa5bb0438d9f6762dc03b2a1e4e700a6b5480ec84b1db3fc33cec2
+set flags arch
+set -g _source_base https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.1
+set -g _targets spirv32-unknown-unknown spirv64-unknown-unknown amdgcn-amd-amdhsa
+
+function prepare
+    cd llvm-project-$pkgver.src/libclc; or return
+    set -l target
+    for target in $_targets
+        mkdir "build-$target"; or return
+    end
+end
+
+function build
+    cd llvm-project-$pkgver.src/libclc; or return
+    set -l target
+    for target in $_targets
+        cmake -S . -B "build-$target" -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DLLVM_DEFAULT_TARGET_TRIPLE="$target"; or return
+        cmake --build "build-$target"; or return
+    end
+end
+
+function package
+    cd llvm-project-$pkgver.src/libclc; or return
+    set -l target
+    for target in $_targets
+        DESTDIR="$pkgdir" cmake --install "build-$target"; or return
+    end
+    ln -s spirv32-unknown-unknown/libclc.spv "$pkgdir/usr/share/clc/spirv-mesa3d-.spv"; or return
+    ln -s spirv64-unknown-unknown/libclc.spv "$pkgdir/usr/share/clc/spirv64-mesa3d-.spv"; or return
+    printf '%s\n' "prefix=/usr" "datarootdir=/usr/share" "datadir=/usr/share" "pkgdatadir=\${datadir}/clc" "libexecdir=\${pkgdatadir}" "" "Name: libclc" "Description: Library requirements of the OpenCL C programming language" "Version: $pkgver" | install -Dm644 /dev/stdin "$pkgdir/usr/share/pkgconfig/libclc.pc"; or return
+    install -Dm644 LICENSE.TXT "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

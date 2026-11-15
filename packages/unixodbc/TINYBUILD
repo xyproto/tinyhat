@@ -1,0 +1,37 @@
+set pkgname unixodbc
+set pkgver 2.3.14
+set pkgrel 1
+set pkgdesc 'ODBC is an open specification for providing application developers with a predictable API with which to access Data Sources'
+set arch i686 x32
+set license GPL-2.0-or-later LGPL-2.1-or-later
+set url http://www.unixodbc.org/
+set backup etc/odbc.ini etc/odbcinst.ini
+set depends readline libltdl glibc
+set provides libodbc.so libodbccr.so libodbcinst.so
+# Also at ftp://ftp.unixodbc.org/pub/unixODBC/unixODBC-$pkgver.tar.gz
+set source "https://github.com/lurcher/unixODBC/releases/download/v$pkgver/unixODBC-$pkgver.tar.gz"
+set sha256sums 4e2814de3e01fc30b0b9f75e83bb5aba91ab0384ee951286504bb70205524771
+set flags arch
+
+function prepare
+    cd unixODBC-$pkgver; or return
+    autoreconf -vfi; or return
+end
+
+function build
+    cd unixODBC-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd unixODBC-$pkgver; or return
+    make -k check; or return
+end
+
+function package
+    cd unixODBC-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    touch "$pkgdir"/etc/{odbc,odbcinst}.ini; or return
+end

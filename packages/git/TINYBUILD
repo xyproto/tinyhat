@@ -1,0 +1,74 @@
+set pkgbase git
+set pkgname git git-zsh-completion
+set pkgver 2.56.0
+set pkgrel 1
+set pkgdesc 'the fast distributed version control system'
+set arch i686 x32
+set url https://git-scm.com/
+set license GPL-2.0-only
+set depends curl expat perl perl-error perl-mailtools openssl pcre2 grep shadow zlib-ng
+switch $CARCH
+    case x32
+        set -g makedepends python xmlto asciidoc git
+    case x86_64 aarch64
+        set -g makedepends python xmlto asciidoc git rust
+    case '*'
+        set -g makedepends python xmlto asciidoc git rust libgnome-keyring
+end
+set checkdepends openssh
+set install git.install
+set source "git+https://github.com/git/git?signed#tag=v$pkgver" \
+    git-daemon@.service \
+    git-daemon.socket \
+    git-sysusers.conf
+set sha256sums f9fe8e8e154798639bb00f7d50144e8f5b2ca6a5d891e245c4330000197fd5f8 \
+    14c0b67cfe116b430645c19d8c4759419657e6809dfa28f438c33a005245ad91 \
+    ac4c90d62c44926e6d30d18d97767efc901076d4e0283ed812a349aece72f203 \
+    7630e8245526ad80f703fac9900a1328588c503ce32b37b9f8811674fcda4a45
+set flags arch
+
+function build
+    cd "$pkgbase"; or return
+    _make all man; or return
+    _make -C contrib/credential/libsecret; or return
+    _make -C contrib/subtree all man; or return
+    _make -C contrib/diff-highlight; or return
+end
+
+switch $CARCH
+    case x32
+        function _make
+            set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' perllibdir="$(/usr/bin/perl -MConfig -wle 'print $Config{installvendorlib}')" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL_CPAN_FALLBACKS=1 USE_LIBPCRE2=1 ZLIB_NG=1
+            make $make_options $argv; or return
+        end
+    case '*'
+        function _make
+            set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' perllibdir="$(/usr/bin/perl -MConfig -wle 'print $Config{installvendorlib}')" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL_CPAN_FALLBACKS=1 USE_LIBPCRE2=1 ZLIB_NG=1 WITH_RUST=1
+            make $make_options $argv; or return
+        end
+end
+
+function package_git
+    set optdepends 'git-zsh-completion: upstream zsh completion' 'tk: gitk and git gui' 'openssh: ssh transport and crypto' 'man: show help with `git command --help`' 'perl-libwww: git svn' 'perl-term-readkey: git svn and interactive.singlekey setting' 'perl-io-socket-ssl: git send-email TLS support' 'perl-authen-sasl: git send-email TLS support' 'perl-cgi: gitweb (web interface) support' 'python: git svn & git p4' 'subversion: git svn' 'org.freedesktop.secrets: keyring credential helper' 'libsecret: libsecret credential helper' 'less: the default pager for git'
+    cd "$pkgbase"; or return
+    _make DESTDIR="$pkgdir" install install-man; or return
+    mkdir -p "$pkgdir"/usr/share/bash-completion/completions/; or return
+    install -m 0644 ./contrib/completion/git-completion.bash "$pkgdir"/usr/share/bash-completion/completions/git; or return
+    mkdir -p "$pkgdir"/usr/share/git/; or return
+    install -m 0644 ./contrib/completion/git-prompt.sh "$pkgdir"/usr/share/git/git-prompt.sh; or return
+    install -m 0755 contrib/credential/libsecret/git-credential-libsecret "$pkgdir"/usr/lib/git-core/git-credential-libsecret; or return
+    _make -C contrib/credential/libsecret clean; or return
+    _make -C contrib/subtree DESTDIR="$pkgdir" install install-man; or return
+    find contrib/ -name '.gitignore' -delete; or return
+    cp -a ./contrib/* "$pkgdir"/usr/share/git/; or return
+    install -D -m 0644 "$srcdir"/git-daemon@.service "$pkgdir"/usr/lib/systemd/system/git-daemon@.service; or return
+    install -D -m 0644 "$srcdir"/git-daemon.socket "$pkgdir"/usr/lib/systemd/system/git-daemon.socket; or return
+    install -D -m 0644 "$srcdir"/git-sysusers.conf "$pkgdir"/usr/lib/sysusers.d/git.conf; or return
+end
+
+function package_git-zsh-completion
+    set description 'the fast distributed version control system - upstream zsh completion'
+    set depends 'git' 'zsh'
+    install -d "$pkgdir"/usr/share/zsh/site-functions/; or return
+    ln -s ../../git/completion/git-completion.zsh "$pkgdir"/usr/share/zsh/site-functions/_git; or return
+end

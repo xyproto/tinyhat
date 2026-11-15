@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/lib/tinyhat/cproject dos-intro "256 byte demoscene intro" intro.asm

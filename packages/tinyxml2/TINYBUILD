@@ -1,0 +1,23 @@
+set pkgname tinyxml2
+set pkgver 11.0.0
+set pkgrel 2
+set pkgdesc 'Simple XML parser made for easy integration'
+set arch i686 x32
+set url https://github.com/leethomason/tinyxml2
+set license LicenseRef-zlib
+set depends glibc libgcc libstdc++
+set makedepends git cmake
+set source "tinyxml2::git+https://github.com/leethomason/tinyxml2#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    set -l cmake_options -B build -S "$pkgname" -D CMAKE_INSTALL_PREFIX=/usr -D tinyxml2_SHARED_LIBS=ON
+    cmake $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" "$pkgname/LICENSE.txt"; or return
+end

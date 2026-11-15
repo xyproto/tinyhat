@@ -1,0 +1,23 @@
+set pkgname gnulib-l10n
+set pkgver 20241231
+set pkgrel 1
+set pkgdesc 'The Gnulib localizations'
+set arch any
+set url https://www.gnu.org/software/gnulib/
+set license LGPL-2.0-or-later
+set source "https://ftp.gnu.org/pub/gnu/gnulib/gnulib-l10n-$pkgver.tar.gz" \
+    "https://ftp.gnu.org/pub/gnu/gnulib/gnulib-l10n-$pkgver.tar.gz.sig"
+set sha256sums 155752ba6796aa294cde87c2bf0e771a5891eeeacb131345be0e080a3ec0ceea \
+    3190934296853fd6291f95289a1e14f742f5f18ecfe909501b8bc70a520dbbfb
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

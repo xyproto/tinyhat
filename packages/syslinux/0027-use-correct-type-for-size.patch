@@ -1,0 +1,24 @@
+From 8999f7cdd69e9130707984421c08069cbeb6a967 Mon Sep 17 00:00:00 2001
+From: Christian Hesse <mail@eworm.de>
+Date: Mon, 30 Sep 2024 10:34:31 +0200
+Subject: [PATCH] use correct type for size
+
+The field in `struct data_area` does not have an address, but a size.
+This fixes compiler error with incompatible type.
+---
+ com32/chain/chain.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/com32/chain/chain.h b/com32/chain/chain.h
+index 5e155b39..7e319b4e 100644
+--- a/com32/chain/chain.h
++++ b/com32/chain/chain.h
+@@ -21,7 +21,7 @@
+ struct data_area {
+     void *data;
+     addr_t base;
+-    addr_t size;
++    size_t size;
+ };
+ 
+ #endif

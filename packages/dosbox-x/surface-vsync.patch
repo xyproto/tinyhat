@@ -1,0 +1,26 @@
+diff --git a/src/output/output_surface.cpp b/src/output/output_surface.cpp
+index 72cab1b82..90e12cb0e 100644
+--- a/src/output/output_surface.cpp
++++ b/src/output/output_surface.cpp
+@@ -8,6 +8,7 @@
+ #include "sdlmain.h"
+ #include "render.h"
+ #include "vga.h"
++#include "control.h"
+ 
+ #include <output/output_tools.h>
+ #include <output/output_tools_xbrz.h>
+@@ -203,6 +204,13 @@ Bitu OUTPUT_SURFACE_SetSize()
+     sdl.surface = SDL_GetWindowSurface(sdl.window);
+     if (sdl.surface == NULL)
+         E_Exit("Could not retrieve window surface: %s", SDL_GetError());
++    /* vsyncmode=host: show each frame in step with the display, without tearing */
++    {
++        Section_prop *vsync = static_cast<Section_prop *>(control->GetSection("vsync"));
++        bool host = vsync != NULL && !strcmp(vsync->Get_string("vsyncmode"), "host");
++        if (!SDL_SetWindowSurfaceVSync(sdl.window, host ? 1 : SDL_WINDOW_SURFACE_VSYNC_DISABLED) && host)
++            LOG_MSG("SDL: no vsync for the window surface: %s", SDL_GetError());
++    }
+     switch (SDL_SURFACE_BITSPERPIXEL(sdl.surface)) {
+     case 8:
+         retFlags = GFX_CAN_8;

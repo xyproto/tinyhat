@@ -1,0 +1,37 @@
+set pkgname speexdsp
+set pkgver 1.2.1
+set pkgrel 3
+set pkgdesc 'DSP library derived from Speex'
+set url https://www.speex.org/
+set arch i686 x32
+set license BSD-3-Clause
+set depends glibc
+set makedepends git
+set provides libspeexdsp.so
+set source "git+https://gitlab.xiph.org/xiph/speexdsp.git#tag=SpeexDSP-$pkgver"
+set b2sums f44bb6a7df8606aecfe2333e3191486d77b1ea9c1ef2c0d4763133d8f0c05252429f11562df8b3a5f6e9610f150a9b0d677b92764e45d244458a6bed733b66e8
+set flags arch
+
+function prepare
+    cd speexdsp; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd speexdsp; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+        --disable-static; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd speexdsp; or return
+    make -k check; or return
+end
+
+function package
+    cd speexdsp; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 COPYING; or return
+end

@@ -1,0 +1,22 @@
+set pkgname iw
+set pkgver 6.17
+set pkgrel 1
+set pkgdesc 'nl80211 based CLI configuration utility for wireless devices'
+set arch i686 x32
+set url https://wireless.wiki.kernel.org/en/users/documentation/iw
+set license GPL
+set depends libnl
+set makedepends git linux-api-headers
+set source "git+https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git#tag=v$pkgver?signed"
+set sha256sums 25cde7e1517f2b7bae36920dc8987c95ca61c5a953d0f004fe6ece17f59980c9
+set flags arch
+
+function build
+    cd "$srcdir/$pkgname/"; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/$pkgname/"; or return
+    make DESTDIR="$pkgdir" SBINDIR="/usr/bin" install; or return
+end

@@ -1,0 +1,36 @@
+set pkgname libisl
+set pkgver 0.28
+set pkgrel 1
+set pkgdesc 'Library for manipulating sets and relations of integer points bounded by linear constraints'
+set arch i686 x32
+set url https://libisl.sourceforge.io
+set license MIT
+set depends gmp
+set provides isl libisl.so
+set replaces isl
+set options staticlibs
+set flags arch
+set source "https://libisl.sourceforge.io/isl-$pkgver.tar.xz"
+set b2sums 8d14052a11bbba409b163e979652e489000e3ab9a13a70f9c6088757da47079eb79128ae59513727214e2906f82e6416d7f91444f0f80121bfbb5085a9f44647
+
+function build
+    cd "$srcdir/isl-$pkgver"; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function check
+    cd "$srcdir/isl-$pkgver"; or return
+    make check; or true
+end
+
+function package
+    cd "$srcdir/isl-$pkgver"; or return
+
+    make DESTDIR="$pkgdir" install; or return
+
+    install -dm755 "$pkgdir/usr/share/gdb/auto-load/usr/lib/"; or return
+    mv $pkgdir/usr/lib/libisl.so.*-gdb.py "$pkgdir/usr/share/gdb/auto-load/usr/lib/"; or return
+
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

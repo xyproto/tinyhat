@@ -20,8 +20,6 @@ pkgbase = libarchive
 	depends = zstd
 	provides = libarchive.so
 	source = git+https://github.com/libarchive/libarchive.git?signed#tag=v3.8.10
-	validpgpkeys = DB2C7CF1B4C265FAEF56E3FC5848A18B8F14184B
-	validpgpkeys = 659C84C0E23EA1FA97E0B58CC040B508D63D2B36
 	sha256sums = 85b5e4f75184468a4c4f043b2ec772e2d6715e89a6c9d3196f02e39dc1a977bb
 
 pkgname = libarchive

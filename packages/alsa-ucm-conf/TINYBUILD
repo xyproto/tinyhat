@@ -1,0 +1,22 @@
+set pkgname alsa-ucm-conf
+set pkgver 1.2.16.1
+set pkgrel 1
+set pkgdesc 'ALSA Use Case Manager configuration (and topologies)'
+set arch any
+set url https://alsa-project.org/
+set license BSD-3-Clause
+set flags arch
+set source "$url/files/pub/lib/$pkgname-$pkgver.tar.bz2"{,.sig}
+set sha512sums df25a29afc3b87347fa89f3fe60ebda68068acdaf68e081b58455ebee319c21e82af4076ba1f10781ba620a9e8efa6e65db27c5989d63a429d44a715dbd1d460 \
+    SKIP
+set b2sums 753e1775cd99c0f6289507d04760c7a87ead4a0d029a817aa3e6083a30eae123859a91432511f1e5f4daa25ddee960e8f3be130586a2761ee95bf4af40a76a13 \
+    SKIP
+
+function package
+    cd $pkgname-$pkgver; or return
+    install -vdm 755 "$pkgdir/usr/share/alsa/"; or return
+    cp -av ucm2 "$pkgdir/usr/share/alsa/"; or return
+    install -vDm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -vDm 644 README.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
+    install -vDm 644 ucm2/README.md -t "$pkgdir/usr/share/doc/$pkgname/ucm2"; or return
+end

@@ -1,0 +1,25 @@
+set pkgname tinyhat-sounds
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Tiny Hat system sounds: startup and shutdown jingles, typewriter and fart sounds while typing, and beep'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends gtk4 sdl3 fluidsynth mpg123
+set source tinyhat-sounds.c tinyhat-soundd.c fart(seq 7).mp3 fartkeyboard-LICENSE
+set sha256sums SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP SKIP
+
+function build
+    cc -std=c23 $CFLAGS (pkg-config --cflags gtk4 | string split -n ' ') -o tinyhat-sounds tinyhat-sounds.c $LDFLAGS \
+        (pkg-config --libs gtk4 | string split -n ' '); or return
+    cc -std=c23 $CFLAGS (pkg-config --cflags sdl3 fluidsynth libmpg123 | string split -n ' ') -o tinyhat-soundd tinyhat-soundd.c \
+        $LDFLAGS (pkg-config --libs sdl3 fluidsynth libmpg123 | string split -n ' ') -lm; or return
+end
+
+function package
+    install -Dm755 tinyhat-sounds "$pkgdir/usr/bin/tinyhat-sounds"; or return
+    install -Dm755 tinyhat-soundd "$pkgdir/usr/bin/tinyhat-soundd"; or return
+    ln -s tinyhat-soundd "$pkgdir/usr/bin/beep"; or return
+    install -Dm644 -t "$pkgdir/usr/share/tinyhat/sounds" fart(seq 7).mp3; or return
+    install -Dm644 fartkeyboard-LICENSE "$pkgdir/usr/share/licenses/$pkgname/fartkeyboard-CC0"; or return
+end

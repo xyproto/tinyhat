@@ -1,0 +1,42 @@
+set pkgname gtest
+set pkgver 1.18.0
+set pkgrel 1
+set pkgdesc 'Google Test - C++ testing utility'
+set arch i686 x32
+set url https://github.com/google/googletest
+set license BSD-3-Clause
+set depends glibc libgcc libstdc++
+set makedepends cmake python
+set optdepends 'python: gmock generator'
+set conflicts gmock
+set replaces gmock
+set provides gmock libgmock.so libgmock_main.so libgtest.so libgtest_main.so
+set -g _srcname googletest-$pkgver
+set source "$_srcname.tar.gz::$url/archive/v$pkgver.tar.gz"
+set sha512sums ba0f5769ccf34acf1bc72d1f7e9ffb8202176d02b64f6f3d9047accfc0cf9026ff5a653d24935e2705fff8709566676452616c93ca0ca6277f1e21d79b58a10a
+set flags arch
+
+function build
+    cmake -H$_srcname -Bbuild \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=None \
+        -Wno-dev \
+        -DBUILD_SHARED_LIBS=ON \
+        -Dgtest_build_tests=ON \
+        -DGOOGLETEST_VERSION=$pkgver; or return
+    cmake --build build; or return
+end
+
+function check
+    # Rounding error in Print, see https://github.com/google/googletest/issues/4210
+    # Also some issues with threads in chroots (in tests)
+    cmake --build build --target test; or true
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+
+    cd $_srcname; or return
+    install -vDm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -vDm 644 README.md CONTRIBUTORS -t "$pkgdir/usr/share/doc/$pkgname"; or return
+end

@@ -1,0 +1,36 @@
+set pkgname openexr
+set pkgver 3.5.2
+set pkgrel 1
+set pkgdesc 'A high dynamic-range image file format library'
+set url https://www.openexr.com/
+set arch i686 x32
+set license BSD-3-Clause
+set depends glibc imath libdeflate libgcc libstdc++ openjph zstd
+set makedepends cmake git pybind11
+set optdepends 'python: for python bindings'
+set source "git+https://github.com/openexr/openexr#tag=v$pkgver"
+set sha256sums 9b74b006e2751d179593923ed1aad2601fee296562ec4c3f6e029261b6ead548
+set flags arch
+
+function prepare
+    # unpin scikit-build-core version
+    sed 's|scikit-build-core[^"]*|scikit-build-core|' -i openexr/pyproject.toml; or return
+    # Fix python module install dir
+    git -C $pkgname cherry-pick -n 30345db72944b38926f13b5114b9a01b4b553890; or return
+end
+
+function build
+    cmake -B build -S $pkgname \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_BUILD_TYPE=None \
+        -DOPENEXR_BUILD_PYTHON=ON; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm644 $pkgname/LICENSE.md -t "$pkgdir"/usr/share/licenses/$pkgname; or return
+
+    python -m compileall "$pkgdir"/usr/lib/python*; or return
+    python -Om compileall "$pkgdir"/usr/lib/python*; or return
+end

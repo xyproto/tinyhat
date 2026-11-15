@@ -1,0 +1,35 @@
+#!/bin/sh
+# Change the volume with one wpctl call and read it back with one more. Every wpctl run makes PipeWire
+# send its whole registry, so this runs at the lowest CPU and I/O priority, one key press at a time,
+# to keep the audio that is playing (DOSBox-X, for instance) from stuttering on a slow PC.
+renice -n 19 -p $$ >/dev/null 2>&1
+ionice -c 3 -p $$ >/dev/null 2>&1
+run=${XDG_RUNTIME_DIR:-/tmp}
+state=${XDG_STATE_HOME:-$HOME/.local/state}/tinyhat
+exec 9>"$run/tinyhat-volume.lock"
+flock 9
+set_volume() {
+	case $1 in
+	up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
+	down) wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%- ;;
+	mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
+	esac
+}
+# Right after login, PipeWire may still be starting
+i=0
+until set_volume "$1" 2>/dev/null || [ "$i" -ge 50 ]; do
+	sleep 0.1
+	i=$((i + 1))
+done
+item=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '/^Volume:/ { printf "%s %d%%", ($3 == "[MUTED]") ? "M" : "V", int($2 * 100 + 0.5) }')
+if [ -n "$item" ]; then
+	# The status bar shows the volume from this file, without running wpctl again
+	mkdir -p "$state"
+	printf '%s\n' "$item" >"$state/volume.tmp" && mv -f "$state/volume.tmp" "$state/volume"
+	tinyhat-status --volume
+fi
+case $item in
+M*) vol=muted ;;
+V*) vol=${item#V } ;;
+esac
+exec tinyhat-notice "Volume ${vol:-unavailable}" 2

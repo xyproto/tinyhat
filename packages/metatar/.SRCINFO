@@ -1,0 +1,16 @@
+pkgbase = metatar
+	pkgdesc = Save, edit and apply the metadata of tar archives, such as file owners and permissions
+	pkgver = 1.9.5
+	pkgrel = 1
+	url = https://github.com/xyproto/metatar
+	arch = i686
+	arch = x32
+	arch = x86_64
+	arch = aarch64
+	license = BSD-3-Clause
+	makedepends = go-tinyhat
+	options = !buildflags
+	source = metatar-1.9.5.tar.gz::https://github.com/xyproto/metatar/archive/refs/tags/v1.9.5.tar.gz
+	sha256sums = d6c0829ed46211f75e1488177b8cdbe46bdae97ee64ed029182e29a7ead92e05
+
+pkgname = metatar

@@ -1,0 +1,80 @@
+set pkgbase p11-kit
+set pkgname p11-kit libp11-kit p11-kit-docs
+set pkgver 0.26.5
+set pkgrel 1
+set pkgdesc 'Loads and enumerates PKCS#11 modules'
+set url https://p11-glue.freedesktop.org
+set arch i686 x32
+set license BSD-3-Clause
+set depends coreutils glibc libtasn1
+set makedepends bash-completion git gtk-doc libffi meson systemd
+set checkdepends gnutls
+set source "git+https://github.com/p11-glue/p11-kit?signed#tag=$pkgver" \
+    git+https://github.com/p11-glue/pkcs11-json
+set b2sums 2b2a785307cac88ab347e8a75aecfdafd933d9dbca6977368eca4c74e0a14bdcbdffd138e9dd86d390f6c1bcf044f1c9763f197ca79bd0877f26d0e00f0712c7 \
+    SKIP
+set flags arch
+
+function prepare
+    cd p11-kit; or return
+
+    git submodule init; or return
+    git submodule set-url subprojects/pkcs11-json "$srcdir/pkcs11-json"; or return
+    git -c protocol.file.allow=always -c protocol.allow=never submodule update; or return
+end
+
+function build
+    # no documentation
+    set -l meson_options \
+        -D gtk_doc=false \
+        -D man=false \
+        -D trust_paths=/etc/ca-certificates/trust-source:/usr/share/ca-certificates/trust-source
+
+    arch-meson p11-kit build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+# Moves files from $pkgdir to $srcdir/$argv[1], for another split package
+function _pick
+    set -l p $argv[1]
+    for f in $argv[2..-1]
+        set -l d "$srcdir/$p/"(string replace -- "$pkgdir/" '' $f)
+        mkdir -p (path dirname $d); or return
+        mv $f $d; or return
+        rmdir -p --ignore-fail-on-non-empty (path dirname $f); or return
+    end
+end
+
+function package_p11-kit
+    set -a depends "libp11-kit=$pkgver-$pkgrel" libp11-kit.so
+    set install p11-kit.install
+
+    meson install -C build --destdir "$pkgdir"; or return
+    ln -srf "$pkgdir/usr/bin/update-ca-trust" "$pkgdir/usr/lib/p11-kit/trust-extract-compat"; or return
+
+    _pick lib "$pkgdir"/usr/include; or return
+    _pick lib "$pkgdir"/usr/lib/{p11-kit-proxy.so,libp11-kit.*}; or return
+    _pick lib "$pkgdir"/usr/lib/{pkcs11,pkgconfig}; or return
+    _pick lib "$pkgdir"/usr/share/p11-kit; or return
+
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 p11-kit/COPYING; or return
+end
+
+function package_libp11-kit
+    set pkgdesc "$pkgdesc (library)"
+    set depends glibc libffi libtasn1
+    set provides libp11-kit.so
+
+    mv lib/* "$pkgdir"; or return
+
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 p11-kit/COPYING; or return
+end
+
+function package_p11-kit-docs
+    # no documentation
+    echo "no documentation"
+end

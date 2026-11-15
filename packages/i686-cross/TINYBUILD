@@ -1,0 +1,108 @@
+set pkgname i686-cross
+set pkgver 16.2.0
+set pkgrel 1
+set pkgdesc 'Cross toolchain from x86_64 to i686 (binutils, gcc and a bootstrap glibc), to build Tiny Hat for i686 without prebuilt i686 packages'
+set arch x86_64
+set url https://gcc.gnu.org/
+set license 'GPL-3.0-or-later WITH GCC-exception-3.1' GPL-3.0-or-later LGPL-2.1-or-later
+set depends gmp mpfr libmpc libisl zlib zstd
+set makedepends python bison
+# !elfcheck: the target libraries and the sysroot are i686, in an x86_64 package
+set options '!buildflags' '!strip' '!elfcheck' staticlibs
+set -g _binutils 2.47
+set -g _glibc 2.44
+set -g _linux 7.3.1
+set source https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz \
+    https://ftp.gnu.org/gnu/binutils/binutils-$_binutils.tar.bz2 \
+    https://ftp.gnu.org/gnu/glibc/glibc-$_glibc.tar.xz \
+    https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$_linux.tar.xz
+set sha256sums e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e \
+    3068128c75cda9f898ccb4211d360246e8e195ffcc9dfb655b23ae23a54800e8 \
+    37f600f2bef3c5e8300147059568b2a2e40a7ad6ccc65ce942556d49429cc667 \
+    fa595aad93734f829c963c2a90ef7c3673224fd7fdae7b49406e397cde2de231
+
+# The target, and where the toolchain looks for i686 headers and libraries
+set -g _t i686-tinyhat-linux-gnu
+set -g _sysroot /usr/$_t/sysroot
+
+# Everything is installed into $srcdir/stage first, so that each step can use the previous ones,
+# and the finished toolchain is copied to $pkgdir at the end
+function _stage_env
+    set -gx STAGE "$srcdir"/stage
+    set -gx PATH "$STAGE"/usr/bin $PATH
+end
+
+function build
+    _stage_env
+    set -l jobs -j(nproc)
+    set -l common --target=$_t --prefix=/usr --libexecdir=/usr/lib --with-sysroot=$_sysroot \
+        --with-build-sysroot="$STAGE$_sysroot" --disable-nls --disable-werror
+
+    # binutils
+    mkdir -p build-binutils; and cd build-binutils; or return
+    ../binutils-$_binutils/configure $common --disable-gdb --disable-gdbserver --disable-sim --disable-gprofng \
+        --enable-deterministic-archives --enable-plugins; or return
+    make $jobs; or return
+    make DESTDIR="$STAGE" install; or return
+    cd "$srcdir"; or return
+
+    # Linux headers for glibc
+    make -C linux-$_linux ARCH=x86 INSTALL_HDR_PATH="$STAGE$_sysroot/usr" headers_install; or return
+
+    # gcc, stage 1: a C compiler and libgcc, enough to build glibc
+    mkdir -p build-gcc1; and cd build-gcc1; or return
+    ../gcc-$pkgver/configure $common --with-arch=i686 --with-tune=generic --with-glibc-version=$_glibc \
+        --with-system-zlib --enable-languages=c --disable-bootstrap --disable-multilib --disable-shared \
+        --disable-threads --without-headers --with-newlib --disable-libsanitizer --disable-libvtv \
+        --disable-libgomp --disable-libquadmath --disable-libssp --disable-libatomic --disable-libstdc++-v3; or return
+    make $jobs all-gcc all-target-libgcc; or return
+    make DESTDIR="$STAGE" install-gcc install-target-libgcc; or return
+    cd "$srcdir"; or return
+
+    # glibc for i686, the bootstrap sysroot that the i686 packages are first built against. CXX names the C++
+    # compiler that is only built after glibc, so that glibc uses its C fallbacks instead of the host's c++
+    mkdir -p build-glibc; and cd build-glibc; or return
+    echo 'slibdir=/usr/lib' >configparms
+    echo 'rtlddir=/usr/lib' >>configparms
+    echo 'sbindir=/usr/bin' >>configparms
+    echo 'rootsbindir=/usr/bin' >>configparms
+    env CC="$_t-gcc" CXX="$_t-g++" AR=$_t-ar RANLIB=$_t-ranlib CFLAGS='-march=i686 -mtune=generic -O2 -pipe' \
+        ../glibc-$_glibc/configure --host=$_t --build=x86_64-pc-linux-gnu --prefix=/usr --libdir=/usr/lib \
+        --libexecdir=/usr/lib --with-headers="$STAGE$_sysroot/usr/include" --enable-kernel=4.4 \
+        --enable-bind-now --enable-stack-protector=strong --disable-nscd --disable-profile --disable-werror; or return
+    make $jobs; or return
+    make DESTDIR="$STAGE$_sysroot" install; or return
+    cd "$srcdir"; or return
+
+    # gcc, final: C and C++ with shared libgcc and libstdc++
+    mkdir -p build-gcc; and cd build-gcc; or return
+    ../gcc-$pkgver/configure $common --with-arch=i686 --with-tune=generic --with-system-zlib \
+        --enable-languages=c,c++ --disable-bootstrap --disable-multilib --enable-shared --enable-threads=posix \
+        --enable-__cxa_atexit --enable-clocale=gnu --enable-default-pie --enable-default-ssp \
+        --enable-linker-build-id --enable-gnu-unique-object --enable-plugin --with-linker-hash-style=gnu \
+        --disable-libsanitizer --disable-libvtv --disable-libssp --disable-libstdcxx-pch --disable-fixincludes; or return
+    make $jobs; or return
+end
+
+function package
+    _stage_env
+    cd build-binutils; or return
+    make DESTDIR="$pkgdir" install; or return
+    cd "$srcdir"/build-gcc; or return
+    make DESTDIR="$pkgdir" install; or return
+    # The bootstrap sysroot: Linux headers and glibc, to which the i686 packages are added as they are built
+    mkdir -p "$pkgdir$_sysroot"; or return
+    cp -a "$STAGE$_sysroot"/. "$pkgdir$_sysroot"/; or return
+    # libgcc_s and libstdc++ for i686 go into the sysroot too, where programs built for i686 find them
+    for f in "$pkgdir"/usr/$_t/lib/lib{gcc_s,stdc++,atomic}*.so*
+        cp -a $f "$pkgdir$_sysroot"/usr/lib/; or return
+    end
+    rm -rf "$pkgdir"/usr/share/{info,man,locale,doc} "$pkgdir"/usr/lib/bfd-plugins
+    # Plain names (gcc, cc, ld, ...) for builds that put /usr/$_t/bin first in PATH
+    install -d "$pkgdir"/usr/$_t/bin; or return
+    for tool in gcc g++ cpp gcc-ar gcc-nm gcc-ranlib
+        ln -sf ../../bin/$_t-$tool "$pkgdir"/usr/$_t/bin/$tool; or return
+    end
+    ln -sf ../../bin/$_t-gcc "$pkgdir"/usr/$_t/bin/cc; or return
+    ln -sf ../../bin/$_t-g++ "$pkgdir"/usr/$_t/bin/c++; or return
+end

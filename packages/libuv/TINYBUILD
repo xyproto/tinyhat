@@ -1,0 +1,33 @@
+set pkgname libuv
+set pkgver 1.53.0
+set pkgrel 1
+set pkgdesc 'Multi-platform support library with a focus on asynchronous I/O'
+set arch i686 x32
+set url https://github.com/libuv/libuv
+set license MIT BSD-2-Clause ISC CC-BY-4.0
+set depends glibc libnsl
+set makedepends git
+set source "git+https://github.com/libuv/libuv.git?signed#tag=v$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    sed -e '/udp_multicast_join/d' -e '/tcp_connect6_link_local/d' -i test/test-list.h; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./autogen.sh; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 LICENSE LICENSE-extra LICENSE-docs -t "$pkgdir"/usr/share/licenses/$pkgname/; or return
+    install -Dm644 AUTHORS "$pkgdir"/usr/share/doc/$pkgname/AUTHORS; or return
+    install -Dm644 README.md "$pkgdir"/usr/share/doc/$pkgname/README.md; or return
+    install -Dm644 ChangeLog "$pkgdir"/usr/share/doc/$pkgname/ChangeLog; or return
+end

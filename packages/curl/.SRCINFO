@@ -22,7 +22,6 @@ pkgbase = curl
 	makedepends = zlib
 	makedepends = zstd
 	source = git+https://github.com/curl/curl.git?signed#tag=curl-8_23_0
-	validpgpkeys = 27EDEAF22F3ABCEB50DB9A125CC908FDB71E12C2
 	sha512sums = 4be9e14dc61c465d1f4e56bed597350ffa66cc49f6b60c29ff196897e8b72cdfb7fc0ad503f3e7f8902b13f085a8138a5e06ca402e50014bda372909eb04798d
 
 pkgname = curl

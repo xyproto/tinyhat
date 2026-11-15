@@ -1,0 +1,39 @@
+set pkgname gdk-pixbuf2
+set pkgver 2.44.8
+set pkgrel 2
+set pkgdesc 'An image loading library'
+set arch i686 x32
+set url https://gitlab.gnome.org/GNOME/gdk-pixbuf
+set license LGPL-2.0-or-later
+set depends giflib glib2 glibc libjpeg-turbo libpng libtiff shared-mime-info
+set makedepends git glib2-devel gobject-introspection meson python-docutils glib2-introspection
+set source "git+https://gitlab.gnome.org/GNOME/gdk-pixbuf.git#tag=$pkgver" \
+    gdk-pixbuf-query-loaders.hook \
+    gdk-pixbuf-remove-loaders-cache.hook
+set sha256sums SKIP \
+    4a01d5b67c202f4356a9ef053ec00c546cf126ff7780ea301af29489e98e286d \
+    52bf044e06698530e0241a7b1c6689332ece27d230509bf1332f33db5402fbed
+set flags arch
+
+function prepare
+    cd gdk-pixbuf; or return
+end
+
+function build
+    set -l meson_options -D android=disabled -D builtin_loaders=all -D documentation=false -D gif=enabled -D glycin=disabled -D gtk_doc=false -D installed_tests=false -D introspection=enabled -D jpeg=enabled -D legacy_xpm=enabled -D man=true -D others=enabled -D png=enabled -D thumbnailer=disabled -D tiff=enabled
+    arch-meson gdk-pixbuf build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package_gdk-pixbuf2
+    set optdepends "libheif: Load .avif, .heic and .heif" "libopenraw: Load .arw, .cr2, .crw, .dng, .erf, .mrw, .nef, .orf, .pef and .raf" "libwmf: Load .apm and .wmf"
+    set provides libgdk_pixbuf-2.0.so
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 *.hook; or return
+end
+
+function package_gdk-pixbuf2-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+end

@@ -1,0 +1,29 @@
+set pkgname iputils
+# Commit date + git rev-parse --short origin/master
+set -g _rev 6e1cb14
+set pkgver 20250605
+set pkgrel 1
+set pkgdesc 'Network monitoring tools, including ping'
+set arch i686 x32
+set license BSD-3-Clause GPL-2.0-or-later
+set url https://github.com/iputils/iputils
+set depends libcap libidn2
+set makedepends docbook-xsl git iproute meson perl-sgmls systemd
+set conflicts arping netkit-base
+set replaces netkit-base
+set source "git+https://github.com/iputils/iputils.git#tag=$pkgver?signed"
+set b2sums f77ff1c2a8f57095d70bc5d5b027757875d86992dd625ef7a14f79aa87b7953137b34bfbe42f34cdf802b615f56897151215d327d32124577eb120f6ed3978e5
+set flags arch
+
+function build
+    mkdir -p build; or return
+    cd build; or return
+    arch-meson ../$pkgname; or return
+    ninja; or return
+end
+
+function package
+    cd build; or return
+    DESTDIR="$pkgdir" ninja install; or return
+    install -vDm 644 "../$pkgname/Documentation/LICENSE.BSD3" -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

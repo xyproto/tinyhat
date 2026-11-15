@@ -1,0 +1,26 @@
+set pkgname x32-binutils
+set pkgver 2.47
+set pkgrel 1
+set pkgdesc 'Binutils for the x86_64-pc-linux-gnux32 toolchain'
+set arch i686
+set url https://www.gnu.org/software/binutils/
+set license GPL-3.0-or-later
+set depends zlib zstd
+set options '!buildflags' '!strip'
+set source "https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.xz"
+set sha256sums 154ab23b60070e8f27013c22977f1129425d67d1e8acd6e13010e617811e4cff
+
+function build
+    mkdir -p build; or return
+    cd build; or return
+    ../binutils-$pkgver/configure --target=x86_64-pc-linux-gnux32 --prefix=/usr --with-sysroot=/ \
+        --disable-nls --disable-werror --disable-multilib --disable-sim --disable-gdb --disable-gprofng \
+        --disable-shared --enable-plugins --enable-deterministic-archives --with-system-zlib; or return
+    make; or return
+end
+
+function package
+    cd build; or return
+    make DESTDIR="$pkgdir" install; or return
+    rm -rf "$pkgdir"/usr/{share,include,lib}; or return
+end

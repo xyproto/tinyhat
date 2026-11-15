@@ -1,0 +1,36 @@
+set pkgname wayland-protocols
+set pkgver 1.50
+set pkgrel 1
+set pkgdesc 'Specifications of extended Wayland protocols'
+set arch any
+set url https://wayland.freedesktop.org/
+set license MIT
+set makedepends wayland meson
+set source "https://gitlab.freedesktop.org/wayland/$pkgname/-/releases/$pkgver/downloads/$pkgname-$pkgver.tar.xz"{,.sig}
+set sha256sums 4460c20cfcf68b994a5ee206ed15fc19ad312f16c96075186e83b0e3f4aa48a5 SKIP
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    # apply patch from the source array (should be a pacman feature)
+    for src in $source
+        set src (string replace -r '::.*' '' -- $src | string replace -r '.*/' '')
+        string match -q '*.patch' -- $src; or continue
+        echo "Applying patch $src..."
+        patch -Np1 <"../$src"; or return
+    end
+end
+
+function build
+    arch-meson $pkgname-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m 644 "$pkgname-$pkgver/COPYING"; or return
+end

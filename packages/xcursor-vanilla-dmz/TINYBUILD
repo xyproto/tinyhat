@@ -1,0 +1,36 @@
+set pkgbase xcursor-vanilla-dmz
+set pkgname xcursor-vanilla-dmz xcursor-vanilla-dmz-aa
+set pkgver 0.4.5.3
+set pkgrel 1
+set arch any
+set url http://jimmac.musichall.cz/
+set license CCPL:by-nc-sa
+set makedepends xorg-xcursorgen
+set source "https://ftp.debian.org/debian/pool/main/d/dmz-cursor-theme/dmz-cursor-theme_$pkgver.tar.xz"
+set sha256sums bdf2f68e0da6697dd092e0c0c92129e5cedeffc49fc97804cbf0f29f3dbaa560
+set flags arch
+
+function build
+    cd dmz-cursor-theme-$pkgver; or return
+    for theme in DMZ-White DMZ-Black
+        pushd $theme/pngs; or return
+        ./make.sh; or return
+        popd
+    end
+end
+
+function package_xcursor-vanilla-dmz
+    set pkgdesc 'Vanilla DMZ cursor theme'
+    cd dmz-cursor-theme-$pkgver; or return
+    install -d "$pkgdir"/usr/share/icons/Vanilla-DMZ/cursors; or return
+    cp -a DMZ-White/xcursors/* "$pkgdir"/usr/share/icons/Vanilla-DMZ/cursors; or return
+    install -Dm644 DMZ-White/index.theme "$pkgdir"/usr/share/icons/Vanilla-DMZ/index.theme; or return
+end
+
+function package_xcursor-vanilla-dmz-aa
+    set pkgdesc 'Vanilla DMZ AA cursor theme'
+    cd dmz-cursor-theme-$pkgver; or return
+    install -d "$pkgdir"/usr/share/icons/Vanilla-DMZ-AA/cursors; or return
+    cp -a DMZ-Black/xcursors/* "$pkgdir"/usr/share/icons/Vanilla-DMZ-AA/cursors; or return
+    install -Dm644 DMZ-Black/index.theme "$pkgdir"/usr/share/icons/Vanilla-DMZ-AA/index.theme; or return
+end

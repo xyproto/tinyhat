@@ -1,0 +1,44 @@
+set pkgname tpm2-tss
+set pkgver 4.2.0
+set pkgrel 2
+set pkgdesc 'Implementation of the TCG Trusted Platform Module 2.0 Software Stack (TSS2)'
+set arch i686 x32
+set url https://github.com/tpm2-software/tpm2-tss
+set license BSD-2-Clause
+set depends curl glibc json-c openssl util-linux-libs
+set makedepends git autoconf-archive cmocka doxygen libtpms systemd
+set checkdepends iproute2 swtpm uthash
+set provides libtss2-esys.so libtss2-fapi.so libtss2-mu.so libtss2-rc.so libtss2-sys.so libtss2-tcti-null.so libtss2-tctildr.so
+set backup etc/tpm2-tss/fapi-config.json etc/tpm2-tss/fapi-profiles/P_ECCP256SHA256-high-range.json etc/tpm2-tss/fapi-profiles/P_ECCP256SHA256-legacy.json etc/tpm2-tss/fapi-profiles/P_ECCP256SHA256-low-range.json etc/tpm2-tss/fapi-profiles/P_ECCP256SHA256.json etc/tpm2-tss/fapi-profiles/P_ECCP384SHA384.json etc/tpm2-tss/fapi-profiles/P_RSA2048SHA256-high-range.json etc/tpm2-tss/fapi-profiles/P_RSA2048SHA256-legacy.json etc/tpm2-tss/fapi-profiles/P_RSA2048SHA256-low-range.json etc/tpm2-tss/fapi-profiles/P_RSA2048SHA256.json etc/tpm2-tss/fapi-profiles/P_RSA3072SHA384.json
+set options '!emptydirs' '!lto'
+set source "git+https://github.com/tpm2-software/tpm2-tss?signed#tag=$pkgver" \
+    0001-dist-Fully-lock-the-tss-system-user.patch \
+    tpm2-tss.tmpfiles
+set sha256sums SKIP \
+    41574d5db8e670d79c4e7efe0598d13c2661a057bef76f0c18d6af682eab2a8a \
+    4899ab4237af3ad8f0ba662058075e1257088ba4aa79c9babfe2ccd94806de0e
+set flags arch
+
+function prepare
+    patch -Np1 -d $pkgname -i ../0001-dist-Fully-lock-the-tss-system-user.patch; or return
+    cd "$pkgname"; or return
+    sed '/VERSION/d' -i bootstrap; or return
+    printf '%s\n' "$pkgver" > VERSION; or return
+    ./bootstrap; or return
+end
+
+function build
+    set -l configure_options --disable-defaultflags --disable-tcti-i2c-ftdi --disable-tcti-libtpms --disable-tcti-spi-ftdi --disable-tcti-spi-ltt2go --disable-weakcrypto --localstatedir=/var --prefix=/usr --sysconfdir=/etc --with-runstatedir=/run --with-sysusersdir=/usr/lib/sysusers.d --with-tmpfilesdir=/usr/lib/tmpfiles.d --with-udevrulesprefix=60-
+    cd "$pkgname"; or return
+    ./configure $configure_options; or return
+    make; or return
+end
+
+function package
+    set -a depends libjson-c.so
+    make DESTDIR="$pkgdir" install -C $pkgname; or return
+    install -vDm 644 "$pkgdir/etc/tpm2-tss/fapi-config.json" -t "$pkgdir/usr/share/factory/etc/$pkgname/"; or return
+    install -vDm 644 "$pkgdir/etc/tpm2-tss/fapi-profiles/"*.json -t "$pkgdir/usr/share/factory/etc/$pkgname/fapi-profiles/"; or return
+    install -vDm 644 $pkgname.tmpfiles "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"; or return
+    install -vDm644 $pkgname/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

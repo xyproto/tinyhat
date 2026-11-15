@@ -1,0 +1,35 @@
+set pkgname dconf
+set pkgver 51.0
+set pkgrel 1
+set pkgdesc 'Configuration database system'
+set arch i686 x32
+set url https://gitlab.gnome.org/GNOME/dconf
+set license LGPL-2.1-or-later
+set depends bash glib2 glibc libgcc
+set makedepends bash-completion dbus git glib2-devel gtk-doc meson python systemd
+set provides libdconf.so
+set install dconf.install
+set source "git+https://gitlab.gnome.org/GNOME/dconf.git#tag=$pkgver" \
+    dconf-update.hook \
+    dconf-update.script
+set sha256sums SKIP \
+    8d02176ff001a13d15a7ac087edd2502725494668933fa2c6e6f9cb21ae24e6b \
+    330142605370f82f4229e8a94b245f911407eb629b50f1497f415c70164a90ec
+set flags arch
+
+function prepare
+    cd dconf; or return
+end
+
+function build
+    set -l meson_options -D gtk_doc=true
+    arch-meson -D vapi=false dconf build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+    install -Dm644 dconf-update.hook -t "$pkgdir/usr/share/libalpm/hooks"; or return
+    install -D dconf-update.script "$pkgdir/usr/share/libalpm/scripts/dconf-update"; or return
+    install -Dm644 /dev/null "$pkgdir/etc/dconf/db/.placeholder"; or return
+end

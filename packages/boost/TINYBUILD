@@ -1,0 +1,61 @@
+set pkgbase boost
+set pkgname boost boost-libs
+set pkgver 1.92.0
+set pkgrel 1
+set pkgdesc 'Free peer-reviewed portable C++ source libraries'
+set arch i686 x32
+set url https://www.boost.org/
+set license BSL-1.0
+set makedepends icu python python-numpy bzip2 zlib zstd
+set source "https://archives.boost.io/release/$pkgver/source/boost_1_92_0.tar.bz2" \
+    boost_1_92_0_python_mpi_gcc_16.patch
+set sha256sums 5c1d40cb8e19adbf740a4ec2da35b3e58f3f5804b1dce44deb53df72193cbc6c \
+    cbea9ce8f511b765bbf139499dce20059f7577b33dcc452014be89299910e69f
+set flags arch
+set -g _srcname boost_1_92_0
+
+function prepare
+    patch -Np1 -d $_srcname/libs/mpi -i "$srcdir/boost_1_92_0_python_mpi_gcc_16.patch"; or return
+end
+
+function build
+    set -l JOBS "$(printf '%s\n' $MAKEFLAGS | sed 's/.*\(-j *[0-9]\+\).*/\1/')"
+    set -l python_version $(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+    pushd $_srcname/tools/build; or return
+    ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK"; or return
+    ./b2 install --prefix="$srcdir"/fakeinstall; or return
+    ln -s b2 "$srcdir"/fakeinstall/bin/bjam; or return
+    popd; or return
+    cd $_srcname; or return
+    ./bootstrap.sh --with-toolset=gcc --with-icu --with-python=python3; or return
+    install -dm755 "$srcdir"/fakeinstall/share/boostbook; or return
+    cp -a tools/boostbook/{xsl,dtd} "$srcdir"/fakeinstall/share/boostbook/; or return
+    ./b2 install variant=release debug-symbols=on threading=multi runtime-link=shared link=shared,static toolset=gcc cxxstd=23 python=$python_version cflags="$CPPFLAGS $CFLAGS -fPIC -O3 -ffat-lto-objects -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK" cxxflags="$CPPFLAGS $CXXFLAGS -fPIC -O3 -ffat-lto-objects -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK" linkflags="$LDFLAGS" --layout=system $JOBS --prefix="$srcdir"/fakeinstall; or return
+end
+
+function package_boost
+    set -l python_version $(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+    set pkgdesc "$pkgdesc"' (development headers)'
+    set optdepends 'python: for python bindings'
+    install -d "$pkgdir"/usr/lib; or return
+    cp -a fakeinstall/lib/cmake "$pkgdir"/usr/lib; or return
+    cp -a fakeinstall/{bin,include,share} "$pkgdir"/usr/; or return
+end
+
+function package_boost-libs
+    set -l python_version $(python -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+    set pkgdesc "$pkgdesc"' (runtime libraries)'
+    set depends 'bzip2' 'glibc' 'icu' 'libgcc' 'libstdc++' 'xz' 'zlib' 'zstd'
+    set options 'staticlibs'
+    set provides libboost_atomic.so libboost_charconv.so libboost_chrono.so libboost_cobalt.so libboost_container.so libboost_context.so libboost_contract.so libboost_coroutine.so libboost_date_time.so libboost_fiber.so libboost_filesystem.so libboost_graph.so libboost_graph_parallel.so libboost_iostreams.so libboost_json.so libboost_locale.so libboost_log.so libboost_log_setup.so libboost_math_c99.so libboost_math_c99f.so libboost_math_c99l.so libboost_math_tr1.so libboost_math_tr1f.so libboost_math_tr1l.so libboost_nowide.so libboost_numpy$(string replace -- '.' '' "$python_version").so libboost_prg_exec_monitor.so libboost_process.so libboost_program_options.so libboost_python$(string replace -- '.' '' "$python_version").so libboost_random.so libboost_regex.so libboost_serialization.so libboost_stacktrace_addr2line.so libboost_stacktrace_basic.so libboost_stacktrace_from_exception.so libboost_stacktrace_noop.so libboost_thread.so libboost_timer.so libboost_type_erasure.so libboost_unit_test_framework.so libboost_url.so libboost_wave.so libboost_wserialization.so
+    install -dm755 "$pkgdir"/usr/lib; or return
+    cp -a fakeinstall/lib/*.so* "$pkgdir"/usr/lib/; or return
+    cp -a fakeinstall/lib/*.a "$pkgdir"/usr/lib/; or return
+    for _lib in python numpy
+        ln -srL "$pkgdir"/usr/lib/libboost_$_lib{$(string replace -- '.' '' "$python_version"),$(string replace -r -- '(.*)\..*$' '$1' "$python_version")}.so; or return
+    end
+    set -l site_packages $(python -c 'import site; print(site.getsitepackages()[0])')
+    install -d "$pkgdir"$site_packages/boost; or return
+    touch "$pkgdir"$site_packages/boost/__init__.py; or return
+    python -m compileall -o 0 -o 1 -o 2 "$pkgdir"$site_packages/boost; or return
+end

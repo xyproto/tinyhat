@@ -1,0 +1,55 @@
+set pkgname gdbm
+set pkgver 1.26
+# latest, versioned translation from https://translationproject.org/domain/gdbm.html
+set -g _translation_version 1.26
+set pkgrel 2
+set pkgdesc 'GNU database library'
+set arch i686 x32
+set url https://www.gnu.org/software/gdbm/gdbm.html
+set license GPL-3.0-or-later
+set depends glibc sh
+set makedepends git readline
+set provides libgdbm_compat.so libgdbm.so
+set source "git+https://git.gnu.org.ua/gdbm.git?signed#tag=v$pkgver" \
+    "https://ftp.gnu.org/gnu/gdbm/gdbm-$pkgver.tar.gz"{,.sig}
+set sha512sums 7a964fae6f8383196e6b40bccad952723ba8c601c7d50153b4011db5bbb908202a6caf61055a3cceaab8dd71c4232420373a9d864a85fd8708097f4e1ce88c8a \
+    44aafe254f0950a8f5215d8f1337674f07b19f2a375f6eb19a7e39690028c80c3774b705c2b76b470ae74042b21f2ca77d02f6f57aa2ee50296db801220a3352 \
+    SKIP
+set b2sums fe795dd537d5904ab6762c85e6dd750278dd039e1fc189563c1111e2ccbaa3a43f326f8ac01392480a332ad06f420e19b3a7fe991354380e34e34807a2d3c176 \
+    9423ea16ee3e8f1ce57ea32371f49919e2a3819a206a61ce927676a08a71a6a495d3949714bff7be789dfce75bf0ab0ac76f07ec673b71a84ae32bd8cd483781 \
+    SKIP
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    set -l configure_options \
+        --prefix=/usr \
+        --enable-libgdbm-compat
+    cd $pkgname; or return
+    ./configure $configure_options; or return
+    make; or return
+    # Generate gdbm mo files from dist tarball
+    cd "$srcdir/$pkgname-$pkgver/po"; or return
+    for po in *.po
+        msgfmt $po -o (string replace -r '\.po$' .mo -- $po); or return
+    end
+end
+
+function check
+    make check -C $pkgname; or return
+end
+
+function package
+    set -a depends readline libreadline.so
+    make DESTDIR="$pkgdir" install -C $pkgname; or return
+    install -vDm 644 $pkgname/{NOTE-WARNING,AUTHORS,NEWS,README} -t "$pkgdir/usr/share/doc/$pkgname"; or return
+    # Install gdbm mo files from dist tarball
+    cd "$srcdir/$pkgname-$pkgver/po"; or return
+    for mo in *.mo
+        install -Dm 644 $mo "$pkgdir/usr/share/locale/"(string replace -r '\.mo$' '' -- $mo)"/LC_MESSAGES/$pkgname.mo"; or return
+    end
+end

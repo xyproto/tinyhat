@@ -1,0 +1,46 @@
+set pkgname libpng
+set pkgver 1.6.59
+set pkgrel 1
+set pkgdesc 'A collection of routines used to create PNG format graphics files'
+set arch i686 x32
+set url http://www.libpng.org/pub/png/libpng.html
+set license libpng-2.0
+set depends zlib sh
+set makedepends git
+set provides libpng16.so
+set flags arch
+set source "git+https://github.com/pnggroup/libpng.git?signed#tag=v$pkgver"
+set sha256sums 885040a9e7a2c16eec433c32ab760cbb6bc6283734f4014368a386a2b4eae340
+
+function prepare
+    cd $pkgname; or return
+
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname; or return
+
+    ./configure \
+        --prefix=/usr \
+        --disable-static; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+
+    install -D -m0644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+
+    cd contrib/pngminus; or return
+    make PNGLIB_SHARED="-L$pkgdir/usr/lib -lpng" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" png2pnm pnm2png; or return
+    install -m0755 png2pnm pnm2png "$pkgdir/usr/bin/"; or return
+end

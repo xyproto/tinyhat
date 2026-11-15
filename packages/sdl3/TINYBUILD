@@ -1,0 +1,47 @@
+set pkgname sdl3
+set pkgver 3.4.18
+set pkgrel 2
+set pkgdesc 'Simple DirectMedia Layer 3 with the Tiny Hat Wayland framebuffer patch'
+set arch i686 x32
+set url https://libsdl.org/
+set license Zlib
+set depends glibc
+set replaces sdl3-man
+set conflicts sdl3-man
+set makedepends perl cmake ninja wayland wayland-protocols libxkbcommon libdrm mesa libglvnd alsa-lib pipewire dbus \
+    libusb systemd-libs vulkan-headers
+set source "https://github.com/libsdl-org/SDL/releases/download/release-$pkgver/SDL3-$pkgver.tar.gz" \
+    wayland-framebuffer.patch \
+    dos-modes.patch
+set sha256sums 9c75cf16330322c217dedd2e0609f1124f1b54b8633e763467b4684d0f4334a3 \
+    SKIP \
+    SKIP
+
+function prepare
+    cd SDL3-$pkgver; or return
+    patch -Np1 -i ../wayland-framebuffer.patch; or return
+    patch -Np1 -i ../dos-modes.patch; or return
+end
+
+function build
+    set CFLAGS (string replace -- -Os -O3 $CFLAGS)
+    set CXXFLAGS (string replace -- -Os -O3 $CXXFLAGS)
+    cmake -S SDL3-$pkgver -B build -G Ninja \
+        -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+        -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_EXAMPLES=OFF -DSDL_TEST_LIBRARY=ON \
+        -DSDL_WAYLAND=ON -DSDL_WAYLAND_LIBDECOR=OFF -DSDL_VULKAN=ON -DSDL_RENDER_VULKAN=ON -DSDL_GPU=ON -DSDL_RENDER_GPU=ON \
+        -DSDL_KMSDRM=ON -DSDL_JACK=OFF -DSDL_SNDIO=OFF -DSDL_LIBURING=OFF -DSDL_DBUS=ON -DSDL_IBUS=OFF \
+        -DSDL_X11=OFF -DSDL_OPENGL=ON -DSDL_OPENGLES=ON -DSDL_ALSA=ON -DSDL_PIPEWIRE=ON -DSDL_PULSEAUDIO=OFF \
+        -DSDL_HIDAPI=ON -DSDL_HIDAPI_LIBUSB=OFF -DSDL_CAMERA=ON -DSDL_RPATH=OFF \
+        -DLIBC_HAS_WORKING_LIBUNWIND=OFF -DLIBUNWIND_HAS_WORKINGLIBUNWIND=OFF -DPC_LIBUNWIND_HAS_WORKING_LIBUNWIND=OFF; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 SDL3-$pkgver/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"; or return
+    mkdir -p "$srcdir/wiki" "$pkgdir/usr/share/man"; or return
+    cd SDL3-$pkgver; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --copy-to-wiki >/dev/null; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --manpath="$pkgdir/usr/share/man" --copy-to-manpages >/dev/null; or return
+end

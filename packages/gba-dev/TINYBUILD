@@ -1,0 +1,48 @@
+set pkgname gba-dev
+set -g _tonc c5af1b2cb019dcde43216596390490bc07800b21
+set -g _tools 1.2.0
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'libtonc, startup code, gba.specs and gbafix for GBA programming'
+set arch i686 x32
+set url https://github.com/gbadev-org/libtonc
+set license MIT LGPL-2.0-or-later
+set depends arm-none-eabi-gcc arm-none-eabi-newlib
+set makedepends arm-none-eabi-binutils
+set options '!strip'
+set source "libtonc-$_tonc.tar.gz::https://github.com/gbadev-org/libtonc/archive/$_tonc.tar.gz" \
+    "gba-tools-v$_tools.tar.gz::https://github.com/devkitPro/gba-tools/archive/refs/tags/v$_tools.tar.gz" \
+    build-libtonc.sh gba_crt0.s gba_cart.ld gba.specs gba_syscalls.c
+set sha256sums 5f5703d4c3188ddcdd770c2dc43cae7bea0780b348b1cd9eb473ba777c0aa396 \
+    1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32 \
+    SKIP SKIP SKIP SKIP SKIP
+
+function build
+    rm -rf tonc-build
+    mkdir tonc-build; or return
+    begin
+        cd tonc-build; and sh ../build-libtonc.sh "$srcdir/libtonc-$_tonc" "$srcdir/libtonc.a"
+    end; or return
+    cd "$srcdir"; or return
+    arm-none-eabi-gcc -mcpu=arm7tdmi -marm -c -o gba_crt0.o gba_crt0.s; or return
+    arm-none-eabi-gcc -mcpu=arm7tdmi -mthumb -mthumb-interwork -O2 -Wall -Wextra -c -o gba_syscalls.o gba_syscalls.c; or return
+    rm -f libgbasys.a
+    arm-none-eabi-ar rcs libgbasys.a gba_syscalls.o; or return
+    gcc $CFLAGS -o gbafix gba-tools-$_tools/src/gbafix.c $LDFLAGS; or return
+end
+
+function package
+    set -l lib "$pkgdir/usr/arm-none-eabi/lib"
+    for d in "$lib" "$lib/thumb/nofp"
+        install -Dm644 gba_crt0.o gba_cart.ld gba.specs -t "$d/"; or return
+    end
+    install -Dm644 libtonc.a "$lib/libtonc.a"; or return
+    install -Dm644 libgbasys.a "$lib/libgbasys.a"; or return
+    install -Dm644 libtonc-$_tonc/include/*.h -t "$pkgdir/usr/arm-none-eabi/include/"; or return
+    install -Dm755 gbafix "$pkgdir/usr/bin/gbafix"; or return
+    strip --strip-unneeded "$pkgdir/usr/bin/gbafix"; or return
+    set -l l "$pkgdir/usr/share/licenses/$pkgname"
+    install -Dm644 libtonc-$_tonc/license.txt "$l/license.libtonc.txt"; or return
+    install -Dm644 gba-tools-$_tools/COPYING "$l/COPYING.gbafix"; or return
+    install -Dm644 gba-tools-$_tools/src/gbafix.c "$l/gbafix.c"; or return
+end

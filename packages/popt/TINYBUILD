@@ -1,0 +1,25 @@
+set pkgname popt
+set pkgver 1.19
+set pkgrel 2
+set pkgdesc 'A commandline option parser'
+set arch i686 x32
+set url https://github.com/rpm-software-management/popt
+set license custom
+set depends glibc
+set options staticlibs
+set source "https://ftp.osuosl.org/pub/rpm/popt/releases/popt-1.x/popt-$pkgver.tar.gz"
+set sha256sums c25a4838fc8e4c1c8aacb8bd620edb3084a3d63bf8987fdad3ca2758c63240f9
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    # Avoid stripping issue
+    CFLAGS="$CFLAGS -ffat-lto-objects" ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
+end

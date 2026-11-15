@@ -1,0 +1,25 @@
+set pkgname libevdev
+set pkgver 1.14.0
+set pkgrel 1
+set pkgdesc 'Wrapper library for evdev devices'
+set arch i686 x32
+set url https://www.freedesktop.org/wiki/Software/libevdev/
+set license MIT
+set depends glibc
+set makedepends python check valgrind meson
+set provides libevdev.so
+set source "https://freedesktop.org/software/libevdev/libevdev-$pkgver.tar.xz" \
+    "https://freedesktop.org/software/libevdev/libevdev-$pkgver.tar.xz.sig"
+set sha256sums 5a0966c7110648665983848bad696c7acba614a2160d2865d535397101007332 \
+    497ca6b36751ee94b7a06567b4ff91a1358481894216c4c47f82d1c1cad6357d
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build -D documentation=disabled; or return
+    meson compile -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" meson install -C build; or return
+    install -Dm644 $pkgname-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

@@ -1,0 +1,29 @@
+set pkgname liblc3
+set pkgver 1.1.3
+set pkgrel 2
+set pkgdesc 'Low Complexity Communication Codec library and tools'
+set arch i686 x32
+set url https://github.com/google/liblc3
+set license Apache-2.0
+set depends glibc
+set makedepends git meson python
+set optdepends 'python: Python bindings'
+set provides liblc3.so
+set source "git+https://github.com/google/liblc3#tag=v$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd liblc3; or return
+end
+
+function build
+    set -l meson_options -D python=true -D tools=true
+    arch-meson liblc3 build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/doc/$pkgname" -m644 liblc3/README.md; or return
+end

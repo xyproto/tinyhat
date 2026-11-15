@@ -1,0 +1,24 @@
+set pkgname spirv-headers
+set pkgver 1.4.363.0
+set pkgrel 1
+set epoch 1
+set pkgdesc 'SPIR-V header files and registry'
+set arch any
+set url https://www.khronos.org/spirv/
+set license MIT
+set groups vulkan-devel
+set makedepends cmake git ninja
+set source "git+https://github.com/KhronosGroup/SPIRV-Headers#tag=vulkan-sdk-$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    set -l cmake_options -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_INSTALL_SYSCONFDIR=/etc -D CMAKE_SKIP_INSTALL_RPATH=ON
+    cmake -S SPIRV-Headers -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm644 SPIRV-Headers/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

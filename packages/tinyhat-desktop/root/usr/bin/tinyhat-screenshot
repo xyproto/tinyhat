@@ -1,0 +1,5 @@
+#!/bin/sh
+dir=$HOME/Pictures
+mkdir -p "$dir"
+f=$dir/screenshot-$(date +%Y-%m-%d-%H%M%S).png
+grim -l 3 "$f" && exec tinyhat-notice "Screenshot saved as ~/Pictures/${f##*/}" 4

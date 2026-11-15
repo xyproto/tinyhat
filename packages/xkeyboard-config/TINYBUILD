@@ -1,0 +1,33 @@
+set pkgname xkeyboard-config
+set pkgver 2.48
+set pkgrel 1
+set pkgdesc 'X keyboard configuration files'
+set arch any
+set license LicenseRef-xkeyboard-config
+set url https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
+set makedepends xorg-xkbcomp libxslt python meson
+set checkdepends python-pytest python-pytest-xdist libxkbcommon
+set provides xkbdata
+set replaces xkbdata
+set conflicts xkbdata
+# https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
+set source "https://xorg.freedesktop.org/archive/individual/data/$pkgname/$pkgname-$pkgver.tar.xz"{,.sig}
+set sha256sums b77041324f0109f77161ee43743fe04baa485866af8460d31e476ad3f7648fd5 SKIP
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build -D compat-rules=true -D xorg-rules-symlinks=true; or return
+    # Print config
+    meson configure build; or return
+    ninja -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -m755 -d "$pkgdir/var/lib/xkb"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgname-$pkgver/COPYING; or return
+end

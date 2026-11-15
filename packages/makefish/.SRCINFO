@@ -1,0 +1,22 @@
+pkgbase = makefish
+	pkgdesc = Builds pacman packages from TINYBUILD files, the fish-based package format of Tiny Hat
+	pkgver = 0.1.0
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = any
+	license = BSD-3-Clause
+	depends = fish
+	depends = coreutils
+	depends = findutils
+	depends = file
+	depends = binutils
+	depends = libarchive
+	depends = zstd
+	depends = gzip
+	depends = curl
+	optdepends = git: for git+ sources
+	optdepends = metatar: for packages that set owners
+	optdepends = upx: for packages with the upx option
+	backup = etc/makefish.conf
+
+pkgname = makefish

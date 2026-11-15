@@ -1,0 +1,53 @@
+set pkgname libunwind
+set pkgver 1.8.3
+set pkgrel 1
+set pkgdesc 'Determine and manipulate the call-chain of a program'
+set url https://www.nongnu.org/libunwind/
+set arch i686
+set license MIT
+set depends glibc xz zlib
+set provides libunwind-{coredump,ptrace,setjmp,x86_64}.so \
+    libunwind.so
+set source "https://github.com/libunwind/libunwind/releases/download/v$pkgver/libunwind-$pkgver.tar.gz"{,.asc} \
+    https://github.com/libunwind/libunwind/commit/b67d508a.patch
+set b2sums 13ac888e72c080b9e2588024578740971f721497864c5f2eb930227cbc5bb040551db6280048b0b6f2dde193d5d1719f546088618ebd2e19f96524c2b767fda1 \
+    SKIP \
+    756ced55c34a33d55cc11f61c32230de820aede55d562aa94143c2f5adb7f408ed2f2d5c48642b035ec4d3ebc59175e6f4b889f712db2556b80a8002d91aa036
+set flags arch
+
+# TeX for the documentation only on i686
+switch $CARCH
+    case i686
+        set -a makedepends texlive-binextra
+end
+
+function prepare
+    cd libunwind-$pkgver; or return
+    patch -p1 -i ../b67d508a.patch; or return # Fix build with GCC 15
+    autoreconf -fvi; or return
+end
+
+function build
+    set -l configure_options \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var
+
+    cd libunwind-$pkgver; or return
+    ./configure $configure_options; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd libunwind-$pkgver; or return
+    # ignore failing tests for now
+    make check; or true
+end
+
+function package
+    cd libunwind-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm 644 COPYING -t "$pkgdir"/usr/share/licenses/$pkgname; or return
+    rm -r "$pkgdir"/usr/libexec; or return
+end

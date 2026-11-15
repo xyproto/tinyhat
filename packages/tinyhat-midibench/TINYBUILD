@@ -1,0 +1,19 @@
+set pkgname tinyhat-midibench
+set pkgver 1
+set pkgrel 2
+set pkgdesc 'Measures FluidSynth speed at boot and picks MIDI settings for DOSBox-X'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends fluidsynth
+set source tinyhat-midibench.c
+set sha256sums SKIP
+
+function build
+    set -l fluidsynth_flags (pkg-config --cflags --libs fluidsynth | string split -n ' '); or return
+    cc $CFLAGS -o midibench tinyhat-midibench.c $fluidsynth_flags -lm $LDFLAGS; or return
+end
+
+function package
+    install -Dm755 midibench "$pkgdir/usr/lib/tinyhat/midibench"; or return
+end

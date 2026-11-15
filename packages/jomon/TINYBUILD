@@ -1,0 +1,31 @@
+set pkgname jomon
+set pkgver 0.6.4
+set pkgrel 2
+set pkgdesc 'Network forensics and sniffer tool'
+set arch i686 x32 x86_64 aarch64
+set url https://github.com/jo-lund/jomon
+set license MIT
+set depends geoip glibc libgcc ncurses
+set makedepends git python re2c
+set optdepends 'geoip-database-extra: for extra geolocation data'
+set source "git+$url#tag=v$pkgver" caps.patch
+set b2sums 625b9d568a35e69e41fbd2c486ed70bdef79380c1e1d3aa6f8a32d3d8b5e9dfb1d77e6cf2430e37a21a2639087d4ceb1ab26f372e84b62fd698700a1f9549445 \
+    SKIP
+
+function prepare
+    cd $pkgname; or return
+    patch -Np1 -i ../caps.patch; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix /usr; or return
+    make 'CFLAGS+=-Wl,-z,now -w'; or return
+end
+
+function package
+    cd $pkgname; or return
+    sed -i "s,X=/,X=\"$pkgdir/\",g" config.mk; or return
+    make install; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

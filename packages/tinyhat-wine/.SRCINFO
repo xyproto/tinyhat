@@ -1,0 +1,10 @@
+pkgbase = tinyhat-wine
+	pkgdesc = Tiny Hat menu entry and installer for Wine
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = any
+	license = BSD-3-Clause
+	depends = tinyhat-desktop
+
+pkgname = tinyhat-wine

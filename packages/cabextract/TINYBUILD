@@ -1,0 +1,30 @@
+set pkgname cabextract
+set pkgver 1.11
+set pkgrel 3
+set pkgdesc 'A program to extract Microsoft cabinet (.CAB) files'
+set arch i686 x32
+set license GPL-2.0-or-later
+set url https://www.cabextract.org.uk/
+set depends glibc
+set makedepends git
+set source "git+https://github.com/kyz/libmspack.git#tag=v$pkgver"
+set b2sums 180c2632b9ed9f2863338ef7c171f2566bc026fd66c5ced367379a24fa3e10b71eb6d6644da595266ca876b6ec1d45380bbb98b1c2060c9cc28f0838254c5368
+set flags arch
+
+function prepare
+    cd libmspack/cabextract; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd libmspack/cabextract; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --mandir=/usr/share/man; or return
+    make; or return
+end
+
+function package
+    make DESTDIR="$pkgdir" -C libmspack/cabextract install; or return
+end

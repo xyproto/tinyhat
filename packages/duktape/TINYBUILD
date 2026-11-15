@@ -1,0 +1,37 @@
+set pkgname duktape
+set pkgver 2.7.0
+set pkgrel 7
+set pkgdesc 'Embeddable Javascript engine'
+set url https://duktape.org/
+set arch i686 x32
+set license MIT
+set depends glibc
+set provides libduktape{,d}.so
+set source "https://duktape.org/duktape-$pkgver.tar.xz"
+set b2sums da5eea88758201177f32c5611a3757433ef1b0173d6430eff1f067abd7535f3e4b9c3717290fbd8475827a53f7a2a74818287a65e563f14e91761f5cd0fe30d5
+set flags arch
+
+function prepare
+    cd duktape-$pkgver; or return
+    # tools/configure.py needs Python 2
+    sed -i 's/^#undef DUK_USE_FASTINT$/#define DUK_USE_FASTINT/' src/duk_config.h; or return
+    # Add missing NEEDED on libm.so
+    sed -i 's/duktape\.c/& -lm/' Makefile.sharedlibrary; or return
+end
+
+function _make
+    make -f Makefile.sharedlibrary INSTALL_PREFIX=/usr $argv
+end
+
+function build
+    cd duktape-$pkgver; or return
+    _make; or return
+end
+
+function package
+    cd duktape-$pkgver; or return
+    _make DESTDIR="$pkgdir" install; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 LICENSE.txt; or return
+end
+
+# getver: github.com/svaarala/duktape

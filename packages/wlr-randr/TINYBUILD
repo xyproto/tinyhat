@@ -1,0 +1,28 @@
+set pkgname wlr-randr
+set pkgver 0.5.0
+set pkgrel 1
+set pkgdesc 'Utility to manage outputs of a Wayland compositor'
+set url https://gitlab.freedesktop.org/emersion/wlr-randr
+set arch i686 x32
+set license MIT
+set depends wayland glibc
+set makedepends meson scdoc
+set source "$pkgname-$pkgver.tar.gz::$url/-/archive/v$pkgver/$pkgname-v$pkgver.tar.gz"
+set sha256sums c566d94fddb84f801c733f1415a4ad5b75870305346363074cbdf468d4ac263a
+set flags arch
+
+function build
+    cd $pkgname-v$pkgver; or return
+    arch-meson build; or return
+    meson compile -C build; or return
+
+    scdoc <$pkgname.1.scd >$pkgname.1; or return
+end
+
+function package
+    cd $pkgname-v$pkgver; or return
+    meson install -C build --destdir "$pkgdir"; or return
+
+    install -Dm 644 $pkgname.1 "$pkgdir/usr/share/man/man1/$pkgname.1"; or return
+    install -Dm 644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

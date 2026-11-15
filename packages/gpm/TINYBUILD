@@ -1,0 +1,51 @@
+set pkgname gpm
+set pkgver 1.20.7.r38.ge82d1a6
+set -g _commit e82d1a653ca94aa4ed12441424da6ce780b1e530
+set pkgrel 7
+set pkgdesc 'A mouse server for the console and xterm'
+set arch i686 x32
+set url https://www.nico.schottelius.org/software/gpm/
+set license GPL
+set depends bash procps-ng
+set makedepends git
+set provides libgpm.so
+set options '!makeflags'
+set source "git+https://github.com/telmich/gpm.git#commit=$_commit" \
+    gpm.sh \
+    gpm.path \
+    gpm.service
+set sha256sums 7db4089030c128d9ee5fb1afb08251d328f8f8835e4716ff41c6c08c1a90bed2 \
+    f41e90dcf6c0c6c4b8eff1c69039a20eb6b38ea851ffd1fa47ba311bf83d6ed8 \
+    1b8712650c70fd139f844fa754e288bfe05a8ed8044d118fda75a47d66034d23 \
+    dbce5688b3ba1d5bc9c4f38bcc2d89a6d68d51b30fb5d6d29a02d0c011d3688e
+set flags arch
+
+function prepare
+    cd "$srcdir/$pkgname"; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd "$srcdir/$pkgname"; or return
+    # fix build with gcc-15
+    set -a CFLAGS -std=gnu17
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --sbindir=/usr/bin; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/$pkgname"; or return
+
+    make DESTDIR="$pkgdir" install; or return
+    install -D -m0644 ../gpm.sh "$pkgdir/etc/profile.d/gpm.sh"; or return
+    install -D -m0644 ../gpm.path "$pkgdir/usr/lib/systemd/system/gpm.path"; or return
+    install -D -m0644 ../gpm.service "$pkgdir/usr/lib/systemd/system/gpm.service"; or return
+
+    # library fixes
+    cd "$pkgdir/usr/lib/"; or return
+    ln -s libgpm.so.2.* libgpm.so; or return
+    chmod 0755 "$pkgdir"/usr/lib/libgpm.so.*; or return
+end

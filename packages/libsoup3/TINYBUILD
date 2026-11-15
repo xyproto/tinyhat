@@ -1,0 +1,42 @@
+set pkgbase libsoup3
+set pkgname libsoup3 libsoup3-docs
+set pkgver 3.8.0
+set pkgrel 1
+set pkgdesc 'HTTP client/server library for GNOME'
+set arch i686 x32
+set url https://libsoup.gnome.org/
+set license LGPL-2.0-or-later
+set depends brotli glib-networking glib2 glibc krb5 libnghttp2 libpsl libsysprof-capture sqlite zlib zstd
+set makedepends gi-docgen git glib2-devel meson python-quart samba
+set checkdepends apache php-apache
+set source "git+https://gitlab.gnome.org/GNOME/libsoup.git#tag=$pkgver" \
+    0001-tests-Remove-AuthDigestQop-none.patch
+set sha256sums SKIP \
+    bdb88a868900fbd7af51c3024d08abfd134d8a3638d449596b6cb2f0e0fc9fe1
+set flags arch
+
+function prepare
+    cd libsoup; or return
+    git apply -3 ../0001-tests-Remove-AuthDigestQop-none.patch; or return
+end
+
+function build
+    set -l meson_options -D autobahn=disabled
+    arch-meson -D introspection=disabled -D vapi=disabled libsoup build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package_libsoup3
+    set -a depends libbrotlidec.so libgssapi_krb5.so libg{lib,object,io}-2.0.so libpsl.so
+    set optdepends 'samba: Windows Domain SSO'
+    set -a provides libsoup-3.0.so
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/doc; or return
+end
+
+function package_libsoup3-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+end

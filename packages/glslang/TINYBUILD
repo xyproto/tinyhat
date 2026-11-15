@@ -1,0 +1,34 @@
+set pkgname glslang
+set pkgver 1.4.363.0
+set pkgrel 1
+set epoch 1
+set pkgdesc 'OpenGL and OpenGL ES shader front end and validator'
+set arch i686 x32
+set url https://github.com/KhronosGroup/glslang
+set license BSD-3-Clause
+set depends glibc libstdc++ spirv-tools
+set makedepends cmake ninja spirv-headers python git
+set options staticlibs
+set source "git+https://github.com/KhronosGroup/glslang.git#tag=vulkan-sdk-$pkgver"
+set sha256sums 6daf1c3811b4f68be560a762011c346e0414ebeb8908f8cb57517aec5c523822
+set flags arch
+
+function build
+    cd "$pkgname"; or return
+    set -a CXXFLAGS -ffat-lto-objects
+    cmake -Bbuild-static -GNinja -DCMAKE_INSTALL_PREFIX='/usr' -DCMAKE_BUILD_TYPE='None' -DALLOW_EXTERNAL_SPIRV_TOOLS='ON' -DBUILD_SHARED_LIBS='OFF'; or return
+    cmake --build build-static; or return
+    cmake -Bbuild-shared -GNinja -DCMAKE_INSTALL_PREFIX='/usr' -DCMAKE_BUILD_TYPE='None' -DALLOW_EXTERNAL_SPIRV_TOOLS='ON' -DBUILD_SHARED_LIBS='ON' -DGLSLANG_TESTS='OFF'; or return
+    cmake --build build-shared; or return
+end
+
+function package
+    cd "$pkgname"; or return
+    DESTDIR="$pkgdir" cmake --install build-static; or return
+    DESTDIR="$pkgdir" cmake --install build-shared; or return
+    install -Dm644 LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+    cd "$pkgdir/usr/lib"; or return
+    for lib in *.so
+        ln -sf "$lib" "$lib.0"; or return
+    end
+end

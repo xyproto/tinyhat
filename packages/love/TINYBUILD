@@ -1,0 +1,41 @@
+set pkgname love
+set pkgver 12.0.r1835.gb7daef0
+set -g _commit b7daef0f7c1dc5888090f5d5b22d4eaf4ffd1d87
+set pkgrel 2
+set pkgdesc 'An open-source 2D game engine which uses the versatile Lua scripting language to create dynamic gaming experiences'
+set arch i686
+set url http://love2d.org/
+set license zlib
+set depends luajit freetype2 harfbuzz openal libvorbis libogg libmodplug sdl3 zlib shared-mime-info hicolor-icon-theme desktop-file-utils libtheora
+set makedepends cmake ninja git
+set flags arch
+set source "love::git+https://github.com/love2d/love#commit=$_commit"
+set sha512sums 6f1e23c9456ce83be9227a0036373da8c17e7082d76c871acb7db801d24ab30a23ce1a7c6f72f9a4c67793cef5ce0226e7b2316f59367242926f894ab74eae7f
+
+function build
+    switch $CARCH
+        case i686
+            set -a CFLAGS -msse2 -mfpmath=sse
+            set -a CXXFLAGS -msse2 -mfpmath=sse
+    end
+    cmake -S love -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS -Wl,--start-group"; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm755 "$pkgdir/usr/bin/love" "$pkgdir/usr/lib/love/love"; or return
+    printf '%s\n' \
+        '#!/bin/sh' \
+        'ver() { IFS=. read -r major minor <<V' \
+        '$1' \
+        V \
+        '  echo $((${major:-0} * 100 + ${minor:-0})); }' \
+        'if [ -n "$TINYHAT_GL_VERSION" ] && [ "$(ver "$TINYHAT_GL_VERSION")" -lt 303 ] && [ "$(ver "${TINYHAT_GLES_VERSION:-0.0}")" -lt 300 ]; then' \
+        '  export LIBGL_ALWAYS_SOFTWARE=1 GALLIUM_DRIVER=llvmpipe' \
+        '  command -v tinyhat-notice >/dev/null && tinyhat-notice "This graphics chip has OpenGL $TINYHAT_GL_VERSION, LÖVE needs 3.3, so it runs in software and can be slow" 8' \
+        fi \
+        'exec /usr/lib/love/love "$@"' >"$pkgdir/usr/bin/love"; or return
+    install -Dm0644 love/license.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

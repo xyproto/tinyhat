@@ -18,7 +18,6 @@ pkgbase = libxtst
 	depends = glibc
 	depends = xorgproto
 	source = git+https://gitlab.freedesktop.org/xorg/lib/libxtst.git?signed#tag=libXtst-1.2.6
-	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
 	sha512sums = fd5e1e3c81d4876730f47b4051954d19ca9ffc42a5fa0b0381db1ae9e642a119440187ae4bb307f0c54b823a3ef591d6b87cb414aedc9d348f7f217a4cf97570
 
 pkgname = libxtst

@@ -1,0 +1,27 @@
+set pkgname lhasa
+set pkgver 0.6.0
+set pkgrel 1
+set pkgdesc 'Free LZH/LHA archive tool'
+set arch i686 x32
+set url https://github.com/fragglet/lhasa
+set license ISC
+set depends glibc
+set provides lha
+set conflicts lha
+set source "https://github.com/fragglet/lhasa/releases/download/v$pkgver/lhasa-$pkgver.tar.gz" \
+    "https://github.com/fragglet/lhasa/releases/download/v$pkgver/lhasa-$pkgver.tar.gz.asc"
+set sha256sums 9840154367f73e9d9c3196f944a121ab4d398d84e921c8fe8fca8a931274aed7 \
+    a66b715195a72f3656d5190559bff376d931f02407690623ecb45d0ed11ddcaf
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm 644 COPYING.md -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

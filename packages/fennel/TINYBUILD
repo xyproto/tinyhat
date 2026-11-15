@@ -1,0 +1,24 @@
+set pkgname fennel
+set pkgver 1.6.1
+set pkgrel 3
+set pkgdesc 'A Lua Lisp language'
+set arch any
+set url https://fennel-lang.org
+set license MIT
+set depends lua54
+set makedepends git
+set source "fennel::git+https://git.sr.ht/~technomancy/fennel#tag=$pkgver"
+set sha256sums 98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd
+set flags arch
+
+function build
+    cd "$pkgname"; or return
+    make LUA=lua5.4 build; or return
+end
+
+function package
+    cd "$pkgname"; or return
+    make LUA=lua5.4 DESTDIR="$pkgdir" PREFIX=/usr install; or return
+    install -Dm0644 -t "$pkgdir/usr/share/doc/$pkgname/" *.md; or return
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE; or return
+end

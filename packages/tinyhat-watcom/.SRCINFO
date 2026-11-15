@@ -1,0 +1,11 @@
+pkgbase = tinyhat-watcom
+	pkgdesc = Tiny Hat menu entry and environment for Open Watcom
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = any
+	license = BSD-3-Clause
+	depends = tinyhat-desktop
+	backup = etc/profile.d/watcom.sh
+
+pkgname = tinyhat-watcom

@@ -1,0 +1,4 @@
+#!/bin/sh
+[ -p /run/tinyhat-splash ] || exit 0
+d=$(systemctl show -P Description -- "$1" 2>/dev/null)
+timeout 2 sh -c 'printf "fail %s\n" "$1" >/run/tinyhat-splash' sh "${d:-$1}"

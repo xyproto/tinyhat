@@ -1,0 +1,80 @@
+set pkgbase colord
+set pkgname colord libcolord colord-sane colord-docs
+set pkgver 1.4.8
+set pkgrel 2
+set pkgdesc 'System daemon for managing color devices'
+set arch i686 x32
+set url https://www.freedesktop.org/software/colord/
+set license GPL-2.0-or-later
+set depends dbus dconf glib2 glibc lcms2 libgcc libgudev libgusb polkit shared-mime-info sqlite systemd-libs
+set makedepends argyllcms bash-completion docbook-xsl git gtk-doc meson sane systemd
+set options '!emptydirs'
+set source "git+https://github.com/hughsie/colord?signed#tag=$pkgver" \
+    0001-Lock-user-account.patch
+set sha256sums SKIP \
+    2c036b1ad9831b8be9077454ef3ef800ebaf67402e4d3d61c31d7b9f7ff3e9cb
+set flags arch
+set -g _f package_libcolord
+
+function prepare
+    cd colord; or return
+    git apply -3 ../0001-Lock-user-account.patch; or return
+    sed -i ' 
+      s/\(g_assert_cmpfloat\s*\)(\([^,]\+\),\s*==\s*,\([^,()]\+\))/\1(fabs((\2)-(\3)),<=,1e-15)/ 
+    ' lib/colord/cd-test-private.c; or return
+end
+
+function build
+    set -l meson_options -D daemon_user=colord -D libcolordcompat=true -D print_profiles=true -D sane=true
+    arch-meson -D introspection=false -D vapi=false colord build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_colord
+    set -a depends "libcolord=$pkgver-$pkgrel"
+    set optdepends 'argyllcms: color profiling' 'colord-sane: SANE support'
+    set provides libcolorhug.so
+    set replaces shared-color-profiles
+    meson install -C build --destdir "$pkgdir"; or return
+    cd "$pkgdir"; or return
+    _pick lib usr/include/colord-1/colord{,.h}; or return
+    _pick lib usr/lib/libcolord{,compat}.so*; or return
+    true
+    _pick lib usr/lib/pkgconfig/colord.pc; or return
+    true
+    _pick sane usr/lib/colord-sane; or return
+    _pick sane usr/lib/colord-plugins/libcolord_sensor_sane.so; or return
+    _pick docs usr/share/gtk-doc; or return
+end
+
+function package_colord-docs
+    set pkgdesc "$pkgdesc (API documentation)"
+    set depends
+    mv docs/* "$pkgdir"; or return
+end
+
+function package_colord-sane
+    set pkgdesc "$pkgdesc (SANE support)"
+    set depends "colord=$pkgver" "libcolord=$pkgver" dbus glib2 glibc libgcc libgudev sane
+    mv sane/* "$pkgdir"; or return
+end
+
+function package_libcolord
+    set pkgdesc "$pkgdesc (client library)"
+    set depends glib2 glibc lcms2 libgcc systemd-libs
+    set provides libcolord.so
+    mv lib/* "$pkgdir"; or return
+end

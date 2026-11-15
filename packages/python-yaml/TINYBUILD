@@ -1,0 +1,37 @@
+set -g _name pyyaml
+set pkgname python-yaml
+set pkgver 6.0.3
+set pkgrel 2
+set pkgdesc 'Python bindings for YAML, using fast libYAML library'
+set arch i686 x32
+set url https://github.com/yaml/pyyaml
+set license MIT
+set depends glibc libyaml python
+set makedepends cython python-build python-installer python-setuptools python-wheel
+set checkdepends python-pytest
+set provides python-pyyaml
+set flags arch
+set source "$_name-$pkgver.tar.gz::$url/archive/refs/tags/$pkgver.tar.gz"
+set sha512sums a0da43e32d127409ad61b11dc1d733b2e9c743977b3d72c05c81fc2ab183b40bc284452b0874dbeae1a736e1cd4a34f0df641ceefd5e9df38b3e53155fc5f633
+set b2sums 4cf50de6e2228072db914399072693d2b493c0d1ff099645397c0747fe67a3ec64f631a4ffc4c34eb6fd53cab80627bab068068b70632b3feadf887d9520214d
+
+function build
+    cd $_name-$pkgver; or return
+    python -m build --wheel --no-isolation --config-setting=--with-libyaml; or return
+end
+
+function check
+    set -l site_packages (python -c "import site; print(site.getsitepackages()[0])"); or return
+
+    cd $_name-$pkgver; or return
+    # install to temporary location, as importlib is used
+    python -m installer --destdir=test_dir dist/*.whl; or return
+    PYTHONPATH="$PWD/test_dir/$site_packages:$PYTHONPATH" pytest; or return
+end
+
+function package
+    cd $_name-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm 644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -Dm 644 CHANGES README.md -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+end

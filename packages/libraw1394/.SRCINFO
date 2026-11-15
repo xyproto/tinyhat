@@ -10,8 +10,7 @@ pkgbase = libraw1394
 	depends = glibc
 	source = https://www.kernel.org/pub/linux/libs/ieee1394/libraw1394-2.1.2.tar.xz
 	source = https://www.kernel.org/pub/linux/libs/ieee1394/libraw1394-2.1.2.tar.sign
-	validpgpkeys = 955C0098E5C46EF9A152481479F36FB2545D79D0
 	sha256sums = 03ccc69761d22c7deb1127fc301010dd13e70e44bb7134b8ff0d07590259a55e
-	sha256sums = SKIP
+	sha256sums = 9ee106bc0aa847d40dc556d771cf4b0e2a40caf8554bf600257c7d8baeb79a8e
 
 pkgname = libraw1394

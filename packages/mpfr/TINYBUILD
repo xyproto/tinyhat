@@ -1,0 +1,53 @@
+set pkgname mpfr
+set -g _pkgver 4.2.2
+set -g _patchver 0
+if test $_patchver -eq 0
+    set -g pkgver $_pkgver
+else
+    set -g pkgver $_pkgver.p$_patchver
+end
+set pkgrel 1
+set pkgdesc 'Multiple-precision floating-point library'
+set arch i686 x32
+set url https://www.mpfr.org/
+set license GPL-3.0-or-later LGPL-3.0-or-later
+set depends glibc gmp
+set provides libmpfr.so
+# NOTE: download potentially existing patches from upstream:
+# `curl patches.diff -o https://www.mpfr.org/mpfr-$_pkgver/allpatches`
+set source "https://ftp.gnu.org/gnu/$pkgname/$pkgname-$_pkgver.tar.xz" \
+    "https://ftp.gnu.org/gnu/$pkgname/$pkgname-$_pkgver.tar.xz.sig"
+set sha512sums eb9e7f51b5385fb349cc4fba3a45ffdf0dd53be6dfc74932dc01258158a10514667960c530c47dd9dfc5aa18be2bd94859d80499844c5713710581e6ac6259a9 \
+    SKIP
+set b2sums 6bbf5658e70fbb673a3b65246a6bac708d1571aa6943c6742efd92f468ac71e6f0fe351b757f7133440ea312d9a5fc3549acd89d54f4d975c58bdc204d7b21ec \
+    SKIP
+set flags arch
+
+function prepare
+    cd $pkgname-$_pkgver; or return
+    for src in $source
+        string match -q '*.diff' -- $src; or string match -q '*.patch' -- $src; or continue
+        printf 'Applying patch %s...\n' $src
+        patch -Np1 -i "../$src"; or return
+    end
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname-$_pkgver; or return
+    ./configure --prefix=/usr \
+        --enable-thread-safe \
+        --enable-shared; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$_pkgver; or return
+    make check; or return
+    make check-exported-symbols; or return
+end
+
+function package
+    cd $pkgname-$_pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

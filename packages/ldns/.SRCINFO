@@ -14,7 +14,6 @@ pkgbase = ldns
 	provides = drill
 	provides = libldns.so
 	source = git+https://github.com/NLnetLabs/ldns?signed#tag=1.9.2
-	validpgpkeys = DC34EE5DB2417BCC151E5100E5F8F8212F77A498
 	sha256sums = 2f2433f0fe1b1bf61b53718b137782b24bf324d338ceb1040327d80b42819984
 
 pkgname = ldns

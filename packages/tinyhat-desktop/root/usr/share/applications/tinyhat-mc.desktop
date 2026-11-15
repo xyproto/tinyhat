@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Midnight Commander
+Icon=system-file-manager
+Comment=File manager
+Exec=tinyhat-term mc
+Terminal=false
+Categories=System;FileManager;

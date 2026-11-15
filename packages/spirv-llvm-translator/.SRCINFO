@@ -18,6 +18,6 @@ pkgbase = spirv-llvm-translator
 	depends = llvm-libs
 	depends = spirv-tools
 	source = git+https://github.com/KhronosGroup/SPIRV-LLVM-Translator#tag=v23.1.2
-	b2sums = de830357b3ce992a14703b5c70f3f41173de4c1798ad64b684b547a0f9f7fbedeed4b72afcd0f5f10c80d97ce93cc111df546b8e07050fbe90130f0f08cf0d0c
+	sha256sums = SKIP
 
 pkgname = spirv-llvm-translator

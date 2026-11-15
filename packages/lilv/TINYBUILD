@@ -1,0 +1,100 @@
+set pkgbase lilv
+set pkgname \
+    lilv{,-{docs,tools}} \
+    python-lilv
+set pkgver 0.28.0
+set pkgrel 1
+set pkgdesc 'A C library interface to the LV2 plug-in standard'
+set arch i686 x32
+set url https://gitlab.com/lv2/lilv
+set license \
+    '0BSD OR ISC' \
+    ISC
+set makedepends \
+    doxygen \
+    libsndfile \
+    lv2 \
+    meson \
+    python \
+    python-sphinx \
+    python-sphinx-lv2-theme \
+    python-sphinxygen \
+    serd \
+    sord \
+    sratom \
+    swig
+set source \
+    "https://download.drobilla.net/$pkgbase-$pkgver.tar.xz"{,.sig}
+set sha512sums 754c9996670235766b84e416bbcb5352a7376e86f7fa373f9428125552294a5d6b032a363ea51fbbf81b88c8f2e47b3566a07bf0992e6e6ebd1bbf31651d9024 \
+    SKIP
+set b2sums 8b45946b492ac6dd00efa0bd487a03e109e1ad9d6452a924bbf51b09cf67713dc91937d4ac441dd6884769bf192ae8d55cd0296485a73df9a4a1e145250beba2 \
+    SKIP
+set flags arch
+
+# Moves files (relative to $pkgdir, or absolute below it) to $srcdir/NAME, for the package NAME
+function _pick
+    set -l p $argv[1]
+    for f in $argv[2..-1]
+        set -l d "$srcdir/$p/"(string replace -- "$pkgdir/" '' $f)
+        mkdir -p (dirname "$d"); or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty (dirname "$f"); or return
+    end
+end
+
+function build
+    arch-meson $pkgbase-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_lilv
+    set depends glibc serd libserd-0.so sord libsord-0.so sratom libsratom-0.so lv2 zix
+    set optdepends 'lilv-docs: for documentation' 'lilv-tools: for CLI tools' 'python-lilv: for Python bindings'
+    set provides liblilv-0.so
+
+    meson install -C build --destdir "$pkgdir"; or return
+
+    # install bash completion to correct directory and remove /etc: https://gitlab.com/lv2/lilv/-/work_items/15
+    install -vDm 644 "$pkgdir/etc/bash_completion.d/$pkgname" -t "$pkgdir/usr/share/bash-completion/completions/"; or return
+    rm -frv "$pkgdir/etc"; or return
+
+    cd "$pkgdir"; or return
+    _pick $pkgname-tools usr/bin/; or return
+    _pick $pkgname-tools usr/share/man/man1/; or return
+    _pick $pkgname-tools usr/share/bash-completion/; or return
+    _pick $pkgname-docs usr/share/doc; or return
+    _pick python-$pkgbase usr/lib/python*; or return
+    cd "$srcdir"; or return
+
+    install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -vDm 644 $pkgname-$pkgver/{NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+end
+
+function package_lilv-tools
+    set pkgdesc "$pkgdesc - CLI tools"
+    set depends glibc libsndfile libsndfile.so lilv liblilv-0.so
+
+    mv -v $pkgname/* "$pkgdir"; or return
+    install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end
+
+function package_lilv-docs
+    set pkgdesc "$pkgdesc - documentation"
+
+    mv -v $pkgname/* "$pkgdir"; or return
+    mv -v "$pkgdir/usr/share/doc/$pkgbase"{-0,}; or return
+    find "$pkgdir" -type f -iname '*.buildinfo' -delete; or return
+    install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end
+
+function package_python-lilv
+    set pkgdesc "$pkgdesc - Python interface"
+    set depends lilv python python-numpy
+
+    mv -v $pkgname/* "$pkgdir"; or return
+    install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

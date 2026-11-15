@@ -1,0 +1,27 @@
+set pkgname libiec61883
+set pkgver 1.2.0
+set pkgrel 9
+set pkgdesc 'A higher level API for streaming DV, MPEG-2 and audio over Linux IEEE 1394'
+set arch i686 x32
+set url https://www.kernel.org/pub/linux/libs/ieee1394/
+set license LGPL
+set depends libraw1394
+set source "https://www.kernel.org/pub/linux/libs/ieee1394/$pkgname-$pkgver.tar.xz"
+set b2sums c1fdd4d6fbfd96eea9f1c22b20a1e71e4cafbe064091ef6211d097342f8751955f2d8a68cb3e5235d733f7ecd3725144abb329331bfa3497be1911bb8773d4a9
+set flags arch
+
+function prepare
+    cd libiec61883-$pkgver; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd libiec61883-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd libiec61883-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

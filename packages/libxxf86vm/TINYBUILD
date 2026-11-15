@@ -1,0 +1,25 @@
+set pkgname libxxf86vm
+set pkgver 1.1.7
+set pkgrel 1
+set pkgdesc 'X11 XFree86 video mode extension library'
+set arch i686 x32
+set url https://xorg.freedesktop.org/
+set license X11-distribute-modifications-variant
+set depends libxext libx11 glibc xorgproto
+set source "https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-$pkgver.tar.xz" \
+    "https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-$pkgver.tar.xz.sig"
+set sha256sums ae50c0f669e0af5a67cc4cd0f54f21d64a64d2660af883e80e95d3fe51b945d8 \
+    e62b1689d9a03da6bf4e5cfee9d8785da3abeb1de2681c89c0ebc13e6fa2dced
+set flags arch
+
+function build
+    cd libXxf86vm-$pkgver; or return
+    ./configure --prefix=/usr --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libXxf86vm-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

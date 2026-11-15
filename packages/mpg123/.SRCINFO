@@ -18,7 +18,6 @@ pkgbase = mpg123
 	provides = libsyn123.so
 	source = https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-1.33.7.tar.bz2
 	source = https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-1.33.7.tar.bz2.sig
-	validpgpkeys = D021FF8ECF4BE09719D61A27231C4CBC60D5CAFE
 	sha512sums = 694743802bb7be0f4a39bf62e681ae0bfed769cb87dc6c5b6fb5f9245966631efb5c5b9bd58588f7af55ced5d020f97c8a54993e71b5295bc45ebd152473f40e
 	sha512sums = SKIP
 

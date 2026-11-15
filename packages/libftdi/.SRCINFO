@@ -24,7 +24,6 @@ pkgbase = libftdi
 	source = https://www.intra2net.com/en/developer/libftdi/download/libftdi1-1.5.tar.bz2.sig
 	source = fix_includes_path.patch
 	source = https://src.fedoraproject.org/rpms/libftdi/raw/rawhide/f/libftdi-1.5-swig-4.3.patch
-	validpgpkeys = 3CEA9B8868BC3852618EB5B4707F91A424F006F5
 	sha512sums = c525b2ab6aff9ef9254971ae7d57f3549a36a36875765c48f947d52532814a2a004de1232389d4fe824a8c8ab84277b08427308573476e1da9b7db83db802f6f
 	sha512sums = SKIP
 	sha512sums = 11e6ff5f5a0f1a53a4815bb1cfc49cbfbb13eca2f7ecbe6c08b105d04910d58cdb7ed1a116bffdaa7c541e23c25b1f1d48f1dd13320d1d3c207a8e31bc52533f

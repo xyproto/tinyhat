@@ -1,0 +1,31 @@
+#!/bin/sh
+mode=fill image= color=
+while [ $# -gt 0 ]; do
+	case $1 in
+	-i | --image) image=$2; shift ;;
+	-m | --mode) mode=$2; shift ;;
+	-c | --color) color=${2#\#}; shift ;;
+	-o | --output) shift ;;
+	-h | --help)
+		echo "Usage: swaybg [-c rrggbb] [-i image.png] [-m stretch|fit|fill|center|tile|left|solid_color]"
+		exit 0
+		;;
+	esac
+	shift
+done
+bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
+if [ ! -p "$bar" ]; then
+	echo "swaybg: the dwl session is not running" >&2
+	exit 1
+fi
+[ "$mode" = solid_color ] && image=
+[ -n "$image" ] && image=$(realpath -- "$image")
+{
+	[ -n "$color" ] && printf 'rootcolor %.6s\n' "$color"
+	printf 'helptext none\n'
+	if [ -n "$image" ]; then
+		printf 'wallpaper %s %s\n' "$mode" "$image"
+	else
+		printf 'wallpaper none\n'
+	fi
+} >"$bar"

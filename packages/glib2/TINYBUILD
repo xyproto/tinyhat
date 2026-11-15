@@ -1,0 +1,92 @@
+set pkgbase glib2
+set pkgname glib2 glib2-devel glib2-docs
+set pkgver 2.90.1
+set pkgrel 1
+set pkgdesc 'Low level core library'
+set arch i686 x32
+set url https://gitlab.gnome.org/GNOME/glib
+set license LGPL-2.1-or-later
+set depends bash glibc libffi libsysprof-capture pcre2 util-linux-libs zlib
+set makedepends dbus dconf gettext git libelf meson python python-packaging shared-mime-info util-linux
+set checkdepends desktop-file-utils glib2
+set source "git+https://gitlab.gnome.org/GNOME/glib.git?signed#tag=$pkgver" \
+    git+https://gitlab.gnome.org/GNOME/gvdb.git \
+    0001-glib-compile-schemas-Remove-noisy-deprecation-warnin.patch \
+    0002-gdesktopappinfo-Add-more-known-terminals.patch \
+    gio-querymodules.hook \
+    gio-remove-module-cache.hook \
+    glib-compile-schemas.hook \
+    glib-remove-compiled-schemas.hook
+set sha256sums SKIP \
+    SKIP \
+    380ff0a41e2efac4ee76e37bfb7bd17551b879dd29b653f59dbc9d38dcdc18b7 \
+    bd132b1bcac4f03681013919bfd2a15fbe27a3eb597729d72871f07996ec694d \
+    557c88177f011ced17bdeac1af3f882b2ca33b386a866fdf900b35f927a2bbe8 \
+    60e546b2017b38ca4cf0776b2e1313143f6f2ede05363f67b63b35fa53e3d1b2 \
+    fe31399eb057d24a37062bcae6f88ca0778a91b85737f8110a03baa8bfc64fec \
+    374925e9437427ae5e4b3186a4061b2287020604fd5866de0eaa24aeb59a4efd
+set flags arch
+set -g documentation false
+
+function prepare
+    cd glib; or return
+    git apply -3 ../0001-glib-compile-schemas-Remove-noisy-deprecation-warnin.patch; or return
+    git apply -3 ../0002-gdesktopappinfo-Add-more-known-terminals.patch; or return
+    git submodule init; or return
+    git submodule set-url subprojects/gvdb "$srcdir/gvdb"; or return
+    git -c protocol.file.allow=always -c protocol.allow=never submodule update; or return
+end
+
+function build
+    set -l meson_options --default-library both -D documentation=false -D dtrace=disabled -D glib_debug=disabled -D man-pages=disabled -D selinux=disabled -D sysprof=enabled -D systemtap=disabled
+    set -a CFLAGS -g3
+    set -a CXXFLAGS -g3
+    set -a CFLAGS -ffat-lto-objects
+    set -a CXXFLAGS -ffat-lto-objects
+    arch-meson -D introspection=disabled glib build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_glib2
+    set -a depends libffi.so libmount.so
+    set -a provides libg{lib,io,irepository,module,object,thread}-2.0.so
+    set optdepends 'dconf: GSettings storage backend' 'glib2-devel: development tools' 'gvfs: most gio functionality'
+    set -a options staticlibs
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 *.hook; or return
+    touch "$pkgdir/usr/lib/gio/modules/.keep"; or return
+    python -m compileall -d /usr/share/glib-2.0/codegen "$pkgdir/usr/share/glib-2.0/codegen"; or return
+    python -O -m compileall -d /usr/share/glib-2.0/codegen "$pkgdir/usr/share/glib-2.0/codegen"; or return
+    cd "$pkgdir"; or return
+    _pick devel usr/bin/gdbus-codegen; or return
+    _pick devel usr/bin/glib-{mkenums,genmarshal}; or return
+    _pick devel usr/bin/gresource; or return
+    _pick devel usr/bin/gtester{,-report}; or return
+    _pick devel usr/share/gdb/; or return
+    _pick devel usr/share/glib-2.0/gdb/; or return
+    _pick devel usr/share/glib-2.0/codegen/; or return
+    _pick devel usr/share/bash-completion/completions/gresource; or return
+end
+
+function package_glib2-devel
+    set pkgdesc "$pkgdesc - development tools"
+    set depends glib2 glibc libelf python python-packaging
+    mv devel/* "$pkgdir"; or return
+end
+
+function package_glib2-docs
+    echo "No documentation for now."; or return
+end

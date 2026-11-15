@@ -1,0 +1,26 @@
+set pkgname xcb-util-wm
+set pkgver 0.4.2
+set pkgrel 2
+set pkgdesc 'Utility libraries for XC Binding - client and window-manager helpers for ICCCM'
+set arch i686 x32
+set url https://xcb.freedesktop.org
+set license X11-distribute-modifications-variant
+set depends libxcb glibc
+set makedepends xorg-util-macros xorgproto
+set source "https://xorg.freedesktop.org/archive/individual/lib/xcb-util-wm-$pkgver.tar.xz" \
+    "https://xorg.freedesktop.org/archive/individual/lib/xcb-util-wm-$pkgver.tar.xz.sig"
+set sha256sums 62c34e21d06264687faea7edbf63632c9f04d55e72114aa4a57bb95e4f888a0b \
+    9a21d3c27273c6ab340b9b93b4ab1a084a8a28bf39a84b1013c57aaf04e7a2da
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr --disable-static; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

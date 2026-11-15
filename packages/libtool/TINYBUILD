@@ -1,0 +1,55 @@
+# NOTE: requires rebuilt with each new gcc version
+
+set pkgbase libtool
+# No multilib on 32-bit, so no lib32-libltdl split package
+set pkgname libtool
+set pkgver 2.6.2
+set -g _commit 309bb53a8adfb22c6e5869cc8da049bf123e5438
+set pkgrel 5
+set -g _gccver 16
+set pkgdesc 'A generic library support script'
+set arch i686 x32
+set url https://www.gnu.org/software/libtool
+set license 'LGPL-2.0-or-later WITH Libtool-exception'
+set depends sh tar
+set makedepends "gcc>=$_gccver" git glibc help2man
+set checkdepends gcc-fortran
+set source "git+https://git.savannah.gnu.org/git/libtool.git#commit=$_commit" \
+    git+https://git.savannah.gnu.org/git/gnulib.git \
+    gnulib-bootstrap::git+https://github.com/gnulib-modules/bootstrap.git
+set b2sums feab7320948202806bb4fa96b3a8724faf24f4033cc4fc34fe6342f31e1f93edca04980138e9bbd2d21c7d412cbd7ac276fb28f0423e138df3bc889657264a0d \
+    SKIP \
+    SKIP
+set flags arch
+
+function prepare
+    cd libtool; or return
+
+    git submodule init; or return
+    git config --local submodule.gnulib.url "$srcdir"/gnulib; or return
+    git config --local submodule.gl-mod/bootstrap.url "$srcdir"/gnulib-bootstrap; or return
+    git -c protocol.file.allow=always submodule update; or return
+
+    ./bootstrap; or return
+end
+
+function build
+    cd libtool; or return
+    ./configure --prefix=/usr lt_cv_sys_lib_dlsearch_path_spec="/usr/lib /usr/lib32"; or return
+    make; or return
+end
+
+function check
+    cd libtool; or return
+    make check gl_public_submodule_commit=; or return
+end
+
+function package_libtool
+    set -a depends glibc
+    set provides "libltdl=$pkgver" "libtool-multilib=$pkgver"
+    set conflicts libltdl libtool-multilib
+    set replaces libltdl libtool-multilib
+
+    cd libtool; or return
+    make DESTDIR="$pkgdir" install; or return
+end

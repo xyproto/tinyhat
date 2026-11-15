@@ -1,0 +1,33 @@
+set pkgname geoip
+set pkgver 1.6.12
+set pkgrel 3
+set pkgdesc 'Non-DNS IP-to-country resolver C library & utils'
+set arch i686 x32
+set url https://www.maxmind.com/app/c
+set license GPL
+set depends zlib geoip-database
+set optdepends 'geoip-database-extra: city/ASN databases (not needed for country lookups)'
+set makedepends autoconf libtool
+set options '!emptydirs'
+set source "$pkgname-$pkgver.tar.gz::https://github.com/maxmind/$pkgname-api-c/archive/v$pkgver.tar.gz"
+set sha256sums 99b119f8e21e94f1dfd6d49fbeed29a70df1544896e76cd456f25e397b07d476
+set flags arch
+
+function prepare
+    cd geoip-api-c-$pkgver; or return
+    ./bootstrap; or return
+end
+
+function build
+    cd geoip-api-c-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --sysconfdir=/etc/geoip; or return
+    make; or return
+end
+
+function package
+    cd geoip-api-c-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

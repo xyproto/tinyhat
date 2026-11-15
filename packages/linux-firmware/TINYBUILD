@@ -1,0 +1,366 @@
+set pkgbase linux-firmware
+set pkgname linux-firmware linux-firmware-whence linux-firmware-other \
+    amd-ucode \
+    linux-firmware-amd \
+    linux-firmware-amdgpu \
+    linux-firmware-atheros \
+    linux-firmware-broadcom \
+    linux-firmware-cirrus \
+    linux-firmware-intel \
+    linux-firmware-liquidio \
+    linux-firmware-marvell \
+    linux-firmware-mediatek \
+    linux-firmware-mellanox \
+    linux-firmware-nfp \
+    linux-firmware-nvidia \
+    linux-firmware-qcom \
+    linux-firmware-qlogic \
+    linux-firmware-radeon \
+    linux-firmware-realtek \
+    linux-firmware-ti
+set pkgver 20260916
+set pkgrel 1
+set pkgdesc 'Firmware files for Linux'
+set url https://gitlab.com/kernel-firmware/linux-firmware
+set license LicenseRef-WHENCE
+set arch any
+set makedepends git parallel python rdfind
+set options '!debug' '!strip'
+set source "git+$url.git?signed#tag=$pkgver"
+set b2sums 6cab8bee911441b26075d459b5d98152cf7cb3aa0eecd872f5856d7228077ab6a52d0c5f24c011c6fedfd19978b5b73e19239c21db071cf58da7c53564ad8aae
+set flags arch
+
+set -g _backports
+set -g _reverts
+set -g _licdir $pkgbase/LICENSES
+
+function prepare
+    cd $pkgbase; or return
+
+    for c in $_backports
+        echo Backporting (git log --oneline -1 $c)
+        git cherry-pick -n $c; or return
+    end
+    for c in $_reverts
+        echo Reverting (git log --oneline -1 $c)
+        git revert -n $c; or return
+    end
+end
+
+function build
+    mkdir -p kernel/x86/microcode; or return
+    cat $pkgbase/amd-ucode/microcode_amd*.bin >kernel/x86/microcode/AuthenticAMD.bin; or return
+
+    # Reproducibility: set the timestamp on the bin file
+    if test -n "$SOURCE_DATE_EPOCH"
+        touch -d @$SOURCE_DATE_EPOCH kernel/x86/microcode/AuthenticAMD.bin; or return
+    end
+
+    # Reproducibility: strip the inode and device numbers from the cpio archive
+    echo kernel/x86/microcode/AuthenticAMD.bin |
+        bsdtar --uid 0 --gid 0 -cnf - -T - |
+        bsdtar --null -cf - --format=newc @- >amd-ucode.img; or return
+end
+
+# Moves files from $pkgdir to $srcdir/$argv[1], for another split package
+function _pick
+    set -l p $argv[1]
+    for f in $argv[2..-1]
+        set -l d "$srcdir/$p/"(string replace -- "$pkgdir/" '' $f)
+        mkdir -p (path dirname $d); or return
+        mv $f $d; or return
+        rmdir -p --ignore-fail-on-non-empty (path dirname $f); or return
+    end
+end
+
+# Prints the entries in directory $argv[1] whose names match the regular expression $argv[2]
+# (for the shell patterns with [...] and ? that fish globs do not have)
+function _match -a dir regex
+    for f in $dir/*
+        string match -qr -- "^($regex)\$" (path basename -- $f); and echo $f
+    end
+    return 0
+end
+
+# Moves the files that package_linux-firmware-other picked for this package into $pkgdir and deduplicates them
+function _split_install -a dir
+    mv -v $dir/* "$pkgdir"; or return
+    make -C $pkgbase FIRMWAREDIR="$pkgdir/usr/lib/firmware" dedup; or return
+end
+
+function package_linux-firmware
+    set pkgdesc "$pkgdesc - Default set"
+    set license CC0-1.0
+    # Each set is on one line, since makefish reads split package metadata line by line
+    set depends linux-firmware-amd linux-firmware-amdgpu linux-firmware-atheros linux-firmware-broadcom
+    set -a depends linux-firmware-cirrus linux-firmware-intel linux-firmware-mediatek linux-firmware-nvidia
+    set -a depends linux-firmware-other linux-firmware-radeon linux-firmware-realtek linux-firmware-ti
+    set optdepends 'linux-firmware-liquidio: Firmware for Cavium LiquidIO server adapters'
+    set -a optdepends 'linux-firmware-marvell: Firmware for Marvell devices'
+    set -a optdepends 'linux-firmware-mellanox: Firmware for Mellanox Spectrum switches'
+    set -a optdepends 'linux-firmware-nfp: Firmware for Netronome Flow Processors'
+    set -a optdepends 'linux-firmware-qcom: Firmware for Qualcomm SoCs'
+    set -a optdepends 'linux-firmware-qlogic: Firmware for QLogic devices'
+end
+
+function package_linux-firmware-whence
+    set pkgdesc "$pkgdesc - WHENCE file (vendor licenses)"
+
+    install -Dm644 $pkgbase/WHENCE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-other
+    set pkgdesc "$pkgdesc - Unsorted firmware for various devices"
+
+    set -l fwdir "$pkgdir/usr/lib/firmware"
+    ZSTD_CLEVEL=19 make -C $pkgbase FIRMWAREDIR="$fwdir" install-zst; or return
+
+    # split
+    _pick amd-ucode "$fwdir"/amd-ucode; or return
+
+    _pick amd "$fwdir"/amd{,npu,tee}; or return
+
+    _pick amdgpu "$fwdir"/amdgpu; or return
+
+    _pick atheros (_match "$fwdir" 'ar[0-9].*') "$fwdir"/{ath*,carl9170*,htc_*,qca,wil6210*}; or return
+
+    _pick broadcom "$fwdir"/{bnx2*,brcm,cypress,tigon}; or return
+
+    _pick cirrus "$fwdir"/{cirrus,cs42l43*,sdca}; or return
+
+    _pick intel "$fwdir"/{e100,hfi1_*,i915,intel,isci,iwlwifi*,ixp4xx,qat_*,xe}; or return
+    _pick intel "$fwdir"/*/ish; or return
+
+    _pick liquidio "$fwdir"/liquidio; or return
+
+    _pick marvell "$fwdir"/{libertas,mwl8k,mwlwifi,mrvl}; or return
+
+    _pick mediatek "$fwdir"/{mediatek,mt7*} (_match "$fwdir" 'rt[237].*'); or return
+
+    _pick mellanox "$fwdir"/mellanox; or return
+
+    _pick nfp "$fwdir"/netronome; or return
+
+    _pick nvidia "$fwdir"/nvidia; or return
+
+    _pick qcom "$fwdir"/{qcom,a300_*}; or return
+
+    _pick qlogic "$fwdir"/{qlogic,qed} (_match "$fwdir" 'ql2..._.*') "$fwdir"/c{b,t,t2}fw-*; or return
+
+    _pick radeon "$fwdir"/radeon; or return
+
+    _pick realtek "$fwdir"/{realtek,rtlwifi,rtw8*,rtl_*}; or return
+
+    _pick ti "$fwdir"/{ti_*,ti,ti-connectivity,tas*,INT8*,TAS2*,TI*,TX*} (_match "$fwdir" '....-.*-0x.\..*'); or return
+
+    # dedup after splitting
+    make -C $pkgbase FIRMWAREDIR="$pkgdir/usr/lib/firmware" dedup; or return
+
+    install -Dm644 $_licdir/{LICENCE,LICENSE}* \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_amd-ucode
+    set pkgdesc 'Microcode update image for AMD CPUs'
+    set license LicenseRef-amd-ucode
+
+    _split_install $pkgname; or return
+
+    install -Dm644 amd-ucode.img -t "$pkgdir/boot"; or return
+    install -Dm644 $_licdir/LICENSE.amd-ucode \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-amd
+    set pkgdesc "$pkgdesc - Firmware for non-GPU AMD devices"
+    set -a license LicenseRef-amd
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENSE.amd{npu,_pmf,-sev} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-amdgpu
+    set pkgdesc "$pkgdesc - Firmware for AMD Radeon GPUs"
+    set -a license LicenseRef-amdgpu MIT
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENSE.amd{gpu,isp} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-atheros
+    set pkgdesc "$pkgdesc - Firmware for Qualcomm Atheros WiFi and Bluetooth adapters"
+    set -a license GPL-2.0-only LicenseRef-atheros
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/NOTICE.{qca,qcom} \
+        $_licdir/LICENCE.{atheros_,open-ath9k-htc-}firmware \
+        $_licdir/LICENSE.{QualcommAtheros*,qcom} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-broadcom
+    set pkgdesc "$pkgdesc - Firmware for Broadcom and Cypress network adapters"
+    set -a license LicenseRef-broadcom
+    set depends linux-firmware-whence
+    set provides linux-firmware-bnx2x
+    set conflicts linux-firmware-bnx2x
+    set replaces 'linux-firmware-bnx2x<=20250613.12fe085f-4'
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.{bnx2*,broadcom_*,cypress,tigon} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-cirrus
+    set pkgdesc "$pkgdesc - Firmware for Cirrus Logic audio devices"
+    set -a license LicenseRef-cirrus
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENSE.cirrus \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-intel
+    set pkgdesc "$pkgdesc - Firmware for Intel devices"
+    set -a license Apache-2.0 GPL-2.0-only LicenseRef-intel
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.{HP,IntcSST2,adsp_sst,e100,fw_sst_0f28,lenovo} \
+        $_licdir/LICENCE.{ibt,iwlwifi,qat}_firmware \
+        $_licdir/LICENSE.{hfi1,ipu3}_firmware \
+        $_licdir/LICENSE.{dell,i915,ice*,intel*,ivsc,ixp4xx,xe} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-liquidio
+    set pkgdesc "$pkgdesc - Firmware for Cavium LiquidIO server adapters"
+    set -a license LicenseRef-liquidio
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.cavium_liquidio \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-marvell
+    set pkgdesc "$pkgdesc - Firmware for Marvell devices"
+    set -a license LicenseRef-marvell
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.{Marvell,NXP} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-mediatek
+    set pkgdesc "$pkgdesc - Firmware for MediaTek and Ralink devices"
+    set -a license LicenseRef-mediatek
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.{mediatek,ralink*} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-mellanox
+    set pkgdesc "$pkgdesc - Firmware for Mellanox Spectrum switches"
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENSE.mellanox \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-nfp
+    set pkgdesc "$pkgdesc - Firmware for Netronome Flow Processors"
+    set -a license LicenseRef-netronome
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.Netronome \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-nvidia
+    set pkgdesc "$pkgdesc - Firmware for NVIDIA GPUs and SoCs"
+    set -a license LicenseRef-nvidia
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.nvidia \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-qcom
+    set pkgdesc "$pkgdesc - Firmware for Qualcomm SoCs"
+    set -a license BSD-3-Clause LicenseRef-qcom
+    set depends linux-firmware-atheros linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/{NOTICE.qcom,LICENSE.qcom*,LICENSE.dell} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-qlogic
+    set pkgdesc "$pkgdesc - Firmware for QLogic devices"
+    set -a license LicenseRef-qlogic
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.qla* \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-radeon
+    set pkgdesc "$pkgdesc - Firmware for ATI Radeon GPUs"
+    set -a license LicenseRef-radeon
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENSE.radeon \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-realtek
+    set pkgdesc "$pkgdesc - Firmware for Realtek devices"
+    set -a license LicenseRef-realtek
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.rtlwifi_firmware.txt \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_linux-firmware-ti
+    set pkgdesc "$pkgdesc - Firmware for Texas Instruments devices"
+    set -a license GPL-2.0-or-later LicenseRef-ti
+    set depends linux-firmware-whence
+
+    _split_install (string replace -r '^linux-firmware-' '' -- $pkgname); or return
+
+    install -Dm644 $_licdir/LICENCE.{ti-connectivity,ti-tspa,wl1251} \
+        -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

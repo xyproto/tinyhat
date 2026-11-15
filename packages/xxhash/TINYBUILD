@@ -1,0 +1,22 @@
+set pkgname xxhash
+set pkgver 0.8.4
+set pkgrel 1
+set pkgdesc 'Extremely fast non-cryptographic hash algorithm'
+set arch i686 x32
+set url https://cyan4973.github.io/xxHash/
+set license GPL2 BSD
+set depends glibc
+set makedepends git
+set provides libxxhash.so
+set source "git+https://github.com/Cyan4973/xxHash.git#tag=v$pkgver"
+set b2sums cd0decd603803637cb4c1f0edaff8ad7ac22c1a08cba38d0139cf6ba36209881d2043c40b7fcad8f93a17daef13a82219f793d30ba63f4f573ee9b56ae06f70d
+set flags arch
+
+function build
+    make PREFIX=/usr DISPATCH=1 -C xxHash; or return
+end
+
+function package
+    make PREFIX=/usr DISPATCH=1 DESTDIR="$pkgdir" -C xxHash install; or return
+    install -Dm 644 xxHash/LICENSE -t "$pkgdir"/usr/share/licenses/xxhash; or return
+end

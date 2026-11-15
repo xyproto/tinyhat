@@ -1,0 +1,27 @@
+#!/bin/sh
+# systemd-pstore saves the kernel log of a crash (kept in EFI variables over the reboot) as files only root can read.
+# Move each one to a folder where tinyhat-crashlog-viewer can show it and the desktop user (in wheel) can remove it
+src=/var/lib/systemd/pstore
+dst=/var/lib/tinyhat/crashlogs
+install -d -m 0775 -g wheel "$dst"
+for d in "$src"/*/; do
+	[ -d "$d" ] || continue
+	id=${d%/}
+	id=${id##*/}
+	log=$(find "$d" -type f -name dmesg.txt | head -n 1)
+	if [ -n "$log" ]; then
+		cat "$log"
+	else
+		find "$d" -type f -exec cat {} +
+	fi >"$dst/.$id.txt"
+	if [ -s "$dst/.$id.txt" ]; then
+		chmod 0644 "$dst/.$id.txt"
+		mv -f "$dst/.$id.txt" "$dst/$id.txt"
+	else
+		rm -f "$dst/.$id.txt"
+	fi
+	rm -rf "$d"
+done
+# Keep the 10 newest
+ls -t "$dst"/*.txt 2>/dev/null | tail -n +11 | while read -r f; do rm -f "$f"; done
+exit 0

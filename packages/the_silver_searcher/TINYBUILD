@@ -1,0 +1,28 @@
+set pkgname the_silver_searcher
+set pkgver 2.2.0
+set pkgrel 4
+set pkgdesc 'Code searching tool similar to Ack, but faster'
+set arch i686 x32
+# Using a fork of the_silver_searcher to get pcre2 support.
+# The last commit in ggreer/the_silver_searcher was in 2020.
+set url https://github.com/aswild/the_silver_searcher
+set license Apache-2.0
+set depends pcre2 xz
+set makedepends git
+set source "git+$url#commit=7b571a8a94d0e22a06e3313cb0d9672b416fb2c1"
+set b2sums SKIP
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    sed -i 's,S -,S -fcommon -,' pgo.sh; or return
+    sed -i 's,ure ",ure --prefix=/usr ",' build.sh; or return
+end
+
+function build
+    $pkgname/build.sh; or return
+end
+
+function package
+    make -C $pkgname DESTDIR="$pkgdir" install; or return
+end

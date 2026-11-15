@@ -1,0 +1,27 @@
+set pkgname python-charset-normalizer
+set pkgver 3.5.1
+set pkgrel 1
+set pkgdesc 'Encoding and language detection alternative to chardet'
+set arch any
+set url https://github.com/Ousret/charset_normalizer
+set license MIT
+set depends python
+set makedepends git python-build python-installer python-setuptools python-wheel
+set checkdepends python-pytest
+set source "git+https://github.com/Ousret/charset_normalizer.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+set -g _name charset_normalizer
+
+function build
+    cd $_name; or return
+    python -m build --wheel --skip-dependency-check --no-isolation; or return
+end
+
+function package
+    set -l site_packages $(python -c "import site; print(site.getsitepackages()[0])")
+    install -d "$pkgdir"/usr/share/licenses/$pkgname; or return
+    ln -s "$site_packages"/$_name-$pkgver.dist-info/licenses/LICENSE "$pkgdir"/usr/share/licenses/$pkgname; or return
+    cd $_name; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+end

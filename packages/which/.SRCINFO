@@ -9,6 +9,6 @@ pkgbase = which
 	depends = bash
 	depends = glibc
 	source = https://ftp.gnu.org/gnu/which/which-2.25.tar.gz
-	b2sums = 9c9b0e197e0f35845fee8a050aeccb3407ea27f82955be028ee3f148d74bf5d2c844814657ccf16adf03176f94b40bb4ae8817f27ffc7b2196b8d2e1e77f82c8
+	sha256sums = 1cb83e4f702e60b8211ab5ec4c2afbab1b1dec80209456a7d2faf7584ed225ea
 
 pkgname = which

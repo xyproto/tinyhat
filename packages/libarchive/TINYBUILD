@@ -1,0 +1,67 @@
+set pkgname libarchive
+set pkgver 3.8.10
+set pkgrel 1
+set pkgdesc 'Multi-format archive and compression library'
+set arch i686 x32
+set url https://libarchive.org/
+set license BSD-2-Clause BSD-4-Clause-UC 'Apache-2.0 OR CC0-1.0 OR OpenSSL'
+set depends acl bzip2 glibc libxml2 lz4 openssl xz zlib zstd
+set makedepends git
+set provides libarchive.so
+set source "git+https://github.com/$pkgname/$pkgname.git?signed#tag=v$pkgver"
+set sha256sums 85b5e4f75184468a4c4f043b2ec772e2d6715e89a6c9d3196f02e39dc1a977bb
+set flags arch
+
+set -g _backports
+set -g _reverts \
+    # Merge pull request #3545 from stoeckmann/xml_alternatives
+    # xar: Improve XML library detection
+    fafe82e3502e8e75a6c4146ec977f77244787c6d
+
+function prepare
+    # extract licenses
+    # NOTE: some license files are missing: https://github.com/libarchive/libarchive/issues/2385
+    sed -n '43,65p' $pkgname/COPYING >BSD-2-Clause.txt; or return
+    sed -n '33,62p' $pkgname/$pkgname/archive_read_support_filter_compress.c >BSD-4-Clause-UC.txt; or return
+    cd $pkgname; or return
+    set -l _l
+    for _c in $_backports
+        if string match -q '*..*' -- $_c
+            set _l --reverse
+        else
+            set _l --max-count=1
+        end
+        git log --oneline $_l $_c; or return
+        git cherry-pick --mainline 1 --no-commit $_c; or return
+    end
+    for _c in $_reverts
+        if string match -q '*..*' -- $_c
+            set _l --reverse
+        else
+            set _l --max-count=1
+        end
+        git log --oneline $_l $_c; or return
+        git revert --mainline 1 --no-commit $_c; or return
+    end
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure \
+        --prefix=/usr \
+        --without-nettle \
+        --disable-static; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+    make check; or return
+end
+
+function package
+    set -a depends libacl.so libbz2.so libxml2.so libcrypto.so liblzma.so libz.so libzstd.so
+    make DESTDIR="$pkgdir" install -C $pkgname; or return
+    install -vDm 644 ./*.txt -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

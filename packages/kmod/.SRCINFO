@@ -22,7 +22,6 @@ pkgbase = kmod
 	source = depmod-search.conf
 	source = depmod.hook
 	source = depmod.script
-	validpgpkeys = EAB33C9690013C733916AC839BA2A5A630CBEA53
 	sha256sums = 7eef327c5cbe2a4649b2487b7a5bec6787cd26c9488bdbb2f35beb15305455b1
 	sha256sums = 1a92bfeae870f61ce814577e69d2a147a9c0caf6aed1131243e4179241fcc4a8
 	sha256sums = c11c2a0f66ea405493e8617689ca10818dc81dd1dddc19bdb220c8b2917119c1

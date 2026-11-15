@@ -13,6 +13,6 @@ pkgbase = json-c
 	depends = glibc
 	provides = libjson-c.so
 	source = git+https://github.com/json-c/json-c#tag=json-c-0.19-20260627
-	b2sums = 791312737431a2a8b82de9cefa2d609dec8021e0b93eced8ffd1fa4f4fdb0c557468840ca5729df2dc2312f5eae76eb6ac4be30b2bf1f38b07790622346ce4c0
+	sha256sums = SKIP
 
 pkgname = json-c

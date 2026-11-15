@@ -1,8 +1,8 @@
 pkgbase = pipewire
 	pkgdesc = Low-latency audio/video router and processor
 	pkgver = 1.6.11
-	pkgrel = 1
 	epoch = 1
+	pkgrel = 1
 	url = https://pipewire.org
 	arch = i686
 	arch = x32
@@ -49,11 +49,10 @@ pkgbase = pipewire
 	makedepends = webrtc-audio-processing-1
 	source = git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=1.6.11
 	source = pipewire-sysusers.conf
-	b2sums = 2359991befdbc6cf5a2e5ad31cde4a3f1904675fe455b9ab719754549e994ba0538b0f070b9954a4d64619067101eff9ed9e03ea3d5dd4674b3d21e9991da5b2
-	b2sums = ea19c2cd60b7b9773b48b2a044c764fbec260ec356d4a0f66a31737015dad5f1509145bf97094988fc2ea55282e98d52df4448a80e46b9e3c2fef57345b87846
+	sha256sums = SKIP
+	sha256sums = c053d98bbe1a156b72b6f0229efbe6c7aa0edda9ba5bb4e580f27bdaa9a773d9
 
 pkgname = pipewire
-	install = pipewire.install
 	license = MIT
 	license = LGPL-2.1-or-later
 	depends = libpipewire=1:1.6.11
@@ -66,6 +65,7 @@ pkgname = pipewire
 	depends = libncursesw.so
 	depends = readline
 	depends = libreadline.so
+	install = pipewire.install
 
 pkgname = alsa-card-profiles
 	pkgdesc = Low-latency audio/video router and processor - ALSA card profiles
@@ -200,7 +200,6 @@ pkgname = pipewire-netjack2
 
 pkgname = pipewire-pulse
 	pkgdesc = Low-latency audio/video router and processor - PulseAudio replacement
-	install = pipewire-pulse.install
 	depends = libpipewire=1:1.6.11
 	depends = libpipewire-0.3.so
 	depends = pipewire-audio=1:1.6.11
@@ -222,6 +221,7 @@ pkgname = pipewire-pulse
 	depends = pipewire-session-manager
 	provides = pulse-native-provider
 	conflicts = pulseaudio
+	install = pipewire-pulse.install
 
 pkgname = pipewire-system-services
 	pkgdesc = Low-latency audio/video router and processor - System services

@@ -1,0 +1,22 @@
+set pkgname libebur128
+set pkgver 1.2.6
+set pkgrel 2
+set pkgdesc 'A library that implements the EBU R 128 standard for loudness normalisation'
+set arch i686 x32
+set url https://github.com/jiixyj/libebur128
+set license MIT
+set depends glibc
+set makedepends cmake git
+set source "git+https://github.com/jiixyj/libebur128#tag=v$pkgver"
+set sha256sums ee74f29f3f4d339f71de831af341b36d2cf24d0129e5bec0512b145d66da3daf
+set flags arch
+
+function build
+    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_STATIC_LIBS=OFF; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm644 $pkgname/COPYING "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
+end

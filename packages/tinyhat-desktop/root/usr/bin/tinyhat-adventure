@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/lib/tinyhat/cproject adventure "Point-and-click adventure" main.lua

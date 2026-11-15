@@ -1,0 +1,95 @@
+set pkgname rsync
+set pkgver 3.5.1
+set pkgrel 3
+set pkgdesc 'A fast and versatile file copying tool for remote and local files'
+set arch i686 x32
+set url https://rsync.samba.org/
+set license GPL-3.0-or-later
+set depends acl libacl.so lz4 openssl popt xxhash libxxhash.so \
+    zlib zstd
+set optdepends 'python: for rrsync'
+set makedepends git python-commonmark
+set backup etc/rsyncd.conf
+set source "git+https://github.com/RsyncProject/rsync.git?signed#tag=v$pkgver" \
+    rsyncd.conf
+set sha256sums 0544af624869e1759f37fe4ec0ab26b99805a9c288ce698ccb5a5b93fb920041 \
+    733ccb571721433c3a6262c58b658253ca6553bec79c2bdd0011810bb4f2156b
+set flags arch
+
+set -g _backports \
+    6eb05b3451101e1781e7026510957aed6681ab0d \
+    7b9cedca0f85aee7ca4acfd03917019d098cc038 \
+    40c9a022a5daf72e09250fb99868ec67acc31a23 \
+    041769d607ce578a1ff2e87caa44b15b8dc76644
+# 6eb05b3: daemon: recognise named Unix stdin sockets (#1121), https://github.com/RsyncProject/rsync/pull/1121
+# 7b9cedc: log: escape terminal control characters (#1114)
+# 40c9a02: human-readable: calculate numbers in a loop (#872)
+# 041769d: human-readable: standardise size and progress-rate formatting (#459)
+
+set -g _reverts
+
+function prepare
+    cd $pkgname; or return
+
+    for _c in $_backports
+        if string match -q '*..*' -- $_c
+            git log --oneline --reverse "$_c"; or return
+        else
+            git log --oneline -1 "$_c"; or return
+        end
+        git cherry-pick -n -m1 "$_c"; or return
+    end
+    for _c in $_reverts
+        git log --oneline -1 "$_c"; or return
+        git revert -n "$_c"; or return
+    end
+
+    # For historic reasons we install the systemd unit as `rsyncd.*`, instead of
+    # just `rsync.*`. Let's make it conflict as expected with these names.
+    sed -i '/^Conflicts=/s|rsync.service|rsyncd.service|' packaging/systemd/rsync.socket; or return
+end
+
+function build
+    cd $pkgname; or return
+
+    ./configure \
+        --prefix=/usr \
+        --enable-ipv6 \
+        --disable-debug \
+        --with-rrsync \
+        --with-included-popt=no \
+        --with-included-zlib=no; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+
+    # check for IPv6 support
+    # https://gitlab.archlinux.org/archlinux/packaging/packages/rsync/-/commit/8936e33b245da170e7b5488b4ca35727ac9c4b68
+    if ./rsync -V | grep -q 'no IPv6'
+        echo 'Built without IPv6 support!' >&2
+        return 1
+    end
+
+    # partial-protected-regular-retry-linux fails in build chroots
+    # ("positive control failed: receiver did not open the existing partial file
+    # with O_CREAT") - it traces syscalls, which does not work under nspawn
+    rm -v testsuite/partial-protected-regular-retry-linux.test; or return
+    make test; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+    # install support scripts to doc
+    for i in support/*
+        install -Dm0644 "$i" "$pkgdir/usr/share/doc/rsync/$i"; or return
+    end
+    install -Dm0644 tech_report.tex "$pkgdir/usr/share/doc/rsync/tech_report.tex"; or return
+    install -Dm0644 ../rsyncd.conf "$pkgdir/etc/rsyncd.conf"; or return
+    install -Dm0644 packaging/systemd/rsync.service "$pkgdir/usr/lib/systemd/system/rsyncd.service"; or return
+    install -Dm0644 packaging/systemd/rsync.socket "$pkgdir/usr/lib/systemd/system/rsyncd.socket"; or return
+    install -Dm0644 packaging/systemd/rsync@.service "$pkgdir/usr/lib/systemd/system/rsyncd@.service"; or return
+end

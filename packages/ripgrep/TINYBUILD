@@ -1,0 +1,52 @@
+set pkgname ripgrep
+set pkgver 15.2.0
+set pkgrel 1
+set pkgdesc 'A search tool that combines the usability of ag with the raw speed of grep'
+set arch i686
+set url https://github.com/BurntSushi/ripgrep
+set license 'MIT OR Unlicense'
+set depends glibc libgcc pcre2
+set makedepends rust
+set source "$url/archive/$pkgver/$pkgname-$pkgver.tar.gz"
+set sha512sums fe7e3c36c8ccfdc292d7d1ac8da95cab4264b63fc89209e7a19557ef29d1c618992bc5c241be53417aa785dc834a239f10eec6c58da5f9438f0f4a860c1857d4
+set flags arch
+
+# Use debug
+set -gx CARGO_PROFILE_RELEASE_DEBUG 2
+set -gx CARGO_PROFILE_RELEASE_STRIP false
+
+# Use LTO
+set -gx CARGO_PROFILE_RELEASE_LTO true
+set -gx CARGO_PROFILE_RELEASE_CODEGEN_UNITS 1
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    cargo fetch --locked --target host-tuple; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    cargo build --release --frozen --features pcre2; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    cargo test --frozen --features pcre2; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    install -vDm755 -t "$pkgdir/usr/bin" target/release/rg; or return
+    mkdir -vp "$pkgdir/usr/share/zsh/site-functions"; or return
+    target/release/rg --generate complete-zsh >"$pkgdir/usr/share/zsh/site-functions/_rg"; or return
+    mkdir -vp "$pkgdir/usr/share/bash-completion/completions"; or return
+    target/release/rg --generate complete-bash >"$pkgdir/usr/share/bash-completion/completions/rg"; or return
+    mkdir -vp "$pkgdir/usr/share/fish/vendor_completions.d"; or return
+    target/release/rg --generate complete-fish >"$pkgdir/usr/share/fish/vendor_completions.d/rg.fish"; or return
+    mkdir -vp "$pkgdir/usr/share/man/man1"; or return
+    target/release/rg --generate man >"$pkgdir/usr/share/man/man1/rg.1"; or return
+    install -vDm644 -t "$pkgdir/usr/share/doc/$pkgname" README.md; or return
+    install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYING; or return
+    install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" LICENSE-MIT; or return
+    install -vDm644 -t "$pkgdir/usr/share/licenses/$pkgname" UNLICENSE; or return
+end

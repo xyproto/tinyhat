@@ -185,14 +185,16 @@ static void savevolume(const char *path, const char *text)
 		unlink(tmp);
 }
 
-static void volume(char *out, size_t size)
+// The volume from wpctl, or with cached set (after tinyhat-volume has just written it) from the volume file only,
+// since every wpctl run makes PipeWire send its whole registry, which can make audio stutter on a slow PC
+static void volume(char *out, size_t size, bool cached)
 {
 	char text[256], path[512];
 	double v;
 	char *argv[] = { "wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@", nullptr };
 	volumefile(path, sizeof path);
 	*out = '\0';
-	if (running("pipewire") && running("wireplumber") && run(text, sizeof text, argv) &&
+	if (!cached && running("pipewire") && running("wireplumber") && run(text, sizeof text, argv) &&
 		sscanf(text, "Volume: %lf", &v) == 1) {
 		snprintf(out, size, "%c %d%%", strstr(text, "[MUTED]") ? 'M' : 'V', (int)(v * 100 + 0.5));
 		savevolume(path, out);
@@ -276,7 +278,7 @@ static void add(char *line, size_t size, const char *item)
 	snprintf(line + len, size - len, "%s%s", len ? "\t" : "", item);
 }
 
-static void status(char *line, size_t size, const char *rundir)
+static void status(char *line, size_t size, const char *rundir, bool cachedvolume)
 {
 	char item[512], text[256], path[512];
 	*line = '\0';
@@ -309,7 +311,7 @@ static void status(char *line, size_t size, const char *rundir)
 	}
 	if (hot())
 		add(line, size, "H");
-	volume(text, sizeof text);
+	volume(text, sizeof text, cachedvolume);
 	if (*text)
 		add(line, size, text);
 	auto now = time(nullptr);
@@ -318,7 +320,8 @@ static void status(char *line, size_t size, const char *rundir)
 	add(line, size, text);
 }
 
-static int refresh(void)
+// Signal the running tinyhat-status: SIGUSR1 to update everything, SIGUSR2 to update with the cached volume
+static int refresh(int sig)
 {
 	char cmdline[256] = "";
 	auto f = fopen(pidfile, "r");
@@ -336,7 +339,7 @@ static int refresh(void)
 	size_t n = fread(cmdline, 1, sizeof cmdline - 1, f);
 	fclose(f);
 	cmdline[n] = '\0';
-	return strstr(cmdline, "tinyhat-status") && !kill(pid, SIGUSR1) ? 0 : 1;
+	return strstr(cmdline, "tinyhat-status") && !kill(pid, sig) ? 0 : 1;
 }
 
 int main(int argc, char *argv[])
@@ -346,11 +349,14 @@ int main(int argc, char *argv[])
 		rundir = "/tmp";
 	snprintf(pidfile, sizeof pidfile, "%s/tinyhat-status.pid", rundir);
 	if (argc > 1 && !strcmp(argv[1], "--refresh"))
-		return refresh();
+		return refresh(SIGUSR1);
+	if (argc > 1 && !strcmp(argv[1], "--volume"))
+		return refresh(SIGUSR2);
 
 	sigset_t set;
 	sigemptyset(&set);
 	sigaddset(&set, SIGUSR1);
+	sigaddset(&set, SIGUSR2);
 	sigaddset(&set, SIGTERM);
 	sigaddset(&set, SIGINT);
 	sigaddset(&set, SIGHUP);
@@ -364,9 +370,10 @@ int main(int argc, char *argv[])
 	if (!access("/run/tinyhat/toram", F_OK) && !mounted("/persist"))
 		puts("live 1");
 
+	bool cachedvolume = false;
 	for (;;) {
 		char line[2048];
-		status(line, sizeof line, rundir);
+		status(line, sizeof line, rundir, cachedvolume);
 		if (printf("%s\n", line) < 0 || fflush(stdout))
 			break;
 		struct timespec now, wait = { .tv_sec = INTERVAL };
@@ -379,6 +386,7 @@ int main(int argc, char *argv[])
 		int sig = sigtimedwait(&set, nullptr, &wait);
 		if (sig == SIGTERM || sig == SIGINT || sig == SIGHUP)
 			break;
+		cachedvolume = sig == SIGUSR2;
 	}
 	unlink(pidfile);
 	return 0;

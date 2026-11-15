@@ -1,0 +1,31 @@
+set pkgname glib2-introspection
+set pkgver 2.90.1
+set pkgrel 1
+set pkgdesc 'GObject introspection data for GLib, GObject and Gio'
+set arch i686 x32
+set url https://gitlab.gnome.org/GNOME/glib
+set license LGPL-2.1-or-later
+set depends "glib2=$pkgver"
+set makedepends gettext glib2 gobject-introspection libffi meson pcre2 python util-linux-libs zlib
+set source "https://download.gnome.org/sources/glib/"(string replace -r '\.[^.]*$' '' -- $pkgver)"/glib-$pkgver.tar.xz"
+set sha256sums 93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396
+
+function build
+    arch-meson glib-$pkgver build \
+        -D introspection=enabled \
+        -D documentation=false \
+        -D man-pages=disabled \
+        -D sysprof=disabled \
+        -D tests=false \
+        -D selinux=disabled \
+        -D dtrace=disabled \
+        -D systemtap=disabled; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$srcdir/root"; or return
+    install -d "$pkgdir/usr/lib" "$pkgdir/usr/share"; or return
+    cp -a "$srcdir/root/usr/lib/girepository-1.0" "$pkgdir/usr/lib/"; or return
+    cp -a "$srcdir/root/usr/share/gir-1.0" "$pkgdir/usr/share/"; or return
+end

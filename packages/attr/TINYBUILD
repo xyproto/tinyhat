@@ -1,0 +1,36 @@
+set pkgname attr
+set pkgver 2.6.0
+set pkgrel 1
+set pkgdesc 'Extended attribute support library for ACL support'
+set arch i686 x32
+set url https://savannah.nongnu.org/projects/attr
+set license 'LGPL-2.1-or-later AND GPL-2.0-or-later'
+set depends glibc
+set makedepends git gettext
+set provides libattr.so
+set backup etc/xattr.conf
+set source "git+https://git.savannah.nongnu.org/git/$pkgname.git?signed#tag=v$pkgver"
+set sha256sums ccd84181352d72d01efd1eb72ec99c539f23eb483406100a10747509477cf644
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    # remove the nfs entries from /etc/xattr.conf
+    # http://lists.gnu.org/archive/html/bug-coreutils/2019-03/msg00008.html
+    sed -i /nfs/d xattr.conf; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --libdir=/usr/lib --libexecdir=/usr/lib --prefix=/usr --sysconfdir=/etc; or return
+    make; or return
+end
+
+function check
+    make -k check -C $pkgbase; or return
+end
+
+function package
+    make DESTDIR="$pkgdir" install -C $pkgname; or return
+end

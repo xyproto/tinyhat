@@ -1,0 +1,39 @@
+set pkgname numactl
+set pkgver 2.0.19
+set pkgrel 1
+set pkgdesc 'Simple NUMA policy support'
+set arch i686 x32
+set url https://github.com/numactl/numactl
+set license GPL-2.0-only LGPL-2.1-only
+set depends glibc
+set provides libnuma.so
+set source "$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz"
+set sha512sums a9aa93bdc6333b620c10ff3573d6ff645ab54beece75e67be8cdddb27d062cc56cea34db342005a171877f85f05eb1d24e43f8466be907ba3b7c8b1f897cd954
+set b2sums 4e98de90a3c3abede9eb5a86c9427ab363c5c1fbb048985b2b7e7e3a150e541b5f99464540f600d2c0771b8fd518af7f6a27d2302077f41f4f67b886c3c0d9bc
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    # prevent excessive overlinking due to libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    # test/numademo fails on build machines without multiple NUMA nodes
+    # ("Configured Nodes does not match available memory nodes")
+    make -k -C $pkgname-$pkgver VERBOSE=1 check; or true
+end
+
+function package
+    make DESTDIR="$pkgdir" install -C $pkgname-$pkgver; or return
+    install -vDm 644 $pkgname-$pkgver/README.md -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+    # move_pages(2) is provided by man-pages and is more up-to-date there anyway
+    rm -rf "$pkgdir/usr/share/man/man2"; or return
+end

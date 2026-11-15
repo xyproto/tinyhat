@@ -1,0 +1,25 @@
+set pkgname sdl3_ttf
+set pkgver 3.2.2
+set pkgrel 2
+set pkgdesc 'SDL3 TrueType font library'
+set arch i686 x32
+set url https://github.com/libsdl-org/SDL_ttf
+set license Zlib
+set depends sdl3 freetype2
+set makedepends perl cmake ninja
+set source "https://github.com/libsdl-org/SDL_ttf/releases/download/release-$pkgver/SDL3_ttf-$pkgver.tar.gz"
+set sha256sums 63547d58d0185c833213885b635a2c0548201cc8f301e6587c0be1a67e1e045d
+
+function build
+    cmake -S SDL3_ttf-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=/usr -DSDLTTF_VENDORED=OFF -DSDLTTF_HARFBUZZ=OFF -DSDLTTF_PLUTOSVG=OFF -DSDLTTF_SAMPLES=OFF -DSDLTTF_INSTALL_MAN=OFF; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 SDL3_ttf-$pkgver/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"; or return
+    mkdir -p "$srcdir/wiki" "$pkgdir/usr/share/man"; or return
+    cd SDL3_ttf-$pkgver; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --copy-to-wiki > /dev/null; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --manpath="$pkgdir/usr/share/man" --copy-to-manpages > /dev/null; or return
+end

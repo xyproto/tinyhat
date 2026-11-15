@@ -1,0 +1,29 @@
+set pkgname desktop-file-utils
+set pkgver 0.28
+set pkgrel 1
+set pkgdesc 'Command line utilities for working with desktop entries'
+set arch i686 x32
+set url https://www.freedesktop.org/wiki/Software/desktop-file-utils
+set license GPL-2.0-or-later
+set depends glib2 glibc
+set makedepends git meson
+set source "git+https://gitlab.freedesktop.org/xdg/desktop-file-utils.git#tag=$pkgver" \
+    update-desktop-database.hook
+set sha256sums SKIP \
+    501f1eb35d9fbbd61666f40302b0ce63425299edf023c075986a24dc3ef18575
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+end
+
+function build
+    arch-meson $pkgname build; or return
+    meson compile -C build; or return
+end
+
+function package
+    set -a depends libglib-2.0.so
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 *.hook; or return
+end

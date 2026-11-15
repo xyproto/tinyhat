@@ -1,0 +1,25 @@
+set pkgname ell
+set pkgver 0.83
+set pkgrel 1
+set pkgdesc 'Embedded Linux library'
+set arch i686 x32
+set url https://git.kernel.org/pub/scm/libs/ell/ell.git/
+set license LGPL-2.1-or-later
+set depends libgcc glibc
+set checkdepends dbus procps-ng
+set source "https://mirrors.edge.kernel.org/pub/linux/libs/ell/ell-$pkgver.tar.xz" \
+    "https://mirrors.edge.kernel.org/pub/linux/libs/ell/ell-$pkgver.tar.sign"
+set sha256sums 39a562f5ab2768e69da1ffbb1f98a8eb3483baffc7d2ef6adc3705e4fd4e53fb \
+    bf3cb7e5f7c56ee417630b08aba4ffbb0636771c3879be179c2f0f5d963c90c9
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir/" install; or return
+end

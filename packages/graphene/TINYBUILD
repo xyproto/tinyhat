@@ -1,0 +1,54 @@
+set pkgbase graphene
+set pkgname graphene graphene-docs
+set pkgver 1.10.8
+set pkgrel 2
+set pkgdesc 'Thin layer of graphic data types'
+set arch i686 x32
+set url https://ebassi.github.io/graphene/
+set license MIT
+set depends glib2 glibc
+set makedepends git gtk-doc meson
+set checkdepends python-gobject python-tappy
+set source "git+https://github.com/ebassi/graphene#tag=$pkgver" \
+    git+https://github.com/ebassi/mutest
+set sha256sums SKIP \
+    SKIP
+set flags arch
+
+function prepare
+    cd graphene; or return
+    git cherry-pick -n f89522ca60a76512b8b85c7b8e4d16b94849f22f; or return
+    git submodule init; or return
+    git submodule set-url subprojects/mutest "$srcdir/mutest"; or return
+    git -c protocol.file.allow=always -c protocol.allow=never submodule update; or return
+end
+
+switch $CARCH
+    case x32 x86_64 aarch64
+        function build
+            set -l meson_options -D gtk_doc=true -D installed_tests=false
+            arch-meson -D introspection=disabled graphene build $meson_options; or return
+            meson compile -C build; or return
+        end
+    case '*'
+        function build
+            set -l meson_options -D gtk_doc=true -D installed_tests=false
+            arch-meson -D introspection=disabled -D sse2=false graphene build $meson_options; or return
+            meson compile -C build; or return
+        end
+end
+
+function package_graphene
+    set provides libgraphene-1.0.so
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/gtk-doc; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 graphene/LICENSE.txt; or return
+end
+
+function package_graphene-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 graphene/LICENSE.txt; or return
+end

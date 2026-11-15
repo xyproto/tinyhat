@@ -7,8 +7,8 @@ pkgbase = bwbasic
 	arch = x32
 	license = GPL-2.0-only
 	depends = glibc
-	noextract = bwbasic-3.40.zip
 	source = https://downloads.sourceforge.net/project/bwbasic/bwbasic/version%203.40/bwbasic-3.40.zip
+	noextract = bwbasic-3.40.zip
 	sha256sums = b5689422a09d05aae1143497d22579e55c4e121ee2b806e738b483b8c000a20f
 
 pkgname = bwbasic

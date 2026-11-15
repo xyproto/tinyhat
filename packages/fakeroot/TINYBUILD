@@ -1,0 +1,44 @@
+set pkgname fakeroot
+set epoch 1
+set pkgver 2.1.4
+set pkgrel 1
+set pkgdesc 'Tool for simulating superuser privileges'
+set arch i686 x32
+set license GPL-3.0-or-later
+set url https://tracker.debian.org/pkg/fakeroot
+set depends glibc filesystem sed util-linux sh
+set makedepends git systemd po4a
+set checkdepends sharutils
+set source "git+https://salsa.debian.org/clint/fakeroot.git#tag=upstream/$pkgver"
+set sha256sums 803efdb4e491b4d9872f1a8c5ec61cdf52409e4592c665b172d3baf2d9f1ab83
+set flags arch
+
+function prepare
+    ln -s fakeroot-archive fakeroot; or return
+    cd $pkgname; or return
+    # Disable t.xattr2 because it fails consistently on the buildds.
+    git cherry-pick -n f69674a9ba64de50b723b5c9b7ae76e72b9ff245; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr --libdir=/usr/lib/libfakeroot --disable-static --with-ipc=sysv; or return
+    make; or return
+    cd doc; or return
+    po4a -k 0 --rm-backups --variable 'srcdir=../doc/' po4a/po4a.cfg; or return
+end
+
+function check
+    cd $pkgname; or return
+    make VERBOSE=1 check; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -dm0755 "$pkgdir/usr/lib/ld.so.conf.d/"; or return
+    echo /usr/lib/libfakeroot >"$pkgdir/usr/lib/ld.so.conf.d/fakeroot.conf"
+    # install README for sysv/tcp usage
+    install -Dm0644 README "$pkgdir/usr/share/doc/$pkgname/README"; or return
+end

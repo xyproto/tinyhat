@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Grafx2
+Icon=applications-graphics
+Comment=Pixel art paint program
+Exec=tinyhat-run -g grafx2
+Terminal=false
+Categories=Graphics;2DGraphics;RasterGraphics;

@@ -1,0 +1,121 @@
+set pkgbase curl
+set pkgname curl libcurl-compat libcurl-gnutls
+set pkgver 8.23.0
+set pkgrel 1
+set pkgdesc 'command line tool and library for transferring data with URLs'
+set arch i686 x32
+set url https://curl.se/
+set license curl
+# for building: git patchelf, the rest are the actual package dependencies
+set makedepends git patchelf ca-certificates brotli gnutls krb5 libidn2 libnghttp2 libnghttp3 libngtcp2 libpsl \
+    libssh2 nettle zlib zstd
+# No check(): valgrind seems broken for 32-bit currently
+set source "git+https://github.com/curl/curl.git?signed#tag=curl-"(string replace -a . _ -- $pkgver)
+set sha512sums 4be9e14dc61c465d1f4e56bed597350ffa66cc49f6b60c29ff196897e8b72cdfb7fc0ad503f3e7f8902b13f085a8138a5e06ca402e50014bda372909eb04798d
+set flags arch
+
+set -g _backports
+set -g _reverts
+
+function prepare
+    cd $pkgbase; or return
+    for _c in $_backports
+        if string match -q '*..*' -- $_c
+            git log --oneline --reverse $_c; or return
+        else
+            git log --oneline -1 $_c; or return
+        end
+        git cherry-pick -n -m1 $_c; or return
+    end
+    for _c in $_reverts
+        git log --oneline -1 $_c; or return
+        git revert -n $_c; or return
+    end
+    # no '-DEV' in version, release date from tagged commit...
+    set -l timestamp (git log -1 --format=%cs "curl-"(string replace -a . _ -- $pkgver)); or return
+    sed -i -e "/\WLIBCURL_VERSION\W/c #define LIBCURL_VERSION \"$pkgver\"" \
+        -e "/\WLIBCURL_TIMESTAMP\W/c #define LIBCURL_TIMESTAMP \"$timestamp\"" \
+        include/curl/curlver.h; or return
+    autoreconf -fi; or return
+end
+
+function build
+    set -l _configure_options --prefix=/usr --mandir=/usr/share/man --disable-ldap --disable-ldaps --disable-manual \
+        --enable-ipv6 --enable-threaded-resolver --enable-websockets --with-gssapi --with-libssh2 --with-nghttp3 \
+        --with-ngtcp2 --with-ca-bundle=/etc/ssl/certs/ca-certificates.crt
+    mkdir build-curl{,-compat,-gnutls}; or return
+
+    # build curl
+    cd "$srcdir"/build-curl; or return
+    "$srcdir/$pkgbase"/configure $_configure_options --enable-versioned-symbols --without-gnutls --with-openssl \
+        --with-fish-functions-dir=/usr/share/fish/vendor_completions.d/ \
+        --with-zsh-functions-dir=/usr/share/zsh/site-functions/; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+
+    # build libcurl-compat
+    cd "$srcdir"/build-curl-compat; or return
+    "$srcdir/$pkgbase"/configure $_configure_options --disable-versioned-symbols --without-gnutls --with-openssl; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make -C lib; or return
+    patchelf --set-soname libcurl-compat.so.4 ./lib/.libs/libcurl.so; or return
+
+    # build libcurl-gnutls
+    cd "$srcdir"/build-curl-gnutls; or return
+    "$srcdir/$pkgbase"/configure $_configure_options --disable-versioned-symbols --with-gnutls --without-openssl; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make -C lib; or return
+    patchelf --set-soname libcurl-gnutls.so.4 ./lib/.libs/libcurl.so; or return
+end
+
+function package_curl
+    set depends ca-certificates brotli libbrotlidec.so krb5 libgssapi_krb5.so libidn2 libidn2.so libnghttp2
+    set -a depends libnghttp2.so libnghttp3 libnghttp3.so libngtcp2 libngtcp2.so libpsl libpsl.so libssh2
+    set -a depends libssh2.so openssl libcrypto.so libssl.so zlib libz.so zstd libzstd.so
+    set provides libcurl.so
+    set replaces wcurl
+    set conflicts wcurl
+    cd build-curl; or return
+    make DESTDIR="$pkgdir" install; or return
+    make DESTDIR="$pkgdir" install -C scripts; or return
+    cd "$srcdir/$pkgname"; or return
+    # license
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m0644 COPYING; or return
+end
+
+function package_libcurl-compat
+    set pkgdesc 'command line tool and library for transferring data with URLs (no versioned symbols)'
+    set depends ca-certificates brotli libbrotlidec.so krb5 libgssapi_krb5.so libidn2 libidn2.so libnghttp2
+    set -a depends libnghttp2.so libnghttp3 libnghttp3.so libngtcp2 libngtcp2.so libpsl libpsl.so libssh2
+    set -a depends libssh2.so openssl libcrypto.so libssl.so zlib libz.so zstd libzstd.so
+    set provides libcurl-compat.so
+    cd "$srcdir"/build-curl-compat; or return
+    make -C lib DESTDIR="$pkgdir" install; or return
+    mv "$pkgdir"/usr/lib/libcurl{,-compat}.so.4.8.0; or return
+    rm "$pkgdir"/usr/lib/libcurl.{a,so}*; or return
+    for version in 3 4.0.0 4.1.0 4.2.0 4.3.0 4.4.0 4.5.0 4.6.0 4.7.0
+        ln -s libcurl-compat.so.4.8.0 "$pkgdir"/usr/lib/libcurl.so.$version; or return
+        ln -s libcurl-compat.so.4.8.0 "$pkgdir"/usr/lib/libcurl-compat.so.$version; or return
+    end
+    install -dm 0755 "$pkgdir"/usr/share/licenses; or return
+    ln -s curl "$pkgdir"/usr/share/licenses/libcurl-compat; or return
+end
+
+function package_libcurl-gnutls
+    set pkgdesc 'command line tool and library for transferring data with URLs (no versioned symbols, linked against gnutls)'
+    # gnutls: libgnutls.so
+    set depends ca-certificates brotli libbrotlidec.so gnutls krb5 libgssapi_krb5.so libidn2 libidn2.so
+    set -a depends libnghttp2 libnghttp2.so libnghttp3 libnghttp3.so libngtcp2 libngtcp2.so libngtcp2_crypto_gnutls.so libpsl
+    set -a depends libpsl.so libssh2 libssh2.so nettle libnettle.so zlib libz.so zstd libzstd.so
+    set provides libcurl-gnutls.so
+    cd "$srcdir"/build-curl-gnutls; or return
+    make -C lib DESTDIR="$pkgdir" install; or return
+    mv "$pkgdir"/usr/lib/libcurl{,-gnutls}.so.4.8.0; or return
+    rm "$pkgdir"/usr/lib/libcurl.{a,so}*; or return
+    ln -s libcurl-gnutls.so.4 "$pkgdir"/usr/lib/libcurl-gnutls.so; or return
+    for version in 3 4 4.0.0 4.1.0 4.2.0 4.3.0 4.4.0 4.5.0 4.6.0 4.7.0
+        ln -s libcurl-gnutls.so.4.8.0 "$pkgdir"/usr/lib/libcurl-gnutls.so.$version; or return
+    end
+    install -dm 0755 "$pkgdir"/usr/share/licenses; or return
+    ln -s curl "$pkgdir"/usr/share/licenses/libcurl-gnutls; or return
+end

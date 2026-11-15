@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=File manager
+Icon=system-file-manager
+Comment=Browse files and folders
+Exec=tinyhat-files %U
+Terminal=false
+Categories=System;FileManager;
+MimeType=inode/directory;

@@ -1,0 +1,56 @@
+set pkgbase sysprof
+set pkgname sysprof libsysprof-capture
+set pkgver 51.0
+set pkgrel 1
+set pkgdesc 'Kernel based performance profiler'
+set arch i686 x32
+set url https://apps.gnome.org/Sysprof/
+set license GPL-3.0-or-later
+set depends cairo glib2 glibc json-glib libdex libelf libgcc libstdc++ libunwind pango polkit systemd-libs
+set makedepends git meson glib2-devel yelp-tools
+set source "git+https://gitlab.gnome.org/GNOME/sysprof.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd sysprof; or return
+end
+
+function build
+    set -a CFLAGS -ffat-lto-objects
+    arch-meson sysprof build -Dgtk=false; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_libsysprof-capture
+    set pkgdesc "$pkgdesc - capture library"
+    set depends
+    set license BSD-2-Clause-Patent
+    mv capture/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 sysprof/src/libsysprof-capture/COPYING; or return
+end
+
+function package_sysprof
+    set -a depends libsysprof-capture
+    set groups gnome-extra
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+    cd "$pkgdir"; or return
+    _pick capture usr/lib/libsysprof-capture-*; or return
+    _pick capture usr/lib/pkgconfig/sysprof-capture-*; or return
+    _pick capture usr/include/sysprof-*/sysprof-{address,capture,clock,collector,macros}.h; or return
+    _pick capture usr/include/sysprof-*/sysprof-{platform,version,version-macros}.h; or return
+    _pick capture usr/include/sysprof-*/sysprof-capture-{condition,cursor,reader,types,writer}.h; or return
+end

@@ -1,0 +1,31 @@
+set pkgname cryptsetup
+set pkgver 2.8.8
+set pkgrel 1
+set pkgdesc 'Userspace setup tool for transparent encryption of block devices using dm-crypt'
+set arch i686 x32
+set url https://gitlab.com/cryptsetup/cryptsetup/
+set license GPL-2.0-or-later
+set depends device-mapper libdevmapper.so glibc openssl libcrypto.so popt util-linux-libs libblkid.so libuuid.so json-c libjson-c.so
+set makedepends util-linux
+set checkdepends jq procps-ng xxd
+set provides libcryptsetup.so
+set conflicts 'mkinitcpio<38-1'
+set options '!emptydirs'
+set source "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-$pkgver.tar.xz" \
+    "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-$pkgver.tar.sign"
+set sha256sums 3acfa685f2dd7fcc832e0b77bc7093aa7da554a51ce8dafbb4138eaa854eee35 \
+    5891c713fe2bb9c74499d99673457354bb673a0cb1b072e36d52a229ac937c6b
+set flags arch
+
+function build
+    cd "$srcdir"/$pkgname-$pkgver; or return
+    ./configure --prefix=/usr --sbindir=/usr/bin --disable-ssh-token --disable-static --disable-asciidoc; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir"/$pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -D -m0644 -t "$pkgdir"/usr/share/doc/cryptsetup/ FAQ.md docs/{Keyring,LUKS2-locking}.txt; or return
+end

@@ -1,8 +1,8 @@
 pkgbase = portaudio
 	pkgdesc = A free, cross-platform, open source, audio I/O library.
 	pkgver = 19.7.0
-	pkgrel = 4
 	epoch = 1
+	pkgrel = 4
 	url = https://github.com/portaudio/portaudio/
 	arch = i686
 	arch = x32

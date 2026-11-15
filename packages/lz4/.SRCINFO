@@ -1,8 +1,8 @@
 pkgbase = lz4
 	pkgdesc = Extremely fast compression algorithm
 	pkgver = 1.10.0
-	pkgrel = 2
 	epoch = 1
+	pkgrel = 2
 	url = https://lz4.github.io/lz4/
 	arch = i686
 	arch = x32

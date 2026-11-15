@@ -1,0 +1,102 @@
+set pkgbase lvm2
+set pkgdesc 'Device mapper and Logical Volume Manager'
+set pkgname lvm2 device-mapper
+set pkgver 2.03.43
+set pkgrel 2
+set arch i686 x32
+set url https://sourceware.org/lvm2/
+set license GPL-2.0-only LGPL-2.1-only
+set makedepends git systemd libaio thin-provisioning-tools
+set flags arch
+set source "git+https://gitlab.com/lvmteam/lvm2.git?signed#tag=v"(string replace -a . _ -- $pkgver)
+set sha256sums 2167736de4920c7cabbcde864e3d2ea0c0bd3a9cda82bdc9e368a1346ace9928
+
+set -g _backports \
+    0b1cb8bcb3bf8bd666521a63c0be1e9da51e2337 # pvscan: preserve preferred device name when importing DEVLINKS
+
+function prepare
+    cd lvm2/; or return
+
+    for _c in $_backports
+        git log --oneline -1 $_c; or return
+        git show $_c -- ':(exclude)WHATS_NEW' | git apply; or return
+    end
+
+    # remove install section from systemd units that are enabled by default
+    sed -i -e '/^\[Install\]$/,$d' \
+        scripts/dm_event_systemd_red_hat.socket.in \
+        scripts/lvm2_lvmpolld_systemd_red_hat.socket.in \
+        scripts/lvm2_monitoring_systemd_red_hat.service.in; or return
+end
+
+function build
+    # build system requires bash:
+    # https://www.redhat.com/archives/linux-lvm/2020-January/msg00004.html
+    # https://www.gnu.org/software/autoconf/manual/autoconf-2.69/html_node/Defining-Variables.html
+    set -lx CONFIG_SHELL /bin/bash
+
+    cd lvm2/; or return
+
+    ./configure \
+        CONFIG_SHELL=/bin/bash \
+        --prefix=/usr \
+        --sbindir=/usr/bin \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --enable-cmdlib \
+        --enable-dmeventd \
+        --enable-lvmpolld \
+        --enable-pkgconfig \
+        --enable-readline \
+        --enable-udev_rules \
+        --enable-udev_sync \
+        --enable-write_install \
+        --with-cache=internal \
+        --with-default-dm-run-dir=/run \
+        --with-default-locking-dir=/run/lock/lvm \
+        --with-default-pid-dir=/run \
+        --with-default-run-dir=/run/lvm \
+        --with-libexecdir=/usr/lib/lvm2 \
+        --with-systemdsystemunitdir=/usr/lib/systemd/system \
+        --with-thin=internal \
+        --with-udev-prefix=/usr; or return
+    make; or return
+end
+
+function package_device-mapper
+    set pkgdesc 'Device mapper userspace library and tools'
+    set url http://sourceware.org/dm/
+    set depends bash glibc libgcc libgcc_s.so systemd-libs libudev.so
+    set provides libdevmapper.so libdevmapper-event.so
+
+    cd lvm2/; or return
+
+    make DESTDIR="$pkgdir" install_device-mapper; or return
+    # Install dmeventd socket and service
+    make DESTDIR="$pkgdir" install_systemd_units; or return
+    rm -f "$pkgdir/usr/lib/systemd/system/"{blk-availability.service,lvm*}; or return
+    install -d -m0755 "$pkgdir/usr/lib/systemd/system/sockets.target.wants"; or return
+    ln -sf ../dm-event.socket "$pkgdir/usr/lib/systemd/system/sockets.target.wants/dm-event.socket"; or return
+end
+
+function package_lvm2
+    set pkgdesc 'Logical Volume Manager 2 utilities'
+    set depends bash "device-mapper>=$pkgver" glibc libaio libaio.so readline libreadline.so systemd-libs libudev.so
+    set -a depends thin-provisioning-tools util-linux-libs libblkid.so
+    set conflicts lvm 'mkinitcpio<38-1'
+    set backup etc/lvm/lvm.conf etc/lvm/lvmlocal.conf
+
+    cd lvm2/; or return
+
+    make -j1 DESTDIR="$pkgdir" install_lvm2; or return
+    # /etc directories
+    install -d "$pkgdir"/etc/lvm/{archive,backup}; or return
+
+    # systemd support
+    make DESTDIR="$pkgdir" install_systemd_units; or return
+    rm -f "$pkgdir/usr/lib/systemd/system/"dm-*; or return
+    install -d -m0755 "$pkgdir/usr/lib/systemd/system/sysinit.target.wants"; or return
+    ln -sf ../lvm2-lvmpolld.socket "$pkgdir/usr/lib/systemd/system/sysinit.target.wants/lvm2-lvmpolld.socket"; or return
+    ln -sf ../lvm2-monitor.service "$pkgdir/usr/lib/systemd/system/sysinit.target.wants/lvm2-monitor.service"; or return
+    make DESTDIR="$pkgdir" install_systemd_generators; or return
+end

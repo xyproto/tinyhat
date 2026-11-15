@@ -1,0 +1,18 @@
+set pkgname tinyionice
+set pkgver 1.0.4
+set pkgrel 3
+set pkgdesc 'Tiny version of ionice from util-linux'
+set arch i686 x32
+set url https://github.com/xyproto/tinyionice
+set license GPL2
+set source "$url/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
+set b2sums e74591c660ad6abb446db293a99d57f82da0ff6180f999d8126cb05cfc9c0f4851f86a052202c3b5e50eb48e993bc1d00afc1cb819ef0cdbe5830544289a32b0
+set flags arch
+
+function build
+    make CFLAGS="$CFLAGS -fPIC -fstack-protector-strong -D_GNU_SOURCE -Wl,-z,now -Os" -C $pkgname-$pkgver; or return
+end
+
+function package
+    DESTDIR="$pkgdir" make -C $pkgname-$pkgver install; or return
+end

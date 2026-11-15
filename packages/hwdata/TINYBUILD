@@ -1,0 +1,22 @@
+set pkgname hwdata
+set pkgver 0.412
+set pkgrel 1
+set pkgdesc 'hardware identification databases'
+set arch any
+set url https://github.com/vcrhonek/hwdata
+set license GPL-2.0-or-later
+set makedepends git
+set replaces hwids
+set source "git+https://github.com/vcrhonek/hwdata.git#tag=v$pkgver?signed"
+set sha256sums SKIP
+set flags arch
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr --disable-blacklist; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+end

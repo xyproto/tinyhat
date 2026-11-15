@@ -1,0 +1,33 @@
+set pkgname lutris
+set pkgver 0.5.23.r124.g82e85b4
+set pkgrel 3
+set -g _commit 82e85b4f90229e911202e24cea129bc12f2649e0
+set pkgdesc 'Game launcher for Linux, from the upstream GTK 4 branch, using Wayland'
+set arch any
+set url https://lutris.net
+set license GPL-3.0-or-later
+set depends python python-gobject glib2-introspection python-dbus python-yaml python-lxml python-requests \
+    python-certifi python-distro python-evdev gtk4 glib2 gdk-pixbuf2 pango cabextract 7zip unzip curl psmisc \
+    wlr-randr
+set optdepends 'wine-staging: Windows games' \
+    'winetricks: Windows components' \
+    'python-pillow: icons of Windows programs and Dolphin games'
+set makedepends git meson gettext
+set source "git+https://github.com/lutris/lutris.git#commit=$_commit" \
+    tinyhat.patch
+set sha256sums SKIP \
+    SKIP
+
+function prepare
+    cd lutris; or return
+    patch -Np1 -i ../tinyhat.patch; or return
+end
+
+function build
+    arch-meson lutris build; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+end

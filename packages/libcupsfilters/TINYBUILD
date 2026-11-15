@@ -1,0 +1,51 @@
+set pkgname libcupsfilters
+set pkgver 2.2.1.r32.gd49e9284
+set -g _commit d49e92848060d6d9d2e95679a115a8da5102f1de # master 2026-10-13
+set pkgrel 1
+set pkgdesc 'OpenPrinting CUPS Filters - contains all the code of the filters of the former cups-filters package as library functions'
+set arch i686 x32
+set url https://github.com/OpenPrinting/libcupsfilters
+set license 'Apache-2.0 WITH LLVM-exception'
+# keep poppler for pdftoppm
+set depends libcups libexif pdfio libjxl poppler \
+    libjpeg-turbo libpng libtiff lcms2 \
+    fontconfig glibc dbus
+# mupdf-tools ???
+set makedepends ghostscript git
+set checkdepends ttf-dejavu # ttf-dejavu for make check
+# Release tarball: https://github.com/OpenPrinting/libcupsfilters/releases/download/$pkgver/$pkgname-$pkgver.tar.xz
+# libcupsfilters-PR167.patch::https://github.com/OpenPrinting/libcupsfilters/pull/167.patch
+#   fa77ba778dcbea8826edcf87c4d022a11c073d288b39a1eaf06e0eaf3376f525
+set source "git+https://github.com/OpenPrinting/libcupsfilters#commit=$_commit"
+set sha256sums 4136e3d0bc8ef8e881818cf62be67d2486361025200627c22233a7a40b8ec989
+set flags arch
+
+function prepare
+    cd "$pkgname"; or return
+    # https://github.com/OpenPrinting/libcupsfilters/issues/209
+    # patch -Np1 -i ../libcupsfilters-PR167.patch
+    autoreconf -vfi; or return
+end
+
+function build
+    cd "$pkgname"; or return
+    ./configure --prefix=/usr \
+        --sysconfdir=/etc \
+        --sbindir=/usr/bin \
+        --localstatedir=/var \
+        --disable-mutool; or return
+    make; or return
+end
+
+function check
+    cd "$pkgname"; or return
+    make check; or return
+end
+
+function package
+    cd "$pkgname"; or return
+    make DESTDIR="$pkgdir/" install; or return
+    # license
+    mkdir -p "$pkgdir"/usr/share/licenses/$pkgname; or return
+    install -m644 "$srcdir"/$pkgname/{COPYING,NOTICE} "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end

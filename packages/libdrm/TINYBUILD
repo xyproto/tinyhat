@@ -1,0 +1,29 @@
+set pkgname libdrm
+set pkgver 2.4.134
+set pkgrel 1
+set pkgdesc 'Userspace interface to kernel DRM services'
+set arch i686 x32
+set url https://dri.freedesktop.org/
+set license MIT
+set depends libpciaccess glibc
+set makedepends python-docutils meson
+set checkdepends cairo
+set optdepends 'cairo: needed for modetest tool'
+set replaces libdrm-new libdrm-nouveau
+set source "https://dri.freedesktop.org/libdrm/libdrm-$pkgver.tar.xz" \
+    "https://dri.freedesktop.org/libdrm/libdrm-$pkgver.tar.xz.sig" \
+    COPYING
+set sha256sums ac5e74d157830eb8bee44c6a6bf3ad49774ef0dd2a72bdad74a8f20308b52a95 \
+    735f7ec2ac0a38cc6d4fb7c6c74a9c399e2216a8ae6475c7176af06c62ce9a79 \
+    9631d4f694952e3e6ae5a05534c2e93e994e47d3413677a3a00e45c8cef6db93
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build -D udev=true -D etnaviv=disabled -D freedreno=disabled -D vc4=disabled -D omap=disabled -D exynos=disabled -D tegra=disabled -D valgrind=disabled -D install-test-programs=true; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 COPYING; or return
+end

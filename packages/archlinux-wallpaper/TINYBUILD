@@ -1,0 +1,18 @@
+set pkgname archlinux-wallpaper
+set pkgver 1.6.1
+set pkgrel 7
+set pkgdesc 'Arch Linux Wallpapers'
+set arch any
+set url 'https://bbs.archlinux.org/viewtopic.php?id=259604'
+set optdepends 'wallutils: support the simple timed wallpaper format'
+set license custom:CC0 custom:SPL
+set source "https://github.com/xyproto/$pkgname/releases/download/$pkgver/$pkgname-$pkgver.tar.gz"
+set sha256sums eb50f5ff9724a00b4bd0f04d14127a621be4244d5f6065097283246684c084c0
+set flags arch
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    install -Dm644 -t "$pkgdir/usr/share/backgrounds/archlinux/" archlinux.stw img/*; or return
+    install -Dm644 -t "$pkgdir/usr/share/gnome-background-properties/" arch-backgrounds.xml; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE.md; or return
+end

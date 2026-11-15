@@ -1,0 +1,25 @@
+# Ported from Arch's brotli 1.2.0-1. Only the library and the brotli tool: python-brotli and brotli-testdata are not built
+set pkgname brotli
+set pkgver 1.2.0
+set pkgrel 1
+set pkgdesc 'Generic-purpose lossless compression algorithm'
+set arch i686 x32
+set url https://github.com/google/brotli
+set license MIT
+set depends glibc
+set provides libbrotlicommon.so libbrotlidec.so libbrotlienc.so
+set makedepends cmake
+set source "brotli-$pkgver.tar.gz::https://github.com/google/brotli/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums 816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec
+set flags arch
+set style cmake
+set cmake_args -DBUILD_SHARED_LIBS=ON
+set install_license LICENSE
+
+function package
+    style_package; or return
+    for man in $srcdir/$builddir/docs/*.?
+        set -l section (string split -r -m1 . -- $man)[2]
+        install -Dm644 -t $pkgdir/usr/share/man/man$section/ -- $man; or return
+    end
+end

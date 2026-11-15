@@ -13,10 +13,7 @@ pkgbase = libksba
 	depends = glibc
 	source = https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.8.1.tar.bz2
 	source = https://www.gnupg.org/ftp/gcrypt/libksba/libksba-1.8.1.tar.bz2.sig
-	validpgpkeys = AC8E115BF73E2D8D47FA9908E98E9B2D19C6C8BD
-	validpgpkeys = D8692123C4065DEA5E0F3AB5249B39D24F25E3B6
-	validpgpkeys = 6DAA6E64A76D2840571B4902528897B826403ADA
 	sha256sums = c2f84393011827219ae117131dba8e7684c2bed0961eed11b0642c2acba440b5
-	sha256sums = SKIP
+	sha256sums = af99f325f81eb395d740bf48dc8e89903b141c10f69244e46e4caa1caec0577e
 
 pkgname = libksba

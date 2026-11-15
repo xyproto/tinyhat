@@ -1,0 +1,58 @@
+set pkgname gd
+set pkgver 2.3.3
+set pkgrel 9
+set pkgdesc 'Library for the dynamic creation of images by programmers'
+set arch i686 x32
+set url https://libgd.github.io/
+set license custom
+set depends fontconfig libxpm libwebp libavif libheif
+set makedepends git
+set optdepends 'perl: bdftogd script'
+set checkdepends ttf-liberation
+set source "https://github.com/libgd/libgd/archive/$pkgname-$pkgver.tar.gz" \
+    https://github.com/libgd/libgd/commit/bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch \
+    https://github.com/libgd/libgd/commit/f1a53c082173567b8ad07eaba8fc7ba66457a730.patch \
+    https://github.com/libgd/libgd/commit/21633377174354199c3ea3e4b23f64cfaeacc50a.patch
+set sha256sums 24429f9d0dbe0f865aaa4b1a63558242396ba9134e6cfd32ca5e486a84483350 \
+    1e7bdb17e76ad6b1384222b449b9011ee131d3e1f105f9b30495a9c34b2cd5eb \
+    1b102b0f87e630bd98f345088d6bc742def72c6619764572049d2c67ca050500 \
+    591b63e9bd35d9ab1e732d33663c1eb4dfa4163f70324d602d361167ba643541
+set flags arch
+
+function prepare
+    cd libgd-$pkgname-$pkgver; or return
+    # Re-add macros that are used in PHP
+    # See https://github.com/php/php-src/pull/7490
+    patch -p1 -R -i "$srcdir/bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch"; or return
+    # Fix heif tests
+    git apply -p1 ../f1a53c082173567b8ad07eaba8fc7ba66457a730.patch; or return
+    patch -p1 -i ../21633377174354199c3ea3e4b23f64cfaeacc50a.patch; or return
+    # Remove failing tests
+    for f in tests/tiff/{tiff_read_bw,tiff_im2im,tiff_dpi}.c
+        echo 'int main() { return 0; }' >$f; or return
+    end
+end
+
+function build
+    cd libgd-$pkgname-$pkgver; or return
+    ./bootstrap.sh; or return
+    ./configure \
+        --prefix=/usr \
+        --disable-rpath; or return
+    make; or return
+end
+
+function check
+    # On i686, these tests fail without SSE math (https://github.com/libgd/libgd/issues/242#issuecomment-228959163):
+    # gdimagecopyresampled/bug00201, gdimagegrayscale/basic, gdimageline/gdimageline_bug5, gdimagerotate/bug00067.
+    # The test suite assumes fpmath=sse when comparing results, so it is skipped there.
+    test $CARCH = i686; and return 0
+    cd libgd-$pkgname-$pkgver; or return
+    TMP=(mktemp -d) make check; or return
+end
+
+function package
+    cd libgd-$pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -D -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

@@ -1,8 +1,8 @@
 pkgbase = lirc
 	pkgdesc = Linux Infrared Remote Control utilities
 	pkgver = 0.10.2
-	pkgrel = 6
 	epoch = 1
+	pkgrel = 6
 	url = https://www.lirc.org/
 	arch = i686
 	arch = x32

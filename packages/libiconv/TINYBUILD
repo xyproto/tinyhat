@@ -1,0 +1,41 @@
+set pkgname libiconv
+set pkgver 1.19
+set pkgrel 1
+set pkgdesc 'GNU charset conversion library'
+set arch i686 x32
+set url http://www.gnu.org/software/libiconv/
+set license LGPL-2.1-only GPL-3.0-only
+set depends glibc
+set source "https://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz"{,.sig}
+set options '!libtool'
+set sha512sums 1e8150f9bca907579330cd9c44ebbee46a260271fbe8f50d5ee24a39ef29c8d254505e85c3409324f7440596da711a8bd49e89f848a6be0cb3238a58c24aaecd \
+    SKIP
+set b2sums a77d5190bfed76627ac5abf24b90a19f3f1c460f2fe4e5002bb4799d789236c268dff0693aa9836ab12df76b1381084dbe2b78cabe8221eb97f54e14a210a8e2 \
+    SKIP
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    ./configure \
+        --prefix=/usr \
+        --docdir=/usr/share/doc/libiconv \
+        --enable-extra-encodings; or return
+    # workaround for insecure rpath
+    sed -i 's|^hardcode_libdir_flag_spec=.*|hardcode_libdir_flag_spec=""|g' libtool; or return
+    sed -i 's|^runpath_var=LD_RUN_PATH|runpath_var=DIE_RPATH_DIE|g' libtool; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+    # move references from iconv to libiconv
+    mv -v "$pkgdir"/usr/include/{iconv.h,libiconv.h}; or return
+    mv -v "$pkgdir"/usr/bin/{iconv,libiconv}; or return
+    mv -v "$pkgdir"/usr/share/man/man1/{,lib}iconv.1; or return
+    mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv.3; or return
+    mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconvctl.3; or return
+    mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv_open.3; or return
+    mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv_close.3; or return
+    mv -v "$pkgdir"/usr/share/man/man3/{,libiconv_}iconv_open_into.3; or return
+end

@@ -1,0 +1,41 @@
+set pkgname innoextract
+set pkgver 1.9
+set pkgrel 17
+set pkgdesc 'A tool to extract installers created by Inno Setup'
+set url https://constexpr.org/innoextract/
+set arch i686 x32
+set license ZLIB
+set depends boost-libs xz
+set makedepends boost cmake
+set source "https://constexpr.org/innoextract/files/$pkgname-$pkgver.tar.gz" \
+    "https://constexpr.org/innoextract/files/$pkgname-$pkgver.tar.gz.sig" \
+    https://github.com/dscharrer/innoextract/commit/264c2fe6.patch \
+    boost-1.89.patch
+set sha256sums 6344a69fc1ed847d4ed3e272e0da5998948c6b828cb7af39c6321aba6cf88126 \
+    SKIP \
+    891436a9d3278ddc3342fef24004b28b8fb6c49cd3534843bea1cb4f0f8508ed \
+    afbf98340e2e0fd5051deca352ec17307a8bdf1b9ec3a3c35eb0ba431ec9be56
+set flags arch
+
+function prepare
+    # Fix build with boost 1.85
+    patch -d $pkgname-$pkgver -p1 <264c2fe6.patch; or return
+    patch -d $pkgname-$pkgver -p1 <boost-1.89.patch; or return
+end
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    set -lx CMAKE_POLICY_VERSION_MINIMUM 3.5 # Fix build with cmake 4
+    # https://github.com/dscharrer/innoextract/issues/88
+    cmake . -DCMAKE_INSTALL_PREFIX=/usr \
+        -DBoost_NO_BOOST_CMAKE=ON; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir/" install; or return
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"; or return
+    install -m644 CHANGELOG "$pkgdir/usr/share/doc/$pkgname/CHANGELOG"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

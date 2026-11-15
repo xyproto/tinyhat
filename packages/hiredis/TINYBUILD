@@ -1,0 +1,23 @@
+set pkgname hiredis
+set pkgver 1.4.1
+set pkgrel 1
+set pkgdesc 'Minimalistic C client library for Redis'
+set arch i686 x32
+set url https://github.com/redis/hiredis/
+set license BSD-3-Clause
+set depends glibc
+set checkdepends valkey
+set source "https://github.com/redis/hiredis//archive/v$pkgver/hiredis-$pkgver.tar.gz"
+set sha256sums ca3180359a8b1275838a45415851f8cd5c411e27bdbf18f4823012e45507d2e4
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    make PREFIX=/usr; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" PREFIX=/usr install; or return
+    install -vDm 644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

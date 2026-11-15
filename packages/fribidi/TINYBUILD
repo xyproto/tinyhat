@@ -1,0 +1,40 @@
+set pkgname fribidi
+set pkgver 1.0.17
+set pkgrel 1
+set pkgdesc 'A Free Implementation of the Unicode Bidirectional Algorithm'
+set url https://github.com/fribidi/fribidi
+set arch i686 x32
+set license LGPL-2.1-or-later
+set depends glibc
+set makedepends git help2man meson
+set provides libfribidi.so
+set source "git+$url?signed#tag=v$pkgver" \
+    'git+https://github.com/fribidi/c2man#commit=577ed4095383ef5284225d45709e6b5f0598a064'
+set b2sums ede6d955fca949a95aaccc334da509e2e43726dde599cb19f646f9da1bad405e986c03518c1b799be83b0a1ca9a920e3ac9e7b29ff8d84d11558abe32aaecc48 \
+    4ce1f0e039bbac3d7015eff10b9738ac4b58dc59f736a8f7ba12857d67092444f500928447a08004ae3548ffb2c788a849ac76c89924db2d82653f547cc4cc6a
+set flags arch
+
+function prepare
+    mkdir -p path; or return
+    # Fix compilation with GCC 15
+    echo "cc='gcc -fpermissive -std=gnu17'" >c2man/config.sh; or return
+end
+
+function build
+    set -l meson_options -D docs=true
+    pushd c2man; or return
+    ./Configure -des; or return
+    make; or return
+    cp c2man -t ../path; or return
+    popd
+    PATH="$PWD/path:$PATH" arch-meson fribidi build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+end

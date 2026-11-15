@@ -8,6 +8,6 @@ pkgbase = mtdev
 	license = MIT
 	depends = glibc
 	source = https://bitmath.org/code/mtdev/mtdev-1.1.7.tar.bz2
-	sha512sums = e6174a38cf67a7f12a3b91e4e27bf74a18d6b40a956950ebb748b0ff87092333daa07e647b26038a5a533f8c48e845d649848e6ba99ea009ab87fd96ed188152
+	sha256sums = a107adad2101fecac54ac7f9f0e0a0dd155d954193da55c2340c97f2ff1d814e
 
 pkgname = mtdev

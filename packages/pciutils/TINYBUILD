@@ -1,0 +1,29 @@
+set pkgname pciutils
+set pkgver 3.15.0
+set pkgrel 1
+set pkgdesc 'PCI bus configuration space access library and tools'
+set arch i686 x32
+set license GPL-2.0-only
+set url https://mj.ucw.cz/sw/pciutils/
+set depends glibc hwdata kmod systemd-libs
+set makedepends git
+set optdepends 'which: for update-pciids' \
+    'grep: for update-pciids' \
+    'curl: for update-pciids'
+set source "git+https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git#tag=v$pkgver?signed"
+set b2sums 634c114f928f37e11054c424d0745f8aaa236a342a62e3fae59519619f5d7a1e9f60bb026e5e8949b0b3f636772f62bb9c1743fd73eb97b2a2e3c09d872a2075
+set flags arch
+
+function build
+    cd $pkgname; or return
+    make OPT="$CFLAGS" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man SBINDIR=/usr/bin lib/libpci.a; or return
+    cp lib/libpci.a "$srcdir/"; or return
+    make clean; or return
+    make OPT="$CFLAGS" ZLIB=no SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all; or return
+end
+
+function package
+    cd $pkgname; or return
+    make SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="$pkgdir" install install-lib; or return
+    rm -rf "$pkgdir"/usr/share/hwdata; or return
+end

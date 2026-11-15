@@ -1,0 +1,11 @@
+#!/bin/sh
+waited=0
+while :; do
+	while [ -e /var/lib/pacman/db.lck ] && [ "$waited" -lt 600 ]; do
+		sleep 1
+		waited=$((waited + 1))
+	done
+	pacman "$@" && exit 0
+	rc=$?
+	[ -e /var/lib/pacman/db.lck ] && [ "$waited" -lt 600 ] || exit "$rc"
+done

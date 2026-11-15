@@ -18,6 +18,6 @@ pkgbase = grim
 	depends = libjpeg-turbo
 	depends = wayland
 	source = git+https://gitlab.freedesktop.org/emersion/grim#tag=v1.5.0
-	b2sums = fcb867a416bcc1acad28e35ab1a2e1aeea4d5c04196ee74b7ad372256ef780ab77bb2afd93badb8c203c0a320ea7b229a999dfd9faa575c8c42150e5fcbcbd9a
+	sha256sums = SKIP
 
 pkgname = grim

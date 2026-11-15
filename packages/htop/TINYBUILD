@@ -1,0 +1,73 @@
+set pkgname htop
+set pkgver 3.5.3
+set pkgrel 1
+set pkgdesc 'Interactive process viewer'
+set arch i686 x32
+set url https://htop.dev/
+set license GPL
+set depends libcap libcap.so libnl ncurses libncursesw.so
+set makedepends git lm_sensors
+set optdepends 'lm_sensors: show cpu temperatures' \
+    'lsof: show files opened by a process' \
+    'strace: attach to a running process'
+set options '!emptydirs'
+set flags arch
+set source "git+https://github.com/htop-dev/htop.git#tag=$pkgver"
+set sha256sums a4619a140f8374c526d27cf5f892b2dceaee27b33a0446d902c35962a5159850
+
+set -g _backports
+
+set -g _reverts
+
+function prepare
+    cd $pkgname; or return
+
+    set -l _l
+    for _c in $_backports
+        if string match -q '*..*' -- $_c
+            set _l --reverse
+        else
+            set _l --max-count=1
+        end
+        git log --oneline $_l $_c; or return
+        git cherry-pick --mainline 1 --no-commit $_c; or return
+    end
+    for _c in $_reverts
+        if string match -q '*..*' -- $_c
+            set _l --reverse
+        else
+            set _l --max-count=1
+        end
+        git log --oneline $_l $_c; or return
+        git revert --mainline 1 --no-commit $_c; or return
+    end
+
+    sed -i \
+        -e "/^m4_define(\[htop_release_version\],/ c m4_define([htop_release_version], [$pkgver-$pkgrel-arch])" \
+        -e '/^AC_INIT/s|m4_defn(\[htop_git_version\])||' configure.ac; or return
+
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname; or return
+
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --enable-affinity \
+        --enable-capabilities \
+        --enable-delayacct \
+        --enable-openvz \
+        --enable-sensors \
+        --enable-unicode \
+        --enable-vserver; or return
+
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+end

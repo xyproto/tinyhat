@@ -14,7 +14,6 @@ pkgbase = libnghttp2
 	source = git+https://github.com/ngtcp2/munit.git
 	source = git+https://github.com/mruby/mruby.git
 	source = git+https://github.com/tatsuhiro-t/neverbleed.git
-	validpgpkeys = F4F3B91474D1EB29889BD0EF7E8403D5D673C366
 	sha512sums = 48f3bf6748abf46e9b1a2cfcfc4053ef8a7d532898da854d508c520c7adcca3a8690f81d2683d14398cf937a3f7c9276000c569ccc1183bbf20d449e64f5c315
 	sha512sums = SKIP
 	sha512sums = SKIP

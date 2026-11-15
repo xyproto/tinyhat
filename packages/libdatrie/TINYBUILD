@@ -1,0 +1,36 @@
+set pkgname libdatrie
+set pkgver 0.2.14
+set pkgrel 1
+set pkgdesc 'Double-array trie library'
+set arch i686 x32
+set url https://linux.thai.net/projects/datrie
+set license LGPL-2.1-or-later
+set depends glibc
+set makedepends doxygen git
+set source "git+https://github.com/tlwg/libdatrie.git#tag=v$pkgver"
+set b2sums 5f3490116639086eeeccc05151e4cc75d55764c22ee2465f14ba53fba59a4d8727ee8ad4bf19bba19ee6dbfca82d72a8e60395a6e42ceea7547cfef985d9ac70
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+end

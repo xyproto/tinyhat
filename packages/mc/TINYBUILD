@@ -1,0 +1,65 @@
+set pkgname mc
+set pkgver 4.8.33
+set pkgrel 1
+set pkgdesc 'A file manager that emulates Norton Commander'
+set arch i686 x32
+set url https://midnight-commander.org/
+set license GPL-3.0-or-later
+set depends e2fsprogs glib2 glibc gpm libssh2 sh slang which
+set makedepends aspell git libxt libx11 unzip
+set optdepends 'aspell: spelling corrections' \
+    'cabextract: ucab extfs' \
+    'cdparanoia: audio extfs' \
+    'cdrkit: alternative iso9660 extfs' \
+    'cvs: CVS support' \
+    'gawk: hp48+ extfs' \
+    'libisoburn: iso9660 extfs' \
+    'mtools: a+ extfs' \
+    'p7zip: support for 7zip archives' \
+    'perl: needed by several extfs scripts' \
+    'python: to access uc1541 or s3 storage' \
+    'unace: uace extfs' \
+    'unarj: uarj extfs' \
+    'unrar: urar extfs' \
+    'unzip: open zip archives' \
+    'rpm-tools: open rpm packages' \
+    'zip: uzip extfs'
+set backup etc/mc/edit.indent.rc \
+    etc/mc/filehighlight.ini \
+    etc/mc/mc.ext \
+    etc/mc/mc.keymap \
+    etc/mc/mc.menu \
+    etc/mc/mcedit.menu \
+    etc/mc/sfs.ini
+set options '!emptydirs'
+set source "git+https://github.com/MidnightCommander/mc#tag=$pkgver"
+set sha256sums e3b43caa743dfb9466914b90605db332f505dc8ded031882ab1da268e1433e6c
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure \
+        --prefix=/usr \
+        --libexecdir=/usr/lib \
+        --sysconfdir=/etc \
+        --enable-aspell \
+        --with-screen=slang \
+        --with-x; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    # FS#50889: Replace mc.keymap symlink with target file to fix backup mechanism.
+    rm "$pkgdir/etc/mc/mc.keymap"; or return
+    cp "$pkgdir"/etc/mc/mc{.default,}.keymap; or return
+    # remove s3 support until it no longer depends on deprecated python-boto:
+    # https://midnight-commander.org/ticket/3904
+    rm -v "$pkgdir/usr/lib/mc/extfs.d/s3+"; or return
+end

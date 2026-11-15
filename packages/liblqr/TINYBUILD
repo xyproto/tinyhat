@@ -1,0 +1,24 @@
+set pkgname liblqr
+set pkgver 0.4.3
+set pkgrel 1
+set pkgdesc 'A seam-carving C/C++ library called Liquid Rescale'
+set arch i686 x32
+set url https://liblqr.wikidot.com/
+set license GPL-3.0-or-later
+set depends glib2 glibc
+set makedepends git
+set options '!emptydirs'
+set source "git+https://github.com/carlobaldassi/liblqr#tag=v$pkgver"
+set sha256sums 1b1d26ab3138b0ec34062c3f1b8cd808d5c7a85e37fdbb9c6fd6722f52b2122d
+set flags arch
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+end

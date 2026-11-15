@@ -1,0 +1,25 @@
+set pkgname gawk
+set pkgver 5.4.1
+set pkgrel 1
+set pkgdesc 'GNU version of awk'
+set arch i686 x32
+set url https://www.gnu.org/software/gawk/
+set license GPL-3.0-or-later
+set depends sh glibc mpfr
+set provides awk
+set source "https://ftp.gnu.org/pub/gnu/gawk/gawk-$pkgver.tar.gz" \
+    "https://ftp.gnu.org/pub/gnu/gawk/gawk-$pkgver.tar.gz.sig"
+set sha256sums 8b3b0ea83930311a3f30905d3ce898d32c6103c2fe20d6a90b40341171b174de \
+    b793330afd34d9d675a3ee766a5d218458d88408c9cd5cd2d1bb625b10bf0699
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr --libexecdir=/usr/lib --sysconfdir=/etc --without-libsigsegv; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

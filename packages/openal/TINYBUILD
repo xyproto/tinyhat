@@ -1,0 +1,52 @@
+set pkgname openal
+set pkgver 1.25.2
+set pkgrel 2
+set pkgdesc 'Cross-platform 3D audio library, software implementation'
+set arch i686 x32
+set url https://github.com/kcat/openal-soft
+set license LGPL-2.0-or-later
+set depends glibc libgcc libstdc++
+set makedepends alsa-lib cmake fluidsynth git jack libmysofa libpulse libsndfile ninja pipewire portaudio sdl3
+set source "git+https://github.com/kcat/openal-soft#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd openal-soft; or return
+end
+
+switch $CARCH
+    case x32 x86_64 aarch64
+        function build
+            set -l cmake_options -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_LIBDIR=lib
+            cmake -S openal-soft -DALSOFT_EXAMPLES=OFF -DALSOFT_NO_CONFIG_UTIL=ON -B build -G Ninja $cmake_options; or return
+            cmake --build build; or return
+        end
+    case '*'
+        function build
+            set -l cmake_options -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_LIBDIR=lib
+            cmake -S openal-soft -DALSOFT_EXAMPLES=OFF -DALSOFT_NO_CONFIG_UTIL=ON -B build -G Ninja $cmake_options -DALSOFT_CPUEXT_SSE4_1=0 -DALSOFT_CPUEXT_SSE3=0 -DALSOFT_CPUEXT_SSE2=0; or return
+            cmake --build build; or return
+        end
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_openal
+    set optdepends 'qt6-base: alsoft-config GUI Configurator' 'fluidsynth: MIDI rendering' 'libmysofa: makemhr tool'
+    set -a provides libopenal.so
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dt "$pkgdir/usr/share/doc/openal" -m644 openal-soft/docs/*; or return
+    cd "$pkgdir"; or return
+end

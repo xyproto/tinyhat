@@ -1,0 +1,39 @@
+set pkgname libldac
+set pkgver 2.0.2.6
+set pkgrel 1
+set pkgdesc 'LDAC Bluetooth encoder library'
+set url https://github.com/EHfive/ldacBT
+set arch i686 x32
+set license Apache-2.0
+set depends glibc
+set makedepends cmake git ninja
+set provides libldacBT_abr.so libldacBT_enc.so
+set source "git+$url#tag=v$pkgver" \
+    git+https://android.googlesource.com/platform/external/libldac
+set b2sums cefd6836476371999cbca1d45c3b5fce447d88186de24ab85f4d7c2b771bd2bd7427adc73112a6f003004a259f519319586589d46bd07af192e795943400cc46 \
+    SKIP
+set flags arch
+
+function prepare
+    cd ldacBT; or return
+    git submodule init; or return
+    git submodule set-url libldac "$srcdir/libldac"; or return
+    git -c protocol.file.allow=always -c protocol.allow=never submodule update; or return
+end
+
+function build
+    set -l cmake_options \
+        -D CMAKE_INSTALL_PREFIX=/usr \
+        -D CMAKE_BUILD_TYPE=None \
+        -D LDAC_SOFT_FLOAT=OFF
+    cmake -S ldacBT -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function check
+    ctest --test-dir build --output-on-failure --stop-on-failure -j(nproc); or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+end

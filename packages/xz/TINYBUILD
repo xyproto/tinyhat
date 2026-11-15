@@ -1,0 +1,48 @@
+set pkgname xz
+set pkgver 5.8.4
+set pkgrel 1
+set pkgdesc 'Library and command line tools for XZ and LZMA compressed files'
+set arch i686 x32
+set url https://tukaani.org/xz/
+set license 'GPL-2.0-or-later AND 0BSD AND LicenseRef-Public-Domain AND LGPL-2.1-or-later'
+set depends glibc sh
+set makedepends git po4a doxygen
+set provides liblzma.so
+set source "git+https://github.com/tukaani-project/xz?signed#tag=v$pkgver"
+set sha256sums 7ddaf585a8049f4a0824da0772c9dc06c2825de2126cdcc4714b91fcc27368c8
+set sha512sums d669b66a7dcea627c88c077f3f3f23b42c1dd477bd240b5c26b6f473b0f2ea1b9db3c0a7b153cece3172e657e7d734a5f51c84b4174c98ba567d0b36535b28d6
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+
+    ./autogen.sh; or return
+end
+
+function build
+    cd $pkgname; or return
+
+    ./configure \
+        --prefix=/usr \
+        --disable-rpath \
+        --enable-doxygen \
+        --enable-werror; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+
+    install -d -m0755 "$pkgdir/usr/share/licenses/xz/"; or return
+    for file in "$pkgdir"/usr/share/doc/xz/COPYING*
+        ln -sf "/usr/share/doc/xz/$(basename $file)" "$pkgdir/usr/share/licenses/xz/"; or return
+    end
+end

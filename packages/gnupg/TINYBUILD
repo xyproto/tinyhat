@@ -1,0 +1,172 @@
+set pkgname gnupg
+set pkgver 2.4.9
+set pkgrel 4
+set pkgdesc 'Complete and free implementation of the OpenPGP standard'
+set arch i686 x32
+set url https://www.gnupg.org/
+set license BSD-2-Clause BSD-3-Clause BSD-4-Clause CC0-1.0 GPL-2.0-or-later GPL-3.0-or-later LGPL-2.1-or-later 'LGPL-3.0-or-later OR GPL-2.0-or-later' MIT Unicode-TOU
+set depends glibc gnutls libgcrypt libgpg-error libksba libldap libusb pinentry sh sqlite tpm2-tss zlib
+# The documentation is not built, so fig2dev, imagemagick and librsvg are not needed
+set makedepends git libassuan npth pcsclite readline bzip2
+set optdepends 'pcsclite: for using scdaemon not with the gnupg internal card driver'
+set install gnupg.install
+set flags arch
+set source \
+    "git+https://github.com/gpg/gnupg.git?signed#tag=$pkgname-$pkgver" \
+    dirmngr.service \
+    dirmngr.socket \
+    dirmngr@.service \
+    dirmngr@.socket \
+    gpg-agent.service \
+    gpg-agent.socket \
+    gpg-agent@.service \
+    gpg-agent@.socket \
+    gpg-agent-browser.socket \
+    gpg-agent-browser@.socket \
+    gpg-agent-extra.socket \
+    gpg-agent-extra@.socket \
+    gpg-agent-ssh.socket \
+    gpg-agent-ssh@.socket \
+    keyboxd.service \
+    keyboxd.socket \
+    keyboxd@.service \
+    keyboxd@.socket \
+    keyboxd.8 \
+    gnupg-2.4-avoid_beta_warning.patch \
+    0001-gpg-accept-subkeys-with-a-good-revocation-but-no-sel.patch \
+    0002-gpg-allow-import-of-previously-known-keys-even-witho.patch \
+    0003-tests-add-test-cases-for-import-without-uid.patch \
+    0004-gpg-drop-import-clean-from-default-keyserver-import-.patch \
+    0005-avoid-systemd-deprecation-warning.patch \
+    0006-Add-systemd-support-for-keyboxd.patch \
+    0007-Ship-sample-systemd-unit-files.patch \
+    0008-gpg-default-El-Gamal-to-3072-bit-keys.patch \
+    0009-gpg-Always-support-and-default-to-using-SHA-512.patch \
+    0010-gpg-Prefer-SHA-512-and-SHA-384-in-personal-digest-pr.patch \
+    0011-Avoid-simple-memory-dumps-via-ptrace.patch \
+    0012-Disallow-compressed-signatures-and-certificates.patch \
+    0013-ssh-agent-emulation-under-systemd-inject-SSH_AUTH_SO.patch \
+    0014-gpg-Sync-compliance-mode-cleanup-with-master.patch \
+    0015-gpg-emit-RSA-pubkey-algorithm-when-in-compatibility-.patch \
+    0016-gpg-Reintroduce-openpgp-as-distinct-from-rfc4880.patch \
+    0017-gpg-Emit-LibrePGP-material-only-in-compliance-gnupg.patch \
+    0018-gpg-gpgconf-list-report-actual-compliance-mode.patch \
+    0019-gpg-Default-to-compliance-openpgp.patch \
+    0020-gpg-Fix-newlines-in-Cleartext-Signature-Framework-CS.patch \
+    0021-Add-keyboxd-systemd-support.patch \
+    0022-Support-large-RSA-keygen-in-non-batch-mode.patch \
+    0023-gpg-Verify-Text-mode-Signatures-over-binary-Literal-.patch \
+    0024-gpg-Do-not-use-a-default-when-asking-for-another-out.patch \
+    0025-Add-missing-test-files-to-EXTRA_DIST.patch \
+    0026-gpg-Fix-edge-case-in-refresh-keys.patch \
+    0027-gpgsm-Require-a-minimum-tag-length-for-GCM-decryptio.patch \
+    0028-gpg-Fix-handling-with-no-CRC-armor.patch \
+    0029-gpg-Fix-armored-input-parsing.patch \
+    0030-gpg-Fix-armor-parsing-when-no-CRC-is-found.patch \
+    0031-tpm-Fix-possible-buffer-overflow-in-PKDECRYPT.patch \
+    0032-agent-Fix-the-regression-in-pkdecrypt-with-TPM-RSA.patch \
+    0033-dirmngr-Fix-a-call-of-calloc.patch
+set sha256sums \
+    383fd9720a966825b9d5e45a2b49b3b340ebed356252c73cca242b26dffec0ba \
+    80a3a80f9f1f337da555a6838483e1baca44cde8a8a3d8c4ba7743626304b981 \
+    8374255ce93a3c343019ab425963bcbc41982ea89e669d1ad1df0aa7be810de1 \
+    ca55048f992824a24ab7f61cbc44a713a153f70a1a60d1cbba7ab4440302a204 \
+    d0d79d76bbf6c0d744ee262882fcdfbe52601c6d74cdc5dd99a15da1cdbb6ae1 \
+    8ea489a57edb0db9394bf2d6c0ec62205f881bb54efb919e4870209c7db01aa7 \
+    81e9dd05cbf3b8406367258eae6ef67ff97f270301bf50b52742647c515c8304 \
+    f735119afa3c452728e899809aa1d87b6091a327934befde3aef70ea9259197f \
+    2af0824fdbb95c1c6b54a9ab0a22aeb92ac997e44112f93919d263efa81909ae \
+    1cf9821b3bf4efaf4da2fd52ceb70d254dc4f6c545603f9045de716ef6aabf2d \
+    402eb8f875daaa419f9fdef59ffa84a1e063cc79e04d885ab0768788a4620ac0 \
+    f0094f67586cbcda17fd0d780e3e73d6dbaa479ac84715ba941531f83f6ecfe9 \
+    6644d769f7919ad58d3caf955195047c521328d180ee2077b78b7f1459f3184b \
+    ffa0191fad52712732f8b24d7d570c1d19a7803e59d30088797b76e252f65858 \
+    ddfeafd4b86ef4dd7bcc841115483bcda58c660547ebaeae47ee343741e571eb \
+    cba1aa10c072d982135d2367a7e957d6787037ab232fd148144eca39a92ec2e6 \
+    2e3e6ce050737c3bc0e608f283bdfef5471def2ff12dee7ef007854033178694 \
+    34144a8e43fbeac88f1ddaf1621e6a3b192efba4580d18a42254ad386819afea \
+    50a00213e44ff07b385e12bca455cd5eec35b271ca2fe500bfe7704ebd8ec73d \
+    38c66efbd3bffdfa9cb0f226a6db03ae4b226f705dc2d0266a555d8ace823b79 \
+    243c3a79295519b3931f9d846cf2af5caa064a78de812ee336dc786c1567b4d0 \
+    8791f21d563721bedbc3a8f1c5c0e1882f6df439a400f50a13b37c94d1cd520f \
+    373bf382b46756b450a42b8f300503044c9fdd8bd597b02823c947574e21e3ac \
+    9d57feeb7a28f636d361d696d91b22597b8e7c9b34ef76916ce4c8c634ab9e5f \
+    f91433a5ecb5e5ab3c39328e705cc551a8d1f36584afa805554bebc473055853 \
+    a3b55340337ba8f6e8cdb8d678c272852fa7f74fc09230dedda4b2090fac56ce \
+    1709939e8f99e1031ac9f8cc1aea81b8ef36df350065c10f1286c90ce668e99a \
+    e9fb54f5a543e4c80de3e637c8a0c354e679562e157833589dc0fd1971405d96 \
+    abbb6f341452ad74c11cfa90b6fec06e2a18a63ffdf1bbc0c5d2fb11a5410fd8 \
+    5177f421b7545fc8912d5965253d5febcfd1cfa10876a0997ac331868daaceec \
+    e57c2decf9024ab44c3fce70b6a3c8d6786cf9bda91f8571a97356693fbf55ce \
+    6051cd5e5ec385a7764bef1b7c5291f2719f951cf1d6ff7092ac20a8d9201466 \
+    d63c7ba16de382c19a697e6c506ae821660524ee951e49613b9d5d232d72ae32 \
+    a8e0b790d29bfd38352a6c9f29c0b24e683e13ea99ec038b9b0f8e683353c25a \
+    7f740b7d91d381c0668f236a7cd23b8f92929c4722690c63682b8f894597662b \
+    fe3ece54d9c16d87db88d1d9f259673631086332f54d913ccb319b0da731868c \
+    413f6faf64ab91a2153b8b62b82d7d88c4ea5c76b3a9c85744b935711cc9bd7b \
+    39a60a18fa8e49d454096232c7f9f3888a5798b66ff1130679a6c27ba41d2d85 \
+    16c220602d0c6e913dc3459372b20b9c945b1546ad3433828253c17e12a28ca6 \
+    a2dafeca4ac3a908f77fa7931657fa44ace8f04cd8a4efb82230bdf7b4542a0c \
+    0ecf581f86e1b2390510384494b239a5c5e7f0a90cb8e69b9afa5028f07ab324 \
+    96e5f2cb79b33b2f589535bd88e14e44d4de8321965831d5ce7d08423f456613 \
+    2989848be6d4cbce727e8fe70802c371ca645aeea6a4540aa6b306347f1f93dd \
+    e4a0712265c03c671a08f42aa1a92d46fd029f8a551541d52c164cf0e0f7f011 \
+    27eea5c0d6266abb6ce455fd56c5c3f5e4ade90b5335db17e14b9ed659848fe4 \
+    3013e5987ebe680185819620128f16906491c3f1f72ac327aa0e6e5fc95ac624 \
+    9c95845ab9e89d17f018e2fe5ef4df7785f20f0062f405fe5791737c4bcf4b60 \
+    3673f04be430f6423f74509fce403d9b79ebb2529bdfb2769990be050277ad73 \
+    1f1115cf8a1cf08dc472c31fb2a5644b15fb9234f58fe169c00a06c3a87fab26 \
+    b1553c61aef3fc21ceaa72eeb917d920ed58e6a39b8af15d0af991559376f8fb \
+    b046762dd3230fcb9b503c1857450c34de52f791b993e054a725e8235568a6e7 \
+    76e1e92915fd06719f670be51bda4ccd264fde59c85ffe8447b2813aa1d7ae11 \
+    401fb135156586d829e2d195860c185f0a4bf7f41d549a602331196da0219aa4 \
+    227ec57201c7ae6835b64b794442be9898438fb006e24e68b8b9318b7343b0a0
+
+function prepare
+    cd $pkgname; or return
+    for src in $source
+        set src (string replace -r '::.*' '' -- $src)
+        set src (string replace -r '.*/' '' -- $src)
+        string match -q '*.patch' -- $src; or continue
+        printf "Applying patch %s...\n" $src
+        patch -Np1 <../$src; or return
+    end
+    sed -n '5, 28 p' COPYING.other >MIT.txt; or return
+    sed -n '30, 60 p' COPYING.other >BSD-4-Clause.txt; or return
+    sed -n '62, 92 p' COPYING.other >BSD-3-Clause.txt; or return
+    sed -n '95, 125 p' COPYING.other >BSD-2-Clause.txt; or return
+    sed -n '128, 160 p' COPYING.other >Unicode-TOU.txt; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd $pkgname; or return
+    # --enable-large-secmem is needed for large RSA keys
+    ./configure --enable-g13 --enable-large-secmem --enable-maintainer-mode --disable-doc \
+        --libexecdir=/usr/lib/gnupg --prefix=/usr --sbindir=/usr/bin --sysconfdir=/etc; or return
+    make; or return
+end
+
+function package
+    set -a depends bzip2 libbz2.so libassuan libassuan.so npth libnpth.so readline libreadline.so
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    ln -s gpg "$pkgdir"/usr/bin/gpg2; or return
+    ln -s gpgv "$pkgdir"/usr/bin/gpgv2; or return
+    install -vDm 644 ../keyboxd.8 -t "$pkgdir/usr/share/man/man8/"; or return
+    install -vDm 644 {BSD-{2,3,4}-Clause,MIT,Unicode-TOU}.txt -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    set -l systemdir "$pkgdir/usr/lib/systemd/"
+    set -l wantsdir "$systemdir"user/sockets.target.wants/
+    install -vdm 755 $wantsdir; or return
+    for unit in ../*.{service,socket}
+        set -l name (path basename $unit)
+        if string match -q '*@.*' -- $name
+            install -vDm 644 $unit -t "$systemdir"system/; or return
+            continue
+        end
+        if string match -q '*.socket' -- $name
+            ln -sv ../$name -t $wantsdir; or return
+        end
+        install -vDm 644 $unit -t "$systemdir"user/; or return
+    end
+end

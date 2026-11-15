@@ -1,0 +1,32 @@
+set pkgname libasyncns
+set pkgver 0.8+r3+g68cd5af
+set pkgrel 3
+set epoch 1
+set pkgdesc 'A C library for executing name service queries asynchronously'
+set url https://0pointer.net/lennart/projects/libasyncns/
+set arch i686 x32
+set license LGPL
+set depends glibc
+set makedepends git lynx
+set -g _commit 68cd5aff1467638c086f1bedcc750e34917168e4 # master
+set source "git+https://git.0pointer.net/clone/libasyncns.git#commit=$_commit"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd libasyncns; or return
+    NOCONFIGURE=1 ./bootstrap.sh; or return
+end
+
+function build
+    cd libasyncns; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+        --disable-static; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    cd libasyncns; or return
+    make DESTDIR="$pkgdir" install; or return
+end

@@ -1,0 +1,48 @@
+set pkgname tzdata
+set pkgver 2026e
+set -g _tzcode 2026e
+set -g _tzdata 2026e
+set pkgrel 1
+set pkgdesc 'Sources for time zone and daylight saving time data'
+set arch i686 x32
+set url https://www.iana.org/time-zones
+set license LicenseRef-tz
+set optdepends 'bash: for tzselect' \
+    'glibc: for zdump, zic'
+set options '!emptydirs'
+set source https://www.iana.org/time-zones/repository/releases/tzcode$_tzcode.tar.gz{,.asc} \
+    https://www.iana.org/time-zones/repository/releases/$pkgname$_tzdata.tar.gz{,.asc}
+set sha512sums 623af2d5c611ce5d9f6d07ceeb09721db03ed90e8e74e027f96fc402eb948fc8a7e9aecac2611e41fb501bdc2592a78020375ad677d887beaacb2fd5da9b9815 \
+    SKIP \
+    5be2f875f73b75e5783c474bf7a6c768e433cc90283f8fc6a75e3d05bd92aec97936e8a55ccca5e880b5dacc18ba65932bab0e783e1ed5d2af4a3a4df95512be \
+    SKIP
+set flags arch
+
+set -g _timezones africa antarctica asia australasia \
+    europe northamerica southamerica \
+    etcetera backward factory
+
+function prepare
+    sed -i "s:sbin:bin:g" Makefile; or return
+end
+
+function build
+    make LFLAGS="$LDFLAGS $LTOFLAGS"; or return
+end
+
+function package
+    cd "$srcdir"; or return
+    # install tzcode stuff
+    make DESTDIR="$pkgdir" install; or return
+    # install tzdata stuff
+    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo $_timezones; or return
+    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo/posix $_timezones; or return
+    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo/right -L leapseconds $_timezones; or return
+    # This creates the posixrules file. We use New York because POSIX requires the daylight savings time rules to be in accordance with US rules.
+    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo -p America/New_York; or return
+    install -m644 -t "$pkgdir"/usr/share/zoneinfo iso3166.tab leap-seconds.list zone1970.tab zone.tab SECURITY; or return # zone.tab is depricated and will go soon
+    # cleanup
+    rm "$pkgdir/etc/localtime"; or return
+    # install license
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
+end

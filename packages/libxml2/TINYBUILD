@@ -1,0 +1,28 @@
+set pkgname libxml2
+set pkgver 2.15.4
+set pkgrel 2
+set pkgdesc 'XML library, built without ICU'
+set arch i686 x32 x86_64
+set url https://gitlab.gnome.org/GNOME/libxml2
+set license MIT
+set depends glibc zlib
+set makedepends meson ninja
+set provides libxml2.so
+set source "https://download.gnome.org/sources/libxml2/$(string replace -r -- '\.[^.]*$' '' $pkgver)/libxml2-$pkgver.tar.xz"
+set sha256sums 98087fd181d9070724f3fbc65c7377db03038eb92bd882374daff44940138821
+
+function prepare
+    cd libxml2-$pkgver; or return
+    sed -i "s/run_command('git', 'describe', check: false)/run_command('true', check: false)/" meson.build; or return
+end
+
+function build
+    meson setup build libxml2-$pkgver --prefix=/usr --buildtype=minsize \
+        -Dicu=disabled -Dpython=disabled -Ddocs=disabled -Dhistory=disabled -Dreadline=disabled -Dhttp=disabled -Dschematron=enabled; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 libxml2-$pkgver/Copyright "$pkgdir/usr/share/licenses/$pkgname/Copyright"; or return
+end

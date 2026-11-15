@@ -1,0 +1,36 @@
+set pkgname libxcb
+set pkgver 1.17.0
+set pkgrel 1
+set pkgdesc 'X11 client-side library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/xorg/lib/libxcb
+set depends xcb-proto libxdmcp libxau glibc
+set makedepends libxslt python xorg-util-macros xorgproto
+set license X11
+set source "https://xorg.freedesktop.org/archive/individual/lib/$pkgname-$pkgver.tar.xz" \
+    "https://xorg.freedesktop.org/archive/individual/lib/$pkgname-$pkgver.tar.xz.sig"
+set sha512sums 945b1f28e8b407a4d0ebf88c99ef3cbef763fd75e6eaa8e971946e44ce8dbe9b478c56ae85aaaadab7fdb25987e88570d9d4fb9ad2febd6d6bf21d644a0e10d0 \
+    SKIP
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    ./configure --prefix=/usr \
+        --enable-xinput \
+        --enable-xkb \
+        --disable-static; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make -k check; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

@@ -1,0 +1,39 @@
+set pkgname libppd
+set pkgver 2.1.1
+set pkgrel 2
+set pkgdesc 'OpenPrinting - the legacy support library for PPD files'
+set arch i686 x32
+set url https://github.com/OpenPrinting/libppd
+# the CUPS exception text is the same as LLVM exception
+set license 'Apache-2.0 WITH LLVM-exception'
+set depends libcups libcupsfilters \
+    zlib glibc libstdc++ libgcc
+set makedepends ghostscript
+# mupdf-tools
+set source "https://github.com/OpenPrinting/libppd/releases/download/$pkgver/$pkgname-$pkgver.tar.xz"
+set sha256sums 3fa341cc03964046d2bf6b161d80c1b4b2e20609f38d860bcaa11cb70c1285e4
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr \
+        --sysconfdir=/etc \
+        --sbindir=/usr/bin \
+        --localstatedir=/var \
+        --disable-mutool; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir/" install; or return
+    rmdir $pkgdir/usr/bin; or return
+    # license
+    mkdir -p "$pkgdir"/usr/share/licenses/$pkgname; or return
+    install -m644 "$srcdir"/$pkgname-$pkgver/{COPYING,NOTICE} "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end

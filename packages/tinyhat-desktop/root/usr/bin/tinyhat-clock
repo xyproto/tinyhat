@@ -1,0 +1,35 @@
+#!/bin/sh
+settime() {
+	doas date -s "$1" >/dev/null || return
+	doas hwclock --systohc 2>/dev/null
+	return 0
+}
+if [ "${1-}" = --set ]; then
+	settime "$2"
+	exit
+fi
+if [ "${1-}" = --set-notify ]; then
+	if settime "$2"; then
+		tinyhat-notice "The clock is now $(date '+%a %Y-%m-%d %H:%M')" 4
+	else
+		tinyhat-notice "Could not set the clock" 4
+	fi
+	exit
+fi
+while :; do
+	printf '\nCurrent date is %s\n' "$(date '+%a %Y-%m-%d')"
+	printf 'Enter new date (yyyy-mm-dd): '
+	read -r d || exit 0
+	printf 'Current time is %s\n' "$(date '+%H:%M:%S')"
+	printf 'Enter new time (hh:mm): '
+	read -r t || exit 0
+	[ -n "$d$t" ] || exit 0
+	new="${d:-$(date +%Y-%m-%d)} ${t:-$(date +%H:%M:%S)}"
+	if date -d "$new" >/dev/null 2>&1; then
+		printf '\nThanks! Setting the time.\n'
+		setsid -f tinyhat-clock --set-notify "$new" >/dev/null 2>&1
+		sleep 1
+		exit 0
+	fi
+	echo 'Invalid date or time, please try again. Press Enter to keep the current value.'
+done

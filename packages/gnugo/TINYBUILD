@@ -1,0 +1,32 @@
+set pkgname gnugo
+set pkgver 3.8
+set pkgrel 8
+set pkgdesc 'Program that plays the game of Go'
+set url https://www.gnu.org/software/gnugo/
+set license GPL-3.0-or-later
+set arch i686 x32
+set depends glibc ncurses
+set flags arch
+set source "https://ftp.gnu.org/gnu/gnugo/$pkgname-$pkgver.tar.gz"{,.sig} \
+    Wformat-security.patch
+set sha256sums da68d7a65f44dcf6ce6e4e630b6f6dd9897249d34425920bfdd4e07ff1866a72 \
+    SKIP \
+    c5c1c45ca30793a4c872aa6b2c5d2dc3ca201831c20a4bb595d82c8cf27eb20e
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    patch -p1 -i ../Wformat-security.patch; or return # Fix build with -Wformat-security
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    set -a CFLAGS -fcommon # https://wiki.gentoo.org/wiki/Gcc_10_porting_notes/fno_common
+    ./configure \
+        --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

@@ -1,0 +1,37 @@
+set pkgbase libdex
+set pkgname libdex libdex-docs
+set pkgver 1.2.0
+set pkgrel 1
+set pkgdesc 'A library supporting \'Deferred Execution\''
+set arch i686 x32
+set url https://gitlab.gnome.org/GNOME/libdex
+set license LGPL-2.1-or-later
+set depends glib2 glibc libatomic libgcc liburing libsysprof-capture python python-gobject
+set makedepends gi-docgen git glib2-devel libsoup3 meson
+set checkdepends python-dbusmock python-gobject xorg-server-xvfb
+set source "git+https://gitlab.gnome.org/GNOME/libdex.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd libdex; or return
+end
+
+function build
+    set -l meson_options -D docs=true -D sysprof=true
+    arch-meson -D introspection=disabled -D vapi=false libdex build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package_libdex
+    set provides libdex-1.so
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/doc; or return
+end
+
+function package_libdex-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+end

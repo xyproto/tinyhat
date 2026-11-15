@@ -1,0 +1,40 @@
+set pkgbase libxml++
+set pkgname libxml++ libxml++-docs
+set pkgver 3.2.6
+set pkgrel 1
+set pkgdesc 'C++ bindings to libxml2'
+set url https://libxmlplusplus.github.io/libxmlplusplus/
+set arch i686 x32
+set license LGPL-2.1-or-later
+set depends glibc glibmm libgcc libstdc++ libxml2
+set makedepends git glibmm-docs meson mm-common
+set options '!emptydirs'
+set source "git+https://github.com/libxmlplusplus/libxmlplusplus#tag=$pkgver"
+set b2sums 9a65793b4976d34ab6cec526d4bbcc4ed4e829abb03bb2c4379e19b858533cd821e3390d608f283d50fe4238b5ba010ef7c909fb9d511c624c848b1f5253e5ab
+set flags arch
+
+function build
+    set -l meson_options \
+        -D maintainer-mode=true
+    arch-meson libxmlplusplus build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_libxml++
+    set provides libxml++-3.0.so
+    meson install -C build --destdir "$pkgdir"; or return
+    # Split -docs
+    mkdir -p docs/usr/share; or return
+    mv -t docs/usr/share "$pkgdir"/usr/share/{devhelp,doc}; or return
+end
+
+function package_libxml++-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    set options '!strip'
+    mv -t "$pkgdir" docs/*; or return
+end

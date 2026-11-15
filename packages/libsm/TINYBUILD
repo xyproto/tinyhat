@@ -1,0 +1,26 @@
+set pkgname libsm
+set pkgver 1.2.6
+set pkgrel 1
+set pkgdesc 'X11 Session Management library'
+set arch i686 x32
+set url https://xorg.freedesktop.org/
+set license MIT MIT-open-group
+set depends libice util-linux-libs xorgproto glibc
+set makedepends xorg-util-macros xtrans
+set source "https://xorg.freedesktop.org//releases/individual/lib/libSM-$pkgver.tar.xz" \
+    "https://xorg.freedesktop.org//releases/individual/lib/libSM-$pkgver.tar.xz.sig"
+set sha256sums be7c0abdb15cbfd29ac62573c1c82e877f9d4047ad15321e7ea97d1e43d835be \
+    3e01af31a5a36aeb22cb33f9565b2c54d36403a0031fbb268749eff5b71772ad
+set flags arch
+
+function build
+    cd libSM-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc; or return
+    make; or return
+end
+
+function package
+    cd libSM-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

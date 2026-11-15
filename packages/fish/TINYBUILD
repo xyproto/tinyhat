@@ -1,0 +1,41 @@
+set pkgname fish
+set pkgver 4.9.3
+set pkgrel 1
+set pkgdesc 'Smart and user friendly shell intended mostly for interactive use'
+set url https://fishshell.com/
+set arch i686
+set license 'GPL-2.0-only AND BSD-3-Clause AND ISC AND MIT AND PSF-2.0'
+set depends glibc libgcc pcre2
+set makedepends cmake git jq rust python-sphinx
+set checkdepends expect procps-ng python-pexpect
+set optdepends 'python: man page completion parser / web config tool' \
+    'pkgfile: command-not-found hook' \
+    'groff: --help for built-in commmands' \
+    'mandoc: --help for built-in commmands (alternative)' \
+    'xsel: X11 clipboard integration' \
+    'xclip: X11 clipboard integration (alternative)' \
+    'wl-clipboard: Wayland clipboard integration'
+set install fish.install
+set backup etc/fish/config.fish
+set source "$pkgname::git+https://github.com/fish-shell/fish-shell#tag=$pkgver"
+set sha512sums 017388b8776fb86563cf475fa280d07b3e3016c00b48f1141dbd6596e041e98ad614ecdb85e2cda92699179caebee64d95193f3a9d9653769de05cdf8d38d9cc
+set b2sums 223586c51e69adbf5ba00df84b3d2f23cc730d989f22afab0e29064bf2d94e9bbbf746f3c46146fb1c696d7c4a3b6008d5c89d15bda0cede6a618472a159b6e8
+set flags arch
+
+function build
+    cd $pkgname; or return
+    set -a CXXFLAGS $CPPFLAGS
+    cmake -B build -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_INSTALL_SYSCONFDIR=/etc -D CMAKE_BUILD_TYPE=Release \
+        -D WITH_DOCS=ON -D FISH_USE_SYSTEM_PCRE2=ON -D WITH_MESSAGE_LOCALIZATION=ON -W no-dev; or return
+    make -C build VERBOSE=1; or return
+end
+
+function check
+    cd $pkgname; or return
+    cmake --build build --target fish_run_tests; or return
+end
+
+function package
+    cd $pkgname; or return
+    DESTDIR="$pkgdir" cmake --install build; or return
+end

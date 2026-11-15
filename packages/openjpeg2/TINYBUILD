@@ -1,0 +1,37 @@
+set pkgname openjpeg2
+set pkgver 2.5.4
+set pkgrel 1
+set pkgdesc "An open source JPEG 2000 codec, version $pkgver"
+set arch i686 x32
+set license BSD-2-Clause MIT
+set url https://github.com/uclouvain/openjpeg
+set makedepends cmake doxygen graphviz
+set depends libpng libtiff lcms2 glibc
+set source "$pkgname-$pkgver.tar.gz::https://github.com/uclouvain/openjpeg/archive/v$pkgver.tar.gz"
+set sha256sums a695fbe19c0165f295a8531b1e4e855cd94d0875d2f88ec4b61080677e27188a
+set flags arch
+
+function prepare
+    # Remove all third party libraries just to be sure
+    find openjpeg-$pkgver/thirdparty/ -mindepth 1 -maxdepth 1 -type d -exec rm -rf '{}' \;; or return
+end
+
+function build
+    cmake -B build -S openjpeg-$pkgver \
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DBUILD_SHARED_LIBS=ON \
+        -DBUILD_STATIC_LIBS=OFF \
+        -DBUILD_DOC=on; or return
+
+    VERBOSE=1 cmake --build build; or return
+end
+
+function check
+    ctest --test-dir build --output-on-failure; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm 644 "$srcdir"/openjpeg-$pkgver/LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end

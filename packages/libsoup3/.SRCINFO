@@ -27,8 +27,8 @@ pkgbase = libsoup3
 	depends = zstd
 	source = git+https://gitlab.gnome.org/GNOME/libsoup.git#tag=3.8.0
 	source = 0001-tests-Remove-AuthDigestQop-none.patch
-	b2sums = 140707e698a031d9c801d33c1c5439d04b7bb12490a4aa63d013e388a56e8ef68e569b16d1181388ba9e5943932149bf1371ddc21034615664de29a0bb7359ae
-	b2sums = 0ae74e19f3764bc4f02fe2de2099182e0aa37d7b0fce36e67f25076b314b363c055c5accb4c54f18f859b27484d038d20ed5d031c38a8c2f252e35d23cb86079
+	sha256sums = SKIP
+	sha256sums = bdb88a868900fbd7af51c3024d08abfd134d8a3638d449596b6cb2f0e0fc9fe1
 
 pkgname = libsoup3
 	depends = brotli

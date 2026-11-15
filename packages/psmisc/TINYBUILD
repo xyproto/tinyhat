@@ -1,0 +1,32 @@
+set pkgname psmisc
+set pkgver 23.7
+set pkgrel 2
+set pkgdesc 'Miscellaneous procfs tools'
+set arch i686 x32
+set url https://gitlab.com/psmisc/psmisc
+set license GPL
+set depends ncurses
+set makedepends git po4a
+set source "git+https://gitlab.com/psmisc/psmisc.git#tag=v$pkgver?signed"
+set sha256sums 80ae6e626ba83232b7af1c02f3f528834ebdd96325367b701f69125d3e196f2f
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+
+    ./autogen.sh; or return
+end
+
+function build
+    cd $pkgname; or return
+
+    ./configure \
+        --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+end

@@ -1,0 +1,41 @@
+set pkgname quickjs-ng
+set -g _pkgname quickjs
+set pkgver 0.18.0
+set pkgrel 1
+set pkgdesc 'A mighty JavaScript engine'
+set url https://quickjs-ng.github.io/quickjs
+set arch i686 x32
+set license MIT
+set depends glibc
+set makedepends cmake
+set source "$pkgname-$pkgver.tar.gz::https://github.com/quickjs-ng/quickjs/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums 28bcd89aa3683fd2a946537e5ce3f11cc46b5cbf3383c7561aaef3df5ff9f1dd
+set flags arch
+
+function build
+    set -l cmake_options \
+        -B build \
+        -S "$_pkgname-$pkgver" \
+        -W no-dev \
+        -D CMAKE_BUILD_TYPE=None \
+        -D CMAKE_INSTALL_PREFIX=/usr \
+        -D QJS_BUILD_LIBC=ON \
+        -D BUILD_SHARED_LIBS=ON
+    cmake $cmake_options; or return
+    cmake --build build; or return
+end
+
+function check
+    set -l excluded_tests ''
+    set -l ctest_flags \
+        --test-dir build \
+        --output-on-failure \
+        --parallel (nproc) \
+        --exclude-regex "$excluded_tests"
+    ctest $ctest_flags; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm 644 "$_pkgname-$pkgver/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

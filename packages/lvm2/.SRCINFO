@@ -12,13 +12,10 @@ pkgbase = lvm2
 	makedepends = libaio
 	makedepends = thin-provisioning-tools
 	source = git+https://gitlab.com/lvmteam/lvm2.git?signed#tag=v2_03_43
-	validpgpkeys = 88437EF5C077BD113D3B7224228191C1567E2C17
-	validpgpkeys = D501A478440AE2FD130A1BE8B9112431E509039F
 	sha256sums = 2167736de4920c7cabbcde864e3d2ea0c0bd3a9cda82bdc9e368a1346ace9928
 
 pkgname = lvm2
 	pkgdesc = Logical Volume Manager 2 utilities
-	url = https://sourceware.org/lvm2/
 	depends = bash
 	depends = device-mapper>=2.03.43
 	depends = glibc

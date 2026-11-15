@@ -14,8 +14,7 @@ pkgbase = tdb
 	provides = libtdb.so
 	source = https://samba.org/ftp/tdb/tdb-1.4.15.tar.gz
 	source = https://samba.org/ftp/tdb/tdb-1.4.15.tar.asc
-	validpgpkeys = 9147A339719518EE9011BCB54793916113084025
-	b2sums = e867c8f4e9712c1a0ed10dd2d35e9cd51819ff722e4e710efde8b1ed8e20575e752d020fb0b6bc8658a720ea17491c07e30fa0b88c515bfb830f83bf128e6ee4
-	b2sums = SKIP
+	sha256sums = fba09d8df1f1b9072aeae8e78b2bd43c5afef20b2f6deefa633aa14a377a8dd2
+	sha256sums = 18c2fd8e8ae2346fc24dc0957c499892cedc8004bc7a3061e90b244f1b2720a6
 
 pkgname = tdb

@@ -1,0 +1,76 @@
+#!/bin/sh
+dir=$HOME/.local/share/tinyhat/mt32
+ini=$HOME/.config/scummvm/scummvm.ini
+
+scummvm_set() {
+	mkdir -p "${ini%/*}"
+	[ -f "$ini" ] || printf '[scummvm]\n' >"$ini"
+	grep -q '^\[scummvm\]$' "$ini" || printf '[scummvm]\n' >>"$ini"
+	awk -v extra="$1" -v device="$2" '
+		/^\[/ { section = $0 }
+		section == "[scummvm]" && /^(extrapath|mt32_device)=/ { next }
+		{ print }
+		$0 == "[scummvm]" {
+			if (extra != "") print "extrapath=" extra
+			if (device != "") print "mt32_device=" device
+		}' "$ini" >"$ini.tmp" && mv -f "$ini.tmp" "$ini"
+}
+
+if [ -f "$dir/MT32_CONTROL.ROM" ] || [ -f "$dir/CM32L_CONTROL.ROM" ]; then
+	echo "MT-32 music is on for DOSBox-X and ScummVM."
+	printf "Switch back to General MIDI music? [y/N] "
+	read -r answer
+	case $answer in
+	[yY]*)
+		rm -f "$dir/MT32_CONTROL.ROM" "$dir/MT32_PCM.ROM" "$dir/CM32L_CONTROL.ROM" "$dir/CM32L_PCM.ROM"
+		scummvm_set "" ""
+		echo "Done. DOSBox-X and ScummVM use General MIDI again."
+		;;
+	esac
+	exit 0
+fi
+
+echo "Looking for MT-32 or CM-32L ROM files in your home folder and on USB sticks..."
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+find "$HOME" /media -maxdepth 4 -type f -iname '*.zip' -size -20M 2>/dev/null | while IFS= read -r z; do
+	unzip -Z1 "$z" 2>/dev/null | grep -i -E '(^|/)(mt32|cm32l)_(control|pcm)\.rom$' | while IFS= read -r member; do
+		unzip -o -j -q "$z" "$member" -d "$tmp"
+	done
+done
+find "$HOME" /media -maxdepth 4 -type f \( -iname 'mt32_control.rom' -o -iname 'mt32_pcm.rom' -o -iname 'cm32l_control.rom' -o -iname 'cm32l_pcm.rom' \) \
+	! -path "$dir/*" -exec cp -f {} "$tmp/" \; 2>/dev/null
+
+found=
+for f in "$tmp"/*; do
+	[ -f "$f" ] || continue
+	name=$(basename "$f" | tr '[:lower:]' '[:upper:]')
+	size=$(wc -c <"$f")
+	case $name:$size in
+	MT32_CONTROL.ROM:65536 | CM32L_CONTROL.ROM:65536 | MT32_PCM.ROM:524288 | CM32L_PCM.ROM:1048576)
+		mkdir -p "$dir"
+		cp -f "$f" "$dir/$name"
+		found="$found $name"
+		;;
+	esac
+done
+
+if { [ -f "$dir/MT32_CONTROL.ROM" ] && [ -f "$dir/MT32_PCM.ROM" ]; } || { [ -f "$dir/CM32L_CONTROL.ROM" ] && [ -f "$dir/CM32L_PCM.ROM" ]; }; then
+	scummvm_set "$dir" "mt32"
+	echo "Installed:$found"
+	echo "DOSBox-X and ScummVM now play music through the emulated Roland MT-32."
+	exit 0
+fi
+
+rm -f "$dir/MT32_CONTROL.ROM" "$dir/MT32_PCM.ROM" "$dir/CM32L_CONTROL.ROM" "$dir/CM32L_PCM.ROM"
+cat <<'MSG'
+No complete set of ROM files was found.
+
+Many DOS games sound best with a Roland MT-32. Tiny Hat can emulate one,
+but the ROM files belong to Roland, so they can't be included.
+If you own an MT-32 (or have another legal source for the ROMs), put
+MT32_CONTROL.ROM and MT32_PCM.ROM (or CM32L_CONTROL.ROM and CM32L_PCM.ROM)
+in your home folder or on a USB stick, loose or in a .zip file,
+and run this again.
+MSG
+exit 1

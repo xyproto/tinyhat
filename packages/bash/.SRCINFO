@@ -65,7 +65,6 @@ pkgbase = bash
 	source = https://ftp.gnu.org/gnu/bash/bash-5.3-patches/bash53-019.sig
 	source = https://ftp.gnu.org/gnu/bash/bash-5.3-patches/bash53-020
 	source = https://ftp.gnu.org/gnu/bash/bash-5.3-patches/bash53-020.sig
-	validpgpkeys = 7C0135FB088AAF6C66C650B9BB5869F064EA74AB
 	b2sums = 82d1b54322bbd1e8c2a93380f1b2888a42a1d7186e504f41cee705a0fdd41463d8f20baa1755051e1396192f8ebd089524767d933a9e0b5fb76f2588601539bb
 	b2sums = SKIP
 	b2sums = 61cc3b7c9e85ae29b48518a2579896cb037153184a233cb5636d8dce4c2a2fded88624c9d5a986d86fdd4b0d521828b510c7a0d16b3c8b95cfca8d4c0a74da17

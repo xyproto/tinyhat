@@ -1,0 +1,23 @@
+set pkgname libmakepkg-dropins
+set pkgver 20
+set pkgrel 2
+set pkgdesc 'Features that can be dropped into libmakepkg to extend the functionality of makepkg'
+set url https://gitlab.archlinux.org/pacman/libmakepkg-dropins
+set arch any
+set license GPL-2.0-or-later
+set depends awk bash coreutils findutils grep sed binutils
+set makedepends git
+set source "git+$url.git#tag=$pkgver?signed"
+set sha256sums 4adb641447d96071223db79e2113448222218391d75643fa499547824cd161ac
+set b2sums 73e075a3e062791cd3a163145e05541e6a20060f770683f3d7f4c3ea865e6177348a511c7d502d1f1f387e3d1afc51b00177829cfb3d5931bbd5b0cbaa70a32c
+set flags arch
+
+function package
+    cd $pkgname; or return
+
+    install -dm755 "$pkgdir/usr/share/makepkg"; or return
+    for dir in (find . -mindepth 1 -maxdepth 1 -type d -not -name .git)
+        cp -ra $dir --target-directory="$pkgdir/usr/share/makepkg"; or return
+    end
+    install -Dm 644 README.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
+end

@@ -25,8 +25,7 @@ pkgbase = v4l-utils
 	backup = etc/rc_maps.cfg
 	source = https://linuxtv.org/downloads/v4l-utils/v4l-utils-1.32.0.tar.xz
 	source = https://linuxtv.org/downloads/v4l-utils/v4l-utils-1.32.0.tar.xz.asc
-	validpgpkeys = 05D0169C26E41593418129DF199A64FADFB500FF
 	sha256sums = 6828828a17775526eb93fb258a9294d1d1073d633c344dd71ecd4e7a1ffb7dfc
-	sha256sums = SKIP
+	sha256sums = c67097a24379a719f6afb9f2a829e4c26189d0460ffb53ba3546d609e496dc29
 
 pkgname = v4l-utils

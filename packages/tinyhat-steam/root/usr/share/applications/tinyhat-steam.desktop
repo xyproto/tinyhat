@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Steam (Big Picture)
+Icon=applications-games
+Comment=Install Steam on first use, then start it in Big Picture mode
+Exec=tinyhat-steam
+Terminal=false
+Categories=Game;

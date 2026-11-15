@@ -23,7 +23,6 @@ pkgbase = ncurses
 	source = ncurses::git+https://github.com/ThomasDickey/ncurses-snapshots.git?signed#tag=v6_6
 	source = ncurses-6.6-libs.patch
 	source = ncurses-6.6-pkgconfig.patch
-	validpgpkeys = 19882D92DDA4C400C22C0D56CC2AF4472167BE03
 	sha512sums = cad17bf83ef3ccd71fb7c33933ddbbbef2e8bd050d5e4e4ebb344b5df8292b1cd3c9e1787e88087d73cc96f625ba0c7cd6714d7720af7f8bd50b314e9838d2a7
 	sha512sums = aa1d2cdc5bce7a99b277f2ecd4a109a337ba39f3ec522c3daf52dba0c1be05c9f0bf695d8bdfdbda1c1f6f3f7214ef0eb4b5b9e1b7e9f05db14419b3bc6ab271
 	sha512sums = c74c9393659e1d744995285f270531108320975da8ca39b0e4cdcaa07a51cdd977bcfbf8eb131c6a81ba2e63e92bb185947ce6a1231c8bb8a2e5e6035c385cfa

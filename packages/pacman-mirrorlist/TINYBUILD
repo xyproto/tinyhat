@@ -1,0 +1,19 @@
+set pkgname pacman-mirrorlist
+# The archlinux32 mirror list: put a new mirrorlist here, then run ./update-list to update its header, pkgver and
+# the checksums
+set pkgver 20260322
+set pkgrel 1
+set pkgdesc 'Arch Linux mirror list for use by pacman'
+set arch any
+set url https://www.archlinux.org/mirrorlist/
+set license GPL-2.0-or-later
+set backup etc/pacman.d/mirrorlist
+set source mirrorlist
+set sha256sums 868eb0a40b0dd0808a04e58c48f51c35990131f1e8092de5a4c6654be08be643
+set b2sums d135896c6b0717c748aefafb1607da88111ab45d034196d33a5efe71690aabc2c34271cd63bae856c3aa52f1a6ac2cbe0491a57137226702b181029408be4489
+set flags arch
+
+function package
+    mkdir -p "$pkgdir/etc/pacman.d"; or return
+    install -m0644 "$srcdir/mirrorlist" "$pkgdir/etc/pacman.d/"; or return
+end

@@ -1,8 +1,8 @@
 pkgbase = zlib
 	pkgdesc = Compression library implementing the deflate compression method found in gzip and PKZIP
 	pkgver = 1.3.2
-	pkgrel = 4
 	epoch = 1
+	pkgrel = 4
 	url = https://www.zlib.net/
 	arch = i686
 	arch = x32
@@ -11,7 +11,6 @@ pkgbase = zlib
 	source = https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz.asc
 	source = https://github.com/madler/zlib/commit/36ff1be48ef696cc67b0855f7c8537ce0276210d.patch
 	source = zlib-1.3.2-CVE-2026-85091.patch::https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148.patch?full_index=1
-	validpgpkeys = 5ED46A6721D365587791E2AA783FCD8E58BCAFBA
 	sha512sums = cf3d49fbabddc57cca99858feeca8f910e9de42a16014cddd406814d2d24ee33fee2af3805d7efbb1b04b05f55818092b000daf82502b675df65f2512c353f73
 	sha512sums = SKIP
 	sha512sums = 39a4ad7f473e4c170fb91a2e14860eaa6e728e9b710185bf9dbb23b949064fe7e51e36a15ec5ea110760ca8af15f8d2450e02e1a442af66516fe3e8b2debda0d

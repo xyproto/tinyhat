@@ -1,0 +1,81 @@
+set pkgbase poppler
+set pkgname poppler poppler-glib
+set pkgver 26.10.0
+set pkgrel 1
+set arch i686 x32
+set url https://poppler.freedesktop.org/
+set license GPL-2.0-only GPL-3.0-or-later LGPL-2.0-or-later LGPL-2.1-or-later MIT HPND-sell-variant
+set makedepends libjpeg-turbo libgcc libstdc++ cairo fontconfig openjpeg2 pkgconfig lcms2 icu git gtk-doc curl poppler-data 'cmake>=3.28' python boost glib2-devel
+set checkdepends noto-fonts-cjk
+set options '!emptydirs'
+set source "git+https://gitlab.freedesktop.org/poppler/poppler.git#tag=poppler-$pkgver?signed" \
+    'test::git+https://gitlab.freedesktop.org/poppler/test.git#commit=48b6219b84fc0a708040cb279d51095cc4e1c603'
+set sha256sums 2277d28b51721ac7e08a7f82e39fffc2c638700670ecfc8104d27383d7704f0a \
+    b4a9235420ac49bd8e7d7b38dad7747b04127051cf6b318bf6de836d9ac97a6a
+set flags arch
+set -g _p nss
+
+function build
+    cmake -B build -S "$pkgbase" -DCMAKE_INSTALL_PREFIX:PATH=/usr -DCMAKE_INSTALL_LIBDIR=/usr/lib -DENABLE_UNSTABLE_API_ABI_HEADERS=ON -DENABLE_GTK_DOC=ON -DENABLE_GOBJECT_INTROSPECTION=OFF -DBUILD_GTK_TESTS=OFF -DENABLE_QT5=OFF -DENABLE_QT6=OFF -DENABLE_GPGME=OFF -DENABLE_NSS3=OFF; or return
+    cmake --build build; or return
+end
+
+function package_poppler
+    set pkgdesc "PDF rendering library based on xpdf 3.0"
+    set depends 'libjpeg-turbo' 'libgcc' 'libstdc++' 'libcairo.so' 'fontconfig' 'openjpeg2' 'lcms2' 'curl' 'libpng' 'freetype2' 'zlib' 'libtiff' 'glibc'
+    set optdepends 'poppler-data: highly recommended encoding data to display PDF documents with certain encodings and characters'
+    set provides 'libpoppler.so' 'libpoppler-cpp.so'
+    set conflicts "poppler-qt3<$pkgver" "poppler-qt4<$pkgver"
+    DESTDIR="$pkgdir" cmake --install build; or return
+    rm -vrf "$pkgdir"/usr/include/poppler/{glib,qt5,qt6}; or return
+    set -l libs "$pkgdir"/usr/lib/libpoppler-{glib,qt5,qt6}.*
+    rm -vf $libs; or return
+    rm -vf "$pkgdir"/usr/lib/pkgconfig/poppler-{glib,qt5,qt6}.pc; or return
+    set -l gir "$pkgdir"/usr/{lib,share}/gir*
+    rm -vrf $gir; or return
+    rm -vrf "$pkgdir"/usr/share/gtk-doc; or return
+    mkdir -p "$pkgdir"/usr/share/licenses/$pkgname; or return
+    install -m644 "$srcdir"/$pkgbase/{COPYING,COPYING3,README-XPDF,README.contributors} "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end
+
+function package_poppler-glib
+    set pkgdesc "Poppler glib bindings"
+    set depends "poppler=$pkgver" 'glib2' 'libgcc' 'libstdc++' 'freetype2' 'libcairo.so' 'glibc'
+    set provides 'libpoppler-glib.so'
+    cd build; or return
+    make -C glib DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/lib/pkgconfig"; or return
+    install -m644 poppler-glib.pc "$pkgdir/usr/lib/pkgconfig/"; or return
+    set -l libs "$pkgdir"/usr/lib/libpoppler.*
+    rm -vf $libs; or return
+    rm -vf "$pkgdir/usr/bin/poppler-glib-demo"; or return
+    mkdir -p "$pkgdir"/usr/share/licenses/$pkgname; or return
+    install -m644 "$srcdir"/$pkgbase/{COPYING,COPYING3,README-XPDF,README.contributors} "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end
+
+function package_poppler-qt5
+    set pkgdesc "Poppler Qt5 bindings"
+    set depends "poppler=$pkgver" 'qt5-base' 'lcms2' 'freetype2' 'libgcc' 'libstdc++' 'glibc'
+    set provides 'libpoppler-qt5.so'
+    cd build; or return
+    make -C qt5 DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/lib/pkgconfig"; or return
+    install -m644 poppler-qt5.pc "$pkgdir/usr/lib/pkgconfig/"; or return
+    mkdir -p "$pkgdir"/usr/share/licenses/$pkgname; or return
+    install -m644 "$srcdir"/$pkgbase/{COPYING,COPYING3,README-XPDF,README.contributors} "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end
+
+function package_poppler-qt6
+    set pkgdesc "Poppler Qt6 bindings"
+    set depends "poppler=$pkgver" 'qt6-base' 'lcms2' 'freetype2' 'libgcc' 'libstdc++' 'glibc'
+    set provides 'libpoppler-qt6.so'
+    if not test "$CARCH" != i486
+        return 0
+    end
+    cd build; or return
+    make -C qt6 DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/lib/pkgconfig"; or return
+    install -m644 poppler-qt6.pc "$pkgdir/usr/lib/pkgconfig/"; or return
+    mkdir -p "$pkgdir"/usr/share/licenses/$pkgname; or return
+    install -m644 "$srcdir"/$pkgbase/{COPYING,COPYING3,README-XPDF,README.contributors} "$pkgdir"/usr/share/licenses/$pkgname/; or return
+end

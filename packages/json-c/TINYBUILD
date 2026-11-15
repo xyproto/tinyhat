@@ -1,0 +1,26 @@
+set pkgname json-c
+set pkgver 0.19
+set pkgrel 1
+set pkgdesc 'JSON implementation in C'
+set arch i686 x32
+set url https://github.com/json-c/json-c/wiki
+set license MIT
+set depends glibc
+set makedepends cmake git ninja
+set checkdepends xxd
+set provides libjson-c.so
+set source "git+https://github.com/json-c/json-c#tag=json-c-$pkgver-20260627"
+set sha256sums SKIP
+set flags arch
+set -g _tagdate 20260627
+
+function build
+    set -l cmake_options -D BUILD_STATIC_LIBS=OFF -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_LIBDIR=/usr/lib -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_POLICY_VERSION_MINIMUM=3.5 -D ENABLE_RDRAND=OFF -D ENABLE_THREADING=ON
+    cmake -S json-c -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 json-c/COPYING; or return
+end

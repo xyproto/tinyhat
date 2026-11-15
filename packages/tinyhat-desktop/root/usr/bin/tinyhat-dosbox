@@ -1,0 +1,104 @@
+#!/bin/sh
+windows_exe() {
+	[ "$(head -c 2 "$1" 2>/dev/null)" = MZ ] || return 1
+	off=$(od -An -tu4 -j 60 -N 4 "$1" 2>/dev/null | tr -d ' ')
+	[ -n "$off" ] || return 1
+	case $(od -An -c -j "$off" -N 2 "$1" 2>/dev/null | tr -d ' ') in PE | NE) return 0 ;; esac
+	return 1
+}
+if [ -f "${1-}" ] && windows_exe "$1"; then
+	for wine in wine-staging wine; do
+		command -v "$wine" >/dev/null && exec "$wine" "$@"
+	done
+	tinyhat-notice "This is a Windows program. Install Wine from the menu to run it." 6
+	exit 1
+fi
+mkdir -p "$HOME/DOS"
+dos=$(readlink -f "$HOME/DOS")
+prog=
+if [ -f "${1-}" ]; then
+	p=$(readlink -f "$1")
+	case $p in "$dos"/*) prog=${p#"$dos"/} && shift ;; esac
+fi
+set -- -conf /etc/tinyhat/dosbox-x.conf -userconf -fastlaunch "$@"
+[ ! -f /run/tinyhat-midi/dosbox-x.conf ] || set -- "$@" -conf /run/tinyhat-midi/dosbox-x.conf
+set -- "$@" -set "midi fluid.soundfont=$(tinyhat-soundfont)"
+mt32=$HOME/.local/share/tinyhat/mt32
+if [ -f "$mt32/MT32_CONTROL.ROM" ] || [ -f "$mt32/CM32L_CONTROL.ROM" ]; then
+	set -- "$@" -set "midi mididevice=mt32" -set "midi mt32.romdir=$mt32/"
+fi
+removable=
+harddisk=
+for d in /media/*/; do
+	mountpoint -q "$d" || continue
+	dev=$(findmnt -no SOURCE --target "$d")
+	case $(readlink -f "/sys/class/block/${dev##*/}") in
+	*/usb* | */mmc*) [ -n "$removable" ] || removable=$d ;;
+	*/block/sr*) [ -n "$removable" ] || removable=$d ;;
+	*) [ -n "$harddisk" ] || harddisk=$d ;;
+	esac
+done
+conf=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-dosbox.conf
+ae() { printf '%s\n' "$@" >>"$conf"; }
+printf '[autoexec]\n' >"$conf"
+set -- "$@" -conf "$conf"
+ae "@echo off" "mount y /usr/share/tinyhat/dos -ro" "set PATH=Z:\\;Y:\\"
+[ ! -d /usr/share/tinyhat/ultrasnd ] || ae "mount u /usr/share/tinyhat/ultrasnd -ro"
+tp=${XDG_DATA_HOME:-$HOME/.local/share}/tinyhat/tp55
+if [ -f "$tp/TURBO.EXE" ]; then
+	[ -f "$tp/TPC.CFG" ] || printf '/UT:\\\r\n/IT:\\\r\n/OT:\\\r\n' >"$tp/TPC.CFG"
+	ae "mount t \"$tp\"" "set PATH=Z:\;Y:\;T:\\"
+fi
+drivec="the DOS folder in your home directory"
+drived=
+drivee=
+if [ -n "$harddisk" ] && [ -n "$(find "$harddisk" -maxdepth 1 \( -iname command.com -o -iname autoexec.bat \) -print -quit)" ]; then
+	ae "mount c \"$harddisk\"" "mount e \"$HOME/DOS\""
+	home=e
+	drivee=$drivec
+	drivec="the DOS hard disk of this PC"
+else
+	ae "mount c \"$HOME/DOS\""
+	home=c
+	if [ -n "$harddisk" ]; then
+		ae "mount e \"$harddisk\""
+		drivee="the hard disk of this PC"
+	fi
+fi
+if [ -n "$removable" ]; then
+	case $(findmnt -no FSTYPE --target "$removable") in
+	iso9660 | udf) ae "mount d \"$removable\" -t cdrom" ;;
+	*) ae "mount d \"$removable\"" ;;
+	esac
+	drived="the USB stick or CD"
+fi
+ae "cls" "c:" "echo Tiny Hat DOS" "echo." "echo C:  $drivec"
+[ -z "$drived" ] || ae "echo D:  $drived"
+[ -z "$drivee" ] || ae "echo E:  $drivee"
+[ ! -f "$tp/TURBO.EXE" ] || ae "echo T:  Turbo Pascal 5.5 (type TURBO to start it)"
+ae "echo." \
+	"echo DIR lists files, CD NAME enters a folder, CD .. goes back." \
+	"echo K lists the programs here. Type a program name to run it." \
+	"echo Alt+Enter: fullscreen   Ctrl+F10: grab or release the mouse   EXIT: quit" \
+	"echo." "@echo on"
+if [ -n "$prog" ]; then
+	gdir=${prog%/*}
+	[ "$gdir" != "$prog" ] || gdir=
+	ae "$home:"
+	[ -z "$gdir" ] || ae "cd \\$(printf '%s' "$gdir" | tr / '\\')"
+	mark=${XDG_CACHE_HOME:-$HOME/.cache}/tinyhat/dos-setup/$(printf '%s' "$gdir" | tr / _)
+	if [ -n "$gdir" ] && [ ! -e "$mark" ]; then
+		setup=
+		for want in setup install; do
+			for f in "$dos/$gdir"/*; do
+				case $(printf '%s' "${f##*/}" | tr 'A-Z' 'a-z') in
+				"$want"*.bat | "$want"*.exe | "$want"*.com) setup=${f##*/} && break 2 ;;
+				esac
+			done
+		done
+		mkdir -p "${mark%/*}" && : >"$mark"
+		[ -z "$setup" ] || ae "$setup"
+	fi
+	ae "${prog##*/}"
+fi
+LD_BIND_NOW=1 SDL_VIDEO_WAYLAND_MODE_SCALING=aspect43 exec nice -n -5 dosbox-x "$@"

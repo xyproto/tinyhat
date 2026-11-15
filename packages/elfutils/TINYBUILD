@@ -1,0 +1,56 @@
+set pkgbase elfutils
+set pkgname elfutils libelf
+set pkgver 0.196
+set pkgrel 2
+set pkgdesc 'Handle ELF object files and DWARF debugging information'
+set arch i686 x32
+set url https://sourceware.org/elfutils/
+# No debuginfod: libelf would otherwise pull in curl and its network and TLS libraries everywhere it is used,
+# such as in systemd
+set makedepends bzip2 git libgcc libstdc++ xz zlib zstd
+set flags arch
+set options staticlibs
+set source 'elfutils::git+https://forge.sourceware.org/elfutils/elfutils-mirror.git?signed#tag=elfutils-0.196'
+set sha256sums SKIP
+
+function prepare
+    cd $pkgbase; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    # fat-lto-objects is required for non-mangled .a files in libelf
+    set -a CFLAGS -ffat-lto-objects
+    cd $pkgbase; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --program-prefix=eu- --enable-deterministic-archives \
+        --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod; or return
+    make; or return
+end
+
+function _pick
+    set -l p $argv[1]
+    for f in $argv[2..]
+        set -l d "$srcdir/$p/$f"
+        mkdir -p (path dirname $d); or return
+        mv $f $d; or return
+        rmdir -p --ignore-fail-on-non-empty (path dirname $f)
+    end
+    return 0
+end
+
+function package_elfutils
+    set pkgdesc "$pkgdesc (utilities)"
+    set license GPL-3.0-or-later
+    set depends glibc "libelf=$pkgver" libgcc libstdc++ sh
+    make DESTDIR="$pkgdir" install -C $pkgbase; or return
+    cd "$pkgdir"; or return
+    set -l lib etc/profile.d/* usr/include usr/lib usr/share/man/*/{gelf,elf,libelf}*
+    _pick libelf $lib; or return
+end
+
+function package_libelf
+    set pkgdesc "$pkgdesc (libraries)"
+    set license 'GPL-2.0-or-later OR LGPL-3.0-or-later'
+    set depends bzip2 libbz2.so glibc xz liblzma.so zlib zstd libzstd.so
+    mv -v $pkgname/* "$pkgdir"; or return
+end

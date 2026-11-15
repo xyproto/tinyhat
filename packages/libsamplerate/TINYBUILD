@@ -1,0 +1,28 @@
+set pkgname libsamplerate
+set pkgver 0.2.2
+set pkgrel 3
+set pkgdesc 'An audio sample rate conversion library'
+set arch i686 x32
+set url https://libsndfile.github.io/libsamplerate/
+set license BSD
+set depends glibc
+set makedepends alsa-lib cmake libsndfile opus
+set checkdepends fftw
+set provides libsamplerate.so
+set source "https://github.com/libsndfile/libsamplerate/releases/download/$pkgver/libsamplerate-$pkgver.tar.xz" \
+    "https://github.com/libsndfile/libsamplerate/releases/download/$pkgver/libsamplerate-$pkgver.tar.xz.sig"
+set sha256sums 3258da280511d24b49d6b08615bbe824d0cacc9842b0e4caf11c52cf2b043893 \
+    48febb940c17a243584860ea0c151e652f2cad261f1fcf28a84aa1cd833cd167
+set flags arch
+
+function build
+    set -l cmake_options -B build -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_BUILD_TYPE=None -D BUILD_SHARED_LIBS=ON -S $pkgname-$pkgver -Wno-dev
+    cmake $cmake_options; or return
+    cmake --build build --verbose; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -vDm 644 $pkgname-$pkgver/{AUTHORS,NEWS,README.md,ChangeLog} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+    install -vDm 644 $pkgname-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

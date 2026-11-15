@@ -1,0 +1,32 @@
+set pkgname x264
+set pkgver 0.165.r3222.b35605a
+set pkgrel 2
+set epoch 3
+set pkgdesc 'Open Source H264/AVC video encoder'
+set arch i686 x32
+set url https://www.videolan.org/developers/x264.html
+set license GPL-2.0-only
+set depends glibc liblsmash.so
+set makedepends git nasm
+set provides libx264 libx264.so
+set conflicts libx264 libx264-10bit libx264-all
+set replaces libx264 libx264-10bit libx264-all
+set -g _commit b35605ace3ddf7c1a5d67a2eb553f034aef41d55
+set source "git+https://code.videolan.org/videolan/x264.git#commit=$_commit"
+set sha256sums SKIP
+set flags arch
+
+function build
+    cd x264; or return
+    ./configure \
+        --prefix=/usr \
+        --enable-shared \
+        --enable-pic \
+        --enable-lto \
+        --disable-avs; or return
+    make; or return
+end
+
+function package
+    make -C x264 DESTDIR="$pkgdir" BASHCOMPLETIONSDIR=/usr/share/bash-completion/completions install-cli install-lib-shared install-bashcompletion; or return
+end

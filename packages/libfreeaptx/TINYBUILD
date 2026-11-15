@@ -1,0 +1,28 @@
+set pkgname libfreeaptx
+set pkgver 0.2.2
+set pkgrel 1
+set pkgdesc 'Open Source aptX codec library'
+set url https://github.com/regularhunter/libfreeaptx
+set arch i686 x32
+set license LGPL-2.1-or-later
+set depends glibc
+set makedepends git
+set provides libfreeaptx.so
+set source "git+$url#tag=$pkgver"
+set b2sums 4ed9db239b23b76cca22b0d390e859678dae5c959989cccd7a669951d7ffc18437d165c80f47b3fff587f19f52136dec6360b6735f0068b461eb0132716a6bb6
+set flags arch
+
+function _make
+    make CPPFLAGS="$CPPFLAGS" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" \
+        PREFIX=/usr $argv
+end
+
+function build
+    cd $pkgname; or return
+    _make; or return
+end
+
+function package
+    cd $pkgname; or return
+    _make DESTDIR="$pkgdir" install; or return
+end

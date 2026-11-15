@@ -1,0 +1,22 @@
+set pkgname which
+set pkgver 2.25
+set pkgrel 1
+set pkgdesc 'A utility to show the full path of commands'
+set arch i686 x32
+set url https://savannah.gnu.org/projects/which/
+set license GPL-3.0-or-later
+set depends bash glibc
+set source "https://ftp.gnu.org/gnu/which/which-$pkgver.tar.gz"
+set sha256sums 1cb83e4f702e60b8211ab5ec4c2afbab1b1dec80209456a7d2faf7584ed225ea
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

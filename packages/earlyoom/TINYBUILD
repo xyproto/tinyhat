@@ -1,0 +1,32 @@
+set pkgname earlyoom
+set pkgver 1.9.0
+set pkgrel 1
+set pkgdesc 'Early OOM Daemon for Linux'
+set arch i686 x32
+set url https://github.com/rfjakob/earlyoom
+set license MIT
+set depends glibc
+set makedepends pandoc
+set optdepends 'systembus-notify: desktop notifications'
+set backup etc/default/earlyoom
+set source "https://github.com/rfjakob/$pkgname/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
+set sha256sums b2fe5e1e071a5a000b22fb9602c068fd69d09c057f0ba972dfc5d85daf464b2a
+set flags arch
+
+function prepare
+    cd "$pkgname-$pkgver"; or return
+    sed "/systemctl|chcon/d" -ri Makefile; or return
+    sed '/^DynamicUser=/a SupplementaryGroups=proc' -i earlyoom.service.in; or return
+    sed 's;^EARLYOOM_ARGS="(.*)";EARLYOOM_ARGS="\1 -n --avoid \'(^|/)(init|systemd|Xorg|sshd)$\'";' -ri earlyoom.default; or return
+end
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    make PREFIX=/usr SYSTEMDUNITDIR=/usr/lib/systemd/system VERSION=$pkgver earlyoom; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make install DESTDIR="$pkgdir" PREFIX=/usr SYSTEMDUNITDIR=/usr/lib/systemd/system; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

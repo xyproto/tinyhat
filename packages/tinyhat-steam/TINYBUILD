@@ -1,0 +1,15 @@
+set pkgname tinyhat-steam
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Tiny Hat menu entry and installer for Steam'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends tinyhat-desktop
+
+function package
+    cp -a $startdir/root/. $pkgdir/; or return
+    find $pkgdir -type d -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
+end

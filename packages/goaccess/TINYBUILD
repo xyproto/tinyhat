@@ -1,0 +1,31 @@
+set pkgname goaccess
+set pkgver 1.12
+set pkgrel 1
+set pkgdesc 'An open source real-time web log analyzer and interactive viewer'
+set arch i686 x32
+set url https://goaccess.io
+set license MIT
+set depends ncurses libmaxminddb openssl
+set makedepends git
+set optdepends 'geoip2-database: for geoip support'
+set backup etc/goaccess/goaccess.conf
+set source "git+https://github.com/allinurl/goaccess.git#tag=v$pkgver"
+set sha512sums e20bc4cc7ab09e57a13c958e08f5e3ac6df42e02edab2e46df6c910b8bc8eb15de72374e3c7dc83bdbb962aedfb717870ceec509514c3532d796b612bcab9c70
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --enable-geoip=mmdb --enable-utf8 --with-openssl; or return
+    make prefix=/usr sysconfdir=/etc; or return
+end
+
+function package
+    cd $pkgname; or return
+    make prefix="$pkgdir/usr" sysconfdir="$pkgdir/etc" install; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYING; or return
+end

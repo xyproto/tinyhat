@@ -12,8 +12,7 @@ pkgbase = ell
 	depends = glibc
 	source = https://mirrors.edge.kernel.org/pub/linux/libs/ell/ell-0.83.tar.xz
 	source = https://mirrors.edge.kernel.org/pub/linux/libs/ell/ell-0.83.tar.sign
-	validpgpkeys = E932D120BC2AEC444E558F0106CA9F5D1DCF2659
 	sha256sums = 39a562f5ab2768e69da1ffbb1f98a8eb3483baffc7d2ef6adc3705e4fd4e53fb
-	sha256sums = SKIP
+	sha256sums = bf3cb7e5f7c56ee417630b08aba4ffbb0636771c3879be179c2f0f5d963c90c9
 
 pkgname = ell

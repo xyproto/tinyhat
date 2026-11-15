@@ -29,9 +29,8 @@ pkgbase = colord
 	options = !emptydirs
 	source = git+https://github.com/hughsie/colord?signed#tag=1.4.8
 	source = 0001-Lock-user-account.patch
-	validpgpkeys = 163EB50119225DB3DF8F49EA17ACBA8DFA970E17
-	b2sums = 451c9571241278fb3347dd928370f3e350645c1cb2736beda37e7e5d3c1d374d49626298f0ab96d457de6ec3633fda1057d992aa833bf4f8042e29fcc4162a66
-	b2sums = 1383a097be955cef0bcfe594522e352fc160ac2e8069887b27910d525f383b3d77d7425fd6415d49efd24ca2962ef616f731cba2ec836be9a466fe2027015bec
+	sha256sums = SKIP
+	sha256sums = 2c036b1ad9831b8be9077454ef3ef800ebaf67402e4d3d61c31d7b9f7ff3e9cb
 
 pkgname = colord
 	depends = dbus
