@@ -1,4 +1,0 @@
-#!/bin/sh
-sync
-[ "$(id -u)" = 0 ] || exec doas systemctl suspend "$@"
-exec systemctl suspend "$@"

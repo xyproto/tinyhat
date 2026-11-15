@@ -1,7 +1,0 @@
-[Midnight-Commander]
-skin=tinyhat
-use_internal_edit=false
-confirm_exit=false
-
-[Panels]
-navigate_with_arrows=true

@@ -1,5 +1,0 @@
-makedepends_i686=()
-optdepends_i686=()
-eval "$(
-  declare -f package | sed 's/PROG_EXTRA=sensord//'
-)"

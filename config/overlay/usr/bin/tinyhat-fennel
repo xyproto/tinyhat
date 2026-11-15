@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/lib/tinyhat/cproject love-fennel "Fennel and LÖVE" game.fnl

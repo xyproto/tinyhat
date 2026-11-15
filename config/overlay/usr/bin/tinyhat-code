@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/lib/tinyhat/cproject example1 "C programming" main.c

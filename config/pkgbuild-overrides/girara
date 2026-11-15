@@ -1,2 +1,0 @@
-makedepends=(${makedepends[@]/doxygen/})
-eval "$(declare -f build | sed 's/arch-meson build/& -Ddocs=disabled/')"

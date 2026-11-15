@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=C programming book
-Icon=accessories-dictionary
-Comment=Beej's Guide to C Programming
-Exec=netsurfy file:///usr/share/tinyhat/c-guide/bgc/index.html
-Terminal=false
-Categories=Development;
