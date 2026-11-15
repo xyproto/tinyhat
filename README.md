@@ -13,7 +13,7 @@ Please [recommend Tiny Hat on DistroWatch](https://distrowatch.com/dwres.php?res
 The goals for this distro are:
 
 * Use less than 100M of memory after booting.
-* Use around 500M of disk space (currently uses a bit more, but still usable on a 1GB USB stick).
+* Use around 600M of disk space (currently uses a bit more, but still usable on a 1GB USB stick).
 * Use modern libraries, frameworks and protocols (SDL3, Wayland).
 * To be possible to use on a 32-bit or 64-bit x86 machine with little ram and disk space, for:
   * Retro gaming (ScummVM, DosBox-X and ZSNES).
@@ -30,19 +30,19 @@ The goals for this distro are:
 * Be not impossible to use for brand new users.
 * Have reproducible builds.
 
-It also includes MemTest86+ and FreeDOS (floppy edition).
+Its boot menu also has MemTest86+ and a FreeDOS 1.4 live floppy with a couple of games.
 
 ### Reproducible builds
 
 * Each release has a `SHA256SUMS` file with the SHA256 hash sum, as well as a detached GPG signature for the hash sum named `SHA256SUMS.asc`.
 * One can veryfy the image hash sum file with `gpg --verify SHA256SUMS.asc SHA256SUMS` and then `sha256sum -c SHA256SUMS`.
-* Each build of the image (`tinyhat32.img`). is reproducible and bit-identical.
+* Each build of the image (`build/tinyhat32.img`). is reproducible and bit-identical.
 
 ### Dependencies
 
-For `make` to be able to create `tinyhat32.img`, these Arch Linux packages are needed:
+For `make` to be able to create `build/tinyhat32.img`, these Arch Linux packages are needed:
 
-    base-devel bc bubblewrap cpio git git-lfs libelf python-markdown python-numpy qemu-user-static qemu-user-static-binfmt squashfs-tools vorbis-tools xfsprogs
+    base-devel bc bubblewrap cpio git git-lfs libelf lua python-markdown python-numpy qemu-user-static qemu-user-static-binfmt squashfs-tools vorbis-tools xfsprogs
 
 For `make vdi`, this package is also needed:
 
@@ -56,7 +56,7 @@ For `make run` and `make qemutest`, these packages are also needed:
 
     imagemagick qemu-system-x86
 
-For `make x32` and `make 64` (`tinyhat64x32.img` and `tinyhat64.img`), this package is also needed (for creating the Secure Boot signing key):
+For `make x32` and `make 64` (`build/tinyhat64x32.img` and `build/tinyhat64.img`), this package is also needed (for creating the Secure Boot signing key):
 
     openssl
 
