@@ -1,0 +1,61 @@
+set pkgname libpaper
+set pkgver 2.2.8
+set pkgrel 1
+set pkgdesc 'Library for handling paper characteristics'
+set arch i686 x32
+set url https://github.com/rrthomas/libpaper
+# https://github.com/rrthomas/libpaper/pull/37
+# libpaper is LGPL-2.1+
+# bundled libgnu is LGPL-2.1+, LGPL-2+ and GPL-3+
+# paperspecs is Public Domain
+# localepaper.c is FSFAP
+# paper.c is GPL-3.0-or-later
+# paperconf.c is GPL 2.0 only
+# localepaper.c is FSFAP (except it is missing the warranty disclaimer... but the intent is clear)
+set license LGPL-2.1-or-later LicenseRef-Public-Domain GPL-3.0-or-later LGPL-2.0-or-later FSFAP MIT
+set depends glibc
+set backup etc/papersize
+set source https://github.com/rrthomas/libpaper/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz \
+    localepaper.c
+set sha256sums 1e330571690191874eca415ec76889dd11bab9887a2302d6a3665cd081c4d77b \
+    7e49c6ce67fbaea77929ab5849026412d0f91f692a902805c0134a071cccde22
+set provides paper
+set replaces paper
+set conflicts paper
+set flags arch
+
+function prepare
+    cd "$pkgname-$pkgver"; or return
+    cp ../localepaper.c src/; or return
+end
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --sbindir=/usr/bin; or return
+    make; or return
+    # localepaper
+    cd src; or return
+    gcc $CFLAGS $LDFLAGS -I.. -Ilibgnu -o localepaper localepaper.c libgnu/.libs/libgnupaper.a; or return
+end
+
+function check
+    cd "$pkgname-$pkgver"; or return
+    make -k check; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+    # localepaper
+    install -Dt "$pkgdir/usr/lib" -m0755 src/localepaper; or return
+    # add systemwide default papersize read by many office applications
+    install -dm 755 "$pkgdir"/etc; or return
+    echo '# Simply write the paper name. See man 1 paper and "paper --no-size --all" for possible values' >"$pkgdir"/etc/papersize
+    # add libpaper.d directory other packages can use to store files
+    install -dm 755 "$pkgdir"/etc/libpaper.d; or return
+    # license
+    install -Dm644 {COPYING,COPYING-GPL-3,COPYING-MIT} -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

@@ -1,0 +1,24 @@
+set pkgname tomlc17
+set pkgver R261109
+set pkgrel 1
+set pkgdesc 'TOML parser library in C17, as a static library'
+set arch i686 x86_64 aarch64
+set url https://github.com/cktan/tomlc17
+set license MIT
+set options staticlibs
+set source "tomlc17-$pkgver.tar.gz::https://github.com/cktan/tomlc17/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums f4d54c5ac871688582a9d56c88400d245f3846e298169944fb189e5666e25932
+
+function build
+    make -C tomlc17-$pkgver/src CFLAGS="$CFLAGS -std=c17 -fpic -DNDEBUG" libtomlc17.a; or return
+end
+
+function package
+    cd tomlc17-$pkgver; or return
+    install -Dm644 src/tomlc17.h "$pkgdir/usr/include/tomlc17.h"; or return
+    install -Dm644 src/libtomlc17.a "$pkgdir/usr/lib/libtomlc17.a"; or return
+    install -d "$pkgdir/usr/lib/pkgconfig"; or return
+    printf 'prefix=/usr\nName: libtomlc17\nURL: %s\nDescription: %s\nVersion: %s\nLibs: -L${prefix}/lib -ltomlc17\nCflags: -I${prefix}/include\n' \
+        "$url" "$pkgdesc" "$pkgver" >"$pkgdir/usr/lib/pkgconfig/libtomlc17.pc"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

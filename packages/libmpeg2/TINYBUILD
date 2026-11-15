@@ -1,0 +1,30 @@
+set pkgname libmpeg2
+set pkgver 0.5.1
+set pkgrel 11
+set pkgdesc 'Library for decoding MPEG-1 and MPEG-2 video streams'
+set arch i686 x32
+set url https://libmpeg2.sourceforge.io/
+set license GPL-2.0-or-later
+set depends glibc
+set flags arch
+set source "https://download.videolan.org/contrib/libmpeg2/$pkgname-$pkgver.tar.gz"
+set b2sums 29b71740fa601c668a8f5b0a43aa763bda2fc66587f5bff847d4bc6d03dd831abe46428616b770aaaabf2d42877daad8c305ab4dd988cc91a4c90decfcc19c9a
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

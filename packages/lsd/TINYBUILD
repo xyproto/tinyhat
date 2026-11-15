@@ -1,0 +1,33 @@
+set pkgname lsd
+set pkgver 1.2.0
+set pkgrel 2
+set pkgdesc 'Modern ls with a lot of pretty colors and awesome icons'
+set arch i686
+set url https://github.com/lsd-rs/lsd
+set license Apache-2.0
+set depends libgcc libgit2 zlib
+set makedepends cargo
+set checkdepends git
+set optdepends nerd-fonts awesome-terminal-fonts
+set source "https://github.com/lsd-rs/lsd/archive/v$pkgver/lsd-$pkgver.tar.gz"
+set sha256sums dae8d43087686a4a1de0584922608e9cbab00727d0f72e4aa487860a9cbfeefa
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    cargo fetch --target "$(rustc --print host-tuple)"; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    LIBGIT2_NO_VENDOR=1 SHELL_COMPLETIONS_DIR=completions cargo build --release --frozen; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    install -Dm 755 target/release/$pkgname -t "$pkgdir/usr/bin"; or return
+    install -Dm 644 README.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
+    install -Dm 644 "completions/$pkgname.bash" "$pkgdir/usr/share/bash-completion/completions/$pkgname"; or return
+    install -Dm 644 "completions/$pkgname.fish" "$pkgdir/usr/share/fish/vendor_completions.d/$pkgname.fish"; or return
+    install -Dm 644 "completions/_$pkgname" "$pkgdir/usr/share/zsh/site-functions/_$pkgname"; or return
+end

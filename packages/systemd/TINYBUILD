@@ -1,0 +1,166 @@
+set pkgbase systemd
+set pkgname systemd systemd-libs systemd-resolvconf systemd-sysvcompat
+set pkgver 262.1
+set pkgrel 1
+set arch i686 x32
+set url https://www.github.com/systemd/systemd
+set license LGPL-2.1-or-later
+set makedepends acl docbook-xsl gperf lz4 xz pam libelf intltool kmod libidn2 libgcrypt libxcrypt libxslt util-linux linux-api-headers python-jinja python-lxml shadow git meson libseccomp pcre2 audit libxkbcommon bash-completion systemd rsync gcc-libs
+set conflicts 'mkinitcpio<38-1'
+set source "git+https://github.com/systemd/systemd#tag=v$pkgver?signed" \
+    0001-Use-Arch-Linux-device-access-groups.patch \
+    arch.conf \
+    loader.conf \
+    splash-arch.bmp \
+    systemd-user.pam \
+    systemd-hook \
+    20-systemd-sysusers.hook \
+    21-systemd-tmpfiles.hook \
+    25-systemd-binfmt.hook \
+    25-systemd-catalog.hook \
+    25-systemd-hwdb.hook \
+    25-systemd-sysctl.hook \
+    30-systemd-daemon-reload-system.hook \
+    30-systemd-daemon-reload-user.hook \
+    35-systemd-enqueue-marked.hook \
+    35-systemd-udev-reload.hook \
+    35-systemd-update.hook \
+    36-systemd-modules-load.hook
+set sha256sums SKIP \
+    3ed6376fa18f9f79413c49ca0a04543476649217365c27cd396c83e867a3dffc \
+    e81d73077046628ba495ed07abfc819ea270d773fe806b3ff0af527a2c6b5d42 \
+    45bde2e7da268c2cdd00efe6973821f92a51357d2009874adf8d854f850db349 \
+    d0ec3070db1f29799adbc8be8a26341290d2df4bf35939a5adce8e7947bad3bf \
+    d89d4a651a0ade67be200b05ddb622b57bc15027bb27a534f719c6274f680673 \
+    90e00dd01359565be85a8cdd93b424b4c1c89563300d16eaf0e7eedc349bf9fc \
+    f55162dc55268aa3850ef410aa1e444defa0f68b996e415c8b8bc04d63053e7a \
+    3cfdc3c21d32cc35b1315f4ff4df87238bc7d2c27bdcf4e5a70600832c481e95 \
+    a938701f4244ebdc4ae88ed0032a8315b68f086c6e45d9f2e34ef9442a8f6b47 \
+    be3c749ed51ee26c8412e0304a41ac5e00e668f4d5227b5f359a3b0c31d18d5d \
+    b19b23467dc33b3e8267cabea10726b0d181e0de1b491ec538b9fb620bccf57f \
+    1af0fbaeaf974fe3d8409854179fac68e8461524dd49849b7e889374363ce3c9 \
+    2d2733a167ee360a36d6cc613001913deb62f199d73e86d39bfe06e669f4b066 \
+    5e35263da327771ec1b9bff1d792b0da4c802f0322e40838f07554788fc191e2 \
+    06180f1d8133babcec60bda7aacc06d881626e2a1d7ca164eeab59a6657bf501 \
+    f6364443609b1d5a07f385e7228ace0eae5040ae3bbd4e00ed5033ef1b19e4b9 \
+    1090b7b1edba2042298b609a77bbe122982ca936208408fb79d77b33a2f3c27a \
+    53e1ac2a7ddcd696f7c8c930bd36c8764b9d46502cf56340c67a579b128dae4c
+set flags arch
+set -g _meson_version 262.1-1
+set -g _systemd_src_dir systemd
+
+function prepare
+    cd "$_systemd_src_dir"; or return
+    if not git status > /dev/null 2>&1
+        return 0
+    end
+    set -l _c
+    set -l _l
+    for _c in $_backports
+        if string match -q -- '*..*' "$_c"
+            set _l '--reverse'
+        else
+            set _l '--max-count=1'
+        end
+        git log --oneline "$_l" "$_c"; or return
+        git cherry-pick --mainline 1 --no-commit "$_c"; or return
+    end
+    for _c in $_reverts
+        if string match -q -- '*..*' "$_c"
+            set _l '--reverse'
+        else
+            set _l '--max-count=1'
+        end
+        git log --oneline "$_l" "$_c"; or return
+        git revert --mainline 1 --no-commit "$_c"; or return
+    end
+    patch -Np1 -i ../0001-Use-Arch-Linux-device-access-groups.patch; or return
+end
+
+function build
+    set -l _timeservers {0..3}.arch.pool.ntp.org
+    set -l _nameservers '9.9.9.9#dns.quad9.net' '2620:fe::9#dns.quad9.net' '1.1.1.1#cloudflare-dns.com' '2606:4700:4700::1111#cloudflare-dns.com' '8.8.8.8#dns.google' '2001:4860:4860::8888#dns.google'
+    set -l _meson_options -Dversion-tag="$_meson_version-arch" -Dvcs-tag=false -Dshared-lib-tag="$_meson_version" -Dmode=release -Dapparmor=disabled -Dbootloader=disabled -Dukify=disabled -Dopenssl=disabled -Dtests=false -Dcoredump=false -Dxenctrl=disabled -Dbpf-framework=disabled -Dima=false -Dinstall-tests=false -Dselinux=disabled -Dsshdprivsepdir=/usr/share/empty.sshd -Dsysupdated=disabled -Dvmlinux-h=disabled -Dcompat-sysv-interfaces=false -Ddbuspolicydir=/usr/share/dbus-1/system.d -Ddefault-dnssec=no -Ddefault-kill-user-processes=false -Ddefault-locale='C.UTF-8' -Dlocalegen-path=/usr/bin/locale-gen -Ddns-over-tls=false -Dfallback-hostname='archlinux' -Dnologin-path=/usr/bin/nologin -Dntp-servers=$_timeservers -Ddns-servers=$_nameservers -Drpmmacrosdir=no -Dsbat-distro='arch' -Dsbat-distro-summary='Arch Linux' -Dsbat-distro-pkgname="$pkgname" -Dsbat-distro-version="$pkgver" -Dsbat-distro-url="https://archlinux.org/packages/core/x86_64/$pkgname/"
+    set -l _feature
+    for _feature in man seccomp polkit acl audit blkid kmod pam libcrypt libidn2 elfutils zlib bzip2 xz lz4 zstd xkbcommon pcre2 libmount
+        set -a _meson_options -D$_feature=enabled
+    end
+    meson setup --prefix /usr --libexecdir lib --sbindir bin --buildtype plain --auto-features disabled --wrap-mode nodownload -D b_lto=true -D b_pie=true -D python.bytecompile=1 "$_systemd_src_dir" build $_meson_options $MESON_EXTRA_CONFIGURE_OPTIONS; or return
+    meson compile -C build; or return
+end
+
+function package_systemd
+    set pkgdesc 'system and service manager'
+    set -a license 'CC0-1.0' 'GPL-2.0-or-later' 'MIT-0'
+    set depends "systemd-libs=$pkgver" 'acl' 'bash' 'dbus' 'dbus-units' 'glibc' 'kbd' 'kmod' 'hwdata' 'libxcrypt' 'libidn2' 'lz4' 'pam' 'libelf' 'libgcc' 'libseccomp' 'util-linux' 'xz' 'pcre2' 'audit'
+    set provides 'nss-myhostname' "systemd-tools=$pkgver" "udev=$pkgver"
+    set replaces 'nss-myhostname' 'systemd-tools' 'udev'
+    set conflicts 'nss-myhostname' 'systemd-tools' 'udev'
+    set backup etc/systemd/homed.conf etc/systemd/journald.conf etc/systemd/journal-remote.conf etc/systemd/journal-upload.conf etc/systemd/logind.conf etc/systemd/networkd.conf etc/systemd/oomd.conf etc/systemd/pstore.conf etc/systemd/resolved.conf etc/systemd/sleep.conf etc/systemd/system.conf etc/systemd/timesyncd.conf etc/systemd/user.conf etc/udev/iocost.conf etc/udev/udev.conf
+    set install systemd.install
+    meson install -C build --no-rebuild --destdir "$pkgdir" --quiet; or return
+    install -d -m0755 systemd-libs/lib/; or return
+    mv "$pkgdir"/usr/lib/lib{nss,systemd,udev}*.so* systemd-libs/lib/; or return
+    mv "$pkgdir"/usr/lib/pkgconfig systemd-libs/lib/pkgconfig; or return
+    mv "$pkgdir"/usr/include systemd-libs/include; or return
+    mv "$pkgdir"/usr/share/man/man3 systemd-libs/man3; or return
+    install -d -m0755 systemd-libs/man8/; or return
+    mv "$pkgdir"/usr/share/man/man8/*nss* systemd-libs/man8/; or return
+    rm "$pkgdir"/usr/share/man/man1/init.1; or return
+    rm "$pkgdir"/usr/share/man/man8/{halt,poweroff,reboot,shutdown}.8; or return
+    rm "$pkgdir"/usr/bin/{halt,init,poweroff,reboot,shutdown}; or return
+    rm "$pkgdir"/usr/{bin/resolvconf,share/man/man1/resolvconf.1}; or return
+    rm "$pkgdir"/usr/share/factory/etc/{issue,nsswitch.conf}; or return
+    sed -i -e '/^C \/etc\/nsswitch\.conf/d' -e '/^C \/etc\/issue/d' "$pkgdir"/usr/lib/tmpfiles.d/etc.conf; or return
+    echo 'disable *' > "$pkgdir"/usr/lib/systemd/system-preset/99-default.preset; or return
+    install -d -m 2755 "$pkgdir"/var/log/journal; or return
+    install -D -m0644 arch.conf "$pkgdir"/usr/share/systemd/bootctl/arch.conf; or return
+    install -D -m0644 loader.conf "$pkgdir"/usr/share/systemd/bootctl/loader.conf; or return
+    install -D -m0644 splash-arch.bmp "$pkgdir"/usr/share/systemd/bootctl/splash-arch.bmp; or return
+    install -D -m0755 systemd-hook "$pkgdir"/usr/share/libalpm/scripts/systemd-hook; or return
+    install -D -m0644 -t "$pkgdir"/usr/share/libalpm/hooks *.hook; or return
+    install -D -m0644 systemd-user.pam "$pkgdir"/usr/lib/pam.d/systemd-user; or return
+    install -d -m0700 "$pkgdir"/etc/cryptsetup-keys.d; or return
+    install -d -m0755 "$pkgdir/usr/share/licenses/$pkgbase"; or return
+    ln -s -t "$pkgdir/usr/share/licenses/$pkgbase" /usr/share/doc/systemd/LICENSES/MIT-0.txt; or return
+    ln -s kernel-install "$pkgdir"/usr/bin/installkernel; or return
+    ln -s kernel-install.8.gz "$pkgdir"/usr/share/man/man8/installkernel.8.gz; or return
+end
+
+function package_systemd-libs
+    set pkgdesc 'systemd client libraries'
+    set depends 'glibc' 'libgcc' 'libgcc_s.so' 'libgcrypt' 'lz4' 'xz' 'zstd'
+    set -a license 'CC0-1.0' 'GPL-2.0-or-later WITH Linux-syscall-note'
+    set provides 'libsystemd' 'libsystemd.so' 'libudev.so'
+    set conflicts 'libsystemd'
+    set replaces 'libsystemd'
+    install -d -m0755 "$pkgdir"/usr/share/man; or return
+    mv systemd-libs/lib "$pkgdir"/usr/lib; or return
+    mv systemd-libs/include "$pkgdir"/usr/include; or return
+    mv systemd-libs/man3 "$pkgdir"/usr/share/man/man3; or return
+    mv systemd-libs/man8 "$pkgdir"/usr/share/man/man8; or return
+end
+
+function package_systemd-resolvconf
+    set pkgdesc 'systemd resolvconf replacement (for use with systemd-resolved)'
+    set depends "systemd=$pkgver"
+    set provides 'openresolv' 'resolvconf'
+    set conflicts 'resolvconf'
+    install -d -m0755 "$pkgdir"/usr/bin; or return
+    ln -s resolvectl "$pkgdir"/usr/bin/resolvconf; or return
+    install -d -m0755 "$pkgdir"/usr/share/man/man1; or return
+    ln -s resolvectl.1.gz "$pkgdir"/usr/share/man/man1/resolvconf.1.gz; or return
+end
+
+function package_systemd-sysvcompat
+    set pkgdesc 'sysvinit compat for systemd'
+    set conflicts 'sysvinit'
+    set depends "systemd=$pkgver"
+    install -D -m0644 -t "$pkgdir"/usr/share/man/man1 build/man/init.1; or return
+    install -D -m0644 -t "$pkgdir"/usr/share/man/man8 build/man/{halt,poweroff,reboot,shutdown}.8; or return
+    install -d -m0755 "$pkgdir"/usr/bin; or return
+    ln -s ../lib/systemd/systemd "$pkgdir"/usr/bin/init; or return
+    for tool in halt poweroff reboot shutdown
+        ln -s systemctl "$pkgdir"/usr/bin/$tool; or return
+    end
+end

@@ -1,0 +1,67 @@
+set pkgbase avahi
+set pkgname avahi avahi-bookmarks
+set pkgver 0.9rc5
+set pkgrel 2
+set epoch 1
+set pkgdesc 'Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour)'
+set arch i686 x32
+set url https://github.com/avahi/avahi
+set license LGPL-2.1-or-later
+set depends bash dbus expat gdbm glib2 glibc libcap libdaemon systemd-libs
+set makedepends git glib2-devel gobject-introspection python-dbus python-gobject python-twisted systemd xmltoman dbus-python
+set source 'git+https://github.com/avahi/avahi#tag=v0.9-rc5' \
+    0001-HACK-Install-fixes.patch
+set sha256sums SKIP \
+    e5aac2341d746c2d1df5fdeb1f63ca581833eaa8732e230adc40877848c0f2a5
+set flags arch
+
+function prepare
+    cd avahi; or return
+    git apply -3 ../0001-HACK-Install-fixes.patch; or return
+    NOCONFIGURE=1 ./autogen.sh; or return
+end
+
+function build
+    set -l configure_options --prefix=/usr --sysconfdir=/etc --localstatedir=/var --sbindir=/usr/bin --runstatedir=/run --disable-gtk --disable-gtk3 --disable-doxygen-doc --disable-libevent --disable-mono --disable-qt5 --enable-compat-libdns_sd --with-autoipd-group=avahi --with-autoipd-user=avahi --with-avahi-priv-access-group=network --with-distro=archlinux --with-systemdsystemunitdir=/usr/lib/systemd/system with_dbus_sys=/usr/share/dbus-1/system.d
+    cd avahi; or return
+    ./configure $configure_options; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$f"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_avahi
+    set -a depends libdbus-1.so
+    set provides libavahi-{client,common,core,glib,gobject}.so libdns_sd.so
+    set backup etc/avahi/{hosts,avahi-daemon.conf,avahi-{autoip,dnsconf}d.action} usr/lib/avahi/service-types.db
+    cd avahi; or return
+    make DESTDIR="$pkgdir" install; or return
+    echo 'u! avahi - "Avahi mDNS/DNS-SD daemon"' | install -Dm644 /dev/stdin "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"; or return
+    cd "$pkgdir"; or return
+    _pick a-bm usr/bin/avahi-bookmarks; or return
+    _pick a-bm usr/share/man/man1/avahi-bookmarks.1*; or return
+    # The GTK tools and their files, globs that match nothing are left out
+    set -l gtk usr/bin/{avahi-discover{,-standalone},bshell,bssh,bvnc} usr/include/avahi-ui usr/lib/libavahi-ui-gtk3.* \
+        usr/lib/pkgconfig/avahi-ui-gtk3.pc usr/lib/python*/site-packages/avahi/ServiceTypeDatabase.py usr/share/applications \
+        usr/share/avahi/interfaces usr/share/man/man1/{avahi-discover,bshell,bssh,bvnc}.1*
+    rm -rf $gtk; or return
+end
+
+function package_avahi-bookmarks
+    set pkgdesc "$pkgdesc - web page of Zeroconf-announced HTTP/FTP services"
+    set depends "avahi=$epoch:$pkgver" glib2 python python-dbus python-gobject
+    set optdepends 'python-twisted: built-in web server (default mode, not -c)'
+    mv a-bm/* "$pkgdir"; or return
+end

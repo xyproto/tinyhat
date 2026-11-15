@@ -1,0 +1,41 @@
+set pkgbase glibmm
+set pkgname glibmm glibmm-docs
+set pkgver 2.66.10
+set pkgrel 1
+set pkgdesc 'C++ bindings for GLib'
+set url https://www.gtkmm.org/
+set arch i686 x32
+set license LGPL-2.1-or-later
+set depends glib2 glibc libgcc libsigc++ libstdc++ perl
+set makedepends clang git libsigc++-docs meson mm-common perl-xml-parser
+set checkdepends glib-networking
+set options '!emptydirs'
+set source "git+https://gitlab.gnome.org/GNOME/glibmm.git#tag=$pkgver"
+set b2sums 6075c2243eff2abfd991aaf822b69e2df4935f3773834b64865d1eb69a563b48d5c7ea6419e3cc5d59d20e12eb73153821150f86e8ed25fae658a6e910420e7e
+set flags arch
+
+function build
+    set -l meson_options -D maintainer-mode=true
+    arch-meson glibmm build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_glibmm
+    set -a depends libsigc-2.0.so
+    set provides libglibmm-2.4.so libgiomm-2.4.so
+    meson install -C build --destdir "$pkgdir"; or return
+    # Split -docs
+    mkdir -p docs/usr/share; or return
+    mv -t docs/usr/share "$pkgdir"/usr/share/{devhelp,doc}; or return
+end
+
+function package_glibmm-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    set options '!strip'
+    mv -t "$pkgdir" docs/*; or return
+end

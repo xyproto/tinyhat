@@ -1,0 +1,42 @@
+set pkgname gmp
+set pkgver 6.3.0
+set pkgrel 3
+set pkgdesc 'A free library for arbitrary precision arithmetic'
+set arch i686 x32
+set url https://gmplib.org/
+set depends libgcc libstdc++ glibc
+set license GPL-2.0-or-later LGPL-3.0-or-later
+set source https://gmplib.org/download/gmp/gmp-$pkgver.tar.lz{,.sig} \
+    gmp-gcc-15.patch
+set sha256sums be5c908a7a836c3a9bd9d62aa58563c5e9e7fef94c43a7f42dbc35bb6d02733c \
+    SKIP \
+    fd0f1b48dbe72413efbd9c45f1ca7013d555f46c578446ce3ba202e3a9b96c6c
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    patch -p1 <../gmp-gcc-15.patch; or return # Fix build with GCC 15
+    autoreconf -vif; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    # Enable shadow stack support
+    LDFLAGS="$LDFLAGS -Wl,-z,shstk" ./configure --build=$CHOST \
+        --prefix=/usr \
+        --enable-cxx \
+        --enable-fat; or return
+    # Fix overlinking
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

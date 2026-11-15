@@ -1,0 +1,39 @@
+set pkgname aget
+set pkgver 1.4.3
+set pkgrel 1
+set pkgdesc 'Minimalistic AUR helper'
+set arch i686
+set url https://github.com/xyproto/aget
+set license BSD-3-Clause
+set depends git
+set makedepends go-tinyhat
+set options '!buildflags'
+set source "aget-$pkgver.tar.gz::https://github.com/xyproto/aget/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums b3ddd6abd2f6d935d26aa8a3c1e14d417be2d0658e8014ea04ace6f3cf1ebeab
+
+function build
+    cd aget-$pkgver; or return
+    set -lx GOROOT /usr/lib/go-tinyhat
+    set -lx GOARCH 386
+    set -lx GOPATH "$srcdir/gopath"
+    set -lx GOCACHE "$srcdir/gocache"
+    set -lx GOTOOLCHAIN local
+    set -lx GOFLAGS -mod=vendor
+    set -lx CGO_ENABLED 0
+    set -lx GO386 softfloat
+    switch $CARCH
+        case aarch64
+            set GOROOT /usr/lib/go
+            set GOARCH arm64
+        case x86_64
+            set GOROOT /usr/lib/go
+            set GOARCH amd64
+    end
+    set -lx PATH "$GOROOT/bin" $PATH
+    go build -trimpath -buildvcs=false -ldflags '-s -w' -o aget; or return
+end
+
+function package
+    install -Dm755 aget-$pkgver/aget "$pkgdir/usr/bin/aget"; or return
+    install -Dm644 aget-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

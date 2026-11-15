@@ -20,7 +20,6 @@ pkgbase = sqlite
 	sha256sums = 4e57d9ac979f1c9872e69799c2597eeef4c6ce7224f3ede0bf9dc8d217b1e65d
 
 pkgname = sqlite
-	pkgdesc = A C library that implements an SQL database engine
 	depends = readline
 	depends = zlib
 	depends = glibc

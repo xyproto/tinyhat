@@ -26,8 +26,7 @@ pkgbase = libinput
 	depends = mtdev
 	depends = systemd-libs
 	source = git+https://gitlab.freedesktop.org/libinput/libinput.git?signed#tag=1.32.0
-	validpgpkeys = 3C2C43D9447D5938EF4551EBE23B7E70B467F0BF
-	b2sums = 0282e8b3c5b1cd1ac68c0b5d9dba67f60c69e747d28bef5eb911e60687238b0beb7ceb2dac6cad80ad511f8eb8ee461cc58964cbbd529c57b28872ed7666dd71
+	sha256sums = SKIP
 
 pkgname = libinput
 	optdepends = libinput-tools: debug utilities

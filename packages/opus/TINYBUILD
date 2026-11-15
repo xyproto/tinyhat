@@ -1,0 +1,51 @@
+set pkgbase opus
+set pkgname opus opus-docs
+set pkgver 1.6.1
+set pkgrel 1
+set pkgdesc 'Totally open, royalty-free, highly versatile audio codec'
+set url https://www.opus-codec.org/
+set arch i686 x32
+set license BSD-3-Clause
+set depends glibc
+set makedepends doxygen meson
+set source "https://downloads.xiph.org/releases/opus/opus-$pkgver.tar.gz"
+set b2sums dda8fb4e30e5f22d2b37616902892dcc715a2886150ab54f67d61a90c60a03afee05fb7b56a0d88355db007bb4d72c8bd6de3d874a49767318a5bba115b1a613
+# https://downloads.xiph.org/releases/opus/SHA256SUMS.txt
+set sha256sums 6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1
+# Git doesn't contain model data
+set flags arch
+
+function prepare
+    ln -s opus-$pkgver opus; or return
+end
+
+function build
+    set -l meson_options \
+        -D asm=disabled \
+        -D custom-modes=true \
+        -D deep-plc=enabled \
+        -D dred=enabled \
+        -D osce=enabled
+    arch-meson opus build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_opus
+    set provides libopus.so
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dm644 opus/opus.m4 -t "$pkgdir/usr/share/aclocal"; or return
+    mkdir -p doc/usr/share; or return
+    mv "$pkgdir"/usr/share/doc doc/usr/share/doc; or return
+    install -Dm644 opus/COPYING -t "$pkgdir/usr/share/licenses/opus"; or return
+end
+
+function package_opus-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+    install -Dm644 opus/COPYING -t "$pkgdir/usr/share/licenses/opus-docs"; or return
+end

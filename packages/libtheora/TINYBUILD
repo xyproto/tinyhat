@@ -1,0 +1,37 @@
+set pkgname libtheora
+set pkgver 1.2.0
+set pkgrel 1
+set pkgdesc 'Standard encoder and decoder library for the Theora video compression format'
+set arch i686 x32
+set url https://www.theora.org/
+set license BSD-3-Clause
+set depends glibc libogg
+set makedepends doxygen git libpng libvorbis sdl
+set source "git+https://github.com/xiph/theora.git#tag=v$pkgver"
+set b2sums 50ed821f0a8ee98c95ea638c66740dda5d2346b70742f1834b96f0089d219c9f3b0d0fad539138b7c514f47d968a550fa842bfff22935db748caf6a4c489428c
+set flags arch
+
+function prepare
+    cd theora; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd theora; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var; or return
+    make; or return
+end
+
+function check
+    cd theora; or return
+    make check; or return
+end
+
+function package
+    cd theora; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE COPYING; or return
+end

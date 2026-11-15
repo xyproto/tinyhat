@@ -1,0 +1,49 @@
+set pkgbase libsigc++
+set pkgname libsigc++ libsigc++-docs
+set pkgver 2.12.2
+set pkgrel 1
+set pkgdesc 'Callback Framework for C++'
+set url https://libsigcplusplus.github.io/libsigcplusplus/
+set arch i686 x32
+set license LGPL-2.1-or-later
+set depends glibc libgcc libstdc++
+set makedepends git meson mm-common
+set options '!emptydirs'
+set source "git+https://github.com/libsigcplusplus/libsigcplusplus#tag=$pkgver"
+set b2sums 7ce877e4f40d63a6712650de83a74efd28ea1e341441ce6380069f5869d6f8cf76d02a32b8b8a15eef1e2b82250fee3e036ff29f953866ed0372250bf36046bc
+set flags arch
+
+function build
+    set -l meson_options \
+        -D maintainer-mode=true
+
+    arch-meson libsigcplusplus build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_libsigc++
+    set provides "libsigc++2.0=$pkgver" libsigc-2.0.so
+    set conflicts libsigc++2.0
+    set replaces libsigc++2.0
+
+    meson install -C build --destdir "$pkgdir"; or return
+
+    # Split -docs
+    mkdir -p docs/usr/share; or return
+    mv -t docs/usr/share "$pkgdir"/usr/share/{devhelp,doc}; or return
+end
+
+function package_libsigc++-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    set provides "libsigc++2.0-docs=$pkgver"
+    set conflicts libsigc++2.0-docs
+    set replaces libsigc++2.0-docs
+    set options '!strip'
+
+    mv -t "$pkgdir" docs/*; or return
+end

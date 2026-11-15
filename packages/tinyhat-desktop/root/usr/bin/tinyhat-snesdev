@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/lib/tinyhat/cproject snes-c-hello "SNES programming" hello.c

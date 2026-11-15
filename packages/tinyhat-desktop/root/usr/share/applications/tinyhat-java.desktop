@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Install CGoban 3
+Icon=applications-system
+Comment=Install Java and the CGoban 3 Go client
+Exec=tinyhat-java
+Terminal=false
+Categories=System;

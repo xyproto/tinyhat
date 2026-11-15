@@ -1,0 +1,24 @@
+set pkgname libksba
+set pkgver 1.8.1
+set pkgrel 1
+set pkgdesc 'Library for working with X.509 certificates, CMS data and related objects'
+set arch i686 x32
+set url https://www.gnupg.org/related_software/libksba/
+set license GPL-2.0-only GPL-3.0-only LGPL-3.0-only
+set depends bash libgpg-error glibc
+set source "https://www.gnupg.org/ftp/gcrypt/libksba/libksba-$pkgver.tar.bz2" \
+    "https://www.gnupg.org/ftp/gcrypt/libksba/libksba-$pkgver.tar.bz2.sig"
+set sha256sums c2f84393011827219ae117131dba8e7684c2bed0961eed11b0642c2acba440b5 \
+    af99f325f81eb395d740bf48dc8e89903b141c10f69244e46e4caa1caec0577e
+set flags arch
+
+function build
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+end

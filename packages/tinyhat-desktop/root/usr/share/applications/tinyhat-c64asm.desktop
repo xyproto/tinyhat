@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Example C64 program in Assembly
+Icon=input-gaming
+Comment=Write a Commodore 64 program in 6502 assembly with ca65 (press Ctrl+Space twice in rapid succession to build and run it in VICE)
+Exec=tinyhat-c64asm
+Terminal=false
+Categories=Development;

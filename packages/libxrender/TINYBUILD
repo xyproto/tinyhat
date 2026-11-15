@@ -1,0 +1,29 @@
+set pkgname libxrender
+set pkgver 0.9.13
+set pkgrel 1
+set pkgdesc 'X Rendering Extension client library'
+set arch i686 x32
+set url https://xorg.freedesktop.org/
+set license HPND-sell-variant
+set depends libx11 glibc xorgproto
+set makedepends git xorg-util-macros
+set flags arch
+set source "git+https://gitlab.freedesktop.org/xorg/lib/libxrender.git?signed#tag=libXrender-$pkgver"
+set sha512sums 6291d3c95642ed44561991f9900f0f734dddee039be55c1b189700754f64548cd3c27beb71600f7b72e2e795ef58b3fc7407424d06973b19510e4ef7a064ba60
+
+function prepare
+    cd libxrender; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd libxrender; or return
+    ./configure --prefix=/usr --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libxrender; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

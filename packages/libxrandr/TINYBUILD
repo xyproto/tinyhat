@@ -1,0 +1,28 @@
+set pkgname libxrandr
+set pkgver 1.5.5
+set pkgrel 1
+set pkgdesc 'X11 RandR extension library'
+set arch i686 x32
+set license HPND-sell-variant
+set url https://xorg.freedesktop.org/
+set depends libxext libxrender libx11 glibc
+set makedepends xorg-util-macros xorgproto
+set source "$url/releases/individual/lib/libXrandr-$pkgver.tar.xz" \
+    "$url/releases/individual/lib/libXrandr-$pkgver.tar.xz.sig"
+set sha512sums 3cae1d2eb425dd3d3bd89f514a8e4bd9c696170ab6f3882f6db1936c30674b48277f2e485a8e3e47b3093fb1d9a32d2b054b064bd781db039e833b397aeeda9b \
+    SKIP
+set flags arch
+
+function build
+    cd libXrandr-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc; or return
+    make; or return
+end
+
+function package
+    cd libXrandr-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+
+    install -d -m755 "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

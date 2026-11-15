@@ -1,0 +1,51 @@
+set pkgbase openjph
+set pkgname openjph openjph-doc
+set pkgver 0.32.0
+set pkgrel 1
+set pkgdesc 'Open-source implementation of JPEG2000 Part-15'
+set arch i686 x32
+set url https://github.com/aous72/OpenJPH/
+set license BSD-2-Clause
+set makedepends cmake doxygen git libtiff
+set checkdepends expat
+set source "git+https://github.com/aous72/OpenJPH#tag=$pkgver"
+set sha256sums 08bdab8ec90f7fd930c310aaafad2ae5a1c59288a91420edb218738a86b26aa7
+set flags arch
+
+function build
+    set -l simd
+    # The i686 baseline has no SSE2: the SSE/SSE2 code paths fail to compile
+    # ("inlining failed in call to 'always_inline' ... target specific option
+    # mismatch"), so build the generic, SIMD-free code there.
+    test $CARCH = i686; and set simd -DOJPH_DISABLE_SIMD:BOOL=ON
+    cmake -B build -S OpenJPH \
+        -G 'Unix Makefiles' \
+        $simd \
+        -DCMAKE_BUILD_TYPE:STRING=None \
+        -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+        -DOJPH_BUILD_TESTS:BOOL=ON \
+        -Wno-dev; or return
+    cmake --build build; or return
+
+    cd OpenJPH/docs; or return
+    doxygen; or return
+end
+
+function check
+    ctest --test-dir build --output-on-failure; or return
+end
+
+function package_openjph
+    set depends glibc libgcc libstdc++ libtiff
+
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -D -m644 OpenJPH/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_openjph-doc
+    set pkgdesc "$pkgdesc (documentation)"
+
+    install -d -m755 "$pkgdir/usr/share/doc"; or return
+    install -D -m644 OpenJPH/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    cp -dr --no-preserve=ownership OpenJPH/docs/html "$pkgdir/usr/share/doc/openjph"; or return
+end

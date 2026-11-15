@@ -22,7 +22,6 @@ pkgbase = alsa-utils
 	source = https://www.alsa-project.org/files/pub/utils/alsa-utils-1.2.16.tar.bz2
 	source = https://www.alsa-project.org/files/pub/utils/alsa-utils-1.2.16.tar.bz2.sig
 	source = alsa-utils.tmpfiles
-	validpgpkeys = F04DF50737AC1A884C4B3D718380596DA6E59C91
 	sha512sums = 288c042f5acb8a7cf1b0a0c25327c74e0bce126124253bdb2d0dc2630b8bc80b5e5d694de97738d031377fd82d887db32af1c4b27c6d940357b318d0a3ef02cf
 	sha512sums = SKIP
 	sha512sums = 17ca2d760f383c02ccd00073d4fe73d6687ee58eb0ab5e458ad9d09845be7891cfe389e365bef00c7885e8afad45ea9ebf2925950f8d3fd8157feb818f986990

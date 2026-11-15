@@ -1,0 +1,28 @@
+set pkgname gzip
+set pkgver 1.15
+set pkgrel 1
+set pkgdesc 'GNU compression utility'
+set arch i686 x32
+set url https://www.gnu.org/software/gzip/
+set license GPL-3.0-or-later
+set depends glibc sh coreutils sed
+set makedepends less python
+set optdepends 'diffutils: zdiff/zcmp support' 'grep: zegrep/zfgrep/zforce/zgrep support' 'less: zless support' 'util-linux: zmore support'
+set source "https://ftp.gnu.org/gnu/gzip/gzip-$pkgver.tar.xz"
+set sha256sums 9aa0cc780dec156b8282844833b342ab7cb08c25d2cd9a1869cdd0df31deff48
+set flags arch
+
+function prepare
+    true
+end
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    ./configure --prefix=/usr --disable-gcc-warnings; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+end

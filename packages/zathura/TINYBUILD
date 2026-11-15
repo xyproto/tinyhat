@@ -1,0 +1,26 @@
+set pkgname zathura
+set pkgver 2026.10.23
+set pkgrel 2
+set pkgdesc 'Minimalistic document viewer'
+set arch i686 x32
+set url https://pwmt.org/projects/zathura/
+set license Zlib
+set depends girara sqlite desktop-file-utils file libseccomp gtk4 glib2 json-glib xxhash
+set makedepends meson ninja
+set checkdepends xorg-server-xvfb weston libdisplay-info
+set optdepends 'zathura-djvu: DjVu support' 'zathura-pdf-poppler: PDF support using Poppler' 'zathura-pdf-mupdf: PDF support using MuPDF' 'zathura-ps: PostScript support' 'zathura-cb: Comic book support'
+set source "zathura-$pkgver.tar.gz::https://github.com/pwmt/zathura/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 664e3770fd487e3a0a47b05bb53b25cf0deca4ca001c7b82b0fb2fbb754b37d8
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    arch-meson build -Dsynctex=disabled -Dmanpages=disabled -Dconvert-icon=disabled -Dtests-x11=disabled -Dtests-wayland=disabled; or return
+    ninja -C build; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm 664 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

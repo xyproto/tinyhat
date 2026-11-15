@@ -1,0 +1,57 @@
+set pkgname pam
+set pkgver 1.7.3
+set pkgrel 1
+set pkgdesc 'PAM (Pluggable Authentication Modules) library'
+set arch i686 x32
+set license GPL-2.0-only
+set url http://linux-pam.org
+set depends audit glibc libaudit.so libcrypt.so libnsl libtirpc libxcrypt pambase systemd-libs
+set makedepends docbook-xml docbook-xsl docbook5-xml flex fop git libxslt meson w3m
+set provides libpam.so libpamc.so libpam_misc.so
+set backup etc/security/{access.conf,faillock.conf,group.conf,limits.conf,namespace.conf,namespace.init,pwhistory.conf,pam_env.conf,time.conf} \
+    etc/environment
+set source "pam::git+https://github.com/linux-pam/linux-pam?signed#tag=v$pkgver" \
+    "$pkgname.tmpfiles"
+set b2sums a533679b3362f9ebb67a7652454af9402ee845e1bd6f99064b870b38f9dc7a6ec62a73d65af2086e863448742714b6eb6a91d0ad2209e77325fd127635230648 \
+    36582c80020008c3810b311a2e126d2fb4ffc94e565ea4c0c0ab567fdb92943e269781ffa548550742feb685847c26c340906c7454dcc31df4e1e47d511d8d6f
+set options '!emptydirs'
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    # apply patches from the source array
+    for src in $source
+        set src (string replace -r '::.*' '' -- $src | string replace -r '.*/' '')
+        string match -q '*.patch' -- $src; or continue
+        echo "Applying patch $src..."
+        patch -Np1 <"../$src"; or return
+    end
+end
+
+function build
+    arch-meson $pkgname \
+        -Dlogind=enabled \
+        -Deconf=disabled \
+        -Dselinux=disabled \
+        -Delogind=disabled \
+        -Dpam_userdb=disabled \
+        -Dpwaccess=disabled \
+        -Dvendordir='' \
+        build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dm 644 $pkgname.tmpfiles "$pkgdir"/usr/lib/tmpfiles.d/$pkgname.conf; or return
+
+    # remove unreproducible pdf files
+    rm "$pkgdir"/usr/share/doc/Linux-PAM/*.pdf; or return
+
+    # set unix_chkpwd uid
+    chmod +s "$pkgdir"/usr/bin/unix_chkpwd; or return
+end

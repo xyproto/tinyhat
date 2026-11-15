@@ -1,0 +1,9 @@
+[Trigger]
+Type = Package
+Operation = Upgrade
+Target = syslinux
+
+[Action]
+Description = Updating syslinux...
+When = PostTransaction
+Exec = /usr/bin/syslinux-install_update -s

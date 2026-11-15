@@ -20,7 +20,6 @@ pkgbase = dbus-python
 	depends = python
 	optdepends = python-gobject: D-Bus services via PyGI
 	source = git+https://gitlab.freedesktop.org/dbus/dbus-python.git?signed#tag=dbus-python-1.5.0
-	validpgpkeys = DA98F25C0871C49A59EAFF2C4DE8FF2A63C7CC90
 	b2sums = e7afea40984b9fe56d751567c71d759353551803a8e08def27f80e061fde613e61cd697886debde0cfa295083a8a7640376fe9512879e3d9e3fa0c4fb01368b2
 
 pkgname = python-dbus

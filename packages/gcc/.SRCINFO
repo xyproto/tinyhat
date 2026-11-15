@@ -19,6 +19,7 @@ pkgbase = gcc
 	makedepends = libmpc
 	makedepends = python
 	makedepends = zstd
+	makedepends = rust
 	options = !emptydirs
 	options = !lto
 	source = git+https://forge.sourceware.org/gcc/gcc#commit=d564253eb6c859e266d3cae18e82fb4db9a88316
@@ -31,7 +32,6 @@ pkgbase = gcc
 	sha256sums = 44ea973558842f3f4bd666bdaf6e810fd7b7c7bd36b5cc4c69f93d2cd0124fc7
 	sha256sums = 1773f5137f08ac1f48f0f7297e324d5d868d55201c03068670ee4602babdef2f
 	sha256sums = 838e14d4ef76079107a5373316598025915eaf747a10522ec9f8842125ca9a8e
-	makedepends_i686 = rust
 
 pkgname = gcc
 	pkgdesc = The GNU Compiler Collection - C and C++ frontends
@@ -51,8 +51,6 @@ pkgname = gcc
 	depends = zlib
 	depends = zstd
 	optdepends = gcc-libs: for generating code for 32-bit ABI
-	provides = 
-	replaces = 
 	options = !emptydirs
 	options = staticlibs
 
@@ -83,8 +81,6 @@ pkgname = gcc-fortran
 	depends = mpfr
 	depends = zlib
 	depends = zstd
-	provides = 
-	replaces = 
 
 pkgname = gcc-gcobol
 
@@ -101,7 +97,6 @@ pkgname = gcc-go
 	depends = zstd
 	provides = go=1.17
 	conflicts = go
-	replaces = 
 
 pkgname = gcc-libs
 	pkgdesc = Runtime libraries shipped by GCC
@@ -118,7 +113,6 @@ pkgname = gcc-libs
 	depends = libstdc++
 	depends = libtsan
 	depends = libubsan
-	provides = 
 
 pkgname = gcc-m2
 	pkgdesc = Modula-2 frontend for GCC
@@ -143,8 +137,6 @@ pkgname = gcc-objc
 	depends = mpfr
 	depends = zlib
 	depends = zstd
-	provides = 
-	replaces = 
 
 pkgname = gcc-rust
 	pkgdesc = Rust frontend for GCC

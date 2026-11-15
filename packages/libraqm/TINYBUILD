@@ -1,0 +1,22 @@
+set pkgname libraqm
+set pkgver 0.11.0
+set pkgrel 1
+set pkgdesc 'A library that encapsulates the logic for complex text layout'
+set arch i686 x32
+set url https://github.com/HOST-Oman/libraqm/
+set license MIT
+set depends freetype2 fribidi glibc harfbuzz
+set makedepends git gtk-doc meson
+set source "git+https://github.com/HOST-Oman/libraqm#tag=v$pkgver"
+set sha256sums 6f3ddc83bc6de239fc992ce2ed8f69397813ca7977c7067c6d20e822122c6782
+set flags arch
+
+function build
+    meson build libraqm --prefix=/usr -D docs=true; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -D -m644 libraqm/COPYING "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
+end

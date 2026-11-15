@@ -1,0 +1,31 @@
+set pkgname libexif
+set pkgver 0.6.26
+set pkgrel 1
+set pkgdesc 'Library to parse an EXIF file and read the data from those tags'
+set url https://github.com/libexif/libexif
+set arch i686 x32
+set license LGPL
+set depends glibc
+set provides libexif.so
+set flags arch
+set source $url/releases/download/v$pkgver/$pkgname-$pkgver.tar.bz2{,.asc}
+set sha512sums e99d2de0566284d98547915d6661effd18a51fe1687d923e57bd2250551d3ee73587f7c8386d926e7ff21df06887bedae3e10b4441bf544f04f559c381e258fe \
+    SKIP
+set b2sums db29fe7095d8e44a47ba0e87f5f245498352c06192b85962e72d507cc979138cfb07ed4c0f22cfe3ea3e120e7ee9463f8d8a66a14952459822c38b262bf7a042 \
+    SKIP
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

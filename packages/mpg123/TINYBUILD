@@ -1,0 +1,34 @@
+set pkgname mpg123
+set pkgver 1.33.7
+set pkgrel 1
+set pkgdesc 'Console based real time MPEG Audio Player for Layer 1, 2 and 3'
+set url https://mpg123.de/
+set arch i686 x32
+set license LGPL-2.1-only
+set depends alsa-lib glibc
+set makedepends jack libpulse
+set optdepends 'jack: for jack audio support' \
+    'libpulse: for pulse audio support' \
+    'perl: for conplay'
+set provides lib{mpg,out,syn}123.so
+set flags arch
+set source https://downloads.sourceforge.net/sourceforge/mpg123/mpg123-$pkgver.tar.bz2{,.sig}
+set sha512sums 694743802bb7be0f4a39bf62e681ae0bfed769cb87dc6c5b6fb5f9245966631efb5c5b9bd58588f7af55ced5d020f97c8a54993e71b5295bc45ebd152473f40e \
+    SKIP
+
+function build
+    cd mpg123-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --enable-int-quality \
+        --with-audio="alsa oss jack pulse"; or return
+    # https://bugzilla.gnome.org/show_bug.cgi?id=655517
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    cd mpg123-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm 755 scripts/conplay -t "$pkgdir/usr/bin"; or return
+end

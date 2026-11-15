@@ -1,0 +1,43 @@
+set pkgname jbigkit
+set pkgver 2.2
+set pkgrel 1
+set pkgdesc 'Data compression library/utilities for bi-level high-resolution images'
+set arch i686 x32
+set url 'https://www.cl.cam.ac.uk/~mgk25/jbigkit/'
+set license GPL-2.0-or-later
+set depends glibc
+set makedepends git
+set flags arch
+set source "git+https://www.cl.cam.ac.uk/~mgk25/git/jbigkit#tag=v$pkgver" \
+    jbigkit-2.2-shared_lib.patch
+set b2sums 81e8031feccb247557cb077420d8e30d6cec42c77738956afdc704216304aa8bfbe5e024256245765d9bf6119d025a3aca5fe55e6fd9aa3d56ced050473efef9 \
+    d094077cf1e1b749ce7cc88add7557475b73f01dfa97ead0a291e4e5a00b47a7e1869f5f65206ece09658c6499237ad9fa6c329df2b233a6cd710bab1afcb38b
+
+function prepare
+    cd $pkgname; or return
+
+    # instead of a static library, create a shared library
+    git apply -3 ../jbigkit-2.2-shared_lib.patch; or return
+end
+
+function build
+    cd $pkgname; or return
+    make EXTRA_CFLAGS="$CFLAGS"; or return
+end
+
+function check
+    cd $pkgname; or return
+    # NOTE: tests can not be parallelized
+    make test -j1 LD_LIBRARY_PATH=../libjbig; or return
+end
+
+function package
+    cd $pkgname; or return
+    install -vDm 644 libjbig/*.h -t "$pkgdir/usr/include/"; or return
+    install -vDm 755 libjbig/*.so.* -t "$pkgdir/usr/lib/"; or return
+    for lib in libjbig.so libjbig85.so
+        ln -sv "$lib.$pkgver" "$pkgdir/usr/lib/$lib"; or return
+    end
+    install -vDm 755 pbmtools/{jbgtopbm{,85},pbmtojbg{,85}} -t "$pkgdir/usr/bin/"; or return
+    install -vDm 644 pbmtools/*.1* -t "$pkgdir/usr/share/man/man1/"; or return
+end

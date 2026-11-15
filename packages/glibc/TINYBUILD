@@ -1,0 +1,94 @@
+set pkgbase glibc
+set pkgname glibc glibc-locales
+set pkgver 2.44+r50+g1848099f063e
+set pkgrel 2
+set arch i686 x32
+set url https://www.gnu.org/software/libc
+set license GPL-2.0-or-later LGPL-2.1-or-later
+set makedepends git python
+set options staticlibs '!lto'
+set flags arch
+set -g _commit 1848099f063e99d4ffecbd7667766d54862398b9
+set source "glibc::git+https://forge.sourceware.org/glibc/glibc-mirror#commit=$_commit" \
+    locale.gen.txt locale-gen sdt.h sdt-config.h tunables.conf shstk.conf \
+    10-glibc-locale-gen.hook 10-glibc-remove-locale-archive.hook 11-glibc-ldconfig.hook \
+    11-glibc-remove-ldconfig-cache.hook 12-glibc-iconvconfig.hook 12-glibc-remove-iconvconfig-cache.hook
+set sha256sums SKIP \
+    2a7dd6c906b6c54a68f48a21898664a32fdb136cbd9ff7bfd48f01d1aaa649ae \
+    6932c404fcba3e6ded66a459201b6f8eb94c964fd27ea9e0fcafd0433dcc34a8 \
+    774061aff612a377714a509918a9e0e0aafce708b87d2d7e06b1bd1f6542fe70 \
+    cdc234959c6fdb43f000d3bb7d1080b0103f4080f5e67bcfe8ae1aaf477812f0 \
+    8122d212bcc9ca7ca33cdbe2117fc112eafe27b7c44a6e63e022651eb4a0cdb6 \
+    06117f161fa04fe4512aebfe83818a8cc8161b5c250d6b07b8b6496a9c8294d0 \
+    a0685f238eccdd9029b5f98683c424c45f8c7c2b606517b235a8bdae3eb73232 \
+    68d1c2d20399142c1cbc8bde8f055ddef976ad7840cbf9273703270587f8a4d0 \
+    fdf2879654541a1ad006703f4ff5524e0f61b4d2c05e5de93ddd8484c56b15fc \
+    8d9688181613c6bedf483f7113b7f324d527ec8d095ef2333ab01963530ab850 \
+    03fbbf6f4c5ba419a9fd3a00a64e8905507955ced571dc0e2058fc17c6aec5e4 \
+    df1c2648974875e1b67a02aa5c1caee3094d10001144d312a7c5494068492019
+
+function prepare
+    mkdir -p glibc-build; or return
+end
+
+function build
+    # No systemtap probes (they need sys/sdt.h at build time), no lib32 build (Tiny Hat builds for one ABI at a time)
+    set -l flags --prefix=/usr --enable-bind-now --enable-fortify-source \
+        --enable-kernel=4.4 --enable-multi-arch --enable-stack-protector=strong --disable-nscd --disable-profile \
+        --disable-werror --libdir=/usr/lib --libexecdir=/usr/lib
+    switch $CARCH
+        case i686
+            # No ISA level marking, so that the libraries load on every i686 CPU (FS32#145)
+            set -a flags libc_cv_include_x86_isa_level=no
+        case '*'
+            # Control-flow enforcement and SFrame are for 64-bit x86 only
+            set -a flags --enable-cet --enable-sframe
+    end
+    # _FORTIFY_SOURCE=3 is built in with --enable-fortify-source
+    set CFLAGS (string replace -- -Wp,-D_FORTIFY_SOURCE=3 '' $CFLAGS)
+    cd glibc-build; or return
+    printf '%s\n' slibdir=/usr/lib rtlddir=/usr/lib sbindir=/usr/bin rootsbindir=/usr/bin >configparms
+    "$srcdir"/glibc/configure $flags; or return
+    make -O; or return
+    # Pregenerated locales: localedef does not work under fakeroot in package()
+    make -C "$srcdir"/glibc/localedata objdir="$srcdir"/glibc-build DESTDIR="$srcdir"/locales install-locale-files; or return
+end
+
+function package_glibc
+    set pkgdesc 'GNU C Library'
+    set depends 'linux-api-headers>=4.10' tzdata filesystem
+    set optdepends 'perl: for mtrace'
+    set backup etc/gai.conf etc/locale.gen etc/tunables.conf etc/tunables.conf.d/shstk.conf
+    make -C glibc-build DESTDIR="$pkgdir" install; or return
+    rm -f "$pkgdir"/etc/ld.so.cache
+    # Shipped in tzdata
+    rm -f "$pkgdir"/usr/bin/{tzselect,zdump,zic}
+    cd glibc; or return
+    install -dm755 "$pkgdir"/usr/lib/locale; or return
+    install -m644 posix/gai.conf "$pkgdir"/etc/gai.conf; or return
+    install -m755 "$srcdir"/locale-gen "$pkgdir"/usr/bin; or return
+    install -m644 "$srcdir"/locale.gen.txt "$pkgdir"/etc/locale.gen; or return
+    sed -e '1,3d' -e 's|/| |g' -e 's|\\\\| |g' -e 's|^|#|g' localedata/SUPPORTED >>"$pkgdir"/etc/locale.gen; or return
+    sed -e '1,3d' -e 's|/| |g' -e 's| \\\\||g' localedata/SUPPORTED >"$pkgdir"/usr/share/i18n/SUPPORTED; or return
+    # C.UTF-8, so that it is always available
+    cp -r "$srcdir"/locales/usr/lib/locale/C.utf8 -t "$pkgdir"/usr/lib/locale; or return
+    sed -i '/#C\.UTF-8 /d' "$pkgdir"/etc/locale.gen; or return
+    # Tracing probes for libstdc++ exceptions, used by gdb's catch command
+    install -Dm644 "$srcdir"/sdt.h "$pkgdir"/usr/include/sys/sdt.h; or return
+    install -Dm644 "$srcdir"/sdt-config.h "$pkgdir"/usr/include/sys/sdt-config.h; or return
+    for hook in 10-glibc-locale-gen 10-glibc-remove-locale-archive 11-glibc-ldconfig 11-glibc-remove-ldconfig-cache \
+        12-glibc-iconvconfig 12-glibc-remove-iconvconfig-cache
+        install -vDm 644 ../$hook.hook -t "$pkgdir"/usr/share/libalpm/hooks/; or return
+    end
+    install -vDm 644 ../tunables.conf -t "$pkgdir"/etc/; or return
+    install -vDm 644 ../shstk.conf -t "$pkgdir"/etc/tunables.conf.d/; or return
+end
+
+function package_glibc-locales
+    set pkgdesc 'Pregenerated locales for GNU C Library'
+    set depends "glibc=$pkgver"
+    cp -r locales/* -t "$pkgdir"; or return
+    rm -r "$pkgdir"/usr/lib/locale/C.utf8; or return
+    # deduplicate locale data
+    hardlink -c "$pkgdir"/usr/lib/locale; or return
+end

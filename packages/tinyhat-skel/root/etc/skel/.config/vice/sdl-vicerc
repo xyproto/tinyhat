@@ -1,0 +1,14 @@
+[C64SC]
+JoyDevice1=5
+JoyDevice2=4
+
+[C64]
+JoyDevice1=5
+JoyDevice2=4
+
+[C128]
+JoyDevice1=5
+JoyDevice2=4
+
+[VIC20]
+JoyDevice1=4

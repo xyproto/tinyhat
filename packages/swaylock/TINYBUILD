@@ -1,0 +1,22 @@
+set pkgname swaylock
+set pkgver 1.8.6
+set pkgrel 1
+set pkgdesc 'Screen locker for Wayland'
+set arch i686 x32
+set url https://github.com/swaywm/swaylock
+set license MIT
+set depends libcairo.so libxkbcommon pam wayland
+set makedepends meson ninja wayland-protocols
+set backup etc/pam.d/swaylock
+set source "https://github.com/swaywm/swaylock/releases/download/v$pkgver/swaylock-$pkgver.tar.gz"
+set sha256sums a15154348fef852fdb224112d137c393c826478b777f63479beb15e8d3812eaf
+
+function build
+    meson setup build swaylock-$pkgver --prefix=/usr --sysconfdir=/etc --buildtype=minsize -Dpam=enabled -Dgdk-pixbuf=disabled -Dman-pages=disabled -Dzsh-completions=false -Dbash-completions=false -Dfish-completions=false; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 swaylock-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

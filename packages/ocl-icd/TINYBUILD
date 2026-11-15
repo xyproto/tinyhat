@@ -1,0 +1,44 @@
+set pkgname ocl-icd
+set pkgver 2.3.5
+set pkgrel 1
+set pkgdesc 'OpenCL ICD Bindings'
+set arch i686 x32
+set url https://github.com/OCL-dev/ocl-icd
+set license BSD-2-Clause
+set depends glibc
+set makedepends ruby mesa xmlto asciidoc 'opencl-headers>=2.1'
+set checkdepends
+set provides opencl-icd-loader
+set conflicts libcl
+set replaces libcl
+set optdepends 'opencl-driver: packaged opencl driver'
+set source "ocl-icd-$pkgver.tar.gz::https://github.com/OCL-dev/$pkgname/archive/v$pkgver.tar.gz"
+set sha256sums cdd7984425fa92d37273eee4180b5f57b047eda6dd8fd623e58498f844b09b75
+set flags arch
+
+function prepare
+    cd "$srcdir/$pkgname-$pkgver"; or return
+
+    autoreconf -fiv; or return
+end
+
+function build
+    cd "$srcdir/$pkgname-$pkgver"; or return
+
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function check
+    cd "$srcdir/$pkgname-$pkgver"; or return
+
+    make -k check; or return
+end
+
+function package
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir/" install; or return
+
+    install -m755 -d "$pkgdir/usr/share/licenses/ocl-icd"; or return
+    install -m644 "$srcdir/$pkgname-$pkgver/COPYING" "$pkgdir/usr/share/licenses/ocl-icd/"; or return
+end

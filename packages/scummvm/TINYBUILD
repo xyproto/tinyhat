@@ -1,0 +1,49 @@
+set pkgname scummvm
+set pkgver 2026.4.0
+set pkgrel 3
+set pkgdesc 'Engine for classic adventure games'
+set arch i686 x32
+set url https://www.scummvm.org/
+set license GPL-3.0-or-later
+set depends sdl3 fluidsynth a52dec faad2 flac freetype2 fribidi giflib libjpeg-turbo libmad libmikmod libmpeg2 libpng libtheora libvorbis zlib
+set source "https://downloads.scummvm.org/frs/scummvm/$pkgver/scummvm-$pkgver.tar.xz" \
+    sdl3-palette.patch \
+    sdl3-net-and-prefer-sdl3.patch
+set sha256sums cd660b34104da7f85ed0a11b7c6c2320c629bb87ee297935711ebc1e09731f12 \
+    SKIP \
+    SKIP
+
+function prepare
+    cd scummvm-$pkgver; or return
+    for p in ../*.patch
+        patch -Np1 -i "$p"; or return
+    end
+end
+
+function build
+    cd scummvm-$pkgver; or return
+    set -a CFLAGS -O3
+    set -a CXXFLAGS -O3
+    set LDFLAGS (string replace -- ,--gc-sections '' $LDFLAGS)
+    mkdir -p pc; or return
+    for f in /usr/lib/pkgconfig/*.pc /usr/share/pkgconfig/*.pc
+        switch (path basename -- $f)
+            case sdl.pc sdl2.pc 'SDL2_*.pc' sdl2-compat.pc
+                continue
+        end
+        ln -sf "$f" pc/; or return
+    end
+    set -lx PKG_CONFIG_LIBDIR "$PWD/pc"
+    STRINGS=strings ./configure --prefix=/usr --backend=sdl --enable-release-mode --disable-optimizations --disable-debug \
+        --disable-tts --disable-cloud --disable-libcurl --disable-discord --disable-eventrecorder \
+        --disable-gtk --disable-sndio --disable-updates --disable-vpx --disable-taskbar --disable-text-console \
+        --disable-sdlnet --disable-all-engines \
+        --enable-engine=scumm,scumm_7_8,sci,sci32,agi,agos,kyra,lol,eob,queen,sky,sword1,sword2,lure,drascula,gob,saga,ihnm,saga2,cine,cruise,made,tinsel,touche,tucker,parallaction,groovie,tsage,access,mads,sherlock,cge,cge2,hugo,dreamweb,lab,mortevielle,teenagent,draci,chewy,supernova,voyeur,mm,xeen,mm1,zvision,twine,dgds,freescape,m4,trecision,darkseed,hopkins,awe,toltecs,lastexpress,glk,efh,got; or return
+    make; or return
+end
+
+function package
+    cd scummvm-$pkgver; or return
+    make install DESTDIR="$pkgdir"; or return
+    install -Dm644 COPYING COPYRIGHT AUTHORS LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

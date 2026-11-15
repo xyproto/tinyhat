@@ -1,7 +1,7 @@
 pkgbase = unrar
 	pkgver = 7.3.1
-	pkgrel = 1
 	epoch = 1
+	pkgrel = 1
 	url = https://www.rarlab.com/rar_add.htm
 	arch = i686
 	arch = x32

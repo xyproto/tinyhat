@@ -1,8 +1,8 @@
 pkgbase = jemalloc
 	pkgdesc = General-purpose scalable concurrent malloc implementation
 	pkgver = 5.4.0
-	pkgrel = 1
 	epoch = 1
+	pkgrel = 1
 	url = https://jemalloc.net/
 	arch = i686
 	arch = x32

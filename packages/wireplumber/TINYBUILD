@@ -1,0 +1,89 @@
+set pkgbase wireplumber
+set pkgname wireplumber libwireplumber wireplumber-docs wireplumber-system-services
+set pkgver 0.5.19
+set pkgrel 2
+set pkgdesc 'Session / policy manager implementation for PipeWire'
+set arch i686 x32 x86_64 aarch64
+set url https://pipewire.pages.freedesktop.org/wireplumber/
+set license MIT
+set makedepends doxygen git glib2 glib2-devel glibc graphviz libgcc libpipewire lua meson pipewire python-breathe python-lxml python-sphinx python-sphinx_rtd_theme systemd systemd-libs
+set checkdepends pipewire-audio
+set source "git+https://gitlab.freedesktop.org/pipewire/wireplumber.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+set -g _f package_wireplumber-system-services
+set -g _ver 0.5
+
+function prepare
+    cd $pkgbase; or return
+end
+
+function build
+    set -l meson_options -D elogind=disabled -D system-lua=true -D systemd-system-service=true
+    if not test $CARCH != aarch64
+        set -a meson_options -D doc=disabled
+    end
+    arch-meson -D introspection=disabled $pkgbase build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_libwireplumber
+    set pkgdesc "$pkgdesc - client library"
+    set depends glibc libgcc libg{lib,module,object,io}-2.0.so libpipewire-0.3.so
+    set provides libwireplumber-$_ver.so
+    mv libw/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE; or return
+end
+
+function package_wireplumber
+    set depends "libwireplumber=$pkgver" glibc libgcc libg{lib,object,io}-2.0.so libpipewire libpipewire-0.3.so libsystemd.so lua pipewire systemd-libs
+    set optdepends 'wireplumber-docs: Documentation' 'wireplumber-system-services: System daemon (not recommended)'
+    set provides pipewire-session-manager
+    set conflicts pipewire-media-session
+    set install wireplumber.install
+    meson install -C build --destdir "$pkgdir"; or return
+    begin
+        set -l __subshell_pwd $PWD
+    cd "$pkgdir"; or return
+        _pick libw usr/lib/libwireplumber-$_ver.so*; or return
+        true
+        _pick libw usr/lib/pkgconfig; or return
+        _pick libw usr/include; or return
+        true
+        if test -d usr/share/doc/wireplumber/html
+            _pick docs usr/share/doc/wireplumber/html; or return
+        end
+        _pick system usr/lib/systemd/system; or return
+        cd $__subshell_pwd
+    end
+    install -Dt "$pkgdir/usr/share/doc/$pkgname" -m644 $pkgbase/{NEWS,README}*; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE; or return
+end
+
+function package_wireplumber-docs
+    set pkgdesc "$pkgdesc - documentation"
+    if test -d docs
+        mv docs/* "$pkgdir"; or return
+    end
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE; or return
+end
+
+function package_wireplumber-system-services
+    set pkgdesc "$pkgdesc - system services"
+    set depends "wireplumber=$pkgver" pipewire-system-services
+    mv system/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 $pkgbase/LICENSE; or return
+end

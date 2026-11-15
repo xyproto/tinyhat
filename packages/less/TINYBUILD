@@ -1,0 +1,39 @@
+set pkgname less
+set pkgver 710
+set pkgrel 1
+set epoch 1
+set pkgdesc 'A terminal based program for viewing text files'
+set license 'GPL-3.0-or-later OR LicenseRef-Less'
+set arch i686 x32
+set url https://www.greenwoodsoftware.com/less/
+set depends glibc ncurses pcre2
+set makedepends git
+set source https://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.tar.gz \
+    $pkgname-$pkgver.tar.gz.sig::https://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.sig
+set b2sums defbc6a019b5d6a598bfbd965cd34ec87777e7ee1dd47025ea84d2a7d474285f2add24b2e5d5aabf7cf9e00f5b2be44c42b1406cb6066d2ac0c5a63b5626917c \
+    SKIP
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    # apply patch from the source array (should be a pacman feature)
+    for src in $source
+        set src (string replace -r '::.*' '' -- $src | string replace -r '.*/' '')
+        string match -q '*.patch' -- $src; or continue
+        echo "Applying patch $src..."
+        # TODO: reactivate when dropping the git exclude patch patch -Np1 < "../$src"
+        git apply --exclude NEWS --exclude version.c "../$src"; or return
+    end
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    sh configure --prefix=/usr --libexecdir=/usr/lib --sysconfdir=/etc --with-regex=pcre2; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 {,"$pkgdir"/usr/share/licenses/$pkgname/}LICENSE; or return
+end

@@ -1,0 +1,32 @@
+set pkgname libsodium
+set pkgver 1.0.22
+set pkgrel 1
+set pkgdesc 'A modern, portable, easy to use crypto library'
+set arch i686 x32
+set url https://github.com/jedisct1/libsodium
+set license custom:ISC
+set depends glibc
+set makedepends git
+set provides libsodium.so
+set source "git+$url.git?signed#tag=$pkgver-RELEASE"
+set sha512sums d7329ac93a33a5d231432c3a7d05f66089a0eb4e5c7c1924e41f8da7f611e93930559eb42f59d3541d7b4a4039c2a5fb625ac1c9297c5530736fde1a40712b72
+set flags arch
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    # install license
+    install -d -m 755 "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m 644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

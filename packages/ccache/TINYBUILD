@@ -1,0 +1,33 @@
+set pkgname ccache
+set pkgver 4.14.1
+set pkgrel 1
+set pkgdesc 'Compiler cache that speeds up recompilation by caching previous compilations'
+set arch i686 x32
+set url https://ccache.dev/
+set license GPL-3.0-or-later
+set depends fmt glibc hiredis libblake3 libgcc libstdc++ xxhash libxxhash.so zstd libzstd.so
+set makedepends cmake git perl tl-expected
+set checkdepends doctest
+set source "git+https://github.com/ccache/ccache.git#tag=v$pkgver?signed"
+set sha256sums SKIP
+set flags arch
+
+function build
+    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -Wno-dev; or return
+    cmake --build build; or return
+end
+
+function package
+    make DESTDIR="$pkgdir" install -C build; or return
+    install -vdm 755 "$pkgdir/usr/lib/ccache/bin"; or return
+    set -l prog
+    for prog in gcc g++ c++
+        ln -vs /usr/bin/ccache "$pkgdir/usr/lib/ccache/bin/$prog"; or return
+        ln -vs /usr/bin/ccache "$pkgdir/usr/lib/ccache/bin/$CHOST-$prog"; or return
+    end
+    for prog in cc clang clang++
+        ln -vs /usr/bin/ccache "$pkgdir/usr/lib/ccache/bin/$prog"; or return
+    end
+    cd $pkgname; or return
+    install -vDm 644 -t "$pkgdir/usr/share/doc/$pkgname" doc/*.md doc/*.adoc; or return
+end

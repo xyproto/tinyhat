@@ -1,0 +1,269 @@
+set pkgbase pipewire
+set pkgname pipewire alsa-card-profiles libpipewire pipewire-alsa pipewire-audio pipewire-docs pipewire-ffado pipewire-jack pipewire-jack-client pipewire-netjack2 pipewire-pulse pipewire-system-services pipewire-v4l2 pipewire-zeroconf pipewire-session-manager pulse-native-provider
+set pkgver 1.6.11
+set pkgrel 1
+set epoch 1
+set pkgdesc 'Low-latency audio/video router and processor'
+set arch i686 x32 x86_64 aarch64
+set url https://pipewire.org
+set license MIT
+set makedepends alsa-lib avahi bluez-libs dbus dconf doxygen fftw git glib2 glib2-devel graphviz jack2 libebur128 libfdk-aac libffado libfreeaptx libgcc liblc3 libldac libmysofa libpulse libsndfile libstdc++ libusb lilv meson ncurses opus python-docutils readline rtkit sbc spandsp systemd valgrind webrtc-audio-processing-1
+set checkdepends desktop-file-utils openal
+set source "git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=$pkgver" \
+    pipewire-sysusers.conf
+set sha256sums SKIP \
+    c053d98bbe1a156b72b6f0229efbe6c7aa0edda9ba5bb4e580f27bdaa9a773d9
+set flags arch
+set -g _pwname pipewire-0.3
+set -g _spaname spa-0.2
+
+function prepare
+    cd pipewire; or return
+end
+
+function build
+    set -l meson_options -D bluez5-codec-lc3plus=disabled -D onnxruntime=disabled -D roc=disabled -D bluez5-codec-ldac-dec=disabled -D docs=enabled -D jack-devel=true -D libjack-path=/usr/lib -D man=enabled -D rlimits-install=false -D selinux=disabled -D libcamera=disabled -D gstreamer=disabled -D gstreamer-device-provider=disabled -D libcanberra=disabled -D x11=disabled -D x11-xfixes=disabled -D sdl2=disabled -D session-managers=[] -D snap=disabled -D systemd-system-service=enabled -D udevrulesdir=/usr/lib/udev/rules.d
+    arch-meson pipewire build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_alsa-card-profiles
+    set pkgdesc "$pkgdesc - ALSA card profiles"
+    set license LGPL-2.1-or-later
+    mv acp/* "$pkgdir"; or return
+end
+
+function package_gst-plugin-pipewire
+    set pkgdesc "Multimedia graph framework - pipewire plugin"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glib2 libg{lib,object}-2.0.so glibc gst-plugins-base-libs gstreamer libgcc pipewire-session-manager
+    mv gst/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_libpipewire
+    set pkgdesc "$pkgdesc - client library"
+    set depends dbus libdbus-1.so glib2 libglib-2.0.so glibc libgcc systemd-libs libsystemd.so libudev.so
+    set provides lib$_pwname.so
+    mv lib/* "$pkgdir"; or return
+    mkdir -p "$pkgdir"/etc/pipewire/client{,-rt}.conf.d; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire
+    set -a license LGPL-2.1-or-later
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so dbus libdbus-1.so glibc libgcc ncurses libncursesw.so readline libreadline.so
+    set install pipewire.install
+    meson install -C build --destdir "$pkgdir"; or return
+    begin
+        set -l __subshell_pwd $PWD
+    cd "$pkgdir"; or return
+        _pick acp usr/lib/udev; or return
+        _pick acp usr/share/alsa-card-profile; or return
+        _pick audio usr/bin/pipewire-aes67; or return
+        _pick audio usr/bin/pw-{cat,loopback,mididump,midi2play,midi2record,sysex}; or return
+        _pick audio usr/bin/pw-{dsd,enc,midi,}play; or return
+        _pick audio usr/bin/pw-{midi,}record; or return
+        _pick audio usr/bin/spa-{acp-tool,resample}; or return
+        _pick audio usr/lib/$_pwname/libpipewire-module-rtp-{sap,sink,source}.so; or return
+        _pick audio usr/lib/$_spaname/aec/libspa-aec-webrtc.so; or return
+        _pick audio usr/lib/$_spaname/{alsa,bluez5,filter-graph}; or return
+        _pick audio usr/lib/alsa-lib; or return
+        _pick audio usr/share/$_spaname/bluez5; or return
+        _pick audio usr/share/alsa; or return
+        _pick audio usr/share/man/man1/pw-{cat,loopback,mididump}.1; or return
+        _pick audio usr/share/man/man1/spa-{acp-tool,resample}.1; or return
+        _pick audio usr/share/man/man7/libpipewire-module-rtp-{sap,sink,source}.7; or return
+        _pick audio usr/share/pipewire/pipewire-aes67.conf; or return
+        _pick docs usr/share/doc; or return
+        _pick ffado usr/lib/$_pwname/libpipewire-module-ffado*.so; or return
+        _pick ffado usr/share/man/man7/libpipewire-module-ffado-driver.7; or return
+        _pick jack-client usr/lib/$_pwname/libpipewire-module-jack{-tunnel,dbus-detect}.so; or return
+        _pick jack-client usr/lib/$_spaname/jack; or return
+        _pick jack-client usr/share/man/man7/libpipewire-module-jack{-tunnel,dbus-detect}.7; or return
+        _pick jack usr/bin/pw-jack; or return
+        _pick jack usr/include/jack; or return
+        _pick jack usr/lib/libjack*; or return
+        _pick jack usr/lib/pkgconfig/jack*.pc; or return
+        _pick jack usr/share/man/man1/pw-jack.1; or return
+        _pick jack usr/share/man/man5/pipewire-jack.conf.5; or return
+        _pick jack usr/share/pipewire/jack.conf; or return
+        _pick netjack2 usr/lib/$_pwname/libpipewire-module-netjack2*.so; or return
+        _pick netjack2 usr/share/man/man7/libpipewire-module-netjack2*.7; or return
+        _pick pulse usr/bin/pipewire-pulse; or return
+        _pick pulse usr/lib/$_pwname/libpipewire-module-protocol-pulse.so; or return
+        _pick pulse usr/lib/$_pwname/libpipewire-module-pulse-tunnel.so; or return
+        _pick pulse usr/lib/systemd/user/pipewire-pulse.*; or return
+        _pick pulse usr/share/glib-2.0/schemas/org.freedesktop.pulseaudio.gschema.xml; or return
+        _pick pulse usr/share/man/man1/pipewire-pulse.1; or return
+        _pick pulse usr/share/man/man5/pipewire-pulse.conf.5; or return
+        _pick pulse usr/share/man/man7/libpipewire-module-{protocol-pulse,pulse-tunnel}.7; or return
+        _pick pulse usr/share/man/man7/pipewire-pulse*.7; or return
+        _pick pulse usr/share/pipewire/pipewire-pulse.conf*; or return
+        _pick v4l2 usr/bin/pw-v4l2 usr/lib/$_pwname/v4l2; or return
+        _pick v4l2 usr/share/man/man1/pw-v4l2.1; or return
+        _pick zeroconf usr/lib/$_pwname/libpipewire-module-rtp-session.so; or return
+        _pick zeroconf usr/lib/$_pwname/libpipewire-module-snapcast-discover.so; or return
+        _pick zeroconf usr/lib/$_pwname/libpipewire-module-{raop,zeroconf}-*.so; or return
+        _pick zeroconf usr/share/man/man7/libpipewire-module-rtp-session.7; or return
+        _pick zeroconf usr/share/man/man7/libpipewire-module-snapcast-discover.7; or return
+        _pick zeroconf usr/share/man/man7/libpipewire-module-{raop,zeroconf}-*.7; or return
+        _pick system usr/lib/systemd/system; or return
+        _pick lib usr/include/{$_pwname,$_spaname}; or return
+        _pick lib usr/lib/$_pwname; or return
+        _pick lib usr/lib/$_spaname; or return
+        _pick lib usr/lib/lib$_pwname.so*; or return
+        _pick lib usr/lib/pkgconfig/lib{$_pwname,$_spaname}.pc; or return
+        _pick lib usr/share/man/man7/libpipewire*; or return
+        mkdir -p etc/pipewire/{filter-chain,minimal,pipewire,pipewire-avb}.conf.d; or return
+        cd $__subshell_pwd
+    end
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-alsa
+    set pkgdesc "$pkgdesc - ALSA configuration"
+    set depends "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" pipewire-session-manager
+    mkdir -p "$pkgdir/etc/alsa/conf.d"; or return
+    ln -st "$pkgdir/etc/alsa/conf.d" /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf; or return
+    install -Dm644 /dev/null "$pkgdir/usr/share/pipewire/media-session.d/with-alsa"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-audio
+    set pkgdesc "$pkgdesc - Audio support"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire=$epoch:$pkgver" alsa-card-profiles alsa-lib libasound.so bluez-libs libbluetooth.so dbus libdbus-1.so fftw libfftw3f.so glib2 libg{lib,object,io}-2.0.so glibc libebur128 libfdk-aac libfdk-aac.so libfreeaptx libfreeaptx.so libgcc liblc3 liblc3.so libldac libldacBT_enc.so libmysofa libmysofa.so libsndfile libsndfile.so libstdc++ libusb libusb-1.0.so lilv liblilv-0.so opus libopus.so sbc libsbc.so spandsp libspandsp.so systemd-libs webrtc-audio-processing-1 libwebrtc-audio-processing-1.so
+    set provides ladspa-host lv2-host
+    mv audio/* "$pkgdir"; or return
+    mkdir -p "$pkgdir/etc/pipewire/pipewire-aes67.conf.d"; or return
+    mkdir -p "$pkgdir/etc/alsa/conf.d"; or return
+    ln -st "$pkgdir/etc/alsa/conf.d" /usr/share/alsa/alsa.conf.d/50-pipewire.conf; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-docs
+    set pkgdesc "$pkgdesc - documentation"
+    mv docs/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-ffado
+    set pkgdesc "$pkgdesc - FireWire support"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc libffado libffado.so
+    mv ffado/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-jack
+    set pkgdesc "$pkgdesc - JACK replacement"
+    set -a license GPL-2.0-only LGPL-2.1-or-later
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc pipewire-session-manager sh
+    set optdepends 'jack-example-tools: for official JACK example-clients and tools'
+    set conflicts jack jack2 pipewire-jack-client
+    set provides jack libjack.so libjacknet.so libjackserver.so
+    mv jack/* "$pkgdir"; or return
+    mkdir -p "$pkgdir/etc/pipewire/jack.conf.d"; or return
+    install -Dm644 /dev/null "$pkgdir/usr/share/pipewire/media-session.d/with-jack"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-jack-client
+    set pkgdesc "$pkgdesc - PipeWire as JACK client"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" dbus libdbus-1.so glibc jack libjack.so libgcc
+    set conflicts pipewire-jack
+    mv jack-client/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-libcamera
+    set pkgdesc "$pkgdesc - Libcamera support"
+    set depends "pipewire=$epoch:$pkgver" glibc libcamera libcamera-base.so libcamera.so libgcc libstdc++
+    mv libcamera/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-netjack2
+    set pkgdesc "$pkgdesc - netJACK2 support"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc opus libopus.so
+    mv netjack2/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-onnx
+    set pkgdesc "$pkgdesc - ONNX filter support"
+    set depends "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc onnxruntime
+    mv onnx/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-pulse
+    set pkgdesc "$pkgdesc - PulseAudio replacement"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" avahi libavahi-{client,common}.so dbus libdbus-1.so dconf glib2 libg{lib,object,io}-2.0.so glibc libgcc libpulse libpulse.so pipewire-session-manager
+    set provides pulse-native-provider
+    set conflicts pulseaudio
+    set install pipewire-pulse.install
+    mv pulse/* "$pkgdir"; or return
+    mkdir -p "$pkgdir/etc/pipewire/pipewire-pulse.conf.d"; or return
+    install -Dm644 /dev/null "$pkgdir/usr/share/pipewire/media-session.d/with-pulseaudio"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-roc
+    set pkgdesc "$pkgdesc - ROC streaming support"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc libgcc roc-toolkit libroc.so
+    mv roc/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-session-manager
+    set pkgdesc "Session manager for PipeWire (default provider)"
+    set license CC0-1.0
+    set depends wireplumber
+end
+
+function package_pipewire-system-services
+    set pkgdesc "$pkgdesc - System services"
+    set depends "pipewire-pulse=$epoch:$pkgver" "pipewire=$epoch:$pkgver"
+    mv system/* "$pkgdir"; or return
+    install -Dm644 pipewire-sysusers.conf "$pkgdir/usr/lib/sysusers.d/pipewire.conf"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-v4l2
+    set pkgdesc "$pkgdesc - V4L2 interceptor"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire=$epoch:$pkgver" glibc pipewire-session-manager sh
+    mv v4l2/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-x11-bell
+    set pkgdesc "$pkgdesc - X11 bell"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc libcanberra libcanberra.so libx11 libxfixes
+    mv x11-bell/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pipewire-zeroconf
+    set pkgdesc "$pkgdesc - Zeroconf support"
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" avahi libavahi-{client,common}.so glibc libgcc openssl libcrypto.so opus libopus.so
+    mv zeroconf/* "$pkgdir"; or return
+    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_pulse-native-provider
+    set pkgdesc "PulseAudio sound server (default provider)"
+    set license CC0-1.0
+    set depends pipewire-pulse
+end

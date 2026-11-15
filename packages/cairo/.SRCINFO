@@ -21,9 +21,10 @@ pkgbase = cairo
 	depends = zlib
 	conflicts = cairo
 	source = git+https://gitlab.freedesktop.org/cairo/cairo.git#tag=1.18.6
-	b2sums = 131350b2dbb42b957131a1fa46dbce65eac33b7680f65e59a9087296802bbe301d949ce6574efeac84140e34fec86748e2cb1a0ea9dc352b251c627cfc73252a
+	sha256sums = SKIP
 
 pkgname = cairo-wayland
+	provides = cairo=1.18.6
 	provides = libcairo-gobject.so
 	provides = libcairo-script-interpreter.so
 	provides = libcairo.so

@@ -14,8 +14,7 @@ pkgbase = libevdev
 	provides = libevdev.so
 	source = https://freedesktop.org/software/libevdev/libevdev-1.14.0.tar.xz
 	source = https://freedesktop.org/software/libevdev/libevdev-1.14.0.tar.xz.sig
-	validpgpkeys = 3C2C43D9447D5938EF4551EBE23B7E70B467F0BF
-	sha512sums = 527a643ec805618f04967c88105347966fc54726edbd884631255eb8f71cd4fdcb661b2051cd724a979372dbc5a7e47c8ab68098fa8cd3fcdd9a5413db7e062c
-	sha512sums = SKIP
+	sha256sums = 5a0966c7110648665983848bad696c7acba614a2160d2865d535397101007332
+	sha256sums = 497ca6b36751ee94b7a06567b4ff91a1358481894216c4c47f82d1c1cad6357d
 
 pkgname = libevdev

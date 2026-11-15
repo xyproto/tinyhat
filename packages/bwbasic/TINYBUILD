@@ -1,0 +1,27 @@
+set pkgname bwbasic
+set pkgver 3.40
+set pkgrel 1
+set pkgdesc 'Bywater BASIC interpreter'
+set url https://sourceforge.net/projects/bwbasic/
+set arch i686 x32
+set license GPL-2.0-only
+set depends glibc
+set source "https://downloads.sourceforge.net/project/bwbasic/bwbasic/version%20$pkgver/bwbasic-$pkgver.zip"
+set noextract bwbasic-$pkgver.zip
+set sha256sums b5689422a09d05aae1143497d22579e55c4e121ee2b806e738b483b8c000a20f
+
+function prepare
+    mkdir -p $pkgname-$pkgver; or return
+    bsdtar -xf $pkgname-$pkgver.zip -C $pkgname-$pkgver; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    $CC $CPPFLAGS $CFLAGS -ansi $LDFLAGS -o bwbasic bw*.c -lm; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    install -Dm755 bwbasic "$pkgdir/usr/bin/bwbasic"; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

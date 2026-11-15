@@ -1,0 +1,26 @@
+set pkgname libxcursor
+set pkgver 1.2.3
+set pkgrel 1
+set pkgdesc 'X cursor management library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/xorg/lib/libxcursor
+set license HPND-sell-variant
+set depends libxfixes libxrender default-cursors libx11 glibc xorgproto
+set makedepends xorg-util-macros
+set source "https://xorg.freedesktop.org//releases/individual/lib/libXcursor-$pkgver.tar.xz" \
+    "https://xorg.freedesktop.org//releases/individual/lib/libXcursor-$pkgver.tar.xz.sig"
+set sha256sums fde9402dd4cfe79da71e2d96bb980afc5e6ff4f8a7d74c159e1966afb2b2c2c0 \
+    3f38a63e4015f3ce6549ea37392dcc02f757fa225c38a64e9066694bef22c708
+set flags arch
+
+function build
+    cd libXcursor-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libXcursor-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

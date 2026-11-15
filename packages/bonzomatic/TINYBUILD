@@ -1,0 +1,24 @@
+set pkgname bonzomatic
+set pkgver 2023.06.15
+set pkgrel 7
+set pkgdesc 'Live shader coding tool'
+set arch i686 x32
+set url https://github.com/Gargaj/bonzomatic
+set license Unlicense
+set depends alsa-lib fontconfig glew glfw hicolor-icon-theme libglvnd
+set makedepends chrpath cmake git glu
+set source 'git+https://github.com/Gargaj/bonzomatic#tag=2023-06-15'
+set sha256sums SKIP
+set flags arch
+
+function build
+    cmake -B build -D BONZOMATIC_USE_SYSTEM_GLFW=on -D BONZOMATIC_USE_SYSTEM_GLEW=on -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_FLAGS="$CFLAGS -fPIC -w" -D CMAKE_CXX_FLAGS="$CXXFLAGS -fPIC -w" -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_POLICY_VERSION_MINIMUM=3.5 -S $pkgname; or return
+    make -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" make -C build install; or return
+    chrpath -d "$pkgdir/usr/bin/bonzomatic"; or return
+    install -Dm644 $pkgname/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+    install -Dm644 $pkgname/data/unix/icon.png "$pkgdir/usr/share/pixmaps/$pkgname.png"; or return
+end

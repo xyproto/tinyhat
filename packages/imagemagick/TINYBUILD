@@ -1,0 +1,91 @@
+set pkgname imagemagick
+set pkgver 7.1.2.34
+set -g _pkgver (string replace -r -- '\.([^.]*)$' '-$1' $pkgver)
+set pkgrel 2
+set pkgdesc 'An image viewing/manipulation program'
+set url https://www.imagemagick.org/
+set arch i686 x32
+set license ImageMagick
+set depends bzip2 cairo fftw fontconfig freetype2 glib2 glibc lcms2 liblqr libltdl libpng libraqm libxext libxml2 \
+    libgcc libstdc++ libgomp xz zlib
+set optdepends 'ghostscript: PS/PDF support' \
+    'jbigkit: JBIG support' \
+    'libheif: HEIF support' \
+    'libjpeg-turbo: JPEG support' \
+    'libjxl: JPEG XL support' \
+    'libraw: DNG support' \
+    'librsvg: SVG support' \
+    'libtiff: TIFF support' \
+    'libultrahdr: UHDR support' \
+    'libwebp: WEBP support' \
+    'libwmf: WMF support' \
+    'libzip: OpenRaster support' \
+    'ocl-icd: OpenCL support' \
+    'openexr: OpenEXR support' \
+    'openjpeg2: JPEG2000 support' \
+    'djvulibre: DJVU support' \
+    'pango: Text rendering'
+set options '!emptydirs' libtool
+set backup etc/ImageMagick-7/{colors,delegates,log,mime,policy,quantization-table,thresholds,type,type-{dejavu,ghostscript}}.xml
+set provides libmagick
+set makedepends djvulibre ghostscript git glu jbigkit libheif libjpeg-turbo libjxl libraw librsvg libultrahdr libwebp \
+    libwmf libzip ocl-icd opencl-headers openexr openjpeg2
+set checkdepends gsfonts ttf-dejavu
+set replaces imagemagick-doc
+set source "git+https://github.com/ImageMagick/ImageMagick#tag=$_pkgver"
+set sha256sums 2decd930d110206c70b1cd5f591c03974d7a2253c1f3d6da1fd90a2f3da38c3f
+set flags arch
+
+function build
+    cd ImageMagick; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --enable-shared \
+        --disable-static \
+        --with-dejavu-font-dir=/usr/share/fonts/TTF \
+        --with-gs-font-dir=/usr/share/fonts/gsfonts \
+        PSDelegate=/usr/bin/gs \
+        XPSDelegate=/usr/bin/gxps \
+        PCLDelegate=/usr/bin/gpcl6 \
+        --enable-hdri \
+        --enable-opencl \
+        --without-gslib \
+        --with-djvu \
+        --with-fftw \
+        --with-jxl \
+        --with-lqr \
+        --with-modules \
+        --with-openexr \
+        --with-openjp2 \
+        --without-perl \
+        --with-rsvg \
+        --with-uhdr \
+        --with-webp \
+        --with-wmf \
+        --with-xml \
+        --without-autotrace \
+        --without-dps \
+        --without-fpx \
+        --without-gcc-arch \
+        --without-gvc; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd ImageMagick; or return
+    ulimit -n 4096
+    # FAIL: Magick++/tests/tests.tap 2
+    # see https://github.com/ImageMagick/ImageMagick/issues/1019
+    # => for now run checks, but make failure non-fatal..
+    make check; or true
+end
+
+function package
+    cd ImageMagick; or return
+    make DESTDIR="$pkgdir" install; or return
+    rm "$pkgdir"/etc/ImageMagick-*/type-{apple,urw-base35,windows}.xml; or return
+    rm "$pkgdir"/usr/lib/*.la; or return
+    install -Dm644 LICENSE NOTICE -t "$pkgdir"/usr/share/licenses/$pkgname; or return
+end

@@ -1,0 +1,22 @@
+set pkgname grim
+set pkgver 1.5.0
+set pkgrel 2
+set pkgdesc 'Screenshot utility for Wayland'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/emersion/grim
+set license MIT
+set depends libcairo.so libjpeg-turbo wayland
+set makedepends bash-completion fish git meson ninja pango scdoc wayland-protocols
+set source "git+https://gitlab.freedesktop.org/emersion/grim#tag=v$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    arch-meson build -Dbash-completions=true -Dfish-completions=true "$pkgname"; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 $pkgname/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

@@ -12,8 +12,7 @@ pkgbase = libice
 	depends = xorgproto
 	source = https://xorg.freedesktop.org//releases/individual/lib/libICE-1.1.2.tar.xz
 	source = https://xorg.freedesktop.org//releases/individual/lib/libICE-1.1.2.tar.xz.sig
-	validpgpkeys = 4A193C06D35E7C670FA4EF0BA2FB9E081F2D130E
-	sha512sums = 340f51ffa1f14ed442ab8bcea92dd63df147c48242e232e818cafe02f43de7ab6e99c5430b9cb8d0dc661295239d2b3f6bdb6a092ce51a98afa06235257e9b1f
-	sha512sums = SKIP
+	sha256sums = 974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625
+	sha256sums = b1edd37141e367a6f41e7edce5a614d6c3ab73be3a28060214c3ed6c737124c4
 
 pkgname = libice

@@ -16,7 +16,7 @@ pkgbase = flac
 	depends = gcc-libs
 	depends = libogg
 	source = git+https://github.com/xiph/flac#tag=1.5.0
-	b2sums = 2df577ac40233cdbea3389b076b239b266cdb3cf04a7a57982ae16b9c6f99af245b15590c19954d34cd3c8617ed2ddec3346c13c3f4b6e495df127104a978d19
+	sha256sums = SKIP
 
 pkgname = flac
 	provides = libFLAC.so

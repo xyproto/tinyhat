@@ -1,8 +1,8 @@
 pkgbase = avahi
 	pkgdesc = Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour)
 	pkgver = 0.9rc5
-	pkgrel = 2
 	epoch = 1
+	pkgrel = 2
 	url = https://github.com/avahi/avahi
 	arch = i686
 	arch = x32
@@ -27,8 +27,8 @@ pkgbase = avahi
 	depends = systemd-libs
 	source = git+https://github.com/avahi/avahi#tag=v0.9-rc5
 	source = 0001-HACK-Install-fixes.patch
-	b2sums = 4878a236ded4ef93573df43dc0c04d538d1c77028c9427d826158bd39f27cc65ad08f4290883848a471d7890533c36f9f3ad7072baf45ec129acd0993d6d48d2
-	b2sums = a15b00c05cce3b6a1479d88b1393cd955a80c669fed03be5f624a8e8701f22fe327bbd42f7563a532ae8ebc39408f3aedfc982c42a2b6141ccc22af96f16293c
+	sha256sums = SKIP
+	sha256sums = e5aac2341d746c2d1df5fdeb1f63ca581833eaa8732e230adc40877848c0f2a5
 
 pkgname = avahi
 	depends = bash

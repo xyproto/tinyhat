@@ -1,0 +1,35 @@
+set pkgname libxau
+set pkgver 1.0.12
+set pkgrel 1
+set pkgdesc 'X11 authorisation library'
+set arch i686 x32
+set url https://xorg.freedesktop.org/
+set license MIT-open-group
+set depends glibc xorgproto
+set makedepends meson
+set provides libXau.so
+set source "$url/releases/individual/lib/libXau-$pkgver.tar.xz" \
+    "$url/releases/individual/lib/libXau-$pkgver.tar.xz.sig"
+set sha512sums 4bbe8796f4a14340499d5f75046955905531ea2948944dfc3d6069f8b86c1710042bfc7918d459320557883e6631359d48e6173c69c62ff572314e864ff97c5e \
+    SKIP
+set flags arch
+
+function build
+    arch-meson libXau-$pkgver build; or return
+
+    # Print config
+    meson configure build; or return
+
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+
+    install -Dvm644 libXau-$pkgver/COPYING \
+        "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

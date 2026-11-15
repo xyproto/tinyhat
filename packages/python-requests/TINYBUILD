@@ -1,0 +1,41 @@
+set pkgname python-requests
+set pkgver 2.34.2
+set pkgrel 1
+set pkgdesc 'Python HTTP for Humans'
+set arch any
+set url https://requests.readthedocs.io/
+set license Apache-2.0
+set depends ca-certificates python python-charset-normalizer python-idna python-urllib3 python-certifi
+set makedepends git python-build python-installer python-setuptools python-wheel
+set checkdepends python-pysocks python-pytest-httpbin python-trustme
+set optdepends 'python-chardet: alternative character encoding library' \
+    'python-pysocks: SOCKS proxy support'
+set source "$pkgname::git+https://github.com/psf/requests#tag=v$pkgver"
+set sha512sums f1e6feb53d7385f8e81fae929c340be2391ba8c7e6213d3b6c9f5b9b1bd02ef16cc47c2959f17b306bb7fce9bd71d53a7fded1fe581bc7e8d641cea458cca1ac
+set b2sums e2ed45b76fa140ec7e2bb70fa65f8ce4efd0c0a3cf1f8714d14708e85eeeac093bdb7230c6b903dc095d5a94ea235350ea6f7bd6d8e9327b1312271bf3028f89
+set flags arch
+
+function build
+    cd $pkgname; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function check
+    cd $pkgname; or return
+
+    set -l pytest_options \
+        -v tests \
+        # test_unicode_header_name hangs
+        --deselect tests/test_requests.py::TestRequests::test_unicode_header_name \
+        # [Errno 111] Connection refused
+        --deselect 'tests/test_requests.py::TestTimeout::test_connect_timeout[timeout0]' \
+        --deselect 'tests/test_requests.py::TestTimeout::test_connect_timeout[timeout1]' \
+        --deselect 'tests/test_requests.py::TestTimeout::test_total_timeout_connect[timeout0]' \
+        --deselect 'tests/test_requests.py::TestTimeout::test_total_timeout_connect[timeout1]'
+    PYTHONPATH="$PWD/src" pytest $pytest_options; or return
+end
+
+function package
+    cd $pkgname; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+end

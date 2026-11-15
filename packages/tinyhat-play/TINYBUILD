@@ -1,0 +1,22 @@
+set pkgname tinyhat-play
+set pkgver 1.3.0
+set pkgrel 1
+set pkgdesc 'Search for, download and launch homebrew games for classic gaming platforms'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat-play
+set license BSD-3-Clause
+set depends gtk4 curl libglvnd sdl3 libarchive
+set makedepends fontconfig
+set provides tinyhat-retro
+set conflicts tinyhat-retro
+set replaces tinyhat-retro
+set source "tinyhat-play-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums e0eb136df2492f11f5f6851255a46ff9e3390b0ba476485c97e667d4cf9a1909
+
+function build
+    make -C tinyhat-play-$pkgver; or return
+end
+
+function package
+    make -C tinyhat-play-$pkgver DESTDIR="$pkgdir" PREFIX=/usr install; or return
+end

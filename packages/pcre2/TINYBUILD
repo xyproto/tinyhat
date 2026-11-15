@@ -1,0 +1,55 @@
+set pkgname pcre2
+set pkgver 10.49
+set pkgrel 1
+set pkgdesc 'A library that implements Perl 5-style regular expressions. 2nd version'
+set arch i686 x32
+set url https://github.com/PCRE2Project/pcre2
+set license BSD-2-Clause 'BSD-3-Clause WITH PCRE2-exception'
+set depends bzip2 glibc readline zlib
+set makedepends git
+set optdepends 'sh: for pcre2-config'
+set provides libpcre2-{8,16,32,posix}.so
+set options staticlibs
+set source "$pkgname::git+$url?signed#tag=$pkgname-$pkgver" \
+    sljit::git+https://github.com/zherczeg/sljit.git
+set sha512sums 3112ecb32bcbb8840c70e263915d0a690ae2cbc6b5160ff05d96419353290d5e2740a9dd4f7d59fff697bab58695751fedd3b665a7649e2b7c3af417d7f74698 \
+    SKIP
+set b2sums 120754ca82467149bfb02c6b3f778a25c7a65b968ac358e01b1cdbb9114805a1e75585e049c8a25e0f6723a314798e39f6caa97a55aef3ce9d84e60566859592 \
+    SKIP
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    git submodule init; or return
+    git config submodule."deps/sljit".url ../sljit; or return
+    git -c protocol.file.allow=always submodule update; or return
+    ./autogen.sh; or return
+    # extract licenses
+    cp -v deps/sljit/LICENSE ../BSD-2-Clause.txt; or return
+    sed -n '70,94p' LICENCE.md >../BSD-3-Clause.txt; or return
+    sed -n '100,104p' LICENCE.md >../PCRE2-exception.txt; or return
+end
+
+function build
+    set -l configure_options \
+        --enable-jit \
+        --enable-pcre2-16 \
+        --enable-pcre2-32 \
+        --enable-pcre2grep-libbz2 \
+        --enable-pcre2grep-libz \
+        --enable-pcre2test-libreadline \
+        --prefix=/usr
+    cd $pkgname; or return
+    # use fat LTO objects for static libraries
+    set -a CFLAGS -ffat-lto-objects
+    set -a CXXFLAGS -ffat-lto-objects
+    ./configure $configure_options; or return
+    make; or return
+end
+
+# No check function: the tests are not run (archlinux32 removes check)
+
+function package
+    make DESTDIR="$pkgdir" install -C $pkgname; or return
+    install -Dm644 ./*.txt -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

@@ -1,0 +1,151 @@
+# toolchain build order: linux-api-headers->glibc->binutils->gcc->glibc->binutils->gcc
+
+set pkgname binutils
+set pkgver 2.47
+set -g _commit 6ce87bbc521cf46eaee9a1f7ef61cee2cdfb3e32
+set pkgrel 4
+set pkgdesc 'A set of programs to assemble and manipulate binary and object files'
+set arch i686 x32
+set url https://www.gnu.org/software/binutils/
+set license GPL-2.0-or-later GPL-3.0-or-later LGPL-2.0-or-later LGPL-3.0-or-later GFDL-1.3 FSFAP
+set depends \
+    glibc \
+    jansson \
+    libelf \
+    libgcc \
+    libstdc++ \
+    zlib \
+    zstd
+set makedepends git
+set checkdepends \
+    bc \
+    dejagnu \
+    debuginfod
+set optdepends \
+    'debuginfod: for debuginfod server/client functionality' \
+    'perl: for gprofng-display-html'
+set conflicts binutils-multilib
+set replaces binutils-multilib
+set provides \
+    libctf.so \
+    libgprofng.so \
+    libsframe.so
+set backup etc/gprofng.rc
+set options \
+    staticlibs \
+    '!distcc' \
+    '!ccache'
+set source \
+    "binutils-gdb::git+https://forge.sourceware.org/binutils-gdb/binutils-gdb-mirror#commit=$_commit" \
+    gold-warn-unsupported.patch \
+    0001-strip-Don-t-treat-fat-IR-objects-as-plugin-object.patch
+set sha256sums 79e580da50b1914cf02f0dd1f293ffdb3d4ee81311d6146ddb17092764b1a3c6 \
+    2d430b66f84a19c154725ec535280c493be1d34f1a90f95208dce02fecd0e4e4 \
+    cd1816becb0e992ebc09f2ff66050e4b92fad33f0b7acc833cf513f4e4791d1a
+set flags arch
+
+function prepare
+    test -d binutils-gdb; or ln -s binutils-$pkgver binutils-gdb; or return
+    mkdir -p binutils-build; or return
+
+    cd binutils-gdb; or return
+
+    # Turn off development mode (-Werror, gas run-time checks, date in sonames)
+    sed -i '/^development=/s/true/false/' bfd/development.sh; or return
+
+    # Creds @Fedora
+    # Change the gold configuration script to only warn about
+    # unsupported targets.  This allows the binutils to be built with
+    # BPF support enabled.
+    patch -Np1 <../gold-warn-unsupported.patch; or return
+end
+
+function build
+    cd binutils-build; or return
+
+    # From archlinux32:
+    # --enable-64-bit-bfd: BFD for x86_64, otherwise there are problems with cross-compilation or building grub.
+    # No --with-debuginfod: "configure: error: debuginfod is missing or unusable".
+    # No x86_64-pep target: it belongs in a cross binutils for EFI binaries (https://bugs.archlinux.org/task/42540).
+    # --enable-cet=no: no Control Flow instructions (endbr32/endbr64).
+    "$srcdir"/binutils-gdb/configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --with-lib-path=/usr/lib:/usr/local/lib \
+        --with-bugurl=https://gitlab.archlinux.org/archlinux/packaging/packages/binutils/-/issues \
+        --enable-64-bit-bfd \
+        --enable-cet=no \
+        --enable-colored-disassembly \
+        --enable-default-execstack=no \
+        --enable-deterministic-archives \
+        --enable-gold \
+        --enable-install-libiberty \
+        --enable-jansson \
+        --enable-ld=default \
+        --enable-new-dtags \
+        --enable-pgo-build=lto \
+        --enable-plugins \
+        --enable-relro \
+        --enable-shared \
+        --enable-targets=bpf-unknown-none \
+        --enable-threads \
+        --disable-gdb \
+        --disable-gdbserver \
+        --disable-libdecnumber \
+        --disable-readline \
+        --disable-sim \
+        --disable-werror \
+        --with-pic \
+        --with-system-zlib; or return
+
+    make -O tooldir=/usr; or return
+
+    # Extract the FSF All Permissive License
+    # <https://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html>
+    # used for some linker scripts.
+    tail -n 5 "$srcdir"/binutils-gdb/ld/scripttempl/README >FSFAP; or return
+end
+
+function check
+    cd binutils-build; or return
+
+    # Use minimal flags for testsuite
+    # ld testsuite uses CFLAGS_FOR_TARGET and requires -g
+    # gold testsuite requires CXXFLAGS/CFLAGS with default PIE/PIC disabled
+    # Failures are ignored (2.38: FAIL: Build ifunc-1a with PIE -z ibtplt)
+    make -O CFLAGS_FOR_TARGET="-O2 -g" \
+        CXXFLAGS="-O2 -no-pie -fno-PIC" \
+        CFLAGS="-O2 -no-pie" \
+        LDFLAGS="" \
+        check; or true
+end
+
+function package
+    cd binutils-build; or return
+    make DESTDIR="$pkgdir" tooldir=/usr install; or return
+
+    # Files that clash with gdb (from archlinux32)
+    set -l gdbfiles "$pkgdir"/usr/share/info/{annotate,gdb,stabs}.info* \
+        "$pkgdir"/usr/share/man/man1/{gcore,gdb-add-index,gdb,gdbserver}.1* \
+        "$pkgdir"/usr/share/man/man5/gdbinit.5*
+    rm -rf "$pkgdir"/usr/bin/{gcore,gdb,gdb-add-index,gdbserver} \
+        "$pkgdir"/usr/include/gdb \
+        "$pkgdir"/usr/lib/libinproctrace.so \
+        "$pkgdir"/usr/share/gdb/{guile,syscalls,system-gdbinit} \
+        $gdbfiles; or return
+
+    # install PIC version of libiberty
+    install -m644 libiberty/pic/libiberty.a "$pkgdir"/usr/lib; or return
+
+    # Remove unwanted files
+    set -l unwanted "$pkgdir"/usr/share/man/man1/{dlltool,windres,windmc}*
+    rm -f $unwanted; or return
+
+    # No shared linking to these files outside binutils
+    rm -f "$pkgdir"/usr/lib/lib{bfd,opcodes}.so; or return
+    printf '%s\n' '/* GNU ld script */' '' 'INPUT( /usr/lib/libbfd.a -lsframe -liberty -lz -lzstd -ldl )' >"$pkgdir"/usr/lib/libbfd.so; or return
+    printf '%s\n' '/* GNU ld script */' '' 'INPUT( /usr/lib/libopcodes.a -lbfd )' >"$pkgdir"/usr/lib/libopcodes.so; or return
+
+    # install FSF All Permissive License
+    install -Dm644 -t "$pkgdir"/usr/share/licenses/$pkgname/ FSFAP; or return
+end

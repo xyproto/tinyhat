@@ -1,0 +1,23 @@
+#!/bin/sh
+sync
+n=0
+busy=
+for d in /media/*/; do
+	d=${d%/}
+	mountpoint -q "$d" || continue
+	if doas systemd-mount --umount "$d" 2>/dev/null; then
+		n=$((n + 1))
+	else
+		busy="$busy ${d##*/}"
+	fi
+done
+for c in /dev/sr[0-9]*; do
+	[ -b "$c" ] && doas eject "$c" 2>/dev/null
+done
+doas rmdir /media/* 2>/dev/null
+if [ -n "$busy" ]; then
+	exec tinyhat-notice "Still in use, close programs first:$busy" 6
+elif [ "$n" -gt 0 ]; then
+	exec tinyhat-notice "It is now safe to remove USB sticks and CDs" 5
+fi
+exec tinyhat-notice "No USB sticks or CDs are mounted" 4

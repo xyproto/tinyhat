@@ -1,0 +1,33 @@
+set pkgname libmodplug
+set pkgver 0.8.9.0
+set pkgrel 7
+set pkgdesc 'A MOD playing library'
+set arch i686 x32
+set url http://modplug-xmms.sourceforge.net/
+set license LicenseRef-PublicDomain
+set depends glibc libstdc++
+set source "https://downloads.sourceforge.net/modplug-xmms/$pkgname-$pkgver.tar.gz" \
+    libmodplug-0.8.9.0-no-fast-math.patch
+set sha256sums 457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de \
+    24b97252803b39546199715158ab1d61616755c6c9756f8b2b9b1948477ce4ed
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    # FS#76950 (Gentoo)
+    patch -Np1 -i ../libmodplug-0.8.9.0-no-fast-math.patch; or return
+    autoreconf -vfi; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -D -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

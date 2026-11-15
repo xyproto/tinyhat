@@ -1,0 +1,44 @@
+set pkgbase libsecret
+set pkgname libsecret libsecret-docs
+set pkgver 0.21.8.2
+set pkgrel 1
+set pkgdesc 'Library for storing and retrieving passwords and other secrets'
+set arch i686 x32
+set url https://gnome.pages.gitlab.gnome.org/libsecret/
+set license LGPL-2.1-or-later
+set depends glib2 glibc libgcrypt tpm2-tss
+set makedepends bash-completion git glib2-devel meson
+set checkdepends gjs python-dbus python-gobject swtpm tpm2-abrmd
+set source "git+https://gitlab.gnome.org/GNOME/libsecret.git?signed#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd $pkgbase; or return
+    sed -ri '/test-(secmem|dh-length)/d' egg/meson.build; or return
+end
+
+function build
+    set -l meson_options -D test_setup=disabled -D tpm2=true
+    set -a meson_options -D gtk_doc=false
+    set -a meson_options -D manpage=false
+    arch-meson -D introspection=false -D vapi=false $pkgbase build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function libsecret-docs
+    echo "No documentation for now."; or return
+end
+
+function package_libsecret
+    set optdepends 'org.freedesktop.secrets: secret storage backend'
+    set provides libsecret-1.so
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+end
+
+function package_libsecret-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+end

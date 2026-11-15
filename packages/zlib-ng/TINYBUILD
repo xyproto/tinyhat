@@ -1,0 +1,58 @@
+set pkgbase zlib-ng
+set pkgname zlib-ng zlib-ng-compat
+set pkgver 2.3.3
+set pkgrel 1
+set pkgdesc 'zlib replacement with optimizations for next generation systems'
+set url https://github.com/zlib-ng/zlib-ng
+set arch i686 x32
+set license Zlib
+set depends glibc
+set makedepends git cmake ninja
+set source "git+https://github.com/zlib-ng/zlib-ng#tag=$pkgver"
+set sha256sums aa625dc5ecdeb0ea6c12d76518dd10a55e865499c5a0fced68f52cb751542041
+set b2sums 9380c04753e0eab0b3fb5a72b115a65f5841fccb03f7e711e4bf5ed78888b3bb19085ade58b47c229868774333d20cd29301ae4f0e7db8c2d40414dfe6e71af2
+set flags arch
+
+function build
+    cd $pkgbase; or return
+    set -l _options \
+        -G Ninja \
+        -DCMAKE_BUILD_TYPE=None \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -Wno-dev \
+        -DWITH_GTEST=OFF \
+        -DBUILD_SHARED_LIBS=ON
+    echo 'Building zlib-ng'
+    cmake -B build $_options; or return
+    cmake --build build; or return
+    echo 'Building zlib-ng-compat'
+    cmake -B build-compat $_options -DZLIB_COMPAT=ON; or return
+    cmake --build build-compat; or return
+end
+
+function check
+    cd $pkgbase; or return
+    echo 'Checking zlib-ng'
+    ctest --output-on-failure --test-dir build; or return
+    echo 'Checking zlib-ng-compat'
+    ctest --output-on-failure --test-dir build-compat; or return
+end
+
+function package_zlib-ng
+    set provides libz-ng.so
+    cd $pkgbase; or return
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm 644 LICENSE.md -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -Dm 644 README.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
+end
+
+function package_zlib-ng-compat
+    set pkgdesc "$pkgdesc (zlib compat)"
+    set provides zlib libz.so
+    set conflicts zlib
+    cd $pkgbase; or return
+    DESTDIR="$pkgdir" cmake --install build-compat; or return
+    install -Dm 644 LICENSE.md -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -Dm 644 README.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
+end

@@ -1,0 +1,21 @@
+set pkgname tinyhat-pipewire-wait
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Makes PipeWire clients wait for the default sink when PipeWire is started on demand'
+set arch i686 x32 x86_64 aarch64
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends pipewire
+set source tinyhat-wait.c tinyhat-wait.conf
+set sha256sums SKIP SKIP
+
+function build
+    cc -std=gnu11 -shared -fPIC $CFLAGS -o libpipewire-module-tinyhat-wait.so tinyhat-wait.c $LDFLAGS (pkg-config --cflags --libs libpipewire-0.3 | string split -n ' '); or return
+end
+
+function package
+    install -Dm755 -t "$pkgdir/usr/lib/pipewire-0.3" libpipewire-module-tinyhat-wait.so; or return
+    install -Dm644 tinyhat-wait.conf "$pkgdir/usr/share/pipewire/client.conf.d/tinyhat-wait.conf"; or return
+    install -Dm644 tinyhat-wait.conf "$pkgdir/usr/share/pipewire/client-rt.conf.d/tinyhat-wait.conf"; or return
+    install -Dm644 tinyhat-wait.conf "$pkgdir/usr/share/pipewire/jack.conf.d/tinyhat-wait.conf"; or return
+end

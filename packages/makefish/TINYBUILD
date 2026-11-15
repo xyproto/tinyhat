@@ -1,0 +1,17 @@
+set pkgname makefish
+set pkgver 0.1.0
+set pkgrel 1
+set pkgdesc 'Builds pacman packages from TINYBUILD files, the fish-based package format of Tiny Hat'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends fish coreutils findutils file binutils libarchive zstd gzip curl
+set optdepends 'git: for git+ sources' 'metatar: for packages that set owners' 'upx: for packages with the upx option'
+set backup etc/makefish.conf
+
+function package
+    cp -a $startdir/root/. $pkgdir/; or return
+    find $pkgdir -type d -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
+end

@@ -1,0 +1,24 @@
+# toolchain build order: linux-api-headers->glibc->binutils->gcc->glibc->binutils->gcc
+
+set pkgname linux-api-headers
+set pkgver 7.3
+set pkgrel 1
+set pkgdesc 'Kernel headers sanitized for use in userspace'
+set arch i686 x32
+set url https://www.gnu.org/software/libc
+set license GPL-2.0-only
+set makedepends rsync
+set source https://www.kernel.org/pub/linux/kernel/v(string sub -l 1 -- $pkgver).x/linux-$pkgver.tar.{xz,sign}
+set sha256sums 87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953 \
+    SKIP
+set flags arch
+
+function build
+    cd linux-$pkgver; or return
+    make mrproper; or return
+end
+
+function package
+    cd linux-$pkgver; or return
+    make INSTALL_HDR_PATH="$pkgdir/usr" headers_install; or return
+end

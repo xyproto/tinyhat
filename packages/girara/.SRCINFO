@@ -17,6 +17,6 @@ pkgbase = girara
 	replaces = girara-gtk3
 	replaces = girara-common
 	source = girara-2026.07.18.tar.gz::https://github.com/pwmt/girara/archive/refs/tags/2026.07.18.tar.gz
-	sha512sums = 28a9e0fd27fe8788a69a87dfd2609d0a56220a83dba9b18783a409f6bd0044e8404302a94089a06ef1a722c3e901380164a6ce1de76bfdf69fb8a5b467a1b729
+	sha256sums = 841ca1d6fc33f87ca0065208052dffd7c49489cfd1119ce572176c1d5428a1e0
 
 pkgname = girara

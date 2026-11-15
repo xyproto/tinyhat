@@ -1,0 +1,11 @@
+[Unit]
+Description=Shorter PCI latency timers for steadier frame times
+ConditionArchitecture=|x86
+ConditionArchitecture=|x86-64
+
+[Service]
+Type=oneshot
+ExecStart=-/usr/lib/tinyhat/pci-latency
+
+[Install]
+WantedBy=multi-user.target

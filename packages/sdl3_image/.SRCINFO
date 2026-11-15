@@ -1,11 +1,12 @@
 pkgbase = sdl3_image
 	pkgdesc = SDL3 image loading library (PNG, JPEG, GIF, BMP and more)
 	pkgver = 3.4.8
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/libsdl-org/SDL_image
 	arch = i686
 	arch = x32
 	license = Zlib
+	makedepends = perl
 	makedepends = cmake
 	makedepends = ninja
 	depends = sdl3

@@ -1,0 +1,13 @@
+[Unit]
+Description=Start iwd when a WiFi network has been saved
+After=tinyhat-persist.service
+ConditionPathExistsGlob=|/var/lib/iwd/*.psk
+ConditionPathExistsGlob=|/var/lib/iwd/*.open
+ConditionPathExistsGlob=|/var/lib/iwd/*.8021x
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/systemctl --no-block start iwd.service
+
+[Install]
+WantedBy=multi-user.target

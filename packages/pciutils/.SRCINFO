@@ -15,7 +15,6 @@ pkgbase = pciutils
 	optdepends = grep: for update-pciids
 	optdepends = curl: for update-pciids
 	source = git+https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git#tag=v3.15.0?signed
-	validpgpkeys = C466A56CADA981F4297D20C31F3D0761D9B65F0B
 	b2sums = 634c114f928f37e11054c424d0745f8aaa236a342a62e3fae59519619f5d7a1e9f60bb026e5e8949b0b3f636772f62bb9c1743fd73eb97b2a2e3c09d872a2075
 
 pkgname = pciutils

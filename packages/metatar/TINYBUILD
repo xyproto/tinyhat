@@ -1,0 +1,39 @@
+set pkgname metatar
+set pkgver 1.9.5
+set pkgrel 1
+set pkgdesc 'Save, edit and apply the metadata of tar archives, such as file owners and permissions'
+set arch i686 x32 x86_64 aarch64
+set url https://github.com/xyproto/metatar
+set license BSD-3-Clause
+set makedepends go-tinyhat
+set source "metatar-$pkgver.tar.gz::https://github.com/xyproto/metatar/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums d6c0829ed46211f75e1488177b8cdbe46bdae97ee64ed029182e29a7ead92e05
+set options !buildflags
+
+function build
+    cd metatar-$pkgver; or return
+    set -lx GOROOT /usr/lib/go-tinyhat
+    set -lx GOARCH 386
+    set -lx GO386 softfloat
+    switch $CARCH
+        case x86_64
+            set GOROOT /usr/lib/go
+            set GOARCH amd64
+        case aarch64
+            set GOROOT /usr/lib/go
+            set GOARCH arm64
+    end
+    set -lx GOPATH $srcdir/gopath
+    set -lx GOCACHE $srcdir/gocache
+    set -lx GOTOOLCHAIN local
+    set -lx GOFLAGS -mod=vendor
+    set -lx CGO_ENABLED 0
+    set -lx PATH $GOROOT/bin $PATH
+    go build -trimpath -buildvcs=false -ldflags '-s -w' -o metatar; or return
+end
+
+function package
+    cd metatar-$pkgver; or return
+    install -Dm755 metatar $pkgdir/usr/bin/metatar; or return
+    install -Dm644 LICENSE $pkgdir/usr/share/licenses/$pkgname/LICENSE; or return
+end

@@ -1,0 +1,27 @@
+set pkgname libglvnd
+set pkgver 1.7.0
+set pkgrel 3
+set pkgdesc 'The GL Vendor-Neutral Dispatch library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/glvnd/libglvnd
+set license custom:BSD-like
+set makedepends python meson
+set provides libgl libegl libgles libEGL.so libGL.so libGLESv2.so libGLdispatch.so libOpenGL.so
+set source "https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v$pkgver/libglvnd-v$pkgver.tar.gz" \
+    license-from-upstream
+set sha256sums 2b6e15b06aafb4c0b6e2348124808cbd9b291c647299eaaba2e3202f51ff2f3d \
+    1a99f7487849c41fc3520e0af3dfcf28a0df05e78956d9ec58c2c52b1f20a77d
+set flags arch
+
+function build
+    arch-meson $pkgname-v$pkgver build -D gles1=false -D x11=disabled -D glx=disabled; or return
+    meson compile -C build; or return
+end
+
+function package
+    set depends 'mesa' 'opengl-driver'
+    meson install -C build --destdir "$pkgdir"; or return
+    printf 'INPUT(-lOpenGL)\n' > "$pkgdir/usr/lib/libGL.so"; or return
+    sed 's/^Name: .*/Name: gl/' "$pkgdir/usr/lib/pkgconfig/opengl.pc" > "$pkgdir/usr/lib/pkgconfig/gl.pc"; or return
+    install -Dm644 license-from-upstream "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
+end

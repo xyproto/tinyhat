@@ -11,7 +11,6 @@ pkgbase = libtasn1
 	depends = glibc
 	source = https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.21.0.tar.gz
 	source = https://ftp.gnu.org/gnu/libtasn1/libtasn1-4.21.0.tar.gz.sig
-	validpgpkeys = B1D2BD1375BECB784CF4F8C4D73CF638C53C06BE
 	sha256sums = 1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87
 	sha256sums = SKIP
 

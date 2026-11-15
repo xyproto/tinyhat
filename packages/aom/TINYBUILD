@@ -1,0 +1,54 @@
+set pkgbase aom
+set pkgname aom aom-docs
+set pkgver 3.15.2
+set pkgrel 1
+set pkgdesc 'Alliance for Open Media video codec'
+set url https://aomedia.org/
+set arch i686 x32
+set license BSD-3-Clause
+set depends glibc libgcc libstdc++
+set makedepends cmake doxygen ninja yasm
+set source "https://storage.googleapis.com/aom-releases/libaom-$pkgver.tar.gz"{,.asc}
+set b2sums 255a195b4847c7b3345753c3bca54dc6028ec17de4b2df8efb2db1b41e66bd52f224e81bd7151117c0c621522b8d422ca47b7e96dbeab9a4aff4ec5c453cbfd9 SKIP
+set flags arch
+
+function prepare
+    cd libaom-$pkgver; or return
+    # Don't require static library
+    sed -i 's/aom aom_static/aom/' cmake/aom_install.cmake; or return
+end
+
+function build
+    set -l cmake_options \
+        # Upstream would like Release, adding -O3 and removing assertions
+        # https://gitlab.archlinux.org/archlinux/packaging/packages/aom/-/issues/1
+        -D CMAKE_BUILD_TYPE=Release \
+        -D CMAKE_INSTALL_PREFIX=/usr \
+        -D BUILD_SHARED_LIBS=1 \
+        -D ENABLE_TESTS=0
+
+    # upstream wants this off
+    set CFLAGS (string replace -- _FORTIFY_SOURCE=3 _FORTIFY_SOURCE=0 $CFLAGS)
+    set CXXFLAGS (string replace -- _FORTIFY_SOURCE=3 _FORTIFY_SOURCE=0 $CXXFLAGS)
+
+    cmake -S libaom-$pkgver -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package_aom
+    set provides libaom.so
+
+    DESTDIR="$pkgdir" cmake --install build; or return
+
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libaom-$pkgver/{LICENSE,PATENTS}; or return
+end
+
+function package_aom-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+
+    mkdir -p "$pkgdir/usr/share/doc"; or return
+    cp -r build/docs/html "$pkgdir/usr/share/doc/$pkgbase"; or return
+
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libaom-$pkgver/{LICENSE,PATENTS}; or return
+end

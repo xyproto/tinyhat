@@ -1,0 +1,39 @@
+set pkgname libnl
+set pkgver 3.12.0
+set pkgrel 1
+set pkgdesc 'Library for applications dealing with netlink sockets'
+set arch i686 x32
+set url https://github.com/thom311/libnl/
+set license LGPL-2.1-only
+set depends glibc gcc-libs
+set makedepends git
+set provides libnl-3.so libnl-cli-3.so libnl-genl-3.so libnl-idiag-3.so \
+    libnl-nf-3.so libnl-route-3.so libnl-xfrm-3.so
+set backup etc/libnl/classid \
+    etc/libnl/pktloc
+set source "git+https://github.com/thom311/libnl.git#tag=libnl"(string replace -a . _ -- $pkgver)"?signed"
+set sha256sums d741b8f94ef4a64b953603efce660a2eec4eb0cb6cd7faeabf75c8af99f0bcab
+set flags arch
+
+function prepare
+    cd "$pkgname"; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd "$pkgname"; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --sbindir=/usr/bin \
+        --disable-static; or return
+    make; or return
+end
+
+function check
+    make -C "$pkgname" check; or return
+end
+
+function package
+    make -C "$pkgname" DESTDIR="$pkgdir" install; or return
+end

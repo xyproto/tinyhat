@@ -1,0 +1,17 @@
+set pkgname pure-fish
+set pkgver 4.19.2
+set pkgrel 1
+set pkgdesc 'Pretty, minimal and fast fish prompt'
+set arch any
+set url https://github.com/pure-fish/pure
+set license MIT
+set depends fish
+set source "pure-fish-$pkgver.tar.gz::https://github.com/pure-fish/pure/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums 3d42523b48d92a83861257f902ff4c8c39ee7ee80d8da51d22b6ad5e1ad091d4
+
+function package
+    install -d "$pkgdir/etc/fish/conf.d" "$pkgdir/etc/fish/functions" "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 pure-$pkgver/conf.d/*.fish "$pkgdir/etc/fish/conf.d/"; or return
+    install -m644 pure-$pkgver/functions/*.fish "$pkgdir/etc/fish/functions/"; or return
+    install -m644 pure-$pkgver/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

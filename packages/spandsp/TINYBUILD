@@ -1,0 +1,46 @@
+set pkgbase spandsp
+set pkgname spandsp spandsp-docs
+set pkgver 0.0.6
+set pkgrel 7
+set pkgdesc 'Low-level signal processing library that modulates and demodulates signals commonly used in telephony'
+set arch i686 x32
+set url https://www.soft-switch.org/
+set license LGPL-2.1-only
+set depends glibc libtiff
+set makedepends docbook-xsl doxygen
+#set source "https://www.soft-switch.org/downloads/$pkgbase/$pkgbase-$pkgver.tar.gz"
+set source "https://web.archive.org/web/20260102090731/https://www.soft-switch.org/downloads/$pkgbase/$pkgbase-$pkgver.tar.gz"
+set b2sums 6ee95501473d5758c9ff96580bb51222f49a230dc6a5f52f5a852781cbb70079bb07f9d7224f5c7ea91c0dd617fa543a37518f68875c76a44b3be1415aece696
+set flags arch
+
+function prepare
+    cd $pkgbase-$pkgver; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgbase-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --enable-doc; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package_spandsp
+    set provides libspandsp.so
+
+    cd $pkgbase-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end
+
+function package_spandsp-docs
+    set pkgdesc 'Developer documentation for spandsp'
+    set depends
+
+    cd $pkgbase-$pkgver; or return
+    install -dm755 "$pkgdir/usr/share/doc/$pkgbase"; or return
+    cp -r doc/api/html "$pkgdir/usr/share/doc/$pkgbase/"; or return
+end

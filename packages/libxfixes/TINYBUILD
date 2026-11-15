@@ -1,0 +1,28 @@
+set pkgname libxfixes
+set pkgver 6.0.2
+set pkgrel 1
+set pkgdesc "X11 miscellaneous 'fixes' extension library"
+set arch i686 x32
+set url https://xorg.freedesktop.org/
+set license MIT HPND-sell-variant
+set depends libx11 xorgproto glibc
+set makedepends xorg-util-macros
+set source "$url/releases/individual/lib/libXfixes-$pkgver.tar.xz" \
+    "$url/releases/individual/lib/libXfixes-$pkgver.tar.xz.sig"
+set sha512sums 87542927ba9839fdd83282b0fba1bd2afae853ffe4e0f5f548915de22432bbc34a064578ba8527ba6041a993ee27390ba6ee2f1a957cb961717d45026e40ec75 \
+    SKIP
+set flags arch
+
+function build
+    cd "libXfixes-$pkgver"; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static; or return
+    make; or return
+end
+
+function package
+    cd "libXfixes-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

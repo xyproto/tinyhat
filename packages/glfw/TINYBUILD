@@ -1,0 +1,25 @@
+set pkgname glfw
+set pkgver 3.5.1
+set pkgrel 1
+set epoch 1
+set pkgdesc 'A free, open source, portable framework for graphical application development'
+set arch i686 x32
+set url https://www.glfw.org/
+set license custom:ZLIB
+set depends libgl libxkbcommon
+set makedepends mesa cmake doxygen vulkan-headers vulkan-icd-loader extra-cmake-modules wayland-protocols libxi libxrandr libxcursor libxinerama
+set provides glfw-x11 glfw-wayland
+set replaces glfw-x11 glfw-wayland glfw-doc
+set source "glfw-$pkgver.tar.gz::https://github.com/glfw/glfw/archive/$pkgver.tar.gz"
+set sha256sums 5234f4f29473e9a06bc7847d8371858dd135d38466eeeaa652fdc9f8f9ff0c20
+set flags arch
+
+function build
+    cmake -B build -S "$pkgname-$pkgver" -DCMAKE_BUILD_TYPE='None' -DCMAKE_INSTALL_PREFIX='/usr' -DBUILD_SHARED_LIBS=ON -Wno-dev; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm644 "$pkgname-$pkgver"/LICENSE.md "$pkgdir/usr/share/licenses/$pkgname/LICENSE.md"; or return
+end

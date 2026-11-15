@@ -1,0 +1,31 @@
+set pkgname libxi
+set pkgver 1.8.4
+set pkgrel 1
+set pkgdesc 'X11 Input extension library'
+set arch i686 x32
+set url https://xorg.freedesktop.org
+set depends libxext libxfixes libx11 glibc xorgproto
+set makedepends git xorg-util-macros
+set license MIT-open-group SMLNJ MIT
+set source "git+https://gitlab.freedesktop.org/xorg/lib/libxi.git?signed#tag=libXi-$pkgver"
+set sha512sums 77bafa1909f4b9b2574c11b37ccebbc41d724e7843fa1aa24ff23650e98ed995bdc75b1e49856fd673d5f390ed3e3863531668057f2d579e4614d97122e779de
+set flags arch
+
+function prepare
+    cd libxi; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd libxi; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libxi; or return
+    make DESTDIR="$pkgdir" install; or return
+
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

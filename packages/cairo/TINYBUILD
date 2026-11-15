@@ -1,0 +1,48 @@
+set pkgbase cairo
+set pkgname cairo-wayland
+set pkgver 1.18.6
+set pkgrel 1
+set pkgdesc '2D graphics library with support for multiple output devices'
+set arch i686 x32
+set url https://cairographics.org/
+set license 'LGPL-2.1-only OR MPL-1.1'
+set depends bash fontconfig freetype2 glib2 glibc libpng lzo pixman zlib
+set makedepends git gtk-doc meson valgrind
+set conflicts cairo
+set source "git+https://gitlab.freedesktop.org/cairo/cairo.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+set -g _d bash fontconfig freetype2 glib2 glibc libpng lzo pixman zlib
+set -g _p zlib
+
+function prepare
+    cd cairo; or return
+end
+
+function build
+    set -l meson_options -D dwrite=disabled -D xlib=disabled -D xcb=disabled -D gtk_doc=true -D spectre=disabled -D symbol-lookup=disabled -D tests=disabled
+    arch-meson cairo build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package_cairo
+    set provides libcairo-gobject.so libcairo-script-interpreter.so libcairo.so
+    set -a options !emptydirs
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/gtk-doc; or return
+end
+
+function package_cairo-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+end
+
+function package_cairo-wayland
+    set provides "cairo=$pkgver" libcairo-gobject.so libcairo-script-interpreter.so libcairo.so
+    set -a options !emptydirs
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/gtk-doc; or return
+end

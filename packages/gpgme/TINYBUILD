@@ -1,0 +1,62 @@
+set pkgname gpgme
+set pkgver 2.2.0
+set pkgrel 1
+set pkgdesc 'C wrapper library for GnuPG'
+set arch i686 x32
+set url https://www.gnupg.org/related_software/gpgme/
+set license GPL-2.0-or-later LGPL-2.0-or-later LGPL-2.1-or-later MIT
+# libgpg-error.so is left out on purpose
+set depends glibc libassuan libassuan.so libgpg-error 'gnupg>=2'
+set makedepends git
+set provides libgpgme.so
+set options '!emptydirs'
+# https://dev.gnupg.org/T4191
+# patch from Debian, see: https://salsa.debian.org/debian/gpgme/blob/debian/master/debian/patches/0004-Avoid-Y2038-problem-on-32-bit-architectures.patch
+# (listed, but not applied)
+set source "git+https://github.com/gpg/gpgme.git?signed#tag=$pkgname-$pkgver" \
+    0004-Avoid-Y2038-problem-on-32-bit-architectures.patch
+set sha256sums bbad98ccc6af9d2140d61cd20edf77f2ffb014cf47ac089bb7291f051464c7d7 \
+    0c788590e0bb7cc9da04457f94360ceef9cb9fc0525e6bfbf9fbb8d72801ae8f
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+
+    sed -i s/-unknown// autogen.sh; or return
+    autoreconf -fi; or return
+    #patch -Np1 -i "$srcdir/0004-Avoid-Y2038-problem-on-32-bit-architectures.patch"
+end
+
+function build
+    cd $pkgname; or return
+
+    # No language bindings (Python and Qt are disabled)
+    ./configure --disable-languages \
+        --prefix=/usr \
+        --disable-fd-passing \
+        --disable-static \
+        --disable-gpgsm-test; or return
+
+    # prevent excessive overlinking due to libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make CXXFLAGS=-D_FILE_OFFSET_BITS=64; or return
+end
+
+function check
+    cd $pkgname; or return
+
+    # this test fails with gnupg (FS#66572)
+    sed -i 's#"t-keylist-secret",##' tests/json/t-json.c; or return
+
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+    # that is not used, no?!
+    rm "$pkgdir"/usr/lib/pkgconfig/gpgme-glib.pc; or return
+
+    install -vDm 644 LICENSES "$pkgdir/usr/share/licenses/$pkgname/MIT.txt"; or return
+end

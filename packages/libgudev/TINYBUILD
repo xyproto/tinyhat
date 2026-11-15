@@ -1,0 +1,37 @@
+set pkgbase libgudev
+set pkgname libgudev libgudev-docs
+set pkgver 238
+set pkgrel 4
+set pkgdesc 'GObject bindings for libudev'
+set arch i686 x32
+set url https://gitlab.gnome.org/GNOME/libgudev
+set license LGPL-2.1-or-later
+set depends glib2 glibc libgcc libsystemd
+set makedepends git glib2-devel glibc-locales gtk-doc meson systemd umockdev
+set source "git+https://gitlab.gnome.org/GNOME/libgudev.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd libgudev; or return
+end
+
+function build
+    set -l meson_options -D gtk_doc=true
+    arch-meson -D introspection=disabled -D vapi=disabled libgudev build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function package_libgudev
+    set -a depends libg{lib,object}-2.0.so libudev.so
+    set -a provides libgudev-1.0.so
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/gtk-doc; or return
+end
+
+function package_libgudev-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv doc/* "$pkgdir"; or return
+end

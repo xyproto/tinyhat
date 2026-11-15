@@ -1,0 +1,45 @@
+set pkgname orbiton
+set -g _commit 6c7c218c3650ff7d5c5b319410b22c1390ce500e
+set pkgver 2.75.0
+set pkgrel 1
+set pkgdesc 'Editor and IDE'
+set arch i686 x86_64 aarch64
+set url https://github.com/xyproto/orbiton/
+set license BSD-3-Clause
+set depends glibc
+set makedepends go-tinyhat
+set options '!buildflags'
+set source "orbiton-$_commit.tar.gz::https://github.com/xyproto/orbiton/archive/$_commit.tar.gz"
+set sha256sums 0798944ea32305ced398c831e5896d2c99b8d99db89a396e1a5ec1702e882934
+
+function build
+    cd orbiton-$_commit/v2; or return
+    set -lx GOROOT /usr/lib/go-tinyhat
+    set -lx GOPATH "$srcdir/gopath"
+    set -lx GOCACHE "$srcdir/gocache"
+    set -lx GOTOOLCHAIN local
+    set -lx GOFLAGS -mod=vendor
+    set -lx CGO_ENABLED 0
+    set -lx GOARCH 386
+    set -lx GO386 softfloat
+    switch $CARCH
+        case aarch64
+            set GOROOT /usr/lib/go
+            set GOARCH arm64
+        case x86_64
+            set GOROOT /usr/lib/go
+            set GOARCH amd64
+    end
+    set -lx PATH $GOROOT/bin $PATH
+    go build -trimpath -buildvcs=false -ldflags '-s -w' -o "$srcdir/o"; or return
+end
+
+function package
+    install -Dm755 o "$pkgdir/usr/bin/o"; or return
+    for l in orbiton orbiton-nano nano feedgame obuild osudo vs
+        ln -sf o "$pkgdir/usr/bin/$l"; or return
+    end
+    install -Dm644 orbiton-$_commit/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+    gzip -n -9 -c orbiton-$_commit/o.1 >o.1.gz; or return
+    install -Dm644 o.1.gz "$pkgdir/usr/share/man/man1/o.1.gz"; or return
+end

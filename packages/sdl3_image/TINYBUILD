@@ -1,0 +1,25 @@
+set pkgname sdl3_image
+set pkgver 3.4.8
+set pkgrel 3
+set pkgdesc 'SDL3 image loading library (PNG, JPEG, GIF, BMP and more)'
+set arch i686 x32
+set url https://github.com/libsdl-org/SDL_image
+set license Zlib
+set depends sdl3 libtiff libwebp
+set makedepends perl cmake ninja
+set source "https://github.com/libsdl-org/SDL_image/releases/download/release-$pkgver/SDL3_image-$pkgver.tar.gz"
+set sha256sums e8223b424bc7541cf84ffff5cf7e4f24ec3711c60462cb1bd6dc1d7bd7f25477
+
+function build
+    cmake -S SDL3_image-$pkgver -B build -G Ninja -DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_INSTALL_PREFIX=/usr -DSDLIMAGE_VENDORED=OFF -DSDLIMAGE_BACKEND_STB=ON -DSDLIMAGE_DEPS_SHARED=OFF -DSDLIMAGE_AVIF=OFF -DSDLIMAGE_JXL=OFF -DSDLIMAGE_TIF=ON -DSDLIMAGE_WEBP=ON -DSDLIMAGE_SVG=ON -DSDLIMAGE_PNG_LIBPNG=OFF -DSDLIMAGE_SAMPLES=OFF -DSDLIMAGE_TESTS=OFF -DSDLIMAGE_INSTALL_MAN=OFF; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 SDL3_image-$pkgver/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"; or return
+    mkdir -p "$srcdir/wiki" "$pkgdir/usr/share/man"; or return
+    cd SDL3_image-$pkgver; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --copy-to-wiki > /dev/null; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --manpath="$pkgdir/usr/share/man" --copy-to-manpages > /dev/null; or return
+end

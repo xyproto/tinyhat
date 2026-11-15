@@ -1,0 +1,29 @@
+set pkgname findutils
+set pkgver 4.11.0
+set pkgrel 1
+set pkgdesc 'GNU utilities to locate files'
+set arch i686 x32
+set url https://www.gnu.org/software/findutils/
+set license GPL-3.0-or-later
+set depends glibc
+set makedepends gperf python
+set source "https://ftp.gnu.org/gnu/findutils/findutils-$pkgver.tar.xz"
+set sha256sums bfd19cb06cc71f3352d567e90284d8cdac02ac89774bbeadf0b533b0c11432fd
+set flags arch
+
+function prepare
+    true
+end
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    sed -e '/^SUBDIRS/s/locate//' -e 's/frcode locate updatedb//' -i Makefile.in; or return
+    ./configure --prefix=/usr; or return
+    make -C locate dblocation.texi; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+end

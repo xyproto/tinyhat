@@ -14,7 +14,6 @@ pkgbase = patch
 	optdepends = ed: for patch -e functionality
 	source = git+https://git.savannah.gnu.org/git/patch.git?signed#tag=v2.8.1
 	source = git+https://git.savannah.gnu.org/git/gnulib.git
-	validpgpkeys = 259B3792B3D6D319212CC4DCD5BF9FEB0313653A
 	sha256sums = cb1143d906898c105ab8680054c82f8decc4c0b01e86dc25b23bf99d24af7175
 	sha256sums = SKIP
 

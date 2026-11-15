@@ -19,9 +19,8 @@ pkgbase = coreutils
 	source = https://ftp.gnu.org/gnu/coreutils/coreutils-9.12.tar.gz
 	source = https://ftp.gnu.org/gnu/coreutils/coreutils-9.12.tar.gz.sig
 	source = 0001-env-printenv-only-quote-when-outputting-to-terminals.patch
-	validpgpkeys = 6C37DC12121A5006BC1DB804DF6FD971306037D9
-	b2sums = c125cc479e4eec0178e49a1dffa975fb5d7753a5f04d3bb695d0e8043c05d76fb07c9595db20e9df5c359fdbbb326acb976d5bec7bd1771da22840156bb66369
-	b2sums = SKIP
-	b2sums = 97619b6af8bdb4e18d1a895f52e72af8e2fd2dc0afda8f724a70c9b68cdc31470398101012cc4452ab5142defe55956fd9bc8f87d71ea11ff87cb2147e122d10
+	sha256sums = 14cbf5a4de0c7b7fa3b9fa7fada4c58b2defe33336aa8fd83d7622c5c4ebdc13
+	sha256sums = 5517066495da2fe4459d07b9284e497276d228c3c0f540f3f879f058345e98fd
+	sha256sums = 60df76f209ec6022c313d546370fb33045cd62179499c61bef3e3f2e4d82446e
 
 pkgname = coreutils

@@ -1,0 +1,45 @@
+set pkgname audit
+set pkgver 4.2.1
+set pkgrel 2
+set pkgdesc 'Userspace components of the audit framework'
+set url https://github.com/linux-audit/audit-userspace
+set arch i686 x32
+set license GPL-2.0-or-later LGPL-2.0-or-later
+# No Kerberos (GSSAPI), z/OS (LDAP), AppArmor or Python bindings: libaudit is what systemd and pam need
+set depends bash glibc libcap-ng libcap-ng.so
+set makedepends glibc libcap-ng linux-api-headers
+set provides libaudit.so libauparse.so
+set backup etc/libaudit.conf etc/audit/audit-stop.rules etc/audit/auditd.conf
+set flags arch
+set options emptydirs
+set source $url/archive/v$pkgver/audit-userspace-v$pkgver.tar.gz audit.tmpfiles audit-4.1.2-executable_paths.patch
+set sha256sums 42876d195ee2ded19e5f72d7664096eee314928aa36ad346719ba5b25818fc84 \
+    5d032b5612a037027d196f70de16e93c1c939adcaf3692244265ea7856e05fa8 \
+    b9424430d5369b3db5c5a33cb583782ae3632f9f7e0759d6b2432221fe04bec8
+
+function prepare
+    # use /usr and /bin merge compatible paths in configs
+    patch -Np1 -d audit-userspace-$pkgver -i ../audit-4.1.2-executable_paths.patch; or return
+    cd audit-userspace-$pkgver; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd audit-userspace-$pkgver; or return
+    ./configure --enable-experimental --enable-gssapi-krb5=no --enable-systemd=yes --disable-zos-remote \
+        --libexecdir=/usr/lib/audit --prefix=/usr --runstatedir=/run --sbindir=/usr/bin --sysconfdir=/etc \
+        --with-aarch64 --with-apparmor=no --with-arm --with-io_uring=yes --with-libcap-ng=yes --with-nftables \
+        --with-python3=no; or return
+    # prevent excessive overlinking due to libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    make DESTDIR="$pkgdir" install -C audit-userspace-$pkgver; or return
+    # tmpfiles.d integration for factory files and file permissions
+    install -vDm 644 audit.tmpfiles "$pkgdir/usr/lib/tmpfiles.d/audit.conf"; or return
+    rm -frv "$pkgdir/usr/lib/audit"; or return
+    install -vdm 755 "$pkgdir/usr/share/factory/"; or return
+    cp -av "$pkgdir/etc" "$pkgdir/usr/share/factory/"; or return
+end

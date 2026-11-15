@@ -1,0 +1,16 @@
+set pkgname ttf-jetbrains-mono
+set pkgver 2.304
+set pkgrel 2
+set pkgdesc 'Typeface for developers, by JetBrains'
+set arch any
+set url https://jetbrains.com/lp/mono
+set license custom:OFL
+set source "https://github.com/JetBrains/JetBrainsMono/releases/download/v$pkgver/JetBrainsMono-$pkgver.zip"
+set b2sums c54913d1d7f11150afeb2974238ee26f09be5ea2b1db2510c00bafb2ae0d807d6ca64d4fcef5dfc95d524bb4f2f3324243fc6a693bd2b81c79820f48cb1e9909
+set flags arch
+
+function package
+    find fonts/ttf -type f -name '*.ttf' -exec \
+        install -Dm644 -t "$pkgdir/usr/share/fonts/TTF" {} \;; or return
+    install -Dm644 OFL.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

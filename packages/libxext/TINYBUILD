@@ -1,0 +1,27 @@
+set pkgname libxext
+set pkgver 1.3.7
+set pkgrel 1
+set pkgdesc 'X11 miscellaneous extensions library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/xorg/lib/libxext
+set license LicenseRef-libxext
+set depends libx11 glibc xorgproto
+set makedepends xorg-util-macros
+set flags arch
+set source https://xorg.freedesktop.org/releases/individual/lib/libXext-$pkgver.tar.xz{,.sig}
+set sha512sums 09cd230da472e87e4fdbc9b0f83a9181cc44af04c06fa4a7d8aa405e0f8551d3ac3a4b379249c44d97e1025b60d1c52f8ca13817eed0206e2bf3d66a55d89701 \
+    SKIP
+
+function build
+    cd libXext-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libXext-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

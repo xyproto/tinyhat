@@ -1,0 +1,40 @@
+set pkgname png2xpm
+set -g _commit 9eb268eca26e61eb7da0b1a9b25882b79195e9ab
+set pkgver 0+9eb268ec
+set pkgrel 1
+set pkgdesc 'Convert PNG images to XPM format'
+set arch i686
+set url https://github.com/xyproto/xpm
+set license BSD-3-Clause
+set depends glibc
+set makedepends go-tinyhat
+set options '!buildflags'
+set source "xpm-$_commit.tar.gz::https://github.com/xyproto/xpm/archive/$_commit.tar.gz"
+set sha256sums 7d7a02a683b675875febd5ab67d3d4f067db3111bf8a31da86c36ced8bae16b3
+
+function build
+    cd xpm-$_commit; or return
+    set -lx GOROOT /usr/lib/go-tinyhat
+    set -lx GOPATH "$srcdir/gopath"
+    set -lx GOCACHE "$srcdir/gocache"
+    set -lx GOTOOLCHAIN local
+    set -lx GOFLAGS -mod=vendor
+    set -lx CGO_ENABLED 0
+    set -lx GOARCH 386
+    set -lx GO386 softfloat
+    switch $CARCH
+        case aarch64
+            set GOROOT /usr/lib/go
+            set GOARCH arm64
+        case x86_64
+            set GOROOT /usr/lib/go
+            set GOARCH amd64
+    end
+    set -lx PATH $GOROOT/bin $PATH
+    go build -trimpath -buildvcs=false -ldflags '-s -w' -o "$srcdir/png2xpm" ./cmd/png2xpm; or return
+end
+
+function package
+    install -Dm755 png2xpm "$pkgdir/usr/bin/png2xpm"; or return
+    install -Dm644 xpm-$_commit/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

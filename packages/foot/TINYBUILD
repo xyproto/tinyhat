@@ -1,0 +1,52 @@
+set pkgbase foot
+set pkgdesc 'Fast, lightweight, and minimalistic Wayland terminal emulator'
+set pkgname $pkgbase $pkgbase-terminfo
+set pkgver 1.28.0
+set pkgrel 3
+set url "https://codeberg.org/dnkl/$pkgbase"
+set arch i686 x32
+set license MIT
+set makedepends fcft fontconfig git libutf8proc libxkbcommon llvm meson ncurses ninja pixman python scdoc sway \
+    tllist wayland wayland-protocols
+set optdepends 'libutempter: utmp logging'
+set flags arch
+set source "$pkgbase::git+$url.git#tag=$pkgver"
+set sha256sums 05a057b1145507625d9f548ae546705d58ba60cbb26a8958ce72f0b9c1bdee46
+
+function build
+    cd "$pkgbase"; or return
+    if test $CARCH = aarch64
+        meson setup build --prefix=/usr --buildtype=release -Dterminfo-base-name=foot-extra --wrap-mode=nodownload; or return
+        meson compile -C build; or return
+        return
+    end
+    ./pgo/pgo.sh \
+        full-headless-sway \
+        . build \
+        -Dterminfo-base-name=foot-extra \
+        --prefix=/usr \
+        --wrap-mode=nodownload; or return
+end
+
+function check
+    cd "$pkgbase"; or return
+    ninja -C build test; or return
+end
+
+function package_foot
+    set optdepends 'foot-terminfo: extra non-standard features over terminfo included in ncurses' 'libnotify: desktop notifications' 'xdg-utils: URI launching'
+    set depends fcft fontconfig libfcft.so libutf8proc libxkbcommon ncurses pixman wayland
+    set backup etc/xdg/foot/foot.ini
+    cd "$pkgbase"; or return
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    rm -r "$pkgdir/usr/share/terminfo/"; or return
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE; or return
+end
+
+function package_foot-terminfo
+    set pkgdesc "Extra non-standard terminfo files for $pkgbase, a Wayland terminal emulator"
+    set depends ncurses
+    cd "$pkgbase"; or return
+    install -Dm0644 -t "$pkgdir/usr/share/terminfo/f/" build/f/foot-extra*; or return
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" LICENSE; or return
+end

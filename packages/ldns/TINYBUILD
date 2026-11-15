@@ -1,0 +1,42 @@
+set pkgname ldns
+set pkgver 1.9.2
+set pkgrel 1
+set pkgdesc 'Fast DNS library supporting recent RFCs'
+set url https://www.nlnetlabs.nl/projects/ldns/
+set license custom:BSD
+set arch i686 x32
+set depends openssl dnssec-anchors
+set provides drill libldns.so
+set optdepends 'libpcap: ldns-dpa tool'
+set makedepends git libpcap
+set source "git+https://github.com/NLnetLabs/ldns?signed#tag=$pkgver"
+set sha256sums 2f2433f0fe1b1bf61b53718b137782b24bf324d338ceb1040327d80b42819984
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+
+    autoreconf -fi; or return
+    libtoolize -c --install; or return
+end
+
+function build
+    cd $pkgname; or return
+
+    ./configure \
+        --prefix=/usr \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --disable-rpath \
+        --with-drill \
+        --with-examples \
+        --with-trust-anchor=/etc/trusted-key.key; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+
+    make DESTDIR="$pkgdir" install; or return
+    install -D -m0644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

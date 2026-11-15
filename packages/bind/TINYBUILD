@@ -1,0 +1,64 @@
+set pkgname bind
+set pkgver 9.20.30
+set pkgrel 2
+set pkgdesc 'A complete, highly portable implementation of the DNS protocol'
+set arch i686 x32
+set url https://www.isc.org/software/bind/
+set license MPL2
+set depends bash dnssec-anchors e2fsprogs glibc libedit json-c krb5 libcap libidn2 libnsl libuv libxml2 openssl readline xz zlib jemalloc libnghttp2 liburcu
+set makedepends git metatar
+set owners 'etc/named.conf 0:40' 'var/named 0:40' 'var/named/localhost.zone 0:40' 'var/named/localhost.ip6.zone 0:40' 'var/named/127.0.0.zone 0:40'
+set provides bind-tools dnsutils dns-server
+set conflicts bind-tools dnsutils
+set replaces bind-tools dnsutils host
+set backup etc/named.conf var/named/127.0.0.zone var/named/localhost.zone var/named/localhost.ip6.zone
+set options '!emptydirs'
+set install bind.install
+set source "git+https://gitlab.isc.org/isc-projects/bind9.git#tag=v$pkgver" \
+    tmpfiles.conf \
+    sysusers.conf \
+    named.conf \
+    named.service \
+    localhost.zone \
+    localhost.ip6.zone \
+    127.0.0.zone
+set sha256sums b817a7a1cb20e2a7d4b16142187fcf7be9ec62470a1aee21b7033c96cc08e6d8 \
+    f0423c4ee8495da487e07e9144bec1d25f46a0cd2dfa7cfd7a761ef15bfefc98 \
+    c968019a5f040a4a8f9ed13d82d4ba597652224b42f7cff123d8125af2c5108c \
+    e503b8472a82fa6bfc8d4ec011da402750166a63c319e54c48a242c81798e83a \
+    3f0f8db0a1deae270dd166b4750be7c1041b4b44891176f35a8df7dd55d24d34 \
+    0011708e516128647dd25b59b6ebc465f36e85bbe0a8fbdc3eb04b7f28c2197f \
+    c06fc270e32a843c8b6d86335a2ec607d405dfba6875de8d8a9abde39a9e2c17 \
+    b88fd2b99e7d42d414b329b814b9ff3304fa0ef9c67df81bde235bbfa0f3a3b8
+set flags arch
+set -g _d bash dnssec-anchors e2fsprogs glibc libedit json-c krb5 libcap libidn2 libnsl libuv libxml2 openssl readline xz zlib jemalloc libnghttp2 liburcu
+set -g _p liburcu
+
+function prepare
+    cd bind9; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd bind9; or return
+    set -gx CFLAGS $CFLAGS
+    set -a CFLAGS ' -DDIG_SIGCHASE'
+    ./configure --prefix=/usr --sysconfdir=/etc --sbindir=/usr/bin --localstatedir=/var --disable-static --enable-fixed-rrset --enable-full-report --disable-geoip --with-jemalloc --with-openssl --with-libidn2 --with-json-c --with-libxml2 --without-lmdb; or return
+    make; or return
+end
+
+function package
+    cd bind9; or return
+    install -dm755 "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -Dm644 LICENSE COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    make DESTDIR="$pkgdir" install; or return
+    cd "$srcdir"; or return
+    install -D -m644 tmpfiles.conf "$pkgdir/usr/lib/tmpfiles.d/$pkgname.conf"; or return
+    install -D -m644 sysusers.conf "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"; or return
+    install -D -m644 named.service "$pkgdir/usr/lib/systemd/system/named.service"; or return
+    install -D -m640 named.conf "$pkgdir/etc/named.conf"; or return
+    install -d -m770 "$pkgdir/var/named"; or return
+    install -m640 localhost.zone "$pkgdir/var/named"; or return
+    install -m640 localhost.ip6.zone "$pkgdir/var/named"; or return
+    install -m640 127.0.0.zone "$pkgdir/var/named"; or return
+end

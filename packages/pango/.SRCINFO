@@ -1,8 +1,8 @@
 pkgbase = pango
 	pkgdesc = A library for layout and rendering of text
 	pkgver = 1.58.2
-	pkgrel = 1
 	epoch = 1
+	pkgrel = 1
 	url = https://www.pango.org/
 	arch = i686
 	arch = x32
@@ -23,7 +23,7 @@ pkgbase = pango
 	depends = libsysprof-capture
 	depends = libthai
 	source = git+https://gitlab.gnome.org/GNOME/pango.git#tag=1.58.2
-	b2sums = 4f5c5f63dc741f9357028863052ee5065f6198fe8e0e9720d6ed0a8c04452c693defb13d688cc3151a9efc0c41392f3c224fac6b0b75f8519682236764152d7d
+	sha256sums = SKIP
 
 pkgname = pango
 	provides = libpango-1.0.so

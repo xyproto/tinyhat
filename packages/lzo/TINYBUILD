@@ -1,0 +1,38 @@
+set pkgname lzo
+set pkgver 2.10
+set pkgrel 5
+set pkgdesc 'Portable lossless data compression library'
+set arch i686 x32
+set url https://www.oberhumer.com/opensource/lzo
+set license GPL
+set depends glibc
+set provides liblzo2.so libminilzo.so
+set options debug
+set source "https://www.oberhumer.com/opensource/lzo/download/lzo-$pkgver.tar.gz"
+set sha256sums c0f892943208266f9b6543b3ae308fab6284c5c90e627931446fb49b4221a072
+set flags arch
+
+function build
+    cd lzo-$pkgver; or return
+    ./configure --prefix=/usr --enable-shared; or return
+    make; or return
+    # build minilzo
+    gcc $CPPFLAGS $CFLAGS -fpic -Iinclude/lzo -o minilzo/minilzo.o -c minilzo/minilzo.c; or return
+    gcc $LDFLAGS -shared -o libminilzo.so.0 -Wl,-soname,libminilzo.so.0 minilzo/minilzo.o; or return
+end
+
+function check
+    cd lzo-$pkgver; or return
+    make test; or return # Larger test
+    make check; or return
+end
+
+function package
+    cd lzo-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    # install minilzo
+    install -m 755 libminilzo.so.0 "$pkgdir"/usr/lib; or return
+    install -p -m 644 minilzo/minilzo.h "$pkgdir"/usr/include/lzo; or return
+    cd "$pkgdir"/usr/lib; or return
+    ln -s libminilzo.so.0 libminilzo.so; or return
+end

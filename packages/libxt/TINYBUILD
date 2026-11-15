@@ -1,0 +1,26 @@
+set pkgname libxt
+set pkgver 1.3.1
+set pkgrel 1
+set pkgdesc 'X11 toolkit intrinsics library'
+set arch i686 x32
+set url https://xorg.freedesktop.org/
+set license MIT HPND-sell-variant SMLNJ MIT-open-group X11
+set depends libsm libx11 libice glibc xorgproto
+set makedepends xorg-util-macros
+set source "$url/releases/individual/lib/libXt-$pkgver.tar.xz"{,.sig}
+set sha512sums c220292f60b0f53134cf9364831a32bbaa9fa6bbb3a7143e917920957b7a48c616e946042747089f29ea9d8a18ecd64de620bcaf56d82462e7107de906f5db38 \
+    SKIP
+set flags arch
+
+function build
+    cd libXt-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libXt-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

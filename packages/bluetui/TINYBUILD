@@ -1,0 +1,34 @@
+set pkgname bluetui
+set pkgver 0.8.2
+set pkgrel 1
+set pkgdesc 'TUI for managing bluetooth devices'
+set arch i686
+set url https://github.com/pythops/bluetui
+set license GPL-3.0-only
+set depends bluez dbus glibc libgcc
+set makedepends cargo
+set options '!lto'
+set flags arch
+set source "$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz"
+set sha512sums cfb966878df4ca3b3055eb404c943a4749da040a5f42846603768fa60c70045fa974efd0fad32ff5828212364f8c8c1f43465f9f7effa850d82f1eacff697a75
+
+function prepare
+    cd "$pkgname-$pkgver"; or return
+    cargo fetch --locked --target (rustc --print host-tuple); or return
+end
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    cargo build --release --frozen; or return
+end
+
+function check
+    cd "$pkgname-$pkgver"; or return
+    cargo test --frozen; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    install -Dm 755 "target/release/$pkgname" -t "$pkgdir/usr/bin"; or return
+    install -Dm 644 Readme.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
+end

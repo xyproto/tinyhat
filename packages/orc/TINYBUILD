@@ -1,0 +1,41 @@
+set pkgbase orc
+set pkgname orc orc-docs
+set pkgver 0.4.44
+set pkgrel 1
+set pkgdesc 'Optimized Inner Loop Runtime Compiler'
+set url https://gstreamer.freedesktop.org/modules/orc.html
+set arch i686 x32
+set license BSD-3-Clause
+set depends glibc
+set makedepends clang git hotdoc llvm meson valgrind
+set flags arch
+set source "git+https://gitlab.freedesktop.org/gstreamer/orc.git?signed#tag=$pkgver"
+set b2sums 9a8a076322f2d3933bd731f21b0bf5b7c0aeec4426fdaa92b8e74d625c495aab2a0f976a58cbc7e1fbbae901999c9f27088ea3bd2b5d024f4e079c4874484c74
+
+# No check(): the suite dies with SIGILL in the avx test vectors on the 32-bit builders
+# (error log 2026-09-13 pentium4, 7/43 FAILs incl. test-accsadubl / exec_opcodes_sys), the compiled library itself works.
+
+function build
+    # hotdoc is installed but its Python module isn't importable (built for a different Python version than the
+    # chroot's). Disable docs to skip it.
+    arch-meson orc build -D hotdoc=disabled; or return
+    meson compile -C build; or return
+end
+
+function package_orc
+    set provides liborc{,-test}-(string replace -r '\.[^.]*$' '' -- $pkgver).so
+
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 orc/COPYING; or return
+
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/doc; or return
+end
+
+function package_orc-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+
+    mv doc/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 orc/COPYING; or return
+end

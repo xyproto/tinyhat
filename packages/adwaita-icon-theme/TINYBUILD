@@ -1,0 +1,47 @@
+set pkgbase adwaita-icon-theme
+set pkgname adwaita-icon-theme adwaita-cursors
+set pkgver 51.0
+set pkgrel 1
+set pkgdesc 'GNOME standard icons'
+set url https://gitlab.gnome.org/GNOME/adwaita-icon-theme
+set arch any
+set license 'CC-BY-SA-3.0 OR LGPL-3.0-only'
+set depends adwaita-icon-theme-legacy hicolor-icon-theme
+set makedepends git gtk-update-icon-cache meson
+set flags arch
+# Upstream tags pre-releases like 50.alpha as 50..alpha
+set -g _tag (string replace -r '[a-z]' '.$0' -- $pkgver)
+set source "git+https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git#tag=$_tag"
+set b2sums 1e0257129aa3f6ecddae7d5bf789924363e4f5b29c016e0a95dac4a707b6f68bad41c766f0ca1f84f50a5e867a447c7345a991354708634ad76990cd42d2e2b5
+
+function build
+    arch-meson $pkgbase build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_adwaita-icon-theme
+    set -a depends adwaita-cursors
+
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+
+    # Split cursors
+    mkdir -p cursors/usr/share/icons/Adwaita; or return
+    mv {$pkgdir,cursors}/usr/share/icons/Adwaita/cursors; or return
+
+    # Covered by common licenses
+    rm -r "$pkgdir/usr/share/licenses"; or return
+end
+
+function package_adwaita-cursors
+    set pkgdesc 'GNOME standard cursors'
+    set depends
+
+    mv cursors/* "$pkgdir"; or return
+
+    # deduplicate cursors
+    hardlink -c "$pkgdir/usr"; or return
+end

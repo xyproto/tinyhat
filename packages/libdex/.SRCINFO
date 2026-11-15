@@ -23,7 +23,7 @@ pkgbase = libdex
 	depends = python
 	depends = python-gobject
 	source = git+https://gitlab.gnome.org/GNOME/libdex.git#tag=1.2.0
-	b2sums = 63e4597f5e17ae84b6727447ba3caccecb1aee9799cc68ecbcdf3b2b602d3aadf866152f8ac4d3b474a9d649c0bb53aab5d4b51086275bc937c62a4a9c3ad4e0
+	sha256sums = SKIP
 
 pkgname = libdex
 	provides = libdex-1.so

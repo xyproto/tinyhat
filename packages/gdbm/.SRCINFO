@@ -15,7 +15,6 @@ pkgbase = gdbm
 	source = git+https://git.gnu.org.ua/gdbm.git?signed#tag=v1.26
 	source = https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz
 	source = https://ftp.gnu.org/gnu/gdbm/gdbm-1.26.tar.gz.sig
-	validpgpkeys = 4BE4E62655488EB92ABB468F79FFD94BFCE230B1
 	sha512sums = 7a964fae6f8383196e6b40bccad952723ba8c601c7d50153b4011db5bbb908202a6caf61055a3cceaab8dd71c4232420373a9d864a85fd8708097f4e1ce88c8a
 	sha512sums = 44aafe254f0950a8f5215d8f1337674f07b19f2a375f6eb19a7e39690028c80c3774b705c2b76b470ae74042b21f2ca77d02f6f57aa2ee50296db801220a3352
 	sha512sums = SKIP

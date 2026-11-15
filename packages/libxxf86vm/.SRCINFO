@@ -12,8 +12,7 @@ pkgbase = libxxf86vm
 	depends = xorgproto
 	source = https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-1.1.7.tar.xz
 	source = https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-1.1.7.tar.xz.sig
-	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
-	sha512sums = d1051c9698a884d86e5beb00d5ee148d2b5ded7fd05168861f722b89643ad9b7f7d220f0cbb64b290a69faf9a6630181533aaddb01c9c68b46f1e5625030f094
-	sha512sums = SKIP
+	sha256sums = ae50c0f669e0af5a67cc4cd0f54f21d64a64d2660af883e80e95d3fe51b945d8
+	sha256sums = e62b1689d9a03da6bf4e5cfee9d8785da3abeb1de2681c89c0ebc13e6fa2dced
 
 pkgname = libxxf86vm

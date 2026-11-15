@@ -1,0 +1,66 @@
+#!/bin/sh
+# A small cowsay: cowsay [-e eyes] [-T tongue] [-W width] [message], or the message on stdin.
+eyes=oo
+tongue='  '
+width=40
+think=0
+[ "${0##*/}" = cowthink ] && think=1
+while getopts 'e:T:W:h' opt; do
+	case $opt in
+	e) eyes=$(printf '%.2s' "$OPTARG") ;;
+	T) tongue=$(printf '%-2.2s' "$OPTARG") ;;
+	W) width=$OPTARG ;;
+	*)
+		echo "usage: ${0##*/} [-e eyes] [-T tongue] [-W width] [message]" >&2
+		exit 1
+		;;
+	esac
+done
+shift $((OPTIND - 1))
+if [ $# -gt 0 ]; then
+	text=$*
+else
+	text=$(cat)
+fi
+printf '%s\n' "$text" | awk -v width="$width" -v think="$think" -v eyes="$eyes" -v tongue="$tongue" '
+{
+	gsub(/\t/, "        ")
+	n = split($0, words, " ")
+	if (n == 0) { lines[++count] = ""; next }
+	line = ""
+	for (i = 1; i <= n; i++) {
+		w = words[i]
+		while (length(w) > width) {
+			if (line != "") { lines[++count] = line; line = "" }
+			lines[++count] = substr(w, 1, width)
+			w = substr(w, width + 1)
+		}
+		if (line == "") line = w
+		else if (length(line) + 1 + length(w) <= width) line = line " " w
+		else { lines[++count] = line; line = w }
+	}
+	if (line != "") lines[++count] = line
+}
+END {
+	longest = 0
+	for (i = 1; i <= count; i++) if (length(lines[i]) > longest) longest = length(lines[i])
+	border = ""
+	for (i = 0; i < longest + 2; i++) border = border "_"
+	print " " border
+	for (i = 1; i <= count; i++) {
+		if (think) { l = "("; r = ")" }
+		else if (count == 1) { l = "<"; r = ">" }
+		else if (i == 1) { l = "/"; r = "\\" }
+		else if (i == count) { l = "\\"; r = "/" }
+		else { l = "|"; r = "|" }
+		printf "%s %-" longest "s %s\n", l, lines[i], r
+	}
+	gsub(/_/, "-", border)
+	print " " border
+	trail = think ? "o" : "\\"
+	printf "        %s   ^__^\n", trail
+	printf "         %s  (%s)\\_______\n", trail, eyes
+	printf "            (__)\\       )\\/\\\n"
+	printf "             %s ||----w |\n", tongue
+	printf "                ||     ||\n"
+}'

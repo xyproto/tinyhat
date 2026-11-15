@@ -1,0 +1,30 @@
+set pkgname gperftools
+set pkgver 2.18.1
+set pkgrel 1
+set pkgdesc 'Fast, multi-threaded malloc and nifty performance analysis tools'
+set arch i686 x32
+set url https://github.com/gperftools/gperftools
+set license BSD-3-Clause
+set depends glibc libgcc libstdc++ libunwind
+set makedepends git
+set source "git+https://github.com/gperftools/gperftools.git#tag=gperftools-$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --enable-frame-pointers --enable-libunwind; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" COPYING; or return
+end

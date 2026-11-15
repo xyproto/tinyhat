@@ -1,0 +1,53 @@
+[bluetui]
+title = "Tiny Hat: Bluetooth keys"
+heading = "Connecting a Bluetooth device"
+steps = [
+  "Put the device (gamepad, keyboard, mouse or headphones) in pairing mode.",
+  "Click on the bluetui terminal, then press <b>s</b> to start scanning.",
+  "Press <b>Tab</b> until <i>New devices</i> is selected, choose the device with <b>↑</b> and <b>↓</b>, then press <b>Enter</b> to pair.",
+  "In <i>Paired devices</i>, press <b>t</b> to trust the device, so it connects by itself next time.",
+]
+keys_heading = "Keys in bluetui"
+keys = [
+  ["Tab, Shift+Tab", "Next or previous panel"],
+  ["↑ ↓  or  j k", "Move up and down in a list"],
+  ["s", "Start or stop scanning for new devices"],
+  ["Enter or Space", "Pair a new device, or connect or disconnect a paired one"],
+  ["t", "Trust or distrust a paired device"],
+  ["u", "Unpair (forget) a paired device"],
+  ["e", "Rename a paired device"],
+  ["f", "Mark a paired device as a favorite"],
+  ["o", "Turn the Bluetooth adapter on or off"],
+  ["p, d", "Make the adapter pairable or discoverable"],
+  ["q", "Quit bluetui"],
+]
+footer = "This window is shown the first time bluetui is started after booting."
+
+[monkeyjumpgo]
+title = "Tiny Hat: MonkeyJump Go keys"
+heading = "Playing Go against GNU Go"
+steps = [
+  "You play black. Click on a point, or move there with the arrow keys and press <b>Space</b>, and GNU Go answers as white.",
+  "The line at the bottom of the board shows GNU Go's moves, captures and other messages.",
+  "When you think the game is over, press <b>a</b> to pass. When both players have passed, the score is counted and the winner is shown.",
+]
+keys_heading = "Keys in MonkeyJump Go"
+keys = [
+  ["Arrow keys", "Move the cursor"],
+  ["Space, left click", "Play black, and let GNU Go answer as white"],
+  ["a / z", "Pass as black / white"],
+  ["u", "Undo the last moves"],
+  ["Return / m", "Let GNU Go play white / black"],
+  ["w / b", "Place a white / black stone, without an answer"],
+  ["g", "Show the last move"],
+  ["e / f", "Estimate / count the score"],
+  ["Right click", "Show the score estimate and the level"],
+  ["Middle click", "Start a new game, with the next GNU Go level"],
+  ["1-9, 0", "Set the GNU Go level (0 is level 10)"],
+  ["Backspace", "Clear the board"],
+  ["s / l", "Save / reload the game as SGF"],
+  ["n / p", "Next / previous move in a loaded SGF game"],
+  ["F12", "Save a screenshot"],
+  ["q, Escape", "Quit"],
+]
+footer = "This window is shown the first time MonkeyJump Go is started after booting."

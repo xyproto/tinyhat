@@ -1,0 +1,48 @@
+set pkgbase fmt
+set pkgname fmt fmt-docs
+set pkgver 12.2.0
+set pkgrel 1
+set pkgdesc 'Open-source formatting library for C++'
+set arch i686 x32
+set url https://fmt.dev
+set license MIT
+# No doxygen: breaks a cycle with doxygen, spdlog and fmt, so the documentation is not built
+set makedepends cmake git mkdocs mkdocs-material mkdocstrings ninja python-pymdown-extensions python-regex
+switch $CARCH
+    case i686
+        set -a makedepends npm
+end
+# 32-bit has no __int128, and fmt's software uint128 fallback lacks operator~
+# ("no match for 'operator~' (operand type is 'fmt::v12::detail::uint128')");
+# upstream fix 588b3a0f (#4813), fixed in releases after 12.2.0
+set source "git+https://github.com/fmtlib/fmt.git#tag=$pkgver" fmt-uint128-operator-not.patch
+set b2sums e095e1d8e2d95a08f8d6430360e76e9b24a4e213ee83adeeeabf93de09dde325c8e2c4bbbab0907d79f77a21ef5db55ca25f836173f3cd94aecb0cc214fc596d \
+    9227a1cdcb530cfa5fe57d60e8c49c31947435536d0e5fe5bfffc5844fb9743bfbd1d2fddc2c54b027c522e161362896c850a5231a38f32c5a150aed12328fd2
+set flags arch
+
+function prepare
+    patch -Np1 -d fmt -i "$srcdir/fmt-uint128-operator-not.patch"; or return
+end
+
+function build
+    cmake -S fmt -B build -G Ninja -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -Wno-dev \
+        -DBUILD_SHARED_LIBS=ON; or return
+    cmake --build build; or return
+end
+
+function check
+    ctest --test-dir build --output-on-failure; or return
+end
+
+function package_fmt
+    set depends glibc libgcc libstdc++
+    set provides libfmt.so
+    DESTDIR="$pkgdir" cmake --install build --component fmt_core; or return
+    install -Dm 644 -t "$pkgdir"/usr/share/licenses/$pkgname fmt/LICENSE; or return
+end
+
+function package_fmt-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    DESTDIR="$pkgdir" cmake --install build --component fmt_doc; or return
+    install -Dm 644 -t "$pkgdir"/usr/share/licenses/$pkgname fmt/LICENSE; or return
+end

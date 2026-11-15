@@ -1,0 +1,49 @@
+set pkgname iana-etc
+set pkgver 20260617
+set -g _ports service-names-port-numbers-$pkgver
+set -g _protocols protocol-numbers-20260310
+set pkgrel 1
+set pkgdesc '/etc/protocols and /etc/services provided by IANA'
+set url https://www.iana.org/protocols
+set arch any
+set license custom:none
+set backup etc/{protocols,services}
+set flags arch
+set source "https://sources.archlinux.org/other/packages/iana-etc/$_ports.xml" \
+    "https://sources.archlinux.org/other/packages/iana-etc/$_protocols.xml" \
+    license-from-upstream
+# iana-etc files change often, not worth checksumming
+set sha256sums SKIP \
+    59cdd7930cd6152bd11713b8883503511fffb2add72345d21d043cecb969803b \
+    dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb
+
+# Original but unversioned IANA files:
+# https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml
+# https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xml
+
+function package
+    cd "$srcdir"; or return
+
+    install -d "$pkgdir/etc"; or return
+    install -Dm644 license-from-upstream "$pkgdir/usr/share/licenses/iana-etc/LICENSE"; or return
+    install -Dm644 $_ports.xml "$pkgdir/usr/share/iana-etc/port-numbers.iana"; or return
+    install -Dm644 $_protocols.xml "$pkgdir/usr/share/iana-etc/protocol-numbers.iana"; or return
+
+    gawk -F"[<>]" '
+BEGIN { print "# Full data: /usr/share/iana-etc/protocol-numbers.iana\n" }
+(/<record/) { v=n="" }
+(/<value/) { v=$3 }
+(/<name/ && $3!~/ /) { n=$3 }
+(/<\/record/ && n && v!="") { printf "%-12s %3i %s\n", tolower(n),v,n }
+' $_protocols.xml >"$pkgdir/etc/protocols"; or return
+
+    gawk -F"[<>]" '
+BEGIN { print "# Full data: /usr/share/iana-etc/port-numbers.iana\n" }
+(/<record/) { n=u=p=c="" }
+(/<name/ && !/\(/) { n=$3 }
+(/<number/) { u=$3 }
+(/<protocol/) { p=$3 }
+(/Unassigned/ || /Reserved/ || /historic/) { c=1 }
+(/<\/record/ && n && u && p && !c) { printf "%-15s %5i/%s\n", n,u,p }
+' $_ports.xml >"$pkgdir/etc/services"; or return
+end

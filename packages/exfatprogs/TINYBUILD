@@ -1,0 +1,33 @@
+set pkgname exfatprogs
+set pkgver 1.4.3
+set pkgrel 1
+set pkgdesc 'exFAT filesystem userspace utilities for the Linux Kernel exfat driver'
+set arch i686 x32
+set url https://github.com/exfatprogs/exfatprogs
+set license GPL-2.0-or-later
+set depends glibc
+set provides exfat-utils
+set conflicts exfat-utils
+set source "https://github.com/exfatprogs/exfatprogs/archive/$pkgver/$pkgname-$pkgver.tar.gz"
+set b2sums 703e873aad763e8e8aaea92e99519fafed469a2d24a62befd93ab665ac28036fc9abc510972e2a6893927204910f6946147c465966e1464c2784b21b8a026232
+set flags arch
+
+function prepare
+    cd exfatprogs-$pkgver; or return
+    ./autogen.sh; or return
+end
+
+function build
+    cd exfatprogs-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --sbindir=/usr/bin \
+        --libexecdir=/usr/lib/$pkgname; or return
+    make; or return
+end
+
+function package
+    cd exfatprogs-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 -t "$pkgdir"/usr/share/man/man8 */*.8; or return
+end

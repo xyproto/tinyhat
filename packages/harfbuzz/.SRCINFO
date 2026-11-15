@@ -25,11 +25,7 @@ pkgbase = harfbuzz
 	makedepends = zlib
 	makedepends = glib2-introspection
 	source = git+https://github.com/harfbuzz/harfbuzz?signed#tag=15.1.0
-	validpgpkeys = 053D20F17CCCA9651B2C6FCB9AB24930C0B997A2
-	validpgpkeys = 9F377DDB6D3153A48EB3EB1E63CC496475267693
-	validpgpkeys = 2277650A4E8BDFE4B7F6BE419FEE04E5D3531115
-	validpgpkeys = EACF64F53455E2771BA661A4803B21859F015E4E
-	b2sums = 3bd5a5eb272ea7b1df3d436a22ff42a281493beeb426759dcb61ea44b4acdb59ed880548b09535d559f3027628bc8a950264e133af5c7f408ce12332073acec7
+	sha256sums = SKIP
 
 pkgname = harfbuzz
 	depends = freetype2

@@ -1,0 +1,97 @@
+set pkgbase nss
+set pkgname nss ca-certificates-mozilla
+set pkgver 3.131
+set pkgrel 1
+set pkgdesc 'Network Security Services'
+set url https://firefox-source-docs.mozilla.org/security/nss/index.html
+set arch i686 x32
+set license MPL-2.0
+set depends glibc nspr p11-kit sh sqlite zlib
+# clang: workaround for FS32#218 (segfaults in the library signer)
+set makedepends gyp mercurial perl python clang
+set flags arch
+set -g _tag (string replace -a . _ -- $pkgver)
+# nss-3.58-no-plt.patch: brings back the changes of 617b84f70caf, but archlinux32 never applied it (its prepare()
+# rewrite looked for a "patch -Np1" line that does not exist), so it is only listed here
+set source "hg+https://hg.mozilla.org/projects/nss#tag=NSS_$_tag"_RTM \
+    bundle.sh \
+    certdata2pem.py \
+    nss-3.58-no-plt.patch
+set b2sums 43415cf6bfbf8c7bda54bfad9fc55f23d609e5e1139f1bb6d84633a127ad6d1db2dd13b7494330c8a191aa7f901e227a0b986a1f29281fb8f35dc6031ac14c57 \
+    4be5dd836c844fdd7b63302a6994d62149082c3bc81eef70f373f416fed80a61a923960e4390d1c391b81ab01b409370d788818a30ffdd3a4ed467b670f990f6 \
+    6bb59dcc9289916dcbf8fb6d73db0c0cd7582dc12a3aa4e8be19ec62c9ede65fdd9470a2d92ec5a114506b78d2d21b8ae0a1b45a17dc1f90f7d75434a93da510 \
+    0477664df27febc3e2bc88a1f25ed55251e4e3baa869e47fc33c18f94899c92e92db545c7bf42017c5c985ab243aa8648064ab7d6244d9bfd68892072788675c
+
+function prepare
+    mkdir -p certs; or return
+    ln -srft certs nss/lib/ckfw/builtins/{certdata.txt,nssckbi.h}; or return
+end
+
+function build
+    set -l buildsh_options \
+        --disable-tests \
+        --enable-libpkix \
+        --opt \
+        --system-nspr \
+        --system-sqlite
+
+    cd certs; or return
+    ../certdata2pem.py; or return
+
+    cd ..; or return
+    ./bundle.sh; or return
+
+    cd nss; or return
+    # Signing the libraries segfaults on IA32 (FS32#218), so do not sign, and build with clang, verbosely
+    ./build.sh --clang -v -Dsign_libs=0 $buildsh_options; or return
+end
+
+function package_nss
+    set -l nsprver (pkg-config --modversion nspr); or return
+    set -l libdir /usr/lib
+    set -l includedir /usr/include/nss
+
+    sed nss/pkg/pkg-config/nss.pc.in \
+        -e "s,%prefix%,/usr,g" \
+        -e "s,%exec_prefix%,\${prefix},g" \
+        -e "s,%libdir%,$libdir,g" \
+        -e "s,%includedir%,$includedir,g" \
+        -e "s,%NSPR_VERSION%,$nsprver,g" \
+        -e "s,%NSS_VERSION%,$pkgver,g" |
+        install -Dm644 /dev/stdin "$pkgdir$libdir/pkgconfig/nss.pc"; or return
+
+    ln -s nss.pc "$pkgdir$libdir/pkgconfig/mozilla-nss.pc"; or return
+
+    install -Dt "$pkgdir$libdir" dist/Release/lib/*.so; or return
+
+    set -l v (awk '/#define.*NSS_V(MAJOR|MINOR|PATCH)/ {print $3}' nss/lib/nss/nss.h); or return
+
+    sed nss/pkg/pkg-config/nss-config.in \
+        -e "s,@prefix@,/usr,g" \
+        -e "s,@exec_prefix@,/usr,g" \
+        -e "s,@libdir@,$libdir,g" \
+        -e "s,@includedir@,$includedir,g" \
+        -e "s,@MOD_MAJOR_VERSION@,$v[1],g" \
+        -e "s,@MOD_MINOR_VERSION@,$v[2],g" \
+        -e "s,@MOD_PATCH_VERSION@,$v[3],g" |
+        install -D /dev/stdin "$pkgdir/usr/bin/nss-config"; or return
+
+    install -Dt "$pkgdir/usr/bin" \
+        dist/Release/bin/{*util,shlibsign,signtool,signver,ssltap}; or return
+
+    install -Dt "$pkgdir$includedir" -m644 dist/public/nss/*.h; or return
+
+    install -Dt "$pkgdir/usr/share/man/man1" -m644 \
+        nss/doc/nroff/{*util,signtool,signver,ssltap}.1; or return
+
+    # Replace built-in trust with p11-kit connection
+    ln -sf pkcs11/p11-kit-trust.so "$pkgdir$libdir/libnssckbi.so"; or return
+end
+
+function package_ca-certificates-mozilla
+    set pkgdesc "Mozilla's set of trusted CA certificates"
+    set depends 'ca-certificates-utils>=20181109'
+
+    install -Dm644 ca-bundle.trust.p11-kit \
+        "$pkgdir/usr/share/ca-certificates/trust-source/mozilla.trust.p11-kit"; or return
+end

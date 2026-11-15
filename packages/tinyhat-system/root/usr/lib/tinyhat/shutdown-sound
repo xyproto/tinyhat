@@ -1,0 +1,5 @@
+#!/bin/sh
+[ "$(id -u)" != 0 ] || exit 0
+grep -qs '^shutdown=[1-9]' "${XDG_CONFIG_HOME:-$HOME/.config}/tinyhat/sounds" || exit 0
+timeout 3 systemctl --user stop pipewire-pulse.socket pipewire-pulse.service pipewire.socket pipewire.service wireplumber.service 2>/dev/null
+doas systemctl start --no-block tinyhat-shutdown-sound.service

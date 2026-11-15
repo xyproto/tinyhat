@@ -1,0 +1,196 @@
+set pkgbase bluez
+set pkgname bluez bluez-utils bluez-libs bluez-cups bluez-deprecated-tools bluez-hid2hci bluez-mesh bluez-obex
+set pkgver 5.87
+set pkgrel 2
+set url http://www.bluez.org/
+set arch i686 x32
+set license GPL-2.0-only
+set makedepends dbus libical systemd alsa-lib json-c ell python-docutils python-pygments cups git
+# https://www.kernel.org/pub/linux/bluetooth/$pkgname-$pkgver.tar.{xz,sign}
+# "git+https://github.com/bluez/bluez.git?signed#tag=$pkgver"
+set source "git+https://github.com/bluez/bluez.git#tag=$pkgver" \
+    bluetooth.modprobe
+set b2sums 9abcc5de17102c1307396627c87cffb5585e1c9b099cfd33d2a682d93f10e48a178fe8651c16ab9bb788d80f603f91db75e9fcadf7b627017202402d4ec396e5 \
+    0ce33d13b796d4ae2fd688b17742b3a3055663b68a352b02720dac82bcfdaa47bf2ee2a034dfb8ef4ddf3f827bc58fe80548730939c2915f64864cea39c10170
+set flags arch
+
+function prepare
+    cd $pkgbase; or return
+    autoreconf -vfi; or return
+end
+
+function build
+    cd $pkgbase; or return
+    # libraries and the --enable-deprecated tools are deprecated
+    ICAL_LIBS="-lical -licalvcal" \
+        ./configure \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --sysconfdir=/etc \
+        --localstatedir=/var \
+        --libexecdir=/usr/lib \
+        --with-dbusconfdir=/usr/share \
+        --enable-btpclient \
+        --enable-midi \
+        --enable-sixaxis \
+        --enable-mesh \
+        --enable-hid2hci \
+        --enable-experimental \
+        --enable-datafiles \
+        --enable-external-ell \
+        --enable-library --enable-deprecated; or return
+    make; or return
+
+    # fake installation to be seperated into packages
+    make DESTDIR="$srcdir/fakeinstall" install; or return
+
+    # add missing tools FS#41132, FS#41687, FS#42716
+    for files in (find tools/ -type f -perm -755)
+        set -l filename (basename $files)
+        install -Dm755 "$srcdir/$pkgbase/tools/$filename" "$srcdir/fakeinstall/usr/bin/$filename"; or return
+    end
+
+    for files in (find client/btpclient/ -type f -perm -755)
+        set -l filename (basename $files)
+        install -Dm755 "$srcdir/$pkgbase/client/btpclient/$filename" "$srcdir/fakeinstall/usr/bin/$filename"; or return
+    end
+
+    # add man pages for the above tools
+    # https://github.com/bluez/bluez/commit/44e3dd321e4be052bcde40939552b93b734538d3
+    for manfile in (find doc/ -type f -regex '.*\.[1-8]')
+        set -l section (echo $manfile | sed -E 's/.*\.([1-8])$/\1/')
+        set -l filename (basename $manfile)
+        install -Dm644 "$srcdir/$pkgbase/doc/$filename" "$srcdir/fakeinstall/usr/share/man/man$section/$filename"; or return
+    end
+end
+
+function _install
+    for src in $argv
+        set -l f (string replace -r '^fakeinstall/' '' -- $src)
+        set -l dir "$pkgdir/"(string replace -r '/[^/]*$' '' -- $f)
+        install -m755 -d $dir; or return
+        # use copy so a new file is created and fakeroot can track properties such as setuid
+        cp -av $src $dir/; or return
+        rm -rf $src; or return
+    end
+end
+
+function check
+    cd $pkgbase; or return
+    make check; or return
+end
+
+function package_bluez
+    set pkgdesc 'Daemons for the bluetooth protocol stack'
+    set depends systemd-libs dbus glib2 alsa-lib glibc
+    set backup etc/bluetooth/{main,input,network}.conf
+
+    _install fakeinstall/etc/bluetooth/main.conf; or return
+    _install fakeinstall/etc/bluetooth/input.conf; or return
+    _install fakeinstall/etc/bluetooth/network.conf; or return
+    _install fakeinstall/usr/lib/bluetooth/bluetoothd; or return
+    _install fakeinstall/usr/lib/systemd/system/bluetooth.service; or return
+    _install fakeinstall/usr/share/dbus-1/system-services/org.bluez.service; or return
+    _install fakeinstall/usr/share/dbus-1/system.d/bluetooth.conf; or return
+    _install fakeinstall/usr/share/man/man8/bluetoothd.8; or return
+
+    # bluetooth.service wants ConfigurationDirectoryMode=0555
+    chmod -v 555 "$pkgdir"/etc/bluetooth; or return
+
+    # add basic documention
+    install -dm755 "$pkgdir"/usr/share/doc/$pkgbase/dbus-apis; or return
+    cp -a $pkgbase/doc/*.txt "$pkgdir"/usr/share/doc/$pkgbase/dbus-apis/; or return
+    # fix module loading errors
+    install -dm755 "$pkgdir"/usr/lib/modprobe.d; or return
+    install -Dm644 "$srcdir"/bluetooth.modprobe "$pkgdir"/usr/lib/modprobe.d/bluetooth-usb.conf; or return
+    # load module at system start required by some functions
+    # https://bugzilla.kernel.org/show_bug.cgi?id=196621
+    install -dm755 "$pkgdir"/usr/lib/modules-load.d; or return
+    echo crypto_user >"$pkgdir"/usr/lib/modules-load.d/bluez.conf; or return
+end
+
+function package_bluez-utils
+    set pkgdesc 'Development and debugging utilities for the bluetooth protocol stack'
+    set depends dbus systemd-libs glib2 glibc readline
+    set optdepends 'ell: for btpclient' 'perl: for parse_companies.pl'
+    set provides bluez-plugins
+    set replaces bluez-plugins
+
+    _install fakeinstall/usr/bin/{advtest,avinfo,avtest,bcmfw,bdaddr,bluemoon,bluetoothctl,bluetooth-player,bneptest,btattach,btconfig,btgatt-client,btgatt-server,btinfo,btiotest,btmgmt,btmon,btpclient,btpclientctl,btproxy,btsnoop,check-selftest,cltest,create-image,eddystone,gatt-service,hcieventmask,hcisecfilter,hex2hcd,hid2hci,hwdb,ibeacon,isotest,l2ping,l2test,mpris-proxy,nokfw,oobtest,parse_companies.pl,rctest,rtlfw,scotest,seq2bseq,test-runner,update_compids.sh}; or return
+    _install fakeinstall/usr/lib/systemd/user/mpris-proxy.service; or return
+    _install fakeinstall/usr/share/man/man1/bluetoothctl*.1; or return
+    # _install fakeinstall/usr/share/man/man1/{bdaddr,btattach,btmgmt,btmon,isotest,l2ping,rctest}.1
+    _install fakeinstall/usr/share/man/man1/{btattach,btmon,isotest,l2ping,rctest}.1; or return
+    _install fakeinstall/usr/share/man/man5/org.bluez.{A,B,C,D,G,I,L,M,N,P,T}*.5; or return
+    _install fakeinstall/usr/share/man/man7/{btsnoop,hci,l2cap,mgmt,sco,iso}.7; or return
+    _install fakeinstall/usr/share/zsh/site-functions/_bluetoothctl; or return
+end
+
+function package_bluez-deprecated-tools
+    set pkgdesc 'Deprecated tools that are no longer maintained'
+    set depends json-c systemd-libs glib2 dbus readline glibc
+
+    _install fakeinstall/usr/bin/{ciptool,hciattach,hciconfig,hcitool,meshctl,rfcomm,sdptool}; or return
+    _install fakeinstall/usr/share/man/man1/{ciptool,hciattach,hciconfig,hcitool,rfcomm,sdptool}.1; or return
+    _install fakeinstall/usr/share/man/man7/rfcomm.7; or return
+end
+
+function package_bluez-libs
+    set pkgdesc 'Deprecated libraries for the bluetooth protocol stack'
+    set depends glibc
+    set provides libbluetooth.so
+    set license LGPL-2.1-only
+
+    _install fakeinstall/usr/include/bluetooth/*; or return
+    _install fakeinstall/usr/lib/libbluetooth.so*; or return
+    _install fakeinstall/usr/lib/pkgconfig/*; or return
+end
+
+function package_bluez-cups
+    set pkgdesc 'CUPS printer backend for Bluetooth printers'
+    set depends cups glib2 glibc dbus
+
+    _install fakeinstall/usr/lib/cups/backend/bluetooth; or return
+end
+
+function package_bluez-hid2hci
+    set pkgdesc "Put HID proxying bluetooth HCI's into HCI mode"
+    set depends systemd-libs glibc
+
+    _install fakeinstall/usr/lib/udev/*; or return
+    _install fakeinstall/usr/share/man/man1/hid2hci.1; or return
+end
+
+function package_bluez-mesh
+    set pkgdesc 'Services for bluetooth mesh'
+    set depends ell json-c readline glibc
+    set backup etc/bluetooth/mesh-main.conf
+
+    _install fakeinstall/etc/bluetooth/mesh-main.conf; or return
+    _install fakeinstall/usr/bin/{mesh-cfgclient,mesh-cfgtest}; or return
+    _install fakeinstall/usr/lib/bluetooth/bluetooth-meshd; or return
+    _install fakeinstall/usr/lib/systemd/system/bluetooth-mesh.service; or return
+    _install fakeinstall/usr/share/dbus-1/system-services/org.bluez.mesh.service; or return
+    _install fakeinstall/usr/share/dbus-1/system.d/bluetooth-mesh.conf; or return
+    _install fakeinstall/usr/share/man/man8/bluetooth-meshd.8; or return
+
+    # bluetooth.service wants ConfigurationDirectoryMode=0555
+    chmod -v 555 "$pkgdir"/etc/bluetooth; or return
+end
+
+function package_bluez-obex
+    set pkgdesc 'Object Exchange daemon for sharing content'
+    set depends glib2 libical dbus readline systemd-libs glibc
+
+    _install fakeinstall/usr/bin/{obexctl,obex-client-tool,obex-server-tool}; or return
+    _install fakeinstall/usr/lib/bluetooth/obexd; or return
+    _install fakeinstall/usr/lib/systemd/user/obex.service; or return
+    _install fakeinstall/usr/share/dbus-1/services/org.bluez.obex.service; or return
+    _install fakeinstall/usr/share/dbus-1/system.d/obex.conf; or return
+    _install fakeinstall/usr/lib/systemd/user/dbus-org.bluez.obex.service; or return
+    _install fakeinstall/usr/share/man/man5/org.bluez.obex*.5; or return
+
+    # make sure there are no files left to install
+    rm fakeinstall/usr/lib/libbluetooth.la; or return
+    find fakeinstall -depth -print0 | xargs -0 rmdir; or return
+end

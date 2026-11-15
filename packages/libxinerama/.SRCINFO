@@ -15,7 +15,6 @@ pkgbase = libxinerama
 	depends = xorgproto
 	source = https://xorg.freedesktop.org//archive/individual/lib/libXinerama-1.1.6.tar.xz
 	source = https://xorg.freedesktop.org//archive/individual/lib/libXinerama-1.1.6.tar.xz.sig
-	validpgpkeys = 3AB285232C46AE43D8E192F4DAB0F78EA6E7E2D2
 	sha512sums = 64bff837941625120da43b8876db4204bc5740bcf3147997fc4df1475f90d6d9e3f9caa8748c7ebbf69d681be8e5ab4bc40f82c56c367dddcec3ab27d1c71573
 	sha512sums = SKIP
 

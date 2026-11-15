@@ -1,0 +1,35 @@
+set pkgname iproute2
+set pkgver 7.3.0
+set pkgrel 1
+set pkgdesc 'IP Routing Utilities'
+set arch i686 x32
+set url https://git.kernel.org/pub/scm/network/iproute2/iproute2.git
+set license GPL-2.0-or-later
+set depends glibc libcap libcap.so libelf libbpf libbpf.so
+set makedepends git db linux-atm
+set optdepends 'db: userspace arp daemon' 'linux-atm: ATM support' 'python: for routel'
+set provides iproute
+set options '!emptydirs'
+set source "git+https://git.kernel.org/pub/scm/network/iproute2/iproute2.git#tag=v$pkgver" \
+    0001-make-iproute2-fhs-compliant.patch
+set sha256sums ad89c9e89cb74de7d26da8c15f835ab12f840d17e769f6273b0e4ef72a53004c \
+    758b82bd61ed7512d215efafd5fab5ae7a28fbfa6161b85e2ce7373285e56a5d
+set flags arch
+set -g _d glibc libcap libcap.so libelf libbpf libbpf.so
+set -g _p libbpf.so
+
+function prepare
+    cd "$srcdir/$pkgname"; or return
+    patch -Np1 -i "$srcdir"/0001-make-iproute2-fhs-compliant.patch; or return
+end
+
+function build
+    cd "$srcdir/$pkgname"; or return
+    ./configure --color auto; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/$pkgname"; or return
+    make DESTDIR="$pkgdir" SBINDIR="/usr/bin" install; or return
+end

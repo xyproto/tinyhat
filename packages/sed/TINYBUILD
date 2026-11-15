@@ -1,0 +1,25 @@
+set pkgname sed
+set pkgver 4.10
+set pkgrel 2
+set pkgdesc 'GNU stream editor'
+set arch i686 x32
+set url https://www.gnu.org/software/sed/
+set license GPL-3.0-or-later
+set depends glibc acl
+set makedepends gettext
+set source "https://ftp.gnu.org/pub/gnu/sed/sed-$pkgver.tar.xz" \
+    "https://ftp.gnu.org/pub/gnu/sed/sed-$pkgver.tar.xz.sig"
+set sha256sums b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7 \
+    b43d0dae9cba8cc2adb268cc37e974d5811475ffd569d66c8963cfd5ae2e224e
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

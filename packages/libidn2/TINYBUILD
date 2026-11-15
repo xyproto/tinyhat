@@ -1,0 +1,36 @@
+set pkgname libidn2
+set pkgver 2.3.8
+set pkgrel 1
+set pkgdesc 'Free software implementation of IDNA2008, Punycode and TR46'
+set arch i686 x32
+set url 'https://www.gnu.org/software/libidn/#libidn2'
+set license GPL2 LGPL3
+set depends libunistring
+switch $CARCH
+    case x32 x86_64 aarch64
+        set -g makedepends
+    case '*'
+        set -g makedepends ruby-ronn-ng
+end
+set provides libidn2.so
+set source "https://ftp.gnu.org/gnu/libidn/libidn2-$pkgver.tar.gz" \
+    "https://ftp.gnu.org/gnu/libidn/libidn2-$pkgver.tar.gz.sig"
+set sha256sums f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a \
+    268ad6787ed902fba2154bcd64347269af6c4298bdeed8d7db59df7b65fd31f2
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --disable-dependency-tracking --prefix=/usr --disable-static; or return
+    make; or return
+end
+
+function package
+    set -a depends 'libunistring.so'
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

@@ -11,7 +11,6 @@ pkgbase = libbsd
 	depends = libmd
 	options = staticlibs
 	source = git+https://gitlab.freedesktop.org/libbsd/libbsd.git?signed#tag=0.12.2
-	validpgpkeys = 4F3E74F436050C10F5696574B972BF3EA4AE57A3
 	sha512sums = cea336318d941992d0f624386d4d43828940de9b4ebbf580bb4771efb2cf00fd85e2d17c9006fe1b5fecaa277d25d5e6af15e7456722b172270e4a77e1a0299e
 
 pkgname = libbsd

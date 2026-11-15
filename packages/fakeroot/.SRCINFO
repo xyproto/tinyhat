@@ -1,8 +1,8 @@
 pkgbase = fakeroot
 	pkgdesc = Tool for simulating superuser privileges
 	pkgver = 2.1.4
-	pkgrel = 1
 	epoch = 1
+	pkgrel = 1
 	url = https://tracker.debian.org/pkg/fakeroot
 	arch = i686
 	arch = x32

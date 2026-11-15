@@ -1,0 +1,57 @@
+set pkgname libffado
+set pkgver 2.5.0
+set pkgrel 1
+set pkgdesc 'Driver for FireWire audio devices'
+set arch i686 x32
+set url https://www.ffado.org/
+set license 'GPL-2.0-only or GPL-3.0-only'
+set depends \
+    gcc-libs \
+    glibc \
+    glibmm \
+    hicolor-icon-theme \
+    libiec61883 \
+    libraw1394 \
+    libxml++ \
+    python-dbus
+set makedepends \
+    alsa-lib \
+    dbus-c++ \
+    jack \
+    libconfig \
+    python-setuptools \
+    scons
+set provides libffado.so
+set source \
+    "https://www.ffado.org/files/$pkgname-$pkgver.tgz"
+set sha512sums 0c2e21e1ac13111c8090e97cf56ba82e977463e3e0465b603899922aebcefb5144e3779d23f874be1dc269104bb631ad4edd198a13a65bb1e3d2ed3e52bee4c1
+set b2sums 4828b308628d5ccea13993a0c80bd9ead5762943f01ad004169bd0e6018cd68ce4868ae18c286433e08d9d4ce770d6ea82e4da252d52fff6baae9ff3fd3c37b9
+set flags arch
+
+# The mixer (python-pyqt5) is only used on i686; configure handles its absence
+switch $CARCH
+    case i686
+        set -a makedepends python-pyqt5
+        set -a optdepends 'python-pyqt5: ffado-mixer'
+end
+
+function build
+    set -l site_packages (python -c "import site; print(site.getsitepackages()[0])"); or return
+    set -l scons_options \
+        CUSTOM_ENV=True \
+        DEBUG=no \
+        MANDIR=/usr/share/man \
+        PREFIX=/usr \
+        PYPKGDIR=$site_packages \
+        PYTHON_INTERPRETER=/usr/bin/python \
+        UDEVDIR=/usr/lib/udev/rules.d
+    cd $pkgname-$pkgver; or return
+    scons $scons_options; or return
+end
+
+function package
+    set -a depends alsa-lib libasound.so dbus-c++ libdbus-c++-1.so libconfig libconfig++.so
+    cd $pkgname-$pkgver; or return
+    scons DESTDIR="$pkgdir" install; or return
+    install -vDm 644 {AUTHORS,README} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+end

@@ -1,0 +1,20 @@
+#!/bin/sh
+# Show the current IP addresses of this machine, the one on the default route first
+main=$(ip -o -4 route show default 2>/dev/null | awk '$1 == "default" { print $5; exit }')
+out=$(ip -br -4 addr show scope global 2>/dev/null | awk -v main="$main" '
+	function tidy(s) { sub(/\/[0-9]+$/, "", s); return s }
+	NF > 2 {
+		line = $1
+		for (i = 3; i <= NF; i++)
+			line = line " " tidy($i)
+		if ($1 == main)
+			head = head line "\n"
+		else
+			rest = rest line "\n"
+	}
+	END { printf "%s%s", head, rest }')
+if [ -n "$out" ]; then
+	printf '%s' "$out"
+else
+	echo "not connected"
+fi

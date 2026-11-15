@@ -1,0 +1,23 @@
+set pkgname libyaml
+set pkgver 0.2.5
+set pkgrel 3
+set pkgdesc 'YAML 1.1 library'
+set arch i686 x32
+set url https://pyyaml.org/wiki/LibYAML
+set license MIT
+set depends glibc
+set source "https://pyyaml.org/download/libyaml/yaml-$pkgver.tar.gz"
+set sha512sums dadd7d8e0d88b5ebab005e5d521d56d541580198aa497370966b98c904586e642a1cd4f3881094eb57624f218d50db77417bbfd0ffdce50340f011e35e8c4c02
+set flags arch
+
+function build
+    cd "$srcdir/yaml-$pkgver"; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/yaml-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 License "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

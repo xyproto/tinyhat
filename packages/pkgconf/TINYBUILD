@@ -1,0 +1,41 @@
+set pkgname pkgconf
+set pkgver 3.0.10
+set pkgrel 1
+set pkgdesc 'Package compiler and linker metadata toolkit'
+set url https://github.com/pkgconf/pkgconf
+set license ISC
+set arch i686 x32
+set depends glibc
+set makedepends git meson
+set provides libpkgconf.so pkg-config pkgconfig
+set conflicts pkg-config
+set replaces pkg-config
+# The i686 personality is the main personality: no lib32, no 64-bit
+set source "git+$url#tag=pkgconf-$pkgver" \
+    i686-pc-linux-gnu.personality
+set b2sums 724d41c5735dcf0763d376c6a1a813ca018bc4a9afeeaf391f41c364aca4f7ff42da22255eac0c947ed31da6798c1e3e3ff739c4f991010e489432397e969fd7 \
+    b44d82b4c4fd32eeed11a3e5a5ab7331f27467d0f83c118eb381d872cc41a1d69e00605a598a35e9288edf5e8fdadaebfff4bd83131506665c7ab94ef7a678a3
+set flags arch
+
+function build
+    arch-meson pkgconf build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+
+    for p in *.personality
+        install -Dm644 "$p" -t "$pkgdir/usr/share/pkgconfig/personality.d"; or return
+        ln -s pkgconf "$pkgdir/usr/bin/"(string replace -r '\.[^.]*$' '' -- $p)-pkg-config; or return
+    end
+
+    ln -s pkgconf "$pkgdir/usr/bin/pkg-config"; or return
+    ln -s pkgconf.1 "$pkgdir/usr/share/man/man1/pkg-config.1"; or return
+
+    install -Dm644 pkgconf/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

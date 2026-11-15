@@ -1,0 +1,56 @@
+set pkgname shaderc
+set pkgver 2026.4
+set pkgrel 1
+set pkgdesc 'Collection of tools, libraries and tests for shader compilation'
+set url https://github.com/google/shaderc
+set arch i686 x32
+set license Apache-2.0
+set depends glibc glslang libgcc libstdc++ spirv-tools
+set makedepends asciidoctor cmake ninja python spirv-headers
+set provides libshaderc_shared.so
+set source "https://github.com/google/shaderc/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
+set sha512sums a8dbf46cd10b2fabd0f533fcc79975202a235d04019295f14d3b51bf9699978ebf332c63f14b60fb518fc4deb07c37f84f19f2450958ae2035cbfacc68d78dae
+set b2sums b4f36d811365adf6446fa1651996af4fea19b60b307469c99ffe7a61c432d849432498a66665e93bfe6d696f6b7ec91afc963a231d59890d9840df64f5802b44
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+
+    # de-vendor libs and disable git versioning
+    sed '/examples/d;/third_party/d' -i CMakeLists.txt; or return
+    sed /build-version/d -i glslc/CMakeLists.txt; or return
+    set -l spirv_tools_ver (pacman -Q spirv-tools | cut -d ' ' -f 2 | sed 's/-.*//'); or return
+    set -l glslang_ver (pacman -Q glslang | cut -d ' ' -f 2 | sed 's/-.*//'); or return
+    printf '"%s\\\\n"\n' $pkgver $spirv_tools_ver $glslang_ver >glslc/src/build-version.inc; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    cmake \
+        -B build \
+        -GNinja \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_CXX_FLAGS="$CXXFLAGS -ffat-lto-objects" \
+        -DSHADERC_SKIP_TESTS=ON \
+        -DPYTHON_EXECUTABLE=python \
+        -Dglslang_SOURCE_DIR=/usr/include/glslang; or return
+    ninja -C build; or return
+
+    cd glslc; or return
+    asciidoctor -b manpage README.asciidoc -o glslc.1; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    ninja -C build test; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm 644 glslc/glslc.1 -t "$pkgdir/usr/share/man/man1"; or return
+
+    # Remove unused shaderc_static.pc
+    rm "$pkgdir/usr/lib/pkgconfig/shaderc_static.pc"; or return
+end

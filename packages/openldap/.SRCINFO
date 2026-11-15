@@ -19,7 +19,6 @@ pkgbase = openldap
 	source = https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.7.1.tgz.asc
 	source = openldap.tmpfiles
 	source = openldap.sysusers
-	validpgpkeys = 3CE269B5398BC8B785645E987F67D5FD1CE1CBCE
 	sha256sums = 253db80f301258ea69cda1184766d57395b836aaabf41157eb0316eb0fac1341
 	sha256sums = SKIP
 	sha256sums = 0be46138e53ff2fa6d4b4c06bfbdd2100426e0bd2ed29bf3419ade6b5974e9a0

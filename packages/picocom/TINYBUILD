@@ -1,0 +1,23 @@
+set pkgname picocom
+set pkgver 3.1
+set pkgrel 3
+set pkgdesc 'Minimal dumb-terminal emulation program, very much like minicom'
+set url https://github.com/npat-efault/picocom
+set license GPL2
+set arch i686 x32
+set makedepends git
+set depends glibc
+set source "git+https://github.com/npat-efault/picocom.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    cd $pkgname; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    install -D -m 755 picocom "$pkgdir/usr/bin/picocom"; or return
+    install -D -m 644 picocom.1 "$pkgdir/usr/share/man/man1/picocom.1"; or return
+end

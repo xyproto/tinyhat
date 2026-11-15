@@ -1,0 +1,97 @@
+# NOTE: upgrade libsasl in tandem with extra/cyrus-sasl
+# As one PKGBUILD can (currently) not provide packages for several
+# repositories, libsasl and the rest of cyrus-sasl are provided separately
+# (else this would require mariadb and postgresql in [core])
+
+set -g _name cyrus-sasl
+set pkgname libsasl
+set pkgver 2.1.28
+set pkgrel 5
+set pkgdesc 'Cyrus Simple Authentication Service Layer (SASL) library'
+set arch i686 x32
+set url https://www.cyrusimap.org/sasl/
+set -g _url https://github.com/cyrusimap/cyrus-sasl
+set license BSD-3-Clause-Attribution
+set depends glibc
+set makedepends gdbm git krb5 libldap mariadb-libs openssl postgresql-libs sqlite
+set provides libsasl2.so
+set source "$_name::git+$_url.git?signed#tag=$_name-$pkgver"
+set sha512sums a055876910be34d59c6e1c8891244975d213490ba6aa0924e5f018094f3ef01871f627b076d6a6ad9547f77ad528f0ac20b3c0efd391cac97bb9e024de037271
+set b2sums c4d417139a81ffb1ade5456ecd14be77bd2e0ff0e59cf818206dc3df78a4d4be1ee5b0988d3a3edbb1542041b9f3b921d855075df5d86b0458b99020192170d1
+set flags arch
+
+function prepare
+    set -l cherry_picks \
+        2d2e97b0eb53fa7f87a3bf1529d8f712dd954480 \
+        266f0acf7f5e029afbb3e263437039e50cd6c262 \
+        887dbc0435056ec58ee48c4d803f110ade1e4c39 \
+        dfaa62392e7caecc6ecf0097b4d73738ec4fc0a8 \
+        c2bd3afbca57f176d8c650670ce371444bb7fcc0
+    # 2d2e97b0: fix for CVE-2022-24407
+    # 266f0acf: fix issues with time.h detection https://github.com/cyrusimap/cyrus-sasl/issues/859
+    # 887dbc04, dfaa6239, c2bd3afb: openssl 3.0 support: https://github.com/cyrusimap/cyrus-sasl/pull/653
+    cd $_name; or return
+    for commit in $cherry_picks
+        git cherry-pick -n $commit; or return
+    end
+    autoreconf -fiv; or return
+end
+
+function build
+    set -l configure_options \
+        --disable-krb4 \
+        --disable-macos-framework \
+        --disable-otp \
+        --disable-passdss \
+        --disable-srp \
+        --disable-srp-setpass \
+        --disable-static \
+        --enable-alwaystrue \
+        --enable-anon \
+        --enable-auth-sasldb \
+        --enable-checkapop \
+        --enable-cram \
+        --enable-digest \
+        --enable-gssapi \
+        --enable-ldapdb \
+        --enable-login \
+        --enable-ntlm \
+        --enable-plain \
+        --enable-shared \
+        --enable-sql \
+        --infodir=/usr/share/info \
+        --mandir=/usr/share/man \
+        --prefix=/usr \
+        --sbin=/usr/bin \
+        --sysconfdir=/etc \
+        --with-dblib=gdbm \
+        --with-devrandom=/dev/urandom \
+        --with-configdir=/etc/sasl2:/etc/sasl:/usr/lib/sasl2 \
+        --with-ldap \
+        --with-mysql=/usr \
+        --with-pam \
+        --with-pgsql=/usr/lib \
+        --with-saslauthd=/var/run/saslauthd \
+        --with-sqlite3=/usr/lib
+    cd $_name; or return
+    ./configure $configure_options; or return
+    # prevent excessive overlinking by libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    make -k check -C $_name; or return
+end
+
+function package
+    set -a depends gdbm libgdbm.so openssl libcrypto.so
+    make DESTDIR="$pkgdir" install-pkgconfigDATA -C $_name; or return
+    for _target in include lib sasldb plugins utils
+        make DESTDIR="$pkgdir" install -C $_name/$_target; or return
+    end
+    install -vDm 644 $_name/COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    # remove files provided by extra/cyrus-sasl
+    set -l files "$pkgdir"/usr/lib/sasl2/lib{gs2,gssapiv2,ldapdb,sql}.so*
+    rm -fv $files; or return
+end

@@ -1,0 +1,21 @@
+set pkgname nomarch
+set pkgver 1.4
+set pkgrel 1
+set pkgdesc 'Extracts files from old .ARC archives'
+set arch i686 x32
+set url https://packages.debian.org/source/sid/nomarch
+set license GPL-2.0-or-later
+set depends glibc
+set source "https://deb.debian.org/debian/pool/main/n/nomarch/nomarch_$pkgver.orig.tar.gz"
+set sha256sums fe20da34e0d3ba0cf6388701f44ac22224cf65130ddbc5fcbc27bc4949a6e1ad
+
+function build
+    cd nomarch-$pkgver; or return
+    make CC="$CC" CFLAGS="$CFLAGS $LDFLAGS -std=gnu99"; or return
+end
+
+function package
+    cd nomarch-$pkgver; or return
+    install -Dm755 nomarch "$pkgdir/usr/bin/nomarch"; or return
+    install -Dm644 nomarch.1 "$pkgdir/usr/share/man/man1/nomarch.1"; or return
+end

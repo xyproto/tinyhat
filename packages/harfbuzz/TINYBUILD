@@ -1,0 +1,85 @@
+set pkgbase harfbuzz
+set pkgname harfbuzz harfbuzz-cairo harfbuzz-icu
+set pkgver 15.1.0
+set pkgrel 1
+set pkgdesc 'OpenType text shaping engine'
+set arch i686 x32
+set url https://harfbuzz.github.io/
+set license MIT
+set makedepends cairo freetype2 git glib2 glib2-devel glibc gobject-introspection graphite icu libpng libstdc++ meson python ragel zlib glib2-introspection
+set checkdepends python-fonttools python-setuptools
+set source "git+https://github.com/harfbuzz/harfbuzz?signed#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd harfbuzz; or return
+end
+
+function build
+    set -l meson_options -D cpp_std=c++17 -D graphite2=enabled
+    set CFLAGS "$(string replace -- '-fexceptions' '' "$CFLAGS")"
+    set CXXFLAGS "$(string replace -- '-fexceptions' '' "$CXXFLAGS")"
+    arch-meson -D chafa=disabled -D gpu_demo=disabled -D docs=disabled -D utilities=disabled harfbuzz build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_harfbuzz
+    set depends freetype2 libfreetype.so glib2 libg{lib,object}-2.0.so glibc graphite libgraphite2.so libpng libpng16.so zlib libz.so
+    set provides libharfbuzz{,-{subset,gobject,raster,vector}}.so
+    meson install -C build --destdir "$pkgdir" --no-rebuild; or return
+    begin
+        set -l __subshell_pwd $PWD
+    cd "$pkgdir"; or return
+        _pick hb-cairo usr/lib/libharfbuzz-cairo*; or return
+        _pick hb-cairo usr/lib/pkgconfig/harfbuzz-cairo.pc; or return
+        _pick hb-cairo usr/include/harfbuzz/hb-cairo.h; or return
+        _pick hb-icu usr/lib/libharfbuzz-icu*; or return
+        _pick hb-icu usr/lib/pkgconfig/harfbuzz-icu.pc; or return
+        _pick hb-icu usr/include/harfbuzz/hb-icu.h; or return
+        cd $__subshell_pwd
+    end
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
+end
+
+function package_harfbuzz-cairo
+    set pkgdesc "$pkgdesc - Cairo integration"
+    set depends cairo libcairo.so freetype2 glib2 glibc graphite harfbuzz libharfbuzz.so
+    set provides libharfbuzz-cairo.so
+    mv hb-cairo/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
+end
+
+function package_harfbuzz-docs
+    set pkgdesc "$pkgdesc - Documentation"
+    mv hb-docs/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
+end
+
+function package_harfbuzz-icu
+    set pkgdesc "$pkgdesc - ICU integration"
+    set depends glibc harfbuzz libharfbuzz.so icu libicuuc.so
+    set provides libharfbuzz-icu.so
+    mv hb-icu/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
+end
+
+function package_harfbuzz-utils
+    set pkgdesc "$pkgdesc - Utilities"
+    set depends cairo libcairo.so chafa libchafa.so freetype2 libfreetype.so glew libGLEW.so glfw glib2 libg{lib,object}-2.0.so glibc harfbuzz libharfbuzz{,-gobject,-subset}.so harfbuzz-cairo libharfbuzz-cairo.so libgl libGL.so libstdc++ libstdc++.so
+    mv hb-utils/* "$pkgdir"; or return
+    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
+end

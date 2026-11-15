@@ -1,0 +1,25 @@
+set pkgname jansson
+set pkgver 2.15.1
+set pkgrel 1
+set pkgdesc 'C library for encoding, decoding and manipulating JSON data'
+set arch i686 x32
+set url https://www.digip.org/jansson/
+set depends glibc
+set license MIT
+set options staticlibs
+set flags arch
+set source "https://github.com/akheron/jansson/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"{,.asc}
+set sha256sums 0c7114dc0b2d22a670724a1f95922029d7077c19dbf79a584cb8084d2f267f2f \
+    SKIP
+
+function build
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    CFLAGS="$CFLAGS -ffat-lto-objects" ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

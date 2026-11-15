@@ -15,8 +15,8 @@ pkgbase = graphene
 	depends = glibc
 	source = git+https://github.com/ebassi/graphene#tag=1.10.8
 	source = git+https://github.com/ebassi/mutest
-	b2sums = 386f8b82979459807828a392d5071ece645c9e06699a706b0cc2a582df74388f78f8f8152d02004f2e3e093be9a10b0e72cad04687cf650e06deead6f4929c4a
-	b2sums = SKIP
+	sha256sums = SKIP
+	sha256sums = SKIP
 
 pkgname = graphene
 	provides = libgraphene-1.0.so

@@ -1,0 +1,29 @@
+set pkgname a52dec
+set pkgver 0.8.0
+set pkgrel 3
+set pkgdesc 'Library for decoding ATSC A/52 (AC-3) audio streams'
+set arch i686 x32
+set url https://git.adelielinux.org/community/a52dec/
+set license GPL-2.0-or-later
+set depends glibc
+set makedepends git
+set source "git+https://git.adelielinux.org/community/a52dec.git#tag=v$pkgver"
+set b2sums 3d40824f3aaf949facd428105a6f2213e8f1663a10bd4251a15791e0bbca2b10cbccae1baeff24fd6bc03d5b2b2a6798da5311da796becda4f8d88c4dc7b00b9
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var --enable-shared; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 -t "$pkgdir/usr/include/a52dec/" liba52/a52_internal.h; or return
+end

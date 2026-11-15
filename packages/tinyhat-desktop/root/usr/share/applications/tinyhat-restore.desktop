@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Restore my files
+Icon=document-revert
+Comment=Bring back your files from a back up archive
+Exec=tinyhat-restore
+Terminal=false
+Categories=System;Settings;

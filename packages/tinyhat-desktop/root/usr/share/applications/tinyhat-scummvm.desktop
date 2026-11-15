@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ScummVM
+Icon=applications-games
+Comment=Graphic adventure game engine
+Exec=tinyhat-scummvm
+Terminal=false
+Categories=Game;AdventureGame;

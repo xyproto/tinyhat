@@ -1,0 +1,24 @@
+set pkgname spirv-llvm-translator
+set pkgver 23.1.2
+set pkgrel 1
+set pkgdesc 'LLVM <-> SPIR-V converter for compilers targeting SPIR-V'
+set arch i686 x32
+set url https://www.khronos.org/spirv/
+set license NCSA
+set depends glibc libstdc++ llvm-libs spirv-tools
+set makedepends cmake git llvm ninja spirv-headers
+set checkdepends clang python
+set source "git+https://github.com/KhronosGroup/SPIRV-LLVM-Translator#tag=v$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    set -l cmake_options -D BUILD_SHARED_LIBS=ON -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_INSTALL_SYSCONFDIR=/etc -D CMAKE_POSITION_INDEPENDENT_CODE=ON -D CMAKE_SKIP_RPATH=ON -D LLVM_CONFIG=llvm-config -D LLVM_EXTERNAL_LIT=/usr/bin/lit -D LLVM_EXTERNAL_SPIRV_HEADERS_SOURCE_DIR=/usr/include/spirv -D LLVM_LIBDIR_SUFFIX= -D LLVM_SPIRV_ENABLE_LIBSPIRV_DIS=ON -D LLVM_SPIRV_INCLUDE_TESTS=OFF -W no-author
+    cmake -S SPIRV-LLVM-Translator -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm644 SPIRV-LLVM-Translator/LICENSE.TXT -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

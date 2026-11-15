@@ -5,6 +5,7 @@ pkgbase = filesystem
 	url = https://archlinux.org
 	arch = any
 	license = 0BSD
+	makedepends = metatar
 	depends = iana-etc
 	backup = etc/crypttab
 	backup = etc/fstab

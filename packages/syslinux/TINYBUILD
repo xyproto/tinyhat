@@ -1,0 +1,116 @@
+set pkgname syslinux
+set pkgver 6.04.pre3.r3.g05ac953c
+#set -g _tag syslinux-$pkgver
+set -g _commit 05ac953c23f90b2328d393f7eecde96e41aed067
+set pkgrel 5
+set pkgdesc 'Collection of boot loaders that boot from FAT, ext2/3/4 and btrfs filesystems, from CDs and via PXE'
+set url https://www.syslinux.org/
+set arch i686 x32
+set install syslinux.install
+set license GPL-2.0-or-later
+# syslinux build system is a mess of submakes that does not work with -jN
+# efi32/com32 do not like Arch cflags/ldflags, though it would be nice to have the flags for userspace tools
+set options '!makeflags' '!buildflags'
+set makedepends git python nasm upx asciidoc
+set optdepends 'perl-crypt-passwdmd5: For md5pass' \
+    'perl-digest-sha1: For sha1pass' \
+    'mtools: For mkdiskimage and syslinux support' \
+    'gptfdisk: For GPT support' \
+    'util-linux: For isohybrid' \
+    'efibootmgr: For EFI support' \
+    'dosfstools: For EFI support'
+
+# The syslinux-install_update script is maintained at https://gist.github.com/pyther/772138
+# Script not yet updated for syslinux-efi
+set source "git+https://repo.or.cz/syslinux.git#commit=$_commit" \
+    syslinux.cfg \
+    syslinux.hook \
+    syslinux-install_update \
+    0002-gfxboot-menu-label.patch \
+    0005-gnu-efi-version-compatibility.patch \
+    0017-single-load-segment.patch \
+    0004-gnu-efi-from-arch.patch \
+    0016-strip-gnu-property.patch \
+    0018-prevent-pow-optimization.patch \
+    0025-reproducible-build.patch \
+    0005-Workaround-multiple-definition-of-symbol-errors.patch \
+    0006-Replace-builtin-strlen-that-appears-to-get-optimized.patch \
+    0026-add-missing-include.patch \
+    0027-use-correct-type-for-size.patch
+set sha256sums deec61086a2cb73163d50e150d1ef32bd56c8a3faa1fc4322d11080ba0cbe63a \
+    b9692be0cce43811c1b04053072ac50dd7b39bbc2ba7bcbe0e4387668af8df08 \
+    1d6a21bf2751d7522637f4fa9712d7efc376b59a7777ddeca7503932d6523365 \
+    9fc416a8ac86edaae58bc55513c4425e7887da20c7d5fdb6f7cfd527d4da13f5 \
+    d1fe9084ce2526619f94b8a07b89fb0194e874beef9f202f8b974879d77f2e1a \
+    8610959df6c01568ff478ca1eb4aac301f3ba1f5bd4739daaec072865e8be2d7 \
+    5b017ba5eae77caa09fa5af6ecfa0df1e7e22776b2b13c8744c6cb7ecd7ad0e9 \
+    cf3c3da9300d6ea70eab5b8dca724ce03a3651bd63fb0168594dcfeb35eec11c \
+    7facb5c2abc71c9bfe01bf4db388306ed7b7abf6654009af336262839527f962 \
+    755cd7062fe8495f6f62053ce664451c12ae65dba9fb5c75062a495fbe040fb1 \
+    9a76f6f75a42485bc337163ba38068b09f7889bdc1a4e191408898f10de36662 \
+    7e41e17e8cbc7287d6c3c9eb0a7b682cd8d3252030856b338050c21dff9bf05a \
+    d7410d0ff89a15e2a100faf1546d730e043dde15c295974564144e00a93f03a3 \
+    e16e051d17ead7e6457a479a1e2226160ca9aae3d607c0c25fa3677522aa9280 \
+    7f2ce9e16ddcca1a55b32bddfd39c7f190eed9d8df4319bbd6b07e0a2607e662
+set flags arch
+
+# efi32 needs glibc
+switch $CARCH
+    case x86_64
+        set -a makedepends glibc
+end
+
+set -g _targets bios efi64 efi32
+
+function prepare
+    cd syslinux; or return
+
+    git revert -n 458a54133ecdf1685c02294d812cb562fe7bf4c3; or return
+
+    patch -p1 <../0002-gfxboot-menu-label.patch; or return
+    patch -p1 <../0017-single-load-segment.patch; or return
+    patch -p1 <../0016-strip-gnu-property.patch; or return
+    patch -p1 <../0018-prevent-pow-optimization.patch; or return
+
+    # TODO: use 'gnu-efi-libs' package instead of embedded sources
+    # patch -p1 < ../0004-gnu-efi-from-arch.patch
+    # patch -p1 < ../0005-gnu-efi-version-compatibility.patch
+
+    patch -p1 <../0025-reproducible-build.patch; or return
+
+    patch -p1 <../0005-Workaround-multiple-definition-of-symbol-errors.patch; or return
+    patch -p1 <../0006-Replace-builtin-strlen-that-appears-to-get-optimized.patch; or return
+
+    patch -p1 <../0026-add-missing-include.patch; or return
+    patch -p1 <../0027-use-correct-type-for-size.patch; or return
+
+    # do not swallow efi compilation output to make debugging easier
+    sed 's|> /dev/null 2>&1||' -i efi/check-gnu-efi.sh; or return
+
+    # disable debug and development flags to reduce bootloader size
+    truncate --size 0 mk/devel.mk; or return
+end
+
+function build
+    cd syslinux; or return
+    set -lx LDFLAGS $LDFLAGS --no-dynamic-linker # workaround for binutils 2.28 http://www.syslinux.org/wiki/index.php?title=Building
+    set -lx EXTRA_CFLAGS -fno-PIE # to fix gpxe build
+    make PYTHON=python $_targets; or return
+end
+
+function package
+    cd syslinux; or return
+    make $_targets install INSTALLROOT="$pkgdir" SBINDIR=/usr/bin MANDIR=/usr/share/man AUXDIR=/usr/lib/syslinux; or return
+
+    rm -r "$pkgdir"/usr/lib/syslinux/{com32,dosutil,syslinux.com}; or return
+    install -D -m644 COPYING "$pkgdir"/usr/share/licenses/syslinux/COPYING; or return
+    install -d "$pkgdir"/usr/share/doc; or return
+    cp -ar doc "$pkgdir"/usr/share/doc/syslinux; or return
+
+    install -d "$pkgdir"/usr/lib/syslinux/bios; or return
+    mv "$pkgdir"/usr/lib/syslinux/{*.bin,*.c32,*.0,memdisk} "$pkgdir"/usr/lib/syslinux/bios; or return
+
+    install -D -m0644 ../syslinux.cfg "$pkgdir"/usr/share/syslinux/syslinux.cfg; or return
+    install -D -m0644 ../syslinux.hook "$pkgdir"/usr/share/libalpm/hooks/90-syslinux.hook; or return
+    install -D -m0755 ../syslinux-install_update "$pkgdir"/usr/bin/syslinux-install_update; or return
+end

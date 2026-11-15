@@ -15,11 +15,11 @@ pkgbase = ntfs-3g
 
 pkgname = ntfs-3g
 	pkgdesc = NTFS FUSE driver
-	install = ntfs-3g.install
 	depends = glibc
 	depends = fuse2
 	depends = libntfs-3g
 	optdepends = ntfsprogs: userspace utilities
+	install = ntfs-3g.install
 
 pkgname = ntfsprogs
 	pkgdesc = NTFS userspace utilities

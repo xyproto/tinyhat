@@ -1,0 +1,37 @@
+set pkgname dwl
+set pkgver 0.9
+set pkgrel 12
+set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
+set arch i686 x32
+set url https://codeberg.org/dwl/dwl
+set license GPL-3.0-only MIT CC0-1.0
+set depends wlroots0.20 fcft libpng libinput libxcb libxkbcommon pixman wayland xcb-util-wm
+set makedepends wayland-protocols tllist tomlc17
+set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems
+set source "dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz" \
+    $_patches.patch \
+    config.h
+# The tarball has a checksum, the local patches and config.h are SKIP
+set sha256sums 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d \
+    (string replace -r '.*' SKIP -- $_patches) \
+    SKIP
+
+function prepare
+    cd dwl; or return
+    for p in $_patches
+        patch -Np1 -i "../$p.patch"; or return
+    end
+    cp ../config.h config.h; or return
+end
+
+function build
+    cd dwl; or return
+    make PREFIX=/usr CFLAGS="$CFLAGS -O3 -DWLR_USE_UNSTABLE -std=c11" XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm"; or return
+end
+
+function package
+    cd dwl; or return
+    make PREFIX=/usr DESTDIR="$pkgdir" install; or return
+    install -Dm644 LICENSE* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -Dm644 /usr/share/licenses/tomlc17/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.tomlc17"; or return
+end

@@ -1,0 +1,34 @@
+set pkgname tinyhat-gui
+set pkgver 1
+set pkgrel 9
+set pkgdesc 'Tiny Hat backup, restore, file picker, media player, crash log and help dialogs, and the GL level probe'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends gtk4 libglvnd
+set makedepends fontconfig tomlc17
+set -g _progs tinyhat-backup tinyhat-restore tinyhat-pick tinyhat-crashlog-viewer tinyhat-help
+set source $_progs.c tinyhat-glinfo.c
+set sha256sums SKIP SKIP SKIP SKIP SKIP SKIP
+
+function build
+    mkdir -p pc; or return
+    for f in pango pangocairo pangoft2 pangoxft
+        test -f /usr/lib/pkgconfig/$f.pc; and sed 's/>= *[0-9][0-9.]*//g' /usr/lib/pkgconfig/$f.pc >pc/$f.pc
+    end
+    set -lx PKG_CONFIG_PATH "$srcdir/pc"
+    set -l cflags (pkg-config --cflags gtk4 libtomlc17 | string split -n ' '); or return
+    set -l libs (pkg-config --libs gtk4 libtomlc17 | string split -n ' '); or return
+    for p in $_progs
+        cc $CFLAGS $cflags -o $p $p.c $LDFLAGS $libs; or return
+    end
+    cc $CFLAGS -o tinyhat-glinfo tinyhat-glinfo.c $LDFLAGS -lEGL; or return
+end
+
+function package
+    for p in $_progs
+        install -Dm755 $p "$pkgdir/usr/bin/$p"; or return
+    end
+    install -Dm755 tinyhat-glinfo "$pkgdir/usr/bin/tinyhat-glinfo"; or return
+    install -Dm644 /usr/share/licenses/tomlc17/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE.tomlc17"; or return
+end

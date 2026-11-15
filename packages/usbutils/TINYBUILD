@@ -1,0 +1,28 @@
+set pkgname usbutils
+set pkgver 020
+set pkgrel 1
+set pkgdesc 'A collection of USB tools to query connected USB devices'
+set arch i686 x32
+set url https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usbutils.git/
+set license GPL-2.0-only GPL-2.0-or-later GPL-3.0-only LGPL-2.1-or-later MIT
+set depends glibc hwdata
+set makedepends libusb meson systemd
+set optdepends 'coreutils: for lsusb.py usage' 'python: for lsusb.py usage' 'sh: for usb-devices'
+set source "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-$pkgver.tar.xz" \
+    "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-$pkgver.tar.sign"
+set sha256sums 20287d68fcd9ebb50a05ba0645a4af7583bd8dfc7307215ba121e4bc6d057aa1 \
+    37908bb6d9445f2872c84fb03657998cb00fc030ba0fa4144e2cf9b3be42d2df
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function package
+    set -a depends libusb libusb-1.0.so systemd-libs libudev.so
+    meson install -C build --destdir "$pkgdir"; or return
+    install -vDm 755 build/usbreset -t "$pkgdir/usr/bin"; or return
+    install -vDm 644 $pkgname-$pkgver/{NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+    install -vDm 644 $pkgname-$pkgver/LICENSES/*.txt -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

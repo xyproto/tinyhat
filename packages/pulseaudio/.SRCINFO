@@ -59,7 +59,6 @@ pkgbase = pulseaudio
 	b2sums = 73f93801069b2c5b09646870269c0f42cefc2183a73b47c78fd160c978a841c11c5146b98351a11be24d4785181f361a455534e6f6ca2d977cf585044836f8ed
 
 pkgname = pulseaudio
-	install = pulseaudio.install
 	depends = libpulse=17.0+r134+g77d25a1e6
 	depends = alsa-lib
 	depends = bash
@@ -98,6 +97,7 @@ pkgname = pulseaudio
 	backup = etc/pulse/daemon.conf
 	backup = etc/pulse/default.pa
 	backup = etc/pulse/system.pa
+	install = pulseaudio.install
 
 pkgname = libpulse
 	pkgdesc = A featureful, general-purpose sound server (client library)

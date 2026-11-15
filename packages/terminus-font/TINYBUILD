@@ -1,0 +1,50 @@
+set pkgname terminus-font
+set pkgver 4.49.1
+set pkgrel 8
+set pkgdesc 'Monospace bitmap font (for X11 and console)'
+set url http://terminus-font.sourceforge.net/
+set arch any
+set license GPL2 custom:OFL
+set makedepends xorg-bdftopcf python grub freetype2
+set conflicts terminus-font-otb
+set replaces terminus-font-otb
+set source "https://downloads.sourceforge.net/project/terminus-font/terminus-font-$(string replace -r '\.1$' '' -- $pkgver)/terminus-font-$pkgver.tar.gz" \
+    fix-75-yes-terminus.patch
+set sha256sums d961c1b781627bf417f9b340693d64fc219e0113ad3a3af1a3424c7aa373ef79 \
+    136af8f840ed054fa4c62b4963f1e8b3139e8d4fc32b35f1cf90100cb270716c
+set flags arch
+
+function prepare
+    cd terminus-font-$pkgver; or return
+    patch -p1 <"$srcdir"/fix-75-yes-terminus.patch; or return
+end
+
+function build
+    cd terminus-font-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --x11dir=/usr/share/fonts/misc \
+        --otbdir=/usr/share/fonts/misc \
+        --psfdir=/usr/share/kbd/consolefonts; or return
+    make all otb; or return
+    # build grub fonts
+    for i in *.bdf
+        grub-mkfont -o (basename $i .bdf).pf2 $i; or return
+    end
+end
+
+function package
+    make -C terminus-font-$pkgver DESTDIR="$pkgdir" install install-otb; or return
+    install -Dm644 "$srcdir/terminus-font-$pkgver/75-yes-terminus.conf" \
+        "$pkgdir/usr/share/fontconfig/conf.avail/75-yes-terminus.conf"; or return
+    install -Dm644 "$srcdir/terminus-font-$pkgver/OFL.TXT" \
+        "$pkgdir/usr/share/licenses/terminus-font/LICENSE"; or return
+    install -d "$pkgdir/usr/share/fontconfig/conf.default"; or return
+    ln -sr "$pkgdir/usr/share/fontconfig/conf.avail/75-yes-terminus.conf" \
+        "$pkgdir/usr/share/fontconfig/conf.default/75-yes-terminus.conf"; or return
+    cd terminus-font-$pkgver; or return
+    for i in *.pf2
+        install -D -m644 $i "$pkgdir/usr/share/grub/$i"; or return
+    end
+    install -Dm644 README "$pkgdir/usr/share/$pkgname/README"; or return
+end

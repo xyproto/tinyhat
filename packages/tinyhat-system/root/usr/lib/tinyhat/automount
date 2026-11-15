@@ -1,0 +1,69 @@
+#!/bin/sh
+action=$1
+dev=$2
+notice() {
+	for b in /run/user/*/tinyhat-bar; do
+		[ -p "$b" ] || continue
+		runuser -u "$(stat -c %U "$b")" -- env XDG_RUNTIME_DIR="${b%/*}" tinyhat-notice "$1" 6
+	done
+}
+cleanup() {
+	for d in /media/*/; do
+		d=${d%/}
+		[ -d "$d" ] && ! mountpoint -q "$d" && rmdir "$d" 2>/dev/null
+	done
+}
+if [ "$action" = remove ]; then
+	[ -b "$dev" ] && [ -n "$(blkid -o value -s TYPE "$dev")" ] && exit 0
+	findmnt -rno TARGET -S "$dev" | while read -r m; do
+		case $m in
+		/media/?*) systemd-mount --umount "$m" 2>/dev/null || umount -l "$m" ;;
+		esac
+	done
+	cleanup
+	exit 0
+fi
+[ -b "$dev" ] || exit 0
+host=0
+if findmnt -rn -S "$dev" >/dev/null; then
+	findmnt -rno TARGET -S "$dev" | grep -q '^/media/' && exit 0
+	findmnt -rno TARGET -S "$dev" | grep -qx /run/tinyhat/host || exit 0
+	host=1
+fi
+type=$(blkid -o value -s TYPE "$dev")
+label=$(blkid -o value -s LABEL "$dev")
+case $label in TINYHAT | THDATA) exit 0 ;; esac
+[ -n "$type" ] || exit 0
+name=$(printf '%s' "${label:-${dev##*/}}" | tr -c 'A-Za-z0-9._-' '_')
+dir=/media/$name
+mountpoint -q "$dir" && dir=/media/${name}_${dev##*/}
+what="USB stick"
+case ${dev##*/}:$(readlink -f "/sys/class/block/${dev##*/}") in
+sr*) what=CD ;;
+*/usb* | */mmc*) ;;
+*) what="Hard disk" ;;
+esac
+if [ "$host" = 1 ]; then
+	mkdir -p "$dir" && mount --bind /run/tinyhat/host "$dir" && notice "$what: $dir"
+	exit 0
+fi
+uid=$(id -u tinyhat 2>/dev/null || echo 1000)
+opts=noatime
+case " $(cat /proc/cmdline) " in
+*" tinyhat.persist=none "* | *" tinyhat.nopersist "*) [ "$what" = "Hard disk" ] && opts=ro ;;
+esac
+case $type in
+vfat) opts=$opts,uid=$uid,gid=$uid,fmask=0022,dmask=0022,flush ;;
+exfat) opts=$opts,uid=$uid,gid=$uid,fmask=0022,dmask=0022 ;;
+ntfs) type=ntfs3 opts=$opts,uid=$uid,gid=$uid ;;
+ext2 | ext3 | ext4) [ "$opts" = ro ] && opts=ro,noload ;;
+xfs) [ "$opts" = ro ] && opts=ro,norecovery ;;
+iso9660 | udf) opts=ro ;;
+esac
+fsck=yes
+case $opts in ro | ro,*) fsck=no ;; esac
+if systemd-mount --collect --fsck=$fsck -t "$type" -o "$opts" "$dev" "$dir"; then
+	notice "$what: $dir"
+else
+	cleanup
+fi

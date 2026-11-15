@@ -1,0 +1,24 @@
+set pkgname fcft
+set pkgver 3.3.3
+set pkgrel 1
+set pkgdesc 'Simple library for font loading and glyph rasterization'
+set arch i686 x32
+set url https://codeberg.org/dnkl/fcft
+set license MIT
+set depends fontconfig freetype2 harfbuzz libutf8proc pixman
+set makedepends meson scdoc tllist
+set checkdepends ttf-dejavu
+set provides libfcft.so
+set source "fcft-$pkgver.tar.gz::https://codeberg.org/dnkl/fcft/archive/$pkgver.tar.gz"
+set sha256sums b0c0f4a599f43723736c8565b8b84337c4195077f07f1bb8bb3252bb13a2306a
+set flags arch
+
+function build
+    arch-meson $pkgname build -Dgrapheme-shaping=enabled -Drun-shaping=enabled; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" "$pkgname/LICENSE"; or return
+    install -Dm0644 "$pkgname/unicode/license.txt" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.unicode"; or return
+end

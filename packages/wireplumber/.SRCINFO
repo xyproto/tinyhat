@@ -27,10 +27,9 @@ pkgbase = wireplumber
 	makedepends = systemd
 	makedepends = systemd-libs
 	source = git+https://gitlab.freedesktop.org/pipewire/wireplumber.git#tag=0.5.19
-	b2sums = 3cfd6d99d563c08c13948e1c7d48bf25a7255f85ddba576fd3e15acb7d76da20bdaaf4b68dfca88b2a5d6c67d190df377ed358ac236db1168ffd61afaaa4302c
+	sha256sums = SKIP
 
 pkgname = wireplumber
-	install = wireplumber.install
 	depends = libwireplumber=0.5.19
 	depends = glibc
 	depends = libgcc
@@ -47,6 +46,7 @@ pkgname = wireplumber
 	optdepends = wireplumber-system-services: System daemon (not recommended)
 	provides = pipewire-session-manager
 	conflicts = pipewire-media-session
+	install = wireplumber.install
 
 pkgname = libwireplumber
 	pkgdesc = Session / policy manager implementation for PipeWire - client library

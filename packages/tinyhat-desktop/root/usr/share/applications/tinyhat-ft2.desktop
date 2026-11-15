@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Fasttracker II clone
+Icon=audio-x-generic
+Comment=Music tracker
+Exec=ft2-clone
+Terminal=false
+Categories=AudioVideo;Audio;Music;

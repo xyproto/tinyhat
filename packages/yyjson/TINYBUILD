@@ -1,0 +1,26 @@
+set pkgname yyjson
+set pkgver 0.13.0
+set pkgrel 1
+set pkgdesc 'A high performance JSON library written in ANSI C'
+set arch i686 x32
+set url https://ibireme.github.io/yyjson
+set license MIT
+set depends glibc
+set makedepends cmake
+set provides libyyjson.so
+set source "yyjson-$pkgver.tar.gz::https://github.com/ibireme/yyjson/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 34e0f62a2bc11ab20d601e8ca1cc2b2079503aa45119a19133d89d19b94a0fae
+set flags arch
+
+function build
+    cmake -B build -S "$pkgname-$pkgver" -DCMAKE_BUILD_TYPE='None' -DCMAKE_INSTALL_PREFIX='/usr' -DBUILD_SHARED_LIBS='ON' -DYYJSON_BUILD_TESTS='ON' -Wno-dev; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    cd "$pkgname-$pkgver"; or return
+    install -Dm 644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+    install -Dm 644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"; or return
+    install -Dm 644 doc/*.md -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+end

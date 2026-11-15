@@ -1,0 +1,17 @@
+set pkgname default-cursors
+set pkgver 3
+set pkgrel 1
+set pkgdesc 'Default cursor set'
+set url https://archlinux.org
+set arch any
+set license CC0-1.0
+set optdepends 'adwaita-cursors: default cursor theme'
+set backup usr/share/icons/default/index.theme
+set flags arch
+
+function package
+    cd "$pkgdir"; or return
+    install -dm755 usr/share/icons/default; or return
+    printf '%s\n' '[Icon Theme]' 'Inherits=Adwaita' >usr/share/icons/default/index.theme; or return
+    chmod 644 usr/share/icons/default/index.theme; or return
+end

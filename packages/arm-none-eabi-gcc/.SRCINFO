@@ -21,10 +21,7 @@ pkgbase = arm-none-eabi-gcc
 	options = !lto
 	source = https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz
 	source = https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz.sig
-	validpgpkeys = 33C235A34C46AA3FFB293709A328C3A2C3C45C06
-	validpgpkeys = D3A93CAD751C2AF4F8C7AD516C35B99309B5FA62
-	validpgpkeys = 13975A70E63C361C73AE69EF6EEB81F8981C74C7
 	sha256sums = e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e
-	sha256sums = SKIP
+	sha256sums = 43d73202dcede15d31001c6ba0d28723014ef57e4dc815631772daadbe23bcd2
 
 pkgname = arm-none-eabi-gcc

@@ -1,0 +1,33 @@
+set pkgname lz4
+set epoch 1
+set pkgver 1.10.0
+set pkgrel 2
+set pkgdesc 'Extremely fast compression algorithm'
+set arch i686 x32
+set url https://lz4.github.io/lz4/
+set license GPL-2.0-or-later
+set makedepends git meson ninja
+set checkdepends diffutils
+set depends glibc
+set provides liblz4.so
+set source "git+https://github.com/lz4/lz4.git#tag=v$pkgver"
+set sha256sums 487f9bc24fdaf589e2f4bb23dd98b1f21a71b643db09251145616587c9468555
+set flags arch
+
+function build
+    meson setup --prefix=/usr --buildtype=plain lz4/build/meson build; or return
+    meson configure build -Dcontrib=true -Dexamples=true -Dprograms=true; or return
+    meson compile -C build; or return
+end
+
+function check
+    rm -f passwd.lz4
+    build/meson/programs/lz4 /etc/passwd passwd.lz4; or return
+    build/meson/programs/lz4 -d passwd.lz4 passwd; or return
+    diff -q /etc/passwd passwd; or return
+    rm passwd; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+end

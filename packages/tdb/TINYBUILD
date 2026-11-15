@@ -1,0 +1,27 @@
+set pkgname tdb
+set pkgver 1.4.15
+set pkgrel 2
+set pkgdesc 'Trivial Database similar to GDBM but allows simultaneous commits'
+set arch i686 x32
+set url https://tdb.samba.org/
+set license GPL-3.0-or-later
+set depends glibc
+set makedepends python libxslt docbook-xsl
+set optdepends 'python: for python bindings'
+set provides libtdb.so
+set source "https://samba.org/ftp/tdb/tdb-$pkgver.tar.gz" \
+    "https://samba.org/ftp/tdb/tdb-$pkgver.tar.asc"
+set sha256sums fba09d8df1f1b9072aeae8e78b2bd43c5afef20b2f6deefa633aa14a377a8dd2 \
+    18c2fd8e8ae2346fc24dc0957c499892cedc8004bc7a3061e90b244f1b2720a6
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr --localstatedir=/var --disable-rpath-install --sysconfdir=/etc/samba; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

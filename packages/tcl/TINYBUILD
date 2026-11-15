@@ -1,0 +1,73 @@
+set pkgname tcl
+set pkgver 9.0.1
+set pkgrel 1
+set pkgdesc 'Powerful, easy-to-learn dynamic programming language'
+set arch i686 x32
+set url http://tcl.sourceforge.net/
+set license TCL
+set depends zlib
+set options staticlibs '!lto'
+set -g _archive "$pkgname$pkgver"
+set source "https://downloads.sourceforge.net/sourceforge/tcl/$_archive-src.tar.gz"
+set sha256sums a72b1607d7a399c75148c80fcdead88ed3371a29884181f200f2200cdee33bbc
+set flags arch
+
+function prepare
+    cd "$_archive"; or return
+    # we build the tcl sqlite interface in sqlite-tcl package
+    set -l sqlite pkgs/sqlite3*
+    rm -rf $sqlite; or return
+end
+
+function build
+    cd "$_archive/unix"; or return
+    ./configure \
+        --prefix=/usr \
+        --mandir=/usr/share/man \
+        --enable-threads \
+        --enable-64bit; or return
+    # Since the test targets are known-broken with a race condition in
+    # prerequisites, forcing one job at a time just out of defensiveness.
+    make -j1; or return
+end
+
+function check
+    cd "$_archive/unix"; or return
+    # Upstream test suite uses a custom test runner with two different
+    # invocations. The Makefile specifies dependencies for one of those
+    # runs, but not both—relying instead on them having been built by the
+    # other invocation. Running parallel jobs can run those in a different
+    # order which makes for non-deterministic test failures.
+    make -j1 test; or return
+end
+
+function package
+    set -l majorminor (string replace -r '\.[^.]*$' '' -- $pkgver)
+    cd "$_archive/unix"; or return
+    make INSTALL_ROOT="$pkgdir" install install-private-headers; or return
+    ln -sf tclsh$majorminor "$pkgdir/usr/bin/tclsh"; or return
+    ln -sf libtcl$majorminor.so "$pkgdir/usr/lib/libtcl.so"; or return
+    install -Dm0644 -t "$pkgdir/usr/share/licenses/$pkgname/" ../license.terms; or return
+    install -Dm644 tcl.m4 -t "$pkgdir/usr/share/aclocal"; or return
+    chmod 644 "$pkgdir/usr/lib/libtclstub.a"; or return
+
+    # remove buildroot traces
+    set -l _tclver 8.6
+    sed -e "s#$srcdir/$_archive/unix#/usr/lib#" \
+        -e "s#$srcdir/$_archive#/usr/include#" \
+        -e "s#'{/usr/lib} '#'/usr/lib/tcl$_tclver'#" \
+        -i "$pkgdir/usr/lib/tclConfig.sh"; or return
+
+    set -l tdbcver tdbc1.1.10
+    sed -e "s#$srcdir/$_archive/unix/pkgs/$tdbcver#/usr/lib/$tdbcver#" \
+        -e "s#$srcdir/$_archive/pkgs/$tdbcver/generic#/usr/include#" \
+        -e "s#$srcdir/$_archive/pkgs/$tdbcver/library#/usr/lib/tcl$majorminor#" \
+        -e "s#$srcdir/$_archive/pkgs/$tdbcver#/usr/include#" \
+        -i "$pkgdir/usr/lib/$tdbcver/tdbcConfig.sh"; or return
+
+    set -l itclver itcl4.3.2
+    sed -e "s#$srcdir/$_archive/unix/pkgs/$itclver#/usr/lib/$itclver#" \
+        -e "s#$srcdir/$_archive/pkgs/$itclver/generic#/usr/include#" \
+        -e "s#$srcdir/$_archive/pkgs/$itclver#/usr/include#" \
+        -i "$pkgdir/usr/lib/$itclver/itclConfig.sh"; or return
+end

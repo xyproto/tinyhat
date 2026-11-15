@@ -1,0 +1,39 @@
+set pkgname zsnes
+set pkgver 2.3.9
+set pkgrel 1
+set pkgdesc 'Super Nintendo emulator'
+set arch i686
+set url https://github.com/xyproto/zsnes
+set license GPL-2.0-or-later
+set depends sdl3 libglvnd libpng pipewire zlib
+set makedepends mesa
+set source "zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/v$pkgver.tar.gz"
+set b2sums c1e8eb04b46a200413eed1ac49aa97bda952784feee9fbf2e02d3b34e0c2654d974816fa9a03f82a771fe7511a8a7b7c24f842e37483ff40bae1f8596c843e88
+
+# The extra flags for CFLAGS and CXXFLAGS
+function _zsnes_flags
+    echo -O3
+    test $CARCH = i686; and echo -fno-pic
+    true
+end
+
+function build
+    cd zsnes-$pkgver; or return
+    set -lx CFLAGS $CFLAGS (_zsnes_flags)
+    set -lx CXXFLAGS $CXXFLAGS (_zsnes_flags)
+    make all OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr; or return
+end
+
+function package
+    cd zsnes-$pkgver; or return
+    set -lx CFLAGS $CFLAGS (_zsnes_flags)
+    set -lx CXXFLAGS $CXXFLAGS (_zsnes_flags)
+    make install DESTDIR="$pkgdir" OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr; or return
+    if test $CARCH = i686
+        readelf -h "$pkgdir/usr/bin/zsnes" | grep -q "Type:.*EXEC"; or return
+    end
+    mv "$pkgdir/usr/bin/zsnes" "$pkgdir/usr/bin/zsnes-bin"; or return
+    printf '#!/bin/sh\nexec tinyhat-run -g /usr/bin/zsnes-bin "$@"\n' >"$pkgdir/usr/bin/zsnes"; or return
+    chmod 755 "$pkgdir/usr/bin/zsnes"; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

@@ -9,7 +9,7 @@ pkgbase = luajit
 	depends = libgcc
 	source = LuaJIT-dd3b243.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/dd3b243.tar.gz
 	source = c7815e1a1b49871e645252bb12e722fb4879df11.patch
-	b2sums = d7d6b358668be45e50ee139f8e244a2625cbcd63f95677d4709e4f38a4753181edeff764a53421dc741f00787e4385d315a78dd3cd8852e2f19c7595d8cd62db
-	b2sums = fabd0be78309d8211e96d4d0cf105ae6a27f46110d8b19513d10bdd7c6045221fc5c8e21d1bcc1def854d7d1bf6473c99fb7bc7e4d5307188129c3c87cf8c69b
+	sha256sums = a6ac8457c474c6fb71aaa7660dd5bf8f6e0506496fc74786b2dae18e26a768cc
+	sha256sums = e59a3fa37e9fa7505193fde2a668eaa66caed39e77502868f12691cf0ee4e8a5
 
 pkgname = luajit

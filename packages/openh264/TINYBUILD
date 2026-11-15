@@ -1,0 +1,36 @@
+set pkgname openh264
+set pkgver 2.6.0
+set pkgrel 2
+set -g _gtestver 1.8.1
+set pkgdesc 'H.264 encoder and decoder'
+set arch i686 x32
+set url https://www.openh264.org/
+set license BSD-2-Clause
+set depends glibc libgcc libstdc++
+set makedepends nasm
+set provides libopenh264.so
+set source "https://github.com/cisco/openh264/archive/v$pkgver/$pkgname-$pkgver.tar.gz" \
+    "https://github.com/google/googletest/archive/release-$_gtestver/googletest-$_gtestver.tar.gz"
+set sha256sums 558544ad358283a7ab2930d69a9ceddf913f4a51ee9bf1bfb9e377322af81a69 \
+    9bf1fe5182a604b4135edc1a425ae356c9ad15e9b23f9f12a02e80184c3a249c
+set flags arch
+
+function prepare
+    ln -sf "../googletest-release-$_gtestver" "$pkgname-$pkgver/gtest"; or return
+end
+
+function build
+    make -C "$pkgname-$pkgver"; or return
+end
+
+function check
+    make -C "$pkgname-$pkgver" test; or return
+    cd "$pkgname-$pkgver/testbin"; or return
+    ./CmdLineExample.sh; or return
+end
+
+function package
+    make -C "$pkgname-$pkgver" DESTDIR="$pkgdir" PREFIX=/usr install-shared; or return
+    install -D -m755 "$pkgname-$pkgver"/h264{dec,enc} -t "$pkgdir/usr/bin"; or return
+    install -D -m644 "$pkgname-$pkgver/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

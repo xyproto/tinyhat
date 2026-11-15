@@ -14,7 +14,6 @@ pkgbase = libmad
 	source = libmad-md_size.diff
 	source = libmad-length-check.patch
 	source = libmad-0.15.1b-gcc43.patch
-	validpgpkeys = 4229B6BBA00DE143B485B74D2CE2036B4BF38A33
 	sha512sums = 2cad30347fb310dc605c46bacd9da117f447a5cabedd8fefdb24ab5de641429e5ec5ce8af7aefa6a75a3f545d3adfa255e3fa0a2d50971f76bc0c4fc0400cc45
 	sha512sums = SKIP
 	sha512sums = ff815f5aa32aec4230351b258430ca2184c0a44f80845c92b46aedb9942b3cd85c7b3aa575f4f562a5e02f7fadf6f3d6fe06e64d2b65418dbcd10762214695b1

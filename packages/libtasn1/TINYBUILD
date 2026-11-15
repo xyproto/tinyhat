@@ -1,0 +1,32 @@
+set pkgname libtasn1
+set pkgver 4.21.0
+set pkgrel 1
+set pkgdesc 'The ASN.1 library used in GNUTLS'
+set arch i686 x32
+set license GPL-3.0-or-later LGPL-2.1-or-later GFDL-1.3-or-later
+set url https://www.gnu.org/software/libtasn1/
+set depends glibc
+set source "https://ftp.gnu.org/gnu/libtasn1/$pkgname-$pkgver.tar.gz" \
+    "https://ftp.gnu.org/gnu/libtasn1/$pkgname-$pkgver.tar.gz.sig"
+set sha256sums 1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87 \
+    SKIP
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    CODE_COVERAGE_LDFLAGS="$LDFLAGS" make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    make -C doc/reference DESTDIR="$pkgdir" install-data-local; or return
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

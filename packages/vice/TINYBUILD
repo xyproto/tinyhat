@@ -1,0 +1,65 @@
+set pkgname vice
+set pkgver 3.10
+set pkgrel 2
+set pkgdesc 'Commodore 64, C128 and VIC-20 emulators (x64sc, x128 and xvic) with the SDL UI, ported to SDL3'
+set arch i686 x32
+set url https://vice-emu.sourceforge.io/
+set license GPL-2.0-or-later
+set depends sdl3 sdl3_image libpng zlib
+set makedepends flex xa autoconf automake
+set source "vice-$pkgver.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-$pkgver.tar.gz/download" \
+    sdl3.patch
+set sha256sums 8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1 \
+    99915bc7dceea62935e54c731443ed7d81df2d17a8e5fd325eea36297141f64a
+
+function prepare
+    cd vice-$pkgver; or return
+    patch -p1 -i "$srcdir/sdl3.patch"; or return
+    autoreconf -fi; or return
+    sed -i 's/if ((log_to_file) || (!log_colorize)) {/if ((log_to_file) || (!log_colorize) || (log_to_stdout)) {/' src/log.c; or return
+    mkdir -p "$srcdir/bin"; or return
+    printf '#!/bin/sh\nfor f; do sed -i "s/\\\\r$//" "$f"; done\n' >"$srcdir/bin/dos2unix"; or return
+    chmod 755 "$srcdir/bin/dos2unix"; or return
+end
+
+function build
+    cd vice-$pkgver; or return
+    set -lx PATH "$srcdir/bin" $PATH
+    set -a CFLAGS -O3
+    set -a CXXFLAGS -O3
+    ./configure --prefix=/usr --enable-sdl2ui --with-sdlsound --without-alsa --without-pulse \
+        --disable-html-docs --disable-pdf-docs --without-flac --without-vorbis --without-mpg123 --without-lame \
+        --disable-ffmpeg --disable-ethernet --disable-catweasel --disable-hardsid --disable-parsid --disable-midi; or return
+    make; or return
+end
+
+# Moves the given emulator to /usr/lib/vice and installs a wrapper that autostarts programs in warp mode,
+# with the given options, and with the given lighter settings on slow computers
+function _wrap -a name opts slow
+    install -Dm755 bin/$name lib/vice/$name; or return
+    rm bin/$name; or return
+    printf '%s\n' '#!/bin/sh' \
+        "set -- -autostartprgmode 1 -autostart-warp $opts \"\$@\"" \
+        'if tinyhat-slow; then' \
+        \t"set -- $slow \"\$@\"" \
+        fi \
+        "exec /usr/lib/vice/$name \"\$@\"" | install -Dm755 /dev/stdin bin/$name; or return
+end
+
+function package
+    cd vice-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    cd "$pkgdir/usr"; or return
+    find bin -type f ! -name x64sc ! -name x128 ! -name xvic ! -name c1541 -delete; or return
+    find bin -type l -delete; or return
+    _wrap x64sc "" "-sidengine 0 -soundrate 22050 -VICIIfilter 0"; or return
+    _wrap x128 -40col "-sidengine 0 -soundrate 22050 -VICIIfilter 0 -VDCfilter 0"; or return
+    _wrap xvic "" "-soundrate 22050 -VICfilter 0"; or return
+    rm -rf share/doc share/man share/info share/applications share/icons share/metainfo
+    cd share/vice; or return
+    rm -rf C64DTV CBM-II PET PLUS4 SCPU64 GLSL
+    set -l files C64/gtk3_*.vkm C128/gtk3_*.vkm VIC20/gtk3_*.vkm common/*.svg common/*.ttf common/icon1024x1024.png common/Icon-128@2x.png
+    rm -f $files
+    find common -name '*.png' ! -name 'C64_*' ! -name 'C128_*' ! -name 'VIC20_*' -delete; or return
+    install -Dm644 "$srcdir/vice-$pkgver/COPYING" "$srcdir/vice-$pkgver/README" -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

@@ -1,0 +1,24 @@
+set pkgname spirv-tools
+set pkgver 1.4.363.0
+set pkgrel 1
+set epoch 1
+set pkgdesc 'API and commands for processing SPIR-V modules'
+set arch i686 x32
+set url https://www.khronos.org/spirv/
+set license Apache-2.0
+set groups vulkan-devel
+set depends libstdc++ glibc sh
+set makedepends cmake git ninja python spirv-headers
+set source "git+https://github.com/KhronosGroup/SPIRV-Tools#tag=vulkan-sdk-$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    set -l cmake_options -D BUILD_SHARED_LIBS=ON -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_INSTALL_SYSCONFDIR=/etc -D CMAKE_SKIP_INSTALL_RPATH=ON -D SPIRV-Headers_SOURCE_DIR=/usr -D SPIRV_TOOLS_BUILD_STATIC=OFF -D SPIRV_WERROR=OFF
+    cmake -S SPIRV-Tools -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+end

@@ -1,0 +1,27 @@
+set pkgname libxdmcp
+set pkgver 1.1.5
+set pkgrel 2
+set pkgdesc 'X11 Display Manager Control Protocol library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/xorg/lib/libxdmcp
+set license MIT-open-group
+set depends glibc xorgproto
+set makedepends xorg-util-macros
+set provides libXdmcp.so
+set source "https://xorg.freedesktop.org//releases/individual/lib/libXdmcp-$pkgver.tar.xz"{,.sig}
+set sha512sums d7a1d70a58b7d34ddd01a91d3ccbc086a36626b7081cfcbb150d24288c6adad612b042ba7ea63a218595afb2ee04384c0f8ba84ee3c6bd29913724b54e898d83 \
+    SKIP
+set flags arch
+
+function build
+    cd libXdmcp-$pkgver; or return
+    ./configure --prefix=/usr --sysconfdir=/etc --disable-static; or return
+    make; or return
+end
+
+function package
+    cd libXdmcp-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 COPYING "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

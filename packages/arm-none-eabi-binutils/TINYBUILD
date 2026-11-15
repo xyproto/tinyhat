@@ -1,0 +1,59 @@
+set -g _target arm-none-eabi
+set pkgname $_target-binutils
+set pkgver 2.47
+set pkgrel 1
+set pkgdesc 'A set of programs to assemble and manipulate binary and object files for the ARM EABI (bare-metal) target'
+set arch i686 x32
+set url https://www.gnu.org/software/binutils/
+set license GPL
+set depends zlib libelf
+set flags arch
+set source "https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.bz2"{,.sig}
+set sha256sums 3068128c75cda9f898ccb4211d360246e8e195ffcc9dfb655b23ae23a54800e8 \
+    SKIP
+
+function prepare
+    cd binutils-$pkgver; or return
+    sed -i '/ac_cpp=/s/$CPPFLAGS/$CPPFLAGS -O2/' libiberty/configure; or return
+end
+
+function build
+    cd binutils-$pkgver; or return
+
+    ./configure --target=$_target \
+        --with-sysroot=/usr/$_target \
+        --prefix=/usr \
+        --disable-werror \
+        --enable-multilib \
+        --enable-interwork \
+        --with-gnu-as \
+        --with-gnu-ld \
+        --disable-nls \
+        --enable-ld=default \
+        --enable-gold \
+        --enable-plugins \
+        --enable-deterministic-archives; or return
+
+    make; or return
+end
+
+function check
+    cd binutils-$pkgver; or return
+
+    # unset LDFLAGS as testsuite makes assumptions about which ones are active
+    # do not abort on errors - manually check log files
+    make LDFLAGS="" -k check; or true
+end
+
+function package
+    cd binutils-$pkgver; or return
+
+    make DESTDIR="$pkgdir" install; or return
+
+    # Remove file conflicting with host binutils and manpages for MS Windows tools
+    rm "$pkgdir"/usr/share/man/man1/arm-none-eabi-{dlltool,windres,windmc}*; or return
+    rm "$pkgdir"/usr/lib/bfd-plugins/libdep.so; or return
+
+    # Remove info documents that conflict with host version
+    rm -r "$pkgdir"/usr/share/info; or return
+end

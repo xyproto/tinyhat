@@ -1,0 +1,24 @@
+set pkgname lcms2
+set pkgver 2.19.1
+set pkgrel 1
+set pkgdesc 'Small-footprint color management engine, version 2'
+set arch i686 x32
+set url http://www.littlecms.com/
+set license MIT
+set depends glibc libjpeg-turbo libtiff
+set provides liblcms2.so
+set source "https://github.com/mm2/Little-CMS/releases/download/lcms$pkgver/lcms2-$pkgver.tar.gz"
+set sha256sums bfc54f7bab59fbc921012014a8032e4cba4abd46db47d46b76416a8c0b2815c8
+set flags arch
+
+function build
+    cd "$pkgname-$pkgver"; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd "$pkgname-$pkgver"; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -D -m0644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

@@ -1,8 +1,8 @@
 pkgbase = x264
 	pkgdesc = Open Source H264/AVC video encoder
 	pkgver = 0.165.r3222.b35605a
-	pkgrel = 2
 	epoch = 3
+	pkgrel = 2
 	url = https://www.videolan.org/developers/x264.html
 	arch = i686
 	arch = x32

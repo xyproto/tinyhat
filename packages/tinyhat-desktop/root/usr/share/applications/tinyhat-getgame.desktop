@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Download and run a game...
+Icon=applications-games
+Comment=Free and open source games for the NES, Genesis, GBA, C64, CHIP-8, DOS, ScummVM and Linux
+Exec=tinyhat-getgame
+Terminal=false
+Categories=Game;

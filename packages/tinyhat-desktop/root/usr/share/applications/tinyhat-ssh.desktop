@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=SSH server (start or stop)
+Icon=network-server
+Comment=Allow logging in from other computers with ssh, scp or SFTP
+Exec=tinyhat-ssh
+Terminal=false
+Categories=Network;RemoteAccess;

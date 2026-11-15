@@ -1,0 +1,2 @@
+#!/bin/sh
+exec /usr/lib/tinyhat/cproject raylib3d "Example Raylib program in C" main.c

@@ -1,0 +1,32 @@
+set pkgname abcmidi
+set pkgver 2026_10_09
+set pkgrel 1
+set pkgdesc 'Tools for ABC and MIDI files'
+set groups pro-audio
+set arch i686 x32
+set url https://github.com/sshlien/abcmidi
+set license GPL-2.0-or-later
+set makedepends git
+set depends glibc
+set source "git+$url#tag="(string replace -a _ . -- $pkgver)
+set b2sums d7a74c9ecea1ad388e546a6f1a6e6b8d777b4ca5428dbf0581bacd7f4ce0d052b2c9fd2d753c00c7cae0e9aeff9bcd2312dc655ec2ea039bcf44ce6ffa42c662
+set flags arch
+
+function prepare
+    sed -i 's/extern int lyrics_meta/int lyrics_meta/g' $pkgname/genmidi.c; or return
+end
+
+function build
+    cd $pkgname; or return
+    set -a CFLAGS -std=c99 -Wno-implicit-function-declaration -Wl,--allow-multiple-definition
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -m 755 -d "$pkgdir"/usr/share/doc/$pkgname/{programming,samples}; or return
+    install -m 644 -t "$pkgdir"/usr/share/doc/$pkgname/programming doc/programming/*.{abc,txt}; or return
+    install -m 644 -t "$pkgdir"/usr/share/doc/$pkgname/samples samples/*.abc; or return
+end

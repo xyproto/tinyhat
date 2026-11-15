@@ -1,0 +1,79 @@
+set pkgbase ntfs-3g
+set pkgname ntfs-3g ntfsprogs libntfs-3g
+set pkgver 2026.9.28
+set pkgrel 1
+set pkgdesc 'NTFS filesystem driver and utilities'
+set url https://www.tuxera.com/community/open-source-ntfs-3g/
+set arch i686 x32
+set license GPL-2.0-or-later
+set depends glibc
+set makedepends fuse2 git
+set source "git+https://github.com/tuxera/ntfs-3g.git#tag=$pkgver"
+set sha256sums 20101fda5df9c3e9883dcaa42cc386ec656ba05ea74ec62f31281f471607a991
+set options '!emptydirs'
+set flags arch
+
+function prepare
+    cd $pkgbase; or return
+
+    autoreconf -fiv; or return
+    sed 's|$(DESTDIR)/sbin|$(DESTDIR)/usr/bin|' -i {ntfsprogs,src}/Makefile.in; or return
+end
+
+function build
+    cd $pkgbase; or return
+
+    ./configure \
+        --prefix=/usr \
+        --sbin=/usr/bin \
+        --mandir=/usr/share/man \
+        --disable-ldconfig \
+        --disable-static \
+        --with-fuse=external \
+        --enable-xattr-mappings \
+        --enable-posix-acls \
+        --enable-extras \
+        --enable-crypto; or return
+    make; or return
+end
+
+function _install
+    make \
+        DESTDIR="$pkgdir" \
+        rootbindir=/usr/bin \
+        rootsbindir=/usr/bin \
+        rootlibdir=/usr/lib \
+        $argv \
+        install
+end
+
+function package_ntfs-3g
+    set pkgdesc 'NTFS FUSE driver'
+    set -a depends fuse2 libntfs-3g
+    set -a optdepends 'ntfsprogs: userspace utilities'
+    set install ntfs-3g.install
+
+    cd $pkgbase; or return
+
+    _install -C src; or return
+    ln -s /usr/bin/ntfs-3g "$pkgdir/usr/bin/mount.ntfs"; or return
+end
+
+function package_ntfsprogs
+    set pkgdesc 'NTFS userspace utilities'
+    set -a depends gnutls libgcrypt libntfs-3g util-linux-libs
+
+    cd $pkgbase; or return
+
+    _install -C ntfsprogs; or return
+    rm "$pkgdir"/usr/share/man/man8/ntfsfallocate.8; or return # uninstalled binary
+end
+
+function package_libntfs-3g
+    set pkgdesc 'NTFS-3G core library'
+
+    cd $pkgbase; or return
+
+    _install -C include; or return
+    _install -C libntfs-3g; or return
+end

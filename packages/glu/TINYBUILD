@@ -1,0 +1,33 @@
+set pkgname glu
+set pkgver 9.0.3
+set pkgrel 3
+set pkgdesc 'Mesa OpenGL utility library'
+set arch i686 x32
+set url https://gitlab.freedesktop.org/mesa/glu
+# no license file included, can be found inside the source files
+set license SGI-B-2.0 MIT
+set depends libgl glibc libstdc++ libgcc
+set makedepends meson
+set source "https://mesa.freedesktop.org/archive/glu/glu-$pkgver.tar.xz"{,.sig}
+set sha512sums b2781059c0e176192c3fc0d7244645020937a463311171efddb9f35fb94ee43faabcf627fa7f429d48fceaf6dd9c5adb69c86c7a21ec4ea490f4ab143d52e3ba \
+    SKIP
+set flags arch
+
+function build
+    arch-meson glu-$pkgver build \
+        -D default_library=shared; or return
+    # Print config
+    meson configure build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    # no license included
+    install -dm755 "$pkgdir/usr/share/licenses/$pkgname"; or return
+    echo "SGI-B-2.0 and MIT" >"$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

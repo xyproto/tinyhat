@@ -1,0 +1,33 @@
+set pkgname l-smash
+set pkgver 2.14.5
+set pkgrel 4
+set pkgdesc 'MP4 muxer and other tools'
+set arch i686 x32
+set url https://github.com/l-smash/l-smash
+set license custom
+set depends glibc
+set provides liblsmash.so
+set flags arch
+set source "l-smash-$pkgver.tar.gz::https://github.com/l-smash/l-smash/archive/v$pkgver.tar.gz"
+set sha256sums e6f7c31de684f4b89ee27e5cd6262bf96f2a5b117ba938d2d606cf6220f05935
+
+function build
+    cd l-smash-$pkgver; or return
+
+    ./configure \
+        --prefix=/usr \
+        --enable-shared \
+        --disable-static \
+        --extra-cflags="$CFLAGS" \
+        --extra-ldflags="$LDFLAGS"; or return
+    make; or return
+end
+
+function package
+    cd l-smash-$pkgver; or return
+
+    make DESTDIR="$pkgdir" install; or return
+
+    install -dm 755 "$pkgdir"/usr/share/licenses/l-smash; or return
+    install -m 644 LICENSE "$pkgdir"/usr/share/licenses/l-smash/; or return
+end

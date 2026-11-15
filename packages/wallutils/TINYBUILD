@@ -1,0 +1,47 @@
+set pkgname wallutils
+set pkgver 5.14.5
+set pkgrel 1
+set pkgdesc 'Utilities for handling monitors, resolutions and (timed) wallpapers'
+set arch i686 x86_64
+set url https://github.com/xyproto/wallutils
+set license BSD-3-Clause
+set depends glibc
+set makedepends go-tinyhat
+set options '!buildflags'
+set source "wallutils-$pkgver.tar.gz::https://github.com/xyproto/wallutils/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums 8b389e2ff134f331a1cbace92dbd4d6b5793005b5f5454afaad8ddeb4cded75f
+
+function build
+    cd wallutils-$pkgver; or return
+    set -lx GOROOT /usr/lib/go-tinyhat
+    set -lx GOPATH "$srcdir/gopath"
+    set -lx GOCACHE "$srcdir/gocache"
+    set -lx GOTOOLCHAIN local
+    set -lx GOFLAGS -mod=vendor
+    set -lx CGO_ENABLED 0
+    set -lx GOARCH 386
+    set -lx GO386 softfloat
+    switch $CARCH
+        case aarch64
+            set GOROOT /usr/lib/go
+            set GOARCH arm64
+        case x86_64
+            set GOROOT /usr/lib/go
+            set GOARCH amd64
+    end
+    set -lx PATH "$GOROOT/bin" $PATH
+    for cmd in lswallpaper setwallpaper vram
+        pushd cmd/$cmd; or return
+        go build -trimpath -buildvcs=false -ldflags "-s -w"; or return
+        popd
+    end
+end
+
+function package
+    cd wallutils-$pkgver; or return
+    for cmd in lswallpaper setwallpaper vram
+        install -Dm755 cmd/$cmd/$cmd "$pkgdir/usr/bin/$cmd"; or return
+        install -Dm644 cmd/$cmd/$cmd.1 "$pkgdir/usr/share/man/man1/$cmd.1"; or return
+    end
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

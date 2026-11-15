@@ -1,0 +1,27 @@
+set pkgname libmikmod
+set pkgver 3.3.15
+set pkgrel 1
+set pkgdesc 'Module player library supporting many formats, including MOD, S3M, IT and XM'
+set arch i686 x32
+set url https://mikmod.sourceforge.net
+set license LGPL-2.0-or-later
+set depends glibc sh
+set makedepends alsa-lib cmake git libpulse ninja
+set provides libmikmod.so
+set source "git+https://git.code.sf.net/p/mikmod/mikmod#tag=libmikmod-$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd mikmod; or return
+end
+
+function build
+    set -l cmake_options -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D ENABLE_DL=1
+    cmake -S mikmod/libmikmod -B build -G Ninja $cmake_options; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+end

@@ -1,0 +1,59 @@
+set pkgname python
+set pkgver 3.14.10
+set pkgrel 2
+set -g _pybasever (string replace -r '\.[^.]*$' '' -- $pkgver)
+set pkgdesc 'The Python programming language'
+set arch i686 x32
+set url https://www.python.org/
+set license PSF-2.0
+set depends bzip2 expat gdbm libffi libnsl libxcrypt openssl zlib tzdata mpdecimal zstd sqlite
+set provides "python3=$pkgver"
+set source "https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz"
+set sha512sums 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a
+
+function prepare
+    cd Python-$pkgver; or return
+    rm -r Modules/expat Modules/_decimal/libmpdec; or return
+end
+
+function build
+    cd Python-$pkgver; or return
+    py_cv_module__tkinter=n/a ./configure --prefix=/usr \
+        --enable-shared \
+        --with-computed-gotos \
+        --enable-ipv6 \
+        --with-system-expat \
+        --with-dbmliborder=gdbm:ndbm \
+        --with-system-libmpdec \
+        --enable-loadable-sqlite-extensions \
+        --without-ensurepip \
+        --with-tzpath=/usr/share/zoneinfo; or return
+    make; or return
+end
+
+function package
+    cd Python-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    ln -s python3 "$pkgdir/usr/bin/python"; or return
+    ln -s python3-config "$pkgdir/usr/bin/python-config"; or return
+    ln -s pydoc3 "$pkgdir/usr/bin/pydoc"; or return
+    ln -s python$_pybasever.1 "$pkgdir/usr/share/man/man1/python.1"; or return
+    rm -rf "$pkgdir/usr/lib/python$_pybasever"/{test,idlelib,tkinter,turtledemo,turtle.py}; or return
+    rm -f "$pkgdir"/usr/bin/{idle,idle3,"idle$_pybasever"}; or return
+    printf '%s\n' \
+        '[externally-managed]' \
+        "Error=To install Python packages system-wide, try 'pacman -S" \
+        " python-xyz', where xyz is the package you are trying to" \
+        ' install.' \
+        '' \
+        ' If you wish to install a non-Arch-packaged Python package,' \
+        " create a virtual environment using 'python -m venv path/to/venv'." \
+        ' Then use path/to/venv/bin/python and path/to/venv/bin/pip.' \
+        '' \
+        ' If you wish to install a non-Arch packaged Python application,' \
+        " it may be easiest to use 'pipx install xyz', which will manage a" \
+        ' virtual environment for you. Make sure you have python-pipx' \
+        ' installed via pacman.' \
+        '' >"$pkgdir/usr/lib/python$_pybasever/EXTERNALLY-MANAGED"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

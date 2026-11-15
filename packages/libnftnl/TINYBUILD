@@ -1,0 +1,33 @@
+set pkgname libnftnl
+set pkgver 1.3.2
+set pkgrel 1
+set pkgdesc 'Netfilter library providing interface to the nf_tables subsystem'
+set arch i686 x32
+set url https://netfilter.org/projects/libnftnl/
+set license GPL-2.0-or-later
+set depends glibc libmnl
+set makedepends git
+set source "git+https://git.netfilter.org/libnftnl.git?signed#tag=$pkgname-$pkgver"
+set sha256sums 1cc163418e3d49900cde95056572217cd51bce975872da18146dd2e95180a32b
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+end

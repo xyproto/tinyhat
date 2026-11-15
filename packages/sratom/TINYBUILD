@@ -1,0 +1,50 @@
+set pkgbase sratom
+set pkgname sratom sratom-docs
+set pkgver 0.6.22
+set pkgrel 1
+set pkgdesc 'An LV2 Atom RDF serialisation library'
+set arch i686 x32
+set url https://drobilla.net/software/sratom.html
+set license ISC
+set makedepends doxygen lv2 meson python-sphinx python-sphinx-lv2-theme python-sphinxygen serd sord
+set source "https://download.drobilla.net/$pkgbase-$pkgver.tar.xz"{,.sig}
+set sha512sums bb3a46e88faf1596d2f10ac9d22f063e52f7c068a0712b0234168346727f179ea236280dae89e4136e97c243d0815444af1dcc6b86d70b99f5f88008481288b0 \
+    SKIP
+set b2sums be8726f3fe805b7176e3b3c0c8839536ef2825b1ca06eb0fed281272fd183eaa27b945eceab14ca7e8360cd8720ede99f560bc99af1f6b4028279c2d9ee5366b \
+    SKIP
+set flags arch
+
+# Move files (relative to $pkgdir) from $pkgdir to $srcdir/P, for the split package P
+function _pick -a p
+    for f in $argv[2..-1]
+        set -l d "$srcdir/$p/$f"
+        mkdir -p (dirname $d); or return
+        mv "$pkgdir/$f" $d; or return
+        rmdir -p --ignore-fail-on-non-empty (dirname "$pkgdir/$f"); or return
+    end
+end
+
+function build
+    arch-meson $pkgbase-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build; or return
+end
+
+function package_sratom
+    set depends glibc serd libserd-0.so sord libsord-0.so lv2
+    set provides libsratom-0.so
+    set optdepends 'sratom-docs: for developer documentation'
+    meson install -C build --destdir "$pkgdir"; or return
+    _pick sratom-docs usr/share/doc; or return
+    install -vDm 644 $pkgbase-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/sratom/"; or return
+    install -vDm 644 $pkgbase-$pkgver/{NEWS,README.md} -t "$pkgdir/usr/share/doc/sratom/"; or return
+end
+
+function package_sratom-docs
+    set pkgdesc "$pkgdesc - documentation"
+    mv -v sratom-docs/* "$pkgdir"; or return
+    mv -v "$pkgdir/usr/share/doc/"sratom{-0,}; or return
+end

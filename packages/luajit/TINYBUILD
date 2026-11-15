@@ -1,0 +1,45 @@
+set pkgname luajit
+set pkgver 2.1.1792349434+dd3b243
+set pkgrel 1
+set pkgdesc 'Just-in-time compiler and drop-in replacement for Lua 5.1'
+set arch i686
+set url https://luajit.org/
+set license MIT
+set depends glibc libgcc
+switch $CARCH
+    case x32 x86_64 aarch64
+        set -g source LuaJIT-dd3b243.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/dd3b243.tar.gz
+    case '*'
+        set -g source LuaJIT-dd3b243.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/dd3b243.tar.gz \
+    c7815e1a1b49871e645252bb12e722fb4879df11.patch
+end
+switch $CARCH
+    case x32 x86_64 aarch64
+        set -g sha256sums a6ac8457c474c6fb71aaa7660dd5bf8f6e0506496fc74786b2dae18e26a768cc
+    case '*'
+        set -g sha256sums a6ac8457c474c6fb71aaa7660dd5bf8f6e0506496fc74786b2dae18e26a768cc \
+    e59a3fa37e9fa7505193fde2a668eaa66caed39e77502868f12691cf0ee4e8a5
+end
+set flags arch
+set -g _commit dd3b243
+
+switch $CARCH
+    case x32 x86_64 aarch64
+        functions -e prepare
+    case '*'
+        function prepare
+            cd "LuaJIT-$_commit"*/; or return
+            patch -p1 -i "$srcdir/c7815e1a1b49871e645252bb12e722fb4879df11.patch"; or return
+        end
+end
+
+function build
+    cd "LuaJIT-$_commit"*/; or return
+    make amalg PREFIX=/usr BUILDMODE=dynamic TARGET_STRIP=" @:"; or return
+end
+
+function package
+    cd "LuaJIT-$_commit"*/; or return
+    make install DESTDIR="$pkgdir" PREFIX=/usr; or return
+    install -Dm644 COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/COPYRIGHT"; or return
+end

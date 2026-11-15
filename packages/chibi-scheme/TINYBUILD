@@ -1,0 +1,21 @@
+set pkgname chibi-scheme
+set pkgver 0.12
+set pkgrel 1
+set pkgdesc 'Minimal Scheme implementation for use as an extension language'
+set arch i686 x32
+set url https://github.com/ashinn/chibi-scheme
+set license BSD-3-Clause
+set depends glibc
+set source "chibi-scheme-$pkgver.tar.gz::https://github.com/ashinn/chibi-scheme/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums b70a1147bc70a0f90df3fb6081bc99808237fd17a9accf9ee7a2cc20d95a4df0
+
+function build
+    cd $pkgname-$pkgver; or return
+    make PREFIX=/usr; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make PREFIX=/usr DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

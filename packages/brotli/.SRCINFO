@@ -6,26 +6,12 @@ pkgbase = brotli
 	arch = i686
 	arch = x32
 	license = MIT
-	makedepends = git
 	makedepends = cmake
-	makedepends = python-setuptools
-	makedepends = python-build
-	makedepends = python-installer
-	makedepends = python-wheel
-	makedepends = python-pkgconfig
-	source = brotli::git+https://github.com/google/brotli#tag=v1.2.0
-	sha512sums = 36b8fadb3e5de540746eea19c758234095fafc0a4a687bd70fc70b0f74036c03cf9c70a7339aa1626f1197b5ac707bf5b01e393f6cd26c90b78519529724871a
-
-pkgname = brotli
 	depends = glibc
 	provides = libbrotlicommon.so
 	provides = libbrotlidec.so
 	provides = libbrotlienc.so
+	source = brotli-1.2.0.tar.gz::https://github.com/google/brotli/archive/refs/tags/v1.2.0.tar.gz
+	sha256sums = 816c96e8e8f193b40151dad7e8ff37b1221d019dbcb9c35cd3fadbfe6477dfec
 
-pkgname = python-brotli
-	pkgdesc = Generic-purpose lossless compression algorithm - python library
-	depends = python
-
-pkgname = brotli-testdata
-	pkgdesc = Generic-purpose lossless compression algorithm - test data
-	depends = 
+pkgname = brotli

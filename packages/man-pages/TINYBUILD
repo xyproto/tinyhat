@@ -1,0 +1,89 @@
+set pkgbase man-pages
+set pkgname man-pages man-pages-utils
+set pkgver 6.19
+set -g _posixver 2017-a
+set pkgrel 1
+set pkgdesc 'Linux man pages'
+set arch any
+set license BSD-2-Clause \
+    BSD-3-Clause \
+    BSD-4.3TAHOE \
+    BSD-4-Clause-UC \
+    GPL-1.0-or-later \
+    GPL-2.0-only \
+    GPL-2.0-or-later \
+    GPL-3.0-or-later \
+    LGPL-3.0-linking-exception \
+    LGPL-3.0-or-later \
+    LicenseRef-Public-Domain \
+    LicenseRef-UltraPermissive \
+    Linux-man-pages-1-para \
+    Linux-man-pages-copyleft \
+    Linux-man-pages-copyleft-2-para \
+    Linux-man-pages-copyleft-var \
+    MIT \
+    Spencer-94
+set url https://www.kernel.org/doc/man-pages/
+set makedepends man2html git
+# https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/
+set source "https://www.kernel.org/pub/linux/docs/man-pages/$pkgbase-$pkgver.tar."{xz,sign} \
+    "https://www.kernel.org/pub/linux/docs/man-pages/man-pages-posix/$pkgbase-posix-$_posixver.tar."{xz,sign}
+# https://www.kernel.org/pub/linux/docs/man-pages/sha256sums.asc
+set sha256sums 88a7c42ad2e03d8b96dc72d95e451f2d875ff0f43103a8eb8ac8242133bdcb05 \
+    SKIP \
+    ce67bb25b5048b20dad772e405a83f4bc70faf051afa289361c81f9660318bc3 \
+    SKIP
+set flags arch
+
+# The posix tarball unpacks to a directory without the -a suffix
+function _posixdir
+    echo "$srcdir/$pkgbase-posix-"(string replace -r -- '-[^-]*$' '' $_posixver)
+end
+
+function prepare
+    cd "$srcdir"/$pkgbase-$pkgver; or return
+
+    # included in shadow
+    rm man5/passwd.5; or return
+    rm man3/getspnam.3; or return
+    # included in tzdata
+    rm man5/tzfile.5 man8/{tzselect,zdump,zic}.8; or return
+    # included in libxcrypt
+    rm man3/crypt*.3; or return
+    # nscd is dead
+    rm man5/nscd.conf.5 man8/nscd.8; or return
+end
+
+# make -R is required until gnu_make 4.5.x will be released
+
+function package_man-pages
+    cd "$srcdir"/$pkgbase-$pkgver; or return
+
+    # install man-pages
+    make DESTDIR="$pkgdir" prefix=/usr install -R; or return
+
+    # install posix pages
+    make -C (_posixdir) DESTDIR="$pkgdir" install -R; or return
+
+    # posix pages have a custom license
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 "$srcdir"/$pkgbase-$pkgver/LICENSES/* "$pkgdir/usr/share/licenses/$pkgname"/; or return
+    install -m644 (_posixdir)/POSIX-COPYRIGHT "$pkgdir/usr/share/licenses/$pkgname/POSIX-COPYRIGHT"; or return
+
+    # split out utils - this cannot be done in prepare() because make install depends on some of these utils
+    mkdir _tools; or return
+    mv "$pkgdir"/usr/bin _tools/; or return
+    mkdir _man1; or return
+    mv "$pkgdir"/usr/share/man/man1/{diffman-git,grepc,grepc_c,mansect,mansectf,pdfman,sortman}.1 _man1/; or return
+end
+
+function package_man-pages-utils
+    set pkgdesc "$pkgdesc - command line tools"
+    set depends sh
+    set license GPL-3.0-or-later
+
+    install -m755 -d "$pkgdir"/usr/bin; or return
+    mv "$srcdir"/$pkgbase-$pkgver/_tools/bin/* "$pkgdir"/usr/bin/; or return
+    install -m755 -d "$pkgdir"/usr/share/man/man1; or return
+    mv "$srcdir"/$pkgbase-$pkgver/_man1/* "$pkgdir"/usr/share/man/man1/; or return
+end

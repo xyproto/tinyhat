@@ -1,0 +1,23 @@
+set pkgname libdeflate
+set pkgver 1.26
+set pkgrel 1
+set pkgdesc 'Heavily optimized library for DEFLATE/zlib/gzip compression and decompression'
+set arch i686 x32
+set url https://github.com/ebiggers/libdeflate
+set license MIT
+set depends glibc
+set makedepends cmake git ninja
+set provides libdeflate.so
+set source "git+https://github.com/ebiggers/libdeflate.git#tag=v$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function build
+    cmake -S libdeflate -B build -G Ninja -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -DLIBDEFLATE_BUILD_STATIC_LIB=OFF -DLIBDEFLATE_BUILD_TESTS=ON; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm 644 libdeflate/COPYING -t "$pkgdir"/usr/share/licenses/libdeflate/; or return
+end

@@ -1,0 +1,27 @@
+set pkgname liburing
+set pkgver 2.15
+set pkgrel 1
+set pkgdesc 'Linux-native io_uring I/O access library'
+set arch i686 x32
+set url https://github.com/axboe/liburing
+set license 'GPL-2.0-only WITH Linux-syscall-note OR MIT' LGPL-2.0-or-later MIT
+set makedepends git
+set provides liburing.so liburing-ffi.so
+set source "git+https://github.com/axboe/liburing.git?signed#tag=$pkgname-$pkgver"
+set sha512sums abeb8bc69de224ac8d130689d1e36bc2f9652ee3a1239278401f59be2b99f39d056ec50ae03264a751e18bb865834e6ebd04a00a6783e9ca0ff4c9168305d7de
+set b2sums dab7a1e2dc1ad09ccc24901a19d866ad3be29ba9c2b2402765056857ba51653b93b940423620cc6d6768256f78a0ff806de1996098305dba3aef21f433dde70d
+set flags arch
+
+function build
+    set -l configure_options \
+        --prefix=/usr \
+        --mandir=/usr/share/man
+    cd $pkgname; or return
+    ./configure $configure_options; or return
+    make; or return
+end
+
+function package
+    make DESTDIR="$pkgdir" install -C $pkgname; or return
+    install -vDm 644 $pkgname/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

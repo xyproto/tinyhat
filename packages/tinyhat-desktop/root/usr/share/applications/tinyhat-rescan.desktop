@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Scan drives for ScummVM games
+Icon=system-search
+Comment=Scan all drives for ScummVM games again
+Exec=tinyhat-scan-games -f
+Terminal=false
+Categories=Game;

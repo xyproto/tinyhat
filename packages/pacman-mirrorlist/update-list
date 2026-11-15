@@ -11,16 +11,8 @@ sed -i '
   1,/^$/d
 ' mirrorlist
 
-sed -i '
-  /^[^#]/d
-' PKGBUILD
-
-printf "pkgver=%s\n" "$(date '+%Y%m%d')" >> PKGBUILD
-for sum_type in sha256 md5 b2; do
-  printf "%ssums=('%s')\n" \
-    "${sum_type}" \
-    "$(
-      ${sum_type}sum mirrorlist | \
-        awk '{print $1}'
-    )" >> PKGBUILD
-done
+sed -i \
+  -e "s/^set pkgver .*/set pkgver $(date '+%Y%m%d')/" \
+  -e "s/^set sha256sums .*/set sha256sums $(sha256sum mirrorlist | awk '{print $1}')/" \
+  -e "s/^set b2sums .*/set b2sums $(b2sum mirrorlist | awk '{print $1}')/" \
+  TINYBUILD

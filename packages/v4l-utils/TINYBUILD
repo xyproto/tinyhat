@@ -1,0 +1,33 @@
+set pkgname v4l-utils
+set pkgver 1.32.0
+set pkgrel 2
+set pkgdesc 'Userspace tools and conversion library for Video 4 Linux'
+set arch i686 x32
+set url https://linuxtv.org/
+set license LGPL
+set depends hicolor-icon-theme libgcc libbpf libjpeg-turbo systemd-libs json-c
+set makedepends alsa-lib meson clang doxygen
+set optdepends 'qt6-base: for qv4l2 and qvidcap' 'qt6-5compat: for qv4l2' 'alsa-lib: for qv4l2'
+set provides libv4l=1.32.0
+set conflicts libv4l
+set replaces libv4l
+set backup etc/rc_maps.cfg
+set source "https://linuxtv.org/downloads/v4l-utils/v4l-utils-$pkgver.tar.xz" \
+    "https://linuxtv.org/downloads/v4l-utils/v4l-utils-$pkgver.tar.xz.asc"
+set sha256sums 6828828a17775526eb93fb258a9294d1d1073d633c344dd71ecd4e7a1ffb7dfc \
+    c67097a24379a719f6afb9f2a829e4c26189d0460ffb53ba3546d609e496dc29
+set flags arch
+
+function prepare
+    cd "$pkgname-$pkgver"; or return
+    sed -i 's/sbin/bin/' utils/v4l2-dbg/meson.build; or return
+end
+
+function build
+    arch-meson -Dgconv=disabled -Dqv4l2=disabled -Dqvidcap=disabled "$pkgname-$pkgver" build; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+end

@@ -15,7 +15,6 @@ pkgbase = aom
 	depends = libstdc++
 	source = https://storage.googleapis.com/aom-releases/libaom-3.15.2.tar.gz
 	source = https://storage.googleapis.com/aom-releases/libaom-3.15.2.tar.gz.asc
-	validpgpkeys = B002F08B74A148DAA01F7123A48E86DB0B830498
 	b2sums = 255a195b4847c7b3345753c3bca54dc6028ec17de4b2df8efb2db1b41e66bd52f224e81bd7151117c0c621522b8d422ca47b7e96dbeab9a4aff4ec5c453cbfd9
 	b2sums = SKIP
 

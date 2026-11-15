@@ -28,7 +28,6 @@ pkgbase = ca-certificates
 
 pkgname = ca-certificates-utils
 	pkgdesc = Common CA certificates (utilities)
-	install = ca-certificates-utils.install
 	depends = bash
 	depends = coreutils
 	depends = findutils
@@ -37,9 +36,10 @@ pkgname = ca-certificates-utils
 	provides = ca-certificates-java
 	conflicts = ca-certificates-java
 	replaces = ca-certificates-java
+	install = ca-certificates-utils.install
 
 pkgname = ca-certificates
 	pkgdesc = Common CA certificates - default providers
 	depends = ca-certificates-mozilla
 	conflicts = ca-certificates-cacert<=20140824-4
-	replaces = 
+	replaces = ca-certificates-cacert<=20140824-4

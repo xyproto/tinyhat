@@ -1,0 +1,41 @@
+set pkgname alsa-lib
+set pkgver 1.2.16.1
+set pkgrel 1
+set pkgdesc 'An alternative implementation of Linux sound support'
+set arch i686 x32
+set url https://www.alsa-project.org
+set license LGPL-2.1-or-later
+set depends alsa-topology-conf alsa-ucm-conf glibc
+set provides libasound.so libatopology.so
+set install $pkgname.install
+set flags arch
+set source $url/files/pub/lib/$pkgname-$pkgver.tar.bz2{,.sig}
+set sha512sums 2ddc5eef7fafe73ba6d8e4f79640a5aaa6e27aac2c77075fda9ee8ae61727bddfcda661e257057d8cf2f1647897d33153703f9ba913574ae7f1fbec53db3fa22 \
+    SKIP
+set b2sums 437a9fd2a11a828eb1244a3871dff9b84e2619f3a7a66f37f236025b4a0f37bd5194215bbdbfebfaf6ae96a4a4f24c1712eb1d8b1e176b51d0544a539c07022d \
+    SKIP
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    # -flto=auto is not supported: https://github.com/alsa-project/alsa-lib/issues/110
+    set -a CFLAGS -flto-partition=none
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr --without-debug; or return
+    # prevent excessive overlinking due to libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    set -lx LD_LIBRARY_PATH "$pkgname-$pkgver/src/.libs/:$LD_LIBRARY_PATH"
+    make -k check -C $pkgname-$pkgver; or return
+end
+
+function package
+    make DESTDIR="$pkgdir" install -C $pkgname-$pkgver; or return
+    install -vDm 644 $pkgname-$pkgver/{MEMORY-LEAK,TODO,NOTES,ChangeLog,doc/asoundrc.txt} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
+end

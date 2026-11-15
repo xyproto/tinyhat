@@ -1,0 +1,69 @@
+set pkgname tinyhat-freedos
+set pkgver 1.4
+set pkgrel 2
+set pkgdesc 'FreeDOS 1.4 live boot floppy with free DOS games, for the GRUB menu'
+set arch any
+set url https://www.freedos.org/
+set license GPL-2.0-or-later BSD-2-Clause BSD-3-Clause LicenseRef-CWSDPMI
+set makedepends mtools
+set _games https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/games
+set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/distributions/$pkgver/FD14-FloppyEdition.zip \
+    blkdrop-$pkgver.zip::$_games/blkdrop.zip \
+    vitetris-$pkgver.zip::$_games/vitetris.zip \
+    sudoku86-$pkgver.zip::$_games/sudoku86.zip \
+    senet-$pkgver.zip::$_games/senet.zip \
+    ctmouse-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/ctmouse.zip
+set noextract FD14-FloppyEdition.zip blkdrop-$pkgver.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip senet-$pkgver.zip ctmouse-$pkgver.zip
+set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a \
+    af4670b67866db841292a8c52ba61334ea7745262e921f13ff814152d8387fcc \
+    53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843 \
+    12c13caecd098748f5a8ace6667bbcacc333da209a70f26e49504fd11cb21eb3 \
+    c672da413252e356341832519423c1e5efe16a6d79097dfc77d0c5ac78618100 \
+    fd47069fb3d9559604dcaef34ca4f3705a7f2f2cff3e4b205e361b79f10a8200
+
+function _dosfile -a path
+    string join \r\n -- $argv[2..] '' >$path
+end
+
+function build
+    set -lx MTOOLS_SKIP_CHECK 1
+    rm -rf floppy games
+    mkdir -p floppy games; or return
+    bsdtar -xf FD14-FloppyEdition.zip -C floppy --strip-components=1 144m/x86BOOT.img; or return
+    set -l img floppy/x86BOOT.img
+    set -l cr \r
+    mtype -i $img ::/FDAUTO.BAT | while read -l line
+        if string match -q 'if exist SETUP.BAT CALL SETUP.BAT BOOT*' -- $line
+            printf '%s\n' "CTMOUSE.EXE$cr" "echo FreeDOS 1.4, started from Tiny Hat. Nothing is installed on this computer.$cr" \
+                "echo Games: BLKDROP, TETRIS, SUDOKU and SENET. SETUP installs FreeDOS on a hard disk.$cr" "echo.$cr"
+        else
+            printf '%s\n' $line
+        end
+    end >floppy/FDAUTO.BAT
+    grep -q 'Games: BLKDROP' floppy/FDAUTO.BAT; or return
+    mcopy -o -i $img floppy/FDAUTO.BAT ::/FDAUTO.BAT; or return
+    bsdtar -xf blkdrop-$pkgver.zip -C games GAMES/BLKDROP/BLKDROP.EXE GAMES/BLKDROP/README.TXT BATLINKS/BLKDROP.BAT SOURCE/BLKDROP/SOURCES.ZIP; or return
+    bsdtar -xf games/SOURCE/BLKDROP/SOURCES.ZIP -C games/GAMES/BLKDROP LICENSE; or return
+    rm -r games/SOURCE
+    bsdtar -xf vitetris-$pkgver.zip -C games GAMES/VITETRIS/TETRIS.EXE GAMES/VITETRIS/CWSDPMI.EXE GAMES/VITETRIS/CWSDPMI.DOC GAMES/VITETRIS/LICENCE.TXT GAMES/VITETRIS/README.TXT GAMES/VITETRIS/VITETRIS.CFG; or return
+    bsdtar -xf sudoku86-$pkgver.zip -C games GAMES/SUDOKU86/SUDOKU86.EXE GAMES/SUDOKU86/SUDOKU86.DAT GAMES/SUDOKU86/SUDOKU86.LEV GAMES/SUDOKU86/README.TXT; or return
+    bsdtar -xf senet-$pkgver.zip -C games GAMES/SENET/SENET.EXE BATLINKS/SENET.BAT DOC/SENET/COPYING; or return
+    mv games/DOC/SENET/COPYING games/GAMES/SENET/COPYING; or return
+    _dosfile games/BATLINKS/TETRIS.BAT '@echo off' 'cd %DOSDRV%\GAMES\VITETRIS' 'TETRIS.EXE %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/SUDOKU.BAT '@echo off' 'cd %DOSDRV%\GAMES\SUDOKU86' 'SUDOKU86.EXE %1 %2 %3' 'cd \\'
+    bsdtar -xf ctmouse-$pkgver.zip -C games BIN/CTMOUSE.EXE; or return
+    mcopy -i $img games/BIN/CTMOUSE.EXE ::/FREEDOS/BIN/; or return
+    mcopy -s -i $img games/GAMES ::/; or return
+    mcopy -i $img games/BATLINKS/BLKDROP.BAT games/BATLINKS/SENET.BAT games/BATLINKS/TETRIS.BAT games/BATLINKS/SUDOKU.BAT ::/FREEDOS/BIN/; or return
+    minfo -i $img >/dev/null; or return
+    mdir -i $img ::/GAMES >/dev/null
+end
+
+function package
+    install -Dm644 floppy/x86BOOT.img $pkgdir/usr/share/tinyhat/freedos.img; or return
+    install -Dm644 games/GAMES/BLKDROP/LICENSE $pkgdir/usr/share/licenses/$pkgname/BLKDROP; or return
+    install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $pkgdir/usr/share/licenses/$pkgname/VITETRIS; or return
+    install -Dm644 games/GAMES/SUDOKU86/README.TXT $pkgdir/usr/share/licenses/$pkgname/SUDOKU86; or return
+    install -Dm644 games/GAMES/SENET/COPYING $pkgdir/usr/share/licenses/$pkgname/SENET; or return
+    install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI
+end

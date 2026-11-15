@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Learn the game of Go
+Icon=applications-games
+Comment=The Interactive Way to Go, an online tutorial for the game of Go
+Exec=xdg-open https://way-to-go.gitlab.io/capture-stones/
+Terminal=false
+Categories=Game;BoardGame;

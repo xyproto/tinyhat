@@ -18,7 +18,6 @@ pkgbase = libngtcp2
 	source = git+https://github.com/ngtcp2/ngtcp2.git?signed#tag=v1.25.0
 	source = git+https://github.com/ngtcp2/munit.git
 	source = git+https://github.com/ngtcp2/urlparse.git
-	validpgpkeys = F4F3B91474D1EB29889BD0EF7E8403D5D673C366
 	sha256sums = cf8cf5673a16d359e4c3830188b0c4733f4c4ce7ae9fa7dada82869ea79c0b55
 	sha256sums = SKIP
 	sha256sums = SKIP

@@ -1,0 +1,48 @@
+set pkgname pcre
+set pkgver 8.45
+set pkgrel 5
+set pkgdesc 'A deprecated library that implements Perl 5-style regular expressions'
+set arch i686 x32
+set url https://www.pcre.org/
+set license BSD
+set depends glibc libgcc libstdc++ readline zlib bzip2 bash
+set provides libpcre{,16,32,posix,cpp}.so
+set source "https://sourceforge.net/projects/pcre/files/$pkgname/$pkgver/$pkgname-$pkgver.tar.bz2"{,.sig} \
+    0001-pcre-JIT-compiler-update-for-Intel-CET.patch \
+    0002-pcre-Pass-mshstk-to-the-compiler-when-Intel-CET-is-enable.patch
+set sha256sums 4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8 \
+    SKIP \
+    86e2fe1193f2dfaa5e3f3866c6be42a9cd0dddc5623f1658203a4dc73a4526f7 \
+    a44ffb942d585c2c95036f91529063738b1c373fcd26a3e2dc95ae76b1f3c3db
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    # apply patch from the source array (should be a pacman feature)
+    for src in $source
+        set src (string replace -r '::.*' '' -- $src | string replace -r '.*/' '')
+        string match -q '*.patch' -- $src; or continue
+        echo "Applying patch $src..."
+        patch -Np1 <"../$src"; or return
+    end
+    autoreconf -fi; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-jit \
+        --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make -j1 check; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 LICENCE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

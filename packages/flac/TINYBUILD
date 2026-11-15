@@ -1,0 +1,49 @@
+set pkgbase flac
+set pkgname flac flac-doc
+set pkgver 1.5.0
+set pkgrel 1
+set pkgdesc 'Free Lossless Audio Codec'
+set arch i686 x32
+set url https://xiph.org/flac/
+set license BSD-3-Clause GPL-2.0-or-later
+set depends glibc gcc-libs libogg
+set makedepends cmake doxygen git nasm ninja
+set source "git+https://github.com/xiph/flac#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd flac; or return
+    sed -i 's/FLAC__TEST_LEVEL=1/FLAC__TEST_LEVEL=0/' test/CMakeLists.txt; or return
+end
+
+switch $CARCH
+    case x32 x86_64 aarch64
+        function build
+            set -l cmake_options -D BUILD_SHARED_LIBS=ON -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D NDEBUG=ON -D WITH_FORTIFY_SOURCE=OFF -D WITH_STACK_PROTECTOR=OFF
+            cmake -S flac -DINSTALL_MANPAGES=OFF -B build -G Ninja $cmake_options; or return
+            cmake --build build; or return
+        end
+    case '*'
+        function build
+            set -l cmake_options -D BUILD_SHARED_LIBS=ON -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D NDEBUG=ON -D WITH_FORTIFY_SOURCE=OFF -D WITH_STACK_PROTECTOR=OFF
+            cmake -S flac -DINSTALL_MANPAGES=OFF -DWITH_SSE=OFF -B build -G Ninja $cmake_options; or return
+            cmake --build build; or return
+        end
+end
+
+function package_flac
+    set provides 'libFLAC.so' 'libFLAC++.so'
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm 644 flac/src/*/*.m4 -t "$pkgdir/usr/share/aclocal"; or return
+    mkdir -p doc/usr/share; or return
+    mv {"$pkgdir",doc}/usr/share/doc; or return
+    install -Dm 644 flac/COPYING.Xiph -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_flac-doc
+    set pkgdesc "$pkgdesc"' - documentation'
+    set license 'GFDL-1.3-no-invariants-or-later'
+    set depends
+    mv doc/* "$pkgdir"; or return
+end

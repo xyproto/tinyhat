@@ -1,0 +1,35 @@
+set pkgname sbc
+set pkgver 2.2
+set pkgrel 1
+set pkgdesc 'Bluetooth Subband Codec (SBC) library'
+set url https://git.kernel.org/pub/scm/bluetooth/sbc.git
+set arch i686 x32
+# GPL for the programs, LGPL for the library
+set license GPL-2.0-or-later LGPL-2.1-or-later
+set depends glibc
+set makedepends git
+set provides libsbc.so
+set source "git+$url#tag=$pkgver"
+set b2sums 281da2c9d6bc79e71771e2947186b7b0a375ccb4e20a74834d15f8cd1cf617197bcc6e1a2d0628942f6c9eabb81698ac6b33032526de39baaeb0d0565cb9f49d
+set flags arch
+
+function prepare
+    cd sbc; or return
+    autoreconf -fvi; or return
+end
+
+function build
+    cd sbc; or return
+    ./configure --prefix=/usr --disable-static --disable-tester; or return
+    make; or return
+end
+
+function check
+    cd sbc; or return
+    make check; or return
+end
+
+function package
+    cd sbc; or return
+    make DESTDIR="$pkgdir" install; or return
+end

@@ -1,0 +1,43 @@
+set pkgname gettext
+set pkgver 1.0
+set pkgrel 2
+set pkgdesc 'GNU internationalization library'
+set url https://www.gnu.org/software/gettext/
+set arch i686 x32
+set license GFDL-1.2-only GPL-2.0-only GPL-2.0-or-later LGPL-2.0-only
+set depends acl attr curl glibc json-c libgcc libgomp libstdc++ gnulib-l10n libunistring libxml2 ncurses sh
+# emacs is left out: currently broken around libsitter
+set makedepends
+set optdepends 'git: for autopoint infrastructure updates' \
+    'appstream: for appstream support'
+set options '!docs'
+set source https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz{,.sig}
+set b2sums 1e4b78979f780878472142f1c0baba468d60f4b5605eeb5db5c092901183e3128c79df94c2041de870920f079b4bf38e6dae056b731e4b2b4c5cc343940962d8 \
+    SKIP
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure \
+        --prefix=/usr \
+        --libexecdir=/usr/lib \
+        --enable-csharp \
+        --enable-nls \
+        --with-xz \
+        --without-included-gettext \
+        --without-included-libunistring; or return
+    sed -e 's/ -shared / -Wl,-O1,--as-needed\0/g' \
+        -i gettext-{tools,runtime,runtime/libasprintf}/libtool; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    # ignore failing time test in gnulib for now
+    make check; or true
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

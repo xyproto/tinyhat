@@ -1,0 +1,34 @@
+set pkgname kmod
+set pkgver 34.2
+set pkgrel 1
+set pkgdesc 'Linux kernel module management tools and library'
+set arch i686 x32
+set url https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git
+set license LGPL-2.1-or-later GPL-2.0-or-later
+set depends glibc zlib xz zstd
+set makedepends git meson scdoc
+set checkdepends linux-headers libelf
+set provides libkmod.so
+set options strip
+set source "git+https://git.kernel.org/pub/scm/utils/kernel/kmod/kmod.git#tag=v$pkgver?signed" \
+    depmod-search.conf \
+    depmod.hook \
+    depmod.script
+set sha256sums 7eef327c5cbe2a4649b2487b7a5bec6787cd26c9488bdbb2f35beb15305455b1 \
+    1a92bfeae870f61ce814577e69d2a147a9c0caf6aed1131243e4179241fcc4a8 \
+    c11c2a0f66ea405493e8617689ca10818dc81dd1dddc19bdb220c8b2917119c1 \
+    18661aa40c25580f04d2ac3f32e54c2997c0994d1c829905537b413a9d291ac6
+set flags arch
+
+function build
+    arch-meson 'kmod' 'build' -Dbuild-tests=false -Dmanpages=true -Dopenssl=disabled -Dxz=enabled -Dzlib=enabled -Dzstd=enabled; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C 'build' --destdir "$pkgdir"; or return
+    install -dm0755 "$pkgdir"/{etc,usr/lib}/{depmod,modprobe}.d; or return
+    install -Dm0644 "$srcdir/depmod-search.conf" "$pkgdir/usr/lib/depmod.d/search.conf"; or return
+    install -Dm0644 "$srcdir/depmod.hook" "$pkgdir/usr/share/libalpm/hooks/60-depmod.hook"; or return
+    install -Dm0755 "$srcdir/depmod.script" "$pkgdir/usr/share/libalpm/scripts/depmod"; or return
+end

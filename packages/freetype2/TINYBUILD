@@ -1,0 +1,87 @@
+set pkgbase freetype2
+set pkgname freetype2 freetype2-demos freetype2-docs
+set pkgver 2.15.0
+set pkgrel 1
+set pkgdesc 'Font rasterization library'
+set arch i686 x32
+set url https://www.freetype.org/
+set license 'FTL OR GPL-2.0-or-later'
+set depends brotli bzip2 glibc libpng zlib
+set makedepends cairo glib2 harfbuzz libgcc libstdc++ libx11 meson libxml2
+set source "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz" \
+    "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-$pkgver.tar.xz.sig" \
+    "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-doc-$pkgver.tar.xz" \
+    "https://download-mirror.savannah.gnu.org/releases/freetype/freetype-doc-$pkgver.tar.xz.sig" \
+    "https://download-mirror.savannah.gnu.org/releases/freetype/ft2demos-$pkgver.tar.xz" \
+    "https://download-mirror.savannah.gnu.org/releases/freetype/ft2demos-$pkgver.tar.xz.sig" \
+    freetype2.sh \
+    0001-Enable-table-validation-modules.patch \
+    0002-Enable-subpixel-rendering.patch \
+    0003-Enable-long-PCF-family-names.patch
+set sha256sums 93cd47eb719c325107f2d3cf087d06299e944c3b48a40b55537302304dea1dd5 \
+    6664ef375e30abffaf16d124d878ae2d4903d7af260692da7e975442eeca3462 \
+    151b3f0a221b39775a0b2aa8e5893a60c4ef5ed7081371c5cce27250808bdff5 \
+    6ce8650ca7fdfc7025b0a26a37351e9267cf723ed869964d60e89aa7d7427155 \
+    9b77c9ccf3965d2c5e65383c7c7fdb411d6239c402426f32f7411fade396c268 \
+    ed72b71c9accd362b074c91223f79a614b9d91d055ff8b570dc355ac8bd5921c \
+    26474284e7bd08191fea23b97eb1f638dd91b1e15f1f06fbf46799ddfeebf4ff \
+    5d8dc169e7f32391497ca29e253548bbe87999e1cebddcef3e87c4be63e8f82a \
+    debdf00902ff6beb83be6f88952f5acd92e2c800896b9e8b617de4800dbf4909 \
+    8d25c4d40d08eea74ed796224b8a89a4be913c1868b2a169ab46a3d8875c14ff
+set flags arch
+
+function prepare
+    ln -sr freetype-$pkgver freetype2; or return
+    cd freetype-$pkgver; or return
+    patch -Np1 -i ../0001-Enable-table-validation-modules.patch; or return
+    patch -Np1 -i ../0002-Enable-subpixel-rendering.patch; or return
+    patch -Np1 -i ../0003-Enable-long-PCF-family-names.patch; or return
+    sed -i "/subdir(.src\/ftinspect.)/d" "$srcdir/ft2demos-$pkgver/meson.build"; or return
+end
+
+function build
+    set -l meson_options -D freetype2:default_library=shared -D freetype2:error_strings=true -D freetype2:harfbuzz=dynamic -D freetype2:hvf=disabled -D librsvg=disabled
+    set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
+    arch-meson ft2demos-$pkgver build $meson_options; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_freetype2
+    set optdepends 'harfbuzz: Improved autohinting'
+    set provides libfreetype.so
+    set backup etc/profile.d/freetype2.sh
+    meson install -C build --destdir="$pkgdir"; or return
+    _pick demos "$pkgdir"/usr/bin; or return
+    _pick demos "$pkgdir"/usr/share/man/man1; or return
+    install -Dm644 freetype2.sh -t "$pkgdir/etc/profile.d"; or return
+    install -Dm644 freetype-$pkgver/docs/FTL.TXT -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_freetype2-demos
+    set pkgdesc "Freetype tools and demos"
+    set depends cairo freetype2 glib2 glibc libgcc libstdc++ libx11
+    set optdepends 'qt6-base: ftinspect'
+    mv demos/* "$pkgdir"; or return
+    install -Dm644 freetype-$pkgver/docs/FTL.TXT -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end
+
+function package_freetype2-docs
+    set pkgdesc "Freetype documentation"
+    set depends
+    mkdir -p "$pkgdir/usr/share/doc"; or return
+    cp -r freetype-$pkgver/docs "$pkgdir/usr/share/doc/$pkgbase"; or return
+    install -Dm644 freetype-$pkgver/docs/FTL.TXT -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

@@ -11,8 +11,7 @@ pkgbase = sed
 	depends = acl
 	source = https://ftp.gnu.org/pub/gnu/sed/sed-4.10.tar.xz
 	source = https://ftp.gnu.org/pub/gnu/sed/sed-4.10.tar.xz.sig
-	validpgpkeys = 155D3FC500C834486D1EEA677FD9FCCB000BEEEE
 	sha256sums = b8e72182b2ec96a3574e2998c47b7aaa64cc20ce000d8e9ac313cc07cecf28c7
-	sha256sums = SKIP
+	sha256sums = b43d0dae9cba8cc2adb268cc37e974d5811475ffd569d66c8963cfd5ae2e224e
 
 pkgname = sed

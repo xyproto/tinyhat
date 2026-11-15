@@ -1,0 +1,33 @@
+set pkgname libtiff
+set pkgver 4.7.2
+set pkgrel 2
+set pkgdesc 'Library for manipulation of TIFF images'
+set arch i686 x32
+set url http://www.simplesystems.org/libtiff/
+set license libtiff
+set depends libstdc++ glibc jbigkit libdeflate libjpeg-turbo libjpeg.so libwebp xz zlib zstd
+switch $CARCH
+    case x32 x86_64 aarch64
+        set -g makedepends cmake git
+    case '*'
+        set -g makedepends cmake git freeglut glu mesa jbigkit
+end
+set optdepends 'freeglut: for using tiffgt'
+set provides libtiff.so libtiffxx.so
+set source "git+https://gitlab.com/libtiff/libtiff.git?signed#tag=v$pkgver"
+set sha256sums 633aa6529859b02b08df2dc29e0119fe614991f4490441c2eb80052de68a3754
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+end
+
+function build
+    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_POLICY_VERSION_MINIMUM=3.5; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    install -Dm 644 libtiff/LICENSE.md -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

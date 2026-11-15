@@ -1,0 +1,39 @@
+set pkgbase wayland
+set pkgname wayland wayland-docs
+set pkgver 1.26.0
+set pkgrel 1
+set pkgdesc 'A computer display server protocol'
+set arch i686 x32
+set url https://wayland.freedesktop.org/
+set license MIT
+set depends glibc libffi expat libxml2 default-cursors
+set makedepends meson libxslt doxygen xmlto graphviz docbook-xsl mdbook
+set source "https://gitlab.freedesktop.org/wayland/wayland/-/releases/$pkgver/downloads/wayland-$pkgver.tar.xz" \
+    "https://gitlab.freedesktop.org/wayland/wayland/-/releases/$pkgver/downloads/wayland-$pkgver.tar.xz.sig"
+set sha256sums 64176eaa46e4969903e286f8e5ef8331affc17fdf03ac9b58381d2b23162b7a3 \
+    SKIP
+set flags arch
+
+function build
+    arch-meson $pkgbase-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function check
+    meson test -C build --print-errorlogs; or return
+end
+
+function package_wayland
+    set provides libwayland-client.so libwayland-cursor.so libwayland-egl.so libwayland-server.so
+    meson install -C build --destdir "$pkgdir"; or return
+    mkdir -p docs/share; or return
+    mv "$pkgdir"/usr/share/{doc,man} docs/share; or return
+    install -Dm 644 $pkgbase-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end
+
+function package_wayland-docs
+    set pkgdesc "$pkgdesc (documentation)"
+    set depends
+    mv docs "$pkgdir/usr"; or return
+    install -Dm 644 $pkgbase-$pkgver/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

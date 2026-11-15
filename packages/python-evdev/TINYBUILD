@@ -1,0 +1,21 @@
+set pkgname python-evdev
+set pkgver 2.0.0
+set pkgrel 1
+set pkgdesc 'Python bindings for the Linux input subsystem'
+set url https://python-evdev.readthedocs.io/en/latest/
+set arch i686 x32
+set license BSD-3-Clause
+set depends glibc python
+set makedepends git python-build python-installer python-setuptools python-wheel
+set source "git+https://github.com/gvalkov/python-evdev#tag=v$pkgver"
+set b2sums cb7f8c200f249ca458456ab3d028965e01101309a4bcd07af1a8b2e89cf04c25f6fc16e4dd9eec7a719236138768ad10c8734df343e95e4c0442617744225292
+set flags arch
+
+function build
+    python -m build --wheel --no-isolation $pkgname; or return
+end
+
+function package
+    python -m installer --destdir="$pkgdir" $pkgname/dist/*.whl; or return
+    install -Dm644 $pkgname/LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+end

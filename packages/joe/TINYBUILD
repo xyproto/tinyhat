@@ -1,0 +1,27 @@
+set pkgname joe
+set pkgver 4.8
+set pkgrel 1
+set pkgdesc 'Classic text editor' # Joe's Own Editor, since 1988
+set arch i686 x32
+set url https://joe-editor.sourceforge.io/
+set license GPL-2.0-or-later
+set makedepends git
+set depends glibc ncurses
+set optdepends 'gpm: console mouse support'
+set backup etc/joe/ftyperc etc/joe/jicerc.ru etc/joe/jmacsrc \
+    etc/joe/joerc etc/joe/jpicorc etc/joe/jstarrc etc/joe/rjoerc
+set flags arch
+set source "git+https://github.com/joe-editor/joe#tag=releases/joe-$pkgver"
+set b2sums fb6e6ce5867dad323464b72f555b45a65c374bb64f178fe9d4de8963ff1b783811b81383151da482e3b6a942bbd1a66485c03774bd0a6edffa463d6c39b1d702
+
+function build
+    cd $pkgname; or return
+    ./autojoe; or return
+    ./configure --mandir=/usr/share/man --prefix=/usr --sysconfdir=/etc; or return
+    make; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+end

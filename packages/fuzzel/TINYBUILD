@@ -1,0 +1,28 @@
+set pkgname fuzzel
+set pkgver 1.15.0
+set pkgrel 2
+set pkgdesc 'Application launcher for Wayland'
+set arch i686 x32
+set url https://codeberg.org/dnkl/fuzzel
+set license MIT
+set depends libcairo.so fcft libpng libutf8proc libxkbcommon pixman wayland
+set makedepends meson ninja scdoc tllist wayland-protocols
+set source "fuzzel-$pkgver.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/$pkgver.tar.gz" \
+    wheel-repaint.patch
+set sha256sums 95b6c022fc1f1c7ab586d47c1594417cc311bf41ea8f5f8b5641478da7b5cf3b \
+    0562d17389f2c0a09ade45f26823fbffb729823616c6759916f4712535143267
+
+function prepare
+    cd fuzzel; or return
+    patch -Np1 -i ../wheel-repaint.patch; or return
+end
+
+function build
+    meson setup build fuzzel --prefix=/usr --buildtype=minsize -Dwerror=false -Denable-cairo=enabled -Dpng-backend=libpng -Dsvg-backend=nanosvg; or return
+    ninja -C build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" ninja -C build install; or return
+    install -Dm644 fuzzel/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

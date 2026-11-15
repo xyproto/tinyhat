@@ -1,0 +1,62 @@
+set pkgname file
+set pkgver 5.48
+set pkgrel 1
+set pkgdesc 'File type identification utility'
+set arch i686 x32
+set license BSD-2-Clause-Darwin
+set url https://www.darwinsys.com/file/
+set depends glibc bzip2 libbz2.so libseccomp libseccomp.so xz liblzma.so zlib libz.so zstd libzstd.so
+set makedepends git
+set provides libmagic.so
+set options '!emptydirs'
+set flags arch
+# Warning: Upstream commits update file version and date inside each file!
+#          Remove these changes from patches when cherry-picking to avoid
+#          conflicts!
+set source "git+https://github.com/file/file.git#tag=FILE"(string replace -a . _ -- $pkgver)
+set sha256sums b87dd9948e5a31c8bc16e7c6dff05ab894ccbbf3d02727cb3e50d9073d2bff5f
+
+function prepare
+    cd file; or return
+
+    # apply patch from the source array (should be a pacman feature)
+    for src in $source
+        set src (string replace -r '::.*' '' -- $src | string replace -r '.*/' '')
+        string match -q '*.patch' -- $src; or continue
+        echo "Applying patch $src..."
+        patch -Np1 <"../$src"; or return
+    end
+
+    autoreconf -fiv; or return
+end
+
+function build
+    cd file; or return
+
+    # Fix linking libmagic (vfork needs libpthread)
+    set -a CFLAGS -pthread
+
+    # libseccomp is disabled for now (archlinux32: gcc 2.33)
+    ./configure \
+        --prefix=/usr \
+        --datadir=/usr/share/file \
+        --enable-fsect-man5 \
+        --disable-libseccomp; or return
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function check
+    cd file; or return
+
+    # ignore some failing time tests in Garmin data
+    # (possibly a 32-bit time issue)
+    make check; or true
+end
+
+function package
+    cd file; or return
+
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

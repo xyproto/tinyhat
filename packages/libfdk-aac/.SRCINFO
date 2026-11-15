@@ -10,6 +10,6 @@ pkgbase = libfdk-aac
 	depends = glibc
 	provides = libfdk-aac.so
 	source = git+https://github.com/mstorsjo/fdk-aac.git#tag=v3.0.0
-	b2sums = a7171040e5e4ba76319698565473610b954a791cace26468e3293567cbbf61b9e75eb0a400d4f5da62062ce0afe00c58751808c7958f3f229031a3d3ce69679a
+	sha256sums = SKIP
 
 pkgname = libfdk-aac

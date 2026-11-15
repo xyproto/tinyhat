@@ -1,0 +1,31 @@
+set pkgname libunistring
+set pkgver 1.4.2
+set pkgrel 1
+set pkgdesc 'Library for manipulating Unicode strings and C strings'
+set url https://www.gnu.org/software/libunistring/
+set arch i686 x32
+set license GPL-2.0-or-later LGPL-3.0-or-later
+set depends glibc
+set provides libunistring.so
+set source https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz{,.sig}
+set b2sums a03c51d3b1295642f5933e1b129f1b3f81705ef10422a30e6786d36e5788334ee6fbff1d70b31e1a95a65a6869db35f7ce77f6a59555eadf1ee31ecf19d92ccd \
+    SKIP
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    # hotfix for FS#63334 (test crashes due to too agressive symbol elimination)
+    set -lx LDFLAGS -Wl,-O1,--sort-common,-z,relro,-z,now
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function check
+    # hotfix for FS#63334 (test crashes due to too agressive symbol elimination)
+    set -lx LDFLAGS -Wl,-O1,--sort-common,-z,relro,-z,now
+    make -C $pkgname-$pkgver check; or return
+end
+
+function package
+    make -C $pkgname-$pkgver DESTDIR="$pkgdir" install; or return
+end

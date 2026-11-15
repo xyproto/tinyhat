@@ -1,0 +1,49 @@
+set pkgbase gsettings-desktop-schemas
+set pkgname gsettings-desktop-schemas gsettings-system-schemas
+set pkgver 51.0
+set pkgrel 1
+set pkgdesc 'GSettings schemas for GNOME'
+set arch any
+set url https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas
+set license LGPL-2.1-or-later
+set makedepends adwaita-fonts dconf git glib2-devel meson
+set source "git+https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git#tag=$pkgver"
+set sha256sums SKIP
+set flags arch
+
+function prepare
+    cd $pkgbase; or return
+end
+
+function build
+    arch-meson -D introspection=false $pkgbase build; or return
+    meson compile -C build; or return
+end
+
+function _pick
+    set -l p "$argv[1]"
+    set -l f
+    set -l d
+    set -e argv[1]
+    for f in $argv
+        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
+        mkdir -p "$(dirname "$d")"; or return
+        mv "$f" "$d"; or return
+        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
+    end
+end
+
+function package_gsettings-desktop-schemas
+    set pkgdesc "$pkgdesc desktop components"
+    set depends "gsettings-system-schemas=$pkgver" adwaita-fonts dconf
+    meson install -C build --no-rebuild --destdir "$pkgdir"; or return
+    cd "$pkgdir"; or return
+    _pick system usr/share/glib-2.0/schemas/org.gnome.desktop.enums.xml; or return
+    _pick system usr/share/glib-2.0/schemas/org.gnome.system.*.gschema.xml; or return
+end
+
+function package_gsettings-system-schemas
+    set pkgdesc "$pkgdesc system components"
+    set depends dconf
+    mv system/* "$pkgdir"; or return
+end

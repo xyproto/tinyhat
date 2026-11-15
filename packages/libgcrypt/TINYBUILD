@@ -1,0 +1,60 @@
+# after a .so bump first rebuild dirmngr
+
+set pkgname libgcrypt
+set pkgver 1.12.4
+set pkgrel 1
+set pkgdesc 'General purpose cryptographic library based on the code from GnuPG'
+set arch i686 x32
+set url https://www.gnupg.org
+set license BSD-3-Clause \
+    'BSD-3-Clause OR GPL-2.0-only' \
+    GPL-2.0-or-later \
+    LGPL-2.0-or-later \
+    LGPL-2.1-or-later \
+    X11 \
+    LicenseRef-scancode-public-domain \
+    LicenseRef-OCB1
+set depends libgpg-error glibc
+set options '!emptydirs'
+set flags arch
+# https://www.gnupg.org/download/integrity_check.html
+set source https://gnupg.org/ftp/gcrypt/$pkgname/$pkgname-$pkgver.tar.bz2{,.sig}
+set sha256sums d77f68f48879510e79a2f65977ccc68981781ea0923e5bdffac2a193ea3d660e \
+    SKIP
+
+function prepare
+    cd $pkgname-$pkgver; or return
+
+    # tests fail due to systemd+libseccomp preventing memory syscalls when building in chroots
+    #  t-secmem: line 176: gcry_control (GCRYCTL_INIT_SECMEM, pool_size, 0) failed: General error
+    #  FAIL: t-secmem
+    #  t-sexp: line 1174: gcry_control (GCRYCTL_INIT_SECMEM, 16384, 0) failed: General error
+    #  FAIL: t-sexp
+    sed -i "s:t-secmem::" tests/Makefile.am; or return
+    sed -i "s:t-sexp::" tests/Makefile.am; or return
+
+    # fix version - due to autoreconf
+    sed -i 's/beta=yes/beta=no/; s/tmp="-unknown"/tmp=""/' autogen.sh; or return
+
+    autoreconf -vfi; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr \
+        --disable-static \
+        --disable-padlock-support; or return
+    make; or return
+end
+
+function check
+    cd $pkgname-$pkgver; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -m755 -d "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -m644 {COPYING.LIB,LICENSES} "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

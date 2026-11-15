@@ -1,0 +1,110 @@
+set pkgname inetutils
+set pkgver 2.8
+set pkgrel 1
+set pkgdesc 'A collection of common network programs'
+set arch i686 x32
+set url https://www.gnu.org/software/inetutils/
+set license GPL-3.0-or-later
+set depends glibc pam libcap readline ncurses libxcrypt \
+    libpam.so libcrypt.so libreadline.so libncursesw.so
+set makedepends git help2man python
+set backup etc/pam.d/rlogin etc/pam.d/rsh
+set options '!emptydirs'
+set install inetutils.install
+set source "git+https://git.savannah.gnu.org/git/inetutils.git#tag=v$pkgver?signed" \
+    git+https://git.savannah.gnu.org/git/gnulib.git \
+    inetutils.sysusers \
+    ftpd.service rlogin.pam rlogin@.service rlogin.socket \
+    rsh.pam rsh@.service rsh.socket talk.service talk.socket \
+    telnet@.service telnet.socket
+set sha512sums 348f7ed9528ac8d68de72d3b7efb93c5a31f924b80cdc1f0818ad4fdd7694e3e9d0bb759be02839a5eaa0f14b913f5aaab3032ed22a9f2cbab58ed085d12c780 \
+    SKIP \
+    00a6ff36efe63612990181f7cb37ea7d43ee7f2b6bda6b1fc23ccb2f3b19da54aabad041c2412936561dcd997f9613bd8144a96f5e04f30135a36f9ac98d8056 \
+    df5b37c9fc072e012f0e67d849db7e535a62ddb17a37e865acb157f2bc16ffd72d84f24fef1e788dacbbe7e5675e87e141fbd36e53339cc7810dde1b9c54a3b8 \
+    432a45af5cd4f9f2dee4b631b45745b734e47cf631553e79db31905fa0839988914bcfed1dfcdd00d2ea6e4029b0674d46623c33ce0bd0678c2628fbaa0d1b25 \
+    5c2d1040484f4053cc6e114d38e3a671792c6f196f666a6f6529276d55589870fa9040ac32ac9b521c80c14931b03c97738d2a6ffb50d3a658363a5123ea9e6e \
+    8857dd03794a0ed48b87e6a876c4e17246f3bb4083dc2a9593d8c05d831b03d944d133ae8dc44bc23d1b9d7fe82dd7ab166cb87f53b859a62fc1479e9a49a1de \
+    c957708315ea2d873da55691bb0d0997ee3e2dcb40fb47cef19fd60c25379f1660d0605edd8fb0a477252c5af3e422b44b5e0aaa5b76220dadc90791dd526801 \
+    b71e7c25bb1fe3e35420ea3d7eda9b44ed61423ec54973a42a0b5bdac01e8d131aa9656a1e050d74f27723a976fe058a79a04bb34ed70dc5eeb7c49b9be078b4 \
+    9fc711b8260f4340188b8f6bc5ac944958d1609a1a506d76b3be917a01caa4493edae89da3c1eaa55294bbddaa6744c68ecb1cd322bb2d74e284d2d6fcd0d2c8 \
+    0024798b019c8720a52d5003730085de4fb091826c50605d7eeb4506a2fe189740535106e6e8a7afc61edbbd2c5f689358a4009cd466f1a7dcb3a9e8a8c8425a \
+    502ca66fb2c0a2df0ea8827c820c199c29a91ab5ccff26866e02a4219007ee7fa36ed4b6001207212db332047a574edc70744e6fcc130d62aab02faa3c9566f7 \
+    6b1f170c1c680bfa2186e0cb3bf555124048c46669bee0265948d22723493b5a23a735f52a8a72304e6cd020dbf2c9991d6cbc4e006bf38dc3b7d6c1addcf1e8 \
+    218f2b5686ca0321a9f7a5a991c69b289aa297b7a295e654020636d38fbb5a37d09e720c1e2f950ba14616b0e7dafc2cb6a5e325e3b117dfe0ab3c733b98e5eb
+set flags arch
+
+function prepare
+    cd $pkgname; or return
+
+    # The inetutils does not have a submodule, that is added on the fly.
+    # Giving the path like this should work anyway...
+    set -lx GNULIB_REFDIR "$srcdir/gnulib"
+
+    sh bootstrap; or return
+    autoreconf -fiv; or return
+end
+
+function build
+    cd $pkgname; or return
+    ./configure \
+        --prefix=/usr \
+        --libexec=/usr/bin \
+        --localstatedir=/var \
+        --sysconfdir=/etc \
+        --without-wrap \
+        --with-pam \
+        --enable-ftp \
+        --enable-ftpd \
+        --enable-telnet \
+        --enable-telnetd \
+        --enable-talk \
+        --enable-talkd \
+        --enable-rlogin \
+        --enable-rlogind \
+        --enable-rsh \
+        --enable-rshd \
+        --enable-rcp \
+        --enable-hostname \
+        --enable-dnsdomainname \
+        --disable-rexec \
+        --disable-rexecd \
+        --disable-tftp \
+        --disable-tftpd \
+        --disable-ping \
+        --disable-ping6 \
+        --disable-logger \
+        --disable-syslogd \
+        --disable-inetd \
+        --disable-whois \
+        --disable-uucpd \
+        --disable-ifconfig \
+        --disable-traceroute; or return
+
+    # fix tgetent from curses...
+    sed -i '/HAVE_CURSES_TGETENT/c #define HAVE_CURSES_TGETENT 1' config.h; or return
+    sed -i '/# include <curses.h>/a # include <term.h>' telnet/telnet.c telnetd/utility.c; or return
+
+    make; or return
+end
+
+function check
+    cd $pkgname; or return
+    make check; or return
+end
+
+function package
+    cd $pkgname; or return
+    make DESTDIR="$pkgdir" install; or return
+
+    chmod -s "$pkgdir"/usr/bin/{rcp,rlogin,rsh}; or return
+
+    install -D -m644 "$srcdir/rlogin.pam" "$pkgdir/etc/pam.d/rlogin"; or return
+    install -D -m644 "$srcdir/rsh.pam" "$pkgdir/etc/pam.d/rsh"; or return
+
+    for f in ftpd.service rlogin@.service rlogin.socket rsh@.service rsh.socket talk.service talk.socket \
+        telnet@.service telnet.socket
+        install -D -m644 "$srcdir/$f" "$pkgdir/usr/lib/systemd/system/$f"; or return
+    end
+
+    install -vDm 644 ../$pkgname.sysusers "$pkgdir/usr/lib/sysusers.d/$pkgname.conf"; or return
+end

@@ -17,9 +17,8 @@ pkgbase = libdrm
 	source = https://dri.freedesktop.org/libdrm/libdrm-2.4.134.tar.xz
 	source = https://dri.freedesktop.org/libdrm/libdrm-2.4.134.tar.xz.sig
 	source = COPYING
-	validpgpkeys = 34FF9526CFEF0E97A340E2E40FDE7BE0E88F5E48
-	sha512sums = ef2abddea59d1e93c83a48de920431b839ab50d6071ef4da3cf126e7d64ba7b235f2e34e1169d49ad9de2937a0a18acd66bb8d324b067239b1136e0ddbe792a1
-	sha512sums = SKIP
-	sha512sums = b0ca349b882a4326b19f81f22804fabdb6fb7aef31cdc7b16b0a7ae191bfbb50c7daddb2fc4e6c33f1136af06d060a273de36f6f3412ea326f16fa4309fda660
+	sha256sums = ac5e74d157830eb8bee44c6a6bf3ad49774ef0dd2a72bdad74a8f20308b52a95
+	sha256sums = 735f7ec2ac0a38cc6d4fb7c6c74a9c399e2216a8ae6475c7176af06c62ce9a79
+	sha256sums = 9631d4f694952e3e6ae5a05534c2e93e994e47d3413677a3a00e45c8cef6db93
 
 pkgname = libdrm

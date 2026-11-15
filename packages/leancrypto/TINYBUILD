@@ -1,0 +1,29 @@
+set pkgname leancrypto
+set pkgver 1.9.1
+set pkgrel 1
+set pkgdesc 'Lean cryptographic library usable for bare-metal environments'
+set arch i686 x32
+set license GPL-2.0-or-later LicenseRef-BSDvariant LicenseRef-leancrypto
+set url https://leancrypto.org
+set depends glibc
+set makedepends meson
+set source "$pkgname-$pkgver.tar.gz::https://github.com/smuellerDD/leancrypto/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums c3fe73e0e164d69e8c88c64b1649513f8e4f41c2f541614a9c4298f6368aa194
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build; or return
+
+    # Print config
+    meson configure build; or return
+
+    meson compile -C build; or return
+end
+
+# No check function: the tests take forever (meson test -C build --print-errorlogs)
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" $pkgname-$pkgver/LICENSE{,.bsd,.gplv2}; or return
+end
