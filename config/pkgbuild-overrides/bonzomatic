@@ -1,4 +1,0 @@
-makedepends=(chrpath cmake git glu imagemagick)
-eval "$(
-  declare -f build | sed 's/-D BONZOMATIC_USE_SYSTEM_GLFW=off/-D BONZOMATIC_USE_SYSTEM_GLFW=on/'
-)"

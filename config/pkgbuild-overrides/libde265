@@ -1,2 +1,0 @@
-makedepends=(${makedepends[@]/sdl2-compat/})
-optdepends=(${optdepends[@]/sdl2-compat*/})

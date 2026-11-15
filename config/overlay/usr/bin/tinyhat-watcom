@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/lib/tinyhat/cproject dos-hello "DOS programming" hello.c

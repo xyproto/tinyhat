@@ -1,1 +1,0 @@
-eval "$(declare -f build | sed 's/-D LLVM_SPIRV_INCLUDE_TESTS=ON/-D LLVM_SPIRV_INCLUDE_TESTS=OFF/')"

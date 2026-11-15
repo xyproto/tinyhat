@@ -1,5 +1,0 @@
-makedepends=(texinfo)
-optdepends=()
-eval "$(
-  declare -f build | sed 's/--sysconfdir=\/etc/--sysconfdir=\/etc --disable-floppyd --without-x/'
-)"

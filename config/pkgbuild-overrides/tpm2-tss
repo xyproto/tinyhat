@@ -1,1 +1,0 @@
-eval "$(declare -f build | sed 's/ --enable-integration//; s/ --enable-unit//')"

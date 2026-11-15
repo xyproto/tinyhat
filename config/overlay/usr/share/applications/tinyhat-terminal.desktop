@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Terminal
-Icon=utilities-terminal
-Comment=foot terminal
-Exec=tinyhat-term
-Terminal=false
-Categories=System;TerminalEmulator;

@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/lib/tinyhat/cproject c64-asm-hello "C64 programming in Assembly" hello.s

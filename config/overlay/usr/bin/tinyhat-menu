@@ -1,5 +1,0 @@
-#!/bin/sh
-if pkill -x -u "$(id -u)" fuzzel; then
-	sleep 0.2
-fi
-exec fuzzel
