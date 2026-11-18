@@ -6,6 +6,10 @@ nobuild=
 arch=i686
 bootstrap=
 cross=
+without=
+name=
+stamp=
+env=
 while :; do
   case ${1-} in
     --nobuild)
@@ -26,11 +30,73 @@ while :; do
       cross=1
       shift
       ;;
+    --name)
+      # The build's name, like cross-glibc: its output goes to build/log/NAME.log, and build/state/NAME tells how it
+      # went (state=running, built, up-to-date, fetched, failed or stopped; start, end, log, reason)
+      name=$2
+      shift 2
+      ;;
+    --stamp)
+      # Written with the cache entry (the key and the package files) after a build or a cache hit, only when it
+      # changed, so that ninja (restat) runs what depends on this build only then
+      stamp=$2
+      shift 2
+      ;;
+    --env)
+      # NAME=VERSION ... of what the build uses from the build environment (from scripts/buildplan.py): part of the key
+      env=$2
+      shift 2
+      ;;
+    --without)
+      # --cross: leave out the packages of these package directories (BASE,BASE...), for the first build of a
+      # package in a dependency cycle, before the rest of the cycle is built
+      without=$2
+      shift 2
+      ;;
     *) break ;;
   esac
 done
 dir=$(readlink -f "$1")
 shift
+started=$(date +%s)
+result=failed
+setstate() {
+  [ -n "$name" ] || return 0
+  {
+    echo "state=$1"
+    echo "start=$started"
+    [ "$1" = running ] || echo "end=$(date +%s)"
+    echo "log=build/log/$name.log"
+    # The last line of the log that is not empty, usually the error
+    [ "$1" != failed ] || echo "reason=$(grep -v '^[[:space:]]*$' "$top/build/log/$name.log" | tail -n 1 | cut -c1-200)"
+  } > "$top/build/state/$name.tmp"
+  mv -f "$top/build/state/$name.tmp" "$top/build/state/$name"
+}
+if [ -n "$name" ]; then
+  mkdir -p "$top/build/log" "$top/build/state"
+  exec > "$top/build/log/$name.log" 2>&1
+  setstate running
+fi
+# Removes the build tree (unless KEEP_WORK=1 keeps it, to look into a failure) and records how the build went
+finish() {
+  rc=$1
+  if [ -z "${KEEP_WORK-}" ] && [ -n "${ownwork-}" ]; then
+    chmod -R u+rwX "$work" 2> /dev/null || true
+    rm -rf "$work"
+  fi
+  if [ "$rc" = 0 ] && [ -n "$stamp" ] && [ -f "${cache-}" ]; then
+    mkdir -p "$(dirname "$stamp")"
+    cp "$cache" "$stamp.new"
+    if cmp -s "$stamp.new" "$stamp"; then rm -f "$stamp.new"; else mv -f "$stamp.new" "$stamp"; fi
+  fi
+  case $rc in
+    0) setstate "$result" ;;
+    129 | 130 | 143) setstate stopped ;;
+    *) setstate failed ;;
+  esac
+}
+trap 'finish $?' EXIT
+trap 'exit 143' TERM INT HUP
 base=${dir##*/}
 [ -f "$dir/TINYBUILD" ] || { echo "$0: no TINYBUILD in $dir" >&2; exit 1; }
 themeenv=$(python3 "$top/scripts/distro.py" theme-env "$base")
@@ -88,6 +154,13 @@ fi
 case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 rootarch=$arch
 [ -z "$cross" ] || rootarch=x86_64
+# Cross builds: glibc's iconv works on the target, but configure's test program, run on the build machine, would load
+# the build machine's 64-bit gconv modules and fail (am_cv_func_iconv_works, gnulib's iconv.m4); without it, gettext's
+# msgfmt cannot convert from ISO-8859-1
+# Builds in the i686 build environment (i686 and x32) run what only runs at build time (perl, autoconf, git, pacman,
+# fish...) from the x86_64 build environment at /host (scripts/mkbuildroot.sh)
+hostenv=
+[ "$seed" != "$top/build/buildroot" ] || hostenv=$top/build/buildroot-x86_64
 mkdir -p "$repo" "$boot" "$dest/.cache" "$top/vendor/src" "$HOME/.ccache"
 
 lookup() {
@@ -96,8 +169,9 @@ lookup() {
   [ $# -gt 0 ] || return 0
   case $kind in
     i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
-    # Our own builds of the packages and what they need at run time, never prebuilt ones
-    cross) out=$(python3 "$top/scripts/buildplan.py" pkgfiles "$repo" i686 "$@") ;;
+    # Our own builds of the packages and what they need at run time, never prebuilt ones, and never an older build
+    # of this package directory's own packages
+    cross) out=$(python3 "$top/scripts/buildplan.py" pkgfiles --without "$base${without:+,$without}" "$repo" i686 "$@") ;;
     x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
     aarch64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" aarch64 "$@") ;;
     x86_64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x86_64 "$@") ;;
@@ -133,13 +207,17 @@ i686deps=$(
 x32deps="$(lookup x32 $want_x32) $(lookup boot $want_boot)"
 sysdeps=$(lookup sysroot $want_sysroot)
 
-key=$({
+# What the build depends on, and so what its cache key is made of: the build options, the theme, the files in the
+# package directory, the makep configuration, and the packages it is built with
+inputs=$({
   echo "$arch $bootstrap $nobuild${cross:+ cross}"
+  for t in $env; do echo "tool $t"; done
   printf '%s\n' "$themeenv"
   (cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
-  env -i PATH="$PATH" MAKEFISH_CONF="$top/packages/makefish/root/etc/makefish.conf" fish "$top/packages/makefish/root/usr/bin/makefish" --print-config -a "$arch"
+  env -i PATH="$PATH" MAKEP_CONF="$top/packages/makep/root/etc/makep.conf" fish "$top/packages/makep/root/usr/bin/makep" --print-config -a "$arch"
   for f in $i686deps $x32deps $sysdeps $crossdeps; do echo "${f##*/}"; done
-} | sha256sum | cut -d' ' -f1)
+})
+key=$(printf '%s\n' "$inputs" | sha256sum | cut -d' ' -f1)
 cache=$dest/.cache/$arch-$base
 if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; then
   hit=1
@@ -148,36 +226,30 @@ if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; 
   done
   if [ -n "$hit" ]; then
     echo "$base ($arch): up to date"
+    result=up-to-date
     exit 0
   fi
 fi
 
-load=${PKG_LOAD-}
-prio=10
-# A heavy build waits for its turn before it takes a build slot, so that
-# waiting heavy builds never hold slots that small builds could use
-if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
-  mkdir -p "$top/build/chroot"
-  exec 6> "$top/build/chroot/.heavy"
-  flock 6
-  load=
-  prio=0
+# Why it builds: what changed since the inputs of the last build (kept next to its cache key)
+if [ -z "$nobuild" ]; then
+  if [ -f "$cache.inputs" ]; then
+    echo "$base ($arch): building, since these inputs changed (- before, + now):"
+    printf '%s\n' "$inputs" | diff "$cache.inputs" - | grep '^[<>]' | sed 's/^</  -/; s/^>/  +/' || true
+  elif [ -f "$cache" ]; then
+    echo "$base ($arch): building (the last build did not record its inputs)"
+  else
+    echo "$base ($arch): building for the first time"
+  fi
 fi
 
-# At most PKG_JOBS packages build at once, to limit the disk space used by build trees
-slot=0
-if [ "${PKG_JOBS:-0}" -gt 0 ]; then
-  mkdir -p "$top/build/chroot"
-  while :; do
-    i=1
-    while [ $i -le "$PKG_JOBS" ]; do
-      exec 7> "$top/build/chroot/.slot$i"
-      flock -n 7 && slot=$i && break 2
-      i=$((i + 1))
-    done
-    exec 7>&-
-    sleep 2
-  done
+# How many builds run at once, and one heavy build at a time, is up to ninja (pools in build/pools.ninja). A heavy
+# build gets all cores, without the load limit, and runs before the others
+load=${PKG_LOAD-}
+prio=10
+if [ "$(python3 "$top/scripts/distro.py" heavy "$base")" = 1 ]; then
+  load=
+  prio=0
 fi
 
 [ -z "$rustcross" ] || "$top/scripts/rust-cross.sh"
@@ -187,13 +259,9 @@ if [ -n "$crosscc" ] && { [ ! -x "$top/build/cross-cc/launch" ] || [ "$top/scrip
   mv -f "$top/build/cross-cc/launch.$$" "$top/build/cross-cc/launch"
 fi
 
-cleanup() {
-  chmod -R u+rwX "$work" 2> /dev/null || true
-  rm -rf "$work"
-}
-cleanup
-# KEEP_WORK=1 keeps the build tree after the build, to look into a failure
-[ -n "${KEEP_WORK-}" ] || trap cleanup EXIT
+chmod -R u+rwX "$work" 2> /dev/null || true
+rm -rf "$work"
+ownwork=1
 mkdir -p "$work/upper" "$work/ovl" "$work/pkg"
 cp -rL "$dir" "$work/pkg/$base"
 
@@ -221,6 +289,7 @@ bwrap_run() {
   nice -n "$prio" ${personality:+setarch "$personality"} bwrap \
     --overlay-src "$seed" --overlay "$work/upper" "$work/ovl" / \
     --ro-bind "$top/vendor" /vendor \
+    ${hostenv:+--ro-bind "$hostenv" /host} \
     --dev /dev --proc /proc --tmpfs /tmp \
     --ro-bind /etc/resolv.conf /etc/resolv.conf \
     --unshare-all --hostname tinyhat-build --clearenv \
@@ -228,11 +297,13 @@ bwrap_run() {
     ${libpath:+--setenv LD_LIBRARY_PATH $libpath} \
     --setenv LANG C.UTF-8 \
     --setenv HWLOC_HIDE_ERRORS 2 \
-    --setenv MAKEINFO true \
+    --setenv MAKEINFO /tinyhat/scripts/makeinfo-stub \
+    --setenv CMAKE_POLICY_VERSION_MINIMUM 3.5 \
     --setenv SOURCE_DATE_EPOCH "$epoch" \
     --setenv TINYHAT_ARCH "$arch" \
     --setenv TINYHAT_BOOTSTRAP "$bootstrap" \
-    ${cross:+--setenv PKG_CONFIG_SYSROOT_DIR /usr/$tc/sysroot --setenv PKG_CONFIG_LIBDIR /usr/$tc/sysroot/usr/lib/pkgconfig:/usr/$tc/sysroot/usr/share/pkgconfig} \
+    ${cross:+--setenv am_cv_func_iconv_works yes} \
+    ${cross:+--setenv PKG_CONFIG_SYSROOT_DIR /usr/$tc/sysroot --setenv PKG_CONFIG_FDO_SYSROOT_RULES 1 --setenv TINYHAT_SYSROOT /usr/$tc/sysroot --setenv TINYHAT_CROSS $tc --setenv PKG_CONFIG_LIBDIR /usr/$tc/sysroot/usr/lib/pkgconfig:/usr/$tc/sysroot/usr/share/pkgconfig} \
     ${rustcross:+--ro-bind /usr /host/usr --ro-bind /usr/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2} \
     ${rustcross:+--ro-bind $top/build/rust-cross /opt/tinyhat-rust/toolchain --ro-bind $top/scripts/rust-cross /opt/tinyhat-rust/bin} \
     ${crosscc:+--ro-bind $top/scripts/cross-cc /opt/tinyhat-cc/bin --ro-bind $top/build/cross-cc/launch /opt/tinyhat-cc/launch} \
@@ -253,7 +324,7 @@ pacargs="--arch i686"
 [ "$arch" != aarch64 ] || pacargs="--arch aarch64 --disable-sandbox"
 [ "$arch" != x86_64 ] || pacargs="--arch x86_64 --disable-sandbox"
 if [ -n "$i686deps" ]; then
-  pacman -Udd $pacargs --noconfirm --noscriptlet --overwrite "*" $i686deps
+  pacman -Udd --needed $pacargs --noconfirm --noscriptlet --overwrite "*" $i686deps
 fi
 if [ -n "$sysdeps" ]; then
   s=/usr/$tc/sysroot
@@ -274,6 +345,12 @@ if [ "$tc" = i686-tinyhat-linux-gnu ]; then
     bsdtar --no-xattrs --no-acls --no-fflags --no-same-owner -xpf "$f" -C "$s" $meta
   done
   ln -sfn "$s/usr/lib/ld-linux.so.2" /usr/lib/ld-linux.so.2
+  # The cross compiler through ccache by its full name too, as the ccache package does for the native one
+  if [ -x /usr/bin/ccache ] && [ -d /usr/lib/ccache/bin ]; then
+    for c in gcc g++ c++; do
+      ln -sfn /usr/bin/ccache "/usr/lib/ccache/bin/$tc-$c"
+    done
+  fi
 fi
 if [ "$arch" = x32 ]; then
   mkdir -p /usr/lib32
@@ -296,10 +373,16 @@ if [ "$arch" = x32 ]; then
 fi
 ' sh "$rootarch" "$tc" "$i686deps" "$x32deps" "$sysdeps" "$crossdeps"
 
-# run [--nobuild | --packagelist]: makefish on the TINYBUILD in the build environment
+# run [--nobuild | --packagelist]: makep on the TINYBUILD in the build environment
+# Network access: for downloading the sources (run --nobuild), and while building only for TINYBUILDs with
+# options network (like cargo fetch in prepare): other builds cannot download anything behind our back
+buildnet=
+grep -qx '	options = network' "$dir/.SRCINFO" 2> /dev/null && buildnet=--share-net
 run() {
+  net=$buildnet
+  [ "${1-}" != --nobuild ] || net=--share-net
   set -- -C /startdir -o /repo -s /srcdest -a "$arch" "$@"
-  sandbox --uid 1000 --gid 1000 --share-net \
+  sandbox --uid 1000 --gid 1000 $net \
     --bind "$work/pkg/$base" /startdir \
     --bind "$dest" /repo \
     --bind "$top/vendor/src" /srcdest \
@@ -308,17 +391,18 @@ run() {
     --setenv HOME /build \
     --setenv USER builder \
     --setenv CCACHE_DIR /ccache \
+    --setenv CCACHE_BASEDIR /startdir \
     --setenv CCACHE_MAXSIZE "${CCACHE_MAXSIZE:-20G}" \
     --setenv TINYHAT_JOBS "$jobs" \
     --setenv TINYHAT_LOAD "$load" \
     --setenv CARGO_BUILD_JOBS "${PKG_CARGO_JOBS:-$(nproc)}" \
     --setenv TINYHAT_SOURCE_MIRROR "${TINYHAT_SOURCE_MIRROR-}" \
     --setenv TINYHAT_THEMEENV "$themeenv" \
-    --setenv MAKEFISH_CONF /tinyhat/packages/makefish/root/etc/makefish.conf \
-    --setenv MAKEFISH_FETCH /tinyhat/scripts/fetch.sh \
+    --setenv MAKEP_CONF /tinyhat/packages/makep/root/etc/makep.conf \
+    --setenv MAKEP_FETCH /tinyhat/scripts/fetch.sh \
     --setenv MAKEFLAGS "-j$jobs${load:+ -l$load}" \
     --chdir /startdir \
-    /bin/sh -c 'exec 2>&9 9>&-; eval "$TINYHAT_THEMEENV"; exec fish /tinyhat/packages/makefish/root/usr/bin/makefish '"$ignorearch"' "$@"' sh "$@"
+    /bin/sh -c 'exec 2>&9 9>&-; eval "$TINYHAT_THEMEENV"; exec fish /tinyhat/packages/makep/root/usr/bin/makep '"$ignorearch"' "$@"' sh "$@"
 }
 
 exec 8> "$top/vendor/src/.lock"
@@ -327,14 +411,17 @@ run --nobuild
 flock -u 8
 exec 8>&-
 run $nobuild
+[ -z "$nobuild" ] || result=fetched
 if [ -z "$nobuild" ]; then
   {
     echo "$key"
     run --packagelist | sed 's|.*/||'
   } > "$cache.tmp"
+  printf '%s\n' "$inputs" > "$cache.inputs"
   mv "$cache.tmp" "$cache"
+  result=built
   # Remove the downloaded sources that only this package uses, unless another arch of it is building
-  if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "aarch64-$base" -o -name "x86_64-$base" -o -name "boot-$base" \) ! -path "$work")" ]; then
+  if [ "${KEEP_SOURCES:-0}" != 1 ] && [ -z "$(find "$top/build/chroot" -maxdepth 1 \( -name "i686-$base" -o -name "x32-$base" -o -name "aarch64-$base" -o -name "x86_64-$base" -o -name "boot-$base" -o -name "cross-$base" \) ! -path "$work")" ]; then
     exec 8> "$top/vendor/src/.lock"
     flock 8
     python3 "$top/scripts/pkg.py" prunable "$dir" | while IFS= read -r f; do
@@ -343,4 +430,3 @@ if [ -z "$nobuild" ]; then
     exec 8>&-
   fi
 fi
-cleanup

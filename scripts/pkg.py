@@ -246,6 +246,8 @@ def planned_versions():
         pinned = os.path.join(TOP, "vendor", "archlinux32", "pkg.lock")
         if os.path.exists(pinned):
             seeded.update({p["name"]: p["version"] for p in read_lock(pinned)})
+        p = distro.plan() or {"builds": {}}
+        prebuilt = {b["base"] for b in p["builds"].values() if b["kind"] == "i686" and b["mode"] == "prebuilt"}
         for d in os.listdir(os.path.join(TOP, "packages")):
             path = os.path.join(TOP, "packages", d, ".SRCINFO")
             if not os.path.exists(path):
@@ -260,10 +262,8 @@ def planned_versions():
                         base[k] = v
             if "pkgver" in base and "pkgrel" in base:
                 ver = (base["epoch"] + ":" if base.get("epoch") else "") + f"{base['pkgver']}-{base['pkgrel']}"
-                mode = os.path.join(TOP, "build", "pkg", "mode", d)
-                prebuilt = os.path.exists(mode) and open(mode).read().strip() == "prebuilt"
                 for n in names:
-                    _PLANNED[n] = seeded.get(n) if prebuilt else ver
+                    _PLANNED[n] = seeded.get(n) if d in prebuilt else ver
     return _PLANNED
 
 
@@ -302,8 +302,13 @@ def arch_files(repodir, arch):
 
 
 def load_repo(repodir, arch="i686"):
+    """Our built packages for ARCH in repodir (and arch any). For i686 and x32, only the versions that our TINYBUILDs
+    make: those images get nothing prebuilt (like archlinux32 packages that older builds left in the repository)."""
     idx = Index.new()
+    planned = planned_versions() if arch in ("i686", "x32") else None
     for name, path in sorted(arch_files(repodir, arch).items()):
+        if planned is not None and split_filename(os.path.basename(path))[1] != planned.get(name):
+            continue
         info = pkginfo(path)
         idx.add(info["pkgname"][0], {
             "name": info["pkgname"][0],
@@ -743,7 +748,8 @@ def cmd_prebuilt(repodir, lockfile, *names):
         lf.seek(0)
         locked = {p["name"]: p for p in (parse_lock_line(line) for line in lf if line.strip())}
         entries = dict(locked)
-        for name in names:
+        # NAME or NAME=VERSION (the version the plan expects, so that ninja runs this again when it changes)
+        for name in (n.split("=", 1)[0] for n in names):
             if name in locked:
                 p = dict(locked[name])
             elif name in db:

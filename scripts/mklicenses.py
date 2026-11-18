@@ -15,22 +15,19 @@ TOP = pkg.TOP
 OUT = sys.argv[2] if len(sys.argv) > 2 else os.path.join(TOP, "build", "licenses")
 LOCK = sys.argv[1] if len(sys.argv) > 1 else os.path.join(TOP, "build", "rootfs.lock")
 ARCH = sys.argv[3] if len(sys.argv) > 3 else "i686"
+KERNEL_ARCH = sys.argv[4] if len(sys.argv) > 4 else ARCH
 REPO = os.path.join(TOP, "build", "repo")
 PKGDIR = os.path.join(TOP, "build", f"repo-{ARCH}") if ARCH in ("aarch64", "x86_64") else REPO
 SRC = os.path.join(TOP, "vendor", "src")
 
 X86_ONLY = {"open-watcom"}
 SOURCES = [
-    ("linux", "7.3.1", "https://www.kernel.org/", "GPL-2.0-only WITH Linux-syscall-note",
-     "linux-7.3.1.tar.xz", ["COPYING", "LICENSES/preferred/GPL-2.0", "LICENSES/exceptions/Linux-syscall-note"]),
-    ("xpadneo", "0.10.5", "https://github.com/atar-axis/xpadneo", "GPL-2.0-only",
-     "xpadneo-0.10.5.tar.gz", ["LICENSE.md", "LICENSES/"]),
     ("open-watcom", "2.0 (2026-10-01 build)", "https://github.com/open-watcom/open-watcom-v2", "Watcom-1.0",
      "open-watcom-2026-10-01.tar.xz", ["license.txt"]),
     ("pixelitos", "20260721 (icon theme)", "https://github.com/ItzSelenux/pixelitos-icon-theme", "MIT",
      "pixelitos-icon-theme-20260721.tar.gz", ["LICENSE", "CREDITS.md"]),
 ]
-BOOT = ["busybox", "memtest86+", "tinyhat-splash", "grub", "amd-ucode", "intel-ucode", "grub-efi64"]
+BOOT = ["tinyhat-mountroot", "memtest86+", "tinyhat-splash", "grub", "amd-ucode", "intel-ucode", "grub-efi64"]
 
 
 def info(path, name, version, url, lic):
@@ -58,6 +55,8 @@ def main():
     for name in BOOT:
         if name in files and name not in {p["name"] for p in entries}:
             entries.append({"name": name, "version": pkg.pkginfo(files[name])["pkgver"][0], "path": files[name]})
+    kernel = pkg.arch_files(REPO, KERNEL_ARCH)["linux-tinyhat"]
+    entries.append({"name": "linux-tinyhat", "version": pkg.pkginfo(kernel)["pkgver"][0], "path": kernel})
     for p in entries:
         path = os.path.join(OUT, p["name"])
         os.makedirs(path)

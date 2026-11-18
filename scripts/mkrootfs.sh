@@ -33,7 +33,7 @@ cd "$top"
 
 inlock() { awk -v p="$1" '$2 == p && $1 == "tinyhat" { found = 1 } END { exit !found }' "$lock"; }
 localpkgs=
-for p in ${TINYHAT_PKGS-}; do
+for p in $(python3 scripts/buildplan.py query tinyhat-pkgs); do
   if inlock "$p"; then
     localpkgs="$localpkgs $p"
   fi
@@ -57,9 +57,7 @@ case $mode in
       bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
         "$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
     fi
-    ln -sf clang "$root/usr/bin/cc"
-    bsdtar -xpf "$(pkgfile archlinux-wallpaper)" -C "$root" usr/share/backgrounds/archlinux/small.png
-    python3 scripts/mkarchwallpaper.py "$root/usr/share/backgrounds/archlinux/small.png" "$root/usr/share/backgrounds/archlinux/small.png" 1920 1080
+    ln -sf gcc "$root/usr/bin/cc"
     mkdir -p "$root/usr/share/backgrounds/tinyhat"
     python3 scripts/mkwallpaper.py img/tinyhat.svg "$root/usr/share/backgrounds/tinyhat/tinyhat.png"
     python3 scripts/mkhatwallpaper.py "$root/usr/share/backgrounds/tinyhat/wirehat.png"
@@ -175,9 +173,7 @@ EOF
     sed -i 's|^SigLevel *= *Required DatabaseOptional$|& TrustAll|' "$root/etc/pacman.conf"
     grep -q '^SigLevel *= *Required DatabaseOptional TrustAll$' "$root/etc/pacman.conf"
     ignore=$(
-      for m in build/pkg/mode/*; do
-        [ "$(cat "$m")" = built ] && [ -f "packages/${m##*/}/.SRCINFO" ] && sed -n 's/^pkgname = //p' "packages/${m##*/}/.SRCINFO"
-      done
+      python3 scripts/buildplan.py query built-pkgnames
       python3 scripts/distro.py pins
     )
     ignorepkgs=
@@ -208,7 +204,8 @@ EOF
       sed -i "/^ID_LIKE=/a VERSION=\"$TINYHAT_VERSION\"\nVERSION_ID=$TINYHAT_VERSION" "$root/etc/os-release"
       sed -i "s/^title = \"Tiny Hat\"\$/title = \"Tiny Hat $TINYHAT_VERSION\"/" "$root/etc/tinyhat/dwl.toml"
     fi
-    (cd config/etc && find . -mindepth 1) | while IFS= read -r p; do
+    # Modes from the checkout depend on the umask of whoever cloned it (cp -a copies config/etc's own mode to /etc too)
+    (cd config/etc && find .) | while IFS= read -r p; do
       if [ -d "config/etc/$p" ]; then
         chmod 755 "$root/etc/$p"
       else

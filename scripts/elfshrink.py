@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Removes what executables do not need to run (section headers, sstrip) in usr/bin and usr/lib of a root file system.
+# No upx: the image is a compressed squashfs, which compresses unpacked executables better than upx does, and packed
+# executables cannot share their pages in RAM
 import os
 import shutil
 import struct
@@ -6,12 +9,8 @@ import subprocess
 import sys
 
 root = sys.argv[1]
-UPX_MIN = 4 << 20
-HAVE = {tool: shutil.which(tool) is not None for tool in ("upx", "sstrip")}
-for tool, ok in HAVE.items():
-    if not ok:
-        print(f"elfshrink.py: {tool} not found, skipping it", file=sys.stderr)
-UPX_SKIP = {"fish", "fish_indent", "fish_key_reader", "foot", "dwl", "o", "mc"}
+if not shutil.which("sstrip"):
+    sys.exit("elfshrink.py: sstrip not found")
 
 
 def executable(path):
@@ -34,36 +33,7 @@ def executable(path):
     return etype == 2 or (etype == 3 and 3 in types)
 
 
-def no_upx_files(root):
-    """The files of installed packages that were built with the !upx option (xdata upx=no)."""
-    out = set()
-    local = os.path.join(root, "var", "lib", "pacman", "local")
-    for entry in os.listdir(local) if os.path.isdir(local) else ():
-        try:
-            desc = open(os.path.join(local, entry, "desc"), encoding="utf-8").read().split("\n\n")
-        except OSError:
-            continue
-        if not any(block.startswith("%XDATA%\n") and "\nupx=no" in "\n" + block for block in desc):
-            continue
-        try:
-            files = open(os.path.join(local, entry, "files"), encoding="utf-8").read().split("\n\n")
-        except OSError:
-            continue
-        for block in files:
-            if block.startswith("%FILES%\n"):
-                out.update(line for line in block.split("\n")[1:] if line and not line.endswith("/"))
-    return out
-
-
-NO_UPX = no_upx_files(root)
-
-
-def packed(path):
-    with open(path, "rb") as f:
-        return b"UPX!" in f.read(4096)
-
-
-saved = {"upx": 0, "sstrip": 0}
+saved = 0
 seen = set()
 for top in ("usr/bin", "usr/lib"):
     for dirpath, dirnames, filenames in os.walk(os.path.join(root, top)):
@@ -77,20 +47,14 @@ for top in ("usr/bin", "usr/lib"):
             if st.st_mode & 0o6000:
                 continue
             try:
-                if not executable(path) or packed(path):
+                if not executable(path):
                     continue
             except (OSError, struct.error):
                 continue
             before = st.st_size
-            if (HAVE["upx"] and top == "usr/bin" and before >= UPX_MIN and st.st_nlink == 1 and name not in UPX_SKIP
-                    and os.path.relpath(path, root) not in NO_UPX
-                    and subprocess.run(["upx", "-q", "-q", "--lzma", path], capture_output=True).returncode == 0):
-                saved["upx"] += before - os.path.getsize(path)
-                os.chmod(path, st.st_mode & 0o7777)
-                continue
             if ".so" in name:
                 continue
-            if HAVE["sstrip"] and subprocess.run(["sstrip", path], capture_output=True).returncode == 0:
-                saved["sstrip"] += before - os.path.getsize(path)
+            if subprocess.run(["sstrip", path], capture_output=True).returncode == 0:
+                saved += before - os.path.getsize(path)
                 os.chmod(path, st.st_mode & 0o7777)
-print(f"elfshrink.py: upx saved {saved['upx'] >> 20} MiB, sstrip saved {saved['sstrip'] >> 10} KiB (uncompressed)")
+print(f"elfshrink.py: sstrip saved {saved >> 10} KiB (uncompressed)")

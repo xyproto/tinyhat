@@ -1,0 +1,39 @@
+#!/bin/sh
+# MAKEINFO in every build (scripts/buildpackage.sh): Tiny Hat makes no Info manuals. This answers --version, so that
+# what checks for makeinfo (like gnulib's bootstrap) finds one, and writes the output file it was asked for, empty, so
+# that install rules that copy it work (the images leave out usr/share/info)
+out=
+in=
+while [ $# -gt 0 ]; do
+  case $1 in
+    --version)
+      echo "makeinfo (GNU texinfo) 7.2"
+      exit 0
+      ;;
+    -o)
+      out=$2
+      shift
+      ;;
+    -o*) out=${1#-o} ;;
+    --output=*) out=${1#--output=} ;;
+    -I | -D | -U | --css-include | --css-ref | --init-file | --error-limit | --paragraph-indent | --fill-column | --footnote-style | --split-size | --enable-encoding | --document-language)
+      shift
+      ;;
+    -*) ;;
+    *) in=$1 ;;
+  esac
+  shift
+done
+if [ -z "$out" ] && [ -n "$in" ]; then
+  out=${in##*/}
+  out=${out%.texi}
+  out=${out%.texinfo}
+  out=${out%.txi}
+  out=$out.info
+fi
+# -o for HTML or a directory: nothing to write
+case $out in
+  "" | */) exit 0 ;;
+esac
+[ -e "$out" ] || : > "$out"
+exit 0
