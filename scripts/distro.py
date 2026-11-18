@@ -46,7 +46,7 @@ def packages():
 
 
 def plan():
-    """build/plan.json, the build plan that scripts/buildplan.py mk writes, or None before the first make."""
+    """build/plan.json, the build plan that scripts/build_planner.py mk writes, or None before the first make."""
     path = os.path.join(TOP, "build", "plan.json")
     if not os.path.exists(path):
         return None

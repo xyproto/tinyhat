@@ -3,7 +3,7 @@ import os
 import sys
 
 import distro
-import buildplan
+import build_planner
 
 
 def installed(root):
@@ -45,10 +45,10 @@ def main():
     if not names:
         sys.exit(f"forbidcheck.py: no pacman database in {root}")
     versions = versions_of(root)
-    rules = buildplan.deny_rules()
+    rules = build_planner.deny_rules()
     bad = []
     for name, entry in sorted(names.items()):
-        if buildplan.denied(name, versions.get(name), rules):
+        if build_planner.denied(name, versions.get(name), rules):
             bad.append(f"package {name} ({entry})")
     for pattern in distro.deny_files():
         for p in sorted(glob.glob(os.path.join(root, pattern))):

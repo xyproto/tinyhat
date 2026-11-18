@@ -4,14 +4,12 @@ umask 022
 mode=$1
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
 root=${2:?}
-modules=$3
-sfs=${4:?}
-lock=$(readlink -f "$5")
-licdir=$(readlink -f "$6")
+sfs=${3:?}
+lock=$(readlink -f "$4")
+licdir=$(readlink -f "$5")
 repo=$top/build/repo
 section=image
 arch=i686
-triplet=i686-pc-linux-gnu
 strip=strip
 bcj=x86
 if grep -q -- '-x32\.pkg\.tar' "$lock"; then
@@ -20,20 +18,18 @@ elif grep -q -- '-aarch64\.pkg\.tar' "$lock"; then
   arch=aarch64
   repo=$top/build/repo-aarch64
   section=image-aarch64
-  triplet=aarch64-unknown-linux-gnu
   strip=aarch64-linux-gnu-strip
   bcj=arm64
 elif grep -q -- '-x86_64\.pkg\.tar' "$lock"; then
   arch=x86_64
   repo=$top/build/repo-x86_64
   section=image-x86_64
-  triplet=x86_64-pc-linux-gnu
 fi
 cd "$top"
 
 inlock() { awk -v p="$1" '$2 == p && $1 == "tinyhat" { found = 1 } END { exit !found }' "$lock"; }
 localpkgs=
-for p in $(python3 scripts/buildplan.py query tinyhat-pkgs); do
+for p in $(python3 scripts/build_planner.py query tinyhat-pkgs); do
   if inlock "$p"; then
     localpkgs="$localpkgs $p"
   fi
@@ -45,32 +41,10 @@ case $mode in
     rm -f "$root.etc.list"
     mkdir -p "$root"
     python3 scripts/pkg.py extract "$lock" "$repo" "$root" "$section"
-    pkgfile() { echo "$repo/$(awk -v p="$1" '$2 == p && $1 != "lib32" { print $4 }' "$lock")"; }
-    bsdtar -xpf "$(pkgfile glibc)" -C "$root" 'usr/lib/*.o' usr/lib/libc_nonshared.a
-    bsdtar -xpf "$(pkgfile tcc)" -C "$root" 'usr/lib/tcc/*'
-    bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/crt*.o" "usr/lib/gcc/$triplet/*/libgcc*.a"
-    if bsdtar -tf "$(pkgfile gcc)" | grep -q "^usr/lib/gcc/$triplet/[^/]*/libgcc_s.so$"; then
-      bsdtar -xpf "$(pkgfile gcc)" -C "$root" "usr/lib/gcc/$triplet/*/libgcc_s*.so"
-    fi
-    if [ "$arch" != aarch64 ]; then
-      a=$(bsdtar -tf "$(pkgfile arm-none-eabi-gcc)" | sed -n 's|^\(usr/lib/gcc/arm-none-eabi/[^/]*\)/$|\1|p' | head -n1)
-      bsdtar -xpf "$(pkgfile arm-none-eabi-gcc)" -C "$root" "$a/cc1" "$a/collect2" "$a/liblto_plugin.so" "$a/include" "$a/include-fixed" "$a/libgcc.a" "$a/crtbegin.o" "$a/crtend.o" "$a/crti.o" "$a/crtn.o" \
-        "$a/thumb/nofp/libgcc.a" "$a/thumb/nofp/crtbegin.o" "$a/thumb/nofp/crtend.o" "$a/thumb/nofp/crti.o" "$a/thumb/nofp/crtn.o"
-    fi
+    python3 scripts/pkg.py keep "$lock" "$repo" "$root" "$section"
     ln -sf gcc "$root/usr/bin/cc"
-    mkdir -p "$root/usr/share/backgrounds/tinyhat"
-    python3 scripts/mkwallpaper.py img/tinyhat.svg "$root/usr/share/backgrounds/tinyhat/tinyhat.png"
-    python3 scripts/mkhatwallpaper.py "$root/usr/share/backgrounds/tinyhat/wirehat.png"
-    python3 scripts/mkhundetann.py "$root/usr/share/backgrounds/tinyhat/hundetann.png"
-    python3 scripts/mkpixelitos.py vendor/src/pixelitos-icon-theme-20260721.tar.gz "$root/usr/share/icons/pixelitos-dark"
-    bsdtar -xpf "$(pkgfile terminus-font)" -C "$root" usr/share/kbd/consolefonts/ter-v24n.psf.gz usr/share/kbd/consolefonts/ter-v24b.psf.gz
     python3 scripts/mklocaldb.py "$lock" "$repo" "$root" "$section"
-    for p in $localpkgs; do
-      bsdtar --no-xattrs --no-acls --no-fflags -xpf "$(pkgfile "$p")" -C "$root" \
-        --exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG
-    done
 
-    chmod -R u=rwX,go=rX "$modules"
     boost=$(find "$root/usr/bin" "$root/usr/lib" -path "$root/usr/lib/modules" -prune -o -path "$root/usr/lib/firmware" -prune -o \
       -type f ! -name 'libboost_*' \( -perm -u+x -o -name '*.so*' \) -print0 \
       | xargs -0 readelf -d 2> /dev/null | sed -n 's/.*(NEEDED).*\[\(libboost_[^].]*\).*/\1/p' | sort -u)
@@ -93,14 +67,6 @@ case $mode in
       mkdir -p "$root/etc/ld.so.conf.d"
       echo /usr/lib32 > "$root/etc/ld.so.conf.d/lib32.conf"
     fi
-    rm -rf "$root/usr/share/metainfo" "$root/usr/share/doc" "$root/usr/share/gettext"
-    bsdtar -xpf "$(pkgfile algernon)" -C "$root" usr/share/doc/algernon/README.md
-    rm -rf "$root/usr/share/icons/Adwaita" "$root/usr/share/icons/AdwaitaLegacy"
-    rm -rf "$root"/usr/share/wayland-sessions
-    rm -f "$root"/usr/share/scummvm/fonts-cjk.dat "$root"/usr/share/scummvm/fonts-imgui.dat
-    find "$root/usr/share/applications" -type f ! -name "tinyhat-*.desktop" -delete
-    # Python only reads .opt-1.pyc and .opt-2.pyc when it runs with -O or -OO
-    find "$root/usr/lib" -path "$root/usr/lib/python3*" -name "*.opt-[12].pyc" -delete
     for f in zsnes-bin dosbox-x scummvm dwl fuzzel grafx2-sdl3 algernon; do
       [ ! -e "$root/usr/bin/$f" ] || sstrip "$root/usr/bin/$f"
     done
@@ -113,48 +79,7 @@ case $mode in
     done
     rm -f "$root/etc/fonts/conf.d/70-no-bitmaps-except-emoji.conf"
 
-    cp -a "$modules/." "$root/"
     python3 scripts/fwprune.py "$root"
-    for k in "$modules"/usr/lib/modules/*/; do
-      [ -d "$k" ] || continue
-      k=${k%/}
-      k=${k##*/}
-      db=$root/var/lib/pacman/local/linux-tinyhat-${k%%-*}-1
-      mkdir -p "$db"
-      printf '%%NAME%%\nlinux-tinyhat\n\n%%VERSION%%\n%s-1\n\n%%DESC%%\nThe Tiny Hat Linux kernel\n\n%%ARCH%%\n%s\n\n%%PROVIDES%%\nNTSYNC-MODULE\nVIRTUALBOX-GUEST-MODULES\n\n' "${k%%-*}" "$arch" > "$db/desc"
-      printf '%%FILES%%\n\n' > "$db/files"
-    done
-
-    install -Dm644 vendor/soundfont/GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/GeneralUser-GS-2.0.3.sf3"
-    ln -sf GeneralUser-GS-2.0.3.sf3 "$root/usr/share/soundfonts/default.sf2"
-    mkdir -p "$root/usr/share/games/bass"
-    python3 -m zipfile -e vendor/src/BASS-Floppy-1.3.zip "$root/usr/share/games/bass"
-    chmod 644 "$root"/usr/share/games/bass/*
-    for g in soltys-en-v1.0:soltys; do
-      mkdir -p "$root/usr/share/games/${g#*:}"
-      python3 -m zipfile -e "vendor/src/${g%:*}.zip" "$root/usr/share/games/${g#*:}"
-    done
-    chmod 755 "$root"/usr/share/games/soltys
-    chmod 644 "$root"/usr/share/games/soltys/*
-    [ "$arch" = aarch64 ] || mkdir -p "$root/usr/lib/watcom"
-    [ "$arch" = aarch64 ] || bsdtar -xf vendor/src/open-watcom-2026-10-01.tar.xz -C "$root/usr/lib/watcom" \
-      --exclude './binl/*.sym' --exclude './binl/vi' --exclude './binl/w??axp' --exclude './binl/wccppc' --exclude './binl/wccmps' \
-      --exclude './binl/wfc*' --exclude './binl/wipfc' --exclude './h/nt' --exclude './h/os2' --exclude './h/os21x' --exclude './h/win' \
-      --exclude './lib286/os2' --exclude './lib286/win' --exclude './lib386/nt' --exclude './lib386/os2' --exclude './lib386/win' \
-      --exclude './lib386/linux' --exclude './lib386/netware' --exclude './lib386/rdos*' \
-      ./binl ./h ./lib286 ./lib386 ./binw/dos4gw.exe ./binw/dos32a.exe \
-      ./binw/pmodew.exe ./binw/wstub.exe ./binw/wstubq.exe ./binw/stub32a.exe ./binw/stub32c.exe ./license.txt
-    [ "$arch" = aarch64 ] || chmod -R u=rwX,go=rX "$root/usr/lib/watcom"
-    mkdir -p "$root/usr/share/tinyhat/c-guide"
-    python3 -m zipfile -e vendor/src/beej-bgc.zip "$root/usr/share/tinyhat/c-guide"
-    python3 -m zipfile -e vendor/src/beej-bgclr.zip "$root/usr/share/tinyhat/c-guide"
-    chmod -R u=rwX,go=rX "$root/usr/share/tinyhat/c-guide"
-    rm -rf "$root.fennel"
-    mkdir -p "$root.fennel"
-    bsdtar -xpf "$(pkgfile fennel)" -C "$root.fennel" usr/share/doc/fennel
-    python3 scripts/mkfennelbook.py "$root.fennel/usr/share/doc/fennel" "$root/usr/share/tinyhat/fennel-book"
-    rm -rf "$root.fennel"
-    chmod -R u=rwX,go=rX "$root/usr/share/tinyhat/fennel-book"
     python3 - "$root"/usr/lib/systemd/libsystemd-core-*.so << 'EOF'
 import sys
 d = open(sys.argv[1], "rb").read()
@@ -173,7 +98,7 @@ EOF
     sed -i 's|^SigLevel *= *Required DatabaseOptional$|& TrustAll|' "$root/etc/pacman.conf"
     grep -q '^SigLevel *= *Required DatabaseOptional TrustAll$' "$root/etc/pacman.conf"
     ignore=$(
-      python3 scripts/buildplan.py query built-pkgnames
+      python3 scripts/build_planner.py query built-pkgnames
       python3 scripts/distro.py pins
     )
     ignorepkgs=
@@ -216,18 +141,9 @@ EOF
     cp -a "$licdir/." "$root/usr/share/licenses/tinyhat/"
 
     touch -d 2026-10-05T00:00:00Z "$root/usr/lib/clock-epoch"
-    ln -sf doas "$root/usr/bin/sudo"
-    ln -sf dbclient "$root/usr/bin/ssh"
-    ln -sf tinyhat-firewall "$root/usr/bin/ufw"
-    ln -sf cowsay "$root/usr/bin/cowthink"
-    ln -sf poweroff "$root/usr/bin/natta"
-    ln -sf poweroff "$root/usr/bin/nightynight"
-    ln -sf sleepmode "$root/usr/bin/sov"
-    ln -sf sleepmode "$root/usr/bin/suspend"
     grep -qx /usr/bin/fish "$root/etc/shells" || printf '/bin/fish\n/usr/bin/fish\n' >> "$root/etc/shells"
     term=$(sed -n 's/^term=//p' "$root/etc/xdg/foot/foot.ini")
     [ -f "$root/usr/share/terminfo/${term%"${term#?}"}/$term" ]
-    chmod 4755 "$root/usr/bin/doas"
 
     scripts/inrootfs.sh "$root" /bin/sh -eu -c '
 ldconfig
@@ -259,14 +175,9 @@ echo tinyhat:tinyhat | chpasswd
 passwd -l root >/dev/null
 systemctl preset-all >/dev/null 2>&1
 systemctl --global preset-all >/dev/null 2>&1
-systemctl enable tinyhat-console.service tinyhat-shutdown-splash.service tinyhat-shutdown-sound.service nftables.service tinyhat-pci-latency.service tinyhat-firewall.service tinyhat-wifi-autostart.service systemd-networkd.service systemd-resolved.service earlyoom.service tinyhat-bluetooth.service tinyhat-pacman-init.service tinyhat-zram.service tinyhat-persist.service tinyhat-timesync-once.service tinyhat-nettime.service tinyhat-pacman-restore.service tinyhat-pacman-sync.service tinyhat-midibench.service tinyhat-crashlogs.service fstrim.timer
-[ ! -f /usr/lib/systemd/system/vboxservice.service ] || systemctl enable vboxservice.service
-systemctl disable bluetooth.service systemd-userdbd.socket systemd-networkd-wait-online.service 2>/dev/null || true
 ln -sf /usr/lib/systemd/system/bluetooth.service /etc/systemd/system/dbus-org.bluez.service
 ln -sf ../run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 systemctl mask systemd-vconsole-setup.service systemd-nsresourced.socket systemd-nsresourced.service systemd-boot-update.service systemd-pcrmachine.service systemd-pcrphase.service systemd-pcrphase-sysinit.service ldconfig.service 2>/dev/null || true
-systemctl --global disable mpris-proxy.service filter-chain.service pipewire.service fluidsynth.service 2>/dev/null || true
-systemctl --global enable pipewire.socket wireplumber.service
 systemctl --global mask gcr-ssh-agent.socket gcr-ssh-agent.service p11-kit-server.socket p11-kit-server.service 2>/dev/null || true
 systemctl set-default multi-user.target
 '
@@ -296,7 +207,7 @@ systemctl set-default multi-user.target
     rm -f "$sfs.caps"
     ;;
   *)
-    echo "usage: $0 base|finalize root modules sfs lock licdir" >&2
+    echo "usage: $0 base|finalize root sfs lock licdir" >&2
     exit 2
     ;;
 esac

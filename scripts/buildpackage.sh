@@ -43,7 +43,7 @@ while :; do
       shift 2
       ;;
     --env)
-      # NAME=VERSION ... of what the build uses from the build environment (from scripts/buildplan.py): part of the key
+      # NAME=VERSION ... of what the build uses from the build environment (from scripts/build_planner.py): part of the key
       env=$2
       shift 2
       ;;
@@ -171,7 +171,7 @@ lookup() {
     i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
     # Our own builds of the packages and what they need at run time, never prebuilt ones, and never an older build
     # of this package directory's own packages
-    cross) out=$(python3 "$top/scripts/buildplan.py" pkgfiles --without "$base${without:+,$without}" "$repo" i686 "$@") ;;
+    cross) out=$(python3 "$top/scripts/build_planner.py" pkgfiles --without "$base${without:+,$without}" "$repo" i686 "$@") ;;
     x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
     aarch64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" aarch64 "$@") ;;
     x86_64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x86_64 "$@") ;;

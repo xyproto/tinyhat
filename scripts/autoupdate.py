@@ -27,7 +27,7 @@ import tomllib
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import distro
 import importpkg
-import buildplan
+import build_planner
 import pkg
 
 TOP = distro.TOP
@@ -51,22 +51,22 @@ def vercmp(a, b):
 def image_state():
     """The packages in the image and their dependency edges, resolved from the .SRCINFO files of the TINYBUILDs.
     Edges to skipped packages (like perl) are kept, since the skip list hides them from the package set."""
-    infos = buildplan.load()
+    infos = build_planner.load()
     versions = {n: i["version"] for i in infos for n in i["pkgnames"]}
     targets, prefs, skip = pkg.list_config("image")
-    pkgs = pkg.resolve_targets(targets, buildplan.indexes(infos), "i686", prefs, skip)
+    pkgs = pkg.resolve_targets(targets, build_planner.indexes(infos), "i686", prefs, skip)
     names = {p["name"] for p in pkgs}
     return names, {(p["name"], d) for p in pkgs for d in p["depends"]}, {n: versions.get(n) for n in names}
 
 
 def guard(before, after):
     """Return what an update newly pulls into the image that matches [image] deny."""
-    rules = buildplan.deny_rules()
+    rules = build_planner.deny_rules()
 
     def found(state):
         names, edges, versions = state
-        out = {f"{n} {versions[n] or ''}".strip() for n in names if buildplan.denied(n, versions[n], rules)}
-        return out | {f"{a} → {b}" for a, b in edges if buildplan.denied(b, None, rules)}
+        out = {f"{n} {versions[n] or ''}".strip() for n in names if build_planner.denied(n, versions[n], rules)}
+        return out | {f"{a} → {b}" for a, b in edges if build_planner.denied(b, None, rules)}
 
     return sorted(found(after) - found(before))
 
@@ -302,8 +302,8 @@ def refresh_lock(report):
     seed = os.path.join(TOP, "build", "seed.txt")
     try:
         with open(seed, "w") as f:
-            subprocess.run([sys.executable, "scripts/buildplan.py", "seed"], cwd=TOP, env=env, stdout=f, check=True)
-        subprocess.run([sys.executable, "scripts/buildplan.py", "libs"], cwd=TOP, env=env, check=True)
+            subprocess.run([sys.executable, "scripts/build_planner.py", "seed"], cwd=TOP, env=env, stdout=f, check=True)
+        subprocess.run([sys.executable, "scripts/build_planner.py", "libs"], cwd=TOP, env=env, check=True)
         subprocess.run([sys.executable, "scripts/pkg.py", "lock", "buildroot", seed], cwd=TOP, env=env, check=True)
     except subprocess.CalledProcessError as e:
         report["failed"].append(("archlinux32", "buildroot lock", str(e)))

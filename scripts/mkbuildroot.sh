@@ -17,8 +17,8 @@ host=build/buildroot-x86_64
 names=$(python3 scripts/distro.py packages buildroot i686)
 # Without the package directories of [buildroot] provided (like oils-for-unix, which provides sh): the build
 # environment has those from /host
-without=$(python3 scripts/buildplan.py query provided-bases | paste -sd,)
-files=$(python3 scripts/buildplan.py pkgfiles --image --without "$without" build/repo i686 $names)
+without=$(python3 scripts/build_planner.py query provided-bases | paste -sd,)
+files=$(python3 scripts/build_planner.py pkgfiles --image --without "$without" build/repo i686 $names)
 # filesystem first: it has the links (like usr/sbin -> bin) that the other packages' paths go through
 files="$(printf '%s\n' $files | grep '/filesystem-[^/]*$') $(printf '%s\n' $files | grep -v '/filesystem-[^/]*$')"
 
