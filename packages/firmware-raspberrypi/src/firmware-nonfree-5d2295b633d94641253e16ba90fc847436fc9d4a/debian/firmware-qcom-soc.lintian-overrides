@@ -1,0 +1,14 @@
+# These binaries do not run on the host, so these rules don't apply
+firmware-qcom-soc: arch-independent-package-contains-binary-or-object *lib/firmware/*
+firmware-qcom-soc: statically-linked-binary *lib/firmware/*
+# apq8096 modem.mbn issues
+# The binary-with-bad-dynamic-table override needs to match the
+# filename with or without brackets, until ftp-master has an upgraded
+# version of lintian!
+firmware-qcom-soc: binary-with-bad-dynamic-table *lib/firmware/qcom/apq8096/modem.mbn*
+firmware-qcom-soc: elf-error In program headers: * [*lib/firmware/qcom/apq8096/modem.mbn]
+# qdu100/hypvm.mbn apparently looks like a shared library, but isn't
+firmware-qcom-soc: shared-library-lacks-prerequisites [*lib/firmware/qcom/qdu100/hypvm.mbn]
+# Extra zlib in the firmware
+firmware-qcom-soc: embedded-library zlib [*lib/firmware/qcom/sdm845/Thundercomm/db845c/slpi.mbn]
+firmware-qcom-soc: embedded-library zlib [*lib/firmware/qcom/sm8250/Thundercomm/RB5/slpi.mbn]

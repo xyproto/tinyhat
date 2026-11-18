@@ -1,13 +1,13 @@
 set pkgname linux-tinyhat
 set pkgver 7.3.5
-set pkgrel 1
+set pkgrel 2
 set -g _xpadneo 0.10.5
 set pkgdesc 'The Tiny Hat Linux kernel, its modules and the xpadneo driver'
 set arch i686 x86_64 aarch64
 set url https://www.kernel.org/
 set license GPL-2.0-only
 set provides NTSYNC-MODULE VIRTUALBOX-GUEST-MODULES
-set makedepends_build bc bison cpio flex libelf python xz zstd
+set makedepends_build bc bison cpio flex kmod libelf python xz zstd
 set options '!debug' '!strip'
 set source "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$pkgver.tar.xz" \
     "xpadneo-$_xpadneo.tar.gz::https://github.com/atar-axis/xpadneo/archive/refs/tags/v$_xpadneo.tar.gz" \
@@ -82,6 +82,7 @@ function package
     make ARCH=$karch INSTALL_MOD_PATH=$pkgdir/usr INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install; or return
     make ARCH=$karch M=$srcdir/xpadneo-$_xpadneo/hid-xpadneo/src INSTALL_MOD_PATH=$pkgdir/usr INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install; or return
     rm -f $modules/build
+    depmod -b $pkgdir/usr $kver; or return
     install -Dm644 (make -s ARCH=$karch image_name) $modules/vmlinuz; or return
     if test $CARCH = aarch64
         install -Dm644 arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb arch/arm64/boot/dts/broadcom/bcm2711-rpi-400.dtb arch/arm64/boot/dts/broadcom/bcm2711-rpi-cm4-io.dtb -t $modules/dtbs/; or return

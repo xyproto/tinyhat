@@ -1,0 +1,41 @@
+set pkgname raspberrypi-bootloader
+set pkgver 20261118
+set pkgrel 1
+set pkgdesc 'Bootloader files for Raspberry Pi'
+set arch aarch64
+set url https://github.com/raspberrypi/firmware
+set license custom
+set options '!strip' '!elfcheck'
+set replaces raspberrypi-firmware-bootloader raspberrypi-bootloader-x raspberrypi-firmware-bootloader-x
+set conflicts raspberrypi-bootloader-x
+set -g _commit 4a44943386efa917f012ec55aba8b51f750be0f7
+set -g _files bootcode.bin \
+    fixup.dat fixup4.dat fixup4cd.dat fixup4db.dat fixup4x.dat fixup_cd.dat fixup_db.dat fixup_x.dat \
+    start.elf start4.elf start4cd.elf start4db.elf start4x.elf start_cd.elf start_db.elf start_x.elf \
+    LICENCE.broadcom
+set source (for f in $_files; echo "$pkgname-$pkgver-$f::https://raw.githubusercontent.com/raspberrypi/firmware/$_commit/boot/$f"; end)
+set sha256sums 3d04e3f6b3c62981c38a31429cae62aab14cfd99dedd56403c36216ac08bb16d \
+    34d4908502236975519a976f802822bacff5a9246cfce9492b8034b8de491cc2 \
+    a5eba96d61498b3439300a069ea477c1ac749085761095c624b695f357070f0d \
+    b470ab913b67a5a6b33e2dc9fb04a783c7153801958586d2687c897f0e8d124e \
+    9e6ee25a7e074210cc49fbf277c4118fd0af1eaf143b7cbb3f012016a130c771 \
+    b4d378265a291734a2b0f73bdde86e5eaf9c5ff1285d8636e26fea1b9767b979 \
+    b470ab913b67a5a6b33e2dc9fb04a783c7153801958586d2687c897f0e8d124e \
+    b290f7265f73135b587c6135fd63ab2996444c4909cc1858f6e5c5b238790e8b \
+    91f512713a68818eb6117201d415a5f6c7f0aaaf07b2d5af7a8ee2ebb4838451 \
+    8fd31e816477c455b9ae313787e9a869cacc32e476eac6653768063477368102 \
+    3073e1537ea9229f2ed2f9f7864c91494fbe2b8c45910f22ccf06b0f3c9295a8 \
+    dc9953aa1ed87b161632bd04e736339d0fe6113c88120c611029afdd7c42457c \
+    0d9203f653d4b229fcbb14030e6d1da507ae4e6adefa68ba1b644dc0b10d8f91 \
+    7701586b231c02bb733c05d2acbd831377aa5f1c26181fe82e19e70e7fa9d702 \
+    83ecfff0fc5e392a57ea25a1c2dfad00945ca48546004d84773c279135e5c369 \
+    bdba60e561b06242b793b00770628a1964654feeda5ab85b9175f64c020c7a0a \
+    02bff0c05e576eaf77a2d3488f605fd497d41dd1a1e112789d1f745e4c71a508 \
+    c7283ff51f863d93a275c66e3b4cb08021a5dd4d8c1e7acc47d872fbe52d3d6b
+
+function package
+    for f in $_files[1..-2]
+        install -Dm644 $pkgname-$pkgver-$f "$pkgdir/boot/$f"; or return
+    end
+    install -Dm644 $pkgname-$pkgver-LICENCE.broadcom "$pkgdir/usr/share/licenses/$pkgname/LICENCE.broadcom"; or return
+end

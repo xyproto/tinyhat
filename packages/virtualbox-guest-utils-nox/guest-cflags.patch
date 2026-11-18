@@ -1,0 +1,10 @@
+--- a/Config.kmk
++++ b/Config.kmk
+@@ -8924,6 +8924,7 @@
+   TEMPLATE_VBoxGuestR3ExeBase_TOOL   := $(subst GXX,GCC,$(TEMPLATE_$(TEMPLATE_VBoxGuestR3ExeBase_EXTENDS)_TOOL))
+  endif
+  TEMPLATE_VBoxGuestR3ExeBase_CXXFLAGS = $(TEMPLATE_$(TEMPLATE_VBoxGuestR3ExeBase_EXTENDS)_CXXFLAGS) -fno-exceptions -fno-rtti
++ TEMPLATE_VBoxGuestR3ExeBase_CFLAGS   = $(TEMPLATE_$(TEMPLATE_VBoxGuestR3ExeBase_EXTENDS)_CFLAGS)
+  # Do not inherit sanitizer flags from VBoxR3Exe in guest executables.  Deal with them separately.
+  TEMPLATE_VBoxGuestR3ExeBase_CXXFLAGS.debug = $(NO_SUCH_VARIABLE)
+  TEMPLATE_VBoxGuestR3ExeBase_CFLAGS.debug = $(NO_SUCH_VARIABLE)

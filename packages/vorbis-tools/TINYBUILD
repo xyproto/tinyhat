@@ -1,0 +1,22 @@
+set pkgname vorbis-tools
+set pkgver 1.4.3
+set pkgrel 1
+set pkgdesc 'Extra tools for Ogg-Vorbis (oggenc, oggdec, ogginfo, vorbiscomment, vcut)'
+set arch i686 x32
+set url https://www.xiph.org/vorbis/
+set license GPL-2.0-or-later
+set depends flac libvorbis
+set source "https://downloads.xiph.org/releases/vorbis/vorbis-tools-$pkgver.tar.gz"
+set sha256sums a1fe3ddc6777bdcebf6b797e7edfe0437954b24756ffcc8c6b816b63e0460dde
+set flags arch
+
+function build
+    cd vorbis-tools-$pkgver; or return
+    ./configure --prefix=/usr --disable-ogg123 --disable-nls --without-speex --without-curl --enable-vcut; or return
+    make; or return
+end
+
+function package
+    cd vorbis-tools-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

@@ -1,0 +1,15 @@
+Package: firmware-@package@
+Meta-Rules-Target: generic
+Architecture: all
+Replaces: @replaces@
+Conflicts: @conflicts@
+Breaks: @breaks@
+Provides: @provides@
+Depends: ${misc:Depends}, @depends@
+Recommends: @recommends@
+Suggests: @suggests@
+Description: Binary firmware for @desc@
+ This package contains the binary firmware for @longdesc@.
+Homepage: @uri@
+Multi-Arch: foreign
+

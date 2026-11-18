@@ -1,0 +1,6 @@
+enable pipewire.socket
+enable wireplumber.service
+disable mpris-proxy.service
+disable filter-chain.service
+disable pipewire.service
+disable fluidsynth.service

@@ -1,0 +1,15 @@
+set pkgname beneath-a-steel-sky
+set pkgver 1.3
+set pkgrel 1
+set pkgdesc 'Beneath a Steel Sky, a science fiction adventure game (floppy version, freeware), for ScummVM'
+set arch any
+set url https://www.scummvm.org/games/#games-sky
+set license LicenseRef-BASS-Freeware
+set optdepends 'scummvm: to play the game'
+set source "https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-$pkgver.zip"
+set sha256sums d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818
+
+function package
+    install -Dm644 sky.dnr sky.dsk readme.txt -t $pkgdir/usr/share/games/bass/; or return
+    install -Dm644 readme.txt $pkgdir/usr/share/licenses/$pkgname/LICENSE; or return
+end

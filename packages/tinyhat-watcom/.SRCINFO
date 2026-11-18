@@ -1,11 +1,17 @@
 pkgbase = tinyhat-watcom
-	pkgdesc = Tiny Hat menu entry and environment for Open Watcom
+	pkgdesc = Open Watcom C/C++ for DOS, with its Tiny Hat menu entry and environment
 	pkgver = 1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
+	license = Watcom-1.0
 	depends = tinyhat-desktop
 	backup = etc/profile.d/watcom.sh
+	options = !strip
+	options = !elfcheck
+	source = open-watcom-2026-10-01.tar.xz::https://github.com/open-watcom/open-watcom-v2/releases/download/2026-10-01-Build/ow-snapshot.tar.xz
+	noextract = open-watcom-2026-10-01.tar.xz
+	sha256sums = e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe
 
 pkgname = tinyhat-watcom

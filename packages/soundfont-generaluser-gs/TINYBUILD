@@ -1,0 +1,27 @@
+set pkgname soundfont-generaluser-gs
+set pkgver 2.0.3
+set pkgrel 1
+set -g _commit 684543d5e5efaef08d02be50dcda8d552478fa60
+set pkgdesc 'GeneralUser GS, a General MIDI sound font, as SF3, and the default sound font'
+set arch any
+set url https://schristiancollins.com/generaluser.php
+set license LicenseRef-GeneralUser-GS
+set makedepends_build python vorbis-tools
+set source "GeneralUser-GS-$pkgver.sf2::https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/$_commit/GeneralUser-GS.sf2" \
+    "GeneralUser-GS-$pkgver-LICENSE.txt::https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/$_commit/documentation/LICENSE.txt" \
+    sf2tosf3.py NOTICE
+set sha256sums 9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe \
+    7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca16b9b8b405be \
+    a3f92a95b68c696005218a4137758e7ccbe688fcba51c13f697669f251dedc65 \
+    c4060086e467edf6a2b01dad3c31c3107c7bcdddd69850b184004a890595bcfa
+
+function build
+    python3 sf2tosf3.py GeneralUser-GS-$pkgver.sf2 GeneralUser-GS-$pkgver.sf3; or return
+end
+
+function package
+    install -Dm644 GeneralUser-GS-$pkgver.sf3 -t $pkgdir/usr/share/soundfonts/; or return
+    ln -s GeneralUser-GS-$pkgver.sf3 $pkgdir/usr/share/soundfonts/default.sf2; or return
+    install -Dm644 GeneralUser-GS-$pkgver-LICENSE.txt $pkgdir/usr/share/licenses/$pkgname/LICENSE; or return
+    install -Dm644 NOTICE -t $pkgdir/usr/share/licenses/$pkgname/; or return
+end

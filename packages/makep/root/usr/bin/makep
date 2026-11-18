@@ -209,7 +209,7 @@ function print_srcinfo
     print_field makedepends_build $makedepends_build
     print_field makedepends_host $makedepends_host
     # Dependencies that the build can do without (it checks for them), so that in a dependency cycle it is built
-    # first without them and then again with them (scripts/buildplan.py cross_rules)
+    # first without them and then again with them (scripts/build_planner.py cross_rules)
     print_field bootstrap_without $bootstrap_without
     print_field depends $depends
     print_field optdepends $optdepends

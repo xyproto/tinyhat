@@ -2930,6 +2930,7 @@ python-idna = { version = "3.20-1", nvchecker = "[python-idna]\nsource = \"git\"
 python-installer = { version = "1.1.0-1", nvchecker = "[python-installer]\nsource = \"git\"\ngit = \"https://github.com/pypa/installer.git\"\n" }
 python-lxml = { version = "6.1.3_1-1", nvchecker = "[python-lxml]\nsource = \"git\"\ngit = \"https://github.com/lxml/lxml.git\"\nprefix=\"lxml-\"\nfrom_pattern = \"-\"\nto_pattern = \"_\"\nexclude_regex = \".*(a|b).*\"\n" }
 python-mako = { version = "1.4.3-1", nvchecker = "[python-mako]\nsource = \"pypi\"\npypi = \"mako\"\n" }
+python-markdown = { version = "3.11.3-1", nvchecker = "[python-markdown]\nsource = \"git\"\ngit = \"https://github.com/Python-Markdown/markdown.git\"\n" }
 python-markupsafe = { version = "3.0.4-1", nvchecker = "[python-markupsafe]\nsource = \"git\"\ngit = \"https://github.com/pallets/markupsafe.git\"\n" }
 python-numpy = { version = "2.5.4-1", nvchecker = "[python-numpy]\nsource = \"git\"\ngit = \"https://github.com/numpy/numpy.git\"\nprefix = \"v\"\nexclude_regex = \".*(dev|pre|a|alpha|b|beta|rc).*\"\n" }
 python-packaging = { version = "26.3-1", nvchecker = "[python-packaging]\nsource = \"git\"\ngit = \"https://github.com/pypa/packaging.git\"\nexclude_regex = \".*(beta|rc).*\"\n" }
@@ -3003,6 +3004,7 @@ unzip = { version = "6.0-23" }
 usbutils = { version = "020-1", nvchecker = "[usbutils]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usbutils.git\"\nprefix = \"v\"\n" }
 util-linux = { version = "2.42.4-1", nvchecker = "[util-linux]\nsource = \"git\"\ngit = \"https://github.com/util-linux/util-linux.git\"\nprefix = \"v\"\nexclude_regex = \".*rc.*\"\n" }
 v4l-utils = { version = "1.32.0-2", nvchecker = "[v4l-utils]\nsource = \"git\"\ngit = \"https://git.linuxtv.org/v4l-utils.git\"\nprefix = \"v4l-utils-\"\n" }
+vorbis-tools = { version = "1.4.3-1", nvchecker = "[vorbis-tools]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/vorbis-tools.git\"\nprefix = \"v\"\n" }
 vulkan-headers = { version = "1:1.4.363.0-1", nvchecker = "[vulkan-headers]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/Vulkan-Headers.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
 vulkan-icd-loader = { version = "1.4.363.0-1", nvchecker = "[vulkan-icd-loader]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/Vulkan-Loader.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
 wayland = { version = "1.26.0-1", nvchecker = "[wayland]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/wayland/wayland.git\"\nexclude_regex = '.*\\.9\\d'\n" }

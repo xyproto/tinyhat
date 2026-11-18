@@ -1,6 +1,6 @@
 set pkgname ldns
 set pkgver 1.9.2
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Fast DNS library supporting recent RFCs'
 set url https://www.nlnetlabs.nl/projects/ldns/
 set license custom:BSD
@@ -38,5 +38,6 @@ function package
     cd $pkgname; or return
 
     make DESTDIR="$pkgdir" install; or return
+    sed -i -e 's/^CFLAGS=.*/CFLAGS=""/' -e 's/^CPPFLAGS=.*/CPPFLAGS=""/' -e 's/^LDFLAGS=.*/LDFLAGS=""/' "$pkgdir/usr/bin/ldns-config"; or return
     install -D -m0644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
 end

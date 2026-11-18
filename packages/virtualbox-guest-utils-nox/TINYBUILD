@@ -1,0 +1,59 @@
+set pkgname virtualbox-guest-utils-nox
+set pkgver 7.2.22
+set pkgrel 1
+set pkgdesc 'VirtualBox Guest userspace utilities without X support'
+set arch i686
+set url https://www.virtualbox.org/
+set license 'GPL-3.0-only AND (GPL-3.0-only OR CDDL-1.0)'
+set depends glibc zlib VIRTUALBOX-GUEST-MODULES
+set makedepends zlib
+set conflicts virtualbox-guest-utils
+set flags arch
+set source "https://download.virtualbox.org/virtualbox/$pkgver/VirtualBox-$pkgver.tar.bz2" \
+    LocalConfig.kmk vboxservice.service 60-vboxguest.rules virtualbox-guest-utils.sysusers \
+    0012-vbglR3GuestCtrlDetectPeekGetCancelSupport.patch guest-cflags.patch
+set sha256sums 440a2b3eeb46e7e992961b70ef24f43e95b3c99fa2ab30aac20b963ef9e91ad7
+
+function _karch -a machine
+    switch $machine
+        case i686
+            echo x86
+        case x86_64
+            echo amd64
+        case '*'
+            return 1
+    end
+end
+
+function prepare
+    cd VirtualBox-$pkgver; or return
+    for p in 0012-vbglR3GuestCtrlDetectPeekGetCancelSupport guest-cflags
+        patch -Np1 -i ../$p.patch; or return
+    end
+    cp ../LocalConfig.kmk .; or return
+end
+
+function build
+    set -l host (_karch (uname -m)); or return
+    set -gx KBUILD_HOST linux
+    set -gx KBUILD_HOST_ARCH $host
+    set -gx KBUILD_TARGET linux
+    set -gx KBUILD_TARGET_ARCH (_karch $CARCH); or return
+    set -gx KBUILD_TARGET_CPU blend
+    set -gx KBUILD_TYPE release
+    set -gx KBUILD_PATH $srcdir/VirtualBox-$pkgver/kBuild
+    set -gx KBUILD_DEVTOOLS $srcdir/VirtualBox-$pkgver/tools
+    set -gx VBOX_ONLY_ADDITIONS 1
+    cd VirtualBox-$pkgver; or return
+    $KBUILD_PATH/bin/linux.$host/kmk VBOX_GCC_OPT="$CXXFLAGS"; or return
+end
+
+function package
+    set -l bin VirtualBox-$pkgver/out/linux.(_karch $CARCH)/release/bin/additions
+    install -Dm755 $bin/VBoxService $bin/VBoxControl $bin/mount.vboxsf -t $pkgdir/usr/bin/; or return
+    install -Dm644 60-vboxguest.rules -t $pkgdir/usr/lib/udev/rules.d/; or return
+    install -Dm644 vboxservice.service -t $pkgdir/usr/lib/systemd/system/; or return
+    install -Dm644 virtualbox-guest-utils.sysusers $pkgdir/usr/lib/sysusers.d/virtualbox-guest-utils.conf; or return
+    install -Dm644 VirtualBox-$pkgver/COPYING $pkgdir/usr/share/licenses/$pkgname/LICENSE; or return
+    install -Dm644 VirtualBox-$pkgver/COPYING.CDDL $pkgdir/usr/share/licenses/$pkgname/LICENSE.CDDL; or return
+end

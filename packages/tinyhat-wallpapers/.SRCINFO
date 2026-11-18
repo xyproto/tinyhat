@@ -1,0 +1,17 @@
+pkgbase = tinyhat-wallpapers
+	pkgdesc = Tiny Hat wallpapers: the hat logo, the wireframe hat and houndstooth
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = any
+	license = BSD-3-Clause
+	makedepends = python
+	makedepends_build = python
+	source = wallpapers.py
+	source = hat.py
+	source = tinyhat.svg
+	sha256sums = ec9cb877272c5dd1884b27e45d8430a929a2a98098b1f2f7d8eee343fc2e5cc4
+	sha256sums = df7670e65614b927b0c8d97687dd58e6a7ca0dc91744acf423daeacfe39c4928
+	sha256sums = beeb30ba54560bd72876efc72bf3f721e284884c3a9f1eba69f4f1036f73955a
+
+pkgname = tinyhat-wallpapers

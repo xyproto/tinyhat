@@ -1,0 +1,26 @@
+set pkgname pixelitos-icon-theme
+set pkgver 20260721
+set pkgrel 1
+set pkgdesc 'Pixelitos, a pixel-art icon theme, as the dark theme pixelitos-dark'
+set arch any
+set url https://github.com/ItzSelenux/pixelitos-icon-theme
+set license MIT
+set makedepends_build python
+set source "pixelitos-icon-theme-$pkgver.tar.gz::https://github.com/ItzSelenux/pixelitos-icon-theme/archive/refs/tags/$pkgver.tar.gz" \
+    mkpixelitos.py
+set sha256sums 61a4bd9570b791897f3d6f9ddb363887bb6290afa6d4aa3d88c07e76f529d229 \
+    8d527f2fabd64a9b24016123d0ea4c0729673571f7b77965cbbcd99701cd1d93
+set noextract pixelitos-icon-theme-$pkgver.tar.gz
+
+function build
+    python3 mkpixelitos.py pixelitos-icon-theme-$pkgver.tar.gz pixelitos-dark; or return
+end
+
+function package
+    install -d $pkgdir/usr/share/icons; or return
+    cp -r pixelitos-dark $pkgdir/usr/share/icons/; or return
+    find $pkgdir/usr/share/icons -type d -exec chmod 755 '{}' +; or return
+    find $pkgdir/usr/share/icons -type f -exec chmod 644 '{}' +; or return
+    bsdtar -xf pixelitos-icon-theme-$pkgver.tar.gz --strip-components 1 pixelitos-icon-theme-$pkgver/LICENSE pixelitos-icon-theme-$pkgver/CREDITS.md; or return
+    install -Dm644 LICENSE CREDITS.md -t $pkgdir/usr/share/licenses/$pkgname/; or return
+end

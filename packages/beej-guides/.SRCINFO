@@ -1,0 +1,13 @@
+pkgbase = beej-guides
+	pkgdesc = Beej's Guide to C Programming and Beej's Guide to the C Library, as HTML
+	pkgver = 20261016
+	pkgrel = 1
+	url = https://beej.us/guide/
+	arch = any
+	license = CC-BY-NC-ND-3.0
+	source = beej-bgc-20261016.zip::https://beej.us/guide/bgc/html/bgc.zip
+	source = beej-bgclr-20261016.zip::https://beej.us/guide/bgclr/html/bgclr.zip
+	sha256sums = f70e1bde325170d358b126b7966676e689dcad52ada03b129f8b2133c24128db
+	sha256sums = 3bd027e25142cf58cccab2398bcc2bdad1f718f7cd5d9baf407f0ae59a9d7296
+
+pkgname = beej-guides

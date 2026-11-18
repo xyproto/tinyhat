@@ -1,16 +1,31 @@
 set pkgname tinyhat-watcom
 set pkgver 1
-set pkgrel 1
-set pkgdesc 'Tiny Hat menu entry and environment for Open Watcom'
+set pkgrel 2
+set pkgdesc 'Open Watcom C/C++ for DOS, with its Tiny Hat menu entry and environment'
 set arch any
 set url https://github.com/xyproto/tinyhat
-set license BSD-3-Clause
+set license BSD-3-Clause Watcom-1.0
+set -g _ow 2026-10-01
 set depends tinyhat-desktop
 set backup etc/profile.d/watcom.sh
+set options '!strip' '!elfcheck'
+set source "open-watcom-$_ow.tar.xz::https://github.com/open-watcom/open-watcom-v2/releases/download/$_ow-Build/ow-snapshot.tar.xz"
+set sha256sums e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe
+set noextract open-watcom-$_ow.tar.xz
 
 function package
     cp -a $startdir/root/. $pkgdir/; or return
     find $pkgdir -type d -exec chmod 755 '{}' +; or return
     find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
     find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
+    install -d $pkgdir/usr/lib/watcom; or return
+    bsdtar -xf $srcdir/open-watcom-$_ow.tar.xz -C $pkgdir/usr/lib/watcom \
+        --exclude './binl/*.sym' --exclude './binl/vi' --exclude './binl/w??axp' --exclude './binl/wccppc' --exclude './binl/wccmps' \
+        --exclude './binl/wfc*' --exclude './binl/wipfc' --exclude './h/nt' --exclude './h/os2' --exclude './h/os21x' --exclude './h/win' \
+        --exclude './lib286/os2' --exclude './lib286/win' --exclude './lib386/nt' --exclude './lib386/os2' --exclude './lib386/win' \
+        --exclude './lib386/linux' --exclude './lib386/netware' --exclude './lib386/rdos*' \
+        ./binl ./h ./lib286 ./lib386 ./binw/dos4gw.exe ./binw/dos32a.exe \
+        ./binw/pmodew.exe ./binw/wstub.exe ./binw/wstubq.exe ./binw/stub32a.exe ./binw/stub32c.exe ./license.txt; or return
+    chmod -R u=rwX,go=rX $pkgdir/usr/lib/watcom; or return
+    install -Dm644 $pkgdir/usr/lib/watcom/license.txt $pkgdir/usr/share/licenses/$pkgname/LICENSE.watcom; or return
 end

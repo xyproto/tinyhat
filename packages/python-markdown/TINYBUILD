@@ -1,0 +1,24 @@
+set pkgname python-markdown
+set pkgver 3.11.3
+set pkgrel 1
+set pkgdesc "Python implementation of John Gruber's Markdown"
+set arch any
+set url https://python-markdown.github.io/
+set license BSD-3-Clause
+set depends python
+set makedepends python-build python-installer python-setuptools python-wheel
+set optdepends 'python-yaml: parse Python in YAML metadata' 'python-pygments: Code highlighting'
+set source "python-markdown-$pkgver.tar.gz::https://github.com/Python-Markdown/markdown/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 7b7c2b4c6b589009adfe8347897b8c8437718f1387dd08180f08dfe6ac954aa3
+set flags arch
+
+function build
+    cd markdown-$pkgver; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd markdown-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE.md -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

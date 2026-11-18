@@ -1,0 +1,21 @@
+pkgbase = soundfont-generaluser-gs
+	pkgdesc = GeneralUser GS, a General MIDI sound font, as SF3, and the default sound font
+	pkgver = 2.0.3
+	pkgrel = 1
+	url = https://schristiancollins.com/generaluser.php
+	arch = any
+	license = LicenseRef-GeneralUser-GS
+	makedepends = python
+	makedepends = vorbis-tools
+	makedepends_build = python
+	makedepends_build = vorbis-tools
+	source = GeneralUser-GS-2.0.3.sf2::https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/GeneralUser-GS.sf2
+	source = GeneralUser-GS-2.0.3-LICENSE.txt::https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/684543d5e5efaef08d02be50dcda8d552478fa60/documentation/LICENSE.txt
+	source = sf2tosf3.py
+	source = NOTICE
+	sha256sums = 9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe
+	sha256sums = 7b32efefdf95ce38a043799f0659853ddc00fbaa14d8c50f0aca16b9b8b405be
+	sha256sums = a3f92a95b68c696005218a4137758e7ccbe688fcba51c13f697669f251dedc65
+	sha256sums = c4060086e467edf6a2b01dad3c31c3107c7bcdddd69850b184004a890595bcfa
+
+pkgname = soundfont-generaluser-gs

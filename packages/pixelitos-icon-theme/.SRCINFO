@@ -1,0 +1,16 @@
+pkgbase = pixelitos-icon-theme
+	pkgdesc = Pixelitos, a pixel-art icon theme, as the dark theme pixelitos-dark
+	pkgver = 20260721
+	pkgrel = 1
+	url = https://github.com/ItzSelenux/pixelitos-icon-theme
+	arch = any
+	license = MIT
+	makedepends = python
+	makedepends_build = python
+	source = pixelitos-icon-theme-20260721.tar.gz::https://github.com/ItzSelenux/pixelitos-icon-theme/archive/refs/tags/20260721.tar.gz
+	source = mkpixelitos.py
+	noextract = pixelitos-icon-theme-20260721.tar.gz
+	sha256sums = 61a4bd9570b791897f3d6f9ddb363887bb6290afa6d4aa3d88c07e76f529d229
+	sha256sums = 8d527f2fabd64a9b24016123d0ea4c0729673571f7b77965cbbcd99701cd1d93
+
+pkgname = pixelitos-icon-theme
