@@ -9,25 +9,19 @@ pkgbase = wireplumber
 	arch = aarch64
 	license = MIT
 	checkdepends = pipewire-audio
-	makedepends = doxygen
 	makedepends = git
 	makedepends = glib2
 	makedepends = glib2-devel
 	makedepends = glibc
-	makedepends = graphviz
 	makedepends = libgcc
 	makedepends = libpipewire
 	makedepends = lua
 	makedepends = meson
 	makedepends = pipewire
-	makedepends = python-breathe
-	makedepends = python-lxml
-	makedepends = python-sphinx
-	makedepends = python-sphinx_rtd_theme
 	makedepends = systemd
 	makedepends = systemd-libs
 	source = git+https://gitlab.freedesktop.org/pipewire/wireplumber.git#tag=0.5.19
-	sha256sums = SKIP
+	sha256sums = cee17d50222698e089e30262365ce956d22638eba81935a2fdd9f05b270f5649
 
 pkgname = wireplumber
 	depends = libwireplumber=0.5.19
@@ -42,7 +36,6 @@ pkgname = wireplumber
 	depends = lua
 	depends = pipewire
 	depends = systemd-libs
-	optdepends = wireplumber-docs: Documentation
 	optdepends = wireplumber-system-services: System daemon (not recommended)
 	provides = pipewire-session-manager
 	conflicts = pipewire-media-session
@@ -58,9 +51,6 @@ pkgname = libwireplumber
 	depends = libgio-2.0.so
 	depends = libpipewire-0.3.so
 	provides = libwireplumber-0.5.so
-
-pkgname = wireplumber-docs
-	pkgdesc = Session / policy manager implementation for PipeWire - documentation
 
 pkgname = wireplumber-system-services
 	pkgdesc = Session / policy manager implementation for PipeWire - system services

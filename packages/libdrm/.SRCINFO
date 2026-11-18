@@ -15,10 +15,8 @@ pkgbase = libdrm
 	replaces = libdrm-new
 	replaces = libdrm-nouveau
 	source = https://dri.freedesktop.org/libdrm/libdrm-2.4.134.tar.xz
-	source = https://dri.freedesktop.org/libdrm/libdrm-2.4.134.tar.xz.sig
 	source = COPYING
 	sha256sums = ac5e74d157830eb8bee44c6a6bf3ad49774ef0dd2a72bdad74a8f20308b52a95
-	sha256sums = 735f7ec2ac0a38cc6d4fb7c6c74a9c399e2216a8ae6475c7176af06c62ce9a79
 	sha256sums = 9631d4f694952e3e6ae5a05534c2e93e994e47d3413677a3a00e45c8cef6db93
 
 pkgname = libdrm

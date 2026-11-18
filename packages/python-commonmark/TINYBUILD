@@ -1,0 +1,25 @@
+# No documentation (sphinx). rsync's man pages are made from Markdown with this
+set pkgname python-commonmark
+set pkgver 0.9.2
+set pkgrel 1
+set pkgdesc 'Python parser for the CommonMark Markdown spec'
+set arch any
+set url https://pypi.org/project/commonmark/
+set license BSD
+set depends python-docutils
+set makedepends python-build python-installer python-wheel python-setuptools
+set source "$pkgname-$pkgver.tar.gz::https://github.com/readthedocs/commonmark.py/archive/$pkgver.tar.gz"
+set sha256sums 65cceb13fad5dd9f53717451afaedde52314254ad180dc2bbb394c600b84ee71
+set flags arch
+
+function build
+    cd commonmark.py-$pkgver; or return
+    python -m build -wn; or return
+end
+
+function package
+    cd commonmark.py-$pkgver; or return
+    python -m installer -d "$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    mv "$pkgdir/usr/bin/cmark" "$pkgdir/usr/bin/cmark-py3"; or return
+end

@@ -1,0 +1,42 @@
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -80,12 +80,12 @@
+  * Under EEVDF this is the request size used to compute the virtual
+  * deadline; see update_deadline().
+  *
+- * (default: 0.70 msec * (1 + ilog(ncpus)), units: nanoseconds)
++ * (default: 0.40 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
+-unsigned int sysctl_sched_base_slice			= 700000ULL;
+-static unsigned int normalized_sysctl_sched_base_slice	= 700000ULL;
++unsigned int sysctl_sched_base_slice			= 400000ULL;
++static unsigned int normalized_sysctl_sched_base_slice	= 400000ULL;
+ 
+-__read_mostly unsigned int sysctl_sched_migration_cost	= 500000UL;
++__read_mostly unsigned int sysctl_sched_migration_cost	= 300000UL;
+ 
+ static int __init setup_sched_thermal_decay_shift(char *str)
+ {
+@@ -126,9 +126,9 @@
+  * to consumption or the quota being specified to be smaller than the slice)
+  * we will always only issue the remaining available time.
+  *
+- * (default: 5 msec, units: microseconds)
++ * (default: 3 msec, units: microseconds)
+  */
+-static unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
++static unsigned int sysctl_sched_cfs_bandwidth_slice		= 3000UL;
+ #endif
+ 
+ #ifdef CONFIG_NUMA_BALANCING
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -3141,7 +3141,7 @@
+ #ifdef CONFIG_PREEMPT_RT
+ # define SCHED_NR_MIGRATE_BREAK 8
+ #else
+-# define SCHED_NR_MIGRATE_BREAK 32
++# define SCHED_NR_MIGRATE_BREAK 8
+ #endif
+ 
+ extern __read_mostly unsigned int sysctl_sched_nr_migrate;

@@ -18,10 +18,10 @@ pkgbase = mgba
 	source = hidecursor.patch
 	source = scale3.patch
 	sha256sums = 91d6fbd32abcbdf030d58d3f562de25ebbc9d56040d513ff8e5c19bee9dacf14
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 528c1606928fce8a9cbe53179a37c8ac50ac420829a1b380d1ea205a4237dc95
+	sha256sums = 220b32354f87ec64745786977a29fbb355f79d4776c082d899aed291fd18be27
+	sha256sums = 2a9a592fe7c5f25a6caa2c110c5d9a9dc80046eed18383fb17ba15238ff715a7
+	sha256sums = 1e129af45282f6ad484439ba27a27fd45c4deb21b25dc44a100302b3e0ec34af
+	sha256sums = 3528e776afd14acf284ba09114961532e52e1f49232af524d181f0fa581362fa
 
 pkgname = mgba

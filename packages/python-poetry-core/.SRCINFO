@@ -1,0 +1,14 @@
+pkgbase = python-poetry-core
+	pkgdesc = Poetry PEP 517 Build Backend & Core Utilities
+	pkgver = 2.5.0
+	pkgrel = 1
+	url = https://github.com/python-poetry/poetry-core
+	arch = any
+	license = MIT
+	makedepends = python-build
+	makedepends = python-installer
+	depends = python
+	source = https://github.com/python-poetry/poetry-core/archive/2.5.0/poetry-core-2.5.0.tar.gz
+	sha256sums = e5a6fa94749ba460c56898d2b9649e3779b9f20f225d75be2fdff0ec43a3449d
+
+pkgname = python-poetry-core

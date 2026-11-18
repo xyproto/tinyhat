@@ -19,9 +19,7 @@ pkgbase = usbutils
 	optdepends = python: for lsusb.py usage
 	optdepends = sh: for usb-devices
 	source = https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-020.tar.xz
-	source = https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-020.tar.sign
 	sha256sums = 20287d68fcd9ebb50a05ba0645a4af7583bd8dfc7307215ba121e4bc6d057aa1
-	sha256sums = 37908bb6d9445f2872c84fb03657998cb00fc030ba0fa4144e2cf9b3be42d2df
 
 pkgname = usbutils
 	depends = glibc

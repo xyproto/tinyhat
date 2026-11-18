@@ -6,7 +6,9 @@ set url https://fishshell.com/
 set arch i686
 set license 'GPL-2.0-only AND BSD-3-Clause AND ISC AND MIT AND PSF-2.0'
 set depends glibc libgcc pcre2
-set makedepends cmake git jq rust python-sphinx
+# The help pages (man pages, used by `cmd --help`) are made with the build environment's sphinx-build (x86_64, at
+# /host: [buildroot] host_python_tools), so python-sphinx is not a dependency
+set makedepends cmake git jq rust
 set checkdepends expect procps-ng python-pexpect
 set optdepends 'python: man page completion parser / web config tool' \
     'pkgfile: command-not-found hook' \
@@ -21,6 +23,9 @@ set source "$pkgname::git+https://github.com/fish-shell/fish-shell#tag=$pkgver"
 set sha512sums 017388b8776fb86563cf475fa280d07b3e3016c00b48f1141dbd6596e041e98ad614ecdb85e2cda92699179caebee64d95193f3a9d9653769de05cdf8d38d9cc
 set b2sums 223586c51e69adbf5ba00df84b3d2f23cc730d989f22afab0e29064bf2d94e9bbbf746f3c46146fb1c696d7c4a3b6008d5c89d15bda0cede6a618472a159b6e8
 set flags arch
+# network: cargo (through CMake) downloads its crates while building (builds have no network access otherwise)
+set -a options network
+set -a options leakpath
 
 function build
     cd $pkgname; or return

@@ -1,32 +1,20 @@
 set pkgbase serd
-set pkgname serd serd-docs
+set pkgname serd
 set pkgver 0.32.10
 set pkgrel 1
 set pkgdesc 'Lightweight C library for RDF syntax supporting reading/ writing Turtle and NTriples'
 set arch i686 x32
 set url https://drobilla.net/software/serd.html
 set license '0BSD OR ISC' BSD-3-Clause ISC
-set makedepends doxygen mandoc meson python-sphinx python-sphinxygen
+# No documentation (doxygen, python-sphinx)
+set makedepends meson
 set flags arch
-set source https://download.drobilla.net/$pkgbase-$pkgver.tar.xz{,.sig}
-set sha512sums 1ceb7caaa97195e829bec0436930c090698a6be8ba1b7ee0ef3f013c817dd7ae472bb9bcc271e55e8b6e12d110b2d1d3d8fe20c36672d6e63c53f151173cd897 \
-    SKIP
-set b2sums 87a79acc5a3d5dfbc2b96ff41000a85953048d27c8ca44745580c932379bab4916b11531265777a809fb0cc2f25c85399a60bde2d30a96105d9dec6bae637bd7 \
-    SKIP
-
-# Moves files (relative to the current directory, which is $pkgdir) to $srcdir/$argv[1], keeping their paths
-function _pick
-    set -l p $argv[1]
-    for f in $argv[2..-1]
-        set -l d "$srcdir/$p/"(string replace -- "$pkgdir/" '' $f)
-        mkdir -p (dirname $d); or return
-        mv $f $d; or return
-        rmdir -p --ignore-fail-on-non-empty (dirname $f); or return
-    end
-end
+set source https://download.drobilla.net/$pkgbase-$pkgver.tar.xz
+set sha512sums 1ceb7caaa97195e829bec0436930c090698a6be8ba1b7ee0ef3f013c817dd7ae472bb9bcc271e55e8b6e12d110b2d1d3d8fe20c36672d6e63c53f151173cd897
+set b2sums 87a79acc5a3d5dfbc2b96ff41000a85953048d27c8ca44745580c932379bab4916b11531265777a809fb0cc2f25c85399a60bde2d30a96105d9dec6bae637bd7
 
 function build
-    arch-meson $pkgbase-$pkgver build; or return
+    arch-meson -D docs=disabled -D man_html=disabled $pkgbase-$pkgver build; or return
     meson compile -C build; or return
 end
 
@@ -36,24 +24,10 @@ end
 
 function package_serd
     set depends glibc
-    set optdepends 'serd-docs: for developer documentation'
     set provides libserd-0.so
 
     meson install -C build --destdir "$pkgdir"; or return
     install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
-
-    pushd "$pkgdir"; or return
-    _pick $pkgname-docs usr/share/doc; or return
-    popd; or return
-
     install -vDm 644 $pkgbase-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
     install -vDm 644 $pkgbase-$pkgver/{AUTHORS,NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
-end
-
-function package_serd-docs
-    set pkgdesc "$pkgdesc - documentation"
-
-    mv -v $pkgname/* "$pkgdir"; or return
-    mv -v "$pkgdir/usr/share/doc/"serd{-0,}; or return
-    install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
 end

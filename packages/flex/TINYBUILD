@@ -1,0 +1,28 @@
+# From the release tarball, without autoreconf (perl): _GNU_SOURCE does what Arch's flex-pie.patch (configure.ac:
+# AC_USE_SYSTEM_EXTENSIONS) does, it gives the reallocarray prototype
+set pkgname flex
+set pkgver 2.6.4
+set pkgrel 6
+set pkgdesc 'A tool for generating text-scanning programs'
+set arch i686 x32
+set url https://github.com/westes/flex
+set license custom:flex
+set depends glibc m4 sh
+set source "https://github.com/westes/flex/releases/download/v$pkgver/flex-$pkgver.tar.gz"
+set sha256sums e87aae032bf07c26f85ac0ed3250998c37621d95f8bd748b31f15b33c45ee995
+set flags arch
+
+function build
+    cd flex-$pkgver; or return
+    CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE" ./configure --prefix=/usr; or return
+    # No overlinking from libtool
+    sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+    make; or return
+end
+
+function package
+    cd flex-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    ln -s flex "$pkgdir/usr/bin/lex"; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/license.txt"; or return
+end

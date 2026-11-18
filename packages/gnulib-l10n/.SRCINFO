@@ -6,8 +6,6 @@ pkgbase = gnulib-l10n
 	arch = any
 	license = LGPL-2.0-or-later
 	source = https://ftp.gnu.org/pub/gnu/gnulib/gnulib-l10n-20241231.tar.gz
-	source = https://ftp.gnu.org/pub/gnu/gnulib/gnulib-l10n-20241231.tar.gz.sig
 	sha256sums = 155752ba6796aa294cde87c2bf0e771a5891eeeacb131345be0e080a3ec0ceea
-	sha256sums = 3190934296853fd6291f95289a1e14f742f5f18ecfe909501b8bc70a520dbbfb
 
 pkgname = gnulib-l10n

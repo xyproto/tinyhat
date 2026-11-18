@@ -8,10 +8,8 @@ set arch i686 x32
 set url https://www.greenwoodsoftware.com/less/
 set depends glibc ncurses pcre2
 set makedepends git
-set source https://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.tar.gz \
-    $pkgname-$pkgver.tar.gz.sig::https://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.sig
-set b2sums defbc6a019b5d6a598bfbd965cd34ec87777e7ee1dd47025ea84d2a7d474285f2add24b2e5d5aabf7cf9e00f5b2be44c42b1406cb6066d2ac0c5a63b5626917c \
-    SKIP
+set source https://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.tar.gz
+set b2sums defbc6a019b5d6a598bfbd965cd34ec87777e7ee1dd47025ea84d2a7d474285f2add24b2e5d5aabf7cf9e00f5b2be44c42b1406cb6066d2ac0c5a63b5626917c
 set flags arch
 
 function prepare

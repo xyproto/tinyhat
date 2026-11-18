@@ -9,18 +9,13 @@ pkgbase = graphene
 	checkdepends = python-gobject
 	checkdepends = python-tappy
 	makedepends = git
-	makedepends = gtk-doc
 	makedepends = meson
 	depends = glib2
 	depends = glibc
 	source = git+https://github.com/ebassi/graphene#tag=1.10.8
-	source = git+https://github.com/ebassi/mutest
-	sha256sums = SKIP
-	sha256sums = SKIP
+	source = git+https://github.com/ebassi/mutest#commit=f0dcb2a48a4a8ef3dc1f7327bb0d4056a798c1a7
+	sha256sums = 26106811557d87d394c06b392356054a13685ee427a0d606a1ba0451ed0a1b74
+	sha256sums = 3a36bd3c95e282179a63762216f0690c0963ef15dd152c36e3a1d7a1ddae74b3
 
 pkgname = graphene
 	provides = libgraphene-1.0.so
-
-pkgname = graphene-docs
-	pkgdesc = Thin layer of graphic data types (documentation)
-	depends = 

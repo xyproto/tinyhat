@@ -9,7 +9,8 @@ set license GPL-2.0-only
 set depends glibc gmp jansson libmnl libnftnl readline
 set optdepends 'python: Python bindings' \
     'python-jsonschema: Python bindings'
-set makedepends asciidoc python python-setuptools python-build \
+# No man pages (asciidoc)
+set makedepends python python-setuptools python-build \
     git python-installer python-wheel
 set backup etc/nftables.conf
 set source "git+https://git.netfilter.org/nftables.git?signed#tag=v$pkgver" \
@@ -34,7 +35,8 @@ function build
         --with-json \
         --with-cli=readline \
         --disable-python \
-        --disable-debug; or return
+        --disable-debug \
+        --disable-man-doc; or return
     make; or return
     # Building the Python module separately due to the automatic build resulting
     # in an incorrect directory structure and unimportable module (see FS#79229)

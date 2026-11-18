@@ -1,0 +1,17 @@
+pkgbase = python-calver
+	pkgdesc = Setuptools extension for CalVer package versions
+	pkgver = 2025.10.20
+	pkgrel = 1
+	url = https://github.com/di/calver
+	arch = any
+	license = Apache-2.0
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	makedepends = python-wheel
+	depends = python
+	source = git+https://github.com/di/calver.git#tag=2025.10.20
+	sha512sums = 16dcd12f3d7eb0977e3f9e8aaf46dbee836e39d1608b4318a7700e18e497bdfa06bd6797e91e4a12189eb4d3007703690210f90c69af832b05e3e319944c6caa
+
+pkgname = python-calver

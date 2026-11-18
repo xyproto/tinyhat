@@ -11,7 +11,11 @@ set license GPL-2.0-or-later
 # syslinux build system is a mess of submakes that does not work with -jN
 # efi32/com32 do not like Arch cflags/ldflags, though it would be nice to have the flags for userspace tools
 set options '!makeflags' '!buildflags'
-set makedepends git python nasm upx asciidoc
+# Only the BIOS boot loaders: Tiny Hat uses memdisk (FreeDOS) from them, and boots with GRUB. No upx (it only
+# compresses the DOS tools, and the build goes on without it) and no asciidoc (the man pages are prebuilt)
+set makedepends git python nasm
+# uuid/uuid.h (extlinux reads XFS superblocks)
+set makedepends_host util-linux-libs
 set optdepends 'perl-crypt-passwdmd5: For md5pass' \
     'perl-digest-sha1: For sha1pass' \
     'mtools: For mkdiskimage and syslinux support' \
@@ -54,13 +58,7 @@ set sha256sums deec61086a2cb73163d50e150d1ef32bd56c8a3faa1fc4322d11080ba0cbe63a 
     7f2ce9e16ddcca1a55b32bddfd39c7f190eed9d8df4319bbd6b07e0a2607e662
 set flags arch
 
-# efi32 needs glibc
-switch $CARCH
-    case x86_64
-        set -a makedepends glibc
-end
-
-set -g _targets bios efi64 efi32
+set -g _targets bios
 
 function prepare
     cd syslinux; or return

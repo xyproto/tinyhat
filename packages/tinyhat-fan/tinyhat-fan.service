@@ -1,0 +1,10 @@
+[Unit]
+Description=Tiny Hat fan and CPU power modes: full, medium and chill
+
+[Service]
+ExecStart=/usr/bin/tinyhat-fand
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

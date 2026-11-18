@@ -1,5 +1,5 @@
 set pkgbase p11-kit
-set pkgname p11-kit libp11-kit p11-kit-docs
+set pkgname p11-kit libp11-kit
 set pkgver 0.26.5
 set pkgrel 1
 set pkgdesc 'Loads and enumerates PKCS#11 modules'
@@ -7,12 +7,13 @@ set url https://p11-glue.freedesktop.org
 set arch i686 x32
 set license BSD-3-Clause
 set depends coreutils glibc libtasn1
-set makedepends bash-completion git gtk-doc libffi meson systemd
+# No documentation (gtk-doc) and no man pages
+set makedepends git libffi meson systemd
 set checkdepends gnutls
 set source "git+https://github.com/p11-glue/p11-kit?signed#tag=$pkgver" \
-    git+https://github.com/p11-glue/pkcs11-json
+    git+https://github.com/p11-glue/pkcs11-json#commit=6d56219d6cd640f3629fb621b01068d7e768efc6
 set b2sums 2b2a785307cac88ab347e8a75aecfdafd933d9dbca6977368eca4c74e0a14bdcbdffd138e9dd86d390f6c1bcf044f1c9763f197ca79bd0877f26d0e00f0712c7 \
-    SKIP
+    f5a1519c43661be74c52441ab5c8afd74dd4887c06b787ef6f77b8d80b7555b111d471ae8cf242b43f0aaf0046423d5bc32a7453c9178fa1b6408fee9ba709fe
 set flags arch
 
 function prepare
@@ -30,7 +31,7 @@ function build
         -D man=false \
         -D trust_paths=/etc/ca-certificates/trust-source:/usr/share/ca-certificates/trust-source
 
-    arch-meson p11-kit build $meson_options; or return
+    arch-meson p11-kit build $meson_options -D bash_completion=disabled; or return
     meson compile -C build; or return
 end
 
@@ -72,9 +73,4 @@ function package_libp11-kit
     mv lib/* "$pkgdir"; or return
 
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 p11-kit/COPYING; or return
-end
-
-function package_p11-kit-docs
-    # no documentation
-    echo "no documentation"
 end

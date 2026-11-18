@@ -6,7 +6,6 @@ pkgbase = libproxy
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = gsettings-desktop-schemas
 	makedepends = meson
@@ -18,12 +17,8 @@ pkgbase = libproxy
 	depends = glibc
 	optdepends = webkit2gtk: PAC proxy support (Webkit2gtk engine)
 	source = git+https://github.com/libproxy/libproxy#tag=0.5.12
-	sha256sums = SKIP
+	sha256sums = 48394e0740b7bb479af8ed7a1d2638dffac0e01403525ca9e7d93d73d24f5449
 
 pkgname = libproxy
 	provides = libproxy.so
 	conflicts = libproxy-webkit<0.5.0-1
-
-pkgname = libproxy-docs
-	pkgdesc = Automatic proxy configuration management library (documentation)
-	depends = 

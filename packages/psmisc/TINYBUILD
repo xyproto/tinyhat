@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://gitlab.com/psmisc/psmisc
 set license GPL
 set depends ncurses
-set makedepends git po4a
+# No translated man pages (po4a); configure skips them without po4a
+set makedepends git
 set source "git+https://gitlab.com/psmisc/psmisc.git#tag=v$pkgver?signed"
 set sha256sums 80ae6e626ba83232b7af1c02f3f528834ebdd96325367b701f69125d3e196f2f
 set flags arch

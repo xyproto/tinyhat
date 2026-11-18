@@ -1,0 +1,32 @@
+# The One True Awk (Brian Kernighan's awk, from "The AWK Programming Language", 2nd edition): with UTF-8 and CSV
+# (--csv). It is /usr/bin/awk in Tiny Hat: 180 KB instead of gawk's 3 MB, which stays installable as gawk
+set pkgname nawk
+set pkgver 20261106
+set pkgrel 1
+set pkgdesc 'The one, true implementation of AWK'
+set arch i686 x32 x86_64 aarch64
+set url https://github.com/onetrueawk/awk
+set license custom
+set depends glibc
+set makedepends bison
+set provides awk
+set source "awk-$pkgver.tar.gz::https://github.com/onetrueawk/awk/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 1b354fe6fa0089a959ef912085e7a064236d15a7d3c9e6ce86456c3b87d3f464
+
+function build
+    cd awk-$pkgver; or return
+    # maketab runs during the build: it is built first, with the build machine's compiler and without the target's
+    # flags (a cross build's -march=i686 does not work for x86_64)
+    make awkgram.tab.h; or return
+    cc -O2 maketab.c -o maketab; or return
+    make CC="$CC" CFLAGS="$CPPFLAGS $CFLAGS $LDFLAGS"; or return
+end
+
+function package
+    cd awk-$pkgver; or return
+    install -Dm755 a.out "$pkgdir/usr/bin/nawk"; or return
+    ln -s nawk "$pkgdir/usr/bin/awk"; or return
+    install -Dm644 awk.1 "$pkgdir/usr/share/man/man1/nawk.1"; or return
+    ln -s nawk.1 "$pkgdir/usr/share/man/man1/awk.1"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

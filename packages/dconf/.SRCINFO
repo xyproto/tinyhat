@@ -7,11 +7,9 @@ pkgbase = dconf
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = bash-completion
 	makedepends = dbus
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gtk-doc
 	makedepends = meson
 	makedepends = python
 	makedepends = systemd
@@ -23,7 +21,7 @@ pkgbase = dconf
 	source = git+https://gitlab.gnome.org/GNOME/dconf.git#tag=51.0
 	source = dconf-update.hook
 	source = dconf-update.script
-	sha256sums = SKIP
+	sha256sums = 51c04d74e6505500b2d80383b2245a72e910a373866a3ce30dd30cfb69ae1a67
 	sha256sums = 8d02176ff001a13d15a7ac087edd2502725494668933fa2c6e6f9cb21ae24e6b
 	sha256sums = 330142605370f82f4229e8a94b245f911407eb629b50f1497f415c70164a90ec
 

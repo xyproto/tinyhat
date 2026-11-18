@@ -1,0 +1,23 @@
+#!/bin/sh
+f=/var/lib/tinyhat-fan/mode
+case $1 in
+  '')
+    cat "$f"
+    exit
+    ;;
+  full | medium | chill) mode=$1 ;;
+  next)
+    case $(cat "$f" 2>/dev/null) in
+      full) mode=medium ;;
+      medium) mode=chill ;;
+      *) mode=full ;;
+    esac
+    ;;
+  *)
+    echo "usage: tinyhat-fan [full | medium | chill | next]" >&2
+    exit 2
+    ;;
+esac
+printf '%s\n' "$mode" > "$f" || exit 1
+tinyhat-status --refresh > /dev/null 2>&1
+exit 0

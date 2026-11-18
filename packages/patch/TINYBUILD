@@ -6,36 +6,25 @@ set arch i686 x32
 set url https://www.gnu.org/software/patch/
 set license GPL-3.0-or-later
 set depends glibc attr
-set makedepends ed git python
+# From the release tarball: Arch builds from git with ./bootstrap (autoconf, automake, makeinfo)
+set makedepends ed
 set optdepends 'ed: for patch -e functionality'
 set flags arch
-set source "git+https://git.savannah.gnu.org/git/patch.git?signed#tag=v$pkgver" \
-    git+https://git.savannah.gnu.org/git/gnulib.git
-set sha256sums cb1143d906898c105ab8680054c82f8decc4c0b01e86dc25b23bf99d24af7175 \
-    SKIP
-
-function prepare
-    cd $pkgname; or return
-
-    git submodule init; or return
-    git config submodule.gnulib.url "$srcdir/gnulib"; or return
-    git -c protocol.file.allow=always submodule update; or return
-
-    ./bootstrap; or return
-end
+set source "https://ftp.gnu.org/gnu/patch/patch-$pkgver.tar.xz"
+set sha256sums 3240c7959c5347c8ed347e3c4201c0337bf4240d5cf09d68889e58eeaba30e17
 
 function build
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     ./configure --prefix=/usr; or return
     make; or return
 end
 
 function check
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     make check; or return
 end
 
 function package
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     make DESTDIR="$pkgdir" install; or return
 end

@@ -1,5 +1,5 @@
 set pkgbase libproxy
-set pkgname libproxy libproxy-docs
+set pkgname libproxy
 set pkgver 0.5.12
 set pkgrel 1
 set pkgdesc 'Automatic proxy configuration management library'
@@ -7,11 +7,12 @@ set arch i686 x32
 set url https://libproxy.github.io/libproxy/
 set license LGPL-2.1-or-later
 set depends curl duktape gcc-libs glib2 glibc
+# No documentation (gi-docgen)
 switch $CARCH
     case x32 aarch64
-        set -g makedepends gi-docgen git gsettings-desktop-schemas meson
+        set -g makedepends git gsettings-desktop-schemas meson
     case '*'
-        set -g makedepends gi-docgen git gsettings-desktop-schemas meson webkit2gtk
+        set -g makedepends git gsettings-desktop-schemas meson webkit2gtk
 end
 switch $CARCH
     case x32 aarch64
@@ -20,7 +21,7 @@ switch $CARCH
         set -g optdepends 'webkit2gtk: PAC proxy support (Webkit2gtk engine)'
 end
 set source "git+https://github.com/libproxy/libproxy#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums 48394e0740b7bb479af8ed7a1d2638dffac0e01403525ca9e7d93d73d24f5449
 set flags arch
 set -g _oifs '$\' \\t\\n\''
 
@@ -29,7 +30,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D release=true
+    set -l meson_options -D docs=false -D release=true
     arch-meson -D introspection=false -D vapi=false libproxy build $meson_options; or return
     meson compile -C build; or return
 end
@@ -38,12 +39,4 @@ function package_libproxy
     set provides libproxy.so
     set conflicts 'libproxy-webkit<0.5.0-1'
     meson install -C build --destdir "$pkgdir"; or return
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/doc; or return
-end
-
-function package_libproxy-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-    mv doc/* "$pkgdir"; or return
 end

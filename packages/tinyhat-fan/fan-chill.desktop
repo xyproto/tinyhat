@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Fan: chill
+Icon=applications-system
+Comment=Quiet and cool: no turbo, with the CPU held at about 68 °C
+Exec=tinyhat-fan chill
+Terminal=false
+Categories=System;

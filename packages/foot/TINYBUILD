@@ -6,7 +6,7 @@ set pkgrel 3
 set url "https://codeberg.org/dnkl/$pkgbase"
 set arch i686 x32
 set license MIT
-set makedepends fcft fontconfig git libutf8proc libxkbcommon llvm meson ncurses ninja pixman python scdoc sway \
+set makedepends fcft fontconfig git libutf8proc libxkbcommon llvm meson ncurses ninja pixman python scdoc \
     tllist wayland wayland-protocols
 set optdepends 'libutempter: utmp logging'
 set flags arch
@@ -20,8 +20,9 @@ function build
         meson compile -C build; or return
         return
     end
+    # Partial PGO (the pgo helper feeds generated escape sequences to the VT parser), so no headless sway is needed
     ./pgo/pgo.sh \
-        full-headless-sway \
+        partial \
         . build \
         -Dterminfo-base-name=foot-extra \
         --prefix=/usr \

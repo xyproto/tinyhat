@@ -7,10 +7,9 @@ set license GPL-3.0-or-later
 set arch i686 x32
 set depends glibc ncurses
 set flags arch
-set source "https://ftp.gnu.org/gnu/gnugo/$pkgname-$pkgver.tar.gz"{,.sig} \
+set source "https://ftp.gnu.org/gnu/gnugo/$pkgname-$pkgver.tar.gz" \
     Wformat-security.patch
 set sha256sums da68d7a65f44dcf6ce6e4e630b6f6dd9897249d34425920bfdd4e07ff1866a72 \
-    SKIP \
     c5c1c45ca30793a4c872aa6b2c5d2dc3ca201831c20a4bb595d82c8cf27eb20e
 
 function prepare

@@ -7,15 +7,12 @@ pkgbase = libevent
 	arch = x32
 	license = BSD-3-Clause-Modification
 	makedepends = cmake
-	makedepends = doxygen
 	makedepends = ninja
 	makedepends = openssl
 	makedepends = python
 	source = https://github.com/libevent/libevent/releases/download/release-2.1.13-stable/libevent-2.1.13-stable.tar.gz
-	source = https://github.com/libevent/libevent/releases/download/release-2.1.13-stable/libevent-2.1.13-stable.tar.gz.asc
 	source = 0001-EVENT__SIZEOF_TIME_T.patch
 	sha256sums = f7e9383b8c0baa81b687e5b5eecc01beefaf1b19b64151d95ed61647fe7a315c
-	sha256sums = SKIP
 	sha256sums = 945fc885b15692721bc7ae52f5774ef4fab8cc0f6108baa8860ab368de8675cf
 
 pkgname = libevent
@@ -27,6 +24,3 @@ pkgname = libevent
 	provides = libevent_extra-2.1.so
 	provides = libevent_openssl-2.1.so
 	provides = libevent_pthreads-2.1.so
-
-pkgname = libevent-docs
-	pkgdesc = Event notification library (documentation)

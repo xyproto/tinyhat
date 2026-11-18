@@ -8,17 +8,13 @@ pkgbase = b3sum
 	license = CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception
 	makedepends = cmake
 	makedepends = git
-	makedepends = onetbb
 	makedepends = rust
 	depends = glibc
 	depends = libgcc
 	source = git+https://github.com/BLAKE3-team/BLAKE3.git#tag=1.8.7
-	sha256sums = SKIP
+	sha256sums = b8352186f14559127a324333c3378f4208a2de9aea855746bf2fcd1f883efef1
 
 pkgname = b3sum
 
 pkgname = libblake3
 	pkgdesc = The official C implementation of BLAKE3
-	depends = glibc
-	depends = libgcc
-	depends = onetbb

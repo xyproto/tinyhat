@@ -7,8 +7,9 @@ set arch i686 x32
 set url https://gitlab.com/sane-project/backends
 set license GPL-2.0-or-later LicenseRef-GPL-2.0-or-later-with-linking-exception
 set depends bash cairo glibc libgcc libpng libieee1284 libstdc++ net-snmp v4l-utils
+# No documentation (texlive-latexextra)
 set makedepends autoconf-archive avahi curl glib2 libgphoto2 libjpeg-turbo libtiff libusb libxml2 poppler-glib python \
-    systemd texlive-latexextra
+    systemd
 set optdepends 'sane-airscan: for scanners working in driverless mode'
 set provides libsane.so
 set source "$url/-/archive/$pkgver/$_name-$pkgver.tar.gz" \

@@ -1,0 +1,23 @@
+# From the release tarball (generated configure and man pages): Arch builds from git, which needs autoreconf (perl)
+set pkgname diffutils
+set pkgver 3.12
+set pkgrel 2
+set pkgdesc 'Utility programs used for creating patch files'
+set arch i686 x32
+set url https://www.gnu.org/software/diffutils
+set license GPL-3.0-or-later
+set depends glibc
+set source "https://ftp.gnu.org/gnu/diffutils/diffutils-$pkgver.tar.xz"
+set sha256sums 7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd
+set flags arch
+
+function build
+    cd diffutils-$pkgver; or return
+    ./configure --prefix=/usr --disable-gcc-warnings; or return
+    make; or return
+end
+
+function package
+    cd diffutils-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

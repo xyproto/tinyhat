@@ -1,7 +1,7 @@
 pkgbase = gawk
 	pkgdesc = GNU version of awk
 	pkgver = 5.4.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.gnu.org/software/gawk/
 	arch = i686
 	arch = x32
@@ -9,10 +9,7 @@ pkgbase = gawk
 	depends = sh
 	depends = glibc
 	depends = mpfr
-	provides = awk
 	source = https://ftp.gnu.org/pub/gnu/gawk/gawk-5.4.1.tar.gz
-	source = https://ftp.gnu.org/pub/gnu/gawk/gawk-5.4.1.tar.gz.sig
 	sha256sums = 8b3b0ea83930311a3f30905d3ce898d32c6103c2fe20d6a90b40341171b174de
-	sha256sums = b793330afd34d9d675a3ee766a5d218458d88408c9cd5cd2d1bb625b10bf0699
 
 pkgname = gawk

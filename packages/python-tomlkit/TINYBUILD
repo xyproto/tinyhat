@@ -1,0 +1,23 @@
+set pkgname python-tomlkit
+set pkgver 0.15.2
+set pkgrel 1
+set pkgdesc 'Style-preserving TOML library for Python'
+set arch any
+set url https://github.com/sdispater/tomlkit
+set license MIT
+set depends python
+set makedepends python-build python-installer python-poetry-core
+set source "https://files.pythonhosted.org/packages/source/t/tomlkit/tomlkit-$pkgver.tar.gz"
+set sha256sums 83e32755ba1d20d9340bd069ee97e9f6232ba2346b63ffcba425de01f7e327a6
+set flags arch
+
+function build
+    cd tomlkit-$pkgver; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd tomlkit-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

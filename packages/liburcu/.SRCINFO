@@ -8,8 +8,6 @@ pkgbase = liburcu
 	license = LGPL2.1
 	depends = glibc
 	source = https://lttng.org/files/urcu/userspace-rcu-0.15.7.tar.bz2
-	source = https://lttng.org/files/urcu/userspace-rcu-0.15.7.tar.bz2.asc
 	sha256sums = 2556b83adc0f9b3ac8024e613e17d014d04c4c49110604ce55fcb14eae32edd3
-	sha256sums = 1e34b4d3ef1b403c3d64a6b1a2ae137a1cdd2c2b8f0f7bae98155a3d72b514dd
 
 pkgname = liburcu

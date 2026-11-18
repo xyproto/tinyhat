@@ -12,6 +12,6 @@ pkgbase = gperftools
 	depends = libstdc++
 	depends = libunwind
 	source = git+https://github.com/gperftools/gperftools.git#tag=gperftools-2.18.1
-	sha256sums = SKIP
+	sha256sums = 4b9da6f2bda8480801ee01e7f7fcaed72d0fbd2729f4a61aa19747c6c253430c
 
 pkgname = gperftools

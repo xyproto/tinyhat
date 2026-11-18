@@ -1,0 +1,18 @@
+pkgbase = python-docutils
+	pkgdesc = Set of tools for processing plaintext docs into formats such as HTML, XML, or LaTeX
+	pkgver = 0.23
+	epoch = 1
+	pkgrel = 1
+	url = http://docutils.sourceforge.net
+	arch = any
+	license = LicenseRef-Public-Domain
+	license = BSD-2-Clause
+	makedepends = python-build
+	makedepends = python-flit-core
+	makedepends = python-installer
+	depends = python
+	optdepends = python-pygments: for syntax highlighting of code directives and roles
+	source = https://downloads.sourceforge.net/docutils/docutils-0.23.tar.gz
+	b2sums = 6db890673947e31995accddd9f7ace1b39beac02d21704d041b047824e3d4beebdc3d86aed95f012b2a6d52d80b38a917702f18504b3a61c263527623d930a78
+
+pkgname = python-docutils

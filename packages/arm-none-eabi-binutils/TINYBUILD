@@ -8,9 +8,8 @@ set url https://www.gnu.org/software/binutils/
 set license GPL
 set depends zlib libelf
 set flags arch
-set source "https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.bz2"{,.sig}
-set sha256sums 3068128c75cda9f898ccb4211d360246e8e195ffcc9dfb655b23ae23a54800e8 \
-    SKIP
+set source "https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.bz2"
+set sha256sums 3068128c75cda9f898ccb4211d360246e8e195ffcc9dfb655b23ae23a54800e8
 
 function prepare
     cd binutils-$pkgver; or return

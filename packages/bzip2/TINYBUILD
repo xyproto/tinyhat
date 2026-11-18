@@ -8,10 +8,9 @@ set url https://sourceware.org/bzip2/
 set depends glibc sh
 set provides libbz2.so
 set flags arch
-set source "https://sourceware.org/pub/bzip2/$pkgname-$pkgver.tar.gz"{,.sig} \
+set source "https://sourceware.org/pub/bzip2/$pkgname-$pkgver.tar.gz" \
     bzip2.pc
 set sha256sums ab5a03176ee106d3f0fa90e381da478ddae405918153cca248e682cd0c4a2269 \
-    SKIP \
     eca9d8cd6376df1fb5442667c603032023fb21d8d183684550da0b96ade39654
 
 function prepare

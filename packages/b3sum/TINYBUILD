@@ -1,9 +1,10 @@
 set pkgbase b3sum
-switch $CARCH
-    case x32
-        set -g pkgname libblake3
-    case '*'
-        set -g pkgname b3sum libblake3
+# x32, and the i686 cross builds (for ccache in the build environment; there is no i686 Rust there), only build the C
+# library. libblake3 is built without oneTBB: TBB only hashes huge inputs in parallel, which ccache does not do
+if test $CARCH = x32; or set -q TINYHAT_CROSS[1]
+    set -g pkgname libblake3
+else
+    set -g pkgname b3sum libblake3
 end
 set pkgver 1.8.7
 set pkgrel 1
@@ -12,53 +13,34 @@ set arch i686 x32
 set url https://github.com/BLAKE3-team/BLAKE3
 set license 'CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception'
 set depends glibc libgcc
-switch $CARCH
-    case x32
-        set -g makedepends cmake git onetbb
-    case '*'
-        set -g makedepends cmake git onetbb rust
-end
+set -g makedepends cmake git
+test $CARCH = x32; or set -a makedepends rust
 set source "git+https://github.com/BLAKE3-team/BLAKE3.git#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums b8352186f14559127a324333c3378f4208a2de9aea855746bf2fcd1f883efef1
 set flags arch
 set -g _name BLAKE3
 
-switch $CARCH
-    case x32
-        function prepare
-            true
-        end
-    case '*'
-        function prepare
-            cd $_name/"$pkgname[1]"; or return
-            cargo fetch --locked --target "$(rustc --print host-tuple)"; or return
-        end
+function prepare
+    contains b3sum $pkgname; or return 0
+    cd $_name/b3sum; or return
+    cargo fetch --locked --target "$(rustc --print host-tuple)"; or return
 end
 
-switch $CARCH
-    case x32
-        function build
-            set -l cmake_options -B build -S "$_name"/c -W no-dev -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D BUILD_SHARED_LIBS=ON -D BLAKE3_USE_TBB=1
-            cmake $cmake_options; or return
-            cmake --build build; or return
-        end
-    case '*'
-        function build
-            set -l cmake_options -B build -S "$_name"/c -W no-dev -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D BUILD_SHARED_LIBS=ON -D BLAKE3_USE_TBB=1
-            cmake $cmake_options; or return
-            cmake --build build; or return
-            cd $_name/"$pkgname[1]"; or return
-            cargo build --release --locked --offline; or return
-        end
+function build
+    cmake -B build -S "$_name"/c -W no-dev -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D BUILD_SHARED_LIBS=ON \
+        -D BLAKE3_USE_TBB=0; or return
+    cmake --build build; or return
+    contains b3sum $pkgname; or return 0
+    cd $_name/b3sum; or return
+    cargo build --release --locked --offline; or return
 end
 
 function package_b3sum
-    cd $_name/"$pkgname[1]"; or return
-    install -Dt "$pkgdir"/usr/bin target/release/"$pkgname[1]"; or return
+    cd $_name/b3sum; or return
+    install -Dt "$pkgdir"/usr/bin target/release/b3sum; or return
 end
 
 function package_libblake3
     set pkgdesc 'The official C implementation of BLAKE3'
-    set -a depends onetbb
     DESTDIR="$pkgdir" cmake --install build; or return
 end

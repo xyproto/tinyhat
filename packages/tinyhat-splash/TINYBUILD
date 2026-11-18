@@ -1,27 +1,46 @@
+# The boot splash, its animations and the tools to write new ones. The Boot Animations gallery (a GTK 4 program) is
+# packaged on its own, by packages/tinyhat-boot-animations, so that the splash needs nothing from GTK
 set pkgname tinyhat-splash
 set pkgver 1.0.2
-set pkgrel 1
-set pkgdesc 'Tiny Hat boot splash, boot and shutdown animations in C, and the Boot Animations gallery'
+set pkgrel 2
+set pkgdesc 'Tiny Hat boot splash, and the boot and shutdown animations in C'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat-bootsplash
 set license BSD-3-Clause
-set depends gtk4
-set makedepends kbd python
-set optdepends 'tcc: building animations' 'make: building animations' 'orbiton: editing animations'
+set depends glibc sh
+set makedepends_build kbd python
+set optdepends 'tcc: building animations' 'make: building animations' 'orbiton: editing animations' \
+    'tinyhat-boot-animations: choosing and previewing animations'
 set provides tinyhat-bootsplash
 set source "tinyhat-bootsplash-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/refs/tags/v$pkgver.tar.gz"
 set sha256sums 2e34888904ce48004dfdd8b2e893c3dac72ac460fa2165e58ac85406f32124f9
+
+set -g _animations tinyhat orbits
 
 function build
     cd tinyhat-bootsplash-$pkgver; or return
     # The theme colours come from the environment, as #rrggbb
     set -l hat (string replace -r '^#' '' -- "$TINYHAT_THEME_HAT_COLOR")
     set -l highlight (string replace -r '^#' '' -- "$TINYHAT_THEME_HAT_HIGHLIGHT_COLOR")
-    make PREFIX=/usr COLORS="-DHAT_COLOR=0x$hat -DHAT_HIGHLIGHT_COLOR=0x$highlight" SPLASH_LDFLAGS=-static; or return
+    # Not "make all", which also builds the gallery
+    make PREFIX=/usr COLORS="-DHAT_COLOR=0x$hat -DHAT_HIGHLIGHT_COLOR=0x$highlight" SPLASH_LDFLAGS=-static \
+        tinyhat-splash animations; or return
 end
 
 function package
     cd tinyhat-bootsplash-$pkgver; or return
-    make PREFIX=/usr DESTDIR="$pkgdir" install; or return
-    strip --strip-all "$pkgdir/usr/bin/tinyhat-splash"; or return
+    # The install target of the Makefile, without the gallery
+    set -l data "$pkgdir"/usr/share/tinyhat-bootsplash
+    set -l lib "$pkgdir"/usr/lib/tinyhat-bootsplash
+    install -Dm755 tinyhat-splash "$pkgdir"/usr/bin/tinyhat-splash; or return
+    strip --strip-all "$pkgdir"/usr/bin/tinyhat-splash; or return
+    install -Dm755 scripts/tinyhat-bootsplash-activate "$pkgdir"/usr/bin/tinyhat-bootsplash-activate; or return
+    install -Dm644 -t $data/runtime runtime/anim.h runtime/draw.c runtime/main.c; or return
+    install -Dm644 -t $data/templates/basic templates/basic/anim.c templates/basic/Makefile templates/basic/compile_flags.txt; or return
+    for a in $_animations
+        install -Dm644 -t $data/animations/$a animations/$a/anim.c animations/$a/Makefile animations/$a/compile_flags.txt; or return
+        install -Dm755 animations/$a/anim $lib/animations/$a; or return
+    end
+    install -dm755 $lib/activate.d; or return
+    install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/tinyhat-bootsplash/LICENSE; or return
 end

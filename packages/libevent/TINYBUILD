@@ -1,17 +1,16 @@
 set pkgbase libevent
-set pkgname libevent libevent-docs
+set pkgname libevent
 set pkgver 2.1.13
 set pkgrel 2
 set pkgdesc 'Event notification library'
 set url https://libevent.org/
 set arch i686 x32
 set license BSD-3-Clause-Modification
-set makedepends cmake doxygen ninja openssl python
+# No documentation (doxygen)
+set makedepends cmake ninja openssl python
 set source "https://github.com/libevent/libevent/releases/download/release-$pkgver-stable/libevent-$pkgver-stable.tar.gz" \
-    "https://github.com/libevent/libevent/releases/download/release-$pkgver-stable/libevent-$pkgver-stable.tar.gz.asc" \
     0001-EVENT__SIZEOF_TIME_T.patch
 set sha256sums f7e9383b8c0baa81b687e5b5eecc01beefaf1b19b64151d95ed61647fe7a315c \
-    SKIP \
     945fc885b15692721bc7ae52f5774ef4fab8cc0f6108baa8860ab368de8675cf
 set flags arch
 
@@ -31,7 +30,7 @@ function build
         -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
         -D CMAKE_SKIP_INSTALL_RPATH=TRUE \
         -D EVENT__DISABLE_REGRESS=OFF \
-        -D EVENT__DOXYGEN=ON \
+        -D EVENT__DOXYGEN=OFF \
         -D EVENT__LIBRARY_TYPE=SHARED \
         -G Ninja
 
@@ -58,15 +57,5 @@ function package_libevent
 
     DESTDIR="$pkgdir" cmake --install build; or return
 
-    mkdir -p doc/usr/share; or return
-    mv "$pkgdir"/usr/share/doc doc/usr/share/doc; or return
-
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libevent-$pkgver-stable/LICENSE; or return
-end
-
-function package_libevent-docs
-    set pkgdesc "$pkgdesc (documentation)"
-
-    mv -v doc/* "$pkgdir"; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libevent-$pkgver-stable/LICENSE; or return
 end

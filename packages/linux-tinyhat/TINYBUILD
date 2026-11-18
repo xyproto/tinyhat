@@ -1,0 +1,95 @@
+set pkgname linux-tinyhat
+set pkgver 7.3.5
+set pkgrel 1
+set -g _xpadneo 0.10.5
+set pkgdesc 'The Tiny Hat Linux kernel, its modules and the xpadneo driver'
+set arch i686 x86_64 aarch64
+set url https://www.kernel.org/
+set license GPL-2.0-only
+set provides NTSYNC-MODULE VIRTUALBOX-GUEST-MODULES
+set makedepends_build bc bison cpio flex libelf python xz zstd
+set options '!debug' '!strip'
+set source "https://cdn.kernel.org/pub/linux/kernel/v7.x/linux-$pkgver.tar.xz" \
+    "xpadneo-$_xpadneo.tar.gz::https://github.com/atar-axis/xpadneo/archive/refs/tags/v$_xpadneo.tar.gz" \
+    common.fragment x86.fragment i686.fragment x86_64.fragment arm64.fragment \
+    panic.patch sched.patch kswapd.patch kcheck.py
+set sha256sums 8f293f83d54f0b7b9be56863ebc5e4ea79d73e530b4ae55c572be97ef39f0990 \
+    084c1ef57b4567c54cb4e4c01c9ae47b180c59a001457ad1e0ed574fdd09b59b \
+    e1875a2dba799b6cc08efb94d5853897c2906d12dd379734fd69b92158031f95 \
+    76690a40947a625dee233a9faa79932e9862e174f3287302e67ae020898cbb60 \
+    2b3fb3af3750d7461d22af9e465033f8130ba03ab676f593a92d814340444971 \
+    dbd8389ea55f59c8c5b60a4a187294f9db92918874e56d87b67cd233affae663 \
+    56448a09ea884654200d0d636ae58ef3d75f5a1d5b6f5c868396cda957a800db \
+    13acdb1a14e30b2dbd33b9b5cd3e17d360e001e08d92756d9afd4e64477ae77f \
+    1c5c8d973ac13445076b0a47db6e28111de7de3e8fb3f6dd8a67547b8abcb717 \
+    d80ce0f9209b350bdabce7cabd574883aa93687cf1bd0c1978b6c7addfd257d5 \
+    32c42d976b23768445c9d05f7826dd8ac9d31ff1275881206d5416bfd56d636a
+
+function _karch
+    switch $CARCH
+        case i686
+            echo i386
+        case x86_64
+            echo x86_64
+        case aarch64
+            echo arm64
+    end
+end
+
+function _hostenv
+    set -e CFLAGS CXXFLAGS CPPFLAGS LDFLAGS PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR PKG_CONFIG_FDO_SYSROOT_RULES
+    if set -q TINYHAT_CROSS
+        set -gx PATH (string match -v -- /usr/$TINYHAT_CROSS/bin $PATH)
+    end
+end
+
+function prepare
+    cd linux-$pkgver; or return
+    for p in panic sched kswapd
+        patch -Np1 -i ../$p.patch; or return
+    end
+end
+
+function build
+    _hostenv
+    cd linux-$pkgver; or return
+    set -l karch (_karch)
+    set -l frags ../common.fragment
+    set -l targets bzImage modules
+    switch $CARCH
+        case i686
+            set -a frags ../x86.fragment ../i686.fragment
+        case x86_64
+            set -a frags ../x86.fragment ../x86_64.fragment
+        case aarch64
+            set -a frags ../arm64.fragment
+            set targets Image modules broadcom/bcm2711-rpi-4-b.dtb broadcom/bcm2711-rpi-400.dtb broadcom/bcm2711-rpi-cm4-io.dtb
+    end
+    make -s ARCH=$karch tinyconfig; or return
+    ./scripts/kconfig/merge_config.sh -m -O . .config $frags; or return
+    make -s ARCH=$karch olddefconfig; or return
+    python3 ../kcheck.py $frags .config; or return
+    make ARCH=$karch KBUILD_BUILD_USER=tinyhat KBUILD_BUILD_HOST=tinyhat KBUILD_BUILD_TIMESTAMP=@$SOURCE_DATE_EPOCH $targets; or return
+    make ARCH=$karch M=$srcdir/xpadneo-$_xpadneo/hid-xpadneo/src VERSION=v$_xpadneo modules; or return
+end
+
+function package
+    _hostenv
+    cd linux-$pkgver; or return
+    set -l karch (_karch)
+    set -l kver (make -s ARCH=$karch kernelrelease); or return
+    set -l modules $pkgdir/usr/lib/modules/$kver
+    make ARCH=$karch INSTALL_MOD_PATH=$pkgdir/usr INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install; or return
+    make ARCH=$karch M=$srcdir/xpadneo-$_xpadneo/hid-xpadneo/src INSTALL_MOD_PATH=$pkgdir/usr INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install; or return
+    rm -f $modules/build
+    install -Dm644 (make -s ARCH=$karch image_name) $modules/vmlinuz; or return
+    if test $CARCH = aarch64
+        install -Dm644 arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb arch/arm64/boot/dts/broadcom/bcm2711-rpi-400.dtb arch/arm64/boot/dts/broadcom/bcm2711-rpi-cm4-io.dtb -t $modules/dtbs/; or return
+    end
+    set -l xp $srcdir/xpadneo-$_xpadneo/hid-xpadneo
+    install -Dm644 $xp/etc-udev-rules.d/60-xpadneo.rules $xp/etc-udev-rules.d/70-xpadneo-disable-hidraw.rules -t $pkgdir/usr/lib/udev/rules.d/; or return
+    install -Dm644 $xp/etc-modprobe.d/xpadneo.conf -t $pkgdir/usr/lib/modprobe.d/; or return
+    install -Dm644 COPYING LICENSES/preferred/GPL-2.0 LICENSES/exceptions/Linux-syscall-note -t $pkgdir/usr/share/licenses/$pkgname/; or return
+    install -Dm644 $srcdir/xpadneo-$_xpadneo/LICENSE.md $pkgdir/usr/share/licenses/$pkgname/LICENSE.xpadneo.md; or return
+    install -Dm644 $srcdir/xpadneo-$_xpadneo/LICENSES/LICENSE.gpl-2.0.txt $pkgdir/usr/share/licenses/$pkgname/LICENSE.xpadneo.gpl-2.0.txt; or return
+end

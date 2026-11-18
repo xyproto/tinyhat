@@ -9,8 +9,10 @@ set depends glibc gcc-libs sdl3 python
 set makedepends cargo clang llvm python
 set source "pyxel-$pkgver.tar.gz::https://github.com/kitao/pyxel/archive/refs/tags/v$pkgver.tar.gz" \
     sdl3.patch
-set sha256sums 969abc7322a3eb4d6f1ce2038f8c23e034db988428479cc4d32871e6f92696c9 \
-    SKIP
+set sha256sums 068686e5dda57828a071cdb8ca877057f0ab28fa33a035bebf2087b667d3a6c8 \
+    5426b5452a374b37d2a56393ccfdcce0f8b72b37099f5bd77717530abd0f8330
+# network: cargo fetch downloads its crates in prepare (builds have no network access otherwise)
+set -a options network
 
 function prepare
     cd pyxel-$pkgver; or return

@@ -1,0 +1,99 @@
+diff --git a/dwl.c b/dwl.c
+index 80c2a23..c88171a 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -264,6 +264,7 @@ struct Monitor {
+ 	Client *tasks[32];
+ 	int taskx[33], ntasks, taskhover;
+ 	int volx0, volx1;
++	int fanx0, fanx1;
+ 	int launchx[9], nlaunch;
+ 	int tipx[8][2], ntips;
+ 	char tips[8][128];
+@@ -1810,6 +1811,10 @@ buttonpress(struct wl_listener *listener, void *data)
+ 					spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "mute", NULL }});
+ 					return;
+ 				}
++				if (event->button == BTN_LEFT && selmon->fanx1 > selmon->fanx0 && cx >= selmon->fanx0 && cx < selmon->fanx1) {
++					spawn(&(Arg){.v = (const char *[]){ "tinyhat-fan", "next", NULL }});
++					return;
++				}
+ 			} else {
+ 				click = ClkTitle;
+ 				for (i = 0; i < (unsigned int)selmon->ntasks; i++)
+@@ -2847,6 +2852,19 @@ iconpixel(int kind, int arg, double x, double y)
+ 		if (segdist(x, y, 0.28, 0.33, 0.52, 0.5) < 0.05 || segdist(x, y, 0.52, 0.5, 0.28, 0.67) < 0.05)
+ 			return fg;
+ 		return x >= 0.62 && x < 0.95 && y >= 0.62 && y < 0.69 ? fg : 0;
++	case 'F': {
++		uint32_t c = arg == 'c' ? 0x7dcfffff : arg == 'f' ? 0xff9e3bff : fg;
++		double a;
++		dx = x - 0.5;
++		dy = y - 0.5;
++		d = hypot(dx, dy);
++		if (d < 0.1)
++			return c;
++		if (d < 0.14 || d > 0.47)
++			return 0;
++		a = fmod(atan2(dy, dx) - d * 2.2 + 62.83185307, 2.09439510);
++		return a < 0.95 ? c : 0;
++	}
+ 	case 'H':
+ 		if (inflame(x, y, 0.40, 0.78, 0.13, 0.50))
+ 			return 0xffe066ff;
+@@ -2863,7 +2881,7 @@ static int
+ iconpx(Monitor *m, int kind)
+ {
+ 	int s = m->b.height * 5 / 8;
+-	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : kind == 'G' || kind == 'S' ? 1.0
++	return (int)ceil(s * (kind == 'B' || kind == 'C' ? 1.45 : kind == 'H' ? 0.8 : kind == 'G' || kind == 'S' || kind == 'F' ? 1.0
+ 		: kind == 'W' ? 1.15 : kind == 'K' ? 1.3 : 1.08));
+ }
+ 
+@@ -2894,7 +2912,7 @@ drawicon(Monitor *m, int x, int kind, int arg)
+ static int
+ statuskind(const char *item)
+ {
+-	return item[0] && strchr("VMBCHWSK", item[0]) && (!item[1] || item[1] == ' ') ? item[0] : 0;
++	return item[0] && strchr("VMBCHWSKF", item[0]) && (!item[1] || item[1] == ' ') ? item[0] : 0;
+ }
+ 
+ static int
+@@ -2980,8 +2998,10 @@ statusitems(Monitor *m, int x, char *s, int draw)
+ 		if (kind) {
+ 			if (draw && (kind == 'V' || kind == 'M'))
+ 				m->volx0 = x;
++			if (draw && kind == 'F')
++				m->fanx0 = x;
+ 			if (draw)
+-				drawicon(m, x, kind, atoi(text));
++				drawicon(m, x, kind, kind == 'F' ? text[0] : atoi(text));
+ 			if (draw && m->ntips < (int)LENGTH(m->tips)) {
+ 				char *t = m->tips[m->ntips];
+ 				switch (kind) {
+@@ -2992,6 +3012,7 @@ statusitems(Monitor *m, int x, char *s, int draw)
+ 				case 'C': snprintf(t, sizeof(m->tips[0]), "Battery %s, charging", text); break;
+ 				case 'H': snprintf(t, sizeof(m->tips[0]), "The computer is too hot"); break;
+ 				case 'K': snprintf(t, sizeof(m->tips[0]), "The SSH server is running"); break;
++				case 'F': snprintf(t, sizeof(m->tips[0]), "Fan: %s (click to change)", text); break;
+ 				default: t[0] = '\0';
+ 				}
+ 				if (t[0]) {
+@@ -3003,6 +3024,8 @@ statusitems(Monitor *m, int x, char *s, int draw)
+ 			x += iconw(m, kind);
+ 			if (draw && (kind == 'V' || kind == 'M'))
+ 				m->volx1 = x;
++			if (draw && kind == 'F')
++				m->fanx1 = x + (*text ? space + (int)drwl_font_getwidth(m->drw, text) : 0);
+ 			if (strchr("VMBCW", kind))
+ 				text = "";
+ 			else if (*text)
+@@ -3405,7 +3428,7 @@ drawbar(Monitor *m)
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		tw = statusw(m);
+-		m->volx0 = m->volx1 = m->nlaunch = 0;
++		m->volx0 = m->volx1 = m->fanx0 = m->fanx1 = m->nlaunch = 0;
+ 		drwl_rect(m->drw, m->b.width - tw, 0, tw, m->b.height, 1, 1);
+ 		drawstext(m, m->b.width - tw, stext);
+ 	}

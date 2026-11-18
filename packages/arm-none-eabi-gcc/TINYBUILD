@@ -7,12 +7,13 @@ set url https://gcc.gnu.org/
 set license GPL LGPL FDL
 set depends arm-none-eabi-binutils zlib libmpc libisl zstd
 set makedepends gmp mpfr arm-none-eabi-newlib
+# arm-none-eabi-newlib is built with this compiler: without newlib, only the compiler and libgcc are built (stage 1),
+# enough to build newlib with, and then this is built again with everything
+set bootstrap_without arm-none-eabi-newlib
 set optdepends 'arm-none-eabi-newlib: Standard C library optimized for embedded systems'
 set options '!emptydirs' '!lto'
-set source "https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz" \
-    "https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz.sig"
-set sha256sums e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e \
-    43d73202dcede15d31001c6ba0d28723014ef57e4dc815631772daadbe23bcd2
+set source "https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz"
+set sha256sums e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e
 # Built on x86_64 for aarch64, nothing is emulated: binutils and gcc are first built for x86_64 with
 # the arm-none-eabi target, to build the target libraries with (a Canadian cross)
 set -g _binutils 2.47
@@ -27,7 +28,7 @@ set -g _target arm-none-eabi
 
 function prepare
     cd $_basedir; or return
-    echo $pkgver > gcc/BASE-VER; or return
+    echo $pkgver >gcc/BASE-VER; or return
     mkdir "$srcdir"/build-{gcc,gcc-nano}; or return
 end
 
@@ -35,9 +36,22 @@ function _canadian
     test $CARCH = aarch64; and command -q hostcc; and test -x /opt/tinyhat-cc/launch
 end
 
+function _stage1
+    not test -f /usr/$_target/include/stdio.h
+end
+
 function build
     set CFLAGS $(string replace -- '-Werror=format-security' '' "$CFLAGS")
     set CXXFLAGS $(string replace -- '-Werror=format-security' '' "$CXXFLAGS")
+    if _stage1
+        cd "$srcdir"/build-gcc; or return
+        "$srcdir"/$_basedir/configure --target=$_target --prefix=/usr --with-sysroot=/usr/$_target \
+            --with-native-system-header-dir=/include --libexecdir=/usr/lib --enable-languages=c --disable-nls \
+            --disable-shared --disable-threads --disable-tls --without-headers --with-newlib --with-gnu-as \
+            --with-gnu-ld --with-system-zlib --with-multilib-list=rmprofile; or return
+        make all-gcc all-target-libgcc; or return
+        return
+    end
     if _canadian
         _build_xtools; or return
     end
@@ -55,9 +69,9 @@ end
 function _xtools_env
     set -gx PATH "$srcdir"/xtools/bin $PATH
     # hostcc and the programs it links use the libraries of the build machine
-    printf '%s\n' '#!/bin/sh' 'export LD_LIBRARY_PATH=/host/usr/lib' 'exec /host/usr/bin/g++ -B/host/usr/bin --sysroot=/host "$@"' > "$srcdir"/xtools/bin/hostcxx; or return
+    printf '%s\n' '#!/bin/sh' 'export LD_LIBRARY_PATH=/host/usr/lib' 'exec /host/usr/bin/g++ -B/host/usr/bin --sysroot=/host "$@"' >"$srcdir"/xtools/bin/hostcxx; or return
     for t in ar nm ranlib
-        printf '%s\n' '#!/bin/sh' 'export LD_LIBRARY_PATH=/host/usr/lib' "exec /host/usr/bin/$t \"\$@\"" > "$srcdir"/xtools/bin/host$t; or return
+        printf '%s\n' '#!/bin/sh' 'export LD_LIBRARY_PATH=/host/usr/lib' "exec /host/usr/bin/$t \"\$@\"" >"$srcdir"/xtools/bin/host$t; or return
     end
     chmod +x "$srcdir"/xtools/bin/host*; or return
     # configure and make run their shell commands with the build machine's bash
@@ -121,6 +135,11 @@ function package
         set makeargs SHELL=$CONFIG_SHELL
     end
     cd "$srcdir"/build-gcc; or return
+    if _stage1
+        make DESTDIR="$pkgdir" install-gcc install-target-libgcc -j1; or return
+        rm -rf "$pkgdir"/usr/share/man/man7 "$pkgdir"/usr/share/info "$pkgdir"/usr/lib/libcc1.*; or return
+        return
+    end
     make $makeargs DESTDIR="$pkgdir" install -j1; or return
     cd "$srcdir"/build-gcc-nano; or return
     make $makeargs DESTDIR="$pkgdir.nano" install -j1; or return
@@ -134,8 +153,8 @@ function package
         cp -f "$from_dir"/libstdc++.a "$to_dir"/libstdc++_nano.a; or return
         cp -f "$from_dir"/libsupc++.a "$to_dir"/libsupc++_nano.a; or return
     end
-    find "$pkgdir"/usr/lib/gcc/$_target/$pkgver "$pkgdir"/usr/$_target/lib -type f -and \( -name \*.a -or -name \*.o \) -exec $_target-objcopy -R .comment -R .note -R .debug_info -R .debug_aranges -R .debug_pubnames -R .debug_pubtypes -R .debug_abbrev -R .debug_line -R .debug_str -R .debug_ranges -R .debug_loc '{}' \;;; or return
-    find "$pkgdir"/usr/bin/ "$pkgdir"/usr/lib/gcc/$_target/$pkgver -type f -and \( -executable \) -exec strip '{}' \;;; or return
+    find "$pkgdir"/usr/lib/gcc/$_target/$pkgver "$pkgdir"/usr/$_target/lib -type f -and \( -name \*.a -or -name \*.o \) -exec $_target-objcopy -R .comment -R .note -R .debug_info -R .debug_aranges -R .debug_pubnames -R .debug_pubtypes -R .debug_abbrev -R .debug_line -R .debug_str -R .debug_ranges -R .debug_loc '{}' \;; or return
+    find "$pkgdir"/usr/bin/ "$pkgdir"/usr/lib/gcc/$_target/$pkgver -type f -and \( -executable \) -exec strip '{}' \;; or return
     rm -r "$pkgdir"/usr/share/man/man7; or return
     rm -r "$pkgdir"/usr/share/info; or return
     rm "$pkgdir"/usr/lib/libcc1.*; or return

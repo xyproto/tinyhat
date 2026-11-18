@@ -10,7 +10,6 @@ pkgbase = procps-ng
 	checkdepends = dejagnu
 	makedepends = gettext
 	makedepends = git
-	makedepends = po4a
 	makedepends = systemd
 	depends = glibc
 	depends = ncurses

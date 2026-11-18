@@ -19,6 +19,7 @@ switch $CARCH
         set -a makedepends uasm
 end
 
+# CFLAGS_WARN_WALL without -Werror: gcc 16 warns about 7-Zip's code (no bug, a newer warning)
 function build
     set -l _platform_flags
     switch $CARCH
@@ -30,6 +31,7 @@ function build
     for component in Bundles/{Alone,Alone7z,Format7zF,SFXCon} UI/Console
         make -C CPP/7zip/$component -f ../../cmpl_gcc.mak $_platform_flags \
             LFLAGS_STRIP= \
+            CFLAGS_WARN_WALL="-Wall -Wextra" \
             CC="cc $CPPFLAGS $CFLAGS $LDFLAGS" \
             CXX="g++ $CPPFLAGS $CXXFLAGS $LDFLAGS"; or return
     end

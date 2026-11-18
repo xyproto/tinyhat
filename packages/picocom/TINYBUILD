@@ -8,7 +8,7 @@ set arch i686 x32
 set makedepends git
 set depends glibc
 set source "git+https://github.com/npat-efault/picocom.git#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums befc653ebf21fac26e8d4f9cbd3d7528364351831f73504229732dd9348517cb
 set flags arch
 
 function build

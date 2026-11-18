@@ -9,11 +9,9 @@ set depends alsa-topology-conf alsa-ucm-conf glibc
 set provides libasound.so libatopology.so
 set install $pkgname.install
 set flags arch
-set source $url/files/pub/lib/$pkgname-$pkgver.tar.bz2{,.sig}
-set sha512sums 2ddc5eef7fafe73ba6d8e4f79640a5aaa6e27aac2c77075fda9ee8ae61727bddfcda661e257057d8cf2f1647897d33153703f9ba913574ae7f1fbec53db3fa22 \
-    SKIP
-set b2sums 437a9fd2a11a828eb1244a3871dff9b84e2619f3a7a66f37f236025b4a0f37bd5194215bbdbfebfaf6ae96a4a4f24c1712eb1d8b1e176b51d0544a539c07022d \
-    SKIP
+set source $url/files/pub/lib/$pkgname-$pkgver.tar.bz2
+set sha512sums 2ddc5eef7fafe73ba6d8e4f79640a5aaa6e27aac2c77075fda9ee8ae61727bddfcda661e257057d8cf2f1647897d33153703f9ba913574ae7f1fbec53db3fa22
+set b2sums 437a9fd2a11a828eb1244a3871dff9b84e2619f3a7a66f37f236025b4a0f37bd5194215bbdbfebfaf6ae96a4a4f24c1712eb1d8b1e176b51d0544a539c07022d
 
 function prepare
     cd $pkgname-$pkgver; or return

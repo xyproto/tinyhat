@@ -1,0 +1,25 @@
+set pkgname python-packaging
+set pkgver 26.3
+set pkgrel 1
+set pkgdesc 'Core utilities for Python packages'
+set arch any
+set url https://github.com/pypa/packaging
+set license 'Apache-2.0 OR BSD-2-Clause'
+set depends python
+set makedepends python-flit-core python-installer
+set source "https://github.com/pypa/packaging/archive/$pkgver/$pkgname-$pkgver.tar.gz"
+set sha512sums 7559e4f0376c775f57c362394ba276451bee0952012fc461458ee450e86fe89909166bb11c217be100b7909f0958f4ee9df4b51c3019e664186fda06a48d810d
+set flags arch
+
+# Bootstrap: built with flit_core directly, because python-build depends on python-packaging
+
+function build
+    cd packaging-$pkgver; or return
+    python -m flit_core.wheel; or return
+end
+
+function package
+    cd packaging-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

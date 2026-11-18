@@ -17,6 +17,6 @@ pkgbase = spirv-tools
 	depends = glibc
 	depends = sh
 	source = git+https://github.com/KhronosGroup/SPIRV-Tools#tag=vulkan-sdk-1.4.363.0
-	sha256sums = SKIP
+	sha256sums = a3e5d1f5dbefc057022d1c9c29315e887cb4c491dffb3ee850cbfaa3725ac9c1
 
 pkgname = spirv-tools

@@ -10,10 +10,10 @@ pkgbase = libnghttp3
 	depends = glibc
 	provides = libnghttp3.so
 	source = git+https://github.com/ngtcp2/nghttp3.git?signed#tag=v1.18.0
-	source = git+https://github.com/ngtcp2/munit.git
-	source = git+https://github.com/ngtcp2/sfparse.git
+	source = git+https://github.com/ngtcp2/munit.git#commit=11e8e3466b2d6a8bdfd4b05a3d1ee7805c5d3442
+	source = git+https://github.com/ngtcp2/sfparse.git#commit=4b313cfd2e1b389ae632b36dcd50402307289af2
 	sha256sums = 5e0c2de58014f949291cf70cba926c6435658652d681eee085226274b26e5062
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 368aef912d78fce711c761532aaa5dd211fea0a3856b0d52e428e9af395abff8
+	sha256sums = 453f60ce638384871bc1bc6a73e899a39df30dd478a872c822cf290bd2b9875d
 
 pkgname = libnghttp3

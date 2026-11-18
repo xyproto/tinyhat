@@ -20,6 +20,6 @@ function package
     install -Dm644 SDL3_ttf-$pkgver/LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE.txt"; or return
     mkdir -p "$srcdir/wiki" "$pkgdir/usr/share/man"; or return
     cd SDL3_ttf-$pkgver; or return
-    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --copy-to-wiki > /dev/null; or return
-    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --manpath="$pkgdir/usr/share/man" --copy-to-manpages > /dev/null; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --copy-to-wiki >/dev/null; or return
+    perl build-scripts/wikiheaders.pl . "$srcdir/wiki" --options=.wikiheaders-options --manpath="$pkgdir/usr/share/man" --copy-to-manpages >/dev/null; or return
 end

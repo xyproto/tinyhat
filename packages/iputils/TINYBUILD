@@ -8,7 +8,8 @@ set arch i686 x32
 set license BSD-3-Clause GPL-2.0-or-later
 set url https://github.com/iputils/iputils
 set depends libcap libidn2
-set makedepends docbook-xsl git iproute meson perl-sgmls systemd
+# No man pages (docbook-xsl)
+set makedepends git iproute meson systemd
 set conflicts arping netkit-base
 set replaces netkit-base
 set source "git+https://github.com/iputils/iputils.git#tag=$pkgver?signed"
@@ -18,7 +19,7 @@ set flags arch
 function build
     mkdir -p build; or return
     cd build; or return
-    arch-meson ../$pkgname; or return
+    arch-meson ../$pkgname -D BUILD_MANS=false; or return
     ninja; or return
 end
 

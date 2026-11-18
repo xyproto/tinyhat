@@ -7,6 +7,7 @@ pkgbase = libretro-blastem
 	license = GPL-3.0-or-later
 	license = BSD-3-Clause
 	license = Zlib
+	makedepends = python
 	depends = glibc
 	source = blastem-ab743653ed110eeb7b1fe64d00cc5f9279c2bfec.tar.gz::https://github.com/libretro/blastem/archive/ab743653ed110eeb7b1fe64d00cc5f9279c2bfec.tar.gz
 	sha256sums = 27ba68065f31314ad29abc6a5514ebf19cdd2a2f24648ffbe360275ccb01de25

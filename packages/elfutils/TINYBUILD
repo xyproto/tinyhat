@@ -11,7 +11,7 @@ set makedepends bzip2 git libgcc libstdc++ xz zlib zstd
 set flags arch
 set options staticlibs
 set source 'elfutils::git+https://forge.sourceware.org/elfutils/elfutils-mirror.git?signed#tag=elfutils-0.196'
-set sha256sums SKIP
+set sha256sums dc09f62d6c32ad40c97451ddaf2c9e7c81d0093e506929f2d3a9d516250d2e85
 
 function prepare
     cd $pkgbase; or return

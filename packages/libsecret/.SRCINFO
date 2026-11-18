@@ -11,16 +11,14 @@ pkgbase = libsecret
 	checkdepends = python-gobject
 	checkdepends = swtpm
 	checkdepends = tpm2-abrmd
-	makedepends = bash-completion
 	makedepends = git
 	makedepends = glib2-devel
 	makedepends = meson
 	depends = glib2
 	depends = glibc
 	depends = libgcrypt
-	depends = tpm2-tss
 	source = git+https://gitlab.gnome.org/GNOME/libsecret.git?signed#tag=0.21.8.2
-	sha256sums = SKIP
+	sha256sums = 6813f26c0eb0ca0a8bbdf1a2e4aa76ef60577810264a0aec5325e71032130724
 
 pkgname = libsecret
 	optdepends = org.freedesktop.secrets: secret storage backend

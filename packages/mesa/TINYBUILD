@@ -1,5 +1,5 @@
 set pkgbase mesa
-set pkgname mesa vulkan-asahi vulkan-broadcom vulkan-dzn vulkan-freedreno vulkan-gfxstream vulkan-intel vulkan-panfrost vulkan-powervr vulkan-radeon vulkan-swrast vulkan-virtio vulkan-mesa-implicit-layers vulkan-mesa-layers
+set pkgname mesa vulkan-asahi vulkan-broadcom vulkan-freedreno vulkan-gfxstream vulkan-intel vulkan-panfrost vulkan-powervr vulkan-radeon vulkan-swrast vulkan-virtio vulkan-mesa-implicit-layers vulkan-mesa-layers
 set pkgver 26.2.5
 set pkgrel 1
 set epoch 1
@@ -7,10 +7,11 @@ set pkgdesc 'Open-source OpenGL drivers'
 set arch i686 x32
 set url https://www.mesa3d.org/
 set license 'MIT AND BSD-3-Clause AND SGI-B-2.0'
-set makedepends clang directx-headers expat glibc libdisplay-info libdrm libelf libgcc libglvnd libpng libstdc++ libva libxml2 llvm llvm-libs lm_sensors spirv-llvm-translator spirv-tools systemd-libs vulkan-icd-loader wayland zlib zstd clang cmake elfutils glslang libclc meson python-mako python-packaging python-ply python-pycparser python-yaml wayland-protocols valgrind
+# No valgrind (only memcheck annotations for debugging, -D valgrind=disabled)
+# No microsoft-experimental (Dozen, Vulkan on D3D12) driver: the vulkan-dzn split package and directx-headers are dropped
+set makedepends clang expat glibc libdisplay-info libdrm libelf libgcc libglvnd libpng libstdc++ libxml2 llvm llvm-libs lm_sensors spirv-llvm-translator spirv-tools systemd-libs vulkan-icd-loader wayland zlib zstd clang cmake elfutils glslang libclc meson python-mako python-packaging python-ply python-pycparser python-yaml wayland-protocols
 set options '!lto'
 set source "https://archive.mesa3d.org/mesa-$pkgver.tar.xz" \
-    "https://archive.mesa3d.org/mesa-$pkgver.tar.xz.sig" \
     xml-1.2.1.tar.gz::https://static.crates.io/crates/xml/1.2.1/download \
     zerocopy-0.8.13.tar.gz::https://static.crates.io/crates/zerocopy/0.8.13/download \
     ucd-trie-0.1.6.tar.gz::https://static.crates.io/crates/ucd-trie/0.1.6/download \
@@ -42,7 +43,6 @@ set source "https://archive.mesa3d.org/mesa-$pkgver.tar.xz" \
     once_cell-1.8.0.tar.gz::https://static.crates.io/crates/once_cell/1.8.0/download \
     syn-2.0.87.tar.gz::https://static.crates.io/crates/syn/2.0.87/download
 set sha256sums 794b3d1729075dae7ebd47c7283b7ca0cdb5dec668f7f11cc0a5d82f6138a0a5 \
-    fe0bd0436c7e4a2375cf8bf48768fe75c9e8e5aceb7b24f2cc6a8a7660f0e13e \
     b8aa498d22c9bbaf482329839bc5620c46be275a19a812e9a22a2b07529a642a \
     67914ab451f3bfd2e69e5e9d2ef3858484e7074d63f204fd166ec391b54de21d \
     ed646292ffc8188ef8ea4d1e0e0150fb15a5c2e12ad9b8fc191ae7a8a7f3c4b9 \
@@ -73,17 +73,17 @@ set sha256sums 794b3d1729075dae7ebd47c7283b7ca0cdb5dec668f7f11cc0a5d82f6138a0a5 
     db7d01726be8ab66ab32f9df467ae8b1148906685bbe75c82d1e65d7f5b3f841 \
     692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56 \
     25aa4ce346d03a6dcd68dd8b4010bcb74e54e62c90c573f394c46eae99aba32d
+# No VA-API (gallium-va): the images leave out the VA drivers, and libva needs X11
 set flags arch
 set -g _crate syn
 set -g _crates 1.2.1 0.8.13 0.1.6 2.8.0 0.2.185 2.2.6 0.14.1 0.4.27 0.8.13 0.2.0 2.1.1 1.0.0 0.2.12 1.0.86 2.8.0 2.0.11 1.0.12 2.9.1 0.61.1 1.0.35 0.20.0 1.0.14 0.3.12 1.1.4 2.8.0 2.0.11 1.0.1 2.8.0 1.8.0 2.0.87
-set -g _d clang directx-headers expat glibc libdisplay-info libdrm libelf libgcc libglvnd libpng libstdc++ libva libxml2 llvm llvm-libs lm_sensors spirv-llvm-translator spirv-tools systemd-libs vulkan-icd-loader wayland zlib zstd clang cmake elfutils glslang libclc meson python-mako python-packaging python-ply python-pycparser python-yaml wayland-protocols valgrind
+set -g _d clang expat glibc libdisplay-info libdrm libelf libgcc libglvnd libpng libstdc++ libxml2 llvm llvm-libs lm_sensors spirv-llvm-translator spirv-tools systemd-libs vulkan-icd-loader wayland zlib zstd clang cmake elfutils glslang libclc meson python-mako python-packaging python-ply python-pycparser python-yaml wayland-protocols
 switch $CARCH
     case aarch64
         set -g _gallium v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu
     case '*'
         set -g _gallium r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe
 end
-set -g _p valgrind
 set -g _pkgver 26.2.5
 set -g _ver 2.0.87
 set -g _x 'libx11|libxcb|libxext|libxrandr|libxshmfence|libxxf86vm|xcb-util-keysyms|xorgproto'
@@ -99,29 +99,29 @@ function prepare
             continue
         end
         echo "Applying patch $src..."; or return
-        patch -Np1 < "../$src"; or return
+        patch -Np1 <"../$src"; or return
     end
-    echo "$_pkgver-arch$epoch.$pkgrel" > VERSION; or return
+    echo "$_pkgver-arch$epoch.$pkgrel" >VERSION; or return
 end
 
 switch $CARCH
     case x32 x86_64
         function build
-            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=enabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,microsoft-experimental,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
+            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
             arch-meson mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
         end
     case aarch64
         function build
-            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu -D gallium-extra-hud=true -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=enabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,microsoft-experimental,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
+            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
             arch-meson mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
         end
     case '*'
         function build
-            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=enabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,microsoft-experimental,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
+            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
             arch-meson -Dsse2=false mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
@@ -148,22 +148,18 @@ end
 function package_mesa
     set depends expat glibc libdrm libelf libgcc libglvnd libstdc++ llvm-libs lm_sensors spirv-tools wayland zlib zstd
     set optdepends "opengl-man-pages: for the OpenGL API man pages"
-    set provides "libva-mesa-driver=$epoch:$pkgver-$pkgrel" "mesa-libgl=$epoch:$pkgver-$pkgrel" libva-driver opengl-driver
+    set provides "mesa-libgl=$epoch:$pkgver-$pkgrel" opengl-driver
     set conflicts 'libva-mesa-driver<1:24.2.7-1' 'mesa-libgl<17.0.1-2'
     set replaces 'libva-mesa-driver<1:24.2.7-1' 'mesa-libgl<17.0.1-2'
     meson install -C build --destdir "$pkgdir" --no-rebuild; or return
     begin
         set -l __subshell_pwd $PWD
-    set -l libdir usr/lib
+        set -l libdir usr/lib
         cd "$pkgdir"; or return
         _pick vkasahi $libdir/libvulkan_asahi.so; or return
         _pick vkasahi usr/share/vulkan/icd.d/asahi_icd.json; or return
         _pick vkbrcom $libdir/libvulkan_broadcom.so; or return
         _pick vkbrcom usr/share/vulkan/icd.d/broadcom_icd.json; or return
-        _pick vkd3d12 $libdir/libvulkan_dzn.so; or return
-        _pick vkd3d12 $libdir/libspirv_to_dxil.*; or return
-        _pick vkd3d12 usr/bin/spirv2dxil; or return
-        _pick vkd3d12 usr/share/vulkan/icd.d/dzn_icd.json; or return
         _pick vkfdreno $libdir/libvulkan_freedreno.so; or return
         _pick vkfdreno usr/share/vulkan/icd.d/freedreno_icd.json; or return
         _pick vkgfxstr $libdir/libvulkan_gfxstream.so; or return
@@ -224,15 +220,6 @@ function package_vulkan-broadcom
     set optdepends "vulkan-mesa-layers: additional vulkan layers"
     set provides vulkan-driver
     mv vkbrcom/* "$pkgdir"; or return
-    install -Dm644 mesa-$_pkgver/docs/license.rst -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-end
-
-function package_vulkan-dzn
-    set pkgdesc "Open-source Vulkan driver for D3D12"
-    set depends expat glibc libdisplay-info libdrm libgcc libstdc++ spirv-tools systemd-libs vulkan-icd-loader vulkan-mesa-implicit-layers wayland zlib zstd
-    set optdepends "vulkan-mesa-layers: additional vulkan layers"
-    set provides vulkan-driver
-    mv vkd3d12/* "$pkgdir"; or return
     install -Dm644 mesa-$_pkgver/docs/license.rst -t "$pkgdir/usr/share/licenses/$pkgname"; or return
 end
 

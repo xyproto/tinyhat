@@ -21,12 +21,12 @@ set sha256sums 7eef327c5cbe2a4649b2487b7a5bec6787cd26c9488bdbb2f35beb15305455b1 
 set flags arch
 
 function build
-    arch-meson 'kmod' 'build' -Dbuild-tests=false -Dmanpages=true -Dopenssl=disabled -Dxz=enabled -Dzlib=enabled -Dzstd=enabled; or return
+    arch-meson kmod build -Dbuild-tests=false -Dmanpages=true -Dopenssl=disabled -Dxz=enabled -Dzlib=enabled -Dzstd=enabled; or return
     meson compile -C build; or return
 end
 
 function package
-    meson install -C 'build' --destdir "$pkgdir"; or return
+    meson install -C build --destdir "$pkgdir"; or return
     install -dm0755 "$pkgdir"/{etc,usr/lib}/{depmod,modprobe}.d; or return
     install -Dm0644 "$srcdir/depmod-search.conf" "$pkgdir/usr/lib/depmod.d/search.conf"; or return
     install -Dm0644 "$srcdir/depmod.hook" "$pkgdir/usr/share/libalpm/hooks/60-depmod.hook"; or return

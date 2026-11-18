@@ -14,10 +14,12 @@ set sha256sums 8b389e2ff134f331a1cbace92dbd4d6b5793005b5f5454afaad8ddeb4cded75f
 function build
     cd wallutils-$pkgver; or return
     set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
     set -lx GOPATH "$srcdir/gopath"
     set -lx GOCACHE "$srcdir/gocache"
     set -lx GOTOOLCHAIN local
-    set -lx GOFLAGS -mod=vendor
+    set -lx GOFLAGS $GOFLAGS -mod=vendor
     set -lx CGO_ENABLED 0
     set -lx GOARCH 386
     set -lx GO386 softfloat

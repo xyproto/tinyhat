@@ -1,0 +1,24 @@
+set pkgname python-vcs-versioning
+set pkgver 2.6.0
+set pkgrel 1
+set pkgdesc 'The blessed package to manage your versions by vcs metadata'
+set arch any
+set url https://github.com/pypa/setuptools-scm
+set license MIT
+set depends python python-packaging python-setuptools
+set makedepends git python-build python-installer
+set source "python-setuptools-scm::git+$url#tag=vcs-versioning-v$pkgver"
+set sha512sums 818c3e797062b947d425f937fc391e5d4d1f75dfe50c8bfbcfff166f36a7abb9fd0e323736fb381def7a6fc0631b87e4cda1ebce2699052d3e8c1c05f9b70fad
+set b2sums 7cdafb46b351ee697f14adb8f30f0fa6c655d79e8c45c17d9200a5a1dac516b9623b80d8964f62ad3a8759f6d5c0ee28c070b5e1c4f3a37c81f66e481d569fd2
+set flags arch
+
+function build
+    cd python-setuptools-scm/vcs-versioning; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd python-setuptools-scm/vcs-versioning; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE.txt -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

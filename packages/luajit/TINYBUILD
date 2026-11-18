@@ -1,27 +1,21 @@
 set pkgname luajit
-set pkgver 2.1.1792349434+dd3b243
+# The commit that archlinux32's x87 patch applies to (2.1.1753364724, 2025-07-24): later commits conflict with it, and
+# without it LuaJIT needs SSE2 on x86. Built without -msse as well, so that it runs on a Pentium II (tested in
+# qemu-i386 -cpu pentium2); the JIT compiler is off on i686, LuaJIT runs as an interpreter
+set pkgver 2.1.1753364724+871db2c
 set pkgrel 1
 set pkgdesc 'Just-in-time compiler and drop-in replacement for Lua 5.1'
 set arch i686
 set url https://luajit.org/
 set license MIT
 set depends glibc libgcc
-switch $CARCH
-    case x32 x86_64 aarch64
-        set -g source LuaJIT-dd3b243.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/dd3b243.tar.gz
-    case '*'
-        set -g source LuaJIT-dd3b243.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/dd3b243.tar.gz \
+# c7815e1a1b49871e645252bb12e722fb4879df11.patch is applied on i686 only (see prepare)
+set source LuaJIT-871db2c.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/871db2c84ecefd70a850e03a6c340214a81739f0.tar.gz \
     c7815e1a1b49871e645252bb12e722fb4879df11.patch
-end
-switch $CARCH
-    case x32 x86_64 aarch64
-        set -g sha256sums a6ac8457c474c6fb71aaa7660dd5bf8f6e0506496fc74786b2dae18e26a768cc
-    case '*'
-        set -g sha256sums a6ac8457c474c6fb71aaa7660dd5bf8f6e0506496fc74786b2dae18e26a768cc \
+set sha256sums ab3f16d82df6946543565cfb0d2810d387d79a3a43e0431695b03466188e2680 \
     e59a3fa37e9fa7505193fde2a668eaa66caed39e77502868f12691cf0ee4e8a5
-end
 set flags arch
-set -g _commit dd3b243
+set -g _commit 871db2c
 
 switch $CARCH
     case x32 x86_64 aarch64
@@ -35,7 +29,10 @@ end
 
 function build
     cd "LuaJIT-$_commit"*/; or return
-    make amalg PREFIX=/usr BUILDMODE=dynamic TARGET_STRIP=" @:"; or return
+    set -l ccopt
+    # No SSE in the C code on i686 (LuaJIT's Makefile has -msse -mfpmath=sse for x86)
+    test $CARCH = i686; and set ccopt CCOPT_x86=-march=i686
+    make amalg PREFIX=/usr BUILDMODE=dynamic TARGET_STRIP=" @:" $ccopt; or return
 end
 
 function package

@@ -9,7 +9,7 @@ pkgbase = libvorbis
 	makedepends = git
 	depends = glibc
 	depends = libogg
-	source = git+https://github.com/xiph/vorbis.git?signed#tag=0c55fa38933fd4bdb7db7c298b27e7bf2f2c5e98
+	source = git+https://github.com/xiph/vorbis.git?signed#commit=0c55fa38933fd4bdb7db7c298b27e7bf2f2c5e98
 	sha256sums = f58777e598c5ef1c9f21698e581f6e62729f3d343ec4aa270051fb304a56fe26
 
 pkgname = libvorbis

@@ -13,6 +13,6 @@ pkgbase = liblc3
 	optdepends = python: Python bindings
 	provides = liblc3.so
 	source = git+https://github.com/google/liblc3#tag=v1.1.3
-	sha256sums = SKIP
+	sha256sums = bcefc8f630ae60c0a078ef06ce21f6858de2acc48972fa2ac95823e839062fd3
 
 pkgname = liblc3

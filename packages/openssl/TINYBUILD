@@ -12,10 +12,8 @@ set provides libcrypto.so libssl.so
 set replaces openssl-perl openssl-doc
 set backup etc/ssl/openssl.cnf
 set source "https://github.com/openssl/openssl/releases/download/openssl-$pkgver/openssl-$pkgver.tar.gz" \
-    "https://github.com/openssl/openssl/releases/download/openssl-$pkgver/openssl-$pkgver.tar.gz.asc" \
     ca-dir.patch
 set sha256sums a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98 \
-    85b3e373c1e1f94f6f043a4774377d04e752549c33c0f84b9f417a78b90c2372 \
     0a32d9ca68e8d985ce0bfef6a4c20b46675e06178cc2d0bf6d91bd6865d648b7
 set flags arch
 
@@ -28,10 +26,10 @@ switch $CARCH
     case x32
         function build
             cd "$srcdir/$pkgname-$pkgver"; or return
-            set -l _platform "linux-x32"
+            set -l _platform linux-x32
             switch "$CARCH"
-            case riscv64
-                set _platform "linux64-$CARCH"
+                case riscv64
+                    set _platform "linux64-$CARCH"
             end
             ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls enable-brotli enable-zlib enable-zstd $_platform; or return
             make depend; or return
@@ -40,10 +38,10 @@ switch $CARCH
     case x86_64 aarch64
         function build
             cd "$srcdir/$pkgname-$pkgver"; or return
-            set -l _platform "linux-generic32"
+            set -l _platform linux-generic32
             switch "$CARCH"
-            case riscv64
-                set _platform "linux64-$CARCH"
+                case riscv64
+                    set _platform "linux64-$CARCH"
             end
             ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls enable-brotli enable-zlib enable-zstd $_platform; or return
             make depend; or return
@@ -52,10 +50,10 @@ switch $CARCH
     case '*'
         function build
             cd "$srcdir/$pkgname-$pkgver"; or return
-            set -l _platform "linux-generic32"
+            set -l _platform linux-generic32
             switch "$CARCH"
-            case riscv64
-                set _platform "linux64-$CARCH"
+                case riscv64
+                    set _platform "linux64-$CARCH"
             end
             ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls no-sse2 enable-brotli enable-zlib enable-zstd $_platform; or return
             make depend; or return

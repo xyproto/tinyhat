@@ -1,5 +1,5 @@
-set pkgbase libseccomp
-set pkgname libseccomp python-libseccomp
+# No python-libseccomp package: nothing in Tiny Hat uses the Python bindings
+set pkgname libseccomp
 set pkgver 2.6.0
 set pkgrel 1
 set pkgdesc 'Enhanced seccomp library'
@@ -7,14 +7,16 @@ set arch i686 x32
 set license LGPL-2.1-only
 set url https://github.com/seccomp/libseccomp
 set checkdepends valgrind
-set makedepends cython git glibc gperf python-build python-installer python-setuptools python-wheel
+set makedepends git glibc gperf
+set depends glibc
+set provides libseccomp.so
 set source "git+https://github.com/seccomp/libseccomp.git#tag=v$pkgver?signed"
 set sha256sums 2aa9a02d102753f4c4f23ff201dec3fbc4cf33d46dd64a0f2aaf5a5341227a93
 set b2sums 76fa0801936a970b0bdff3d3cbc9e8e65f0afbfa1d1e13bd4319a6fee4aa520234a2a5273354ed87671666abb1f961cf9c678d1b38c3afd594f9c8d7694630d2
 set flags arch
 
 function prepare
-    cd $pkgbase; or return
+    cd $pkgname; or return
     # Fix test failures with gcc 15 and LTO
     # hash: fix strict aliasing UB in MurMur hash implementation
     git cherry-pick -n 614530bc8b3c9f49aa59d7eaef4863b746504c23; or return
@@ -22,30 +24,20 @@ function prepare
 end
 
 function build
-    cd $pkgbase; or return
-    ./configure --prefix=/usr; or return
+    cd $pkgname; or return
+    ./configure --prefix=/usr --disable-python; or return
     make; or return
-    cd src/python; or return
-    VERSION_RELEASE=$pkgver CPPFLAGS="$CPPFLAGS -I$srcdir/$pkgbase/include" python -m build --wheel --no-isolation; or return
 end
 
 function check
-    cd $pkgbase; or return
+    cd $pkgname; or return
     # Test results are ignored: valgrind does not support every x86 CPU, and on i686/pentium4
     # 59-basic-empty_binary_tree fails
     make check; or true
 end
 
-function package_libseccomp
-    set depends glibc
-    set provides libseccomp.so
-    cd $pkgbase; or return
+function package
+    cd $pkgname; or return
     make DESTDIR="$pkgdir" install; or return
     install -Dm 644 CHANGELOG README.md SECURITY.md -t "$pkgdir/usr/share/doc/$pkgname"; or return
-end
-
-function package_python-libseccomp
-    set depends python glibc
-    cd $pkgbase/src/python; or return
-    env VERSION_RELEASE=$pkgver python -m installer --destdir="$pkgdir" dist/*.whl; or return
 end

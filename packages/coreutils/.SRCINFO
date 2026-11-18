@@ -14,13 +14,10 @@ pkgbase = coreutils
 	depends = glibc
 	depends = gmp
 	depends = libcap
-	depends = openssl
 	options = !lto
 	source = https://ftp.gnu.org/gnu/coreutils/coreutils-9.12.tar.gz
-	source = https://ftp.gnu.org/gnu/coreutils/coreutils-9.12.tar.gz.sig
 	source = 0001-env-printenv-only-quote-when-outputting-to-terminals.patch
 	sha256sums = 14cbf5a4de0c7b7fa3b9fa7fada4c58b2defe33336aa8fd83d7622c5c4ebdc13
-	sha256sums = 5517066495da2fe4459d07b9284e497276d228c3c0f540f3f879f058345e98fd
 	sha256sums = 60df76f209ec6022c313d546370fb33045cd62179499c61bef3e3f2e4d82446e
 
 pkgname = coreutils

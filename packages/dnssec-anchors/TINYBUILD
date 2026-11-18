@@ -12,7 +12,7 @@ set pkgdesc 'DNSSEC trust anchors for the root zone'
 set url https://data.iana.org/root-anchors/
 set license custom:none
 set arch any
-set makedepends unbound
+
 set flags arch
 set source LICENSE trusted-key-$pkgver.notkey
 set sha256sums dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb \

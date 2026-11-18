@@ -12,11 +12,10 @@ set provides "fuse=$pkgver"
 set replaces fuse
 set conflicts fuse
 set options '!emptydirs'
-set source "https://github.com/libfuse/libfuse/releases/download/fuse-$pkgver/fuse-$pkgver.tar.gz"{,.asc} \
+set source "https://github.com/libfuse/libfuse/releases/download/fuse-$pkgver/fuse-$pkgver.tar.gz" \
     conditionally-define-closefrom.patch \
     clean-includes.patch
 set sha512sums 3d82fafd04f2924299bb09d2bb144935fa004a43fb9a6568e2e1cc5a60fded2efa1711029a0d7f12b3e6e4501f7217f2ee3545646d89da8dece083cb390f23e2 \
-    SKIP \
     0836d1693bea203b562a86c992107ee48766f41bb05a31e9af41009d2270ac84d7881aa5bc2a11ed478cd03985876aca5080341ddea701a12a630a36e1b1a80b \
     6615563894b3c402468db975c227a531a225848a3ce3e802d25081480d356b53b64ce7ccf60083b7d7e069cb553f4add71f113f119d3a7d02888fee96fc74a73
 set flags arch

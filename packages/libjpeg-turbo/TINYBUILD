@@ -9,11 +9,9 @@ set license BSD-3-Clause IJG
 set depends glibc
 set makedepends cmake ninja nasm
 set provides libjpeg.so libturbojpeg.so
-set source "$_url/releases/download/$pkgver/$pkgname-$pkgver.tar.gz"{,.sig}
-set sha512sums 13536db56c16e5364690ae2d31343a203e3b653c853c1f5314d36c8eb06700e92342737f1381f0171b3eb0223384c5fbcde91b55a46576952c4e75dc049cd045 \
-    SKIP
-set b2sums c50c985f8b870ab6467181f69e10f3ec2705cb349613b9178b293f136063e302087832d87f793b3d24ab721a2f5d76271760bd244d0766ab3b8cbe48ebf50cfa \
-    SKIP
+set source "$_url/releases/download/$pkgver/$pkgname-$pkgver.tar.gz"
+set sha512sums 13536db56c16e5364690ae2d31343a203e3b653c853c1f5314d36c8eb06700e92342737f1381f0171b3eb0223384c5fbcde91b55a46576952c4e75dc049cd045
+set b2sums c50c985f8b870ab6467181f69e10f3ec2705cb349613b9178b293f136063e302087832d87f793b3d24ab721a2f5d76271760bd244d0766ab3b8cbe48ebf50cfa
 set flags arch
 
 function build

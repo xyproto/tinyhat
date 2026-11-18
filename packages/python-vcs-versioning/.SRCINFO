@@ -1,0 +1,18 @@
+pkgbase = python-vcs-versioning
+	pkgdesc = The blessed package to manage your versions by vcs metadata
+	pkgver = 2.6.0
+	pkgrel = 1
+	url = https://github.com/pypa/setuptools-scm
+	arch = any
+	license = MIT
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	depends = python
+	depends = python-packaging
+	depends = python-setuptools
+	source = python-setuptools-scm::git+https://github.com/pypa/setuptools-scm#tag=vcs-versioning-v2.6.0
+	sha512sums = 818c3e797062b947d425f937fc391e5d4d1f75dfe50c8bfbcfff166f36a7abb9fd0e323736fb381def7a6fc0631b87e4cda1ebce2699052d3e8c1c05f9b70fad
+	b2sums = 7cdafb46b351ee697f14adb8f30f0fa6c655d79e8c45c17d9200a5a1dac516b9623b80d8964f62ad3a8759f6d5c0ee28c070b5e1c4f3a37c81f66e481d569fd2
+
+pkgname = python-vcs-versioning

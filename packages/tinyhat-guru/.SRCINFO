@@ -10,7 +10,7 @@ pkgbase = tinyhat-guru
 	depends = glibc
 	source = tinyhat-guru.c
 	source = QR-Code-generator-1.8.0.tar.gz::https://github.com/nayuki/QR-Code-generator/archive/refs/tags/v1.8.0.tar.gz
-	sha256sums = SKIP
+	sha256sums = cb04efd46a8c79ab466a5ce2abfc38b22229998d224838bd239bce0df1e1f3d3
 	sha256sums = 2ec0a4d33d6f521c942eeaf473d42d5fe139abcfa57d2beffe10c5cf7d34ae60
 
 pkgname = tinyhat-guru

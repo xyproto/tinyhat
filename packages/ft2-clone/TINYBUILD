@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://16-bits.org/ft2.php
 set license BSD-3-Clause MIT CC-BY-NC-SA-4.0
 set depends glibc libgcc libstdc++ alsa-lib sdl3 hicolor-icon-theme
-set makedepends git libicns cmake ninja gendesk
+# No libicns or gendesk: the .desktop file and 512x512 icon shipped in release/other/Freedesktop.org Resources are used
+set makedepends git cmake ninja
 set source "$pkgname::git+https://github.com/8bitbubsy/ft2-clone#tag=v$pkgver" \
     sdl3.patch
 set sha512sums fdf4a8711a2f0e0c6b3d7673b1663f3eaf3c18edbdb81d8f30bc6b647c1b1d24b5eeeb4d129c4ab9996aedbd11aa9be1b860dc727248ca9f5a4ba9ba8c26c63d \
@@ -17,17 +18,6 @@ set flags arch
 
 function prepare
     cd $pkgname; or return
-    # convert icons
-    icns2png -x \
-        release/macos/ft2-clone-macos.app/Contents/Resources/ft2-clone-macos.icns; or return
-    # generate desktop file
-    gendesk -n \
-        --exec "$pkgname" \
-        --name 'Fasttracker II Clone' \
-        --pkgname "$pkgname" \
-        --pkgdesc "$pkgdesc" \
-        --icon "$pkgname" \
-        --genericname 'Music Tracker'; or return
     # attempt repro build by using commit date as build date
     set -l commit_date (git show --no-patch --format=%cd --date=format:'%d %B %Y'); or return
     patch -p1 -i "$srcdir/sdl3.patch"; or return
@@ -49,10 +39,11 @@ end
 function package
     DESTDIR="$pkgdir" cmake --install build; or return
     cd $pkgname; or return
-    # application icon
-    install -vDm644 ft2-clone-macos_512x512x32.png "$pkgdir/usr/share/icons/hicolor/512x512/apps/$pkgname.png"; or return
-    # desktop file
-    install -vDm644 -t "$pkgdir/usr/share/applications" ft2-clone.desktop; or return
+    # application icon and desktop file, as shipped upstream (the icon is renamed to $pkgname)
+    set -l res 'release/other/Freedesktop.org Resources'
+    install -vDm644 "$res/Fasttracker II clone.png" "$pkgdir/usr/share/icons/hicolor/512x512/apps/$pkgname.png"; or return
+    sed -e "s/^Icon=.*/Icon=$pkgname/" "$res/Fasttracker II clone.desktop" | install -vDm644 /dev/stdin "$pkgdir/usr/share/applications/$pkgname.desktop"; or return
+    install -vDm644 "$res/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE.freedesktop-resources"; or return
     # documentation
     install -vDm644 -t "$pkgdir/usr/share/doc/$pkgname" README.md; or return
     # licensing

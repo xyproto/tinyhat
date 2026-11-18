@@ -9,7 +9,6 @@ pkgbase = libavif
 	makedepends = cmake
 	makedepends = git
 	makedepends = nasm
-	makedepends = pandoc-cli
 	depends = aom
 	depends = dav1d
 	depends = glibc

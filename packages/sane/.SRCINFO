@@ -19,7 +19,6 @@ pkgbase = sane
 	makedepends = poppler-glib
 	makedepends = python
 	makedepends = systemd
-	makedepends = texlive-latexextra
 	depends = bash
 	depends = cairo
 	depends = glibc

@@ -6,11 +6,7 @@ pkgbase = libtheora
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause
-	makedepends = doxygen
 	makedepends = git
-	makedepends = libpng
-	makedepends = libvorbis
-	makedepends = sdl
 	depends = glibc
 	depends = libogg
 	source = git+https://github.com/xiph/theora.git#tag=v1.2.0

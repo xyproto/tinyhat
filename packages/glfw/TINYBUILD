@@ -7,7 +7,9 @@ set arch i686 x32
 set url https://www.glfw.org/
 set license custom:ZLIB
 set depends libgl libxkbcommon
-set makedepends mesa cmake doxygen vulkan-headers vulkan-icd-loader extra-cmake-modules wayland-protocols libxi libxrandr libxcursor libxinerama
+# No documentation (doxygen). No extra-cmake-modules: GLFW's CMake files do not use ECM
+# Wayland only (no X11 backend: libxi, libxrandr, libxcursor, libxinerama)
+set makedepends mesa cmake vulkan-headers vulkan-icd-loader wayland-protocols
 set provides glfw-x11 glfw-wayland
 set replaces glfw-x11 glfw-wayland glfw-doc
 set source "glfw-$pkgver.tar.gz::https://github.com/glfw/glfw/archive/$pkgver.tar.gz"
@@ -15,7 +17,7 @@ set sha256sums 5234f4f29473e9a06bc7847d8371858dd135d38466eeeaa652fdc9f8f9ff0c20
 set flags arch
 
 function build
-    cmake -B build -S "$pkgname-$pkgver" -DCMAKE_BUILD_TYPE='None' -DCMAKE_INSTALL_PREFIX='/usr' -DBUILD_SHARED_LIBS=ON -Wno-dev; or return
+    cmake -B build -S "$pkgname-$pkgver" -DCMAKE_BUILD_TYPE='None' -DCMAKE_INSTALL_PREFIX='/usr' -DBUILD_SHARED_LIBS=ON -DGLFW_BUILD_DOCS=OFF -DGLFW_BUILD_X11=OFF -Wno-dev; or return
     cmake --build build; or return
 end
 

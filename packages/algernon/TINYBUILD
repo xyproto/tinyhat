@@ -15,12 +15,16 @@ set optdepends 'mariadb: For using the MariaDB/MySQL database backend' \
     'valkey: For using the Redis database backend'
 set options docs
 set source "git+https://github.com/xyproto/algernon#commit=$_commit"
-set b2sums SKIP
+set b2sums a3c18f4c17f9e0667d2c0f1b995da2bc74f48b2f64ebf017705efb5f18159c113b153c59cd8463c750c9d1e13bf5fa4c5a20f4e147395976ae1a4992d148f385
 set flags arch
+# network: go build downloads its Go modules (builds have no network access otherwise)
+set -a options network
 
 function prepare
     cd $pkgname; or return
     set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
     set -lx GOPATH "$srcdir/gopath"
     set -lx GOCACHE "$srcdir/gocache"
     set -lx GOTOOLCHAIN local

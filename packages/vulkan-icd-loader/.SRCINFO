@@ -12,13 +12,12 @@ pkgbase = vulkan-icd-loader
 	makedepends = libx11
 	makedepends = libxrandr
 	makedepends = ninja
-	makedepends = python-lxml
 	makedepends = vulkan-headers
 	makedepends = wayland
 	depends = glibc
 	optdepends = vulkan-driver: packaged vulkan driver
 	provides = libvulkan.so
 	source = git+https://github.com/KhronosGroup/Vulkan-Loader#tag=vulkan-sdk-1.4.363.0
-	sha256sums = SKIP
+	sha256sums = 80de80decfc3c51e079fceb873b48fe15d806aa8a6b68d1977142990a43e7460
 
 pkgname = vulkan-icd-loader

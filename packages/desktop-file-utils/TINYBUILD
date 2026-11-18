@@ -9,7 +9,7 @@ set depends glib2 glibc
 set makedepends git meson
 set source "git+https://gitlab.freedesktop.org/xdg/desktop-file-utils.git#tag=$pkgver" \
     update-desktop-database.hook
-set sha256sums SKIP \
+set sha256sums 59597b9a2e50225757a28fccc10d1dbf11f5a99b9b42421c928bdfd64501c0c7 \
     501f1eb35d9fbbd61666f40302b0ce63425299edf023c075986a24dc3ef18575
 set flags arch
 

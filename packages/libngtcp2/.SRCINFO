@@ -16,13 +16,13 @@ pkgbase = libngtcp2
 	provides = libngtcp2_crypto_gnutls.so
 	provides = libngtcp2_crypto_ossl.so
 	source = git+https://github.com/ngtcp2/ngtcp2.git?signed#tag=v1.25.0
-	source = git+https://github.com/ngtcp2/munit.git
-	source = git+https://github.com/ngtcp2/urlparse.git
+	source = git+https://github.com/ngtcp2/munit.git#commit=11e8e3466b2d6a8bdfd4b05a3d1ee7805c5d3442
+	source = git+https://github.com/ngtcp2/urlparse.git#commit=c8168839c89fc5c5917c375e1bd6ffeddf3f7f88
 	sha256sums = cf8cf5673a16d359e4c3830188b0c4733f4c4ce7ae9fa7dada82869ea79c0b55
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 368aef912d78fce711c761532aaa5dd211fea0a3856b0d52e428e9af395abff8
+	sha256sums = 3cd7b03bd06c81a6d43d4c80df8b96b0a4f4bab5b5ee7bdc8adf9c6a1ea19eea
 	b2sums = b2a2485332decc9208fbfbde833380fdb8bf72844e1ed482e6469e3075da4dc5caa7f6c5e8f5c43fbf6f108fc0b2b8bba647dd9b5e054628255f60cbe07fb4ec
-	b2sums = SKIP
-	b2sums = SKIP
+	b2sums = 7e063c56fc97432845fd686b870123ff645e392fc0bca22a3d7323d9d61d589a408e345109a2b5a3747a32fde7cd16057432449393213491f44c7fa8ca5c3586
+	b2sums = fa5a9a7fca6cfa2646cda92f550a282f8fe48910d08df4e92d7cceab17a456750c4472f56b8ba7cba04ad0281a1c9e2f68a4b7e2d60588c501abfb68c314b6b0
 
 pkgname = libngtcp2

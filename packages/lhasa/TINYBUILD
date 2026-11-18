@@ -8,10 +8,8 @@ set license ISC
 set depends glibc
 set provides lha
 set conflicts lha
-set source "https://github.com/fragglet/lhasa/releases/download/v$pkgver/lhasa-$pkgver.tar.gz" \
-    "https://github.com/fragglet/lhasa/releases/download/v$pkgver/lhasa-$pkgver.tar.gz.asc"
-set sha256sums 9840154367f73e9d9c3196f944a121ab4d398d84e921c8fe8fca8a931274aed7 \
-    a66b715195a72f3656d5190559bff376d931f02407690623ecb45d0ed11ddcaf
+set source "https://github.com/fragglet/lhasa/releases/download/v$pkgver/lhasa-$pkgver.tar.gz"
+set sha256sums 9840154367f73e9d9c3196f944a121ab4d398d84e921c8fe8fca8a931274aed7
 set flags arch
 
 function build

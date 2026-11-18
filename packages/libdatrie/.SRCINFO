@@ -6,7 +6,6 @@ pkgbase = libdatrie
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = doxygen
 	makedepends = git
 	depends = glibc
 	source = git+https://github.com/tlwg/libdatrie.git#tag=v0.2.14

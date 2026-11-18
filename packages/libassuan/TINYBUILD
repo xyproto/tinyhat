@@ -7,11 +7,9 @@ set url https://www.gnupg.org/related_software/libassuan/
 set license FSFULLR GPL-2.0-or-later LGPL-2.1-or-later
 set depends glibc libgpg-error sh
 set provides libassuan.so
-set source "https://gnupg.org/ftp/gcrypt/$pkgname/$pkgname-$pkgver.tar.bz2"{,.sig}
-set sha512sums 6914a02c20053bae0fc4c29c5c40655f1cec711983d57fa85e46df34e90b10e33d31256dd50ae7c7faa8d8d750a529bf9072da0cda3bdd77ebfedbc0e26e5e16 \
-    SKIP
-set b2sums 5d6a7e4e9ce1b196bc7d126786716d95896de6145b8d753e2289bd36cbc96efa216360ac127fadb7be2d577e7fa203c8c8695d4aa11afcca6ed5397dd40209cb \
-    SKIP
+set source "https://gnupg.org/ftp/gcrypt/$pkgname/$pkgname-$pkgver.tar.bz2"
+set sha512sums 6914a02c20053bae0fc4c29c5c40655f1cec711983d57fa85e46df34e90b10e33d31256dd50ae7c7faa8d8d750a529bf9072da0cda3bdd77ebfedbc0e26e5e16
+set b2sums 5d6a7e4e9ce1b196bc7d126786716d95896de6145b8d753e2289bd36cbc96efa216360ac127fadb7be2d577e7fa203c8c8695d4aa11afcca6ed5397dd40209cb
 set flags arch
 
 function build

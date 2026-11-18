@@ -1,10 +1,12 @@
 set pkgname tinyhat-system
 set pkgver 1
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Tiny Hat system services, boot and maintenance scripts, and their configuration'
 set arch any
 set url https://github.com/xyproto/tinyhat
 set license BSD-3-Clause
+# The scripts use awk (nawk in the image)
+set depends awk
 set backup etc/iwd/main.conf etc/profile.d/pvsneslib.sh etc/profile.d/tinyhat-env.sh etc/security/limits.d/90-tinyhat-audio.conf etc/tinyhat-bootsplash/activate.d/50-tinyhat
 
 function package

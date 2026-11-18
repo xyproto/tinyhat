@@ -1,19 +1,18 @@
 set pkgbase lv2
-set pkgname lv2 lv2-docs lv2-example-plugins
+set pkgname lv2 lv2-example-plugins
 set pkgver 1.18.10
 set pkgrel 2
 set pkgdesc 'Plugin standard for audio systems'
 set arch i686 x32
 set url https://lv2plug.in/
 set license ISC
-set makedepends asciidoc codespell doxygen flake8 meson pygmentize python-black python-lxml python-markdown \
+# No documentation (asciidoc, doxygen, python-markdown)
+set makedepends codespell flake8 meson pygmentize python-black python-lxml \
     python-pygments python-pylint python-rdflib serd sord
 set flags arch
-set source "https://lv2plug.in/spec/$pkgbase-$pkgver.tar.xz"{,.sig}
-set sha512sums ab4bcf593f633b1ed16c0eb6aa4525458a00655ef9c87619bf85eaa966f8fd094a8e871b825f679e0d97923f8bbbf11841ff467022390ca2f1a5b5f66ccd5d1b \
-    SKIP
-set b2sums 72f9bc50ebac5d71279e0616bb1eb3c2a6748a28ff68988294135b18c7adc68c46a52b4698faf79f633768bf850d5052128a9f84b90aa9b5f9a56721acaf04c3 \
-    SKIP
+set source "https://lv2plug.in/spec/$pkgbase-$pkgver.tar.xz"
+set sha512sums ab4bcf593f633b1ed16c0eb6aa4525458a00655ef9c87619bf85eaa966f8fd094a8e871b825f679e0d97923f8bbbf11841ff467022390ca2f1a5b5f66ccd5d1b
+set b2sums 72f9bc50ebac5d71279e0616bb1eb3c2a6748a28ff68988294135b18c7adc68c46a52b4698faf79f633768bf850d5052128a9f84b90aa9b5f9a56721acaf04c3
 
 function _pick
     set -l p $argv[1]
@@ -34,7 +33,7 @@ end
 
 function build
     # the documentation needs asciidoc and lv2specgen validates the specs against XHTML DTDs fetched from w3.org,
-    # which libxml2 no longer allows - build without docs; lv2-docs then only carries the license
+    # which libxml2 no longer allows - build without docs
     arch-meson $pkgbase-$pkgver build -D docs=disabled; or return
     meson compile -C build; or return
 end
@@ -44,7 +43,7 @@ function check
 end
 
 function package_lv2
-    set optdepends 'lv2-docs: for developer documentation' 'lv2-example-plugins: for example plugins'
+    set optdepends 'lv2-example-plugins: for example plugins'
     set -a optdepends 'python-lxml: for lv2specgen.py' 'python-markdown: for lv2specgen.py'
     set -a optdepends 'python-pygments: for lv2specgen.py' 'python-rdflib: for lv2specgen.py'
     set -a optdepends 'sord: for lv2_validate'
@@ -52,22 +51,13 @@ function package_lv2
     meson install -C build --destdir "$pkgdir"; or return
 
     pushd "$pkgdir"; or return
-    mkdir -p usr/share/doc/lv2
-    and _pick lv2-docs usr/share/doc/lv2/
-    and _pick lv2-example-plugins usr/lib/lv2/eg-*
+    _pick lv2-example-plugins usr/lib/lv2/eg-*
     set -l st $status
     popd
     test $st -eq 0; or return $st
 
     install -vDm 644 $pkgbase-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
     install -vDm 644 $pkgbase-$pkgver/{NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
-end
-
-function package_lv2-docs
-    set pkgdesc "$pkgdesc - documentation"
-
-    mv -v $pkgname/* "$pkgdir"; or return
-    install -vDm 644 $pkgbase-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
 end
 
 function package_lv2-example-plugins

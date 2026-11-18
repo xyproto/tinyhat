@@ -9,16 +9,14 @@ pkgbase = libgudev
 	makedepends = git
 	makedepends = glib2-devel
 	makedepends = glibc-locales
-	makedepends = gtk-doc
 	makedepends = meson
 	makedepends = systemd
-	makedepends = umockdev
 	depends = glib2
 	depends = glibc
 	depends = libgcc
 	depends = libsystemd
 	source = git+https://gitlab.gnome.org/GNOME/libgudev.git#tag=238
-	sha256sums = SKIP
+	sha256sums = 89d780bf07ab4ae01deab1b31608c8774cf0ae1730827749ce93f84125293346
 
 pkgname = libgudev
 	depends = glib2
@@ -29,7 +27,3 @@ pkgname = libgudev
 	depends = libgobject-2.0.so
 	depends = libudev.so
 	provides = libgudev-1.0.so
-
-pkgname = libgudev-docs
-	pkgdesc = GObject bindings for libudev (documentation)
-	depends = 

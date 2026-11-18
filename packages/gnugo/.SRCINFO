@@ -9,10 +9,8 @@ pkgbase = gnugo
 	depends = glibc
 	depends = ncurses
 	source = https://ftp.gnu.org/gnu/gnugo/gnugo-3.8.tar.gz
-	source = https://ftp.gnu.org/gnu/gnugo/gnugo-3.8.tar.gz.sig
 	source = Wformat-security.patch
 	sha256sums = da68d7a65f44dcf6ce6e4e630b6f6dd9897249d34425920bfdd4e07ff1866a72
-	sha256sums = SKIP
 	sha256sums = c5c1c45ca30793a4c872aa6b2c5d2dc3ca201831c20a4bb595d82c8cf27eb20e
 
 pkgname = gnugo

@@ -1,0 +1,17 @@
+pkgbase = vulkan-headers
+	pkgdesc = Vulkan header files and API registry
+	pkgver = 1.4.363.0
+	epoch = 1
+	pkgrel = 1
+	url = https://www.vulkan.org/
+	arch = any
+	groups = vulkan-devel
+	license = Apache-2.0 OR MIT
+	makedepends = cmake
+	makedepends = ninja
+	optdepends = python: Registry tools
+	provides = vulkan-hpp=1.4.363.0
+	source = https://github.com/KhronosGroup/Vulkan-Headers/archive/refs/tags/vulkan-sdk-1.4.363.0.tar.gz
+	sha256sums = 4a078be12bef21cfebc09d878b77a63cff9d68f899254a0b00d0e37ef73e7f7e
+
+pkgname = vulkan-headers

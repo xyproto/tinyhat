@@ -1,0 +1,29 @@
+set pkgname meson-python
+set pkgver 0.22.1
+set pkgrel 1
+set pkgdesc 'Meson PEP 517 Python build backend'
+set arch any
+set url https://github.com/mesonbuild/meson-python
+set license MIT
+set depends meson patchelf python python-packaging python-pyproject-metadata
+set makedepends git ninja python-build python-installer
+set source "git+https://github.com/mesonbuild/meson-python#tag=$pkgver"
+set sha256sums 13dee0e98f80f5c9f4506df161ec708a33f914e722ee906de78b4dfb93af2141
+set flags arch
+
+function prepare
+    cd meson-python; or return
+    # ninja is a system package, not a Python one
+    sed -e /ninja/d -i pyproject.toml; or return
+end
+
+function build
+    cd meson-python; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd meson-python; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

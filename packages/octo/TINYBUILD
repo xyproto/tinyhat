@@ -12,9 +12,9 @@ set source "octo-$_commit.tar.gz::https://github.com/JohnEarnest/c-octo/archive/
     buzzer.patch \
     sharp.patch
 set sha256sums e160d02a05071bbd5a0d9b180ca9e5680be817f458a95e3af055749163f068ed \
-    SKIP \
-    SKIP \
-    SKIP
+    946ded8b83ea8d225b527263ce6f50d13d41cd24c683592835e9c1b91f791c43 \
+    8ee701aa0e0b688a7ca2196a8472afcfc98ffe1bc69efed770e5b97430bf47f6 \
+    4e80cdedc1113bd1a38f4b660f5d08cf0a6ff2fe5285c15dc988eee662c05a62
 
 function prepare
     cd c-octo-$_commit; or return

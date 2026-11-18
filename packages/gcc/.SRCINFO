@@ -12,14 +12,12 @@ pkgbase = gcc
 	checkdepends = python-pytest
 	checkdepends = tcl
 	makedepends = binutils
-	makedepends = gcc-d
 	makedepends = git
 	makedepends = glibc
 	makedepends = libisl
 	makedepends = libmpc
 	makedepends = python
 	makedepends = zstd
-	makedepends = rust
 	options = !emptydirs
 	options = !lto
 	source = git+https://forge.sourceware.org/gcc/gcc#commit=d564253eb6c859e266d3cae18e82fb4db9a88316
@@ -54,22 +52,6 @@ pkgname = gcc
 	options = !emptydirs
 	options = staticlibs
 
-pkgname = gcc-d
-	pkgdesc = D frontend for GCC
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libgphobos
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
-	provides = gdc
-	replaces = gdc
-	options = !emptydirs
-	options = staticlibs
-
 pkgname = gcc-fortran
 	pkgdesc = Fortran front-end for GCC
 	depends = gcc=16.2.1+r23+gd564253eb6c8
@@ -82,22 +64,6 @@ pkgname = gcc-fortran
 	depends = zlib
 	depends = zstd
 
-pkgname = gcc-gcobol
-
-pkgname = gcc-go
-	pkgdesc = Go front-end for GCC
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libgo
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
-	provides = go=1.17
-	conflicts = go
-
 pkgname = gcc-libs
 	pkgdesc = Runtime libraries shipped by GCC
 	depends = glibc>=2.27
@@ -108,46 +74,10 @@ pkgname = gcc-libs
 	depends = libgomp
 	depends = libhwasan
 	depends = liblsan
-	depends = libobjc
 	depends = libquadmath
 	depends = libstdc++
 	depends = libtsan
 	depends = libubsan
-
-pkgname = gcc-m2
-	pkgdesc = Modula-2 frontend for GCC
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libgm2
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
-
-pkgname = gcc-objc
-	pkgdesc = Objective-C front-end for GCC
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libisl.so
-	depends = libmpc
-	depends = libobjc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
-
-pkgname = gcc-rust
-	pkgdesc = Rust frontend for GCC
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
 
 pkgname = libasan
 	pkgdesc = Address Sanitizer runtime library shipped by GCC
@@ -166,52 +96,16 @@ pkgname = libgcc
 	depends = glibc>=2.27
 	provides = libgcc_s.so
 
-pkgname = libgccjit
-	pkgdesc = Just-In-Time Compilation with GCC backend
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
-	provides = libgccjit.so
-
-pkgname = libgcobol
-
 pkgname = libgfortran
 	pkgdesc = Runtime libraries shipped by GCC
 	depends = glibc>=2.27
 	depends = libgcc
 	provides = libgfortran.so
 
-pkgname = libgm2
-	pkgdesc = Modula-2 runtime libraries shipped by GCC
-	depends = glibc>=2.27
-	provides = libm2cor.so
-	provides = libm2iso.so
-	provides = libm2log.so
-	provides = libm2min.so
-	provides = libm2pim.so
-
-pkgname = libgo
-	pkgdesc = Go runtime libraries shipped by GCC
-	depends = glibc>=2.27
-	depends = libgcc
-	provides = libgo.so
-
 pkgname = libgomp
 	pkgdesc = OpenMP library shipped by GCC
 	depends = glibc>=2.27
 	provides = libgomp.so
-
-pkgname = libgphobos
-	pkgdesc = D runtime libraries shipped by GCC
-	depends = glibc>=2.27
-	depends = libgcc
-	provides = libgdruntime.so
-	provides = libgphobos.so
 
 pkgname = libhwasan
 
@@ -222,12 +116,6 @@ pkgname = libitm
 	provides = libitm.so
 
 pkgname = liblsan
-
-pkgname = libobjc
-	pkgdesc = Ojective-C runtime libraries shipped by GCC
-	depends = glibc>=2.27
-	depends = libgcc
-	provides = libobjc.so
 
 pkgname = libquadmath
 	pkgdesc = GCC __float128 library

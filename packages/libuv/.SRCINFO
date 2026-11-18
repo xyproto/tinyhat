@@ -13,6 +13,6 @@ pkgbase = libuv
 	depends = glibc
 	depends = libnsl
 	source = git+https://github.com/libuv/libuv.git?signed#tag=v1.53.0
-	sha256sums = SKIP
+	sha256sums = f609d74930700ba7ecdceef9d14c9c67bcc92e14b88ca10b736c5d504b1eca46
 
 pkgname = libuv

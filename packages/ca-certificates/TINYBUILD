@@ -6,7 +6,8 @@ set pkgdesc 'Common CA certificates'
 set url https://src.fedoraproject.org/rpms/ca-certificates
 set arch any
 set license GPL-2.0-or-later
-set makedepends asciidoc p11-kit
+# No update-ca-trust(8) man page (asciidoc)
+set makedepends p11-kit
 set source 40-update-ca-trust.hook \
     README.{etc,etcssl,extr,java,src,usr} \
     update-ca-trust \
@@ -22,10 +23,6 @@ set b2sums 82e3d728267d931dd8613f5e4944995fb1909dffdd61bce17c5c8aa0e8d14201d249c
     08a77b118db14f520a9a3fa8ee257eaa03fded9d7267e29836f1d5eeb65b2c875ec081eddc3e71473dd4ea50a0a43346c5a60a89362b02bab601d0e78331c7f8
 set flags arch
 
-function build
-    a2x -v -f manpage update-ca-trust.8.txt; or return
-end
-
 function package_ca-certificates-utils
     set pkgdesc "$pkgdesc (utilities)"
     set depends bash coreutils findutils p11-kit
@@ -35,7 +32,6 @@ function package_ca-certificates-utils
     set install ca-certificates-utils.install
 
     install -Dt "$pkgdir/usr/bin" update-ca-trust; or return
-    install -Dt "$pkgdir/usr/share/man/man8" -m644 update-ca-trust.8; or return
     install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 *.hook; or return
 
     set -l etcdir "$pkgdir/etc/$pkgbase"

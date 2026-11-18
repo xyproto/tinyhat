@@ -6,8 +6,9 @@ set arch i686 x32
 set url https://git.kernel.org/pub/scm/network/iproute2/iproute2.git
 set license GPL-2.0-or-later
 set depends glibc libcap libcap.so libelf libbpf libbpf.so
-set makedepends git db linux-atm
-set optdepends 'db: userspace arp daemon' 'linux-atm: ATM support' 'python: for routel'
+# No arpd (configure only builds it when Berkeley DB is found) and no ATM (gone from iproute2): db and linux-atm dropped
+set makedepends git
+set optdepends 'python: for routel'
 set provides iproute
 set options '!emptydirs'
 set source "git+https://git.kernel.org/pub/scm/network/iproute2/iproute2.git#tag=v$pkgver" \

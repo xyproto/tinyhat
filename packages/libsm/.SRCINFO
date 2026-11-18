@@ -14,8 +14,6 @@ pkgbase = libsm
 	depends = xorgproto
 	depends = glibc
 	source = https://xorg.freedesktop.org//releases/individual/lib/libSM-1.2.6.tar.xz
-	source = https://xorg.freedesktop.org//releases/individual/lib/libSM-1.2.6.tar.xz.sig
 	sha256sums = be7c0abdb15cbfd29ac62573c1c82e877f9d4047ad15321e7ea97d1e43d835be
-	sha256sums = 3e01af31a5a36aeb22cb33f9565b2c54d36403a0031fbb268749eff5b71772ad
 
 pkgname = libsm

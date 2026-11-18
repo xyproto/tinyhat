@@ -10,7 +10,7 @@ set groups vulkan-devel
 set depends libstdc++ glibc sh
 set makedepends cmake git ninja python spirv-headers
 set source "git+https://github.com/KhronosGroup/SPIRV-Tools#tag=vulkan-sdk-$pkgver"
-set sha256sums SKIP
+set sha256sums a3e5d1f5dbefc057022d1c9c29315e887cb4c491dffb3ee850cbfaa3725ac9c1
 set flags arch
 
 function build

@@ -1,0 +1,31 @@
+set pkgname python-docutils
+set pkgver 0.23
+set pkgrel 1
+set epoch 1
+set pkgdesc 'Set of tools for processing plaintext docs into formats such as HTML, XML, or LaTeX'
+set arch any
+set url http://docutils.sourceforge.net
+set license LicenseRef-Public-Domain BSD-2-Clause
+set depends python
+set makedepends python-build python-flit-core python-installer
+set optdepends 'python-pygments: for syntax highlighting of code directives and roles'
+set source "https://downloads.sourceforge.net/docutils/docutils-$pkgver.tar.gz"
+set b2sums 6db890673947e31995accddd9f7ace1b39beac02d21704d041b047824e3d4beebdc3d86aed95f012b2a6d52d80b38a917702f18504b3a61c263527623d930a78
+set flags arch
+
+function prepare
+    cd docutils-$pkgver; or return
+    # Remove include list https://github.com/pypa/wheel/issues/92
+    sed -i '/^include =/,/]/d' pyproject.toml; or return
+end
+
+function build
+    cd docutils-$pkgver; or return
+    python -m build --wheel --skip-dependency-check --no-isolation; or return
+end
+
+function package
+    cd docutils-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 COPYING.rst licenses/BSD-2-Clause.rst -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

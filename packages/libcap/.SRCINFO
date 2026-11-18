@@ -15,7 +15,7 @@ pkgbase = libcap
 	options = !lto
 	source = git+https://git.kernel.org/pub/scm/libs/libcap/libcap.git?signed#tag=sig-libcap-2.78
 	source = libcap-2.73-cgo-flags.patch
-	sha256sums = SKIP
+	sha256sums = a30c020d0dacd64cea02920ec054b9072f0784486667347ea61764a5b0ae636b
 	sha256sums = c6f7b96ddf8d537a9dc99940b49dee58b541e7da056a7d3731e250f34187749c
 
 pkgname = libcap

@@ -7,7 +7,8 @@ set arch i686 x32
 set license GPL-3.0-or-later
 set url https://tracker.debian.org/pkg/fakeroot
 set depends glibc filesystem sed util-linux sh
-set makedepends git systemd po4a
+# No translated man pages (po4a)
+set makedepends git systemd
 set checkdepends sharutils
 set source "git+https://salsa.debian.org/clint/fakeroot.git#tag=upstream/$pkgver"
 set sha256sums 803efdb4e491b4d9872f1a8c5ec61cdf52409e4592c665b172d3baf2d9f1ab83
@@ -23,10 +24,8 @@ end
 
 function build
     cd $pkgname; or return
-    ./configure --prefix=/usr --libdir=/usr/lib/libfakeroot --disable-static --with-ipc=sysv; or return
+    ./configure --prefix=/usr --libdir=/usr/lib/libfakeroot --disable-static --with-ipc=sysv PO4A=:; or return
     make; or return
-    cd doc; or return
-    po4a -k 0 --rm-backups --variable 'srcdir=../doc/' po4a/po4a.cfg; or return
 end
 
 function check

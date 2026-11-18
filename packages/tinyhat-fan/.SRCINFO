@@ -1,0 +1,25 @@
+pkgbase = tinyhat-fan
+	pkgdesc = Tiny Hat fan and CPU power modes: full, medium and chill
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	depends = glibc
+	source = tinyhat-fand.c
+	source = tinyhat-fan
+	source = tinyhat-fan.service
+	source = tinyhat-fan.preset
+	source = fan-full.desktop
+	source = fan-medium.desktop
+	source = fan-chill.desktop
+	sha256sums = d48522dafacace54caa6c4fd8e71f6feb6d7238b1c49ad129676d0c0e7f986fa
+	sha256sums = 3ddfb2d1f41370f20f916634a8221f83e273d33d8fee7941b452c17d96c31f31
+	sha256sums = 44f18d0efa8e0ae9b18b0a44e5c5e5a2f97e3691c158875c1bea86afc1451fea
+	sha256sums = 59855610f59d60ca93e15272fb07d39247ad8d9edf91a7d62060682543379463
+	sha256sums = 680d2acb6dba4eced112cee1176c2a94a5c54362457d156681fe8ad2497fdd35
+	sha256sums = 0d7063c254d5e5b326c2f5f4a2f182df26f0d8644146690b70b55e5801502d57
+	sha256sums = 4c614710b04b89cab74785ce7a3d0040a2431b44fada79dd5748c8c3cd2cbac3
+
+pkgname = tinyhat-fan

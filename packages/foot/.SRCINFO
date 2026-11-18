@@ -18,7 +18,6 @@ pkgbase = foot
 	makedepends = pixman
 	makedepends = python
 	makedepends = scdoc
-	makedepends = sway
 	makedepends = tllist
 	makedepends = wayland
 	makedepends = wayland-protocols

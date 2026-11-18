@@ -10,13 +10,13 @@ set provides libnghttp2.so
 set makedepends git
 set conflicts 'nghttp2<1.20.0-2'
 set source "git+https://github.com/nghttp2/nghttp2.git?signed#tag=v$pkgver" \
-    git+https://github.com/ngtcp2/munit.git \
-    git+https://github.com/mruby/mruby.git \
-    git+https://github.com/tatsuhiro-t/neverbleed.git
+    git+https://github.com/ngtcp2/munit.git#commit=114805e1bab0222574b5eb3a92461ad5216647ed \
+    git+https://github.com/mruby/mruby.git#commit=831da26b9021de0369d17b71b5667e2941a1a32d \
+    git+https://github.com/tatsuhiro-t/neverbleed.git#commit=68f65c7b05f68e6fd93631668d4f469875946656
 set sha512sums 48f3bf6748abf46e9b1a2cfcfc4053ef8a7d532898da854d508c520c7adcca3a8690f81d2683d14398cf937a3f7c9276000c569ccc1183bbf20d449e64f5c315 \
-    SKIP \
-    SKIP \
-    SKIP
+    258d0461c3fbd80b4f4675c2a4af7cd621a6a0d152ee30eea4a9f1123f7e7590b65ba6ca2e00252db6fc818446132464ca8f582362f133e48987769f7aa717f5 \
+    a1f098806f948304cb5491902960ef72201962c572b7fa1cb0eb93b8ee834032d47b133eae570a6da6746b79dbf4fd773a9cc92750611cfc7082c6f847c8a27e \
+    ab3e57d6c9712a2e95842b2a247c98a4eaeed57bc6535a1c08af14c3da0d838cbf5e84101532c08d86c35c569dc9f04beee137dc93969d3162d76cded7ff4dda
 set flags arch
 
 function prepare

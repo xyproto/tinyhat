@@ -6,7 +6,7 @@ set arch any
 set url https://mesonbuild.com/
 set license Apache-2.0
 set depends python ninja
-set makedepends git
+set makedepends git python-build python-installer python-setuptools python-wheel
 set source "git+https://github.com/mesonbuild/meson.git#tag=$pkgver"
 set b2sums 4995b1a06b106c0cda8d3cbd2d09d4069422875abbeb0e7717579d477ea36714a08c92fab938114fa53d3e348f79ecf15a87a8aff0d5f4b0e0c6f07155c68701
 set flags arch

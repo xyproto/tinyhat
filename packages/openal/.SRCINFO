@@ -12,17 +12,15 @@ pkgbase = openal
 	makedepends = git
 	makedepends = jack
 	makedepends = libmysofa
-	makedepends = libpulse
 	makedepends = libsndfile
 	makedepends = ninja
 	makedepends = pipewire
-	makedepends = portaudio
 	makedepends = sdl3
 	depends = glibc
 	depends = libgcc
 	depends = libstdc++
 	source = git+https://github.com/kcat/openal-soft#tag=1.25.2
-	sha256sums = SKIP
+	sha256sums = 83aec97873e66a9b7b4d4dd6cd1230509bad2c981207e767b4fac2d1c5e4aae4
 
 pkgname = openal
 	optdepends = qt6-base: alsoft-config GUI Configurator

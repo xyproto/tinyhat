@@ -1,0 +1,23 @@
+set pkgname python-wheel
+set pkgver 0.48.0
+set pkgrel 1
+set pkgdesc 'A built-package format for Python'
+set arch any
+set url https://pypi.python.org/pypi/wheel
+set license MIT
+set depends python python-packaging
+set makedepends python-build python-flit-core python-installer
+set source "$pkgname-$pkgver.tar.gz::https://github.com/pypa/wheel/archive/$pkgver.tar.gz"
+set sha512sums 2eb1b9d8f24b9f7221d24a49b54352f001df778172828d7d58626fd5b5463109cef7fbbdc48548c128b8cdf99a4b76a833f4092d758239375ede7285dfa7c701
+set flags arch
+
+function build
+    cd wheel-$pkgver; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd wheel-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE.txt -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

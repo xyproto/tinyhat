@@ -1,0 +1,13 @@
+pkgbase = m4
+	pkgdesc = The GNU macro processor
+	pkgver = 1.4.21
+	pkgrel = 2
+	url = https://www.gnu.org/software/m4
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	depends = glibc
+	source = https://ftp.gnu.org/gnu/m4/m4-1.4.21.tar.xz
+	sha256sums = f25c6ab51548a73a75558742fb031e0625d6485fe5f9155949d6486a2408ab66
+
+pkgname = m4

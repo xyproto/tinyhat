@@ -13,10 +13,8 @@ switch $CARCH
         set -g makedepends ruby-ronn-ng
 end
 set provides libidn2.so
-set source "https://ftp.gnu.org/gnu/libidn/libidn2-$pkgver.tar.gz" \
-    "https://ftp.gnu.org/gnu/libidn/libidn2-$pkgver.tar.gz.sig"
-set sha256sums f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a \
-    268ad6787ed902fba2154bcd64347269af6c4298bdeed8d7db59df7b65fd31f2
+set source "https://ftp.gnu.org/gnu/libidn/libidn2-$pkgver.tar.gz"
+set sha256sums f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a
 set flags arch
 
 function prepare

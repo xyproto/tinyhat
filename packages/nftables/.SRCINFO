@@ -7,7 +7,6 @@ pkgbase = nftables
 	arch = i686
 	arch = x32
 	license = GPL-2.0-only
-	makedepends = asciidoc
 	makedepends = python
 	makedepends = python-setuptools
 	makedepends = python-build

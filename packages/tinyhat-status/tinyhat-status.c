@@ -309,6 +309,19 @@ static void status(char *line, size_t size, const char *rundir, bool cachedvolum
 		}
 		globfree(&g);
 	}
+	if (running("tinyhat-fand")) {
+		auto f = fopen("/var/lib/tinyhat-fan/mode", "r");
+		*text = '\0';
+		if (f) {
+			if (fgets(text, sizeof text, f))
+				text[strcspn(text, "\n")] = '\0';
+			fclose(f);
+		}
+		if (!strcmp(text, "full") || !strcmp(text, "medium") || !strcmp(text, "chill")) {
+			snprintf(item, sizeof item, "F %s", text);
+			add(line, size, item);
+		}
+	}
 	if (hot())
 		add(line, size, "H");
 	volume(text, sizeof text, cachedvolume);

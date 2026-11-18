@@ -13,7 +13,9 @@ set url https://www.cyrusimap.org/sasl/
 set -g _url https://github.com/cyrusimap/cyrus-sasl
 set license BSD-3-Clause-Attribution
 set depends glibc
-set makedepends gdbm git krb5 libldap mariadb-libs openssl postgresql-libs sqlite
+# Without the plugins that the package leaves out anyway (they are cyrus-sasl's): gssapi and gs2 (krb5), ldapdb
+# (libldap, which needs libsasl) and sql (mariadb, postgresql, sqlite)
+set makedepends gdbm git openssl
 set provides libsasl2.so
 set source "$_name::git+$_url.git?signed#tag=$_name-$pkgver"
 set sha512sums a055876910be34d59c6e1c8891244975d213490ba6aa0924e5f018094f3ef01871f627b076d6a6ad9547f77ad528f0ac20b3c0efd391cac97bb9e024de037271
@@ -52,13 +54,13 @@ function build
         --enable-checkapop \
         --enable-cram \
         --enable-digest \
-        --enable-gssapi \
-        --enable-ldapdb \
+        --disable-gssapi \
+        --disable-ldapdb \
         --enable-login \
         --enable-ntlm \
         --enable-plain \
         --enable-shared \
-        --enable-sql \
+        --disable-sql \
         --infodir=/usr/share/info \
         --mandir=/usr/share/man \
         --prefix=/usr \
@@ -67,12 +69,8 @@ function build
         --with-dblib=gdbm \
         --with-devrandom=/dev/urandom \
         --with-configdir=/etc/sasl2:/etc/sasl:/usr/lib/sasl2 \
-        --with-ldap \
-        --with-mysql=/usr \
         --with-pam \
-        --with-pgsql=/usr/lib \
-        --with-saslauthd=/var/run/saslauthd \
-        --with-sqlite3=/usr/lib
+        --with-saslauthd=/var/run/saslauthd
     cd $_name; or return
     ./configure $configure_options; or return
     # prevent excessive overlinking by libtool

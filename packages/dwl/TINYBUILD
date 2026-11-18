@@ -1,20 +1,62 @@
 set pkgname dwl
 set pkgver 0.9
-set pkgrel 12
+set pkgrel 13
 set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
 set arch i686 x32
 set url https://codeberg.org/dwl/dwl
 set license GPL-3.0-only MIT CC0-1.0
-set depends wlroots0.20 fcft libpng libinput libxcb libxkbcommon pixman wayland xcb-util-wm
+# Built without XWayland (config.mk leaves XWAYLAND and XLIBS empty), so libxcb and xcb-util-wm are dropped
+set depends wlroots0.20 fcft libpng libinput libxkbcommon pixman wayland
 set makedepends wayland-protocols tllist tomlc17
-set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems
+set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems fan
 set source "dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz" \
     $_patches.patch \
     config.h
-# The tarball has a checksum, the local patches and config.h are SKIP
+# After changing a local patch or config.h, run: makep -C packages/dwl --updsums
 set sha256sums 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d \
-    (string replace -r '.*' SKIP -- $_patches) \
-    SKIP
+    b302f62ccc46c6ef2dd9499a1634a6c87148d11db0a6ede71b589fd3339f1ce2 \
+    005e46245522b8478d88f61ff7e48a60c69e006c1bb7e56ceb1ada07dad55589 \
+    a4bc5e459ea0a83eb1a455c3824a473b576ebbbeef83a9969f3b420e4a78d7ae \
+    d524ce52a74c79b006cab6480e2a8b68ad49aca436e28104140e3942236d8738 \
+    78be429193379bd65f874fa6db4b8138d5338afc5e94867b45ed3a2c29fd8fe2 \
+    4f55d0083c38a2605802ed4b2ccaf1a153ba8b81af1f0d0a1b2bdbe3c5d09ae2 \
+    70edd68bd39629155de8b2a163c14a28f2d7735b0b461068644bfce00094d5d1 \
+    40e379666c7905925b6ebf6bb8b13fcd8894eecda56c9fc6f0e5d52dfd6f06a3 \
+    faf8202044a3a36d22fbb7db9e08ffd0888b49cac2476234df3d1f53afe3d44c \
+    dca2148264d5a792df8e1761b29e1f20532e5b527499b16f5a441df6057e71e5 \
+    49dd6f330d6b2f822ac28972df61bae774f1164e58ed57002450b298410f99e9 \
+    4c6ad43867df24267c0ea37672ec9c0ccb564fc942a86b2578d5bb306f9bf558 \
+    f063ca8f44d0da9f8afacbfd3c766bc9b7296c02f52e26e897072c81d5bcd662 \
+    51c477134c38a55425b98248b1b2c99797b5783feb5fc3778752cb59ed05ee42 \
+    8f329df09940870d321086ce98e1f510ae46f344e32491e905db917869275ae5 \
+    2d1be063b0008f3c9be61570cad55d8375e998e9d1d16f5f3a10d55c0caab5de \
+    69279c8a61ac8d0e486664cc727bc74b6d99c85229e0e55d8e3cdbed6b0ae945 \
+    8afda8c6c10e41eec9e258c9656b1a6d8dfaeb7b46ed7b49ed80929a4d0b5b90 \
+    2f77f9019914b384c655b03a1b466865242c9be4e9a6f2c2161698b676293fdf \
+    d3e6e9d99041dfeae32d21320dbef6a866c6b297f43abae2e06dae2b6dabd6e9 \
+    834a2435b10e2db11b3df1de6646cc857d14a0189ab5911ef0752735a6a4d61f \
+    e30042e4794c6f2ffe40b8e7f3710844659f18c7e8268751661d5baa90bdd16d \
+    49854ac02900b34f196a2a7f6eb074d09d5c28bfc37814a1e9d0411d1ded5c5b \
+    a19f1168e354113c197f9156de38cc464179c1b7c3ff72584c9748741ac76d58 \
+    82b459ee464268cc1dac2c249421bcc60ab4f877d48729ab4a9aaced0fbb262c \
+    f78d17ec8c45325effeeda0cbb7d4de38e70988349ed4c658da345ba5b909c2d \
+    862b4b9e4009bb093e3c5921d88ca7dee994370aaa21c5d1f9b2a24de77860ca \
+    ddac11bd61f76478226f147f8d8437db595170cf0476ee102fcf0f99857811f5 \
+    c9548cbfec1d07947a7c22f1de63d3ebaeadebac6ee29bbdf09c31eabd834183 \
+    5fa3ede60e40eed7102a64602e2ccddb2602904148f24d7540d079c6f8121a03 \
+    3a26f157bdf81e9bd87ad3c0b2136d8d917b86db8014f30910afa559db32c026 \
+    8d512072b1ddc0e3bc17d524b0da2ed531d11c60c6a0df82962f20d9d89aa44c \
+    cf6c12c853d2403ba83795f8aa88bb57201092298b7418c7214c6a9be6874f20 \
+    5d1e60308036bfd33f015f64b8b6fecf3f6dad42f70a3c4421e19dea45f25af3 \
+    caaa6a1adb2c6aca491de023ab50b7f19b60b9c8c8d0e396047c776a8076cd3d \
+    7de8bb98de941148e844a40c3c975f85bb947ed8fdda3b4f32840bb55793a831 \
+    8b208e40a675107723b1c84739664bc1f7394521cd2d280bd87f3b4b00f9c3e4 \
+    cdcc723ef3543129b0e9850240399be234740847b970d4674871ef566a82e7e7 \
+    821d85240be35458fc50566110fb79f3fe3969744c44f2a7a0586365a861eff1 \
+    ab5925150712d17ab03758ab5cf304b2aea1f2b24230aeb4016fdadb4b084427 \
+    5fb162612fe6f1c8ad997458cef0583f8d21ba944af9c5901e936f17311fd306 \
+    42cd3a2ea96a35da633c18354f0650a1e2344e2921d3abfcd33919d12db15217 \
+    0c9cbf2b121c8ca0feab7efa9cc1a52a5e72e66a442eeca9f87e3eec9a40860e
 
 function prepare
     cd dwl; or return
@@ -26,7 +68,7 @@ end
 
 function build
     cd dwl; or return
-    make PREFIX=/usr CFLAGS="$CFLAGS -O3 -DWLR_USE_UNSTABLE -std=c11" XWAYLAND=-DXWAYLAND XLIBS="xcb xcb-icccm"; or return
+    make PREFIX=/usr CFLAGS="$CFLAGS -O3 -DWLR_USE_UNSTABLE -std=c11"; or return
 end
 
 function package

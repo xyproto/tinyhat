@@ -7,7 +7,6 @@ pkgbase = chafa
 	arch = x32
 	license = LGPL-3.0-or-later
 	makedepends = git
-	makedepends = gtk-doc
 	depends = libavif
 	depends = libheif
 	depends = libjxl

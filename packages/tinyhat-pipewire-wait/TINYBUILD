@@ -7,7 +7,8 @@ set url https://github.com/xyproto/tinyhat
 set license BSD-3-Clause
 set depends pipewire
 set source tinyhat-wait.c tinyhat-wait.conf
-set sha256sums SKIP SKIP
+set sha256sums 66a1b079e091315850132fcfd827c57886cd24f635ed8c5961756e3b184c6c0d \
+    7ec09c896fc58dd29a9ef95b394271270a340917368801b77ae89930d986b28d
 
 function build
     cc -std=gnu11 -shared -fPIC $CFLAGS -o libpipewire-module-tinyhat-wait.so tinyhat-wait.c $LDFLAGS (pkg-config --cflags --libs libpipewire-0.3 | string split -n ' '); or return

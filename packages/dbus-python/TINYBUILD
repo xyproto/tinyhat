@@ -1,5 +1,5 @@
 set pkgbase dbus-python
-set pkgname python-dbus python-dbus-docs
+set pkgname python-dbus
 set pkgver 1.5.0
 set pkgrel 1
 set pkgdesc 'Python bindings for D-Bus'
@@ -7,19 +7,16 @@ set arch i686 x32
 set url https://www.freedesktop.org/wiki/Software/dbus/
 set license MIT
 set depends dbus glib2 glibc python
-set makedepends git meson python-gobject python-pyproject-metadata python-sphinx python-sphinx_rtd_theme \
-    python-sphinxcontrib-jquery python-tomli
+# No documentation package (python-sphinx, python-sphinx_rtd_theme)
+set makedepends git meson python-gobject python-pyproject-metadata python-tomli
 set optdepends 'python-gobject: D-Bus services via PyGI'
 set source "git+https://gitlab.freedesktop.org/dbus/$pkgbase.git?signed#tag=$pkgbase-$pkgver"
 set b2sums e7afea40984b9fe56d751567c71d759353551803a8e08def27f80e061fde613e61cd697886debde0cfa295083a8a7640376fe9512879e3d9e3fa0c4fb01368b2
 set flags arch
 
 function build
-    # sphinx/sphinx_rtd_theme modules aren't importable in the arch32 build chroot (python 3.14 + sphinx staging
-    # incompatibility). Docs are disabled to skip the sphinx requirement. The python-dbus-docs package is empty,
-    # but the main python-dbus library builds fine.
     arch-meson $pkgbase build \
-        -D doc=false; or return
+        -D doc=disabled; or return
     meson compile -C build; or return
     # Generate egg-info
     python "$pkgbase/tools/generate-pkginfo.py" $pkgver PKG-INFO; or return
@@ -37,20 +34,5 @@ function package_python-dbus
     # Install egg-info and license
     set -l site (python -c 'import site; print(site.getsitepackages()[0])'); or return
     install -Dm644 -t "$pkgdir$site/dbus_python.egg-info/" PKG-INFO; or return
-    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" "$pkgbase/COPYING"; or return
-    # Split documentation (with docs disabled, there is no usr/share/doc to split off)
-    mkdir -p doc/usr/share; or return
-    mkdir -p "$pkgdir/usr/share/doc"; or return
-    mv "$pkgdir"/usr/share/doc doc/usr/share/doc; or return
-end
-
-function package_python-dbus-docs
-    set pkgdesc 'Developer documentation for dbus-python'
-    set depends
-    set optdepends
-    set conflicts dbus-python-docs
-    set replaces dbus-python-docs
-    mv doc/* "$pkgdir"; or return
-    rm -rf "$pkgdir/usr/share/doc/$pkgbase/html/.doctrees"; or return
     install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname/" "$pkgbase/COPYING"; or return
 end

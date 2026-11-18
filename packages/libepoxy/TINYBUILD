@@ -1,5 +1,5 @@
 set pkgbase libepoxy
-set pkgname libepoxy libepoxy-docs
+set pkgname libepoxy
 set pkgver 1.5.10
 set pkgrel 3
 set pkgdesc 'Library handling OpenGL function pointer management'
@@ -7,10 +7,11 @@ set arch i686 x32
 set url https://github.com/anholt/libepoxy
 set license MIT
 set depends glibc libglvnd
-set makedepends git meson mesa-libgl systemd doxygen graphviz
+# No documentation (doxygen, graphviz)
+set makedepends git meson mesa-libgl systemd
 set checkdepends xorg-server-xvfb
 set source 'git+https://github.com/anholt/libepoxy#commit=c84bc9459357a40e46e2fec0408d04fbdde2c973'
-set sha256sums SKIP
+set sha256sums bd602cf72497cc02b8ce5726715b10d957642aa0e22840f2c7541149fe3f07f8
 set flags arch
 set -g _commit c84bc9459357a40e46e2fec0408d04fbdde2c973
 
@@ -19,21 +20,12 @@ function prepare
 end
 
 function build
-    arch-meson libepoxy build -D docs=true -D x11=false -D glx=no; or return
+    arch-meson libepoxy build -D docs=false -D x11=false -D glx=no; or return
     meson compile -C build; or return
 end
 
 function package_libepoxy
     set provides libepoxy.so
     meson install -C build --destdir "$pkgdir"; or return
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/doc; or return
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libepoxy/COPYING; or return
-end
-
-function package_libepoxy-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-    mv doc/* "$pkgdir"; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libepoxy/COPYING; or return
 end

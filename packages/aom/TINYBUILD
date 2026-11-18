@@ -1,5 +1,5 @@
 set pkgbase aom
-set pkgname aom aom-docs
+set pkgname aom
 set pkgver 3.15.2
 set pkgrel 1
 set pkgdesc 'Alliance for Open Media video codec'
@@ -7,9 +7,10 @@ set url https://aomedia.org/
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc libgcc libstdc++
-set makedepends cmake doxygen ninja yasm
-set source "https://storage.googleapis.com/aom-releases/libaom-$pkgver.tar.gz"{,.asc}
-set b2sums 255a195b4847c7b3345753c3bca54dc6028ec17de4b2df8efb2db1b41e66bd52f224e81bd7151117c0c621522b8d422ca47b7e96dbeab9a4aff4ec5c453cbfd9 SKIP
+# No documentation package (doxygen)
+set makedepends cmake ninja yasm
+set source "https://storage.googleapis.com/aom-releases/libaom-$pkgver.tar.gz"
+set b2sums 255a195b4847c7b3345753c3bca54dc6028ec17de4b2df8efb2db1b41e66bd52f224e81bd7151117c0c621522b8d422ca47b7e96dbeab9a4aff4ec5c453cbfd9
 set flags arch
 
 function prepare
@@ -25,6 +26,7 @@ function build
         -D CMAKE_BUILD_TYPE=Release \
         -D CMAKE_INSTALL_PREFIX=/usr \
         -D BUILD_SHARED_LIBS=1 \
+        -D ENABLE_DOCS=0 \
         -D ENABLE_TESTS=0
 
     # upstream wants this off
@@ -39,16 +41,6 @@ function package_aom
     set provides libaom.so
 
     DESTDIR="$pkgdir" cmake --install build; or return
-
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libaom-$pkgver/{LICENSE,PATENTS}; or return
-end
-
-function package_aom-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-
-    mkdir -p "$pkgdir/usr/share/doc"; or return
-    cp -r build/docs/html "$pkgdir/usr/share/doc/$pkgbase"; or return
 
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libaom-$pkgver/{LICENSE,PATENTS}; or return
 end

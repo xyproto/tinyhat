@@ -10,7 +10,7 @@ set makedepends git meson python
 set optdepends 'python: Python bindings'
 set provides liblc3.so
 set source "git+https://github.com/google/liblc3#tag=v$pkgver"
-set sha256sums SKIP
+set sha256sums bcefc8f630ae60c0a078ef06ce21f6858de2acc48972fa2ac95823e839062fd3
 set flags arch
 
 function prepare

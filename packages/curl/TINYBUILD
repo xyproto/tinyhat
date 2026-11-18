@@ -7,7 +7,7 @@ set arch i686 x32
 set url https://curl.se/
 set license curl
 # for building: git patchelf, the rest are the actual package dependencies
-set makedepends git patchelf ca-certificates brotli gnutls krb5 libidn2 libnghttp2 libnghttp3 libngtcp2 libpsl \
+set makedepends git patchelf brotli gnutls krb5 libidn2 libnghttp2 libnghttp3 libngtcp2 libpsl \
     libssh2 nettle zlib zstd
 # No check(): valgrind seems broken for 32-bit currently
 set source "git+https://github.com/curl/curl.git?signed#tag=curl-"(string replace -a . _ -- $pkgver)

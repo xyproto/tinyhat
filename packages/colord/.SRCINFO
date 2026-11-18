@@ -8,9 +8,7 @@ pkgbase = colord
 	license = GPL-2.0-or-later
 	makedepends = argyllcms
 	makedepends = bash-completion
-	makedepends = docbook-xsl
 	makedepends = git
-	makedepends = gtk-doc
 	makedepends = meson
 	makedepends = sane
 	makedepends = systemd
@@ -29,7 +27,7 @@ pkgbase = colord
 	options = !emptydirs
 	source = git+https://github.com/hughsie/colord?signed#tag=1.4.8
 	source = 0001-Lock-user-account.patch
-	sha256sums = SKIP
+	sha256sums = 238ff26f4315ecf13ff1c03355e6cb8b1f75be8c158f1862f17c21a3699d6dfa
 	sha256sums = 2c036b1ad9831b8be9077454ef3ef800ebaf67402e4d3d61c31d7b9f7ff3e9cb
 
 pkgname = colord
@@ -70,7 +68,3 @@ pkgname = colord-sane
 	depends = libgcc
 	depends = libgudev
 	depends = sane
-
-pkgname = colord-docs
-	pkgdesc = System daemon for managing color devices (API documentation)
-	depends = 

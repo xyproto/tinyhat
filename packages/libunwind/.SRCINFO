@@ -5,7 +5,6 @@ pkgbase = libunwind
 	url = https://www.nongnu.org/libunwind/
 	arch = i686
 	license = MIT
-	makedepends = texlive-binextra
 	depends = glibc
 	depends = xz
 	depends = zlib
@@ -15,10 +14,8 @@ pkgbase = libunwind
 	provides = libunwind-x86_64.so
 	provides = libunwind.so
 	source = https://github.com/libunwind/libunwind/releases/download/v1.8.3/libunwind-1.8.3.tar.gz
-	source = https://github.com/libunwind/libunwind/releases/download/v1.8.3/libunwind-1.8.3.tar.gz.asc
-	source = https://github.com/libunwind/libunwind/commit/b67d508a.patch
+	source = b67d508a.patch::https://github.com/libunwind/libunwind/commit/b67d508a.patch?full_index=1
 	b2sums = 13ac888e72c080b9e2588024578740971f721497864c5f2eb930227cbc5bb040551db6280048b0b6f2dde193d5d1719f546088618ebd2e19f96524c2b767fda1
-	b2sums = SKIP
-	b2sums = 756ced55c34a33d55cc11f61c32230de820aede55d562aa94143c2f5adb7f408ed2f2d5c48642b035ec4d3ebc59175e6f4b889f712db2556b80a8002d91aa036
+	b2sums = 3cfbdbcd477db42d3dcdb2a91f9c7144514bd5f2acbba3fc7744e35980e8109e9d8c2fbc68f0b3dd0404a5a261ac48e2924bc9ee061785d4ed6c9f038a699080
 
 pkgname = libunwind

@@ -6,9 +6,8 @@ set arch i686 x32
 set url http://www.multiprecision.org/
 set license LGPL-3.0-only
 set depends glibc gmp mpfr
-set source "https://ftp.gnu.org/gnu/mpc/mpc-$(string replace -a _ - -- $pkgver).tar.xz"{,.sig}
-set sha256sums 91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931 \
-    SKIP
+set source "https://ftp.gnu.org/gnu/mpc/mpc-$(string replace -a _ - -- $pkgver).tar.xz"
+set sha256sums 91204cd32f164bd3b7c992d4a6a8ce6519511aadab30f78b6982d0bf8d73e931
 set flags arch
 
 function build

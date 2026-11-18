@@ -9,6 +9,6 @@ pkgbase = tty-solitaire
 	depends = git
 	depends = ncurses
 	source = git+https://github.com/mpereira/tty-solitaire.git#tag=v1.4.1
-	sha256sums = SKIP
+	sha256sums = e3cc5f8b9930c5f02b4eaa4cfc891cc92e607e600e01ea3db89c92eb3575bd53
 
 pkgname = tty-solitaire

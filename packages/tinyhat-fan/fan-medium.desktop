@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Fan: medium
+Icon=applications-system
+Comment=Turbo on, with the CPU held at about 82 °C
+Exec=tinyhat-fan medium
+Terminal=false
+Categories=System;

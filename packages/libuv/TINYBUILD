@@ -8,12 +8,12 @@ set license MIT BSD-2-Clause ISC CC-BY-4.0
 set depends glibc libnsl
 set makedepends git
 set source "git+https://github.com/libuv/libuv.git?signed#tag=v$pkgver"
-set sha256sums SKIP
+set sha256sums f609d74930700ba7ecdceef9d14c9c67bcc92e14b88ca10b736c5d504b1eca46
 set flags arch
 
 function prepare
     cd $pkgname; or return
-    sed -e '/udp_multicast_join/d' -e '/tcp_connect6_link_local/d' -i test/test-list.h; or return
+    sed -e /udp_multicast_join/d -e /tcp_connect6_link_local/d -i test/test-list.h; or return
 end
 
 function build

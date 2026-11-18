@@ -6,6 +6,8 @@ set arch i686 x32
 set url https://gitlab.freedesktop.org/glvnd/libglvnd
 set license custom:BSD-like
 set makedepends python meson
+# mesa (the OpenGL vendor libraries that libglvnd loads) is only needed at run time, and mesa is built with libglvnd
+set bootstrap_without mesa
 set provides libgl libegl libgles libEGL.so libGL.so libGLESv2.so libGLdispatch.so libOpenGL.so
 set source "https://gitlab.freedesktop.org/glvnd/libglvnd/-/archive/v$pkgver/libglvnd-v$pkgver.tar.gz" \
     license-from-upstream
@@ -19,9 +21,9 @@ function build
 end
 
 function package
-    set depends 'mesa' 'opengl-driver'
+    set depends mesa opengl-driver
     meson install -C build --destdir "$pkgdir"; or return
-    printf 'INPUT(-lOpenGL)\n' > "$pkgdir/usr/lib/libGL.so"; or return
-    sed 's/^Name: .*/Name: gl/' "$pkgdir/usr/lib/pkgconfig/opengl.pc" > "$pkgdir/usr/lib/pkgconfig/gl.pc"; or return
+    printf 'INPUT(-lOpenGL)\n' >"$pkgdir/usr/lib/libGL.so"; or return
+    sed 's/^Name: .*/Name: gl/' "$pkgdir/usr/lib/pkgconfig/opengl.pc" >"$pkgdir/usr/lib/pkgconfig/gl.pc"; or return
     install -Dm644 license-from-upstream "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
 end

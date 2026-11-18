@@ -26,7 +26,7 @@ pkgbase = scummvm
 	source = sdl3-palette.patch
 	source = sdl3-net-and-prefer-sdl3.patch
 	sha256sums = cd660b34104da7f85ed0a11b7c6c2320c629bb87ee297935711ebc1e09731f12
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 638110b4f4eef5c2608ebd4102a2311abd55f08d8f628ac9eb8bc3dbc45a0a3c
+	sha256sums = 876aae152bcb1c6c1234d001fd5ce6a9d5ed25c7a8abad89c528f78026fdb94d
 
 pkgname = scummvm

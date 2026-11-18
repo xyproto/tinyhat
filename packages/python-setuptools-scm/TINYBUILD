@@ -1,0 +1,24 @@
+set pkgname python-setuptools-scm
+set pkgver 10.3.4
+set pkgrel 1
+set pkgdesc 'Handles managing your python package versions in scm metadata'
+set arch any
+set url https://github.com/pypa/setuptools-scm
+set license MIT
+set depends python python-packaging python-setuptools python-vcs-versioning
+set makedepends git python-build python-installer python-wheel
+set source "python-setuptools-scm::git+$url.git#tag=setuptools-scm-v$pkgver"
+set sha512sums 19a7d1249a5f62520b0865540644a8c245de5414523dba1c1bc50ed30b83389e0ff3b51571b93f22daa24c41b9e4d9925bb8db54e1cfd2bba5b5f1f8a0a4a45c
+set b2sums 2559ba30af088731aa1170d20e6884e373fc2aa931518fe5bd50d1d0bac75a47ce9cf6e6cf50599544173262a7aa8c274d78345facc0968eab79eafe91c6350c
+set flags arch
+
+function build
+    cd python-setuptools-scm/setuptools-scm; or return
+    python -m build --wheel --skip-dependency-check --no-isolation; or return
+end
+
+function package
+    cd python-setuptools-scm/setuptools-scm; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

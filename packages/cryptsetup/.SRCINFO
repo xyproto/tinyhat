@@ -25,8 +25,6 @@ pkgbase = cryptsetup
 	conflicts = mkinitcpio<38-1
 	options = !emptydirs
 	source = https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-2.8.8.tar.xz
-	source = https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-2.8.8.tar.sign
 	sha256sums = 3acfa685f2dd7fcc832e0b77bc7093aa7da554a51ce8dafbb4138eaa854eee35
-	sha256sums = 5891c713fe2bb9c74499d99673457354bb673a0cb1b072e36d52a229ac937c6b
 
 pkgname = cryptsetup

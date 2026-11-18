@@ -8,6 +8,6 @@ pkgbase = tinyhat-midibench
 	license = BSD-3-Clause
 	depends = fluidsynth
 	source = tinyhat-midibench.c
-	sha256sums = SKIP
+	sha256sums = 967fc2939002dfd8e14d968d316f4944fe65bc70989d740531a0a9762f9f3cfd
 
 pkgname = tinyhat-midibench

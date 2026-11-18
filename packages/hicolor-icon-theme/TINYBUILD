@@ -1,0 +1,20 @@
+set pkgname hicolor-icon-theme
+set pkgver 0.18
+set pkgrel 1
+set pkgdesc 'Freedesktop.org Hicolor icon theme'
+set arch any
+set url https://gitlab.freedesktop.org/xdg/default-icon-theme
+set license GPL-2.0-or-later
+set makedepends meson
+set source "https://icon-theme.freedesktop.org/releases/$pkgname-$pkgver.tar.xz"
+set sha256sums db0e50a80aa3bf64bb45cbca5cf9f75efd9348cf2ac690b907435238c3cf81d7
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+end

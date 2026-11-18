@@ -6,10 +6,11 @@ set arch i686 x32
 set url https://mikmod.sourceforge.net
 set license LGPL-2.0-or-later
 set depends glibc sh
-set makedepends alsa-lib cmake git libpulse ninja
+# ALSA output (PipeWire takes it through pipewire-alsa): no PulseAudio driver
+set makedepends alsa-lib cmake git ninja
 set provides libmikmod.so
 set source "git+https://git.code.sf.net/p/mikmod/mikmod#tag=libmikmod-$pkgver"
-set sha256sums SKIP
+set sha256sums 3014d28e0514042733f6a65da2a16118f501ae9ead2d54c2061e3270f9685373
 set flags arch
 
 function prepare
@@ -17,7 +18,7 @@ function prepare
 end
 
 function build
-    set -l cmake_options -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D ENABLE_DL=1
+    set -l cmake_options -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D ENABLE_DL=1 -D ENABLE_PULSE=0
     cmake -S mikmod/libmikmod -B build -G Ninja $cmake_options; or return
     cmake --build build; or return
 end

@@ -7,23 +7,19 @@ pkgbase = cmake
 	arch = x32
 	license = BSD-3-Clause
 	makedepends = git
-	makedepends = nlohmann-json
-	depends = curl
 	depends = expat
 	depends = glibc
-	depends = hicolor-icon-theme
-	depends = jsoncpp
 	depends = libarchive
 	depends = libgcc
 	depends = libstdc++
 	depends = libuv
 	depends = ncurses
-	depends = rhash
+	depends = openssl
 	depends = zlib
 	optdepends = make: for unix Makefile generator
 	optdepends = ninja: for ninja generator
 	optdepends = qt6-base: cmake-gui
 	source = git+https://gitlab.kitware.com/cmake/cmake.git#tag=v4.4.5?signed
-	sha256sums = SKIP
+	sha256sums = d1333636a747c66babda24b16debfbb79b3b5b4e3d9e700cfcdfea0ede3bd3a8
 
 pkgname = cmake

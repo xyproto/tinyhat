@@ -14,8 +14,8 @@ pkgbase = octo
 	source = buzzer.patch
 	source = sharp.patch
 	sha256sums = e160d02a05071bbd5a0d9b180ca9e5680be817f458a95e3af055749163f068ed
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 946ded8b83ea8d225b527263ce6f50d13d41cd24c683592835e9c1b91f791c43
+	sha256sums = 8ee701aa0e0b688a7ca2196a8472afcfc98ffe1bc69efed770e5b97430bf47f6
+	sha256sums = 4e80cdedc1113bd1a38f4b660f5d08cf0a6ff2fe5285c15dc988eee662c05a62
 
 pkgname = octo

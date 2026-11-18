@@ -1,0 +1,12 @@
+pkgbase = xcb-proto
+	pkgdesc = XML-XCB protocol descriptions
+	pkgver = 1.17.0
+	pkgrel = 4
+	url = https://xcb.freedesktop.org/
+	arch = any
+	license = X11-distribute-modifications-variant
+	makedepends = python
+	source = https://xorg.freedesktop.org/archive/individual/proto/xcb-proto-1.17.0.tar.xz
+	sha512sums = 34c3795e5a48a66d89b72ee1777fb0bede489d5ec07018e6c9ef3c13bdd60b0358fc2c04a1f0ed0acb5b681aeeb92033db579036e4f5edd967fe56714c03acdf
+
+pkgname = xcb-proto

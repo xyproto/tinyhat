@@ -6,10 +6,8 @@ set arch i686 x32
 set url https://xorg.freedesktop.org/
 set license X11-distribute-modifications-variant
 set depends libxext libx11 glibc xorgproto
-set source "https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-$pkgver.tar.xz" \
-    "https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-$pkgver.tar.xz.sig"
-set sha256sums ae50c0f669e0af5a67cc4cd0f54f21d64a64d2660af883e80e95d3fe51b945d8 \
-    e62b1689d9a03da6bf4e5cfee9d8785da3abeb1de2681c89c0ebc13e6fa2dced
+set source "https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-$pkgver.tar.xz"
+set sha256sums ae50c0f669e0af5a67cc4cd0f54f21d64a64d2660af883e80e95d3fe51b945d8
 set flags arch
 
 function build

@@ -12,44 +12,36 @@ pkgbase = pipewire
 	checkdepends = desktop-file-utils
 	checkdepends = openal
 	makedepends = alsa-lib
-	makedepends = avahi
 	makedepends = bluez-libs
 	makedepends = dbus
 	makedepends = dconf
-	makedepends = doxygen
 	makedepends = fftw
 	makedepends = git
 	makedepends = glib2
 	makedepends = glib2-devel
-	makedepends = graphviz
-	makedepends = jack2
 	makedepends = libebur128
 	makedepends = libfdk-aac
-	makedepends = libffado
 	makedepends = libfreeaptx
 	makedepends = libgcc
 	makedepends = liblc3
 	makedepends = libldac
 	makedepends = libmysofa
-	makedepends = libpulse
 	makedepends = libsndfile
 	makedepends = libstdc++
 	makedepends = libusb
-	makedepends = lilv
 	makedepends = meson
 	makedepends = ncurses
 	makedepends = opus
 	makedepends = python-docutils
 	makedepends = readline
-	makedepends = rtkit
 	makedepends = sbc
 	makedepends = spandsp
 	makedepends = systemd
-	makedepends = valgrind
 	makedepends = webrtc-audio-processing-1
+	bootstrap_without = wireplumber
 	source = git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=1.6.11
 	source = pipewire-sysusers.conf
-	sha256sums = SKIP
+	sha256sums = f2d1450cd6b649a3a1d8ba523fee3b8e41baa95b169eb51fae1f6b54ccaa2fac
 	sha256sums = c053d98bbe1a156b72b6f0229efbe6c7aa0edda9ba5bb4e580f27bdaa9a773d9
 
 pkgname = pipewire
@@ -126,8 +118,6 @@ pkgname = pipewire-audio
 	depends = libstdc++
 	depends = libusb
 	depends = libusb-1.0.so
-	depends = lilv
-	depends = liblilv-0.so
 	depends = opus
 	depends = libopus.so
 	depends = sbc
@@ -138,20 +128,6 @@ pkgname = pipewire-audio
 	depends = webrtc-audio-processing-1
 	depends = libwebrtc-audio-processing-1.so
 	provides = ladspa-host
-	provides = lv2-host
-
-pkgname = pipewire-docs
-	pkgdesc = Low-latency audio/video router and processor - documentation
-
-pkgname = pipewire-ffado
-	pkgdesc = Low-latency audio/video router and processor - FireWire support
-	depends = libpipewire=1:1.6.11
-	depends = libpipewire-0.3.so
-	depends = pipewire-audio=1:1.6.11
-	depends = pipewire=1:1.6.11
-	depends = glibc
-	depends = libffado
-	depends = libffado.so
 
 pkgname = pipewire-jack
 	pkgdesc = Low-latency audio/video router and processor - JACK replacement
@@ -172,21 +148,6 @@ pkgname = pipewire-jack
 	provides = libjackserver.so
 	conflicts = jack
 	conflicts = jack2
-	conflicts = pipewire-jack-client
-
-pkgname = pipewire-jack-client
-	pkgdesc = Low-latency audio/video router and processor - PipeWire as JACK client
-	depends = libpipewire=1:1.6.11
-	depends = libpipewire-0.3.so
-	depends = pipewire-audio=1:1.6.11
-	depends = pipewire=1:1.6.11
-	depends = dbus
-	depends = libdbus-1.so
-	depends = glibc
-	depends = jack
-	depends = libjack.so
-	depends = libgcc
-	conflicts = pipewire-jack
 
 pkgname = pipewire-netjack2
 	pkgdesc = Low-latency audio/video router and processor - netJACK2 support
@@ -204,9 +165,6 @@ pkgname = pipewire-pulse
 	depends = libpipewire-0.3.so
 	depends = pipewire-audio=1:1.6.11
 	depends = pipewire=1:1.6.11
-	depends = avahi
-	depends = libavahi-client.so
-	depends = libavahi-common.so
 	depends = dbus
 	depends = libdbus-1.so
 	depends = dconf
@@ -216,9 +174,8 @@ pkgname = pipewire-pulse
 	depends = libgio-2.0.so
 	depends = glibc
 	depends = libgcc
-	depends = libpulse
-	depends = libpulse.so
 	depends = pipewire-session-manager
+	optdepends = libpulse: pactl and the other PulseAudio client tools
 	provides = pulse-native-provider
 	conflicts = pulseaudio
 	install = pipewire-pulse.install
@@ -236,22 +193,6 @@ pkgname = pipewire-v4l2
 	depends = glibc
 	depends = pipewire-session-manager
 	depends = sh
-
-pkgname = pipewire-zeroconf
-	pkgdesc = Low-latency audio/video router and processor - Zeroconf support
-	depends = libpipewire=1:1.6.11
-	depends = libpipewire-0.3.so
-	depends = pipewire-audio=1:1.6.11
-	depends = pipewire=1:1.6.11
-	depends = avahi
-	depends = libavahi-client.so
-	depends = libavahi-common.so
-	depends = glibc
-	depends = libgcc
-	depends = openssl
-	depends = libcrypto.so
-	depends = opus
-	depends = libopus.so
 
 pkgname = pipewire-session-manager
 	pkgdesc = Session manager for PipeWire (default provider)

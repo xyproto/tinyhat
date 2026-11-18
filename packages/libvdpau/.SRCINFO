@@ -16,6 +16,6 @@ pkgbase = libvdpau
 	optdepends = nvidia-utils: driver for NVIDIA
 	provides = libvdpau.so
 	source = git+https://gitlab.freedesktop.org/vdpau/libvdpau.git#tag=1.5
-	sha256sums = SKIP
+	sha256sums = 2f1b8ee2bed5efdf79dd4f5469237ac5394fcdab3b2b8d689772563a4f751eab
 
 pkgname = libvdpau

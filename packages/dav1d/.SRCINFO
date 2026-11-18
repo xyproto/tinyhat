@@ -12,11 +12,9 @@ pkgbase = dav1d
 	makedepends = ninja
 	makedepends = xxhash
 	source = https://downloads.videolan.org/pub/videolan/dav1d/1.5.4/dav1d-1.5.4.tar.xz
-	source = https://downloads.videolan.org/pub/videolan/dav1d/1.5.4/dav1d-1.5.4.tar.xz.asc
 	source = https://code.videolan.org/videolan/dav1d-test-data/-/archive/1.5.4/dav1d-test-data-1.5.4.tar.gz
 	source = dav1d-0.8.2-sse2-asm.patch
 	sha256sums = 686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
-	sha256sums = b7e9664c8d847b2e88b059843b9977a74df2a7c7d911b094821dc236671bf9fc
 	sha256sums = b19926f25347a32633ffb40f6189eb750b50f1b8b02b2eb63954845a744de343
 	sha256sums = 57cd3adbbfe5fc5d8930047e9accce38baaf50266549fc69350c7817c94e11a2
 

@@ -8,6 +8,6 @@ pkgbase = hwdata
 	makedepends = git
 	replaces = hwids
 	source = git+https://github.com/vcrhonek/hwdata.git#tag=v0.412?signed
-	sha256sums = SKIP
+	sha256sums = b9334ec61cfe61b5f742ecaf6f987a051cb1c763cca0f5a0ca56eba82d226320
 
 pkgname = hwdata

@@ -8,7 +8,6 @@ pkgbase = xfsprogs
 	license = GPL-2.0-only
 	license = LGPL-2.1-only
 	makedepends = git
-	depends = device-mapper
 	depends = libedit
 	depends = liburcu
 	depends = sh
@@ -18,7 +17,7 @@ pkgbase = xfsprogs
 	source = git+https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git?signed#tag=v7.2.1
 	source = xfsprogs-toml-config.patch
 	source = xfsprogs-32bit.patch
-	b2sums = SKIP
+	b2sums = 5ed15066ed3ef1db80554f868c966b9776f71b91e071ca6e400b694d8559dfdbaf28d275c94927d2b12a633b1bfd29edbd6b2bd42568d5847bc99d9c1dff0abc
 	b2sums = 68221b6d8b01aaf4a6d93d2191fc86ae0516ce2c14c5512305d087f4c8584e16b4a000bfd7a5d80f9f3bb4b8bafc2089c74ab03c7f14077a7bdc752f285fed73
 	b2sums = e50cdc207d7db0270cc86b8604de132244a7ccf4322dea6aa06a5672109f5ea9b88c66566eb20d64b88e613d9ff460ebf9ec792b43440bcfa770c7468493bb1c
 

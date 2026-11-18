@@ -15,10 +15,12 @@ set sha256sums 7d7a02a683b675875febd5ab67d3d4f067db3111bf8a31da86c36ced8bae16b3
 function build
     cd xpm-$_commit; or return
     set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
     set -lx GOPATH "$srcdir/gopath"
     set -lx GOCACHE "$srcdir/gocache"
     set -lx GOTOOLCHAIN local
-    set -lx GOFLAGS -mod=vendor
+    set -lx GOFLAGS $GOFLAGS -mod=vendor
     set -lx CGO_ENABLED 0
     set -lx GOARCH 386
     set -lx GO386 softfloat

@@ -7,7 +7,8 @@ set arch i686 x32
 set license GPL-2.0-or-later
 set url https://github.com/twaugh/libieee1284
 set depends glibc
-set makedepends docbook-xml docbook-xsl python xmlto
+# No man pages (xmlto, docbook-xml, docbook-xsl): man3_MANS is emptied for make
+set makedepends python
 set optdepends 'python: for python module'
 set source "$pkgname-$pkgver.tar.gz::$url/archive/V$_tag.tar.gz" \
     "upstream_python_fix1.patch::$url/commit/c48855528beee1397d883f9c8a5df7aed5c917a6.patch" \
@@ -33,10 +34,10 @@ function build
     cd "$pkgname-$_tag"; or return
     ./bootstrap; or return
     ./configure --prefix=/usr --mandir=/usr/share/man --with-python; or return
-    make; or return
+    make man3_MANS=; or return
 end
 
 function package
     cd "$pkgname-$_tag"; or return
-    make DESTDIR="$pkgdir" install; or return
+    make DESTDIR="$pkgdir" man3_MANS= install; or return
 end

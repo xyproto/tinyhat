@@ -8,9 +8,6 @@ pkgbase = libtiff
 	license = libtiff
 	makedepends = cmake
 	makedepends = git
-	makedepends = freeglut
-	makedepends = glu
-	makedepends = mesa
 	makedepends = jbigkit
 	depends = libstdc++
 	depends = glibc
@@ -22,7 +19,6 @@ pkgbase = libtiff
 	depends = xz
 	depends = zlib
 	depends = zstd
-	optdepends = freeglut: for using tiffgt
 	provides = libtiff.so
 	provides = libtiffxx.so
 	source = git+https://gitlab.com/libtiff/libtiff.git?signed#tag=v4.7.2

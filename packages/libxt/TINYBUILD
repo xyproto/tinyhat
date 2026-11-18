@@ -7,9 +7,8 @@ set url https://xorg.freedesktop.org/
 set license MIT HPND-sell-variant SMLNJ MIT-open-group X11
 set depends libsm libx11 libice glibc xorgproto
 set makedepends xorg-util-macros
-set source "$url/releases/individual/lib/libXt-$pkgver.tar.xz"{,.sig}
-set sha512sums c220292f60b0f53134cf9364831a32bbaa9fa6bbb3a7143e917920957b7a48c616e946042747089f29ea9d8a18ecd64de620bcaf56d82462e7107de906f5db38 \
-    SKIP
+set source "$url/releases/individual/lib/libXt-$pkgver.tar.xz"
+set sha512sums c220292f60b0f53134cf9364831a32bbaa9fa6bbb3a7143e917920957b7a48c616e946042747089f29ea9d8a18ecd64de620bcaf56d82462e7107de906f5db38
 set flags arch
 
 function build

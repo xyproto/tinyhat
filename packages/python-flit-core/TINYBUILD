@@ -1,0 +1,29 @@
+set pkgname python-flit-core
+set pkgver 4.2.0
+set pkgrel 1
+set pkgdesc 'A PEP 517 build backend for packages using Flit'
+set arch any
+set url https://github.com/pypa/flit/tree/main/flit_core
+set license BSD-3-Clause
+set depends python
+set makedepends
+set source "flit-$pkgver.tar.gz::https://github.com/pypa/flit/archive/refs/tags/$pkgver.tar.gz"
+set sha512sums 1d01e3bc2c5cd40b24b5a4deffe7af081899a1555c7351f1d806c0805f25f1c34610ddd5c80dd46feb2d9be28bad5681812c5a74dd382bfa19781fa56feb59ed
+set b2sums 90bba1bc63e636d7097886439e08a80dbc8c626d1197e5213c534cdca0efb1ec7814d4f5cd9612236a43f3a2cd6e7df0eaf0a679f91b6fc05913bb090039302b
+set flags arch
+
+# Bootstrap: flit_core builds its own wheel and installs it with its own script,
+# because python-build and python-installer are built with flit_core.
+
+function build
+    cd flit-$pkgver/flit_core; or return
+    python -m flit_core.wheel; or return
+end
+
+function package
+    set -l site_packages (python -c "import site; print(site.getsitepackages()[0])"); or return
+    cd flit-$pkgver/flit_core; or return
+    python bootstrap_install.py --installdir $site_packages --install-root "$pkgdir" dist/flit_core-$pkgver-py3-none-any.whl; or return
+    python -m compileall -q -o 0 -o 1 -s "$pkgdir" -p / "$pkgdir$site_packages/flit_core"; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

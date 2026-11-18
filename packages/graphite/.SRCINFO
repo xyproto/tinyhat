@@ -9,13 +9,7 @@ pkgbase = graphite
 	license = LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later
 	checkdepends = python-fonttools
 	makedepends = cmake
-	makedepends = freetype2
 	makedepends = python
-	makedepends = doxygen
-	makedepends = graphviz
-	makedepends = asciidoc
-	makedepends = texlive-xetex
-	makedepends = dblatex
 	depends = glibc
 	depends = libstdc++
 	depends = libgcc
@@ -25,9 +19,4 @@ pkgbase = graphite
 	sha256sums = 2296d1c189cfb129403f83e7a704a333147856b37475320965c463386ef9d8ef
 
 pkgname = graphite
-	optdepends = graphite-docs: Documentation
 	provides = libgraphite2.so
-
-pkgname = graphite-docs
-	pkgdesc = a "smart font" system to handle the complexities of lesser-known languages of the world (documentation)
-	depends = 

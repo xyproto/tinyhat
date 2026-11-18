@@ -7,12 +7,13 @@ set arch i686 x32
 set url https://www.open-mpi.org
 set license 'BSD-3-Clause AND LicenseRef-MPICH'
 # nvidia-utils is for libcuda.so
+# No valgrind: the memchecker (valgrind memory checks of MPI buffers, a debugging aid) is not built
 set makedepends cuda nvidia-utils gcc-fortran glibc hip-runtime-amd hwloc libgcc libevent libfabric openpmix openucc \
-    openucx prrte valgrind
+    openucx prrte
 set flags arch
 set source "https://www.open-mpi.org/software/ompi/v"(string replace -r '\.[^.]*$' '' -- $pkgver)"/downloads/$pkgbase-$pkgver.tar.bz2"
-set sha256sums 71f424d79d08a2da9159e3ab2bdc467204575602c2744d44d1aa9827bc55bd8e
-set b2sums a45479e028e6b4975b302d09deafe7b9447779dfcf65e59db40ed8a294504ac36cabc58135679427ffd8e7750abe3433b4ca55700d1b3bcb638d63c79e553b45
+set sha256sums e668a3c4acd50c41dc204c8a6dd98a611e0f26af89cf677577fa9be8a2698003
+set b2sums 0e25f4ba8a8c94b3370e80d060d1bf21d631311cfea5ef30b55fad4e3a708d21342687a49edcb8ddcd2d63244db2c6cf278fcb1dba38c47ce1fb46c1bcf370a1
 
 function _pick
     set -l p $argv[1]
@@ -41,7 +42,6 @@ function build
     set -l configure_options \
         --prefix=/usr \
         --enable-builtin-atomics \
-        --enable-memchecker \
         --enable-mpi-fortran=all \
         --enable-pretty-print-stacktrace \
         --libdir=/usr/lib \
@@ -50,7 +50,6 @@ function build
         --with-libevent=external \
         --with-pmix=external \
         --with-prrte=external \
-        --with-valgrind \
         --with-ucc=/usr \
         --with-ucx=/usr \
         --with-cuda=/opt/cuda \

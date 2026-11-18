@@ -6,13 +6,10 @@ pkgbase = slang
 	arch = i686
 	arch = x32
 	license = GPL-2.0-or-later
-	depends = pcre
 	depends = glibc
 	depends = zlib
 	backup = etc/slsh.rc
 	source = https://www.jedsoft.org/releases/slang/slang-2.3.3.tar.bz2
-	source = https://www.jedsoft.org/releases/slang/slang-2.3.3.tar.bz2.asc
 	sha256sums = f9145054ae131973c61208ea82486d5dd10e3c5cdad23b7c4a0617743c8f5a18
-	sha256sums = SKIP
 
 pkgname = slang

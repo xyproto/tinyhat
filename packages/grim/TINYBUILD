@@ -6,13 +6,13 @@ set arch i686 x32
 set url https://gitlab.freedesktop.org/emersion/grim
 set license MIT
 set depends libcairo.so libjpeg-turbo wayland
-set makedepends bash-completion fish git meson ninja pango scdoc wayland-protocols
+set makedepends fish git meson ninja pango scdoc wayland-protocols
 set source "git+https://gitlab.freedesktop.org/emersion/grim#tag=v$pkgver"
-set sha256sums SKIP
+set sha256sums 668c0772f8f3c17cf6f6284613ded11f2283961153de6114c223ae048ec00b82
 set flags arch
 
 function build
-    arch-meson build -Dbash-completions=true -Dfish-completions=true "$pkgname"; or return
+    arch-meson build -Dbash-completions=false -Dfish-completions=true "$pkgname"; or return
     ninja -C build; or return
 end
 

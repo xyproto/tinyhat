@@ -5,13 +5,14 @@ set pkgdesc 'Modular Wayland compositor library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/wlroots/wlroots
 set license MIT
-set depends libdisplay-info libdrm libinput libxcb libxkbcommon mesa pixman seatd systemd-libs wayland xcb-util-wm
-set makedepends meson ninja wayland-protocols hwdata xorg-xwayland
+# No XWayland support (Tiny Hat has no Xwayland binary): xorg-xwayland, libxcb and xcb-util-wm are dropped
+set depends libdisplay-info libdrm libinput libxkbcommon mesa pixman seatd systemd-libs wayland
+set makedepends meson ninja wayland-protocols hwdata
 set source "https://gitlab.freedesktop.org/wlroots/wlroots/-/archive/$pkgver/wlroots-$pkgver.tar.gz"
 set sha256sums 972c7ac44b17828f4702bfae7cd8347346a3fb5b2c1076cfa2c3fcedac5ec343
 
 function build
-    meson setup build wlroots-$pkgver --prefix=/usr --buildtype=minsize -Dbackends=drm,libinput -Drenderers=gles2 -Dallocators=gbm -Dsession=enabled -Dxwayland=enabled -Dxcb-errors=disabled -Dexamples=false -Dcolor-management=disabled -Dlibliftoff=disabled; or return
+    meson setup build wlroots-$pkgver --prefix=/usr --buildtype=minsize -Dbackends=drm,libinput -Drenderers=gles2 -Dallocators=gbm -Dsession=enabled -Dxwayland=disabled -Dxcb-errors=disabled -Dexamples=false -Dcolor-management=disabled -Dlibliftoff=disabled; or return
     ninja -C build; or return
 end
 

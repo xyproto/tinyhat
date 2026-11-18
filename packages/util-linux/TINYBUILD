@@ -5,7 +5,13 @@ set pkgrel 1
 set pkgdesc 'Miscellaneous system utilities for Linux'
 set url https://github.com/util-linux/util-linux
 set arch i686 x32
-set makedepends asciidoctor bash-completion git libcap-ng libxcrypt meson po4a python sqlite systemd
+# No bash completions (Tiny Hat's shells are Oils and fish), no Python bindings to libmount (nothing uses them),
+# and none of the optional features that need libraries Tiny Hat does not have or use (see build)
+set makedepends_host libcap-ng libxcrypt sqlite systemd
+# util-linux and systemd need each other: without systemd (the first build in a bootstrap), util-linux has no
+# systemd support and installs no units
+set bootstrap_without systemd systemd-libs
+set makedepends_build asciidoctor git meson
 set license BSD-2-Clause BSD-3-Clause BSD-4-Clause-UC GPL-2.0-only GPL-2.0-or-later GPL-3.0-or-later ISC \
     LGPL-2.1-or-later LicenseRef-PublicDomain
 set options strip
@@ -70,7 +76,21 @@ function build
         -Dbuild-mesg=enabled \
         -Dbuild-newgrp=enabled \
         -Dbuild-vipw=enabled \
-        -Dbuild-write=enabled
+        -Dbuild-write=enabled \
+        -Dbuild-bash-completion=disabled \
+        -Dbuild-python=disabled \
+        -Dbuild-pylibmount=disabled \
+        -Dcryptsetup=disabled \
+        -Dcryptsetup-dlopen=disabled \
+        -Dslang=disabled \
+        -Dselinux=disabled \
+        -Dsmack=disabled \
+        -Dsysvinit=disabled \
+        -Dbtrfs=disabled \
+        -Dtranslate-docs=disabled
+    # Without libsystemd (the first build in a bootstrap, see bootstrap_without): no systemd support. arch-meson makes
+    # auto features required, so it must be turned off
+    pkg-config --exists libsystemd; or set -a _meson_options -Dsystemd=disabled
     arch-meson $pkgbase build $_meson_options; or return
     meson compile -C build; or return
 end
@@ -87,8 +107,6 @@ function package_util-linux
     set depends "util-linux-libs=$pkgver" coreutils file libmagic.so glibc libcap-ng libgcc libgcc_s.so libxcrypt libcrypt.so ncurses libncursesw.so pam readline shadow systemd-libs libsystemd.so libudev.so zlib
     set optdepends 'words: default dictionary for look'
     set backup etc/pam.d/chfn etc/pam.d/chsh etc/pam.d/login etc/pam.d/remote etc/pam.d/runuser etc/pam.d/runuser-l etc/pam.d/su etc/pam.d/su-l
-
-    set -g _python_stdlib (python -c 'import sysconfig; print(sysconfig.get_paths()["stdlib"])'); or return
 
     DESTDIR="$pkgdir" meson install -C build; or return
 
@@ -109,15 +127,15 @@ function package_util-linux
     install -Dm0644 su.pam "$pkgdir/etc/pam.d/su-l"; or return
 
     # TODO(dreisner): offer this upstream?
-    sed -i '/ListenStream/ aRuntimeDirectory=uuidd' "$pkgdir/usr/lib/systemd/system/uuidd.socket"; or return
+    if test -e "$pkgdir/usr/lib/systemd/system/uuidd.socket"
+        sed -i '/ListenStream/ aRuntimeDirectory=uuidd' "$pkgdir/usr/lib/systemd/system/uuidd.socket"; or return
+    end
 
     # runtime libs are shipped as part of util-linux-libs
     install -d -m0755 util-linux-libs/lib/; or return
     mv "$pkgdir"/usr/lib/lib*.so* util-linux-libs/lib/; or return
     mv "$pkgdir"/usr/lib/pkgconfig util-linux-libs/lib/pkgconfig; or return
     mv "$pkgdir"/usr/include util-linux-libs/include; or return
-    mv "$pkgdir/$_python_stdlib/site-packages" util-linux-libs/site-packages; or return
-    rmdir "$pkgdir/$_python_stdlib"; or return
     if test -d "$pkgdir"/usr/share/man/man3
         mv "$pkgdir"/usr/share/man/man3 util-linux-libs/man3; or return
     end
@@ -144,12 +162,10 @@ function package_util-linux-libs
     set provides libutil-linux libblkid.so libfdisk.so libmount.so libsmartcols.so libuuid.so
     set conflicts libutil-linux
     set replaces libutil-linux
-    set optdepends 'python: python bindings to libmount'
 
-    install -d -m0755 "$pkgdir/$_python_stdlib" "$pkgdir"/usr/share/man/; or return
+    install -d -m0755 "$pkgdir"/usr/lib "$pkgdir"/usr/share/man; or return
     mv util-linux-libs/lib/* "$pkgdir"/usr/lib/; or return
     mv util-linux-libs/include "$pkgdir"/usr/include; or return
-    mv util-linux-libs/site-packages "$pkgdir/$_python_stdlib/site-packages"; or return
     if test -d util-linux-libs/man3
         mv util-linux-libs/man3 "$pkgdir"/usr/share/man/man3; or return
     end

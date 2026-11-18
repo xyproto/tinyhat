@@ -19,11 +19,8 @@ pkgbase = poppler
 	makedepends = openjpeg2
 	makedepends = pkgconfig
 	makedepends = lcms2
-	makedepends = icu
 	makedepends = git
-	makedepends = gtk-doc
 	makedepends = curl
-	makedepends = poppler-data
 	makedepends = cmake>=3.28
 	makedepends = python
 	makedepends = boost

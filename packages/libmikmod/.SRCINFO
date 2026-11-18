@@ -9,12 +9,11 @@ pkgbase = libmikmod
 	makedepends = alsa-lib
 	makedepends = cmake
 	makedepends = git
-	makedepends = libpulse
 	makedepends = ninja
 	depends = glibc
 	depends = sh
 	provides = libmikmod.so
 	source = git+https://git.code.sf.net/p/mikmod/mikmod#tag=libmikmod-3.3.15
-	sha256sums = SKIP
+	sha256sums = 3014d28e0514042733f6a65da2a16118f501ae9ead2d54c2061e3270f9685373
 
 pkgname = libmikmod

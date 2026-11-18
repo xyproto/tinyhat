@@ -1,0 +1,24 @@
+set pkgname xorgproto
+set pkgver 2026.1
+set pkgrel 1
+set pkgdesc 'combined X.Org X11 Protocol headers'
+set arch any
+set url https://xorg.freedesktop.org/
+set license BSD-2-Clause HPND HPND-sell-variant ICU MIT MIT-open-group SGI-B-2.0 SMLNJ X11 X11-distribute-modifications-variant
+set makedepends meson
+set source "https://xorg.freedesktop.org/archive/individual/proto/$pkgname-$pkgver.tar.xz"
+set sha512sums 5d89ffd23edb3c57cbc33d3572b20b356f83ca0cef5c82e66c9073734fb1962c9a28b3169c9517a4d960256883dfd553078a47fd1149e91e86189d58c5079aea
+set flags arch
+
+function build
+    arch-meson $pkgname-$pkgver build; or return
+    meson compile -C build; or return
+end
+
+function package
+    meson install -C build --destdir "$pkgdir"; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" $pkgname-$pkgver/COPYING*; or return
+    # Legacy and other-platform protocols that are not shipped
+    rm -f "$pkgdir"/usr/share/licenses/$pkgname/COPYING-{evieproto,fontcacheproto,lg3dproto,printproto,xcalibrateproto,xf86rushproto,applewmproto,windowswmproto}; or return
+    rm -f "$pkgdir"/usr/include/X11/extensions/apple* "$pkgdir"/usr/share/pkgconfig/applewmproto.pc; or return
+end

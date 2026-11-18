@@ -6,7 +6,8 @@ set url https://github.com/containers/bubblewrap
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glibc libcap libgcc
-set makedepends bash-completion docbook-xsl git libxslt meson
+# No man page (docbook-xsl)
+set makedepends git meson
 set source "git+$url?signed#tag=v$pkgver"
 set b2sums c7e182d4bb08afcba1bdc4beae77106a6fa75e366f328642f6703ca10299e24ee44ca428f78b00617dfee3e758e68885f889c940c1aa48e7a5c1d3d0baa5c133
 set flags arch
@@ -15,6 +16,9 @@ function build
     set -l meson_options \
         # major.minor.0 of linux-lts
         -D assume_kernel=6.18.0 \
+        -D bash_completion=disabled \
+        -D zsh_completion=disabled \
+        -D man=disabled \
         -D selinux=disabled
     arch-meson $pkgname build $meson_options; or return
     meson compile -C build; or return

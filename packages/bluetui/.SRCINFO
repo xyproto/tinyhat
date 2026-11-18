@@ -11,6 +11,7 @@ pkgbase = bluetui
 	depends = glibc
 	depends = libgcc
 	options = !lto
+	options = network
 	source = bluetui-0.8.2.tar.gz::https://github.com/pythops/bluetui/archive/v0.8.2.tar.gz
 	sha512sums = cfb966878df4ca3b3055eb404c943a4749da040a5f42846603768fa60c70045fa974efd0fad32ff5828212364f8c8c1f43465f9f7effa850d82f1eacff697a75
 

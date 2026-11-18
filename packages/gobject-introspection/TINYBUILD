@@ -7,14 +7,17 @@ set url https://wiki.gnome.org/Projects/GObjectIntrospection
 set arch i686 x32
 set license GPL-2.0-or-later LGPL-2.0-or-later
 set -g _glibver 2.90.1
-set makedepends "glib2=$_glibver" cairo git glibc libffi libffi meson python python-mako python-markdown \
+# No g-ir-doc-tool (python-markdown)
+set makedepends "glib2=$_glibver" cairo git glibc libffi libffi meson python python-mako \
     python-setuptools
+# glib2-introspection is built with gobject-introspection, and only needed when g-ir-scanner is used
+set bootstrap_without glib2-introspection
 set source "git+https://gitlab.gnome.org/GNOME/gobject-introspection.git#tag=$pkgver" \
     "git+https://gitlab.gnome.org/GNOME/glib.git?signed#tag=$_glibver" \
-    git+https://gitlab.gnome.org/GNOME/gobject-introspection-tests.git
+    git+https://gitlab.gnome.org/GNOME/gobject-introspection-tests.git#commit=67a03e86da0636c02cac2390ee2f0d5d981875a8
 set b2sums 46007e1c426ebfde0d94b84398a1d99e0fc516f1b5a78590d0d1ddec76b90d19a9c6f4f9959a6d243cbb3601390763bbdd7d05d1d1c3d4fb9746f453b40ea849 \
     d2a3b7c9745b4473621bc77d1fa690c062510cb53dd24555abceb0216ddb9c3f18214774a6c4a948daf0edcf4738db9ed1cba47ec92481d4eee18906bc0e78a3 \
-    SKIP
+    2e09216503af0f095386e0b60634b5917493d22240e4e4c93cf6c78f6142167505d2e30c33853e8a390a375ea298ebba5bcacb3f5fbc438fce5441e8c2b693a1
 set flags arch
 
 function prepare
@@ -25,7 +28,7 @@ function prepare
 end
 
 function build
-    arch-meson $pkgbase build -D glib_src_dir="$srcdir/glib" -D gtk_doc=false; or return
+    arch-meson $pkgbase build -D glib_src_dir="$srcdir/glib" -D gtk_doc=false -D doctool=disabled; or return
     meson compile -C build; or return
 end
 
@@ -45,7 +48,8 @@ end
 
 function package_gobject-introspection
     set depends "gobject-introspection-runtime=$pkgver" "libgirepository=$pkgver" glib2 glibc libffi python
-    set -a depends python-mako python-markdown python-setuptools
+    # The GLib .gir files (GObject-2.0.gir...) that every g-ir-scanner run includes
+    set -a depends python-mako python-setuptools glib2-introspection
     meson install -C build --destdir "$pkgdir"; or return
     # Relax the glib requirement in the pc files: when building glib2 itself, the chroot only has the
     # prebuilt glib2, while this version of gobject-introspection needs a newer one. Everything else in

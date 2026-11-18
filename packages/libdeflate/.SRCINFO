@@ -12,6 +12,6 @@ pkgbase = libdeflate
 	depends = glibc
 	provides = libdeflate.so
 	source = git+https://github.com/ebiggers/libdeflate.git#tag=v1.26
-	sha256sums = SKIP
+	sha256sums = 38a3ffe3a56fba0e95138a5f57a764ffd5632c49dcd6a3515536f8a1ee907a9d
 
 pkgname = libdeflate

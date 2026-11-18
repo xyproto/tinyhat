@@ -6,11 +6,7 @@ pkgbase = giflib
 	arch = i686
 	arch = x32
 	license = MIT
-	makedepends = docbook-xml
-	makedepends = docbook-xsl
 	makedepends = git
-	makedepends = imagemagick
-	makedepends = xmlto
 	depends = glibc
 	provides = libgif.so
 	source = giflib::git+https://git.code.sf.net/p/giflib/code#tag=6.1.3

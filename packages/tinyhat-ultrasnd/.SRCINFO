@@ -9,6 +9,6 @@ pkgbase = tinyhat-ultrasnd
 	source = freepats_20060219.orig.tar.gz::https://deb.debian.org/debian/pool/main/f/freepats/freepats_20060219.orig.tar.gz
 	source = mkultrasnd.py
 	sha256sums = 70bf8ca084df3903d6c9de43fe20539fc0a553d95cfba4d525da3fe66fda5f10
-	sha256sums = SKIP
+	sha256sums = d2cb1ee49dade731d26044237db233a250f18946247bdcc9c9f2dc1b190a624e
 
 pkgname = tinyhat-ultrasnd

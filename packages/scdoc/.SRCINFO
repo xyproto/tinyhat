@@ -1,0 +1,13 @@
+pkgbase = scdoc
+	pkgdesc = Tool for generating roff manual pages
+	pkgver = 1.11.5
+	pkgrel = 1
+	url = https://git.sr.ht/~sircmpwn/scdoc/
+	arch = i686
+	arch = x32
+	license = MIT
+	depends = glibc
+	source = scdoc-1.11.5.tar.gz::https://git.sr.ht/~sircmpwn/scdoc/archive/1.11.5.tar.gz
+	sha512sums = 643209f9b5783d1792eeec2d1cf9ec0838d51adb1b507110aa10bf8963f1df816f6832cb0912a9e9ac698292f1a211dc99368e754636104f0f43f37fa61c179f
+
+pkgname = scdoc

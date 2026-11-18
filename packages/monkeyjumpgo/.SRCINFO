@@ -11,6 +11,7 @@ pkgbase = monkeyjumpgo
 	depends = sdl3
 	depends = sdl3_image
 	options = !buildflags
+	options = network
 	source = monkeyjump-7222c4240e5b73b0514d7f113ce66d7526e60bd1.tar.gz::https://github.com/xyproto/monkeyjump/archive/7222c4240e5b73b0514d7f113ce66d7526e60bd1.tar.gz
 	sha256sums = 651b54a6a11c18ced22cd5e0047f944fa9739416fa891264a13b49e183bc6382
 

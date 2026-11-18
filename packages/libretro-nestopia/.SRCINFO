@@ -13,11 +13,10 @@ pkgbase = libretro-nestopia
 	makedepends = git
 	depends = glibc
 	depends = libgcc
-	depends = libretro-core-info
 	depends = libstdc++
 	source = libretro-nestopia::git+https://github.com/libretro/nestopia.git#commit=f1e02d12664834536edbf7352995a3d0cd1caef4
 	source = inline-peekbus.patch
-	b2sums = SKIP
-	b2sums = SKIP
+	b2sums = bbc5be7bee5d19ececc2d5a838f09782cacfd5dc54d11783cea10881e316374deda1bc56f18850cdcf18a1fef4f9c4f65ec7da22c957739b6360befbde41cfb9
+	b2sums = 122eed5d0fc50089a199bd684301f9b68f50dc00eccc541df022741be336b21c307ee2d814c35882b24c8fe93ac2aaf0094e6c467cf6cc6825664c06e05cac4c
 
 pkgname = libretro-nestopia

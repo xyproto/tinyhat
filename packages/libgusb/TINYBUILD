@@ -1,5 +1,5 @@
 set pkgbase libgusb
-set pkgname libgusb libgusb-docs
+set pkgname libgusb
 set pkgver 0.4.9
 set pkgrel 2
 set pkgdesc 'GObject wrapper for libusb1'
@@ -7,24 +7,17 @@ set arch i686 x32
 set url https://github.com/hughsie/libgusb
 set license LGPL-2.1-or-later
 set depends glib2 libjson-glib-1.0.so libusb-1.0.so
-set makedepends gi-docgen git gtk-doc meson python-setuptools umockdev
+# No documentation (gi-docgen, gtk-doc)
+set makedepends git meson python-setuptools umockdev
 set source "git+https://github.com/hughsie/libgusb.git#tag=$pkgver"
 set sha256sums 27ac4dd41aa0279416bc74f8d195339d439bd9fc0a9f6a0dc9745a07d251c942
 set flags arch
 
 function build
-    arch-meson -D introspection=false -D vapi=false libgusb build; or return
+    arch-meson -D docs=false -D introspection=false -D vapi=false libgusb build; or return
     ninja -C build; or return
 end
 
 function package_libgusb
     DESTDIR="$pkgdir" ninja -C build install; or return
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/doc; or return
-end
-
-function package_libgusb-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-    mv doc/* "$pkgdir"; or return
 end

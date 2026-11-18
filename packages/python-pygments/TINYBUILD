@@ -1,0 +1,27 @@
+set pkgname python-pygments
+set pkgver 2.21.0
+set pkgrel 1
+set pkgdesc 'Python syntax highlighter'
+set arch any
+set url https://pygments.org/
+set license BSD-2-Clause
+set depends python
+set makedepends python-build python-hatchling python-installer
+set provides pygmentize
+set conflicts pygmentize
+set replaces pygmentize
+set source "https://github.com/pygments/pygments/archive/$pkgver/$pkgname-$pkgver.tar.gz"
+set b2sums 6b7ae05d558954a3f6e440f9310bcf6c3f10ff347908dbeecb1447414f7c299ae68a2447924142fbf315df6d9ea93cd2acbead285872fc88ce42a9cfc9e39004
+set flags arch
+
+function build
+    cd pygments-$pkgver; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd pygments-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    install -Dm644 doc/pygmentize.1 -t "$pkgdir/usr/share/man/man1/"; or return
+end

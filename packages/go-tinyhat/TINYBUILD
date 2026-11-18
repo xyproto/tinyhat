@@ -7,7 +7,9 @@ set arch i686
 set url https://go.dev/
 set license BSD-3-Clause
 set makedepends go
-set options '!strip' '!buildflags'
+# !elfcheck: Go's source tree has ELF files for other architectures on purpose (test data, race detector and
+# BoringCrypto objects), which are never linked into i686 programs
+set options '!strip' '!buildflags' '!elfcheck'
 set source "https://go.dev/dl/go$_chain[1].src.tar.gz" \
     "https://go.dev/dl/go$_chain[2].src.tar.gz" \
     "https://go.dev/dl/go$_chain[3].src.tar.gz"

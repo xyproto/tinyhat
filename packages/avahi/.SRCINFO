@@ -9,13 +9,7 @@ pkgbase = avahi
 	license = LGPL-2.1-or-later
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = gobject-introspection
-	makedepends = python-dbus
-	makedepends = python-gobject
-	makedepends = python-twisted
 	makedepends = systemd
-	makedepends = xmltoman
-	makedepends = dbus-python
 	depends = bash
 	depends = dbus
 	depends = expat
@@ -27,7 +21,7 @@ pkgbase = avahi
 	depends = systemd-libs
 	source = git+https://github.com/avahi/avahi#tag=v0.9-rc5
 	source = 0001-HACK-Install-fixes.patch
-	sha256sums = SKIP
+	sha256sums = 24a152a2e1e3e9ef11dcfe94d59238479500888dc662af125aaa9a36652c2e54
 	sha256sums = e5aac2341d746c2d1df5fdeb1f63ca581833eaa8732e230adc40877848c0f2a5
 
 pkgname = avahi
@@ -51,13 +45,3 @@ pkgname = avahi
 	backup = etc/avahi/avahi-daemon.conf
 	backup = etc/avahi/avahi-autoipd.action
 	backup = etc/avahi/avahi-dnsconfd.action
-	backup = usr/lib/avahi/service-types.db
-
-pkgname = avahi-bookmarks
-	pkgdesc = Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour) - web page of Zeroconf-announced HTTP/FTP services
-	depends = avahi=1:0.9rc5
-	depends = glib2
-	depends = python
-	depends = python-dbus
-	depends = python-gobject
-	optdepends = python-twisted: built-in web server (default mode, not -c)

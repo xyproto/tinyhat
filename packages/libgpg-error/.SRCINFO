@@ -12,8 +12,6 @@ pkgbase = libgpg-error
 	depends = glibc
 	depends = sh
 	source = https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.61.tar.bz2
-	source = https://www.gnupg.org/ftp/gcrypt/libgpg-error/libgpg-error-1.61.tar.bz2.sig
 	sha256sums = 7a85413f2bc354f4f8aa832b718af122e48965e9e0eb9012ee659c13c6385c93
-	sha256sums = SKIP
 
 pkgname = libgpg-error

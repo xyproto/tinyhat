@@ -8,6 +8,7 @@ pkgbase = go-tinyhat
 	makedepends = go
 	options = !strip
 	options = !buildflags
+	options = !elfcheck
 	source = https://go.dev/dl/go1.22.12.src.tar.gz
 	source = https://go.dev/dl/go1.24.13.src.tar.gz
 	source = https://go.dev/dl/go1.27.3.src.tar.gz

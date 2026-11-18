@@ -6,13 +6,13 @@ set pkgdesc 'A library for layout and rendering of text'
 set arch i686 x32
 set url https://www.pango.org/
 set license LGPL-2.1-or-later
-set depends libcairo.so 'fontconfig>=2:2.17.0' freetype2 fribidi 'glib2>=2.88' glibc 'harfbuzz>=11.0.0' libsysprof-capture libthai
+set depends libcairo.so 'fontconfig>=2:2.17.0' freetype2 fribidi 'glib2>=2.88' glibc 'harfbuzz>=11.0.0' libthai
 set makedepends git glib2-devel gobject-introspection help2man meson glib2-introspection
 set source "git+https://gitlab.gnome.org/GNOME/pango.git#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums e7d40762b02df495069444e7fe649c6203b8b2280c71498e40d41dc6266e7655
 set flags arch
 set -g BASH_REMATCH libxrender libxrender
-set -g _d cairo 'fontconfig>=2:2.17.0' freetype2 fribidi 'glib2>=2.88' glibc 'harfbuzz>=11.0.0' libsysprof-capture libthai
+set -g _d cairo 'fontconfig>=2:2.17.0' freetype2 fribidi 'glib2>=2.88' glibc 'harfbuzz>=11.0.0' libthai
 set -g _p libthai
 
 function prepare
@@ -20,7 +20,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D documentation=false -D sysprof=enabled -D xft=disabled
+    set -l meson_options -D documentation=false -D sysprof=disabled -D xft=disabled
     arch-meson pango build $meson_options; or return
     meson compile -C build; or return
 end

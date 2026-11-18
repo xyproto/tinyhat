@@ -13,7 +13,7 @@ set source "https://sources.archlinux.org/other/packages/iana-etc/$_ports.xml" \
     "https://sources.archlinux.org/other/packages/iana-etc/$_protocols.xml" \
     license-from-upstream
 # iana-etc files change often, not worth checksumming
-set sha256sums SKIP \
+set sha256sums 047bb1ad8117869c7d899ad24cd509c1182987d1eab17fa81554b60dc6633edc \
     59cdd7930cd6152bd11713b8883503511fffb2add72345d21d043cecb969803b \
     dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb
 

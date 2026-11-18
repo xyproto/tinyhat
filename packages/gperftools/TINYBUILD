@@ -8,7 +8,7 @@ set license BSD-3-Clause
 set depends glibc libgcc libstdc++ libunwind
 set makedepends git
 set source "git+https://github.com/gperftools/gperftools.git#tag=gperftools-$pkgver"
-set sha256sums SKIP
+set sha256sums 4b9da6f2bda8480801ee01e7f7fcaed72d0fbd2729f4a61aa19747c6c253430c
 set flags arch
 
 function prepare

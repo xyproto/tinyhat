@@ -18,9 +18,8 @@ set depends libgpg-error glibc
 set options '!emptydirs'
 set flags arch
 # https://www.gnupg.org/download/integrity_check.html
-set source https://gnupg.org/ftp/gcrypt/$pkgname/$pkgname-$pkgver.tar.bz2{,.sig}
-set sha256sums d77f68f48879510e79a2f65977ccc68981781ea0923e5bdffac2a193ea3d660e \
-    SKIP
+set source https://gnupg.org/ftp/gcrypt/$pkgname/$pkgname-$pkgver.tar.bz2
+set sha256sums d77f68f48879510e79a2f65977ccc68981781ea0923e5bdffac2a193ea3d660e
 
 function prepare
     cd $pkgname-$pkgver; or return

@@ -1,11 +1,14 @@
 set pkgbase bluez
-set pkgname bluez bluez-utils bluez-libs bluez-cups bluez-deprecated-tools bluez-hid2hci bluez-mesh bluez-obex
+set pkgname bluez bluez-utils bluez-libs bluez-deprecated-tools bluez-hid2hci
 set pkgver 5.87
 set pkgrel 2
 set url http://www.bluez.org/
 set arch i686 x32
 set license GPL-2.0-only
-set makedepends dbus libical systemd alsa-lib json-c ell python-docutils python-pygments cups git
+# No CUPS printer backend (bluez-cups): Tiny Hat does not print, and it would need the whole CUPS stack
+# No python-pygments: rst2man only needs it for code blocks with a language, and the BlueZ man pages have none
+# No OBEX (file transfer: libical, icu) and no mesh (json-c): neither is in Tiny Hat's image
+set makedepends dbus systemd alsa-lib ell python-docutils git
 # https://www.kernel.org/pub/linux/bluetooth/$pkgname-$pkgver.tar.{xz,sign}
 # "git+https://github.com/bluez/bluez.git?signed#tag=$pkgver"
 set source "git+https://github.com/bluez/bluez.git#tag=$pkgver" \
@@ -33,11 +36,13 @@ function build
         --enable-btpclient \
         --enable-midi \
         --enable-sixaxis \
-        --enable-mesh \
+        --disable-mesh \
+        --disable-obex \
         --enable-hid2hci \
         --enable-experimental \
         --enable-datafiles \
         --enable-external-ell \
+        --disable-cups \
         --enable-library --enable-deprecated; or return
     make; or return
 
@@ -128,9 +133,9 @@ end
 
 function package_bluez-deprecated-tools
     set pkgdesc 'Deprecated tools that are no longer maintained'
-    set depends json-c systemd-libs glib2 dbus readline glibc
+    set depends systemd-libs glib2 dbus readline glibc
 
-    _install fakeinstall/usr/bin/{ciptool,hciattach,hciconfig,hcitool,meshctl,rfcomm,sdptool}; or return
+    _install fakeinstall/usr/bin/{ciptool,hciattach,hciconfig,hcitool,rfcomm,sdptool}; or return
     _install fakeinstall/usr/share/man/man1/{ciptool,hciattach,hciconfig,hcitool,rfcomm,sdptool}.1; or return
     _install fakeinstall/usr/share/man/man7/rfcomm.7; or return
 end
@@ -146,50 +151,15 @@ function package_bluez-libs
     _install fakeinstall/usr/lib/pkgconfig/*; or return
 end
 
-function package_bluez-cups
-    set pkgdesc 'CUPS printer backend for Bluetooth printers'
-    set depends cups glib2 glibc dbus
-
-    _install fakeinstall/usr/lib/cups/backend/bluetooth; or return
-end
-
 function package_bluez-hid2hci
     set pkgdesc "Put HID proxying bluetooth HCI's into HCI mode"
     set depends systemd-libs glibc
 
     _install fakeinstall/usr/lib/udev/*; or return
     _install fakeinstall/usr/share/man/man1/hid2hci.1; or return
-end
 
-function package_bluez-mesh
-    set pkgdesc 'Services for bluetooth mesh'
-    set depends ell json-c readline glibc
-    set backup etc/bluetooth/mesh-main.conf
-
-    _install fakeinstall/etc/bluetooth/mesh-main.conf; or return
-    _install fakeinstall/usr/bin/{mesh-cfgclient,mesh-cfgtest}; or return
-    _install fakeinstall/usr/lib/bluetooth/bluetooth-meshd; or return
-    _install fakeinstall/usr/lib/systemd/system/bluetooth-mesh.service; or return
-    _install fakeinstall/usr/share/dbus-1/system-services/org.bluez.mesh.service; or return
-    _install fakeinstall/usr/share/dbus-1/system.d/bluetooth-mesh.conf; or return
-    _install fakeinstall/usr/share/man/man8/bluetooth-meshd.8; or return
-
-    # bluetooth.service wants ConfigurationDirectoryMode=0555
-    chmod -v 555 "$pkgdir"/etc/bluetooth; or return
-end
-
-function package_bluez-obex
-    set pkgdesc 'Object Exchange daemon for sharing content'
-    set depends glib2 libical dbus readline systemd-libs glibc
-
-    _install fakeinstall/usr/bin/{obexctl,obex-client-tool,obex-server-tool}; or return
-    _install fakeinstall/usr/lib/bluetooth/obexd; or return
-    _install fakeinstall/usr/lib/systemd/user/obex.service; or return
-    _install fakeinstall/usr/share/dbus-1/services/org.bluez.obex.service; or return
-    _install fakeinstall/usr/share/dbus-1/system.d/obex.conf; or return
-    _install fakeinstall/usr/lib/systemd/user/dbus-org.bluez.obex.service; or return
-    _install fakeinstall/usr/share/man/man5/org.bluez.obex*.5; or return
-
+    # The OBEX tools and D-Bus interface man pages are installed without the OBEX daemon (--disable-obex): unused
+    rm fakeinstall/usr/bin/{obexctl,obex-client-tool,obex-server-tool} fakeinstall/usr/share/man/man5/org.bluez.obex.*.5; or return
     # make sure there are no files left to install
     rm fakeinstall/usr/lib/libbluetooth.la; or return
     find fakeinstall -depth -print0 | xargs -0 rmdir; or return

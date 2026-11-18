@@ -13,7 +13,6 @@ pkgbase = fish
 	makedepends = git
 	makedepends = jq
 	makedepends = rust
-	makedepends = python-sphinx
 	depends = glibc
 	depends = libgcc
 	depends = pcre2
@@ -25,6 +24,8 @@ pkgbase = fish
 	optdepends = xclip: X11 clipboard integration (alternative)
 	optdepends = wl-clipboard: Wayland clipboard integration
 	backup = etc/fish/config.fish
+	options = network
+	options = leakpath
 	source = fish::git+https://github.com/fish-shell/fish-shell#tag=4.9.3
 	sha512sums = 017388b8776fb86563cf475fa280d07b3e3016c00b48f1141dbd6596e041e98ad614ecdb85e2cda92699179caebee64d95193f3a9d9653769de05cdf8d38d9cc
 	b2sums = 223586c51e69adbf5ba00df84b3d2f23cc730d989f22afab0e29064bf2d94e9bbbf746f3c46146fb1c696d7c4a3b6008d5c89d15bda0cede6a618472a159b6e8

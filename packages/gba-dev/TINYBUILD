@@ -15,7 +15,11 @@ set source "libtonc-$_tonc.tar.gz::https://github.com/gbadev-org/libtonc/archive
     build-libtonc.sh gba_crt0.s gba_cart.ld gba.specs gba_syscalls.c
 set sha256sums 5f5703d4c3188ddcdd770c2dc43cae7bea0780b348b1cd9eb473ba777c0aa396 \
     1249fad1da0bc02ba33701357b28768cb8e9e00498a715753b95f00257490c32 \
-    SKIP SKIP SKIP SKIP SKIP
+    21652f40dfd9086ec588f9e9f165904423ef2e5ebe4277b15393b80152fe629e \
+    d2eac15af3fbc85a2ad7aa3877c5becec1dcf50b0c009c67690dee336fa0e4f8 \
+    1f278bd97573d9931d5aa2ece8d753a4692825f2987fc1d14a8047f8fae4f178 \
+    13c7326daa793a10d80f4aa581f44923dc83698a66dc2667a19ef0ec4d6a0a0b \
+    5323f4180e426fce1206d9d313d5e522b38d999dd82c2191cbda5527ff46fe44
 
 function build
     rm -rf tonc-build

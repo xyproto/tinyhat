@@ -8,9 +8,8 @@ set arch i686 x32
 set url https://www.gnu.org/software/libc
 set license GPL-2.0-only
 set makedepends rsync
-set source https://www.kernel.org/pub/linux/kernel/v(string sub -l 1 -- $pkgver).x/linux-$pkgver.tar.{xz,sign}
-set sha256sums 87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953 \
-    SKIP
+set source https://www.kernel.org/pub/linux/kernel/v(string sub -l 1 -- $pkgver).x/linux-$pkgver.tar.xz
+set sha256sums 87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953
 set flags arch
 
 function build

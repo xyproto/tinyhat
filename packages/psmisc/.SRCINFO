@@ -7,7 +7,6 @@ pkgbase = psmisc
 	arch = x32
 	license = GPL
 	makedepends = git
-	makedepends = po4a
 	depends = ncurses
 	source = git+https://gitlab.com/psmisc/psmisc.git#tag=v23.7?signed
 	sha256sums = 80ae6e626ba83232b7af1c02f3f528834ebdd96325367b701f69125d3e196f2f

@@ -13,6 +13,8 @@ set options !buildflags
 function build
     cd metatar-$pkgver; or return
     set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
     set -lx GOARCH 386
     set -lx GO386 softfloat
     switch $CARCH
@@ -26,7 +28,7 @@ function build
     set -lx GOPATH $srcdir/gopath
     set -lx GOCACHE $srcdir/gocache
     set -lx GOTOOLCHAIN local
-    set -lx GOFLAGS -mod=vendor
+    set -lx GOFLAGS $GOFLAGS -mod=vendor
     set -lx CGO_ENABLED 0
     set -lx PATH $GOROOT/bin $PATH
     go build -trimpath -buildvcs=false -ldflags '-s -w' -o metatar; or return

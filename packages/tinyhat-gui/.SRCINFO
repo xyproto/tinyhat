@@ -16,11 +16,11 @@ pkgbase = tinyhat-gui
 	source = tinyhat-crashlog-viewer.c
 	source = tinyhat-help.c
 	source = tinyhat-glinfo.c
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 09649e2a956680d0087c033764a3383d168cac618f2c74517efc81c4506a9569
+	sha256sums = e947598941978ef52f65a87d19c8721066e0869efb8764311ef9fc1a672d1904
+	sha256sums = 45bcd0a4ad978650b42c835a904ce1dc4a1fa1a96ed56c5e68f86d5b0f7eecd8
+	sha256sums = 35c786a6daf43520c869b49042fdabcf918f335240077c55db91348d10c7c8f7
+	sha256sums = 9f3279a101bc8b8fcdc47560c771d3951d6ac3ff281cc4a45866fdda7a3da50c
+	sha256sums = b5ab8168cab0365fc1649140dba4c30f1e8586b690436befafc9967273ceb629
 
 pkgname = tinyhat-gui

@@ -15,8 +15,7 @@ pkgbase = glib-networking
 	depends = glibc
 	depends = gnutls
 	depends = gsettings-system-schemas
-	depends = libproxy
 	source = git+https://gitlab.gnome.org/GNOME/glib-networking.git#tag=2.90.0
-	sha256sums = SKIP
+	sha256sums = c3c0dfb515834f4d12f57a1fac1f8df7de08a35a55fe6c40fe68d237d0ad6670
 
 pkgname = glib-networking

@@ -5,16 +5,24 @@ set pkgdesc 'GNU internationalization library'
 set url https://www.gnu.org/software/gettext/
 set arch i686 x32
 set license GFDL-1.2-only GPL-2.0-only GPL-2.0-or-later LGPL-2.0-only
-set depends acl attr curl glibc json-c libgcc libgomp libstdc++ gnulib-l10n libunistring libxml2 ncurses sh
+# Without curl and json-c: they are only for spit, the online machine translation helper, which Tiny Hat does
+# not need (configure finds them only when they are installed)
+set depends acl attr glibc libgcc libgomp libstdc++ gnulib-l10n libunistring libxml2 ncurses sh
 # emacs is left out: currently broken around libsitter
 set makedepends
 set optdepends 'git: for autopoint infrastructure updates' \
     'appstream: for appstream support'
 set options '!docs'
-set source https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz{,.sig}
-set b2sums 1e4b78979f780878472142f1c0baba468d60f4b5605eeb5db5c092901183e3128c79df94c2041de870920f079b4bf38e6dae056b731e4b2b4c5cc343940962d8 \
-    SKIP
+set source https://ftp.gnu.org/pub/gnu/gettext/$pkgname-$pkgver.tar.gz
+set b2sums 1e4b78979f780878472142f1c0baba468d60f4b5605eeb5db5c092901183e3128c79df94c2041de870920f079b4bf38e6dae056b731e4b2b4c5cc343940962d8
 set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    # Never use curl or json-c (see depends), not even where they are installed: their header checks always fail
+    sed -i -e 's|#include <curl/curlver.h>|#include <tinyhat-no-curl.h>|' \
+        -e 's|#include <json-c/json_c_version.h>|#include <tinyhat-no-json-c.h>|' gettext-tools/configure; or return
+end
 
 function build
     cd $pkgname-$pkgver; or return

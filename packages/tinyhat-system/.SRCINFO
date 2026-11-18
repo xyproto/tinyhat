@@ -1,10 +1,11 @@
 pkgbase = tinyhat-system
 	pkgdesc = Tiny Hat system services, boot and maintenance scripts, and their configuration
 	pkgver = 1
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
+	depends = awk
 	backup = etc/iwd/main.conf
 	backup = etc/profile.d/pvsneslib.sh
 	backup = etc/profile.d/tinyhat-env.sh

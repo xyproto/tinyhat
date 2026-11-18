@@ -5,8 +5,9 @@ set pkgdesc 'Non-DNS IP-to-country resolver C library & utils'
 set arch i686 x32
 set url https://www.maxmind.com/app/c
 set license GPL
-set depends zlib geoip-database
-set optdepends 'geoip-database-extra: city/ASN databases (not needed for country lookups)'
+# geoip-database is optional (the library and tools work without a database), so it is an optdepend
+set depends zlib
+set optdepends 'geoip-database: GeoIP country database' 'geoip-database-extra: city/ASN databases (not needed for country lookups)'
 set makedepends autoconf libtool
 set options '!emptydirs'
 set source "$pkgname-$pkgver.tar.gz::https://github.com/maxmind/$pkgname-api-c/archive/v$pkgver.tar.gz"

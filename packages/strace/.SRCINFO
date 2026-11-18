@@ -9,8 +9,6 @@ pkgbase = strace
 	depends = glibc
 	depends = libunwind
 	source = https://github.com/strace/strace/releases/download/v7.2/strace-7.2.tar.xz
-	source = https://github.com/strace/strace/releases/download/v7.2/strace-7.2.tar.xz.asc
 	sha256sums = 4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5
-	sha256sums = 6988e860ef4875b64f0667e4b20a5692f0b13089116355b3b165420275bf993a
 
 pkgname = strace

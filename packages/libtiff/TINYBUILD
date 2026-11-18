@@ -10,9 +10,9 @@ switch $CARCH
     case x32 x86_64 aarch64
         set -g makedepends cmake git
     case '*'
-        set -g makedepends cmake git freeglut glu mesa jbigkit
+        set -g makedepends cmake git jbigkit
 end
-set optdepends 'freeglut: for using tiffgt'
+# No tiffgt (an OpenGL TIFF viewer: freeglut, glu, mesa)
 set provides libtiff.so libtiffxx.so
 set source "git+https://gitlab.com/libtiff/libtiff.git?signed#tag=v$pkgver"
 set sha256sums 633aa6529859b02b08df2dc29e0119fe614991f4490441c2eb80052de68a3754
@@ -23,7 +23,7 @@ function prepare
 end
 
 function build
-    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_POLICY_VERSION_MINIMUM=3.5; or return
+    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_DISABLE_FIND_PACKAGE_GLUT=ON; or return
     cmake --build build; or return
 end
 

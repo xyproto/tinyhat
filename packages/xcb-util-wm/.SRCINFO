@@ -11,8 +11,6 @@ pkgbase = xcb-util-wm
 	depends = libxcb
 	depends = glibc
 	source = https://xorg.freedesktop.org/archive/individual/lib/xcb-util-wm-0.4.2.tar.xz
-	source = https://xorg.freedesktop.org/archive/individual/lib/xcb-util-wm-0.4.2.tar.xz.sig
 	sha256sums = 62c34e21d06264687faea7edbf63632c9f04d55e72114aa4a57bb95e4f888a0b
-	sha256sums = 9a21d3c27273c6ab340b9b93b4ab1a084a8a28bf39a84b1013c57aaf04e7a2da
 
 pkgname = xcb-util-wm

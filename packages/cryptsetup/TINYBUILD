@@ -11,10 +11,8 @@ set checkdepends jq procps-ng xxd
 set provides libcryptsetup.so
 set conflicts 'mkinitcpio<38-1'
 set options '!emptydirs'
-set source "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-$pkgver.tar.xz" \
-    "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-$pkgver.tar.sign"
-set sha256sums 3acfa685f2dd7fcc832e0b77bc7093aa7da554a51ce8dafbb4138eaa854eee35 \
-    5891c713fe2bb9c74499d99673457354bb673a0cb1b072e36d52a229ac937c6b
+set source "https://www.kernel.org/pub/linux/utils/cryptsetup/v2.8/cryptsetup-$pkgver.tar.xz"
+set sha256sums 3acfa685f2dd7fcc832e0b77bc7093aa7da554a51ce8dafbb4138eaa854eee35
 set flags arch
 
 function build
