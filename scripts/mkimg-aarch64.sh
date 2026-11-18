@@ -18,8 +18,7 @@ mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/grub" "$work/grubarm
 cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
 bsdtar -xf "$(host grub)" -C "$work/grub" usr/bin/grub-mkimage
-mkdir -p "$work/grubarm/usr/lib/grub"
-cp -a "$top/build/buildroot-aarch64/usr/lib/grub/arm64-efi" "$work/grubarm/usr/lib/grub/"
+bsdtar -xf "$(python3 "$top/scripts/pkg.py" repofile "$top/build/repo" aarch64 grub)" -C "$work/grubarm" usr/lib/grub/arm64-efi
 bsdtar -xf "$(host kbd)" -C "$work/kbd" usr/share/kbd/consolefonts/default8x16.psfu.gz
 cp "$top/config/grub.cfg" "$work/root/boot/grub/grub.cfg"
 echo "set tinyhat_arch=aarch64" > "$work/root/boot/grub/arch.cfg"

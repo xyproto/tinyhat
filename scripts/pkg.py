@@ -4,6 +4,7 @@ import fcntl
 import fnmatch
 import hashlib
 import os
+import pathlib
 import re
 import subprocess
 import sys
@@ -237,7 +238,7 @@ _PLANNED = None
 
 def planned_versions():
     """The version of each package that the build plan uses, by name, as in package file names: the version
-    its TINYBUILD makes, or the pinned prebuilt version (vendor/archlinux32/pkg.lock, else the seed) when buildplan.py
+    its TINYBUILD makes, or the pinned prebuilt version (vendor/archlinux32/pkg.lock, else the seed) when build_planner.py
     decided to take it prebuilt."""
     global _PLANNED
     if _PLANNED is None:
@@ -728,6 +729,23 @@ def cmd_archrepo(arch, repodir, lockfile, variant=None):
     write_lock(sorted(sel, key=lambda p: p["name"]), lockfile)
 
 
+def cmd_addpkg(lockfile, repodir, arch, name):
+    """Add our ARCH build of NAME to the lock file of a root file system, linked into repodir: for the kernel, whose
+    architecture is the boot medium's (the x32 image boots the x86_64 kernel)."""
+    built = arch_files(os.path.join(TOP, "build", "repo"), arch)
+    if name not in built:
+        die(f"{name} ({arch}) has not been built")
+    path = built[name]
+    fn = os.path.basename(path)
+    dest = os.path.join(repodir, fn)
+    if os.path.realpath(dest) != os.path.realpath(path):
+        link(path, dest)
+    sel = [p for p in read_lock(lockfile) if p["name"] != name]
+    sel.append({"repo": "tinyhat", "name": name, "version": pkginfo(path)["pkgver"][0], "filename": fn,
+                "sha256": sha256(path)})
+    write_lock(sorted(sel, key=lambda p: p["name"]), lockfile)
+
+
 def reachable(sel, repodir, roots):
     """The packages of sel that the roots need, following depends and provides."""
     idx = Index.new()
@@ -781,21 +799,41 @@ def cmd_source(srcdir, *names):
             die(f"checksum mismatch for {name}")
 
 
-def cmd_extract(lockfile, pkgdir, root, excludes=()):
+def cmd_extract(lockfile, pkgdir, root, excludes=(), everywhere=()):
+    """Extract the packages of the lock into root, without everywhere, and without excludes from the packages that are
+    not Tiny Hat's own."""
     os.makedirs(root, exist_ok=True)
-    pats = [".PKGINFO", ".BUILDINFO", ".MTREE", ".INSTALL", ".CHANGELOG"] + list(excludes)
-    args = []
-    for pat in pats:
-        args += ["--exclude", pat]
-    if os.geteuid() == 0:
-        args += ["-p", "--numeric-owner"]
+    own = set((distro.plan() or {}).get("tinyhat_pkgs", []))
+    base = [".PKGINFO", ".BUILDINFO", ".MTREE", ".INSTALL", ".CHANGELOG"] + list(everywhere)
+    owner = ["-p", "--numeric-owner"] if os.geteuid() == 0 else []
     order = {"i686": 1, "lib32": 2}
     for p in sorted(read_lock(lockfile), key=lambda p: order.get(p["repo"], 0)):
         path = os.path.join(pkgdir, p["filename"])
+        pats = base if p["name"] in own else base + list(excludes)
         if p["repo"] in order:
             extract_lib32(path, root, p["repo"] == "lib32", pats)
             continue
-        subprocess.run(["bsdtar", "--no-xattrs", "--no-acls", "--no-fflags", "-xf", path, "-C", root] + args, check=True)
+        args = [a for pat in pats for a in ("--exclude", pat)]
+        subprocess.run(["bsdtar", "--no-xattrs", "--no-acls", "--no-fflags", "-xf", path, "-C", root] + args + owner,
+                       check=True)
+
+
+def cmd_keep(lockfile, pkgdir, root, section):
+    """Extract the files that [image] keep (and keep in SECTION) names from the packages of the lock."""
+    keep = dict(distro.section("image").get("keep", {}))
+    if section != "image":
+        keep.update(distro.section(section).get("keep", {}))
+    owner = ["-p", "--numeric-owner"] if os.geteuid() == 0 else []
+    for p in read_lock(lockfile):
+        pats = keep.get(p["name"])
+        if not pats or p["repo"] == "lib32":
+            continue
+        path = os.path.join(pkgdir, p["filename"])
+        with tarfile.open(path) as t:
+            names = [m.name for m in t if not m.isdir() and any(pathlib.PurePosixPath(m.name).full_match(pat) for pat in pats)]
+        if names:
+            subprocess.run(["bsdtar", "--no-xattrs", "--no-acls", "--no-fflags", "-xf", path, "-C", root] + owner + names,
+                           check=True)
 
 
 def extract_lib32(path, root, libs_only, excludes):
@@ -822,7 +860,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | repofile REPODIR ARCH NAME | "
-            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
+            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | addpkg LOCK REPODIR ARCH NAME | keep LOCK DIR ROOT SECTION | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
@@ -838,17 +876,23 @@ def main():
         cmd_prebuilt(*args)
     elif cmd == "archrepo":
         cmd_archrepo(*args)
+    elif cmd == "addpkg":
+        cmd_addpkg(*args)
     elif cmd == "source":
         cmd_source(*args)
     elif cmd == "prunable":
         cmd_prunable(*args)
+    elif cmd == "keep":
+        cmd_keep(*args)
     elif cmd == "extract":
-        ex = []
+        ex, everywhere = [], []
         if len(args) > 3:
             ex = distro.section(args[3]).get("exclude", [])
+            everywhere = distro.section(args[3]).get("exclude_all", [])
             if args[3].startswith("image-"):
                 ex = distro.section("image").get("exclude", []) + ex
-        cmd_extract(args[0], args[1], args[2], ex)
+                everywhere = distro.section("image").get("exclude_all", []) + everywhere
+        cmd_extract(args[0], args[1], args[2], ex, everywhere)
     else:
         die(f"unknown command {cmd}")
 

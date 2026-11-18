@@ -134,7 +134,7 @@ def own_seed(infos):
         dep = todo.pop()
         name = idx.resolve(dep)
         if name is None:
-            sys.exit(f"buildplan.py: no TINYBUILD makes {dep}, which [buildroot] i686 needs")
+            sys.exit(f"build_planner.py: no TINYBUILD makes {dep}, which [buildroot] i686 needs")
         if name in seed.pkgs:
             continue
         info = by_base[idx.pkgs[name]["base"]]
@@ -384,7 +384,7 @@ def native_cycles(plans, base_of, full, wanted=None):
             if not ready:
                 ready = sorted(b for b in left if inner[b] - built <= can_skip[b])[:1]
             if not ready:
-                sys.exit("buildplan.py: i686 dependency cycle with no bootstrap_without to break it: "
+                sys.exit("build_planner.py: i686 dependency cycle with no bootstrap_without to break it: "
                          + " ".join(sorted(b for b in left if inner[b] & left)))
             order += ready
             built |= set(ready)
@@ -562,13 +562,13 @@ def write_plan(groups, extra):
             break
         for k, m in sorted(gone.items()):
             if any(k in groups[g] for g in ("rootfs-i686", "rootfs-x32", "cross")):
-                sys.exit(f"buildplan.py: {k} is needed, but needs {' '.join(m)}, which is not in the plan")
-            print(f"buildplan.py: leaving out {k}: it needs {' '.join(m)}, which is not in the plan", file=sys.stderr)
+                sys.exit(f"build_planner.py: {k} is needed, but needs {' '.join(m)}, which is not in the plan")
+            print(f"build_planner.py: leaving out {k}: it needs {' '.join(m)}, which is not in the plan", file=sys.stderr)
             del BUILDS[k]
     groups = {g: [k for k in keys if k in BUILDS] for g, keys in groups.items()}
     plan = {"builds": BUILDS, "groups": groups, **extra}
     distro.write_if_changed(PLAN, json.dumps(plan, indent=1, sort_keys=True) + "\n")
-    out = ["# The package builds, from scripts/buildplan.py (do not edit): run through the Makefile, as in make cross",
+    out = ["# The package builds, from scripts/build_planner.py (do not edit): run through the Makefile, as in make cross",
            "ninja_required_version = 1.10",
            "builddir = build",
            "# pool build and pool heavy (one heavy build at a time), from the Makefile (PKG_JOBS)",
@@ -694,7 +694,7 @@ def cmd_mk():
     # A dependency cycle among package directories that no image needs is not broken: they are left out
     boot_first, dep_kind, unwanted = native_cycles(i686_plans, base_of, full, needed_package_dirs(infos, keys_for(rootfs_i686)))
     if unwanted:
-        print(f"buildplan.py: leaving out {' '.join(sorted(unwanted))}: a dependency cycle that no image needs",
+        print(f"build_planner.py: leaving out {' '.join(sorted(unwanted))}: a dependency cycle that no image needs",
               file=sys.stderr)
         for b in unwanted:
             del i686_plans[b]
@@ -893,7 +893,7 @@ def cmd_seed():
                 continue
             seed.append(dep)
     if wanted_by:
-        sys.exit("buildplan.py: TINYBUILDs need excluded packages in the build environment:\n" +
+        sys.exit("build_planner.py: TINYBUILDs need excluded packages in the build environment:\n" +
                  "\n".join(f"  {d}: needed by {', '.join(sorted(b))}" for d, b in sorted(wanted_by.items())))
     print("\n".join(seed))
 
@@ -927,75 +927,31 @@ def cmd_libs():
 
 
 def cmd_lock_arch(arch, check=False):
-    """Lock the prebuilt packages of the image for another architecture ([image-ARCH] in distro.toml).
+    """Lock what the image for another architecture ([image-ARCH] in distro.toml) builds, and its build environment.
 
-    The image is [image] with the packages in remove left out and the ones in add added. Packages come
-    prebuilt (pkg.ARCH_SOURCES), except for the packages that are built from source:
-    - Tiny Hat's own packages that the prebuilt repositories lack, and the packages listed in build_from_source,
-    - packages with a version pinned in distro.toml, when the prebuilt version is different,
-    - packages whose prebuilt ones would pull in something [image] deny names that the x86 image
-      does not have (like X11 or SDL2), repeated until nothing new is pulled in.
-    The versions and checksums of the prebuilt packages are written to [image-ARCH] in distro.lock."""
+    The image is [image] with the packages in remove left out and the ones in add added, all built from our TINYBUILDs
+    for ARCH, like the i686 image. Only the build environment comes prebuilt (pkg.ARCH_SOURCES). Writes the package
+    directories to build ([build-ARCH]) and the prebuilt build environment ([buildroot-ARCH]) to distro.lock."""
     section = f"image-{arch}"
-    conf, base = distro.section(section), distro.section("image")
     targets, prefs, skip = pkg.list_config(section)
     dbidx = pkg.arch_db(arch)
-    db = dbidx.pkgs
-    prefs = {k: v for k, v in prefs.items() if k not in db}
     infos = load()
     by_base = {i["base"]: i for i in infos}
-    base_of = {n: i["base"] for i in infos for n in i["pkgnames"]}
-    rules = deny_rules()
-    name_rules = [r for r in rules if not r[1]]
-    x86 = {p["name"] for p in pkg.resolve_targets(base.get("packages", []), indexes(infos), "i686", prefs, skip)}
+    own = indexes(infos)["i686"]
+    missing = [t for t in targets if own.resolve(t, prefs) is None]
+    if missing:
+        sys.exit(f"build_planner.py: {section}: no TINYBUILD makes {' '.join(missing)}")
+    sel = pkg.resolve_targets(targets, {"i686": own}, "i686", prefs, skip)
+    prefs = {k: v for k, v in prefs.items() if k not in dbidx.pkgs}
 
-    local = set(conf.get("build_from_source", []))
-    for info in infos:
-        if info["sub"] == "tinyhat" and any(n not in db for n in info["pkgnames"]):
-            local.add(info["base"])
-        # A version pinned in distro.toml is pinned for a reason, so build it if the prebuilt one differs
-        pin = distro.tables().get(info["base"], {}).get("version")
-        if pin and any(n in db and db[n]["version"] != pin for n in info["pkgnames"]):
-            local.add(info["base"])
-    local |= {base_of[t] for t in targets if t not in db and t in base_of}
-
-    def resolve():
-        both = pkg.Index.new()
-        for b in sorted(local):
-            for name in by_base[b]["pkgnames"]:
-                both.add(name, {"name": name, "base": b, "local": True, "depends": by_base[b]["depends"][name]},
-                         by_base[b]["provides"][name])
-        for name, p in db.items():
-            both.add(name, p)
-        for pv, names in dbidx.provides.items():
-            for n in names:
-                both.link(pv, n)
-        sel = pkg.resolve_targets(targets, {arch: both}, arch, prefs, skip)
-        names = {p["name"] for p in sel}
-        users = {}
-        for p in sel:
-            for d in p["depends"]:
-                users.setdefault(both.resolve(d, prefs, names), []).append(p)
-        bad = {p["name"] for p in sel if p["name"] not in x86 and denied(p["name"], None, name_rules)}
-        return sel, users, bad
-
-    while True:
-        sel, users, bad = resolve()
-        more = {base_of[u["name"]] for n in bad for u in users.get(n, [])
-                if not u.get("local") and u["name"] not in bad and u["name"] in base_of}
-        more |= {base_of[p["name"]] for p in sel if not p.get("local") and PKGCONF.get(base_of.get(p["name"]), {}).get("build_from_source")}
-        more -= local
-        if not more:
-            break
-        local |= more
-
-    built = {b: [] for b in conf.get("build_from_source", [])}
+    built = {}
     # The x86_64 build environment builds the i686 packages too, with the i686-cross toolchain (cross_rules)
     if arch == "x86_64":
         built["i686-cross"] = []
     for p in sel:
-        if p.get("local"):
-            built.setdefault(p["base"], []).append(p["name"])
+        built.setdefault(p["base"], []).append(p["name"])
+    for b in distro.section(section).get("boot", []):
+        built.setdefault(b, [])
     tools = package_index(infos, ("arch", "tinyhat"), arches=(arch, "any"))
 
     def build_tools(deps):
@@ -1017,27 +973,18 @@ def cmd_lock_arch(arch, check=False):
     while todo:
         todo += build_tools(all_deps(by_base[todo.pop()]))
     built = {b: sorted(names) for b, names in sorted(built.items())}
-    prebuilt = {p["name"]: {"repo": p["repo"], "version": p["version"], "file": p["filename"], "sha256": p["sha256"]}
-                for p in sel if not p.get("local")}
     buildroot = arch_buildroot(arch, [by_base[b] for b in built], dbidx, prefs,
                                cross_tools(by_base) if arch == "x86_64" else [])
-    sections = {section: prebuilt, f"buildroot-{arch}": buildroot, f"build-{arch}": built}
+    sections = {section: {}, f"buildroot-{arch}": buildroot, f"build-{arch}": built}
     if check:
         stale = [s for s, v in sections.items() if distro.lock().get(s, {}) != v]
         if stale:
-            sys.exit(f"buildplan.py: distro.lock {' '.join(f'[{s}]' for s in stale)} no longer matches the TINYBUILDs "
+            sys.exit(f"build_planner.py: distro.lock {' '.join(f'[{s}]' for s in stale)} no longer matches the TINYBUILDs "
                      f"and distro.toml, run \"make lock-{arch}\"")
         return
     distro.write_lock(**sections)
-    print(f"buildplan.py: {section}: {len(prebuilt)} prebuilt packages locked, {len(built)} package directories to build: "
-          + " ".join(built), file=sys.stderr)
-    print(f"buildplan.py: buildroot-{arch}: {len(buildroot)} prebuilt packages locked", file=sys.stderr)
-    for n in sorted(bad):
-        print(f"buildplan.py: {section}: {n} ([image] deny) is still pulled in by "
-              + " ".join(sorted(u["name"] for u in users.get(n, []))), file=sys.stderr)
-    old = sorted(f"{n} {e['version']}" for n, e in prebuilt.items() if denied(n, e["version"], [r for r in rules if r[1]]))
-    if old:
-        sys.exit(f"buildplan.py: {section}: older than [image] deny allows: {', '.join(old)}")
+    print(f"build_planner.py: {section}: {len(built)} package directories to build: " + " ".join(built), file=sys.stderr)
+    print(f"build_planner.py: buildroot-{arch}: {len(buildroot)} prebuilt packages locked", file=sys.stderr)
 
 
 def arch_buildroot(arch, built, db, prefs, tools=()):
@@ -1057,7 +1004,7 @@ def arch_buildroot(arch, built, db, prefs, tools=()):
         if dep in own or dep in skip or dep.startswith("lib32-") or dep in targets:
             continue
         if db.resolve(dep, prefs) is None:
-            print(f"buildplan.py: buildroot-{arch}: {dep} is not available prebuilt, leaving it out", file=sys.stderr)
+            print(f"build_planner.py: buildroot-{arch}: {dep} is not available prebuilt, leaving it out", file=sys.stderr)
             continue
         targets.append(dep)
     sel = pkg.resolve_targets(targets, {arch: db}, arch, prefs, skip)
@@ -1079,12 +1026,12 @@ def cmd_pkgfile(repodir, arch, name):
     idx = package_index(infos, ("arch", "tinyhat"))
     pname = idx.resolve(name)
     if pname is None:
-        sys.exit(f"buildplan.py: no TINYBUILD makes {name}")
+        sys.exit(f"build_planner.py: no TINYBUILD makes {name}")
     info = by_base[idx.pkgs[pname]["base"]]
     parch = "any" if "any" in info["arch"][pname] else arch
     path = os.path.join(repodir, f"{pname}-{build_version(info, pname)}-{parch}.pkg.tar.zst")
     if not os.path.exists(path):
-        sys.exit(f"buildplan.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
+        sys.exit(f"build_planner.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
     print(path)
 
 
@@ -1110,7 +1057,7 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
         dep, named = todo.pop()
         name = idx.resolve(dep)
         if name is None:
-            sys.exit(f"buildplan.py: no TINYBUILD makes {dep}")
+            sys.exit(f"build_planner.py: no TINYBUILD makes {dep}")
         if name in seen or idx.pkgs[name]["base"] in without or (not named and provided(name)):
             continue
         seen.add(name)
@@ -1119,7 +1066,7 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
         parch = "any" if "any" in info["arch"][name] else arch
         path = os.path.join(repodir, f"{name}-{ver}-{parch}.pkg.tar.zst")
         if not os.path.exists(path):
-            sys.exit(f"buildplan.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
+            sys.exit(f"build_planner.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
         out.append(path)
         todo += [(d, False) for d in info["depends"].get(name, [])]
     print("\n".join(sorted(out)))
@@ -1189,7 +1136,7 @@ def cross_rules(by_base, roots):
             ready = sorted(b for b in left if graph[b] - built <= soft[b])[:1]
         if not ready:
             cycle = sorted(b for b in left if graph[b] & left)
-            sys.exit("buildplan.py: dependency cycle with no bootstrap_without to break it: " + " ".join(cycle))
+            sys.exit("build_planner.py: dependency cycle with no bootstrap_without to break it: " + " ".join(cycle))
         for b in ready:
             order.append(b)
             built.add(b)
@@ -1262,7 +1209,7 @@ def cmd_query(what):
     needed (the package directories the images need), provided-bases (what [buildroot] provided names)."""
     p = distro.plan()
     if p is None:
-        sys.exit("buildplan.py: build/plan.json is missing, run make first")
+        sys.exit("build_planner.py: build/plan.json is missing, run make first")
     if what == "tinyhat-pkgs":
         out = p["tinyhat_pkgs"]
     elif what == "built-pkgnames":
@@ -1274,7 +1221,7 @@ def cmd_query(what):
     elif what == "provided-bases":
         out = provided_bases()
     else:
-        sys.exit(f"buildplan.py: unknown query {what}")
+        sys.exit(f"build_planner.py: unknown query {what}")
     print("\n".join(out))
 
 
@@ -1301,7 +1248,7 @@ def main():
     elif cmd == "lock-arch" and len(sys.argv) in (3, 4) and sys.argv[3:] in ([], ["--check"]):
         cmd_lock_arch(sys.argv[2], sys.argv[3:] == ["--check"])
     else:
-        sys.exit("usage: buildplan.py mk | seed | libs | query tinyhat-pkgs|built-pkgnames|needed | lock-arch ARCH [--check] | pkgfile REPODIR ARCH NAME | pkgfiles [--image] [--without BASE,...] REPODIR ARCH NAME...")
+        sys.exit("usage: build_planner.py mk | seed | libs | query tinyhat-pkgs|built-pkgnames|needed | lock-arch ARCH [--check] | pkgfile REPODIR ARCH NAME | pkgfiles [--image] [--without BASE,...] REPODIR ARCH NAME...")
 
 
 if __name__ == "__main__":

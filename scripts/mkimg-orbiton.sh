@@ -14,14 +14,15 @@ initrd=build/initramfs-orbiton.img
 # [image-orbiton] packages in distro.toml ("make cross" builds them), and what they need at run time
 pkgs=$(python3 scripts/distro.py packages image-orbiton)
 
-files=$(python3 scripts/buildplan.py pkgfiles --image build/repo i686 $pkgs)
+files=$(python3 scripts/build_planner.py pkgfiles --image build/repo i686 $pkgs)
 # filesystem first: it has the links (like usr/sbin -> bin) that the other packages' paths go through
 files="$(printf '%s\n' $files | grep '/filesystem-[^/]*$') $(printf '%s\n' $files | grep -v '/filesystem-[^/]*$')"
 rm -rf "$root"
 mkdir -p "$root"
 for f in $files; do
   bsdtar --no-xattrs --no-acls --no-fflags -xpf "$f" -C "$root" \
-    --exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG
+    --exclude .PKGINFO --exclude .BUILDINFO --exclude .MTREE --exclude .INSTALL --exclude .CHANGELOG \
+    --exclude 'usr/lib/modules/*/vmlinuz'
 done
 echo "mkimg-orbiton.sh: $(echo "$files" | wc -l) packages"
 
@@ -45,8 +46,7 @@ mkdir -p "$root/home/tinyhat"
 chown 1000:1000 "$root/home/tinyhat"
 chmod 700 "$root/home/tinyhat"
 
-# Kernel modules, and only the firmware that they ask for
-cp -a build/modules/. "$root/"
+# Only the firmware that the kernel modules ask for
 python3 scripts/fwprune.py "$root"
 
 rm -f "$sfs"

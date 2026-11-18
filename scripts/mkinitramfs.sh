@@ -18,7 +18,7 @@ mkdir -p "$work/bin" "$work/dev" "$work/proc" "$work/sys" "$work/run" "$work/new
 # With TINYHAT_OWN=1, only packages that our TINYBUILDs build, in the versions they give, never prebuilt ones
 pkgfile() {
   if [ -n "${TINYHAT_OWN-}" ]; then
-    python3 "$top/scripts/buildplan.py" pkgfile "$1" "$arch" "$2"
+    python3 "$top/scripts/build_planner.py" pkgfile "$1" "$arch" "$2"
   else
     python3 "$top/scripts/pkg.py" repofile "$1" "$arch" "$2"
   fi

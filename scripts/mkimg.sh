@@ -18,7 +18,7 @@ efi_modules="fat part_msdos xfs search search_label normal linux echo test sleep
 # With TINYHAT_OWN=1, only packages that our TINYBUILDs build, in the versions they give, never prebuilt ones
 pkg() {
   if [ -n "${TINYHAT_OWN-}" ]; then
-    python3 "$top/scripts/buildplan.py" pkgfile "$top/build/repo" i686 "$1"
+    python3 "$top/scripts/build_planner.py" pkgfile "$top/build/repo" i686 "$1"
   else
     python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 "$1"
   fi
