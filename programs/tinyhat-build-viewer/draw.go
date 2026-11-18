@@ -128,12 +128,29 @@ func (v *viewer) fill(x, y, w, h float32, c rgb, a float32) {
 
 func (v *viewer) bar(x, y, w float32, frac float64, c rgb, label string) {
 	v.fill(x, y, w, 18, rgb{0.2, 0.22, 0.28}, 1)
-	v.fill(x, y, w*float32(math.Max(0, math.Min(1, frac))), 18, c, 1)
-	fg := rgb{0.95, 0.95, 0.95}
-	if frac > 0.5 {
-		fg = rgb{0.05, 0.05, 0.05}
+	fw := w * float32(math.Max(0, math.Min(1, frac)))
+	label = v.fit(label, 12, w-12)
+	v.text(x+6, y+14, label, 12, rgb{0.95, 0.95, 0.95})
+	if fw > 0 {
+		v.fill(x, y, fw, 18, c, 1)
+		v.r.SetClipRect(&sdl.Rect{X: int32(x * v.k), Y: int32(y * v.k), W: int32(fw * v.k), H: int32(18*v.k + 1)})
+		v.text(x+6, y+14, label, 12, rgb{0.05, 0.05, 0.05})
+		v.r.SetClipRect(nil)
 	}
-	v.text(x+6, y+14, label, 12, fg)
+}
+
+func (v *viewer) fit(s string, size int, w float32) string {
+	f := v.font(size)
+	max := int32(w * v.k)
+	if full, _, err := f.MeasureString(s, 0); err != nil || full <= max {
+		return s
+	}
+	dots, _, _ := f.MeasureString("…", 0)
+	_, n, err := f.MeasureString(s, max-dots)
+	if err != nil || int(n) > len(s) {
+		return s
+	}
+	return strings.TrimRight(s[:n], " |,") + "…"
 }
 
 func (v *viewer) graph(x, y, w, h float32, data []float64, c rgb, title string, scale float64) {
@@ -305,10 +322,11 @@ func rpi4Line(snap *snapshot, i int) string {
 	return fmt.Sprintf("rpi4: %s, plus the Raspberry Pi firmware and bootloader  |  tinyhat-rpi4.img %s", pkgs, state)
 }
 
-func archLine(a string, snap *snapshot, i int) string {
+// archLine is the line of a package build row: NAME is what it is, A its kind (the jobs that belong to it)
+func archLine(name, a string, snap *snapshot, i int) string {
 	todo := snap.Todo[i]
 	if len(todo) == 0 {
-		return fmt.Sprintf("%s: all %d packages up to date  (%d built this run)", a, snap.Total[i], snap.Run[i])
+		return fmt.Sprintf("%s: all %d package builds up to date  (%d built this run)", name, snap.Total[i], snap.Run[i])
 	}
 	busy := map[string]bool{}
 	for _, j := range snap.Jobs {
@@ -324,7 +342,7 @@ func archLine(a string, snap *snapshot, i int) string {
 			next = append(next, p)
 		}
 	}
-	line := fmt.Sprintf("%s: %d of %d to build, %d built this run", a, len(todo), snap.Total[i], snap.Run[i])
+	line := fmt.Sprintf("%s: %d of %d to check or build, %d built this run", name, len(todo), snap.Total[i], snap.Run[i])
 	if len(now) > 0 {
 		line += "  |  building " + strings.Join(now, ", ")
 	}
@@ -446,6 +464,9 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 		status, sc = "BUILD STOPPED AT AN ERROR", rgb{1, 0.35, 0.35}
 	} else if snap.Start > 0 {
 		status = "building"
+		if len(snap.Goals) > 0 {
+			status = "building " + strings.Join(snap.Goals, " ")
+		}
 	} else {
 		for _, st := range snap.Steps {
 			if strings.HasPrefix(st, "QEMU test") {
@@ -480,7 +501,10 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 			continue
 		}
 		y += 26
-		label := archLine(a, snap, i)
+		label := archLine(pkgNames[i], a, snap, i)
+		if len(snap.Goals) > 0 && !snap.Active[i] {
+			label += "  |  not part of this build"
+		}
 		if a == "x32" {
 			label += fmt.Sprintf("  |  x32 image: %d x32 + %d i686 packages", snap.X32Image[0], snap.X32Image[1])
 		}
@@ -537,6 +561,25 @@ func (v *viewer) draw(w, h float32, t, dt float64) {
 	if len(snap.Jobs) == 0 && len(snap.Steps) == 0 {
 		y += 22
 		v.text(30, y, "nothing", 13, rgb{0.6, 0.6, 0.6})
+	}
+	if len(snap.Failures) > 0 {
+		y += 34
+		v.text(20, y, fmt.Sprintf("failed in this run (%d, see build/log/NAME.log)", len(snap.Failures)), 15, rgb{1, 0.35, 0.35})
+		for i, f := range snap.Failures {
+			if i == 6 {
+				break
+			}
+			y += 22
+			v.text(30, y, f, 13, rgb{1, 0.55, 0.55})
+		}
+	}
+	if snap.Pace != "" {
+		y += 30
+		v.text(20, y, "recently built  ("+snap.Pace+")", 15, accent)
+		for _, f := range snap.Recent {
+			y += 20
+			v.text(30, y, f, 12, rgb{0.7, 0.85, 0.7})
+		}
 	}
 	y += 30
 	gw := (w - 60) / 3
