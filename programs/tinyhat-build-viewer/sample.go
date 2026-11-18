@@ -420,7 +420,7 @@ func (s *sampler) sample() *snapshot {
 		}
 	}
 
-	// The plan (build/plan.json, from scripts/buildplan.py) and what ninja would run for each group (ninja -n), which
+	// The plan (build/plan.json, from scripts/build_planner.py) and what ninja would run for each group (ninja -n), which
 	// is what may still build: the cache key of each build decides
 	var plan struct {
 		Builds map[string]struct {
