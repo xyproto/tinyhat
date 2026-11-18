@@ -9,7 +9,7 @@ set depends glibc
 set makedepends git
 set provides libfdk-aac.so
 set source "git+https://github.com/mstorsjo/fdk-aac.git#tag=v$pkgver"
-set sha256sums SKIP
+set sha256sums bb97dce7e1492fe9c1373896e3bcae221ad5f2b76f95b5ee568b90499461212e
 set flags arch
 
 function prepare

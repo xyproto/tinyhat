@@ -6,8 +6,8 @@ set arch any
 set url https://wayland.freedesktop.org/
 set license MIT
 set makedepends wayland meson
-set source "https://gitlab.freedesktop.org/wayland/$pkgname/-/releases/$pkgver/downloads/$pkgname-$pkgver.tar.xz"{,.sig}
-set sha256sums 4460c20cfcf68b994a5ee206ed15fc19ad312f16c96075186e83b0e3f4aa48a5 SKIP
+set source "https://gitlab.freedesktop.org/wayland/$pkgname/-/releases/$pkgver/downloads/$pkgname-$pkgver.tar.xz"
+set sha256sums 4460c20cfcf68b994a5ee206ed15fc19ad312f16c96075186e83b0e3f4aa48a5
 set flags arch
 
 function prepare

@@ -6,8 +6,6 @@ pkgbase = json-glib
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = docbook-xsl
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = glib2-devel
 	makedepends = meson
@@ -15,7 +13,7 @@ pkgbase = json-glib
 	depends = glib2
 	depends = glibc
 	source = git+https://gitlab.gnome.org/GNOME/json-glib.git?signed#tag=1.10.8
-	sha256sums = SKIP
+	sha256sums = e966cce7e9d24af59d368e0332022e8ccd5db6bb5926f867a177d6b8fa881d0e
 
 pkgname = json-glib
 	depends = glib2
@@ -24,7 +22,3 @@ pkgname = json-glib
 	depends = libgobject-2.0.so
 	depends = libgio-2.0.so
 	provides = libjson-glib-1.0.so
-
-pkgname = json-glib-docs
-	pkgdesc = JSON library built on GLib (documentation)
-	depends = 

@@ -1,5 +1,5 @@
 set pkgbase pipewire
-set pkgname pipewire alsa-card-profiles libpipewire pipewire-alsa pipewire-audio pipewire-docs pipewire-ffado pipewire-jack pipewire-jack-client pipewire-netjack2 pipewire-pulse pipewire-system-services pipewire-v4l2 pipewire-zeroconf pipewire-session-manager pulse-native-provider
+set pkgname pipewire alsa-card-profiles libpipewire pipewire-alsa pipewire-audio pipewire-jack pipewire-netjack2 pipewire-pulse pipewire-system-services pipewire-v4l2 pipewire-session-manager pulse-native-provider
 set pkgver 1.6.11
 set pkgrel 1
 set epoch 1
@@ -7,11 +7,18 @@ set pkgdesc 'Low-latency audio/video router and processor'
 set arch i686 x32 x86_64 aarch64
 set url https://pipewire.org
 set license MIT
-set makedepends alsa-lib avahi bluez-libs dbus dconf doxygen fftw git glib2 glib2-devel graphviz jack2 libebur128 libfdk-aac libffado libfreeaptx libgcc liblc3 libldac libmysofa libpulse libsndfile libstdc++ libusb lilv meson ncurses opus python-docutils readline rtkit sbc spandsp systemd valgrind webrtc-audio-processing-1
+# No documentation (doxygen, graphviz), FireWire audio (libffado) or client of a JACK2 server (jack2): pipewire-jack
+# is the JACK of Tiny Hat. No valgrind (only an optional test setup)
+# No LV2 plug-in hosting (lv2=disabled, lilv dropped); rtkit is only talked to over D-Bus at run time, so it is not a
+# makedepend
+# No avahi (zeroconf, RAOP, snapcast discovery: pipewire-zeroconf) and no libpulse (tunnels to a PulseAudio server)
+set makedepends alsa-lib bluez-libs dbus dconf fftw git glib2 glib2-devel libebur128 libfdk-aac libfreeaptx libgcc liblc3 libldac libmysofa libsndfile libstdc++ libusb meson ncurses opus python-docutils readline sbc spandsp systemd webrtc-audio-processing-1
+# wireplumber (the session manager, pipewire-session-manager) is only needed at run time, and it is built with pipewire
+set bootstrap_without wireplumber
 set checkdepends desktop-file-utils openal
 set source "git+https://gitlab.freedesktop.org/pipewire/pipewire.git#tag=$pkgver" \
     pipewire-sysusers.conf
-set sha256sums SKIP \
+set sha256sums f2d1450cd6b649a3a1d8ba523fee3b8e41baa95b169eb51fae1f6b54ccaa2fac \
     c053d98bbe1a156b72b6f0229efbe6c7aa0edda9ba5bb4e580f27bdaa9a773d9
 set flags arch
 set -g _pwname pipewire-0.3
@@ -22,7 +29,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D bluez5-codec-lc3plus=disabled -D onnxruntime=disabled -D roc=disabled -D bluez5-codec-ldac-dec=disabled -D docs=enabled -D jack-devel=true -D libjack-path=/usr/lib -D man=enabled -D rlimits-install=false -D selinux=disabled -D libcamera=disabled -D gstreamer=disabled -D gstreamer-device-provider=disabled -D libcanberra=disabled -D x11=disabled -D x11-xfixes=disabled -D sdl2=disabled -D session-managers=[] -D snap=disabled -D systemd-system-service=enabled -D udevrulesdir=/usr/lib/udev/rules.d
+    set -l meson_options -D bluez5-codec-lc3plus=disabled -D onnxruntime=disabled -D roc=disabled -D bluez5-codec-ldac-dec=disabled -D docs=disabled -D libffado=disabled -D jack=disabled -D avahi=disabled -D libpulse=disabled -D raop=disabled -D lv2=disabled -D jack-devel=true -D libjack-path=/usr/lib -D man=enabled -D rlimits-install=false -D selinux=disabled -D libcamera=disabled -D gstreamer=disabled -D gstreamer-device-provider=disabled -D libcanberra=disabled -D x11=disabled -D x11-xfixes=disabled -D sdl2=disabled -D session-managers=[] -D snap=disabled -D systemd-system-service=enabled -D udevrulesdir=/usr/lib/udev/rules.d
     arch-meson pipewire build $meson_options; or return
     meson compile -C build; or return
 end
@@ -69,7 +76,7 @@ function package_pipewire
     meson install -C build --destdir "$pkgdir"; or return
     begin
         set -l __subshell_pwd $PWD
-    cd "$pkgdir"; or return
+        cd "$pkgdir"; or return
         _pick acp usr/lib/udev; or return
         _pick acp usr/share/alsa-card-profile; or return
         _pick audio usr/bin/pipewire-aes67; or return
@@ -87,12 +94,6 @@ function package_pipewire
         _pick audio usr/share/man/man1/spa-{acp-tool,resample}.1; or return
         _pick audio usr/share/man/man7/libpipewire-module-rtp-{sap,sink,source}.7; or return
         _pick audio usr/share/pipewire/pipewire-aes67.conf; or return
-        _pick docs usr/share/doc; or return
-        _pick ffado usr/lib/$_pwname/libpipewire-module-ffado*.so; or return
-        _pick ffado usr/share/man/man7/libpipewire-module-ffado-driver.7; or return
-        _pick jack-client usr/lib/$_pwname/libpipewire-module-jack{-tunnel,dbus-detect}.so; or return
-        _pick jack-client usr/lib/$_spaname/jack; or return
-        _pick jack-client usr/share/man/man7/libpipewire-module-jack{-tunnel,dbus-detect}.7; or return
         _pick jack usr/bin/pw-jack; or return
         _pick jack usr/include/jack; or return
         _pick jack usr/lib/libjack*; or return
@@ -104,22 +105,15 @@ function package_pipewire
         _pick netjack2 usr/share/man/man7/libpipewire-module-netjack2*.7; or return
         _pick pulse usr/bin/pipewire-pulse; or return
         _pick pulse usr/lib/$_pwname/libpipewire-module-protocol-pulse.so; or return
-        _pick pulse usr/lib/$_pwname/libpipewire-module-pulse-tunnel.so; or return
         _pick pulse usr/lib/systemd/user/pipewire-pulse.*; or return
         _pick pulse usr/share/glib-2.0/schemas/org.freedesktop.pulseaudio.gschema.xml; or return
         _pick pulse usr/share/man/man1/pipewire-pulse.1; or return
         _pick pulse usr/share/man/man5/pipewire-pulse.conf.5; or return
-        _pick pulse usr/share/man/man7/libpipewire-module-{protocol-pulse,pulse-tunnel}.7; or return
+        _pick pulse usr/share/man/man7/libpipewire-module-protocol-pulse.7; or return
         _pick pulse usr/share/man/man7/pipewire-pulse*.7; or return
         _pick pulse usr/share/pipewire/pipewire-pulse.conf*; or return
         _pick v4l2 usr/bin/pw-v4l2 usr/lib/$_pwname/v4l2; or return
         _pick v4l2 usr/share/man/man1/pw-v4l2.1; or return
-        _pick zeroconf usr/lib/$_pwname/libpipewire-module-rtp-session.so; or return
-        _pick zeroconf usr/lib/$_pwname/libpipewire-module-snapcast-discover.so; or return
-        _pick zeroconf usr/lib/$_pwname/libpipewire-module-{raop,zeroconf}-*.so; or return
-        _pick zeroconf usr/share/man/man7/libpipewire-module-rtp-session.7; or return
-        _pick zeroconf usr/share/man/man7/libpipewire-module-snapcast-discover.7; or return
-        _pick zeroconf usr/share/man/man7/libpipewire-module-{raop,zeroconf}-*.7; or return
         _pick system usr/lib/systemd/system; or return
         _pick lib usr/include/{$_pwname,$_spaname}; or return
         _pick lib usr/lib/$_pwname; or return
@@ -144,25 +138,12 @@ end
 
 function package_pipewire-audio
     set pkgdesc "$pkgdesc - Audio support"
-    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire=$epoch:$pkgver" alsa-card-profiles alsa-lib libasound.so bluez-libs libbluetooth.so dbus libdbus-1.so fftw libfftw3f.so glib2 libg{lib,object,io}-2.0.so glibc libebur128 libfdk-aac libfdk-aac.so libfreeaptx libfreeaptx.so libgcc liblc3 liblc3.so libldac libldacBT_enc.so libmysofa libmysofa.so libsndfile libsndfile.so libstdc++ libusb libusb-1.0.so lilv liblilv-0.so opus libopus.so sbc libsbc.so spandsp libspandsp.so systemd-libs webrtc-audio-processing-1 libwebrtc-audio-processing-1.so
-    set provides ladspa-host lv2-host
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire=$epoch:$pkgver" alsa-card-profiles alsa-lib libasound.so bluez-libs libbluetooth.so dbus libdbus-1.so fftw libfftw3f.so glib2 libg{lib,object,io}-2.0.so glibc libebur128 libfdk-aac libfdk-aac.so libfreeaptx libfreeaptx.so libgcc liblc3 liblc3.so libldac libldacBT_enc.so libmysofa libmysofa.so libsndfile libsndfile.so libstdc++ libusb libusb-1.0.so opus libopus.so sbc libsbc.so spandsp libspandsp.so systemd-libs webrtc-audio-processing-1 libwebrtc-audio-processing-1.so
+    set provides ladspa-host
     mv audio/* "$pkgdir"; or return
     mkdir -p "$pkgdir/etc/pipewire/pipewire-aes67.conf.d"; or return
     mkdir -p "$pkgdir/etc/alsa/conf.d"; or return
     ln -st "$pkgdir/etc/alsa/conf.d" /usr/share/alsa/alsa.conf.d/50-pipewire.conf; or return
-    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-end
-
-function package_pipewire-docs
-    set pkgdesc "$pkgdesc - documentation"
-    mv docs/* "$pkgdir"; or return
-    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-end
-
-function package_pipewire-ffado
-    set pkgdesc "$pkgdesc - FireWire support"
-    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc libffado libffado.so
-    mv ffado/* "$pkgdir"; or return
     install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
 end
 
@@ -171,19 +152,11 @@ function package_pipewire-jack
     set -a license GPL-2.0-only LGPL-2.1-or-later
     set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc pipewire-session-manager sh
     set optdepends 'jack-example-tools: for official JACK example-clients and tools'
-    set conflicts jack jack2 pipewire-jack-client
+    set conflicts jack jack2
     set provides jack libjack.so libjacknet.so libjackserver.so
     mv jack/* "$pkgdir"; or return
     mkdir -p "$pkgdir/etc/pipewire/jack.conf.d"; or return
     install -Dm644 /dev/null "$pkgdir/usr/share/pipewire/media-session.d/with-jack"; or return
-    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-end
-
-function package_pipewire-jack-client
-    set pkgdesc "$pkgdesc - PipeWire as JACK client"
-    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" dbus libdbus-1.so glibc jack libjack.so libgcc
-    set conflicts pipewire-jack
-    mv jack-client/* "$pkgdir"; or return
     install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
 end
 
@@ -210,7 +183,8 @@ end
 
 function package_pipewire-pulse
     set pkgdesc "$pkgdesc - PulseAudio replacement"
-    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" avahi libavahi-{client,common}.so dbus libdbus-1.so dconf glib2 libg{lib,object,io}-2.0.so glibc libgcc libpulse libpulse.so pipewire-session-manager
+    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" dbus libdbus-1.so dconf glib2 libg{lib,object,io}-2.0.so glibc libgcc pipewire-session-manager
+    set -a optdepends 'libpulse: pactl and the other PulseAudio client tools'
     set provides pulse-native-provider
     set conflicts pulseaudio
     set install pipewire-pulse.install
@@ -252,13 +226,6 @@ function package_pipewire-x11-bell
     set pkgdesc "$pkgdesc - X11 bell"
     set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" glibc libcanberra libcanberra.so libx11 libxfixes
     mv x11-bell/* "$pkgdir"; or return
-    install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-end
-
-function package_pipewire-zeroconf
-    set pkgdesc "$pkgdesc - Zeroconf support"
-    set depends "libpipewire=$epoch:$pkgver" lib$_pwname.so "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" avahi libavahi-{client,common}.so glibc libgcc openssl libcrypto.so opus libopus.so
-    mv zeroconf/* "$pkgdir"; or return
     install -Dm644 pipewire/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
 end
 

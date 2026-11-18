@@ -7,14 +7,13 @@ set url https://developers.google.com/speed/webp/
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc
-set makedepends cmake giflib libjpeg-turbo libpng libtiff ninja
-set source "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-"(string replace -r -- '([a-z])' '-$1' $pkgver)".tar.gz"{,.asc} \
+# No TIFF input in the tools (libtiff links libwebp, so that would be a cycle)
+set makedepends cmake giflib libjpeg-turbo libpng ninja
+set source "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-"(string replace -r -- '([a-z])' '-$1' $pkgver)".tar.gz" \
     0001-cmake-Install-anim-utils.patch
 set sha256sums e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564 \
-    SKIP \
     72128445371887c81046ad19cdbd1688e6b180e6428aec579cac0df756c2af35
 set b2sums cbdfa8616edce14bf3f8621d9d0d925884d0f40e8775c7d8810575c8bec88f10ed912029cc0a4bccf9bb9eb98824e4b1a89ec61ee53d7ef20a150450d8513168 \
-    SKIP \
     f059b5c5729e5ead14f2d715e4192e02cab05cfb70d8781d9ffdba961eaeaf4515e2029845e8a5949a69d3a11a0a154128cc9fc58c34032b1d0d500c86ffa266
 set flags arch
 
@@ -32,6 +31,7 @@ function build
         -D CMAKE_INSTALL_LIBDIR=/usr/lib \
         -D CMAKE_INSTALL_PREFIX=/usr \
         -D CMAKE_SKIP_INSTALL_RPATH=ON \
+        -D CMAKE_DISABLE_FIND_PACKAGE_TIFF=ON \
         -D WEBP_BUILD_CWEBP=ON \
         -D WEBP_BUILD_DWEBP=ON \
         -D WEBP_BUILD_EXTRAS=OFF \
@@ -70,7 +70,7 @@ function package_libwebp
 end
 
 function package_libwebp-utils
-    set depends giflib glibc libjpeg-turbo libpng libtiff libwebp
+    set depends giflib glibc libjpeg-turbo libpng libwebp
     mv utils/* "$pkgdir"; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 \
         libwebp-$pkgver/COPYING; or return

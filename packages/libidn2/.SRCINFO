@@ -11,9 +11,7 @@ pkgbase = libidn2
 	depends = libunistring
 	provides = libidn2.so
 	source = https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz
-	source = https://ftp.gnu.org/gnu/libidn/libidn2-2.3.8.tar.gz.sig
 	sha256sums = f557911bf6171621e1f72ff35f5b1825bb35b52ed45325dcdee931e5d3c0787a
-	sha256sums = 268ad6787ed902fba2154bcd64347269af6c4298bdeed8d7db59df7b65fd31f2
 
 pkgname = libidn2
 	depends = libunistring

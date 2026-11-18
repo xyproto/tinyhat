@@ -1,0 +1,23 @@
+set pkgname python-pluggy
+set pkgver 1.7.0
+set pkgrel 1
+set pkgdesc 'Plugin and hook calling mechanisms for python'
+set arch any
+set url https://github.com/pytest-dev/pluggy
+set license MIT
+set depends python
+set makedepends git python-build python-installer python-setuptools python-setuptools-scm python-wheel
+set source "git+https://github.com/pytest-dev/pluggy.git#tag=$pkgver"
+set sha512sums 4ca2a29d7bf679c7d30a1c463f363dc66f343a8f18e45a1e74d4a5e2f9e3c52865b068bc26fd97d85bfd9be152e22a9973716e5eef01088851f89f699332d5d0
+set flags arch
+
+function build
+    cd pluggy; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd pluggy; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

@@ -10,13 +10,13 @@ set makedepends git
 set optdepends 'perl: bdftogd script'
 set checkdepends ttf-liberation
 set source "https://github.com/libgd/libgd/archive/$pkgname-$pkgver.tar.gz" \
-    https://github.com/libgd/libgd/commit/bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch \
-    https://github.com/libgd/libgd/commit/f1a53c082173567b8ad07eaba8fc7ba66457a730.patch \
-    https://github.com/libgd/libgd/commit/21633377174354199c3ea3e4b23f64cfaeacc50a.patch
+    'bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch::https://github.com/libgd/libgd/commit/bdc281eadb1d58d5c0c7bbc1125ee4674256df08.patch?full_index=1' \
+    'f1a53c082173567b8ad07eaba8fc7ba66457a730.patch::https://github.com/libgd/libgd/commit/f1a53c082173567b8ad07eaba8fc7ba66457a730.patch?full_index=1' \
+    '21633377174354199c3ea3e4b23f64cfaeacc50a.patch::https://github.com/libgd/libgd/commit/21633377174354199c3ea3e4b23f64cfaeacc50a.patch?full_index=1'
 set sha256sums 24429f9d0dbe0f865aaa4b1a63558242396ba9134e6cfd32ca5e486a84483350 \
-    1e7bdb17e76ad6b1384222b449b9011ee131d3e1f105f9b30495a9c34b2cd5eb \
-    1b102b0f87e630bd98f345088d6bc742def72c6619764572049d2c67ca050500 \
-    591b63e9bd35d9ab1e732d33663c1eb4dfa4163f70324d602d361167ba643541
+    7bb677448258e962d8b8bd53c77519bed41364381394aa81a09eeac8e5ad951f \
+    413daf837972d2a43a7814605a33f81bbc3741512e308db19c3de07d450731d2 \
+    a8143092b9fbb2026400a63c824315a02bc6112115a6bf66046661f9e4c8f309
 set flags arch
 
 function prepare

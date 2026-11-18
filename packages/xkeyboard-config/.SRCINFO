@@ -16,8 +16,6 @@ pkgbase = xkeyboard-config
 	conflicts = xkbdata
 	replaces = xkbdata
 	source = https://xorg.freedesktop.org/archive/individual/data/xkeyboard-config/xkeyboard-config-2.48.tar.xz
-	source = https://xorg.freedesktop.org/archive/individual/data/xkeyboard-config/xkeyboard-config-2.48.tar.xz.sig
 	sha256sums = b77041324f0109f77161ee43743fe04baa485866af8460d31e476ad3f7648fd5
-	sha256sums = SKIP
 
 pkgname = xkeyboard-config

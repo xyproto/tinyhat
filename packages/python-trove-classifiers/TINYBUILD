@@ -1,0 +1,28 @@
+set pkgname python-trove-classifiers
+set pkgver 2026.9.21.13
+set pkgrel 1
+set pkgdesc 'Canonical source for classifiers on PyPI (pypi.org)'
+set arch any
+set url https://github.com/pypa/trove-classifiers
+set license Apache-2.0
+set depends python
+set makedepends git python-build python-calver python-installer python-setuptools python-wheel
+set source "git+https://github.com/pypa/trove-classifiers.git#tag=$pkgver"
+set sha512sums 497f4b126d42698ca01eb576e8516d8c1f09d9dfbf28c8fa18d09bb2a215fe5804ce97f8a7fd998f0b15bb42302d9134211e06330591a4575ae0707642003358
+set flags arch
+
+function prepare
+    cd trove-classifiers; or return
+    # calver does not detect git tags
+    echo "Version: $pkgver" >PKG-INFO; or return
+end
+
+function build
+    cd trove-classifiers; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd trove-classifiers; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+end

@@ -1,17 +1,14 @@
 set pkgbase gcc
-set pkgname gcc gcc-d gcc-fortran gcc-gcobol gcc-go gcc-libs gcc-m2 gcc-objc gcc-rust libasan libatomic libgcc libgccjit libgcobol libgfortran libgm2 libgo libgomp libgphobos libhwasan libitm liblsan libobjc libquadmath libstdc++ libtsan libubsan lto-dump
+# C, C++ and Fortran only (Fortran is needed to build fftw, openmpi, python-numpy and libtool): no D, Go, Modula-2,
+# Objective-C, Rust, COBOL or libgccjit, which nothing in Tiny Hat uses
+set pkgname gcc gcc-fortran gcc-libs libasan libatomic libgcc libgfortran libgomp libhwasan libitm liblsan libquadmath libstdc++ libtsan libubsan lto-dump
 set pkgver 16.2.1+r23+gd564253eb6c8
 set pkgrel 1
 set pkgdesc 'The GNU Compiler Collection'
 set arch i686
 set url https://gcc.gnu.org
 set license 'GPL-3.0-or-later WITH GCC-exception-3.1' GFDL-1.3-or-later
-switch $CARCH
-    case x32 x86_64 aarch64
-        set -g makedepends binutils gcc-d git glibc libisl libmpc python zstd
-    case '*'
-        set -g makedepends binutils gcc-d git glibc libisl libmpc python zstd rust
-end
+set makedepends binutils git glibc libisl libmpc python zstd
 set checkdepends dejagnu expect inetutils python-pytest tcl
 set options '!emptydirs' '!lto'
 set source 'git+https://forge.sourceware.org/gcc/gcc#commit=d564253eb6c859e266d3cae18e82fb4db9a88316' \
@@ -26,30 +23,62 @@ set sha256sums c4def1816bc86f2bb981deb958a572ca63eb0ef784418f0414f1071a4efee44d 
     838e14d4ef76079107a5373316598025915eaf747a10522ec9f8842125ca9a8e
 set flags arch
 set -g _commit d564253eb6c859e266d3cae18e82fb4db9a88316
-set -g _libdir usr/lib/gcc//16
 
 function prepare
+    # gcc's private directory (usr/lib/gcc/TRIPLET/MAJOR), used by the package functions; CHOST is set only now
+    set -g _libdir usr/lib/gcc/$CHOST/(string split -f1 . -- $pkgver)
     if test ! -d gcc
         ln -s gcc-$(string replace -- '+' '-' "$pkgver") gcc; or return
     end
     cd gcc; or return
-    patch -Np0 < "$srcdir"/gcc-ada-repro.patch; or return
-    patch -Np1 < ../tune_branch_prediction_cost.patch; or return
+    patch -Np0 <"$srcdir"/gcc-ada-repro.patch; or return
+    patch -Np1 <../tune_branch_prediction_cost.patch; or return
     mkdir -p "$srcdir"/gcc-build; or return
-    mkdir -p "$srcdir"/libgccjit-build; or return
 end
 
 function build
-    set -l _confflags --prefix=/usr --libdir=/usr/lib --libexecdir=/usr/lib --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=https://bugs.archlinux32.org/ --with-build-config=bootstrap-lto --with-gcc-major-version-only --with-linker-hash-style=gnu --with-system-zlib --disable-cet --enable-checking=release --enable-clocale=gnu --enable-default-pie --enable-default-ssp --enable-gnu-indirect-function --enable-gnu-unique-object --enable-libstdcxx-backtrace --enable-link-serialization=1 --enable-linker-build-id --enable-lto --disable-multilib --build=$CHOST --enable-plugin --enable-shared --enable-threads=posix --disable-fixincludes --disable-libssp --disable-libstdcxx-pch --disable-werror
+    # Without libcc1 (gdb's "compile" command), which nothing in Tiny Hat uses
+    set -l _confflags --prefix=/usr --libdir=/usr/lib --libexecdir=/usr/lib --mandir=/usr/share/man --infodir=/usr/share/info --with-bugurl=https://bugs.archlinux32.org/ --with-gcc-major-version-only --with-linker-hash-style=gnu --with-system-zlib --disable-cet --enable-checking=release --enable-clocale=gnu --enable-default-pie --enable-default-ssp --enable-gnu-indirect-function --enable-gnu-unique-object --enable-libstdcxx-backtrace --enable-link-serialization=1 --enable-linker-build-id --enable-lto --disable-multilib --enable-plugin --enable-shared --enable-threads=posix --disable-fixincludes --disable-libssp --disable-libstdcxx-pch --disable-werror --disable-libcc1
     cd gcc-build; or return
     set CFLAGS $(string replace -- '-Werror=format-security' '' "$CFLAGS")
     set CXXFLAGS $(string replace -- '-Werror=format-security' '' "$CXXFLAGS")
-    ../gcc/configure --enable-languages=c,c++,d,fortran,go,lto,m2,objc,obj-c++,rust --enable-bootstrap $_confflags; or return
-    make -O STAGE1_CFLAGS="-O2" BOOT_CFLAGS="$CFLAGS" BOOT_LDFLAGS="$LDFLAGS" LDFLAGS_FOR_TARGET="$LDFLAGS" bootstrap; or return
-    cd "$srcdir"/libgccjit-build; or return
-    ../gcc/configure --enable-languages=jit --disable-bootstrap --enable-host-shared $_confflags; or return
-    make -O all-gcc; or return
-    cp -a gcc/libgccjit.so* ../gcc-build/gcc/; or return
+    if set -q TINYHAT_CROSS[1]
+        # A cross build (scripts/buildpackage.sh --cross, on x86_64): a cross-native gcc, built on x86_64 for i686 by
+        # the i686 cross toolchain, which also builds the target libraries. The cross toolchain's linker and its LTO
+        # plugin are x86_64 programs, so they fit together, and the installed gcc uses the i686 ones. Without a
+        # bootstrap: the compiler is built once, by gcc of the same version. The programs that run during the build
+        # (build-x86_64-pc-linux-gnu) are x86_64 ones: the i686 flags are taken out of the environment, so that only
+        # gcc itself (host) and its libraries (target) get them, explicitly
+        # The target libraries are built by the cross compiler, with -nostdinc++ for C++: the libstdc++ being built must
+        # not find the cross toolchain's own libstdc++ headers (its <fenv.h> wrapper would then never reach glibc's)
+        set -l t $TINYHAT_CROSS
+        # As gcc's own build does it: the new libstdc++'s headers instead of the cross toolchain's
+        set -l lib "$srcdir"/gcc-build/$CHOST/libstdc++-v3
+        set -l _stdinc -nostdinc++ -I$lib/include/$CHOST -I$lib/include -I"$srcdir"/gcc/libstdc++-v3/libsupc++
+        # gcc also hands the host's CXXFLAGS to some of the x86_64 build-machine programs, so leave out -march and -mtune:
+        # the i686 cross compiler has them as its defaults (--with-arch=i686 --with-tune=generic), and the other flags
+        # suit both machines
+        set -l host_cflags (string replace -ra -- ' ?-m(arch|tune)=[^ ]*' '' "$CFLAGS")
+        set -l host_cxxflags (string replace -ra -- ' ?-m(arch|tune)=[^ ]*' '' "$CXXFLAGS")
+        set -l host_ldflags $LDFLAGS
+        set -e CFLAGS CXXFLAGS LDFLAGS CPPFLAGS
+        env CFLAGS="$host_cflags" CXXFLAGS="$host_cxxflags" LDFLAGS="$host_ldflags" \
+            CFLAGS_FOR_TARGET="$host_cflags" CXXFLAGS_FOR_TARGET="$host_cxxflags" \
+            CC=$t-gcc CXX=$t-g++ AR=$t-ar AS=$t-as LD=$t-ld NM=$t-nm RANLIB=$t-ranlib STRIP=$t-strip \
+            OBJCOPY=$t-objcopy OBJDUMP=$t-objdump READELF=$t-readelf \
+            CC_FOR_TARGET=$t-gcc CXX_FOR_TARGET="$t-g++ $_stdinc" GFORTRAN_FOR_TARGET=$t-gfortran AR_FOR_TARGET=$t-ar \
+            AS_FOR_TARGET=$t-as LD_FOR_TARGET=$t-ld NM_FOR_TARGET=$t-nm RANLIB_FOR_TARGET=$t-ranlib \
+            STRIP_FOR_TARGET=$t-strip OBJCOPY_FOR_TARGET=$t-objcopy OBJDUMP_FOR_TARGET=$t-objdump \
+            READELF_FOR_TARGET=$t-readelf CC_FOR_BUILD=/usr/bin/gcc CXX_FOR_BUILD=/usr/bin/g++ \
+            CFLAGS_FOR_BUILD="-O2 -pipe" CXXFLAGS_FOR_BUILD="-O2 -pipe" LDFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
+            ../gcc/configure --enable-languages=c,c++,fortran,lto --disable-bootstrap \
+            --build=x86_64-pc-linux-gnu --host=$CHOST --target=$CHOST $_confflags; or return
+        make -O LDFLAGS_FOR_TARGET="$host_ldflags"; or return
+    else
+        ../gcc/configure --enable-languages=c,c++,fortran,lto --enable-bootstrap --with-build-config=bootstrap-lto \
+            --build=$CHOST $_confflags; or return
+        make -O STAGE1_CFLAGS="-O2" BOOT_CFLAGS="$CFLAGS" BOOT_LDFLAGS="$LDFLAGS" LDFLAGS_FOR_TARGET="$LDFLAGS" bootstrap; or return
+    end
 end
 
 function _install_runtime_library_exception
@@ -62,6 +91,8 @@ function _pick
     set -l d
     set -e argv[1]
     for f in $argv
+        # info manuals are not built from the git sources without makeinfo
+        test -e "$f" -o -L "$f"; or continue
         set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
         mkdir -vp "$(dirname "$d")"; or return
         mv -v "$f" "$d"; or return
@@ -78,21 +109,17 @@ function package_gcc
     set options !emptydirs staticlibs
     cd gcc-build; or return
     make DESTDIR="$pkgdir" install; or return
-    make -C gcc DESTDIR="$pkgdir" jit.install-common jit.install-info; or return
+    if set -q TINYHAT_CROSS[1]
+        # The cross build cannot see glibc's limits.h where gcc looks for it (build != host), so its own limits.h does
+        # not include glibc's (MB_LEN_MAX and the rest would be wrong): the limits.h that gcc makes when it does
+        cat ../gcc/gcc/{limitx.h,glimits.h,limity.h} >"$pkgdir/$_libdir/include/limits.h"; or return
+    end
     begin
         set -l __subshell_pwd $PWD
-    cd "$pkgdir"; or return
-        for _so in libatomic.so libstdc++.so libgdruntime.so libgphobos.so
+        cd "$pkgdir"; or return
+        for _so in libatomic.so libstdc++.so
             ln -srv usr/lib/$_so $_libdir/$_so; or return
         end
-        _pick gcc-d usr/bin/{gdc,$CHOST-gdc}; or return
-        _pick gcc-d $_libdir/d21; or return
-        _pick gcc-d $_libdir/include/d/; or return
-        _pick gcc-d $_libdir/libg{druntime,phobos}.so; or return
-        _pick gcc-d usr/lib/libg{druntime,phobos}.a; or return
-        _pick gcc-d usr/lib/libgphobos.spec; or return
-        _pick gcc-d usr/share/info/gdc.info; or return
-        _pick gcc-d usr/share/man/man1/gdc.1; or return
         _pick gcc-fortran usr/bin/{gfortran,$CHOST-gfortran}; or return
         _pick gcc-fortran $_libdir/finclude/; or return
         _pick gcc-fortran $_libdir/libcaf_{shmem,single}.a; or return
@@ -101,38 +128,15 @@ function package_gcc
         _pick gcc-fortran usr/lib/libgfortran.spec; or return
         _pick gcc-fortran usr/share/info/gfortran.info; or return
         _pick gcc-fortran usr/share/man/man1/gfortran.1; or return
-        _pick gcc-go usr/bin/{gccgo,go,gofmt,$CHOST-gccgo}; or return
-        _pick gcc-go $_libdir/{buildid,cgo,go1,test2json,vet}; or return
-        _pick gcc-go usr/lib/go/; or return
-        _pick gcc-go usr/lib/lib{go,gobegin,golibbegin}.a; or return
-        _pick gcc-go usr/share/info/gccgo.info; or return
-        _pick gcc-go usr/share/man/man1/{gccgo,go,gofmt}.1; or return
-        _pick gcc-m2 usr/bin/{gm2,$CHOST-gm2}; or return
-        _pick gcc-m2 $_libdir/cc1gm2; or return
-        _pick gcc-m2 usr/share/info/m2.info; or return
-        _pick gcc-m2 usr/share/man/man1/gm2.1; or return
-        _pick gcc-objc $_libdir/include/objc/; or return
-        _pick gcc-objc $_libdir/cc1obj*; or return
-        _pick gcc-rust usr/bin/{gccrs,$CHOST-gccrs}; or return
-        _pick gcc-rust $_libdir/crab1; or return
         _pick libasan usr/lib/libasan.{a,so*}; or return
         _pick libatomic usr/lib/libatomic.so*; or return
         _pick libatomic $_libdir/libatomic.so; or return
         _pick libgcc usr/lib/libgcc_s.so.*; or return
-        _pick libgccjit usr/include/libgccjit*; or return
-        _pick libgccjit usr/lib/libgccjit.so*; or return
-        _pick libgccjit usr/share/info/libgccjit.info; or return
         _pick libgfortran usr/lib/libgfortran.{a,so*}; or return
-        _pick libgm2 $_libdir/m2/; or return
-        _pick libgm2 usr/lib/libm2{cor,iso,log,min,pim}.{a,so*}; or return
-        _pick libgo usr/lib/libgo.so*; or return
         _pick libgomp usr/lib/libgomp.{a,so*}; or return
         _pick libgomp usr/share/info/libgomp.info; or return
-        _pick libgphobos usr/lib/libgdruntime.so*; or return
-        _pick libgphobos usr/lib/libgphobos.so*; or return
         _pick libitm usr/lib/libitm.{a,so*}; or return
         _pick libitm usr/share/info/libitm.info; or return
-        _pick libobjc usr/lib/libobjc.{a,so*}; or return
         _pick libquadmath usr/lib/libquadmath.{a,so*}; or return
         _pick libquadmath usr/share/info/libquadmath.info; or return
         _pick libstdc++ usr/lib/libstdc++.so*; or return
@@ -163,19 +167,6 @@ function package_gcc
     _install_runtime_library_exception; or return
 end
 
-function package_gcc-d
-    set pkgdesc "D frontend for GCC"
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libgphobos libisl.so libmpc mpfr zlib zstd
-    set provides gdc
-    set replaces gdc
-    set options !emptydirs staticlibs
-    mv -v $pkgname/* "$pkgdir"; or return
-    mkdir -pv "$pkgdir"/$_libdir/32; or return
-    mv -v "$pkgdir"/usr/lib/libg{druntime,phobos}.a "$pkgdir"/$_libdir/; or return
-    mv -v "$pkgdir"/usr/lib/libgphobos.spec "$pkgdir"/$_libdir/; or return
-    _install_runtime_library_exception; or return
-end
-
 function package_gcc-fortran
     set pkgdesc 'Fortran front-end for GCC'
     set depends "gcc=$pkgver" 'glibc>=2.27' gmp libgfortran libisl.so libmpc mpfr zlib zstd
@@ -187,47 +178,10 @@ function package_gcc-fortran
     _install_runtime_library_exception; or return
 end
 
-function package_gcc-gcobol
-    echo "No Cobol for 32-bit (yet)."; or return
-end
-
-function package_gcc-go
-    set pkgdesc 'Go front-end for GCC'
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libgo libisl.so libmpc mpfr zlib zstd
-    set provides "go=1.17"
-    set replaces
-    set conflicts go
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
 function package_gcc-libs
     set pkgdesc 'Runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27' libasan libatomic libgcc libgfortran libgomp libhwasan liblsan libobjc libquadmath libstdc++ libtsan libubsan
+    set depends 'glibc>=2.27' libasan libatomic libgcc libgfortran libgomp libhwasan liblsan libquadmath libstdc++ libtsan libubsan
     set provides
-end
-
-function package_gcc-m2
-    set pkgdesc 'Modula-2 frontend for GCC'
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libgm2 libisl.so libmpc mpfr zlib zstd
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
-function package_gcc-objc
-    set pkgdesc 'Objective-C front-end for GCC'
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libisl.so libmpc libobjc mpfr zlib zstd
-    set provides
-    set replaces
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
-function package_gcc-rust
-    set pkgdesc "Rust frontend for GCC"
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libisl.so libmpc mpfr zlib zstd
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
 end
 
 function package_libasan
@@ -254,18 +208,6 @@ function package_libgcc
     _install_runtime_library_exception; or return
 end
 
-function package_libgccjit
-    set pkgdesc "Just-In-Time Compilation with GCC backend"
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libisl.so libmpc mpfr zlib zstd
-    set provides libgccjit.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
-function package_libgcobol
-    echo "No Cobol for 32-bit (yet)."; or return
-end
-
 function package_libgfortran
     set pkgdesc 'Runtime libraries shipped by GCC'
     set depends 'glibc>=2.27' libgcc
@@ -274,34 +216,10 @@ function package_libgfortran
     _install_runtime_library_exception; or return
 end
 
-function package_libgm2
-    set pkgdesc 'Modula-2 runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27'
-    set provides libm2cor.so libm2iso.so libm2log.so libm2min.so libm2pim.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
-function package_libgo
-    set pkgdesc 'Go runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27' libgcc
-    set provides libgo.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
 function package_libgomp
     set pkgdesc 'OpenMP library shipped by GCC'
     set depends 'glibc>=2.27'
     set provides libgomp.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
-function package_libgphobos
-    set pkgdesc 'D runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27' libgcc
-    set provides libgdruntime.so libgphobos.so
     mv -v $pkgname/* "$pkgdir"; or return
     _install_runtime_library_exception; or return
 end
@@ -320,14 +238,6 @@ end
 
 function package_liblsan
     touch "$pkgdir/this-is-a-dummy-package"; or return
-end
-
-function package_libobjc
-    set pkgdesc 'Ojective-C runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27' libgcc
-    set provides libobjc.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
 end
 
 function package_libquadmath

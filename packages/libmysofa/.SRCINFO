@@ -8,7 +8,6 @@ pkgbase = libmysofa
 	license = BSD-3-Clause
 	checkdepends = nodejs
 	makedepends = cmake
-	makedepends = cunit
 	makedepends = git
 	depends = glibc
 	depends = zlib

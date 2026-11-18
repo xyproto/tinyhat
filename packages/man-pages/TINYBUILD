@@ -24,15 +24,14 @@ set license BSD-2-Clause \
     MIT \
     Spencer-94
 set url https://www.kernel.org/doc/man-pages/
-set makedepends man2html git
+# No man2html: only man pages are installed (make install), no HTML output
+set makedepends git
 # https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/
-set source "https://www.kernel.org/pub/linux/docs/man-pages/$pkgbase-$pkgver.tar."{xz,sign} \
-    "https://www.kernel.org/pub/linux/docs/man-pages/man-pages-posix/$pkgbase-posix-$_posixver.tar."{xz,sign}
+set source "https://www.kernel.org/pub/linux/docs/man-pages/$pkgbase-$pkgver.tar.xz" \
+    "https://www.kernel.org/pub/linux/docs/man-pages/man-pages-posix/$pkgbase-posix-$_posixver.tar.xz"
 # https://www.kernel.org/pub/linux/docs/man-pages/sha256sums.asc
 set sha256sums 88a7c42ad2e03d8b96dc72d95e451f2d875ff0f43103a8eb8ac8242133bdcb05 \
-    SKIP \
-    ce67bb25b5048b20dad772e405a83f4bc70faf051afa289361c81f9660318bc3 \
-    SKIP
+    ce67bb25b5048b20dad772e405a83f4bc70faf051afa289361c81f9660318bc3
 set flags arch
 
 # The posix tarball unpacks to a directory without the -a suffix

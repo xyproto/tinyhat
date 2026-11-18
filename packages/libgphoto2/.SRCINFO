@@ -6,9 +6,7 @@ pkgbase = libgphoto2
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = doxygen
 	makedepends = git
-	makedepends = graphviz
 	makedepends = meson
 	depends = bash
 	depends = curl
@@ -26,7 +24,3 @@ pkgbase = libgphoto2
 pkgname = libgphoto2
 	provides = libgphoto2.so
 	provides = libgphoto2_port.so
-
-pkgname = libgphoto2-docs
-	pkgdesc = Digital camera access library (documentation)
-	depends = 

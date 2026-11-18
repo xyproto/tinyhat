@@ -9,10 +9,8 @@ set license LGPL
 set depends glibc
 set provides libcrypt.so
 set install libxcrypt.install
-set source "https://github.com/besser82/libxcrypt//releases/download/v$pkgver/libxcrypt-$pkgver.tar.xz" \
-    "https://github.com/besser82/libxcrypt//releases/download/v$pkgver/libxcrypt-$pkgver.tar.xz.asc"
-set sha256sums 71513a31c01a428bccd5367a32fd95f115d6dac50fb5b60c779d5c7942aec071 \
-    11df2b889929d4923eed6298ba44c6e746c9ca5b9de41bd9b1b1a694a2aea65e
+set source "https://github.com/besser82/libxcrypt//releases/download/v$pkgver/libxcrypt-$pkgver.tar.xz"
+set sha256sums 71513a31c01a428bccd5367a32fd95f115d6dac50fb5b60c779d5c7942aec071
 set flags arch
 
 function build
@@ -32,7 +30,7 @@ end
 
 function package_libxcrypt-compat
     set pkgdesc 'Modern library for one-way hashing of passwords - legacy API functions'
-    set depends 'libxcrypt'
+    set depends libxcrypt
     cd build-libxcrypt-compat/; or return
     make DESTDIR="$pkgdir" install; or return
     set -l dev "$pkgdir"/usr/{include,lib/{lib*.so,pkgconfig},share}

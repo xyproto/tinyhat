@@ -8,10 +8,8 @@ set license GPL-2.0-only GPL-2.0-or-later GPL-3.0-only LGPL-2.1-or-later MIT
 set depends glibc hwdata
 set makedepends libusb meson systemd
 set optdepends 'coreutils: for lsusb.py usage' 'python: for lsusb.py usage' 'sh: for usb-devices'
-set source "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-$pkgver.tar.xz" \
-    "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-$pkgver.tar.sign"
-set sha256sums 20287d68fcd9ebb50a05ba0645a4af7583bd8dfc7307215ba121e4bc6d057aa1 \
-    37908bb6d9445f2872c84fb03657998cb00fc030ba0fa4144e2cf9b3be42d2df
+set source "https://www.kernel.org/pub/linux/utils/usb/usbutils/usbutils-$pkgver.tar.xz"
+set sha256sums 20287d68fcd9ebb50a05ba0645a4af7583bd8dfc7307215ba121e4bc6d057aa1
 set flags arch
 
 function build

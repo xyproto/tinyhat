@@ -8,9 +8,8 @@ set license LicenseRef-libxext
 set depends libx11 glibc xorgproto
 set makedepends xorg-util-macros
 set flags arch
-set source https://xorg.freedesktop.org/releases/individual/lib/libXext-$pkgver.tar.xz{,.sig}
-set sha512sums 09cd230da472e87e4fdbc9b0f83a9181cc44af04c06fa4a7d8aa405e0f8551d3ac3a4b379249c44d97e1025b60d1c52f8ca13817eed0206e2bf3d66a55d89701 \
-    SKIP
+set source https://xorg.freedesktop.org/releases/individual/lib/libXext-$pkgver.tar.xz
+set sha512sums 09cd230da472e87e4fdbc9b0f83a9181cc44af04c06fa4a7d8aa405e0f8551d3ac3a4b379249c44d97e1025b60d1c52f8ca13817eed0206e2bf3d66a55d89701
 
 function build
     cd libXext-$pkgver; or return

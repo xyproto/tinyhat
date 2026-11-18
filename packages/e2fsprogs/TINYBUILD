@@ -1,12 +1,13 @@
 set pkgbase e2fsprogs
-set pkgname e2fsprogs fuse2fs
+set pkgname e2fsprogs
 set pkgver 1.47.4
 set pkgrel 1
 set pkgdesc 'Ext2/3/4 filesystem utilities'
 set arch i686 x32
 set license GPL LGPL MIT
 set url http://e2fsprogs.sourceforge.net
-set makedepends git systemd util-linux fuse3
+# No fuse2fs (mounting ext2/3/4 images through FUSE): no fuse3
+set makedepends git systemd util-linux
 set flags arch
 set source "git+https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git#tag=v$pkgver?signed"
 set sha256sums e738cbd6e437988248a5ed143458e33cdbfe17ebfa3818b7f6a6a66264895a66
@@ -31,7 +32,8 @@ function build
         --disable-fsck \
         --disable-uuidd \
         --disable-libuuid \
-        --disable-libblkid; or return
+        --disable-libblkid \
+        --disable-fuse2fs; or return
     make; or return
 
     # regenerate locale files
@@ -60,18 +62,4 @@ function package_e2fsprogs
     # remove static libraries with a shared counterpart
     rm $pkgdir/usr/lib/lib{com_err,e2p,ext2fs,ss}.a; or return
 
-    # remove fuse2fs which will be packaged separately
-    rm $pkgdir/usr/{bin/fuse2fs,share/man/man1/fuse2fs.1}; or return
-end
-
-function package_fuse2fs
-    set pkgdesc 'Ext2/3/4 filesystem driver for FUSE'
-    set depends fuse3 e2fsprogs
-
-    cd "$srcdir/$pkgbase"; or return
-
-    install -D -m0755 misc/fuse2fs "$pkgdir/usr/bin/fuse2fs"; or return
-    install -D -m0644 misc/fuse2fs.1 "$pkgdir/usr/share/man/man1/fuse2fs.1"; or return
-    mkdir -p "$pkgdir/usr/share/licenses"; or return
-    ln -s "$pkgbase" "$pkgdir/usr/share/licenses/$pkgname"; or return
 end

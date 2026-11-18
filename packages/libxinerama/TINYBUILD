@@ -7,9 +7,8 @@ set url https://xorg.freedesktop.org/
 set license MIT MIT-open-group X11
 set depends libxext libx11 glibc xorgproto
 set makedepends xorg-util-macros
-set source "$url/archive/individual/lib/libXinerama-$pkgver.tar.xz"{,.sig}
-set sha512sums 64bff837941625120da43b8876db4204bc5740bcf3147997fc4df1475f90d6d9e3f9caa8748c7ebbf69d681be8e5ab4bc40f82c56c367dddcec3ab27d1c71573 \
-    SKIP
+set source "$url/archive/individual/lib/libXinerama-$pkgver.tar.xz"
+set sha512sums 64bff837941625120da43b8876db4204bc5740bcf3147997fc4df1475f90d6d9e3f9caa8748c7ebbf69d681be8e5ab4bc40f82c56c367dddcec3ab27d1c71573
 set flags arch
 
 function build

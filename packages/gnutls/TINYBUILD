@@ -8,16 +8,14 @@ set url https://www.gnutls.org/
 set options '!zipman'
 set depends glibc gmp libtasn1 zlib nettle leancrypto libstdc++ libgcc \
     libp11-kit libidn2 zstd libidn2.so libunistring brotli
-# gtk-doc is required for autoreconf when patching
-set makedepends tpm2-tss gtk-doc
+# No API documentation (gtk-doc): autoreconf skips gtkdocize when it is missing,
+# and gtk-doc.m4 and gtk-doc.make ship in the tarball
+# No TPM2 wrapped keys (tpm2-tss)
 set checkdepends net-tools tpm2-tools
-set optdepends 'tpm2-tss: support for TPM2 wrapped keys'
 set backup etc/gnutls/config
 set source "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/$pkgname-$pkgver.tar.xz" \
-    "https://www.gnupg.org/ftp/gcrypt/gnutls/v3.8/$pkgname-$pkgver.tar.xz.sig" \
     config
 set sha256sums ffed8ec1bf09c2426d4f14aae377de4753b53e537d685e604e99a8b16ca9c97e \
-    SKIP \
     22e614510fe52defe8c233ce3e5ead2205739fd967657ce3176ca121f3c562b5
 set flags arch
 
@@ -31,10 +29,11 @@ function build
     ./configure --prefix=/usr \
         --sysconfdir=/etc \
         --disable-static \
+        --disable-gtk-doc \
         --with-idn \
         --with-brotli \
         --with-zstd \
-        --with-tpm2 \
+        --without-tpm2 \
         --enable-openssl-compatibility \
         --with-default-trust-store-pkcs11="pkcs11:" \
         --enable-ktls \

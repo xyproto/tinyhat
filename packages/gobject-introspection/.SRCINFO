@@ -16,14 +16,14 @@ pkgbase = gobject-introspection
 	makedepends = meson
 	makedepends = python
 	makedepends = python-mako
-	makedepends = python-markdown
 	makedepends = python-setuptools
+	bootstrap_without = glib2-introspection
 	source = git+https://gitlab.gnome.org/GNOME/gobject-introspection.git#tag=1.86.0
 	source = git+https://gitlab.gnome.org/GNOME/glib.git?signed#tag=2.90.1
-	source = git+https://gitlab.gnome.org/GNOME/gobject-introspection-tests.git
+	source = git+https://gitlab.gnome.org/GNOME/gobject-introspection-tests.git#commit=67a03e86da0636c02cac2390ee2f0d5d981875a8
 	b2sums = 46007e1c426ebfde0d94b84398a1d99e0fc516f1b5a78590d0d1ddec76b90d19a9c6f4f9959a6d243cbb3601390763bbdd7d05d1d1c3d4fb9746f453b40ea849
 	b2sums = d2a3b7c9745b4473621bc77d1fa690c062510cb53dd24555abceb0216ddb9c3f18214774a6c4a948daf0edcf4738db9ed1cba47ec92481d4eee18906bc0e78a3
-	b2sums = SKIP
+	b2sums = 2e09216503af0f095386e0b60634b5917493d22240e4e4c93cf6c78f6142167505d2e30c33853e8a390a375ea298ebba5bcacb3f5fbc438fce5441e8c2b693a1
 
 pkgname = gobject-introspection
 	depends = gobject-introspection-runtime=1.86.0
@@ -33,8 +33,8 @@ pkgname = gobject-introspection
 	depends = libffi
 	depends = python
 	depends = python-mako
-	depends = python-markdown
 	depends = python-setuptools
+	depends = glib2-introspection
 
 pkgname = gobject-introspection-runtime
 	pkgdesc = Introspection system for GObject-based libraries - runtime

@@ -6,7 +6,6 @@ pkgbase = libconfig
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-only
-	makedepends = texinfo
 	depends = libgcc
 	depends = libstdc++
 	depends = glibc

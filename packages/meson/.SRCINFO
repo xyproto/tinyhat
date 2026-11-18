@@ -6,6 +6,10 @@ pkgbase = meson
 	arch = any
 	license = Apache-2.0
 	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	makedepends = python-wheel
 	depends = python
 	depends = ninja
 	source = git+https://github.com/mesonbuild/meson.git#tag=1.12.1

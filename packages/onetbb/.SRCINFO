@@ -7,15 +7,10 @@ pkgbase = onetbb
 	arch = x32
 	license = Apache-2.0
 	makedepends = cmake
-	makedepends = python
-	makedepends = python-pip
-	makedepends = python-setuptools
-	makedepends = swig
 	depends = glibc
 	depends = hwloc
 	depends = libgcc
 	depends = libstdc++
-	optdepends = python: for Python module
 	provides = intel-tbb=2023.1.0
 	provides = tbb=2023.1.0
 	conflicts = intel-tbb

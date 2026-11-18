@@ -7,7 +7,7 @@ set arch i686 x32
 set license 'Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND Zlib AND BSD-2-Clause'
 set url https://openprinting.github.io/cups/
 set makedepends acl pam gnutls colord libusb systemd libpaper
-set source https://github.com/OpenPrinting/cups/releases/download/v$pkgver/cups-$pkgver-source.tar.gz{,.sig} \
+set source https://github.com/OpenPrinting/cups/releases/download/v$pkgver/cups-$pkgver-source.tar.gz \
     cups.logrotate \
     cups.pam \
     cups.sysusers \
@@ -15,7 +15,6 @@ set source https://github.com/OpenPrinting/cups/releases/download/v$pkgver/cups-
     cups-freebind.patch \
     guid.patch
 set sha256sums ab4d9cd7f3e58060091d2b24972223d6401675f11c49b65abf4f6ef31dea22ff \
-    SKIP \
     d87fa0f0b5ec677aae34668f260333db17ce303aa1a752cba5f8e72623d9acf9 \
     57dfd072fd7ef0018c6b0a798367aac1abb5979060ff3f9df22d1048bb71c0d5 \
     5324bd933385713e0dfd0b20cf5f861d1401bdeb693c5be7edc3ca4404e78e2b \

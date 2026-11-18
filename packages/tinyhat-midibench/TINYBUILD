@@ -7,7 +7,7 @@ set url https://github.com/xyproto/tinyhat
 set license BSD-3-Clause
 set depends fluidsynth
 set source tinyhat-midibench.c
-set sha256sums SKIP
+set sha256sums 967fc2939002dfd8e14d968d316f4944fe65bc70989d740531a0a9762f9f3cfd
 
 function build
     set -l fluidsynth_flags (pkg-config --cflags --libs fluidsynth | string split -n ' '); or return

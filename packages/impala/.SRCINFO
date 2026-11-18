@@ -9,6 +9,7 @@ pkgbase = impala
 	depends = libgcc
 	depends = glibc
 	depends = iwd
+	options = network
 	source = impala-0.9.0.tar.gz::https://github.com/pythops/impala/archive/v0.9.0.tar.gz
 	sha512sums = 52428dc343a4fa0165d220752cc7f79460b2308cfa3f07a9142be3d73b7251bc2e0b3133450259c30e5626c0a3d9fad26c09d51707dc6570a2b251c19918035d
 

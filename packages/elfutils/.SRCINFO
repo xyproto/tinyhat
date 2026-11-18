@@ -14,7 +14,7 @@ pkgbase = elfutils
 	makedepends = zstd
 	options = staticlibs
 	source = elfutils::git+https://forge.sourceware.org/elfutils/elfutils-mirror.git?signed#tag=elfutils-0.196
-	sha256sums = SKIP
+	sha256sums = dc09f62d6c32ad40c97451ddaf2c9e7c81d0093e506929f2d3a9d516250d2e85
 
 pkgname = elfutils
 	pkgdesc = Handle ELF object files and DWARF debugging information (utilities)

@@ -9,7 +9,7 @@ set license MIT
 set groups vulkan-devel
 set makedepends cmake git ninja
 set source "git+https://github.com/KhronosGroup/SPIRV-Headers#tag=vulkan-sdk-$pkgver"
-set sha256sums SKIP
+set sha256sums c44aa584944201e4bb4ea5a301cd735c41b7fedeb717e8625b97cd9d7315a4b8
 set flags arch
 
 function build

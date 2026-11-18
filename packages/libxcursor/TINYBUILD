@@ -7,10 +7,8 @@ set url https://gitlab.freedesktop.org/xorg/lib/libxcursor
 set license HPND-sell-variant
 set depends libxfixes libxrender default-cursors libx11 glibc xorgproto
 set makedepends xorg-util-macros
-set source "https://xorg.freedesktop.org//releases/individual/lib/libXcursor-$pkgver.tar.xz" \
-    "https://xorg.freedesktop.org//releases/individual/lib/libXcursor-$pkgver.tar.xz.sig"
-set sha256sums fde9402dd4cfe79da71e2d96bb980afc5e6ff4f8a7d74c159e1966afb2b2c2c0 \
-    3f38a63e4015f3ce6549ea37392dcc02f757fa225c38a64e9066694bef22c708
+set source "https://xorg.freedesktop.org//releases/individual/lib/libXcursor-$pkgver.tar.xz"
+set sha256sums fde9402dd4cfe79da71e2d96bb980afc5e6ff4f8a7d74c159e1966afb2b2c2c0
 set flags arch
 
 function build

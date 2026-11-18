@@ -1,0 +1,13 @@
+pkgbase = diffutils
+	pkgdesc = Utility programs used for creating patch files
+	pkgver = 3.12
+	pkgrel = 2
+	url = https://www.gnu.org/software/diffutils
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	depends = glibc
+	source = https://ftp.gnu.org/gnu/diffutils/diffutils-3.12.tar.xz
+	sha256sums = 7c8b7f9fc8609141fdea9cece85249d308624391ff61dedaf528fcb337727dfd
+
+pkgname = diffutils

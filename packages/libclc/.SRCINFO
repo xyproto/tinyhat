@@ -12,8 +12,6 @@ pkgbase = libclc
 	makedepends = python
 	makedepends = spirv-llvm-translator
 	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.1/llvm-project-23.1.1.src.tar.xz
-	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.1/llvm-project-23.1.1.src.tar.xz.sig
 	sha256sums = ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6
-	sha256sums = 973fe303c2aa5bb0438d9f6762dc03b2a1e4e700a6b5480ec84b1db3fc33cec2
 
 pkgname = libclc

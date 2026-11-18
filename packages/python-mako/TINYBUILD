@@ -1,0 +1,24 @@
+set pkgname python-mako
+set pkgver 1.4.3
+set pkgrel 1
+set pkgdesc 'A template library written in Python'
+set arch any
+set url https://github.com/sqlalchemy/mako
+set license MIT
+set depends python python-markupsafe
+set makedepends git python-build python-installer python-setuptools python-wheel
+set optdepends 'python-pygments: for syntax highlighting'
+set source "python-mako::git+$url.git#tag=rel_"(string replace -a . _ -- $pkgver)
+set sha512sums c4ac12587d58777eae263441622385713c6f551dbd12afb9f73d8830a459bd24bd8a6b627f4733231eb52028ddf20c26833463cfca357e33adeedbd49cfa7a15
+set flags arch
+
+function build
+    cd python-mako; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd python-mako; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

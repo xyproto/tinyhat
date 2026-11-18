@@ -7,11 +7,12 @@ set url https://www.vulkan.org/
 set license Apache-2.0
 set groups vulkan-devel
 set depends glibc
-set makedepends cmake git libx11 libxrandr ninja python-lxml vulkan-headers wayland
+# No python-lxml: the Python code generation only runs with LOADER_CODEGEN/UPDATE_DEPS (or for cross builds)
+set makedepends cmake git libx11 libxrandr ninja vulkan-headers wayland
 set optdepends 'vulkan-driver: packaged vulkan driver'
 set provides libvulkan.so
 set source "git+https://github.com/KhronosGroup/Vulkan-Loader#tag=vulkan-sdk-$pkgver"
-set sha256sums SKIP
+set sha256sums 80de80decfc3c51e079fceb873b48fe15d806aa8a6b68d1977142990a43e7460
 set flags arch
 
 function build

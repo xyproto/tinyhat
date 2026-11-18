@@ -6,8 +6,8 @@ set arch i686 x32
 set url https://uxlfoundation.github.io/oneTBB/
 set license Apache-2.0
 set depends glibc hwloc libgcc libstdc++
-set optdepends 'python: for Python module'
-set makedepends cmake python python-pip python-setuptools swig
+# No Python module (swig, pip) and no test programs (the tests hang anyway, see below)
+set makedepends cmake
 set conflicts intel-tbb tbb
 set provides intel-tbb=$pkgver tbb=$pkgver
 set replaces intel-tbb tbb
@@ -29,7 +29,8 @@ function build
         -DCMAKE_BUILD_TYPE:STRING=None \
         -DCMAKE_INSTALL_PREFIX:PATH=/usr \
         -DTBB_STRICT:BOOL=OFF \
-        -DTBB4PY_BUILD:BOOL=ON \
+        -DTBB4PY_BUILD:BOOL=OFF \
+        -DTBB_TEST:BOOL=OFF \
         -Wno-author; or return
     cmake --build build; or return
 end

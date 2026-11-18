@@ -83,7 +83,7 @@ set sha256sums 7056c04df17a4e0f0bac9f787f347c9cd892cee6323d1c89528090afd0b934a3 
     f1b45f29b1a6b6796190bea821aebdd85ea5107115d6e95a4f9f2f5c9292b575 \
     e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 \
     e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
-# Directories that are not owned by root:root (makefish builds without root, the package archive gets these owners)
+# Directories that are not owned by root:root (makep builds without root, the package archive gets these owners)
 # vsftpd won't run with write perms on /srv/ftp; allow setgid games (gid 50) to write scores
 set owners 'srv/ftp 0:11' 'var/games 0:50'
 set flags arch

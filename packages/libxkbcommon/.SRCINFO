@@ -7,18 +7,21 @@ pkgbase = libxkbcommon
 	arch = x32
 	license = MIT
 	makedepends = git
+	makedepends = meson
 	makedepends = glibc
 	makedepends = libxml2
-	makedepends = meson
-	makedepends = wayland
-	makedepends = wayland-protocols
 	makedepends = xkeyboard-config
-	source = git+https://github.com/xkbcommon/libxkbcommon#tag=xkbcommon-1.13.2
-	sha256sums = SKIP
-
-pkgname = libxkbcommon
+	makedepends_build = git
+	makedepends_build = meson
+	makedepends_host = glibc
+	makedepends_host = libxml2
+	makedepends_host = xkeyboard-config
 	depends = glibc
 	depends = libxml2
 	depends = xkeyboard-config
 	provides = libxkbcommon.so
 	provides = libxkbregistry.so
+	source = git+https://github.com/xkbcommon/libxkbcommon#tag=xkbcommon-1.13.2
+	sha256sums = 2c94c7a5bfeff7954966203503d32bb58da440adbf76a8e32e2b468d218c7477
+
+pkgname = libxkbcommon

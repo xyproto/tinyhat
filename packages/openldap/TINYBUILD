@@ -7,11 +7,10 @@ set url https://www.openldap.org/
 set license custom
 set makedepends libtool libsasl util-linux chrpath unixodbc libsodium systemd
 set options '!makeflags' emptydirs '!lto'
-set source "https://www.openldap.org/software/download/OpenLDAP/openldap-release/$pkgbase-$pkgver.tgz"{,.asc} \
+set source "https://www.openldap.org/software/download/OpenLDAP/openldap-release/$pkgbase-$pkgver.tgz" \
     openldap.tmpfiles \
     openldap.sysusers
 set sha256sums 253db80f301258ea69cda1184766d57395b836aaabf41157eb0316eb0fac1341 \
-    SKIP \
     0be46138e53ff2fa6d4b4c06bfbdd2100426e0bd2ed29bf3419ade6b5974e9a0 \
     e4af9009982808d04fd10bd5d9559cec193efc7a05c6807367473da33392edab
 set flags arch

@@ -9,7 +9,7 @@ set makedepends python
 set source "freepats_$pkgver.orig.tar.gz::https://deb.debian.org/debian/pool/main/f/freepats/freepats_$pkgver.orig.tar.gz" \
     mkultrasnd.py
 set sha256sums 70bf8ca084df3903d6c9de43fe20539fc0a553d95cfba4d525da3fe66fda5f10 \
-    SKIP
+    d2cb1ee49dade731d26044237db233a250f18946247bdcc9c9f2dc1b190a624e
 
 function prepare
     tar -xjf freepats-$pkgver/upstream/freepats-$pkgver.tar.bz2; or return

@@ -1,5 +1,5 @@
 set pkgbase colord
-set pkgname colord libcolord colord-sane colord-docs
+set pkgname colord libcolord colord-sane
 set pkgver 1.4.8
 set pkgrel 2
 set pkgdesc 'System daemon for managing color devices'
@@ -7,11 +7,12 @@ set arch i686 x32
 set url https://www.freedesktop.org/software/colord/
 set license GPL-2.0-or-later
 set depends dbus dconf glib2 glibc lcms2 libgcc libgudev libgusb polkit shared-mime-info sqlite systemd-libs
-set makedepends argyllcms bash-completion docbook-xsl git gtk-doc meson sane systemd
+# No documentation (gtk-doc) and no man pages (docbook-xsl)
+set makedepends argyllcms bash-completion git meson sane systemd
 set options '!emptydirs'
 set source "git+https://github.com/hughsie/colord?signed#tag=$pkgver" \
     0001-Lock-user-account.patch
-set sha256sums SKIP \
+set sha256sums 238ff26f4315ecf13ff1c03355e6cb8b1f75be8c158f1862f17c21a3699d6dfa \
     2c036b1ad9831b8be9077454ef3ef800ebaf67402e4d3d61c31d7b9f7ff3e9cb
 set flags arch
 set -g _f package_libcolord
@@ -25,7 +26,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D daemon_user=colord -D libcolordcompat=true -D print_profiles=true -D sane=true
+    set -l meson_options -D daemon_user=colord -D docs=false -D man=false -D libcolordcompat=true -D print_profiles=true -D sane=true
     arch-meson -D introspection=false -D vapi=false colord build $meson_options; or return
     meson compile -C build; or return
 end
@@ -57,13 +58,6 @@ function package_colord
     true
     _pick sane usr/lib/colord-sane; or return
     _pick sane usr/lib/colord-plugins/libcolord_sensor_sane.so; or return
-    _pick docs usr/share/gtk-doc; or return
-end
-
-function package_colord-docs
-    set pkgdesc "$pkgdesc (API documentation)"
-    set depends
-    mv docs/* "$pkgdir"; or return
 end
 
 function package_colord-sane

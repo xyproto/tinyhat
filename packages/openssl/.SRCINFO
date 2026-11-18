@@ -19,10 +19,8 @@ pkgbase = openssl
 	replaces = openssl-doc
 	backup = etc/ssl/openssl.cnf
 	source = https://github.com/openssl/openssl/releases/download/openssl-3.6.5/openssl-3.6.5.tar.gz
-	source = https://github.com/openssl/openssl/releases/download/openssl-3.6.5/openssl-3.6.5.tar.gz.asc
 	source = ca-dir.patch
 	sha256sums = a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98
-	sha256sums = 85b3e373c1e1f94f6f043a4774377d04e752549c33c0f84b9f417a78b90c2372
 	sha256sums = 0a32d9ca68e8d985ce0bfef6a4c20b46675e06178cc2d0bf6d91bd6865d648b7
 
 pkgname = openssl

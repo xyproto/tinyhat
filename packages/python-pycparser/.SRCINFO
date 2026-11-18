@@ -1,0 +1,16 @@
+pkgbase = python-pycparser
+	pkgdesc = C parser and AST generator written in Python
+	pkgver = 3.12
+	pkgrel = 1
+	url = https://github.com/eliben/pycparser
+	arch = any
+	license = BSD-3-Clause
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	depends = python
+	source = git+https://github.com/eliben/pycparser.git#tag=release_v3.12
+	sha512sums = 3b348c09b770d7ac67ee539018545f1c52334370dba4c9a9739ac66cc5c0d0c72b7919cf82e61a5897ef00d83000b1ffff95425559e5886080f875b84a69aa1c
+
+pkgname = python-pycparser

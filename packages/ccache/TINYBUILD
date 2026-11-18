@@ -5,15 +5,17 @@ set pkgdesc 'Compiler cache that speeds up recompilation by caching previous com
 set arch i686 x32
 set url https://ccache.dev/
 set license GPL-3.0-or-later
-set depends fmt glibc hiredis libblake3 libgcc libstdc++ xxhash libxxhash.so zstd libzstd.so
-set makedepends cmake git perl tl-expected
+set depends fmt glibc libblake3 libgcc libstdc++ xxhash libxxhash.so zstd libzstd.so
+# Its own copy of tl-expected (header only), no tests (doctest) and no remote storage (Redis, HTTP): a local cache
+set makedepends cmake git
 set checkdepends doctest
 set source "git+https://github.com/ccache/ccache.git#tag=v$pkgver?signed"
-set sha256sums SKIP
+set sha256sums 9db1b100d33184ebbbde36fadcb610e01cc8aec1ce1db82e374579e5771a9aae
 set flags arch
 
 function build
-    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -Wno-dev; or return
+    cmake -B build -S $pkgname -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DDEP_TLEXPECTED=BUNDLED \
+        -DENABLE_TESTING=OFF -DREDIS_STORAGE_BACKEND=OFF -DHTTP_STORAGE_BACKEND=OFF -Wno-dev; or return
     cmake --build build; or return
 end
 

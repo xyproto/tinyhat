@@ -1,0 +1,18 @@
+pkgbase = python-pygments
+	pkgdesc = Python syntax highlighter
+	pkgver = 2.21.0
+	pkgrel = 1
+	url = https://pygments.org/
+	arch = any
+	license = BSD-2-Clause
+	makedepends = python-build
+	makedepends = python-hatchling
+	makedepends = python-installer
+	depends = python
+	provides = pygmentize
+	conflicts = pygmentize
+	replaces = pygmentize
+	source = https://github.com/pygments/pygments/archive/2.21.0/python-pygments-2.21.0.tar.gz
+	b2sums = 6b7ae05d558954a3f6e440f9310bcf6c3f10ff347908dbeecb1447414f7c299ae68a2447924142fbf315df6d9ea93cd2acbead285872fc88ce42a9cfc9e39004
+
+pkgname = python-pygments

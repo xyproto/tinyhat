@@ -20,6 +20,6 @@ pkgbase = x264
 	replaces = libx264-10bit
 	replaces = libx264-all
 	source = git+https://code.videolan.org/videolan/x264.git#commit=b35605ace3ddf7c1a5d67a2eb553f034aef41d55
-	sha256sums = SKIP
+	sha256sums = e92edc35efe3f8c3effb0c04854de0f8428cc09a218b2062ec3fe44f8ad2aa4e
 
 pkgname = x264

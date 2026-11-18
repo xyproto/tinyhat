@@ -22,7 +22,10 @@ end
 
 function build
     cd $pkgname; or return
-    make EXTRA_CFLAGS="$CFLAGS"; or return
+    # The library and the tools, without the text copies of the man pages (groff)
+    # (as the top Makefile runs them: make -e, with its CC and CFLAGS)
+    env CC=gcc CFLAGS="-O2 -W" make -C libjbig -e EXTRA_CFLAGS="$CFLAGS"; or return
+    env CC=gcc CFLAGS="-O2 -W" make -C pbmtools -e EXTRA_CFLAGS="$CFLAGS" jbgtopbm jbgtopbm85 pbmtojbg pbmtojbg85; or return
 end
 
 function check

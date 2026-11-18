@@ -6,48 +6,29 @@ set pkgdesc 'Utility used to store, backup, and transport files'
 set arch i686 x32
 set url https://www.gnu.org/software/tar/
 set license GPL-3.0-or-later
-set makedepends git
+# From the release tarball (generated configure and translations): Arch builds from git with ./bootstrap, which needs
+# autoconf, automake and makeinfo
 set checkdepends attr
 set options '!emptydirs'
 set install tar.install
-set source "git+https://git.savannah.gnu.org/git/tar.git#tag=v$pkgver?signed" \
-    git+https://git.savannah.gnu.org/git/gnulib.git \
-    git+https://git.savannah.gnu.org/git/paxutils.git \
-    "https://ftp.gnu.org/gnu/tar/tar-$pkgver.tar.gz" \
-    "https://ftp.gnu.org/gnu/tar/tar-$pkgver.tar.gz.sig" \
+set source "https://ftp.gnu.org/gnu/tar/tar-$pkgver.tar.gz" \
     fix-libacl-conflicts.patch
-set sha256sums 8476308a482ba89b7ba806dc2f77aea268e88828b3f4527d85484c813e025332 \
-    SKIP \
-    SKIP \
-    14d55e32063ea9526e057fbf35fcabd53378e769787eff7919c3755b02d2b57e \
-    SKIP \
+set sha256sums 14d55e32063ea9526e057fbf35fcabd53378e769787eff7919c3755b02d2b57e \
     07c20fc924001f15e93e779588de8113a2ce683ce5b18431e797f7c242eaa33a
 set flags arch
 
 function prepare
-    cd $pkgbase; or return
-    git submodule init; or return
-    git config submodule.gnulib.url "$srcdir/gnulib"; or return
-    git config submodule.paxutils.url "$srcdir/paxutils"; or return
-    git -c protocol.file.allow=always submodule update; or return
+    cd $pkgbase-$pkgver; or return
     # upstream commit doesn't cherry-pick cleanly to stable
     # 08c3fc2e9337094aff01a511170fd35fdb8f1ee3 Avoid acl_ prefix for functions
     patch -Np1 -i ../fix-libacl-conflicts.patch; or return
-    # Don't pull unstable translations from web
-    ./bootstrap --skip-po; or return
 end
 
 function build
-    cd $pkgbase; or return
+    cd $pkgbase-$pkgver; or return
     ./configure --prefix=/usr --sbindir=/usr/bin --libexecdir=/usr/lib/tar --enable-backup-scripts; or return
     # -Werror is enabled by default and causes build failures
     make WERROR_CFLAGS=""; or return
-    # Generate tar mo files from dist tarball
-    # See: https://archlinux.org/todo/unstable-gnu-translations/
-    cd "$srcdir/$pkgbase-$pkgver/po"; or return
-    for po in *.po
-        msgfmt $po -o (string replace -r '\.po$' .mo -- $po); or return
-    end
 end
 
 # The following tests fail on 64-bit and 32-bit:
@@ -65,7 +46,7 @@ end
 #
 # => run the tests, but make tests not fail the build
 function check
-    cd $pkgbase; or return
+    cd $pkgbase-$pkgver; or return
     make check; or true
 end
 
@@ -84,14 +65,8 @@ end
 
 function package_tar
     set depends glibc acl
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     make DESTDIR="$pkgdir" install; or return
-    # Install tar mo files from dist tarball
-    # See: https://archlinux.org/todo/unstable-gnu-translations/
-    cd "$srcdir/$pkgname-$pkgver/po"; or return
-    for mo in *.mo
-        install -Dm 644 $mo "$pkgdir/usr/share/locale/"(string replace -r '\.mo$' '' -- $mo)"/LC_MESSAGES/$pkgname.mo"; or return
-    end
     # Pick backup and restore scripts for tar-scripts package
     cd $pkgdir; or return
     _pick tar-scripts usr/bin/{backup,restore} usr/lib/tar/{backup.sh,dump-remind}; or return

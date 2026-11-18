@@ -8,7 +8,8 @@ set license GPL-3.0-or-later
 set depends acl libacl.so lz4 openssl popt xxhash libxxhash.so \
     zlib zstd
 set optdepends 'python: for rrsync'
-set makedepends git python-commonmark
+# The man pages are made from Markdown (the git source has no prebuilt ones), with python-commonmark
+set makedepends git python python-commonmark
 set backup etc/rsyncd.conf
 set source "git+https://github.com/RsyncProject/rsync.git?signed#tag=v$pkgver" \
     rsyncd.conf

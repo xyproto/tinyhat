@@ -1,0 +1,15 @@
+pkgbase = python-tomlkit
+	pkgdesc = Style-preserving TOML library for Python
+	pkgver = 0.15.2
+	pkgrel = 1
+	url = https://github.com/sdispater/tomlkit
+	arch = any
+	license = MIT
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-poetry-core
+	depends = python
+	source = https://files.pythonhosted.org/packages/source/t/tomlkit/tomlkit-0.15.2.tar.gz
+	sha256sums = 83e32755ba1d20d9340bd069ee97e9f6232ba2346b63ffcba425de01f7e327a6
+
+pkgname = python-tomlkit

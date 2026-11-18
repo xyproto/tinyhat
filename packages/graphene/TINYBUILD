@@ -1,5 +1,5 @@
 set pkgbase graphene
-set pkgname graphene graphene-docs
+set pkgname graphene
 set pkgver 1.10.8
 set pkgrel 2
 set pkgdesc 'Thin layer of graphic data types'
@@ -7,12 +7,13 @@ set arch i686 x32
 set url https://ebassi.github.io/graphene/
 set license MIT
 set depends glib2 glibc
-set makedepends git gtk-doc meson
+# No documentation package (gtk-doc)
+set makedepends git meson
 set checkdepends python-gobject python-tappy
 set source "git+https://github.com/ebassi/graphene#tag=$pkgver" \
-    git+https://github.com/ebassi/mutest
-set sha256sums SKIP \
-    SKIP
+    git+https://github.com/ebassi/mutest#commit=f0dcb2a48a4a8ef3dc1f7327bb0d4056a798c1a7
+set sha256sums 26106811557d87d394c06b392356054a13685ee427a0d606a1ba0451ed0a1b74 \
+    3a36bd3c95e282179a63762216f0690c0963ef15dd152c36e3a1d7a1ddae74b3
 set flags arch
 
 function prepare
@@ -26,13 +27,13 @@ end
 switch $CARCH
     case x32 x86_64 aarch64
         function build
-            set -l meson_options -D gtk_doc=true -D installed_tests=false
+            set -l meson_options -D gtk_doc=false -D installed_tests=false
             arch-meson -D introspection=disabled graphene build $meson_options; or return
             meson compile -C build; or return
         end
     case '*'
         function build
-            set -l meson_options -D gtk_doc=true -D installed_tests=false
+            set -l meson_options -D gtk_doc=false -D installed_tests=false
             arch-meson -D introspection=disabled -D sse2=false graphene build $meson_options; or return
             meson compile -C build; or return
         end
@@ -41,14 +42,5 @@ end
 function package_graphene
     set provides libgraphene-1.0.so
     meson install -C build --destdir "$pkgdir"; or return
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/gtk-doc; or return
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 graphene/LICENSE.txt; or return
-end
-
-function package_graphene-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-    mv doc/* "$pkgdir"; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 graphene/LICENSE.txt; or return
 end

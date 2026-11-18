@@ -6,7 +6,6 @@ set arch i686 x32
 set url https://github.com/rfjakob/earlyoom
 set license MIT
 set depends glibc
-set makedepends pandoc
 set optdepends 'systembus-notify: desktop notifications'
 set backup etc/default/earlyoom
 set source "https://github.com/rfjakob/$pkgname/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
@@ -27,6 +26,7 @@ end
 
 function package
     cd "$pkgname-$pkgver"; or return
-    make install DESTDIR="$pkgdir" PREFIX=/usr SYSTEMDUNITDIR=/usr/lib/systemd/system; or return
+    # No man page (pandoc)
+    make install DESTDIR="$pkgdir" PANDOC= PREFIX=/usr SYSTEMDUNITDIR=/usr/lib/systemd/system; or return
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
 end

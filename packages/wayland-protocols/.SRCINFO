@@ -8,8 +8,6 @@ pkgbase = wayland-protocols
 	makedepends = wayland
 	makedepends = meson
 	source = https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.50/downloads/wayland-protocols-1.50.tar.xz
-	source = https://gitlab.freedesktop.org/wayland/wayland-protocols/-/releases/1.50/downloads/wayland-protocols-1.50.tar.xz.sig
 	sha256sums = 4460c20cfcf68b994a5ee206ed15fc19ad312f16c96075186e83b0e3f4aa48a5
-	sha256sums = SKIP
 
 pkgname = wayland-protocols

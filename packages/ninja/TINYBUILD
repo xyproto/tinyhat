@@ -1,0 +1,24 @@
+# Without the tests (gtest), re2c (the lexer is generated in the tarball) and the Python, bash and zsh extras. Built
+# with its own bootstrap (configure.py, Python) instead of CMake: cmake builds with ninja
+set pkgname ninja
+set pkgver 1.13.2
+set pkgrel 3
+set pkgdesc 'Small build system with a focus on speed'
+set arch i686 x32
+set url https://ninja-build.org/
+set license Apache-2.0
+set depends glibc libgcc libstdc++
+set makedepends python
+set source "ninja-$pkgver.tar.gz::https://github.com/ninja-build/ninja/archive/v$pkgver/ninja-$pkgver.tar.gz"
+set sha256sums 974d6b2f4eeefa25625d34da3cb36bdcebe7fbce40f4c16ac0835fd1c0cbae17
+set flags arch
+
+function build
+    cd ninja-$pkgver; or return
+    python configure.py --bootstrap; or return
+end
+
+function package
+    install -Dm755 ninja-$pkgver/ninja "$pkgdir/usr/bin/ninja"; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" ninja-$pkgver/COPYING; or return
+end

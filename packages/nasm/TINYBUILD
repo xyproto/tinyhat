@@ -6,12 +6,9 @@ set arch i686 x32
 set url https://www.nasm.us
 set license BSD-2-Clause
 set depends glibc zlib
-switch $CARCH
-    case x32 x86_64 aarch64
-        set -g makedepends perl-font-ttf perl-sort-versions fontconfig ttf-roboto ttf-roboto-mono ghostscript xmlto asciidoc diffutils
-    case '*'
-        set -g makedepends perl-font-ttf perl-sort-versions fontconfig ttf-roboto ttf-roboto-mono ghostscript xmlto asciidoc diffutils ttf-liberation
-end
+# No documentation (asciidoc, ghostscript, xmlto, and the fonts and Perl modules for the PDF manual);
+# the man pages are pregenerated in the release tarball
+set makedepends diffutils
 set source "https://www.nasm.us/pub/nasm/releasebuilds/$pkgver/nasm-$pkgver.tar.xz"
 set sha256sums 87336eba53b4acfe917424ab5d500d2b0054d9f5148d35c2273ccf2cfb712f0d
 set flags arch
@@ -19,11 +16,11 @@ set flags arch
 function build
     cd $pkgname-$pkgver; or return
     ./configure --prefix=/usr --docdir=/usr/share/doc/$pkgname --htmldir=/usr/share/doc/$pkgname/html; or return
-    make all doc; or return
+    make all; or return
 end
 
 function package
     cd $pkgname-$pkgver; or return
-    make DESTDIR="$pkgdir" install install_doc; or return
+    make DESTDIR="$pkgdir" install; or return
     install -Dm 644 LICENSE -t "$pkgdir"/usr/share/licenses/nasm; or return
 end

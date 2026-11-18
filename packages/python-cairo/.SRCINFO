@@ -9,17 +9,9 @@ pkgbase = python-cairo
 	license = MPL
 	checkdepends = python-pytest
 	makedepends = meson
-	makedepends = python-sphinx
-	makedepends = python-sphinx_rtd_theme
 	depends = cairo
 	depends = python
 	source = https://github.com/pygobject/pycairo/releases/download/v1.29.2/pycairo-1.29.2.tar.gz
-	source = https://github.com/pygobject/pycairo/releases/download/v1.29.2/pycairo-1.29.2.tar.gz.sig
 	sha256sums = 3e69fff74fe64f5ba2dfa31f67c6bdf26413342574047437d2ac520d35e9a489
-	sha256sums = SKIP
 
 pkgname = python-cairo
-
-pkgname = python-cairo-docs
-	pkgdesc = Developer documentation for Pycairo (stubbed on arch32)
-	depends = 

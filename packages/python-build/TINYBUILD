@@ -1,0 +1,25 @@
+set pkgname python-build
+set pkgver 1.6.1
+set pkgrel 1
+set pkgdesc 'A simple, correct Python build frontend'
+set arch any
+set url https://github.com/pypa/build
+set license MIT
+set depends python python-packaging python-pyproject-hooks
+set makedepends git python-flit-core python-installer
+set source "python-build::git+$url#tag=$pkgver"
+set b2sums 88f8174d36b0fdc098bca44cd2a4258bab577eea4cec7e2cf2fae3b33bd8e88b1d7d3663fa3f5054a11a2c5656aad45f60311a892288c542720b553d7efb9c76
+set flags arch
+
+# Bootstrap: built with flit_core directly, so that python-build does not makedepend on itself
+
+function build
+    cd python-build; or return
+    python -m flit_core.wheel; or return
+end
+
+function package
+    cd python-build; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

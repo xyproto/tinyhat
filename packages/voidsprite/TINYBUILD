@@ -1,0 +1,46 @@
+# A pixel art and sprite editor made with SDL3, in place of mtPaint (GTK2/GTK3). Built with the system's SDL3 libraries
+# (upstream's FLATPAK mode) and zlib, with liblcf (RPG Maker 2000/2003 maps and tilesets) from its submodule, and
+# without AVIF (libavif is not in Tiny Hat), networking (SDL3_net) or fmt (std::format is used)
+set pkgname voidsprite
+set -g _commit 025b430805beb87ebb40d1cf409c444aef2c361a
+set -g _lcf 4b91a5835f2141ae898862c5e6dfee50c7ff87cd
+# The tag beta-2026.10
+set pkgver 2026.10
+set pkgrel 1
+set pkgdesc 'Pixel art and sprite editor made with SDL3'
+set arch i686 x32 x86_64 aarch64
+set url https://github.com/counter185/voidsprite
+set license GPL-2.0-only MIT OFL-1.1
+set depends sdl3 sdl3_image sdl3_ttf zlib libgcc libstdc++ glibc
+set makedepends cmake
+set source "voidsprite-$_commit.tar.gz::https://github.com/counter185/voidsprite/archive/$_commit.tar.gz" \
+    "liblcf-$_lcf.tar.gz::https://github.com/EasyRPG/liblcf/archive/$_lcf.tar.gz" \
+    voidsprite-tinyhat.patch
+set sha256sums c3fe43b980e165337de2ffb6b4364a853095f79521330adb497fc43968a84e0d \
+    d88be765af6b0a90e0bb1aba97c85938db406b19c11d5e0ac46e8eac678e625a \
+    e621d9645fcd7032d312d6c76e28201ed57a047bbe2a791f9802e5f4c40b5813
+
+function prepare
+    cd voidsprite-$_commit; or return
+    rmdir external/liblcf; or return
+    ln -s "$srcdir/liblcf-$_lcf" external/liblcf; or return
+    patch -Np1 -i ../voidsprite-tinyhat.patch; or return
+end
+
+function build
+    cmake -S voidsprite-$_commit -B build -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr \
+        -DFLATPAK=ON -DVSP_NETWORKING=OFF -DRELEASE=ON; or return
+    cmake --build build; or return
+end
+
+function package
+    DESTDIR="$pkgdir" cmake --install build; or return
+    cd voidsprite-$_commit/freesprite/linux; or return
+    install -Dm644 com.github.counter185.voidsprite.desktop -t "$pkgdir/usr/share/applications"; or return
+    for s in 16 32 64 128 256
+        install -Dm644 icons/{$s}x{$s}.png "$pkgdir/usr/share/icons/hicolor/{$s}x{$s}/apps/com.github.counter185.voidsprite.png"; or return
+    end
+    cd "$srcdir"; or return
+    install -Dm644 voidsprite-$_commit/LICENSE voidsprite-$_commit/OPEN_SOURCE_LICENSES -t "$pkgdir/usr/share/licenses/$pkgname"; or return
+    install -Dm644 liblcf-$_lcf/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING.liblcf"; or return
+end

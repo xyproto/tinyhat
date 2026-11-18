@@ -6,8 +6,6 @@ pkgbase = spandsp
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-only
-	makedepends = docbook-xsl
-	makedepends = doxygen
 	depends = glibc
 	depends = libtiff
 	source = https://web.archive.org/web/20260102090731/https://www.soft-switch.org/downloads/spandsp/spandsp-0.0.6.tar.gz
@@ -15,7 +13,3 @@ pkgbase = spandsp
 
 pkgname = spandsp
 	provides = libspandsp.so
-
-pkgname = spandsp-docs
-	pkgdesc = Developer documentation for spandsp
-	depends = 

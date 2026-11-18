@@ -1,50 +1,25 @@
-set pkgbase memtest86+
-set pkgname memtest86+ memtest86+-efi memtest86+-iso
+# Only the i586 build, for the BIOS menu entry (linux16 /boot/memtest86+/memtest.bin): it runs on 32-bit and 64-bit
+# CPUs, while the x86_64 build needs a 64-bit CPU. No EFI files and no ISO image: no Tiny Hat image uses them
+set pkgname memtest86+
 set pkgver 9.00
-set pkgrel 1
-set pkgdesc 'Advanced memory diagnostic tool'
+set pkgrel 2
+set pkgdesc 'Advanced memory diagnostic tool, legacy BIOS version'
 set url https://www.memtest.org
 set arch any
 set license GPL-2.0-only
 set makedepends git
-set -a makedepends lib32-glibc xorriso dosfstools mtools # to build the iso image
 set flags arch
 set source "git+https://github.com/memtest86plus/memtest86plus.git#tag=v$pkgver" \
-    60_memtest86+ \
-    60_memtest86+-efi
+    60_memtest86+
 set sha512sums aaee88ce56be1651b58339c670eb7168718596b85dcb76deb1a912eff9a5a823573dbfe40a09ceccd25938a3f18cae4db50f942dca1179f33397f5e8f0c59be9 \
-    8abdd5ce13396de68905917060700a4e2da1813d08d3ea8012ad3d939635eadcebdb43e2a7ca40bbbb43260877d06726850b12dfcb355d8f8e1da6c0a54ded7c \
-    7ac3717b53a06c4c192275bba6f2b58ac38fada26433f752234e426d75a29707ab179c1f5619e8ff5722f70f68cbb7f5e0850f978ff8a96947d92eddfeb9e50e
+    8abdd5ce13396de68905917060700a4e2da1813d08d3ea8012ad3d939635eadcebdb43e2a7ca40bbbb43260877d06726850b12dfcb355d8f8e1da6c0a54ded7c
 
 function build
-    cd memtest86plus/build/x86_64; or return
-    make; or return
-    make iso; or return
-
-    cd "$srcdir/memtest86plus/build/i586"; or return
+    cd memtest86plus/build/i586; or return
     make; or return
 end
 
-function package_memtest86+
-    set pkgdesc "$pkgdesc legacy BIOS version"
-
-    cd memtest86plus/build/x86_64; or return
-    install -Dm644 mt86plus "$pkgdir/boot/memtest86+/memtest.bin"; or return
+function package
+    install -Dm644 memtest86plus/build/i586/mt86plus "$pkgdir/boot/memtest86+/memtest.bin"; or return
     install -Dm 755 "$srcdir/60_memtest86+" "$pkgdir/etc/grub.d/60_memtest86+"; or return
-end
-
-function package_memtest86+-efi
-    set pkgdesc "$pkgdesc EFI version"
-    set install memtest86+-efi.install
-
-    install -Dm644 memtest86plus/build/x86_64/mt86plus "$pkgdir/boot/memtest86+/memtest86x64.efi"; or return
-    install -Dm644 memtest86plus/build/i586/mt86plus "$pkgdir/boot/memtest86+/memtest86ia32.efi"; or return
-    install -Dm 755 "$srcdir/60_memtest86+-efi" "$pkgdir/etc/grub.d/60_memtest86+-efi"; or return
-end
-
-function package_memtest86+-iso
-    set pkgdesc "$pkgdesc ISO image"
-
-    cd memtest86plus/build/x86_64; or return
-    install -Dm644 memtest.iso "$pkgdir/usr/share/memtest86+/memtest.iso"; or return
 end

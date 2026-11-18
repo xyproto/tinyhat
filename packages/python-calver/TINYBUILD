@@ -1,0 +1,27 @@
+set pkgname python-calver
+set pkgver 2025.10.20
+set pkgrel 1
+set pkgdesc 'Setuptools extension for CalVer package versions'
+set arch any
+set url https://github.com/di/calver
+set license Apache-2.0
+set depends python
+set makedepends git python-build python-installer python-setuptools python-wheel
+set source "git+https://github.com/di/calver.git#tag=$pkgver"
+set sha512sums 16dcd12f3d7eb0977e3f9e8aaf46dbee836e39d1608b4318a7700e18e497bdfa06bd6797e91e4a12189eb4d3007703690210f90c69af832b05e3e319944c6caa
+set flags arch
+
+function prepare
+    cd calver; or return
+    echo "Version: $pkgver" >PKG-INFO; or return
+end
+
+function build
+    cd calver; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd calver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+end

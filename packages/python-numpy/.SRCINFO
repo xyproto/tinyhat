@@ -20,18 +20,18 @@ pkgbase = python-numpy
 	depends = python
 	optdepends = blas-openblas: faster linear algebra
 	source = git+https://github.com/numpy/numpy#tag=v2.5.4
-	source = numpy-meson::git+https://github.com/numpy/meson.git
-	source = numpy-highway::git+https://github.com/google/highway.git
-	source = numpy-x86-simd-sort::git+https://github.com/intel/x86-simd-sort
-	source = numpy-pocketfft::git+https://github.com/mreineck/pocketfft
-	source = numpy-svml::git+https://github.com/numpy/SVML.git
-	source = numpy-pythoncapi-compat::git+https://github.com/python/pythoncapi-compat
+	source = numpy-meson::git+https://github.com/numpy/meson.git#commit=11ed55a4f364a81d7eeef740b27d73cfb4d36a05
+	source = numpy-highway::git+https://github.com/google/highway.git#commit=ee36c837129310be19c17c9108c6dc3f6ae06942
+	source = numpy-x86-simd-sort::git+https://github.com/intel/x86-simd-sort#commit=fa944efbea1a33426b3f8a9a21e23794ab8aa300
+	source = numpy-pocketfft::git+https://github.com/mreineck/pocketfft#commit=33ae5dc94c9cdc7f1c78346504a85de87cadaa12
+	source = numpy-svml::git+https://github.com/numpy/SVML.git#commit=bd9d46e0c627ab16f3d2641f7cdb1bc15d303ba4
+	source = numpy-pythoncapi-compat::git+https://github.com/python/pythoncapi-compat#commit=8636bccf29adfa23463f810b3c2830f7cff1e933
 	sha512sums = 7d90b5988780cd6441400c0ff000490f66fc83b74c770dc16b65a1fc39f83d108e444d017eb8360a13154ee7be23a29aed4d824bcb664e80613c1c45c49da1ba
-	sha512sums = SKIP
-	sha512sums = SKIP
-	sha512sums = SKIP
-	sha512sums = SKIP
-	sha512sums = SKIP
-	sha512sums = SKIP
+	sha512sums = 40b542ea6b8e430fcc5cbc1720756c14820a0c5716d7b5eda292142b7590286a05b9ad53a69d168dc5c5773342372f14a35a563f1faf91e7ed32b2ed4aadee6b
+	sha512sums = 2fbe7b963943925dec8623cbe2cc5d2f0dbdb18ca8692dfa03a23468d56e2a986255c27c2a241e48edf7e9e9637fcd5b4d6535bb11f5c9ab362a81f7deb93e50
+	sha512sums = d46eff0e990b7722b020f4bea0900861fb5d4ab1feb8e6b1085049de600a6d303244cd62d831ebc5f25df9c4475cb75d2ca454446c68bce8fe61c6fe83222fe0
+	sha512sums = 92c396759257c749afbedb2da269a0ac5980183f5992ded25326374c6effe26ffa21452f980690a73b5f09229fe30eacb9746e6055e01724ab59ac18c0eb1dfd
+	sha512sums = f02a68f856a49838380ea65f14a5fc266f7b80c369fe425b8d11058fef27e4183f54da6b959bf7cb6e1dbe16b9703a12804de55b7fc38622b8163552b39e6027
+	sha512sums = 1b02d7c01de1e44e9ab0e0fa10d663bd9b25edf3f726c719714cda6ca087f84a76b98fb9061c67e25550805ff0ce6c0be236be9dec2d93493c8c4baf957954a5
 
 pkgname = python-numpy

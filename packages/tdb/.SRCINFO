@@ -7,14 +7,10 @@ pkgbase = tdb
 	arch = x32
 	license = GPL-3.0-or-later
 	makedepends = python
-	makedepends = libxslt
-	makedepends = docbook-xsl
 	depends = glibc
 	optdepends = python: for python bindings
 	provides = libtdb.so
 	source = https://samba.org/ftp/tdb/tdb-1.4.15.tar.gz
-	source = https://samba.org/ftp/tdb/tdb-1.4.15.tar.asc
 	sha256sums = fba09d8df1f1b9072aeae8e78b2bd43c5afef20b2f6deefa633aa14a377a8dd2
-	sha256sums = 18c2fd8e8ae2346fc24dc0957c499892cedc8004bc7a3061e90b244f1b2720a6
 
 pkgname = tdb

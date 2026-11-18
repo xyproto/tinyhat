@@ -1,0 +1,11 @@
+pkgbase = publicsuffix-list
+	pkgdesc = Cross-vendor public domain suffix database
+	pkgver = 20260507.2070.ee780bcf
+	pkgrel = 1
+	url = https://github.com/publicsuffix/list
+	arch = any
+	license = MPL-2.0
+	source = publicsuffix-list-ee780bcf233174cb23ba8575d54c4154d47508e1.tar.gz::https://github.com/publicsuffix/list/archive/ee780bcf233174cb23ba8575d54c4154d47508e1.tar.gz
+	sha256sums = e8273a038785f7172cb7399e8063d02d6c02357775f280e4047ec4db6e51bd0f
+
+pkgname = publicsuffix-list

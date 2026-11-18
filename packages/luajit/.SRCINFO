@@ -1,15 +1,15 @@
 pkgbase = luajit
 	pkgdesc = Just-in-time compiler and drop-in replacement for Lua 5.1
-	pkgver = 2.1.1792349434+dd3b243
+	pkgver = 2.1.1753364724+871db2c
 	pkgrel = 1
 	url = https://luajit.org/
 	arch = i686
 	license = MIT
 	depends = glibc
 	depends = libgcc
-	source = LuaJIT-dd3b243.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/dd3b243.tar.gz
+	source = LuaJIT-871db2c.tar.gz::https://github.com/LuaJIT/LuaJIT/archive/871db2c84ecefd70a850e03a6c340214a81739f0.tar.gz
 	source = c7815e1a1b49871e645252bb12e722fb4879df11.patch
-	sha256sums = a6ac8457c474c6fb71aaa7660dd5bf8f6e0506496fc74786b2dae18e26a768cc
+	sha256sums = ab3f16d82df6946543565cfb0d2810d387d79a3a43e0431695b03466188e2680
 	sha256sums = e59a3fa37e9fa7505193fde2a668eaa66caed39e77502868f12691cf0ee4e8a5
 
 pkgname = luajit

@@ -20,10 +20,9 @@ pkgbase = pango
 	depends = glib2>=2.88
 	depends = glibc
 	depends = harfbuzz>=11.0.0
-	depends = libsysprof-capture
 	depends = libthai
 	source = git+https://gitlab.gnome.org/GNOME/pango.git#tag=1.58.2
-	sha256sums = SKIP
+	sha256sums = e7d40762b02df495069444e7fe649c6203b8b2280c71498e40d41dc6266e7655
 
 pkgname = pango
 	provides = libpango-1.0.so

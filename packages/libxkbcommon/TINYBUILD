@@ -5,54 +5,26 @@ set pkgdesc 'Keymap handling library for toolkits and window systems'
 set arch i686 x32
 set url https://xkbcommon.org/
 set license MIT
-set makedepends git glibc libxml2 meson wayland wayland-protocols xkeyboard-config
+# Without X11 and without the Wayland xkbcli tools (interactive-wayland), which Tiny Hat does not need
+set makedepends_host glibc libxml2 xkeyboard-config
+set makedepends_build git meson
+set depends glibc libxml2 xkeyboard-config
+set provides libxkbcommon.so libxkbregistry.so
 set source "git+https://github.com/xkbcommon/libxkbcommon#tag=xkbcommon-$pkgver"
-set sha256sums SKIP
+set sha256sums 2c94c7a5bfeff7954966203503d32bb58da440adbf76a8e32e2b468d218c7477
 set flags arch
-set -g BASH_REMATCH xorgproto xorgproto
-set -g _d git glibc libxml2 meson wayland wayland-protocols xkeyboard-config
-set -g _p xorgproto
 
 function prepare
     cd libxkbcommon; or return
 end
 
 function build
-    set -l meson_options -D enable-docs=false -D enable-x11=false -D x-locale-root=/usr/share/xkbcommon/locale
+    set -l meson_options -D enable-docs=false -D enable-x11=false -D enable-wayland=false -D x-locale-root=/usr/share/xkbcommon/locale
     arch-meson libxkbcommon build $meson_options; or return
     meson compile -C build; or return
 end
 
-function _pick
-    set -l p "$argv[1]"
-    set -l f
-    set -l d
-    set -e argv[1]
-    for f in $argv
-        set d "$srcdir/$p/$(string replace -r -- '^'(string escape --style=regex -- "$pkgdir")'/' '' "$f")"
-        mkdir -p "$(dirname "$d")"; or return
-        mv "$f" "$d"; or return
-        rmdir -p --ignore-fail-on-non-empty "$(dirname "$f")"; or return
-    end
-end
-
-function package_libxkbcommon
-    set depends glibc libxml2 xkeyboard-config
-    set provides libxkbcommon.so libxkbregistry.so
+function package
     meson install -C build --destdir "$pkgdir"; or return
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libxkbcommon/LICENSE; or return
-end
-
-function package_libxkbcommon-doc
-    set pkgdesc 'API documentation for libxkbcommon'
-    mv doc/* "$pkgdir"/; or return
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libxkbcommon/LICENSE; or return
-end
-
-function package_libxkbcommon-x11
-    set pkgdesc 'Keyboard handling library using XKB data for X11 XCB clients'
-    set depends glibc libxcb libxkbcommon libxkbcommon.so
-    set provides libxkbcommon-x11.so
-    mv x11/* "$pkgdir"/; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libxkbcommon/LICENSE; or return
 end

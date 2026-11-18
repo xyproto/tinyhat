@@ -6,14 +6,10 @@ pkgbase = bluez
 	arch = x32
 	license = GPL-2.0-only
 	makedepends = dbus
-	makedepends = libical
 	makedepends = systemd
 	makedepends = alsa-lib
-	makedepends = json-c
 	makedepends = ell
 	makedepends = python-docutils
-	makedepends = python-pygments
-	makedepends = cups
 	makedepends = git
 	source = git+https://github.com/bluez/bluez.git#tag=5.87
 	source = bluetooth.modprobe
@@ -49,16 +45,8 @@ pkgname = bluez-libs
 	depends = glibc
 	provides = libbluetooth.so
 
-pkgname = bluez-cups
-	pkgdesc = CUPS printer backend for Bluetooth printers
-	depends = cups
-	depends = glib2
-	depends = glibc
-	depends = dbus
-
 pkgname = bluez-deprecated-tools
 	pkgdesc = Deprecated tools that are no longer maintained
-	depends = json-c
 	depends = systemd-libs
 	depends = glib2
 	depends = dbus
@@ -67,22 +55,5 @@ pkgname = bluez-deprecated-tools
 
 pkgname = bluez-hid2hci
 	pkgdesc = Put HID proxying bluetooth HCI's into HCI mode
-	depends = systemd-libs
-	depends = glibc
-
-pkgname = bluez-mesh
-	pkgdesc = Services for bluetooth mesh
-	depends = ell
-	depends = json-c
-	depends = readline
-	depends = glibc
-	backup = etc/bluetooth/mesh-main.conf
-
-pkgname = bluez-obex
-	pkgdesc = Object Exchange daemon for sharing content
-	depends = glib2
-	depends = libical
-	depends = dbus
-	depends = readline
 	depends = systemd-libs
 	depends = glibc

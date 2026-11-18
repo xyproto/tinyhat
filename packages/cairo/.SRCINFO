@@ -7,9 +7,7 @@ pkgbase = cairo
 	arch = x32
 	license = LGPL-2.1-only OR MPL-1.1
 	makedepends = git
-	makedepends = gtk-doc
 	makedepends = meson
-	makedepends = valgrind
 	depends = bash
 	depends = fontconfig
 	depends = freetype2
@@ -21,7 +19,7 @@ pkgbase = cairo
 	depends = zlib
 	conflicts = cairo
 	source = git+https://gitlab.freedesktop.org/cairo/cairo.git#tag=1.18.6
-	sha256sums = SKIP
+	sha256sums = 4250a85c6d5a4032b2dc24fa74bfb740e5555b1be34473b20c5da9e53286a58a
 
 pkgname = cairo-wayland
 	provides = cairo=1.18.6

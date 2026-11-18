@@ -8,10 +8,12 @@ set arch i686 x32 x86_64 aarch64
 set url https://github.com/libretro/nestopia
 set license GPL-2.0-only
 set groups libretro
-set depends glibc libgcc libretro-core-info libstdc++
+# No libretro-core-info: the .info files are for frontends like RetroArch, the core itself does not need them
+set depends glibc libgcc libstdc++
 set makedepends git
 set source "libretro-nestopia::git+https://github.com/libretro/nestopia.git#commit=$_commit" inline-peekbus.patch
-set b2sums SKIP SKIP
+set b2sums bbc5be7bee5d19ececc2d5a838f09782cacfd5dc54d11783cea10881e316374deda1bc56f18850cdcf18a1fef4f9c4f65ec7da22c957739b6360befbde41cfb9 \
+    122eed5d0fc50089a199bd684301f9b68f50dc00eccc541df022741be336b21c307ee2d814c35882b24c8fe93ac2aaf0094e6c467cf6cc6825664c06e05cac4c
 
 function prepare
     cd libretro-nestopia; or return

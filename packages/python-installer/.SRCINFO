@@ -1,0 +1,13 @@
+pkgbase = python-installer
+	pkgdesc = Low-level library for installing a Python package from a wheel distribution
+	pkgver = 1.1.0
+	pkgrel = 1
+	url = https://github.com/pypa/installer
+	arch = any
+	license = MIT
+	makedepends = python-flit-core
+	depends = python
+	source = python-installer-1.1.0.tar.gz::https://github.com/pypa/installer/archive/refs/tags/1.1.0.tar.gz
+	sha512sums = 8b237594ff4812c4718c72bf1eb1a0ef1cbdb40f601f9ed1df437733bdfcf2fe14fb9a9769aeda3ec8807d21f9d6aa8e6d418dad86d81102fec43f2eb50dba94
+
+pkgname = python-installer

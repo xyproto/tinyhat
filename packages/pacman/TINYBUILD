@@ -7,10 +7,10 @@ set pkgdesc 'A library-based package manager with dependency support'
 set arch i686 x32
 set url https://www.archlinux.org/pacman/
 set license GPL-2.0-or-later
-set depends bash coreutils curl libcurl.so gawk gettext glibc gnupg gpgme libgpgme.so grep libarchive libarchive.so \
+set depends bash coreutils curl libcurl.so awk gettext glibc gnupg gpgme libgpgme.so grep libarchive libarchive.so \
     openssl libcrypto.so pacman-mirrorlist systemd libmakepkg-dropins archlinux32-keyring
-# doxygen is not a makedepend, the docs are disabled (broken Python/asciidoc)
-set makedepends asciidoc git meson
+# No documentation and no man pages (asciidoc, doxygen): -Ddoc=disabled -Ddoxygen=disabled
+set makedepends git meson
 set checkdepends fakechroot python
 set optdepends 'base-devel: required to use makepkg' \
     'perl-locale-gettext: translation support in makepkg-template'
@@ -66,12 +66,12 @@ end
 
 function build
     cd $pkgname; or return
-    # -Ddoc=disabled: broken Python/asciidoc
+    # -Ddoc=disabled: broken Python/asciidoc. Install scriptlets run in osh: Tiny Hat has no bash
     meson --prefix=/usr \
         --buildtype=plain \
         -Ddoc=disabled \
         -Ddoxygen=disabled \
-        -Dscriptlet-shell=/usr/bin/bash \
+        -Dscriptlet-shell=/usr/bin/osh \
         -Dldconfig=/usr/bin/ldconfig \
         build; or return
     meson compile -C build; or return

@@ -1,0 +1,26 @@
+set pkgname python-poetry-core
+set pkgver 2.5.0
+set pkgrel 1
+set pkgdesc 'Poetry PEP 517 Build Backend & Core Utilities'
+set arch any
+set url https://github.com/python-poetry/poetry-core
+set license MIT
+# The vendored fastjsonschema, lark, packaging and tomli are kept
+set depends python
+set makedepends python-build python-installer
+set source "$url/archive/$pkgver/poetry-core-$pkgver.tar.gz"
+set sha256sums e5a6fa94749ba460c56898d2b9649e3779b9f20f225d75be2fdff0ec43a3449d
+set flags arch
+
+# poetry-core builds itself (backend-path in pyproject.toml)
+
+function build
+    cd poetry-core-$pkgver; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd poetry-core-$pkgver; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

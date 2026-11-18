@@ -1,29 +1,19 @@
+# No MPI: the fftw-openmpi split package and openmpi are dropped, since nothing in Tiny Hat uses MPI
 set pkgbase fftw
-set pkgname fftw fftw-openmpi
+set pkgname fftw
 set pkgver 3.3.11
 set pkgrel 1
 set pkgdesc 'A library for computing the discrete Fourier transform (DFT)'
 set arch i686 x32
 set url http://www.fftw.org/
 set license GPL-2.0-or-later
-set makedepends bash cmake gcc-fortran glibc libgcc libgomp libquadmath openmpi
+set makedepends bash cmake gcc-fortran glibc libgcc libgomp libquadmath
 set flags arch
 set source http://www.fftw.org/$pkgbase-$pkgver.tar.gz
 set sha512sums ca1bf80490dc6955a0ab49b1af05d6658c2ecc0968b3bde5b4af22271e47d30cd38f6f8347e8e6124091b6a17717447942bee95f94ca29574ba71c4d167af351
 set b2sums 4bd2ae0ada612243f0681b185230969da2bca6cfccb1e16d17f84459cbdd4ae84dc8a9ddb39ce5e4dfc7d0308709d1dc56688826299ee1017fc6115d16b2bd38
 set -g _build_types single double long-double quad
 set -g _soname 3.7.11
-
-# Moves files (relative to the current directory, which is $pkgdir) to $srcdir/$argv[1], keeping their paths
-function _pick
-    set -l p $argv[1]
-    for f in $argv[2..-1]
-        set -l d "$srcdir/$p/"(string replace -- "$pkgdir/" '' $f)
-        mkdir -p (dirname $d); or return
-        mv $f $d; or return
-        rmdir -p --ignore-fail-on-non-empty (dirname $f); or return
-    end
-end
 
 function prepare
     # fix wrong soname in FFTW3LibraryDepends.cmake
@@ -41,9 +31,8 @@ function build
         --prefix=/usr \
         --enable-shared \
         --enable-threads \
-        --enable-mpi \
-        --enable-openmp \
-        "MPILIBS=$(mpicc --showme:link)"
+        --disable-mpi \
+        --enable-openmp
     set -l _configure_single \
         --enable-sse \
         --enable-avx \
@@ -54,7 +43,6 @@ function build
     set -l _configure_long_double \
         --enable-long-double
     set -l _configure_quad \
-        --disable-mpi \
         --enable-quad-precision
     set -l _cmake_options \
         -B build \
@@ -112,29 +100,12 @@ end
 
 function package_fftw
     set depends bash glibc libgcc libgomp libquadmath
-    set optdepends 'fftw-openmpi: for OpenMPI integration'
     set provides libfftw3q_threads.so libfftw3q_omp.so libfftw3q.so libfftw3l_threads.so libfftw3l_omp.so libfftw3l.so libfftw3f_threads.so libfftw3f_omp.so libfftw3f.so libfftw3_threads.so libfftw3_omp.so libfftw3.so
 
     for _name in $_build_types
         make DESTDIR="$pkgdir" install -C $pkgname-$pkgver-$_name; or return
     end
-    set -l _somajor (string split -f1 . -- $_soname)
-    pushd "$pkgdir"; or return
-    _pick $pkgbase-openmpi usr/include/fftw3-mpi.h; or return
-    _pick $pkgbase-openmpi usr/include/fftw3{,l}-mpi.f03; or return
-    _pick $pkgbase-openmpi usr/lib/libfftw3{,f,l}_mpi.{a,so}; or return
-    _pick $pkgbase-openmpi usr/lib/libfftw3{,f,l}_mpi.so.$_somajor; or return
-    _pick $pkgbase-openmpi usr/lib/libfftw3{,f,l}_mpi.so.$_soname; or return
-    popd; or return
     install -vDm 644 $pkgname-$pkgver-$_build_types[1]/{AUTHORS,ChangeLog,NEWS,README,TODO} -t "$pkgdir/usr/share/doc/$pkgname"; or return
     # install missing FFTW3LibraryDepends.cmake
     install -vDm 644 build/FFTW3LibraryDepends.cmake -t "$pkgdir/usr/lib/cmake/fftw3/"; or return
-end
-
-function package_fftw-openmpi
-    set pkgdesc "$pkgdesc - OpenMPI libraries"
-    set depends fftw glibc openmpi
-    set provides libfftw3l_mpi.so libfftw3f_mpi.so libfftw3_mpi.so
-
-    mv -v $pkgname/* "$pkgdir"; or return
 end

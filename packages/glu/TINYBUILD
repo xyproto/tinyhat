@@ -8,9 +8,8 @@ set url https://gitlab.freedesktop.org/mesa/glu
 set license SGI-B-2.0 MIT
 set depends libgl glibc libstdc++ libgcc
 set makedepends meson
-set source "https://mesa.freedesktop.org/archive/glu/glu-$pkgver.tar.xz"{,.sig}
-set sha512sums b2781059c0e176192c3fc0d7244645020937a463311171efddb9f35fb94ee43faabcf627fa7f429d48fceaf6dd9c5adb69c86c7a21ec4ea490f4ab143d52e3ba \
-    SKIP
+set source "https://mesa.freedesktop.org/archive/glu/glu-$pkgver.tar.xz"
+set sha512sums b2781059c0e176192c3fc0d7244645020937a463311171efddb9f35fb94ee43faabcf627fa7f429d48fceaf6dd9c5adb69c86c7a21ec4ea490f4ab143d52e3ba
 set flags arch
 
 function build

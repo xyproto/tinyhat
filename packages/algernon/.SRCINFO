@@ -14,7 +14,8 @@ pkgbase = algernon
 	optdepends = redis: For using the Redis database backend
 	optdepends = valkey: For using the Redis database backend
 	options = docs
+	options = network
 	source = git+https://github.com/xyproto/algernon#commit=12ea2d92720eb73ec2e70db2d403017a5f4b1f68
-	b2sums = SKIP
+	b2sums = a3c18f4c17f9e0667d2c0f1b995da2bc74f48b2f64ebf017705efb5f18159c113b153c59cd8463c750c9d1e13bf5fa4c5a20f4e147395976ae1a4992d148f385
 
 pkgname = algernon

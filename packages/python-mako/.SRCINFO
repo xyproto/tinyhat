@@ -1,0 +1,19 @@
+pkgbase = python-mako
+	pkgdesc = A template library written in Python
+	pkgver = 1.4.3
+	pkgrel = 1
+	url = https://github.com/sqlalchemy/mako
+	arch = any
+	license = MIT
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	makedepends = python-wheel
+	depends = python
+	depends = python-markupsafe
+	optdepends = python-pygments: for syntax highlighting
+	source = python-mako::git+https://github.com/sqlalchemy/mako.git#tag=rel_1_4_3
+	sha512sums = c4ac12587d58777eae263441622385713c6f551dbd12afb9f73d8830a459bd24bd8a6b627f4733231eb52028ddf20c26833463cfca357e33adeedbd49cfa7a15
+
+pkgname = python-mako

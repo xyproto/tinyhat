@@ -1,32 +1,20 @@
 set pkgbase zix
-set pkgname zix{,-docs}
+set pkgname zix
 set pkgver 0.8.2
 set pkgrel 1
 set pkgdesc 'A lightweight C99 portability and data structure library'
 set arch i686 x32
 set url https://gitlab.com/drobilla/zix
 set license '0BSD OR ISC'
-set makedepends doxygen glibc meson python-sphinx python-sphinx-lv2-theme python-sphinxygen
-set source https://download.drobilla.net/$pkgbase-$pkgver.tar.xz{,.sig}
-set sha512sums 0a6f4044b58013e00da97b6767d33bcb75e530a1337e70112a2e4c8e51433bf65518a7c01cb401575aec71e5b767758e1c04e895eec95cb71fcb767d3a1fdb82 \
-    SKIP
-set b2sums d821ce3dcf8748770b92da1060a34c462222d0b190127d2f18e25de2d1bac63cf171a73531ae58efbbeacebcb6451f267620947384f9822384050e4731f10642 \
-    SKIP
+# No documentation (doxygen, python-sphinx)
+set makedepends glibc meson
+set source https://download.drobilla.net/$pkgbase-$pkgver.tar.xz
+set sha512sums 0a6f4044b58013e00da97b6767d33bcb75e530a1337e70112a2e4c8e51433bf65518a7c01cb401575aec71e5b767758e1c04e895eec95cb71fcb767d3a1fdb82
+set b2sums d821ce3dcf8748770b92da1060a34c462222d0b190127d2f18e25de2d1bac63cf171a73531ae58efbbeacebcb6451f267620947384f9822384050e4731f10642
 set flags arch
 
-# Move files from $pkgdir to $srcdir/$argv[1], keeping their paths
-function _pick
-    set -l p $argv[1]
-    for f in $argv[2..-1]
-        set -l d "$srcdir/$p/"(string replace -r -- '^'(string escape --style=regex "$pkgdir/") '' $f)
-        mkdir -p (dirname "$d"); or return
-        mv "$f" "$d"; or return
-        rmdir -p --ignore-fail-on-non-empty (dirname "$f"); or return
-    end
-end
-
 function build
-    arch-meson $pkgbase-$pkgver build; or return
+    arch-meson -D docs=disabled $pkgbase-$pkgver build; or return
     meson compile -C build; or return
 end
 
@@ -38,19 +26,8 @@ end
 
 function package_zix
     set depends glibc
-    set optdepends 'zix-docs: for developer documentation'
     set provides libzix-0.so
     meson install -C build --destdir "$pkgdir"; or return
-    pushd "$pkgdir"; or return
-    _pick $pkgname-docs usr/share/doc; or return
-    popd
     install -vDm 644 $pkgname-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
     install -vDm 644 $pkgname-$pkgver/{NEWS,README.md} -t "$pkgdir/usr/share/doc/$pkgname/"; or return
-end
-
-function package_zix-docs
-    set pkgdesc "$pkgdesc - documentation"
-    mv -v $pkgname/* "$pkgdir"; or return
-    mv -v "$pkgdir/usr/share/doc/$pkgbase"{-0,}; or return
-    install -vDm 644 $pkgbase-$pkgver/LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
 end

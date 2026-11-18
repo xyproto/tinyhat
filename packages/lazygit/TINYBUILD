@@ -14,10 +14,12 @@ set sha256sums fcaad0909af765ef87bd873164a4de78435515ab4d8b04f58d6ad51e8ecd00e5
 function build
     cd lazygit-$pkgver; or return
     set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
     set -lx GOPATH "$srcdir/gopath"
     set -lx GOCACHE "$srcdir/gocache"
     set -lx GOTOOLCHAIN local
-    set -lx GOFLAGS -mod=vendor
+    set -lx GOFLAGS $GOFLAGS -mod=vendor
     set -lx CGO_ENABLED 0
     set -lx GOARCH 386
     set -lx GO386 softfloat

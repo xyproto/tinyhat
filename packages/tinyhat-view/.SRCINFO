@@ -10,6 +10,6 @@ pkgbase = tinyhat-view
 	depends = sdl3
 	depends = sdl3_image
 	source = tinyhat-view.c
-	sha256sums = SKIP
+	sha256sums = cad5689c7c81153786e654dfb69d91a745674c786045636bae3af6bfdc8e03a2
 
 pkgname = tinyhat-view

@@ -9,7 +9,10 @@ set url https://github.com/shadow-maint/shadow
 set license \
     0BSD \
     BSD-3-Clause
-set depends glibc
+# systemd-libs: logind integration (who is logged in, for the account tools)
+set depends glibc systemd-libs
+# shadow and systemd need each other (through util-linux)
+set bootstrap_without systemd-libs
 # No man pages: they need docbook-xsl, itstool and libxslt (itstool needs python with the libxml2 module)
 set makedepends \
     acl \
@@ -28,19 +31,17 @@ set options '!emptydirs'
 # NOTE: distribution patches are taken from https://gitlab.archlinux.org/archlinux/packaging/upstream/shadow/
 set source \
     "git+$url.git?signed#tag=$_upstream_tag" \
-    "https://gitlab.archlinux.org/archlinux/packaging/upstream/shadow/-/releases/$_dist_tag/downloads/$pkgname-$_dist_tag.patch."{sig,zst} \
+    "https://gitlab.archlinux.org/archlinux/packaging/upstream/shadow/-/releases/$_dist_tag/downloads/$pkgname-$_dist_tag.patch.zst" \
     shadow.{timer,service} \
     useradd.defaults \
     LICENSE
 set sha512sums c21152c9aaf7bf817d87be9f8eb4b804a3ee6c5090829a44742099e48817d3da0a1a754f78a9842ef9284eaebc78b290ad4a6bcdc40511158a33c240c2f78add \
-    SKIP \
     9e57ff88750c3e283232a9dd33db06b094009b8ce72b92a07be2eb81cd407402c747dbea8e1373c8421a28d46acffbb908d75e82fa84b2f233b580487de43183 \
     e4edf705dd04e088c6b561713eaa1afeb92f42ac13722bff037aede6ac5ad7d4d00828cfb677f7b1ff048db8b6788238c1ab6a71dfcfd3e02ef6cb78ae09a621 \
     2c8689b52029f6aa27d75b8b05b0b36e2fc322cab40fdfbb50cdbe331f61bc84e8db20f012cf9af3de8c4e7fdb10c2d5a4925ca1ba3b70eb5627772b94da84b3 \
     706ba6e7fa8298475f2605a28daffef421c9fa8d269cbd5cbcf7f7cb795b40a24d52c20e8d0b73e29e6cd35cd7226b3e9738dc513703e87dde04c1d24087a69c \
     a33658d9271e5c537ccd41bf540b463ad2a5eca4a060c80486ff42a736f0aa042d10436e7177c34d792177cb11285243dee1f31c4df54fb0bfaabbc306406930
 set b2sums 9539673cd7f8cfd43844171546001b9686a1f35e55489750b1e80c76317ba06ee0e35cdffeef5c5cce28099f4b53afb62763cff1ba3b680d3220c40dfe482577 \
-    SKIP \
     323d2ef8d92d73388b9013fbe620d7ebfa960bcdb871941325090f7f1005e07374853ae57ed1877e0d66b74f36551610c5e920091dea180c54df4006ebbab666 \
     5cfc936555aa2b2e15f8830ff83764dad6e11a80e2a102c5f2bd3b7c83db22a5457a3afdd182e3648c9d7d5bca90fa550f59576d0ac47a11a31dfb636cb18f2b \
     a69191ab966f146c35e7e911e7e57c29fffd54436ea014aa8ffe0dd46aaf57c635d0a652b35916745c75d82b3fca7234366ea5f810b622e94730b45ec86f122c \
@@ -54,7 +55,7 @@ function prepare
     for src in $source
         set -l name (string replace -r '::.*' '' -- $src | string replace -r '.*/' '')
         if string match -q '*.patch.zst' -- $name
-            # makefish does not decompress single files
+            # makep does not decompress single files
             echo "Applying patch $name..."
             zstd -dc "../$name" | patch -Np1; or return
         else if string match -q '*.patch' -- $name
@@ -68,7 +69,8 @@ end
 
 function build
     # --disable-account-tools-setuid: no setuid for chgpasswd, chpasswd, groupadd, groupdel, groupmod, newusers, useradd, userdel, usermod
-    # --with-fcaps: use capabilities instead of setuid for setuidmap and setgidmap
+    # --without-fcaps: newuidmap and newgidmap are setuid root, like the other helpers: the build runs unprivileged and
+    # cannot setcap, and the image is unpacked without xattrs (until makep can declare file capabilities)
     # --with-libpam: PAM integration for chpasswd, newusers, passwd
     # --without-libbsd: shadow can use internal implementation for getting passphrase
     # --without-nscd: we do not ship nscd anymore
@@ -83,7 +85,7 @@ function build
         --sbindir=/usr/bin \
         --sysconfdir=/etc \
         --with-audit \
-        --with-fcaps \
+        --without-fcaps \
         --with-group-name-max-length=32 \
         --with-libpam \
         --with-yescrypt \
@@ -96,6 +98,8 @@ function build
     cd $pkgname; or return
     # add extra check, preventing accidental deletion of other user's home dirs when using `userdel -r <user with home in />`
     set -a CFLAGS -DEXTRA_CHECK_HOME_DIR
+    # Without libsystemd (the first build in a bootstrap, see bootstrap_without): no logind integration
+    pkg-config --exists libsystemd; or set -a configure_options --disable-logind
     ./configure $configure_options; or return
 
     # prevent excessive overlinking due to libtool
@@ -108,7 +112,8 @@ function package
 
     cd $pkgname; or return
 
-    make DESTDIR="$pkgdir" install; or return
+    # usbindir: src/Makefile.am has ${prefix}/sbin, where --sbindir does not reach (usr/sbin is a link to bin)
+    make DESTDIR="$pkgdir" usbindir=/usr/bin install; or return
 
     # license
     install -vDm 644 COPYING -t "$pkgdir/usr/share/licenses/$pkgname/"; or return

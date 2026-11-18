@@ -1,7 +1,5 @@
-set pkgbase libcap-ng
-set pkgname \
-    libcap-ng \
-    python-capng
+# No python-capng package: nothing in Tiny Hat uses the Python bindings, and they need SWIG to build
+set pkgname libcap-ng
 set pkgver 0.9.6
 set pkgrel 1
 set pkgdesc 'A library for Linux that makes using posix capabilities easy'
@@ -11,60 +9,31 @@ set license \
     GPL-2.0-or-later \
     LGPL-2.1-or-later
 set depends glibc
-set makedepends \
-    bash-completion \
-    python \
-    swig
+# No bash completion: Tiny Hat's shells are Oils and fish
+set provides libcap-ng.so libdrop_ambient.so
 set source \
-    "https://github.com/stevegrubb/libcap-ng/archive/v$pkgver/$pkgname[1]-$pkgver.tar.gz"
+    "https://github.com/stevegrubb/libcap-ng/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
 set sha512sums 77bc255688606cbc3a9d40cc1d417ebf748d04b8d837d793708b58431857ebfaa077f00cebfcf03c58ce56985feb63f9f8eb70cce21ba304ca3418a0fe1b61d1
 set b2sums 64599a9405895e4b2ec3275cbc58c137be025d6dd11ff51219254495d1370e3dc92a97017fa8651c59426ac81a16660d6194ce0a17b02c502cd85bf44adb7e90
 set flags arch
 
-# Moves files (relative to $pkgdir, or absolute below it) to $srcdir/NAME, for the package NAME
-function _pick
-    set -l p $argv[1]
-    for f in $argv[2..-1]
-        set -l d "$srcdir/$p/"(string replace -- "$pkgdir/" '' $f)
-        mkdir -p (dirname "$d"); or return
-        mv "$f" "$d"; or return
-        rmdir -p --ignore-fail-on-non-empty (dirname "$f"); or return
-    end
-end
-
 function prepare
-    cd $pkgbase-$pkgver; or return
+    cd $pkgname-$pkgver; or return
     # make stupid autotools happy -_-
     touch NEWS; or return
     autoreconf -fiv; or return
 end
 
 function build
-    set -l configure_options \
-        --enable-static=no \
-        --prefix=/usr \
-        --sysconfdir=/etc \
-        --with-python3 \
-        --without-python
-    cd $pkgbase-$pkgver; or return
-    ./configure $configure_options; or return
+    cd $pkgname-$pkgver; or return
+    ./configure --enable-static=no --prefix=/usr --sysconfdir=/etc --without-python3 --without-python; or return
     make; or return
 end
 
 function check
-    make check -C $pkgbase-$pkgver; or return
+    make check -C $pkgname-$pkgver; or return
 end
 
-function package_libcap-ng
-    set provides libcap-ng.so libdrop_ambient.so
-    make DESTDIR="$pkgdir" install -C $pkgbase-$pkgver; or return
-    cd "$pkgdir"; or return
-    _pick python-capng usr/lib/python*; or return
-end
-
-function package_python-capng
-    set pkgdesc "$pkgdesc (Python bindings)"
-    set -a depends libcap-ng libcap-ng.so python
-    set provides python-libcap-ng
-    mv -v python-capng/* "$pkgdir"; or return
+function package
+    make DESTDIR="$pkgdir" install -C $pkgname-$pkgver; or return
 end

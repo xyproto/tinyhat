@@ -15,6 +15,6 @@ pkgbase = python-markupsafe
 	depends = glibc
 	depends = python
 	source = git+https://github.com/pallets/markupsafe.git#tag=3.0.4
-	sha256sums = SKIP
+	sha256sums = a2c28fdc52eb2579145d4e40bfb9cf1eae7bfca4c3abace00cb00d70fde2baf1
 
 pkgname = python-markupsafe

@@ -9,6 +9,6 @@ pkgbase = picocom
 	makedepends = git
 	depends = glibc
 	source = git+https://github.com/npat-efault/picocom.git#tag=3.1
-	sha256sums = SKIP
+	sha256sums = befc653ebf21fac26e8d4f9cbd3d7528364351831f73504229732dd9348517cb
 
 pkgname = picocom

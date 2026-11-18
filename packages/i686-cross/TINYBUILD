@@ -1,6 +1,6 @@
 set pkgname i686-cross
 set pkgver 16.2.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Cross toolchain from x86_64 to i686 (binutils, gcc and a bootstrap glibc), to build Tiny Hat for i686 without prebuilt i686 packages'
 set arch x86_64
 set url https://gcc.gnu.org/
@@ -74,10 +74,10 @@ function build
     make DESTDIR="$STAGE$_sysroot" install; or return
     cd "$srcdir"; or return
 
-    # gcc, final: C and C++ with shared libgcc and libstdc++
+    # gcc, final: C, C++ and Fortran with shared libgcc and libstdc++ (Fortran for building the i686 gcc's libgfortran)
     mkdir -p build-gcc; and cd build-gcc; or return
     ../gcc-$pkgver/configure $common --with-arch=i686 --with-tune=generic --with-system-zlib \
-        --enable-languages=c,c++ --disable-bootstrap --disable-multilib --enable-shared --enable-threads=posix \
+        --enable-languages=c,c++,fortran --disable-bootstrap --disable-multilib --enable-shared --enable-threads=posix \
         --enable-__cxa_atexit --enable-clocale=gnu --enable-default-pie --enable-default-ssp \
         --enable-linker-build-id --enable-gnu-unique-object --enable-plugin --with-linker-hash-style=gnu \
         --disable-libsanitizer --disable-libvtv --disable-libssp --disable-libstdcxx-pch --disable-fixincludes; or return
@@ -100,7 +100,7 @@ function package
     rm -rf "$pkgdir"/usr/share/{info,man,locale,doc} "$pkgdir"/usr/lib/bfd-plugins
     # Plain names (gcc, cc, ld, ...) for builds that put /usr/$_t/bin first in PATH
     install -d "$pkgdir"/usr/$_t/bin; or return
-    for tool in gcc g++ cpp gcc-ar gcc-nm gcc-ranlib
+    for tool in gcc g++ gfortran cpp gcc-ar gcc-nm gcc-ranlib
         ln -sf ../../bin/$_t-$tool "$pkgdir"/usr/$_t/bin/$tool; or return
     end
     ln -sf ../../bin/$_t-gcc "$pkgdir"/usr/$_t/bin/cc; or return

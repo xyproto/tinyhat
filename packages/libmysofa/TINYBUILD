@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://github.com/hoene/libmysofa/
 set license BSD-3-Clause
 set depends glibc zlib
-set makedepends cmake cunit git
+# No tests (cunit), so no mysofa2json test tool either
+set makedepends cmake git
 set checkdepends nodejs
 set provides libmysofa.so
 set source "git+https://github.com/hoene/libmysofa.git#tag=v$pkgver"
@@ -14,7 +15,7 @@ set sha256sums c7590e8100409efc6fec52fdec7dbcd7add56fa4cde403a39be72219b284d9fa
 set flags arch
 
 function build
-    cmake -G 'Unix Makefiles' -B libmysofa/build -S libmysofa -DCMAKE_BUILD_TYPE:STRING='None' -DCMAKE_INSTALL_PREFIX:PATH='/usr' -DCODE_COVERAGE:BOOL='OFF' -Wno-author; or return
+    cmake -G 'Unix Makefiles' -B libmysofa/build -S libmysofa -DCMAKE_BUILD_TYPE:STRING='None' -DCMAKE_INSTALL_PREFIX:PATH='/usr' -DBUILD_TESTS:BOOL='OFF' -DCODE_COVERAGE:BOOL='OFF' -Wno-author; or return
     cmake --build libmysofa/build; or return
 end
 

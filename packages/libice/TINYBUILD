@@ -7,10 +7,8 @@ set url https://xorg.freedesktop.org/
 set license MIT-open-group
 set depends glibc xorgproto
 set makedepends xtrans xorg-util-macros
-set source "https://xorg.freedesktop.org//releases/individual/lib/libICE-$pkgver.tar.xz" \
-    "https://xorg.freedesktop.org//releases/individual/lib/libICE-$pkgver.tar.xz.sig"
-set sha256sums 974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625 \
-    b1edd37141e367a6f41e7edce5a614d6c3ab73be3a28060214c3ed6c737124c4
+set source "https://xorg.freedesktop.org//releases/individual/lib/libICE-$pkgver.tar.xz"
+set sha256sums 974e4ed414225eb3c716985df9709f4da8d22a67a2890066bc6dfc89ad298625
 set flags arch
 
 function build

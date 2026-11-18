@@ -5,7 +5,10 @@ set pkgrel 1
 set arch i686 x32
 set url https://www.github.com/systemd/systemd
 set license LGPL-2.1-or-later
-set makedepends acl docbook-xsl gperf lz4 xz pam libelf intltool kmod libidn2 libgcrypt libxcrypt libxslt util-linux linux-api-headers python-jinja python-lxml shadow git meson libseccomp pcre2 audit libxkbcommon bash-completion systemd rsync gcc-libs
+# Libraries (and pkg-config data) that systemd is built against, and programs that run during the build
+set makedepends_host acl audit gcc-libs kmod libelf libgcrypt libidn2 libseccomp libxcrypt libxkbcommon \
+    linux-api-headers lz4 pam pcre2 util-linux xz
+set makedepends_build docbook-xsl git gperf intltool libxslt meson python-jinja python-lxml rsync shadow systemd
 set conflicts 'mkinitcpio<38-1'
 set source "git+https://github.com/systemd/systemd#tag=v$pkgver?signed" \
     0001-Use-Arch-Linux-device-access-groups.patch \
@@ -26,7 +29,7 @@ set source "git+https://github.com/systemd/systemd#tag=v$pkgver?signed" \
     35-systemd-udev-reload.hook \
     35-systemd-update.hook \
     36-systemd-modules-load.hook
-set sha256sums SKIP \
+set sha256sums 042dfbab459c63b57e4fcdaad587826be8c34f570122c2d7b72e1772173a2455 \
     3ed6376fa18f9f79413c49ca0a04543476649217365c27cd396c83e867a3dffc \
     e81d73077046628ba495ed07abfc819ea270d773fe806b3ff0af527a2c6b5d42 \
     45bde2e7da268c2cdd00efe6973821f92a51357d2009874adf8d854f850db349 \
@@ -51,14 +54,14 @@ set -g _systemd_src_dir systemd
 
 function prepare
     cd "$_systemd_src_dir"; or return
-    if not git status > /dev/null 2>&1
+    if not git status >/dev/null 2>&1
         return 0
     end
     set -l _c
     set -l _l
     for _c in $_backports
         if string match -q -- '*..*' "$_c"
-            set _l '--reverse'
+            set _l --reverse
         else
             set _l '--max-count=1'
         end
@@ -67,7 +70,7 @@ function prepare
     end
     for _c in $_reverts
         if string match -q -- '*..*' "$_c"
-            set _l '--reverse'
+            set _l --reverse
         else
             set _l '--max-count=1'
         end
@@ -80,7 +83,7 @@ end
 function build
     set -l _timeservers {0..3}.arch.pool.ntp.org
     set -l _nameservers '9.9.9.9#dns.quad9.net' '2620:fe::9#dns.quad9.net' '1.1.1.1#cloudflare-dns.com' '2606:4700:4700::1111#cloudflare-dns.com' '8.8.8.8#dns.google' '2001:4860:4860::8888#dns.google'
-    set -l _meson_options -Dversion-tag="$_meson_version-arch" -Dvcs-tag=false -Dshared-lib-tag="$_meson_version" -Dmode=release -Dapparmor=disabled -Dbootloader=disabled -Dukify=disabled -Dopenssl=disabled -Dtests=false -Dcoredump=false -Dxenctrl=disabled -Dbpf-framework=disabled -Dima=false -Dinstall-tests=false -Dselinux=disabled -Dsshdprivsepdir=/usr/share/empty.sshd -Dsysupdated=disabled -Dvmlinux-h=disabled -Dcompat-sysv-interfaces=false -Ddbuspolicydir=/usr/share/dbus-1/system.d -Ddefault-dnssec=no -Ddefault-kill-user-processes=false -Ddefault-locale='C.UTF-8' -Dlocalegen-path=/usr/bin/locale-gen -Ddns-over-tls=false -Dfallback-hostname='archlinux' -Dnologin-path=/usr/bin/nologin -Dntp-servers=$_timeservers -Ddns-servers=$_nameservers -Drpmmacrosdir=no -Dsbat-distro='arch' -Dsbat-distro-summary='Arch Linux' -Dsbat-distro-pkgname="$pkgname" -Dsbat-distro-version="$pkgver" -Dsbat-distro-url="https://archlinux.org/packages/core/x86_64/$pkgname/"
+    set -l _meson_options -Dversion-tag="$_meson_version-arch" -Dvcs-tag=false -Dshared-lib-tag="$_meson_version" -Dmode=release -Dapparmor=disabled -Dbootloader=disabled -Dukify=disabled -Dopenssl=disabled -Dtests=false -Dcoredump=false -Dxenctrl=disabled -Dbpf-framework=disabled -Dima=false -Dinstall-tests=false -Dselinux=disabled -Dsshdprivsepdir=/usr/share/empty.sshd -Dsysupdated=disabled -Dvmlinux-h=disabled -Dcompat-sysv-interfaces=false -Ddbuspolicydir=/usr/share/dbus-1/system.d -Ddefault-dnssec=no -Ddefault-kill-user-processes=false -Ddefault-locale='C.UTF-8' -Dlocalegen-path=/usr/bin/locale-gen -Ddns-over-tls=false -Dfallback-hostname='archlinux' -Dnologin-path=/usr/bin/nologin -Dntp-servers=$_timeservers -Ddns-servers=$_nameservers -Drpmmacrosdir=no -Dbashcompletiondir=no -Dsbat-distro='arch' -Dsbat-distro-summary='Arch Linux' -Dsbat-distro-pkgname="$pkgname" -Dsbat-distro-version="$pkgver" -Dsbat-distro-url="https://archlinux.org/packages/core/x86_64/$pkgname/"
     set -l _feature
     for _feature in man seccomp polkit acl audit blkid kmod pam libcrypt libidn2 elfutils zlib bzip2 xz lz4 zstd xkbcommon pcre2 libmount
         set -a _meson_options -D$_feature=enabled
@@ -91,11 +94,11 @@ end
 
 function package_systemd
     set pkgdesc 'system and service manager'
-    set -a license 'CC0-1.0' 'GPL-2.0-or-later' 'MIT-0'
-    set depends "systemd-libs=$pkgver" 'acl' 'bash' 'dbus' 'dbus-units' 'glibc' 'kbd' 'kmod' 'hwdata' 'libxcrypt' 'libidn2' 'lz4' 'pam' 'libelf' 'libgcc' 'libseccomp' 'util-linux' 'xz' 'pcre2' 'audit'
-    set provides 'nss-myhostname' "systemd-tools=$pkgver" "udev=$pkgver"
-    set replaces 'nss-myhostname' 'systemd-tools' 'udev'
-    set conflicts 'nss-myhostname' 'systemd-tools' 'udev'
+    set -a license 'CC0-1.0' 'GPL-2.0-or-later' MIT-0
+    set depends "systemd-libs=$pkgver" acl bash dbus dbus-units glibc kbd kmod hwdata libxcrypt libidn2 lz4 pam libelf libgcc libseccomp util-linux xz pcre2 audit
+    set provides nss-myhostname "systemd-tools=$pkgver" "udev=$pkgver"
+    set replaces nss-myhostname systemd-tools udev
+    set conflicts nss-myhostname systemd-tools udev
     set backup etc/systemd/homed.conf etc/systemd/journald.conf etc/systemd/journal-remote.conf etc/systemd/journal-upload.conf etc/systemd/logind.conf etc/systemd/networkd.conf etc/systemd/oomd.conf etc/systemd/pstore.conf etc/systemd/resolved.conf etc/systemd/sleep.conf etc/systemd/system.conf etc/systemd/timesyncd.conf etc/systemd/user.conf etc/udev/iocost.conf etc/udev/udev.conf
     set install systemd.install
     meson install -C build --no-rebuild --destdir "$pkgdir" --quiet; or return
@@ -112,7 +115,7 @@ function package_systemd
     rm "$pkgdir"/usr/{bin/resolvconf,share/man/man1/resolvconf.1}; or return
     rm "$pkgdir"/usr/share/factory/etc/{issue,nsswitch.conf}; or return
     sed -i -e '/^C \/etc\/nsswitch\.conf/d' -e '/^C \/etc\/issue/d' "$pkgdir"/usr/lib/tmpfiles.d/etc.conf; or return
-    echo 'disable *' > "$pkgdir"/usr/lib/systemd/system-preset/99-default.preset; or return
+    echo 'disable *' >"$pkgdir"/usr/lib/systemd/system-preset/99-default.preset; or return
     install -d -m 2755 "$pkgdir"/var/log/journal; or return
     install -D -m0644 arch.conf "$pkgdir"/usr/share/systemd/bootctl/arch.conf; or return
     install -D -m0644 loader.conf "$pkgdir"/usr/share/systemd/bootctl/loader.conf; or return
@@ -129,11 +132,11 @@ end
 
 function package_systemd-libs
     set pkgdesc 'systemd client libraries'
-    set depends 'glibc' 'libgcc' 'libgcc_s.so' 'libgcrypt' 'lz4' 'xz' 'zstd'
+    set depends glibc libgcc 'libgcc_s.so' libgcrypt lz4 xz zstd
     set -a license 'CC0-1.0' 'GPL-2.0-or-later WITH Linux-syscall-note'
-    set provides 'libsystemd' 'libsystemd.so' 'libudev.so'
-    set conflicts 'libsystemd'
-    set replaces 'libsystemd'
+    set provides libsystemd 'libsystemd.so' 'libudev.so'
+    set conflicts libsystemd
+    set replaces libsystemd
     install -d -m0755 "$pkgdir"/usr/share/man; or return
     mv systemd-libs/lib "$pkgdir"/usr/lib; or return
     mv systemd-libs/include "$pkgdir"/usr/include; or return
@@ -144,8 +147,8 @@ end
 function package_systemd-resolvconf
     set pkgdesc 'systemd resolvconf replacement (for use with systemd-resolved)'
     set depends "systemd=$pkgver"
-    set provides 'openresolv' 'resolvconf'
-    set conflicts 'resolvconf'
+    set provides openresolv resolvconf
+    set conflicts resolvconf
     install -d -m0755 "$pkgdir"/usr/bin; or return
     ln -s resolvectl "$pkgdir"/usr/bin/resolvconf; or return
     install -d -m0755 "$pkgdir"/usr/share/man/man1; or return
@@ -154,7 +157,7 @@ end
 
 function package_systemd-sysvcompat
     set pkgdesc 'sysvinit compat for systemd'
-    set conflicts 'sysvinit'
+    set conflicts sysvinit
     set depends "systemd=$pkgver"
     install -D -m0644 -t "$pkgdir"/usr/share/man/man1 build/man/init.1; or return
     install -D -m0644 -t "$pkgdir"/usr/share/man/man8 build/man/{halt,poweroff,reboot,shutdown}.8; or return

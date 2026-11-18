@@ -7,10 +7,8 @@ set license HPND-sell-variant
 set url https://xorg.freedesktop.org/
 set depends libxext libxrender libx11 glibc
 set makedepends xorg-util-macros xorgproto
-set source "$url/releases/individual/lib/libXrandr-$pkgver.tar.xz" \
-    "$url/releases/individual/lib/libXrandr-$pkgver.tar.xz.sig"
-set sha512sums 3cae1d2eb425dd3d3bd89f514a8e4bd9c696170ab6f3882f6db1936c30674b48277f2e485a8e3e47b3093fb1d9a32d2b054b064bd781db039e833b397aeeda9b \
-    SKIP
+set source "$url/releases/individual/lib/libXrandr-$pkgver.tar.xz"
+set sha512sums 3cae1d2eb425dd3d3bd89f514a8e4bd9c696170ab6f3882f6db1936c30674b48277f2e485a8e3e47b3093fb1d9a32d2b054b064bd781db039e833b397aeeda9b
 set flags arch
 
 function build

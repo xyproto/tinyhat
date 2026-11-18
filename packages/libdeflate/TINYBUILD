@@ -9,7 +9,7 @@ set depends glibc
 set makedepends cmake git ninja
 set provides libdeflate.so
 set source "git+https://github.com/ebiggers/libdeflate.git#tag=v$pkgver"
-set sha256sums SKIP
+set sha256sums 38a3ffe3a56fba0e95138a5f57a764ffd5632c49dcd6a3515536f8a1ee907a9d
 set flags arch
 
 function build

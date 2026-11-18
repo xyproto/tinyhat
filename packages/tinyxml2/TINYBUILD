@@ -8,7 +8,7 @@ set license LicenseRef-zlib
 set depends glibc libgcc libstdc++
 set makedepends git cmake
 set source "tinyxml2::git+https://github.com/leethomason/tinyxml2#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums 8efd4fdb017619986f1d4342f67dc6876926701b9b79c7e204eb60d94b1dc928
 set flags arch
 
 function build

@@ -1,0 +1,22 @@
+set pkgname xtrans
+set pkgver 1.6.0
+set pkgrel 1
+set pkgdesc 'X transport library'
+set arch any
+set url https://xorg.freedesktop.org/
+set license HPND HPND-sell-variant MIT MIT-open-group X11
+set options '!emptydirs'
+set source "https://xorg.freedesktop.org/releases/individual/lib/$pkgname-$pkgver.tar.xz"
+set sha256sums faafea166bf2451a173d9d593352940ec6404145c5d1da5c213423ce4d359e92
+set flags arch
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

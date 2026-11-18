@@ -18,6 +18,8 @@ set -gx CARGO_PROFILE_RELEASE_STRIP false
 # Use LTO
 set -gx CARGO_PROFILE_RELEASE_LTO true
 set -gx CARGO_PROFILE_RELEASE_CODEGEN_UNITS 1
+# network: cargo fetch downloads its crates in prepare (builds have no network access otherwise)
+set -a options network
 
 function prepare
     cd $pkgname-$pkgver; or return

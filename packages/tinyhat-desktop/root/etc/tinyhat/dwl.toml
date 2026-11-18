@@ -56,11 +56,6 @@ wallpaper = "/usr/share/backgrounds/tinyhat/hundetann.png"
 mode = "tile"
 color = "1a1b26"
 
-[[background]]
-wallpaper = "/usr/share/backgrounds/archlinux/small.png"
-mode = "fill"
-color = "1a1b26"
-
 [[rule]]
 title = "DOSBox-X"
 float = true

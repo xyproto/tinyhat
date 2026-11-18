@@ -14,7 +14,9 @@ set b2sums 9247827434834a9f7f7d70f65989fad22ba2b6cd1c75e00f43727f12a2146411885c2
 set flags arch
 
 function build
-    arch-meson build $_name-fuse-$pkgver; or return
+    # Built as a normal user (useroot=false): fusermount3 gets its setuid bit when packaged. No init script (systemd),
+    # examples or tests
+    arch-meson build $_name-fuse-$pkgver -D useroot=false -D initscriptdir= -D examples=false -D tests=false; or return
     meson compile -C build; or return
 end
 
@@ -29,8 +31,7 @@ function package_fuse3
     set depends fuse-common glibc liburing liburing.so numactl libnuma.so
     set license GPL-2.0-only LGPL-2.1-only
     meson install -C build --destdir "$pkgdir"; or return
-    rm -r "$pkgdir"/etc/init.d; or return
-    rm -r "$pkgdir"/etc/fuse.conf; or return
-    # static device nodes are handled by udev
-    rm -r "$pkgdir"/dev; or return
+    # fuse.conf belongs to fuse-common
+    rm "$pkgdir"/etc/fuse.conf; or return
+    chmod 4755 "$pkgdir"/usr/bin/fusermount3; or return
 end

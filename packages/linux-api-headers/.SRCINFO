@@ -8,8 +8,6 @@ pkgbase = linux-api-headers
 	license = GPL-2.0-only
 	makedepends = rsync
 	source = https://www.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.xz
-	source = https://www.kernel.org/pub/linux/kernel/v7.x/linux-7.3.tar.sign
 	sha256sums = 87363c24f10e06321eb362765521094e94471f6bff8bce2d6b3e40f39f004953
-	sha256sums = SKIP
 
 pkgname = linux-api-headers

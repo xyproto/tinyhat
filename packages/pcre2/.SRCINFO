@@ -19,10 +19,10 @@ pkgbase = pcre2
 	provides = libpcre2-posix.so
 	options = staticlibs
 	source = pcre2::git+https://github.com/PCRE2Project/pcre2?signed#tag=pcre2-10.49
-	source = sljit::git+https://github.com/zherczeg/sljit.git
+	source = sljit::git+https://github.com/zherczeg/sljit.git#commit=de0259c7aaf36aa40cba8014f3fad3edde9307f9
 	sha512sums = 3112ecb32bcbb8840c70e263915d0a690ae2cbc6b5160ff05d96419353290d5e2740a9dd4f7d59fff697bab58695751fedd3b665a7649e2b7c3af417d7f74698
-	sha512sums = SKIP
+	sha512sums = 9c7406f3af225582b6f54587f3a386b603ef5212a998b628c81b37eaf77039f58c9baae9b274df376600118ada695e6f2130d0612ce5ef5d279010cee357c00c
 	b2sums = 120754ca82467149bfb02c6b3f778a25c7a65b968ac358e01b1cdbb9114805a1e75585e049c8a25e0f6723a314798e39f6caa97a55aef3ce9d84e60566859592
-	b2sums = SKIP
+	b2sums = daf691b76d8319c0b600f37f1ec2c1e4c4feb0fec876ac79ba905cba480f3b5a5edf19b0ff91bb873c6bc8c8f4e0b9719b858947c69a4aa808afe7c993a6d3f3
 
 pkgname = pcre2

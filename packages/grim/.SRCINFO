@@ -6,7 +6,6 @@ pkgbase = grim
 	arch = i686
 	arch = x32
 	license = MIT
-	makedepends = bash-completion
 	makedepends = fish
 	makedepends = git
 	makedepends = meson
@@ -18,6 +17,6 @@ pkgbase = grim
 	depends = libjpeg-turbo
 	depends = wayland
 	source = git+https://gitlab.freedesktop.org/emersion/grim#tag=v1.5.0
-	sha256sums = SKIP
+	sha256sums = 668c0772f8f3c17cf6f6284613ded11f2283961153de6114c223ae048ec00b82
 
 pkgname = grim

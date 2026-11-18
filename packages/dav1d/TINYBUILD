@@ -6,28 +6,13 @@ set arch i686 x32
 set url https://code.videolan.org/videolan/dav1d
 set license BSD-2-Clause
 set makedepends glibc meson nasm ninja xxhash
-switch $CARCH
-    case x32 x86_64 aarch64
-        set -g source "https://downloads.videolan.org/pub/videolan/dav1d/$pkgver/dav1d-$pkgver.tar.xz" \
-    "https://downloads.videolan.org/pub/videolan/dav1d/$pkgver/dav1d-$pkgver.tar.xz.asc" \
-    "https://code.videolan.org/videolan/dav1d-test-data/-/archive/$pkgver/dav1d-test-data-$pkgver.tar.gz"
-    case '*'
-        set -g source "https://downloads.videolan.org/pub/videolan/dav1d/$pkgver/dav1d-$pkgver.tar.xz" \
-    "https://downloads.videolan.org/pub/videolan/dav1d/$pkgver/dav1d-$pkgver.tar.xz.asc" \
+# dav1d-0.8.2-sse2-asm.patch is applied on i686 only (see prepare)
+set source "https://downloads.videolan.org/pub/videolan/dav1d/$pkgver/dav1d-$pkgver.tar.xz" \
     "https://code.videolan.org/videolan/dav1d-test-data/-/archive/$pkgver/dav1d-test-data-$pkgver.tar.gz" \
     dav1d-0.8.2-sse2-asm.patch
-end
-switch $CARCH
-    case x32 x86_64 aarch64
-        set -g sha256sums 686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5 \
-    b7e9664c8d847b2e88b059843b9977a74df2a7c7d911b094821dc236671bf9fc \
-    b19926f25347a32633ffb40f6189eb750b50f1b8b02b2eb63954845a744de343
-    case '*'
-        set -g sha256sums 686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5 \
-    b7e9664c8d847b2e88b059843b9977a74df2a7c7d911b094821dc236671bf9fc \
+set sha256sums 686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5 \
     b19926f25347a32633ffb40f6189eb750b50f1b8b02b2eb63954845a744de343 \
     57cd3adbbfe5fc5d8930047e9accce38baaf50266549fc69350c7817c94e11a2
-end
 set flags arch
 
 switch $CARCH
@@ -60,7 +45,7 @@ switch $CARCH
 end
 
 function package_dav1d
-    set depends 'glibc'
+    set depends glibc
     set provides 'libdav1d.so'
     cd "$pkgbase-$pkgver"; or return
     DESTDIR="$pkgdir" ninja -C build install; or return

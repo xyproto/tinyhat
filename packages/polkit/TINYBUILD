@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://github.com/polkit-org/polkit
 set license LGPL-2.0-or-later
 set depends duktape expat glib2 glibc libgcc pam systemd systemd-libs
-set makedepends dbus git glib2-devel gtk-doc meson
+# No documentation (gtk-doc) and no man pages (xsltproc with docbook-xsl, which came with gtk-doc)
+set makedepends dbus git glib2-devel meson
 set checkdepends python-dbusmock
 set provides libpolkit-agent-1.so libpolkit-gobject-1.so
 set install polkit.install
@@ -14,7 +15,7 @@ set source "git+https://github.com/polkit-org/polkit#tag=$pkgver" \
     0001-meson-support-explicit-GID.patch \
     0002-meson-support-installing-agent-helper-as-socket-acti.patch \
     0003-meson-support-os_type-arch-and-detect-Arch-Linux.patch
-set sha256sums SKIP \
+set sha256sums 7f1dd287eeb07b96e4db99aa01dc7215438cfe3df6ae957e1b8dd0973e1031d9 \
     4c0a3a2428e71ab7d3bde3cfce7a0c9ba4c1e619fe71c3d966be886d150c8fb5 \
     255b2f90fe8e5cc463c6f2f881901de7efc25dc3d3bb169f95b8cbbcc7241bfc \
     72f0ea339e6a39a0228f3fdf7617c9ef73e68d147f0f893c478544ad843a38ce
@@ -28,7 +29,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D examples=true -D gettext=true -D gtk_doc=true -D man=true -D tests=true
+    set -l meson_options -D examples=true -D gettext=true -D gtk_doc=false -D man=false -D tests=true
     arch-meson -D introspection=false polkit build $meson_options; or return
     meson compile -C build; or return
 end

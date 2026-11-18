@@ -1,0 +1,23 @@
+# From the release tarball (generated configure and man page): Arch builds from git, which needs autoreconf (perl)
+set pkgname m4
+set pkgver 1.4.21
+set pkgrel 2
+set pkgdesc 'The GNU macro processor'
+set arch i686 x32
+set url https://www.gnu.org/software/m4
+set license GPL-3.0-or-later
+set depends glibc
+set source "https://ftp.gnu.org/gnu/m4/m4-$pkgver.tar.xz"
+set sha256sums f25c6ab51548a73a75558742fb031e0625d6485fe5f9155949d6486a2408ab66
+set flags arch
+
+function build
+    cd m4-$pkgver; or return
+    ./configure --prefix=/usr --disable-gcc-warnings; or return
+    make; or return
+end
+
+function package
+    cd m4-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+end

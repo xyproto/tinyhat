@@ -1,0 +1,14 @@
+pkgbase = python-packaging
+	pkgdesc = Core utilities for Python packages
+	pkgver = 26.3
+	pkgrel = 1
+	url = https://github.com/pypa/packaging
+	arch = any
+	license = Apache-2.0 OR BSD-2-Clause
+	makedepends = python-flit-core
+	makedepends = python-installer
+	depends = python
+	source = https://github.com/pypa/packaging/archive/26.3/python-packaging-26.3.tar.gz
+	sha512sums = 7559e4f0376c775f57c362394ba276451bee0952012fc461458ee450e86fe89909166bb11c217be100b7909f0958f4ee9df4b51c3019e664186fda06a48d810d
+
+pkgname = python-packaging

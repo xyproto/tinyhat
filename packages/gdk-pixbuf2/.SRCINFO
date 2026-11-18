@@ -22,7 +22,7 @@ pkgbase = gdk-pixbuf2
 	source = git+https://gitlab.gnome.org/GNOME/gdk-pixbuf.git#tag=2.44.8
 	source = gdk-pixbuf-query-loaders.hook
 	source = gdk-pixbuf-remove-loaders-cache.hook
-	sha256sums = SKIP
+	sha256sums = 7000e0b653b9ccf19e833092766e00251d7853e7daefa6e8f4b031752e7dfce5
 	sha256sums = 4a01d5b67c202f4356a9ef053ec00c546cf126ff7780ea301af29489e98e286d
 	sha256sums = 52bf044e06698530e0241a7b1c6689332ece27d230509bf1332f33db5402fbed
 

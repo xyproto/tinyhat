@@ -11,16 +11,10 @@ pkgbase = libepoxy
 	makedepends = meson
 	makedepends = mesa-libgl
 	makedepends = systemd
-	makedepends = doxygen
-	makedepends = graphviz
 	depends = glibc
 	depends = libglvnd
 	source = git+https://github.com/anholt/libepoxy#commit=c84bc9459357a40e46e2fec0408d04fbdde2c973
-	sha256sums = SKIP
+	sha256sums = bd602cf72497cc02b8ce5726715b10d957642aa0e22840f2c7541149fe3f07f8
 
 pkgname = libepoxy
 	provides = libepoxy.so
-
-pkgname = libepoxy-docs
-	pkgdesc = Library handling OpenGL function pointer management (documentation)
-	depends = 

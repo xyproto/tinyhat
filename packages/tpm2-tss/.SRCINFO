@@ -11,9 +11,6 @@ pkgbase = tpm2-tss
 	checkdepends = uthash
 	makedepends = git
 	makedepends = autoconf-archive
-	makedepends = cmocka
-	makedepends = doxygen
-	makedepends = libtpms
 	makedepends = systemd
 	depends = curl
 	depends = glibc
@@ -43,7 +40,7 @@ pkgbase = tpm2-tss
 	source = git+https://github.com/tpm2-software/tpm2-tss?signed#tag=4.2.0
 	source = 0001-dist-Fully-lock-the-tss-system-user.patch
 	source = tpm2-tss.tmpfiles
-	sha256sums = SKIP
+	sha256sums = 27eea64f7d19a401b29ba5781219531317851ff2ac2667c5a8cebca92ed8358b
 	sha256sums = 41574d5db8e670d79c4e7efe0598d13c2661a057bef76f0c18d6af682eab2a8a
 	sha256sums = 4899ab4237af3ad8f0ba662058075e1257088ba4aa79c9babfe2ccd94806de0e
 

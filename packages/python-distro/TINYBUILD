@@ -6,7 +6,8 @@ set url https://github.com/python-distro/distro
 set arch any
 set license Apache-2.0
 set depends python
-set makedepends python-sphinx python-build python-installer python-wheel python-setuptools
+# No documentation (python-sphinx)
+set makedepends python-build python-installer python-wheel python-setuptools
 set checkdepends python-pytest
 set options '!makeflags'
 set source "$url/archive/v$pkgver/$pkgname-$pkgver.tar.gz"

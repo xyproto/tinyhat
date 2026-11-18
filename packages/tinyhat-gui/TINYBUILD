@@ -9,7 +9,12 @@ set depends gtk4 libglvnd
 set makedepends fontconfig tomlc17
 set -g _progs tinyhat-backup tinyhat-restore tinyhat-pick tinyhat-crashlog-viewer tinyhat-help
 set source $_progs.c tinyhat-glinfo.c
-set sha256sums SKIP SKIP SKIP SKIP SKIP SKIP
+set sha256sums 09649e2a956680d0087c033764a3383d168cac618f2c74517efc81c4506a9569 \
+    e947598941978ef52f65a87d19c8721066e0869efb8764311ef9fc1a672d1904 \
+    45bcd0a4ad978650b42c835a904ce1dc4a1fa1a96ed56c5e68f86d5b0f7eecd8 \
+    35c786a6daf43520c869b49042fdabcf918f335240077c55db91348d10c7c8f7 \
+    9f3279a101bc8b8fcdc47560c771d3951d6ac3ff281cc4a45866fdda7a3da50c \
+    b5ab8168cab0365fc1649140dba4c30f1e8586b690436befafc9967273ceb629
 
 function build
     mkdir -p pc; or return

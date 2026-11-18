@@ -10,7 +10,7 @@ set makedepends cmake git ninja
 set checkdepends xxd
 set provides libjson-c.so
 set source "git+https://github.com/json-c/json-c#tag=json-c-$pkgver-20260627"
-set sha256sums SKIP
+set sha256sums dc7b28a4380132ae9a3f96bffd49b3378c84280f77efd89adbd676b538031997
 set flags arch
 set -g _tagdate 20260627
 

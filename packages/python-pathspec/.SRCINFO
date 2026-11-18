@@ -1,0 +1,16 @@
+pkgbase = python-pathspec
+	pkgdesc = Utility library for gitignore style pattern matching of file paths
+	pkgver = 1.1.1
+	pkgrel = 1
+	url = https://github.com/cpburnz/python-pathspec
+	arch = any
+	license = MPL-2.0
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-flit-core
+	makedepends = python-installer
+	depends = python
+	source = git+https://github.com/cpburnz/python-pathspec.git#tag=v1.1.1
+	b2sums = f241c1db613c03a48764db57fd5da435e9a0a525a2c90e6ed85ca3e1ce7cfe8aafcb900a6041512d9050a5210e7b2818fbd003d1b047aeb35aa214f7fd15e782
+
+pkgname = python-pathspec

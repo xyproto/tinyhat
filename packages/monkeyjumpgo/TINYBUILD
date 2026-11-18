@@ -11,10 +11,14 @@ set makedepends go-tinyhat
 set options '!buildflags'
 set source "monkeyjump-$_commit.tar.gz::https://github.com/xyproto/monkeyjump/archive/$_commit.tar.gz"
 set sha256sums 651b54a6a11c18ced22cd5e0047f944fa9739416fa891264a13b49e183bc6382
+# network: go build downloads its Go modules (builds have no network access otherwise)
+set -a options network
 
 function build
     cd monkeyjump-$_commit/go; or return
     set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
     set -lx GOPATH "$srcdir/gopath"
     set -lx GOCACHE "$srcdir/gocache"
     set -lx GOTOOLCHAIN local

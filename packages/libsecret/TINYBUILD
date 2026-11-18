@@ -6,11 +6,12 @@ set pkgdesc 'Library for storing and retrieving passwords and other secrets'
 set arch i686 x32
 set url https://gnome.pages.gitlab.gnome.org/libsecret/
 set license LGPL-2.1-or-later
-set depends glib2 glibc libgcrypt tpm2-tss
-set makedepends bash-completion git glib2-devel meson
+# No TPM2 (tpm2-tss)
+set depends glib2 glibc libgcrypt
+set makedepends git glib2-devel meson
 set checkdepends gjs python-dbus python-gobject swtpm tpm2-abrmd
 set source "git+https://gitlab.gnome.org/GNOME/libsecret.git?signed#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums 6813f26c0eb0ca0a8bbdf1a2e4aa76ef60577810264a0aec5325e71032130724
 set flags arch
 
 function prepare
@@ -19,9 +20,9 @@ function prepare
 end
 
 function build
-    set -l meson_options -D test_setup=disabled -D tpm2=true
+    set -l meson_options -D test_setup=disabled -D tpm2=false
     set -a meson_options -D gtk_doc=false
-    set -a meson_options -D manpage=false
+    set -a meson_options -D manpage=false -D bash_completion=disabled
     arch-meson -D introspection=false -D vapi=false $pkgbase build $meson_options; or return
     meson compile -C build; or return
 end

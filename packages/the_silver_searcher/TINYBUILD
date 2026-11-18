@@ -10,7 +10,7 @@ set license Apache-2.0
 set depends pcre2 xz
 set makedepends git
 set source "git+$url#commit=7b571a8a94d0e22a06e3313cb0d9672b416fb2c1"
-set b2sums SKIP
+set b2sums 0c703fc59917158928ebfc1e218414ba20a63d063c0702bbb38d3145fd7a2c5c9e0d8644999470ae3cf5ea1c34bd2291bdc3daaf40c27086162ca98632515316
 set flags arch
 
 function prepare

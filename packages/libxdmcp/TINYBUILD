@@ -8,9 +8,8 @@ set license MIT-open-group
 set depends glibc xorgproto
 set makedepends xorg-util-macros
 set provides libXdmcp.so
-set source "https://xorg.freedesktop.org//releases/individual/lib/libXdmcp-$pkgver.tar.xz"{,.sig}
-set sha512sums d7a1d70a58b7d34ddd01a91d3ccbc086a36626b7081cfcbb150d24288c6adad612b042ba7ea63a218595afb2ee04384c0f8ba84ee3c6bd29913724b54e898d83 \
-    SKIP
+set source "https://xorg.freedesktop.org//releases/individual/lib/libXdmcp-$pkgver.tar.xz"
+set sha512sums d7a1d70a58b7d34ddd01a91d3ccbc086a36626b7081cfcbb150d24288c6adad612b042ba7ea63a218595afb2ee04384c0f8ba84ee3c6bd29913724b54e898d83
 set flags arch
 
 function build

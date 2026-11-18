@@ -6,9 +6,10 @@ set arch i686 x32
 set url https://github.com/kcat/openal-soft
 set license LGPL-2.0-or-later
 set depends glibc libgcc libstdc++
-set makedepends alsa-lib cmake fluidsynth git jack libmysofa libpulse libsndfile ninja pipewire portaudio sdl3
+# PipeWire, ALSA, JACK (pipewire-jack) and SDL3 output: no PulseAudio or PortAudio backends
+set makedepends alsa-lib cmake fluidsynth git jack libmysofa libsndfile ninja pipewire sdl3
 set source "git+https://github.com/kcat/openal-soft#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums 83aec97873e66a9b7b4d4dd6cd1230509bad2c981207e767b4fac2d1c5e4aae4
 set flags arch
 
 function prepare
@@ -19,13 +20,13 @@ switch $CARCH
     case x32 x86_64 aarch64
         function build
             set -l cmake_options -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_LIBDIR=lib
-            cmake -S openal-soft -DALSOFT_EXAMPLES=OFF -DALSOFT_NO_CONFIG_UTIL=ON -B build -G Ninja $cmake_options; or return
+            cmake -S openal-soft -DALSOFT_EXAMPLES=OFF -DALSOFT_NO_CONFIG_UTIL=ON -DALSOFT_BACKEND_PULSEAUDIO=OFF -DALSOFT_BACKEND_PORTAUDIO=OFF -B build -G Ninja $cmake_options; or return
             cmake --build build; or return
         end
     case '*'
         function build
             set -l cmake_options -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_LIBDIR=lib
-            cmake -S openal-soft -DALSOFT_EXAMPLES=OFF -DALSOFT_NO_CONFIG_UTIL=ON -B build -G Ninja $cmake_options -DALSOFT_CPUEXT_SSE4_1=0 -DALSOFT_CPUEXT_SSE3=0 -DALSOFT_CPUEXT_SSE2=0; or return
+            cmake -S openal-soft -DALSOFT_EXAMPLES=OFF -DALSOFT_NO_CONFIG_UTIL=ON -DALSOFT_BACKEND_PULSEAUDIO=OFF -DALSOFT_BACKEND_PORTAUDIO=OFF -B build -G Ninja $cmake_options -DALSOFT_CPUEXT_SSE4_1=0 -DALSOFT_CPUEXT_SSE3=0 -DALSOFT_CPUEXT_SSE2=0; or return
             cmake --build build; or return
         end
 end

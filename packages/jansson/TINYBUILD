@@ -8,9 +8,8 @@ set depends glibc
 set license MIT
 set options staticlibs
 set flags arch
-set source "https://github.com/akheron/jansson/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"{,.asc}
-set sha256sums 0c7114dc0b2d22a670724a1f95922029d7077c19dbf79a584cb8084d2f267f2f \
-    SKIP
+set source "https://github.com/akheron/jansson/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz"
+set sha256sums 0c7114dc0b2d22a670724a1f95922029d7077c19dbf79a584cb8084d2f267f2f
 
 function build
     cd "$srcdir/$pkgname-$pkgver"; or return

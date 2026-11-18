@@ -11,8 +11,8 @@ set provides xkbdata
 set replaces xkbdata
 set conflicts xkbdata
 # https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
-set source "https://xorg.freedesktop.org/archive/individual/data/$pkgname/$pkgname-$pkgver.tar.xz"{,.sig}
-set sha256sums b77041324f0109f77161ee43743fe04baa485866af8460d31e476ad3f7648fd5 SKIP
+set source "https://xorg.freedesktop.org/archive/individual/data/$pkgname/$pkgname-$pkgver.tar.xz"
+set sha256sums b77041324f0109f77161ee43743fe04baa485866af8460d31e476ad3f7648fd5
 set flags arch
 
 function build

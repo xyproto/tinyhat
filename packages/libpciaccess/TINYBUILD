@@ -7,10 +7,8 @@ set license LicenseRef-libpciaccess
 set url https://gitlab.freedesktop.org/xorg/lib/libpciaccess
 set depends glibc zlib
 set makedepends xorg-util-macros meson
-set source "https://xorg.freedesktop.org/releases/individual/lib/$pkgname-$pkgver.tar.xz" \
-    "https://xorg.freedesktop.org/releases/individual/lib/$pkgname-$pkgver.tar.xz.sig"
-set sha512sums a20ea0ef3d650e2cdc18423ea4770780ce273c35115eece85dbbb59e5f2e24bdbaf88e53b1648f2c5d4fa34b015a3fe8318721bf5655a86a835db323e6ecd4f7 \
-    SKIP
+set source "https://xorg.freedesktop.org/releases/individual/lib/$pkgname-$pkgver.tar.xz"
+set sha512sums a20ea0ef3d650e2cdc18423ea4770780ce273c35115eece85dbbb59e5f2e24bdbaf88e53b1648f2c5d4fa34b015a3fe8318721bf5655a86a835db323e6ecd4f7
 set flags arch
 
 function prepare

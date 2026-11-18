@@ -1,0 +1,33 @@
+set pkgname autoconf-archive
+set pkgver 2024.10.16
+set pkgrel 4
+set epoch 1
+set pkgdesc 'A collection of freely re-usable Autoconf macros'
+set arch any
+set url https://www.gnu.org/software/autoconf-archive/
+set license 'GPL-3.0-or-later WITH Autoconf-exception-3.0'
+set depends autoconf
+set optdepends 'automake: macros for use with it'
+set source "https://ftp.gnu.org/gnu/$pkgname/$pkgname-$pkgver.tar.xz" \
+    0001_fix_AX_CXX_COMPILE_STDCXX.patch
+set sha256sums 7bcd5d001916f3a50ed7436f4f700e3d2b1bade3ed803219c592d62502a57363 \
+    101d898728047056ff8e69d58aac7387653a65df9a2e884d6b6ac363439ab372
+set flags arch
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    # Generated detection logic is broken for AX_CXX_COMPILE_STDCXX for serial 21-23
+    patch -Np1 -i ../0001_fix_AX_CXX_COMPILE_STDCXX.patch; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr; or return
+    make; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYING.EXCEPTION; or return
+end

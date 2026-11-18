@@ -1,5 +1,5 @@
 set pkgbase libical
-set pkgname libical libical-docs
+set pkgname libical
 set pkgver 4.0.7
 set pkgrel 1
 set pkgdesc 'An open source reference implementation of the icalendar data type and serialization format'
@@ -7,25 +7,17 @@ set arch i686 x32
 set url https://github.com/libical/libical
 set license LGPL-2.1-only MPL-2.0
 set depends glib2 glibc icu libgcc libstdc++ libxml2
-set makedepends cmake doxygen gi-docgen git jdk-openjdk
-set checkdepends python-gobject
+# No documentation (doxygen, gi-docgen), Java bindings (jdk-openjdk) or tests (python-gobject)
+set makedepends cmake git
 set source "git+https://github.com/libical/libical#tag=v$pkgver"
-set sha256sums SKIP
+set sha256sums 15bd37725c6f7c303965eed722f1dab2a728b13786da80cb1c67f54a8a197b75
 set flags arch
 
 function build
-    cmake -S $pkgname -B build -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBEXECDIR=lib -DLIBICAL_BUILD_TESTING=true -DLIBICAL_GOBJECT_INTROSPECTION=false -DLIBICAL_GLIB_VAPI=false -DCMAKE_DISABLE_FIND_PACKAGE_BerkeleyDB=true; or return
+    cmake -S $pkgname -B build -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_INSTALL_LIBEXECDIR=lib -DLIBICAL_BUILD_DOCS=false -DLIBICAL_GLIB_BUILD_DOCS=false -DLIBICAL_BUILD_TESTING=false -DLIBICAL_JAVA_BINDINGS=false -DLIBICAL_GOBJECT_INTROSPECTION=false -DLIBICAL_GLIB_VAPI=false -DCMAKE_DISABLE_FIND_PACKAGE_BerkeleyDB=true; or return
     cmake --build build; or return
 end
 
 function package_libical
     DESTDIR="$pkgdir" cmake --install build; or return
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/doc; or return
-end
-
-function package_libical-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-    mv doc/* "$pkgdir"; or return
 end

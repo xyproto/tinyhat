@@ -11,6 +11,7 @@ pkgbase = arm-none-eabi-gcc
 	makedepends = gmp
 	makedepends = mpfr
 	makedepends = arm-none-eabi-newlib
+	bootstrap_without = arm-none-eabi-newlib
 	depends = arm-none-eabi-binutils
 	depends = zlib
 	depends = libmpc
@@ -20,8 +21,6 @@ pkgbase = arm-none-eabi-gcc
 	options = !emptydirs
 	options = !lto
 	source = https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz
-	source = https://ftp.gnu.org/gnu/gcc/gcc-16.2.0/gcc-16.2.0.tar.xz.sig
 	sha256sums = e6738e29597f733270731aa90600f37ffdc045079dfc27ec7e8192cc81085c3e
-	sha256sums = 43d73202dcede15d31001c6ba0d28723014ef57e4dc815631772daadbe23bcd2
 
 pkgname = arm-none-eabi-gcc

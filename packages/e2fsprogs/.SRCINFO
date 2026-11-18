@@ -11,7 +11,6 @@ pkgbase = e2fsprogs
 	makedepends = git
 	makedepends = systemd
 	makedepends = util-linux
-	makedepends = fuse3
 	source = git+https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git#tag=v1.47.4?signed
 	sha256sums = e738cbd6e437988248a5ed143458e33cdbfe17ebfa3818b7f6a6a66264895a66
 
@@ -27,8 +26,3 @@ pkgname = e2fsprogs
 	provides = libss.so
 	backup = etc/mke2fs.conf
 	backup = etc/e2scrub.conf
-
-pkgname = fuse2fs
-	pkgdesc = Ext2/3/4 filesystem driver for FUSE
-	depends = fuse3
-	depends = e2fsprogs

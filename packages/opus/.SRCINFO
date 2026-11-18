@@ -6,7 +6,6 @@ pkgbase = opus
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause
-	makedepends = doxygen
 	makedepends = meson
 	depends = glibc
 	source = https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.gz
@@ -15,7 +14,3 @@ pkgbase = opus
 
 pkgname = opus
 	provides = libopus.so
-
-pkgname = opus-docs
-	pkgdesc = Totally open, royalty-free, highly versatile audio codec (documentation)
-	depends = 

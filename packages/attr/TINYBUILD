@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://savannah.nongnu.org/projects/attr
 set license 'LGPL-2.1-or-later AND GPL-2.0-or-later'
 set depends glibc
-set makedepends git gettext
+# Tools that run during the build (msgfmt), from the build environment
+set makedepends_build git gettext
 set provides libattr.so
 set backup etc/xattr.conf
 set source "git+https://git.savannah.nongnu.org/git/$pkgname.git?signed#tag=v$pkgver"

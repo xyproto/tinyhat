@@ -6,7 +6,10 @@ set arch i686 x32
 set license GPL-2.0-only
 set url http://linux-pam.org
 set depends audit glibc libaudit.so libcrypt.so libnsl libtirpc libxcrypt pambase systemd-libs
-set makedepends docbook-xml docbook-xsl docbook5-xml flex fop git libxslt meson w3m
+# No documentation (docbook, fop, xsltproc and a text browser to build it) and no examples
+set makedepends flex git meson
+# pam and systemd need each other
+set bootstrap_without systemd-libs
 set provides libpam.so libpamc.so libpam_misc.so
 set backup etc/security/{access.conf,faillock.conf,group.conf,limits.conf,namespace.conf,namespace.init,pwhistory.conf,pam_env.conf,time.conf} \
     etc/environment
@@ -29,14 +32,19 @@ function prepare
 end
 
 function build
+    # Without libsystemd (the first build in a bootstrap, see bootstrap_without): no logind support
+    set -l logind enabled
+    pkg-config --exists libsystemd; or set logind disabled
     arch-meson $pkgname \
-        -Dlogind=enabled \
+        -Dlogind=$logind \
         -Deconf=disabled \
         -Dselinux=disabled \
         -Delogind=disabled \
         -Dpam_userdb=disabled \
         -Dpwaccess=disabled \
         -Dvendordir='' \
+        -Ddocs=disabled \
+        -Dexamples=false \
         build; or return
     meson compile -C build; or return
 end
@@ -48,9 +56,6 @@ end
 function package
     meson install -C build --destdir "$pkgdir"; or return
     install -Dm 644 $pkgname.tmpfiles "$pkgdir"/usr/lib/tmpfiles.d/$pkgname.conf; or return
-
-    # remove unreproducible pdf files
-    rm "$pkgdir"/usr/share/doc/Linux-PAM/*.pdf; or return
 
     # set unix_chkpwd uid
     chmod +s "$pkgdir"/usr/bin/unix_chkpwd; or return

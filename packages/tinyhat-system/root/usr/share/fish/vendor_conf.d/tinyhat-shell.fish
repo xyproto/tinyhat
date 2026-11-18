@@ -64,11 +64,10 @@ function copy
     end
 end
 
-alias ls='lsd --color=auto --group-directories-first --icon never'
-alias la='lsd -a --color=auto --group-directories-first --icon never'
-alias ll='lsd -l --color=auto --group-directories-first --icon never'
-alias lt='lsd -a --tree --color=auto --group-directories-first --icon never'
-alias l.="lsd -a | grep -e '^\.'"
+alias ls='command ls --color=auto --group-directories-first'
+alias la='command ls -A --color=auto --group-directories-first'
+alias ll='command ls -l --color=auto --group-directories-first'
+alias l.="command ls -A | grep -e '^\.'"
 alias tarnow='tar acf '
 alias untar='tar xvf '
 alias psmem='ps auxf | sort -nr -k 4'
@@ -146,7 +145,6 @@ alias fixpacman='doas rm /var/lib/pacman/db.lck'
 
 alias jctl='journalctl -p 3 -xb'
 
-alias lg='lazygit'
 alias s='git status'
 alias d='git diff'
 alias gd='git diff --cached'
@@ -159,7 +157,7 @@ function __dos_args
 end
 
 function dir --description 'List files (DOS: DIR)'
-    lsd -l --color=auto --group-directories-first --icon never (__dos_args $argv)
+    command ls -l --color=auto --group-directories-first (__dos_args $argv)
 end
 
 function del --description 'Delete files (DOS: DEL)'
@@ -171,7 +169,11 @@ function deltree --description 'Delete a directory and everything in it (DOS: DE
 end
 
 function tree --description 'Show the directory tree (DOS: TREE)'
-    lsd --tree --color=auto --group-directories-first --icon never (__dos_args $argv)
+    set -l dirs (__dos_args $argv)
+    set -q dirs[1]; or set dirs .
+    for d in $dirs
+        find $d -not -path '*/.*' | sort | sed -e 's|[^/]*/|  |g'
+    end
 end
 
 function ver --description 'Show the system version (DOS: VER)'
@@ -209,7 +211,7 @@ function help --description 'DOS commands and their Linux names'
         'rd dir' 'rmdir dir' 'remove an empty directory' \
         'cls' 'clear' 'clear the screen' \
         'edit file' 'o file' 'edit a text file (Ctrl+S saves, Ctrl+Q quits)' \
-        'tree' 'lsd --tree' 'show the directory tree' \
+        'tree' 'find' 'show the directory tree' \
         'mem' 'free -h' 'show memory use' \
         'ver' 'uname -a' 'show the system version'
     echo

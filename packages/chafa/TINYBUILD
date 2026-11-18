@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://hpjansson.org/chafa/
 set license LGPL-3.0-or-later
 set depends libavif libheif libjxl librsvg libwebp libxslt
-set makedepends git gtk-doc
+# No documentation (gtk-doc) and no man page (docbook-xsl)
+set makedepends git
 set provides libchafa.so
 set source "git+https://github.com/hpjansson/chafa.git#tag=$pkgver?signed"
 set sha512sums 192ac6fd4ad14bce7808ede2f2b22fa2f201b31c13f60170a0e707a5b8bdc1bba8f2bfaec1db2b953a3a71c534cc9e48e87bfaf9398a15b42c5b1846f38fdf2c
@@ -14,7 +15,7 @@ set flags arch
 
 function build
     cd $pkgname; or return
-    ./autogen.sh --prefix=/usr --enable-man --enable-gtk-doc; or return
+    ./autogen.sh --prefix=/usr --disable-man --disable-gtk-doc; or return
     make; or return
 end
 

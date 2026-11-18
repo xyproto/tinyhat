@@ -8,6 +8,7 @@ pkgbase = libglvnd
 	license = custom:BSD-like
 	makedepends = python
 	makedepends = meson
+	bootstrap_without = mesa
 	provides = libgl
 	provides = libegl
 	provides = libgles

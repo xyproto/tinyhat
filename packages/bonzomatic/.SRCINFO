@@ -6,7 +6,6 @@ pkgbase = bonzomatic
 	arch = i686
 	arch = x32
 	license = Unlicense
-	makedepends = chrpath
 	makedepends = cmake
 	makedepends = git
 	makedepends = glu
@@ -17,6 +16,6 @@ pkgbase = bonzomatic
 	depends = hicolor-icon-theme
 	depends = libglvnd
 	source = git+https://github.com/Gargaj/bonzomatic#tag=2023-06-15
-	sha256sums = SKIP
+	sha256sums = 5a2aa89e4cb3d93df7ffd2a550e1311045393044c9fc975b9e11279d9638774e
 
 pkgname = bonzomatic

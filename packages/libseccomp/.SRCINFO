@@ -7,22 +7,13 @@ pkgbase = libseccomp
 	arch = x32
 	license = LGPL-2.1-only
 	checkdepends = valgrind
-	makedepends = cython
 	makedepends = git
 	makedepends = glibc
 	makedepends = gperf
-	makedepends = python-build
-	makedepends = python-installer
-	makedepends = python-setuptools
-	makedepends = python-wheel
+	depends = glibc
+	provides = libseccomp.so
 	source = git+https://github.com/seccomp/libseccomp.git#tag=v2.6.0?signed
 	sha256sums = 2aa9a02d102753f4c4f23ff201dec3fbc4cf33d46dd64a0f2aaf5a5341227a93
 	b2sums = 76fa0801936a970b0bdff3d3cbc9e8e65f0afbfa1d1e13bd4319a6fee4aa520234a2a5273354ed87671666abb1f961cf9c678d1b38c3afd594f9c8d7694630d2
 
 pkgname = libseccomp
-	depends = glibc
-	provides = libseccomp.so
-
-pkgname = python-libseccomp
-	depends = python
-	depends = glibc

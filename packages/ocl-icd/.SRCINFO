@@ -8,8 +8,6 @@ pkgbase = ocl-icd
 	license = BSD-2-Clause
 	makedepends = ruby
 	makedepends = mesa
-	makedepends = xmlto
-	makedepends = asciidoc
 	makedepends = opencl-headers>=2.1
 	depends = glibc
 	optdepends = opencl-driver: packaged opencl driver

@@ -9,9 +9,9 @@ set depends glibc
 set makedepends cmake git ninja
 set provides libldacBT_abr.so libldacBT_enc.so
 set source "git+$url#tag=v$pkgver" \
-    git+https://android.googlesource.com/platform/external/libldac
+    git+https://android.googlesource.com/platform/external/libldac#commit=82b6a1abee84787b8fa167efe20290073f60db2d
 set b2sums cefd6836476371999cbca1d45c3b5fce447d88186de24ab85f4d7c2b771bd2bd7427adc73112a6f003004a259f519319586589d46bd07af192e795943400cc46 \
-    SKIP
+    38ce7971ea7dda28aadc023694722ddc7d8c269454e4c219b92f9673688c5baa6d6777d506b75229192d6e7bc9bc8c0641b2abd211c5e088dfd60226e3f379be
 set flags arch
 
 function prepare

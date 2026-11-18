@@ -32,6 +32,6 @@ pkgbase = python-lxml
 	optdepends = python-lxml-docs: offline docs
 	optdepends = python-lxml-html-clean: enable htmlclean feature
 	source = python-lxml::git+https://github.com/lxml/lxml#tag=lxml-6.1.3-1
-	sha256sums = SKIP
+	sha256sums = 743887cea8810ac288d6543f3652a6478000777806ca28b15d588a7b2571d400
 
 pkgname = python-lxml

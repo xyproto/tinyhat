@@ -24,7 +24,7 @@ pkgbase = inetutils
 	backup = etc/pam.d/rsh
 	options = !emptydirs
 	source = git+https://git.savannah.gnu.org/git/inetutils.git#tag=v2.8?signed
-	source = git+https://git.savannah.gnu.org/git/gnulib.git
+	source = git+https://git.savannah.gnu.org/git/gnulib.git#commit=6466c4b5321eb2625a25e582516c0fa4a5261d05
 	source = inetutils.sysusers
 	source = ftpd.service
 	source = rlogin.pam
@@ -38,7 +38,7 @@ pkgbase = inetutils
 	source = telnet@.service
 	source = telnet.socket
 	sha512sums = 348f7ed9528ac8d68de72d3b7efb93c5a31f924b80cdc1f0818ad4fdd7694e3e9d0bb759be02839a5eaa0f14b913f5aaab3032ed22a9f2cbab58ed085d12c780
-	sha512sums = SKIP
+	sha512sums = 501505529254f4f33c9b5aad1f51f2c445ac5c17d572e9403b33b89bd2aaf415965dc049efc12c2e674d00814c0e9644704be36edfa68f57a8076676f287ddbb
 	sha512sums = 00a6ff36efe63612990181f7cb37ea7d43ee7f2b6bda6b1fc23ccb2f3b19da54aabad041c2412936561dcd997f9613bd8144a96f5e04f30135a36f9ac98d8056
 	sha512sums = df5b37c9fc072e012f0e67d849db7e535a62ddb17a37e865acb157f2bc16ffd72d84f24fef1e788dacbbe7e5675e87e141fbd36e53339cc7810dde1b9c54a3b8
 	sha512sums = 432a45af5cd4f9f2dee4b631b45745b734e47cf631553e79db31905fa0839988914bcfed1dfcdd00d2ea6e4029b0674d46623c33ce0bd0678c2628fbaa0d1b25

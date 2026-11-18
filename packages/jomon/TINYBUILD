@@ -10,7 +10,7 @@ set makedepends git python re2c
 set optdepends 'geoip-database-extra: for extra geolocation data'
 set source "git+$url#tag=v$pkgver" caps.patch
 set b2sums 625b9d568a35e69e41fbd2c486ed70bdef79380c1e1d3aa6f8a32d3d8b5e9dfb1d77e6cf2430e37a21a2639087d4ceb1ab26f372e84b62fd698700a1f9549445 \
-    SKIP
+    b46419d6d035d6d1f3c881d39e2f64bf6daf0674966fb7b5aa8ee158180d9382de0669cf207953fd603b8f4bb51f552eb0fe7825c09100a14b234bb6bd5d1761
 
 function prepare
     cd $pkgname; or return

@@ -6,9 +6,7 @@ pkgbase = libgusb
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	makedepends = gi-docgen
 	makedepends = git
-	makedepends = gtk-doc
 	makedepends = meson
 	makedepends = python-setuptools
 	makedepends = umockdev
@@ -19,7 +17,3 @@ pkgbase = libgusb
 	sha256sums = 27ac4dd41aa0279416bc74f8d195339d439bd9fc0a9f6a0dc9745a07d251c942
 
 pkgname = libgusb
-
-pkgname = libgusb-docs
-	pkgdesc = GObject wrapper for libusb1 (documentation)
-	depends = 

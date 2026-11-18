@@ -33,7 +33,7 @@ pkgbase = lutris
 	optdepends = python-pillow: icons of Windows programs and Dolphin games
 	source = git+https://github.com/lutris/lutris.git#commit=82e85b4f90229e911202e24cea129bc12f2649e0
 	source = tinyhat.patch
-	sha256sums = SKIP
-	sha256sums = SKIP
+	sha256sums = 6f1d6ce8f9258008b1f199d90995636f4d7e3be6186e6a845b5c940ad9a4aca7
+	sha256sums = 43fe6b381de2eb2b426eb504202a18ac0fcae9812cedfe6f317a1cc4f272ef61
 
 pkgname = lutris

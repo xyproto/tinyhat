@@ -6,10 +6,8 @@ set arch i686 x32
 set url https://strace.io/
 set license LGPL-2.1-or-later
 set depends glibc libunwind
-set source "https://github.com/strace/strace/releases/download/v$pkgver/strace-$pkgver.tar.xz" \
-    "https://github.com/strace/strace/releases/download/v$pkgver/strace-$pkgver.tar.xz.asc"
-set sha256sums 4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5 \
-    6988e860ef4875b64f0667e4b20a5692f0b13089116355b3b165420275bf993a
+set source "https://github.com/strace/strace/releases/download/v$pkgver/strace-$pkgver.tar.xz"
+set sha256sums 4bde6246926890dcee824f6e6ac42a06752f47d77e5097d86e3c0d6d4b709fe5
 set flags arch
 
 function build

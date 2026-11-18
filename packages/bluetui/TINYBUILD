@@ -11,6 +11,8 @@ set options '!lto'
 set flags arch
 set source "$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz"
 set sha512sums cfb966878df4ca3b3055eb404c943a4749da040a5f42846603768fa60c70045fa974efd0fad32ff5828212364f8c8c1f43465f9f7effa850d82f1eacff697a75
+# network: cargo fetch downloads its crates in prepare (builds have no network access otherwise)
+set -a options network
 
 function prepare
     cd "$pkgname-$pkgver"; or return

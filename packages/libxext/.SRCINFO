@@ -11,8 +11,6 @@ pkgbase = libxext
 	depends = glibc
 	depends = xorgproto
 	source = https://xorg.freedesktop.org/releases/individual/lib/libXext-1.3.7.tar.xz
-	source = https://xorg.freedesktop.org/releases/individual/lib/libXext-1.3.7.tar.xz.sig
 	sha512sums = 09cd230da472e87e4fdbc9b0f83a9181cc44af04c06fa4a7d8aa405e0f8551d3ac3a4b379249c44d97e1025b60d1c52f8ca13817eed0206e2bf3d66a55d89701
-	sha512sums = SKIP
 
 pkgname = libxext

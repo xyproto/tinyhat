@@ -6,28 +6,16 @@ pkgbase = libdex
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later
-	checkdepends = python-dbusmock
-	checkdepends = python-gobject
-	checkdepends = xorg-server-xvfb
-	makedepends = gi-docgen
 	makedepends = git
 	makedepends = glib2-devel
-	makedepends = libsoup3
 	makedepends = meson
 	depends = glib2
 	depends = glibc
 	depends = libatomic
 	depends = libgcc
 	depends = liburing
-	depends = libsysprof-capture
-	depends = python
-	depends = python-gobject
 	source = git+https://gitlab.gnome.org/GNOME/libdex.git#tag=1.2.0
-	sha256sums = SKIP
+	sha256sums = dc27887d0d61f5e00462e0c1172c00d760f8dbce9b627cfd3d54dc465e6660cc
 
 pkgname = libdex
 	provides = libdex-1.so
-
-pkgname = libdex-docs
-	pkgdesc = A library supporting 'Deferred Execution' (documentation)
-	depends = 

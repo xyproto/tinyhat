@@ -6,7 +6,8 @@ set url https://github.com/google/shaderc
 set arch i686 x32
 set license Apache-2.0
 set depends glibc glslang libgcc libstdc++ spirv-tools
-set makedepends asciidoctor cmake ninja python spirv-headers
+# No glslc man page (asciidoctor)
+set makedepends cmake ninja python spirv-headers
 set provides libshaderc_shared.so
 set source "https://github.com/google/shaderc/archive/v$pkgver/$pkgname-$pkgver.tar.gz"
 set sha512sums a8dbf46cd10b2fabd0f533fcc79975202a235d04019295f14d3b51bf9699978ebf332c63f14b60fb518fc4deb07c37f84f19f2450958ae2035cbfacc68d78dae
@@ -36,9 +37,6 @@ function build
         -DPYTHON_EXECUTABLE=python \
         -Dglslang_SOURCE_DIR=/usr/include/glslang; or return
     ninja -C build; or return
-
-    cd glslc; or return
-    asciidoctor -b manpage README.asciidoc -o glslc.1; or return
 end
 
 function check
@@ -49,7 +47,6 @@ end
 function package
     cd $pkgname-$pkgver; or return
     DESTDIR="$pkgdir" ninja -C build install; or return
-    install -Dm 644 glslc/glslc.1 -t "$pkgdir/usr/share/man/man1"; or return
 
     # Remove unused shaderc_static.pc
     rm "$pkgdir/usr/lib/pkgconfig/shaderc_static.pc"; or return

@@ -7,10 +7,8 @@ set url https://xorg.freedesktop.org/
 set license MIT HPND-sell-variant
 set depends libx11 xorgproto glibc
 set makedepends xorg-util-macros
-set source "$url/releases/individual/lib/libXfixes-$pkgver.tar.xz" \
-    "$url/releases/individual/lib/libXfixes-$pkgver.tar.xz.sig"
-set sha512sums 87542927ba9839fdd83282b0fba1bd2afae853ffe4e0f5f548915de22432bbc34a064578ba8527ba6041a993ee27390ba6ee2f1a957cb961717d45026e40ec75 \
-    SKIP
+set source "$url/releases/individual/lib/libXfixes-$pkgver.tar.xz"
+set sha512sums 87542927ba9839fdd83282b0fba1bd2afae853ffe4e0f5f548915de22432bbc34a064578ba8527ba6041a993ee27390ba6ee2f1a957cb961717d45026e40ec75
 set flags arch
 
 function build

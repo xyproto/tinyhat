@@ -6,7 +6,8 @@ set arch i686 x32
 set url https://github.com/OCL-dev/ocl-icd
 set license BSD-2-Clause
 set depends glibc
-set makedepends ruby mesa xmlto asciidoc 'opencl-headers>=2.1'
+# No man page and HTML documentation (asciidoc, xmlto); configure skips them when the tools are missing
+set makedepends ruby mesa 'opencl-headers>=2.1'
 set checkdepends
 set provides opencl-icd-loader
 set conflicts libcl

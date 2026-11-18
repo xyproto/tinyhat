@@ -8,7 +8,6 @@ pkgbase = curl
 	license = curl
 	makedepends = git
 	makedepends = patchelf
-	makedepends = ca-certificates
 	makedepends = brotli
 	makedepends = gnutls
 	makedepends = krb5

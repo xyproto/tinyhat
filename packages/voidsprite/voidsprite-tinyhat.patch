@@ -1,0 +1,73 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index f956e9f..a1bde50 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -39,6 +39,16 @@ endif()
+ #on flatpak we must install these separately as system libraries
+ #(add to the flatpak yml file)
+ #also libavif is already included there by default for some reason
++# Tiny Hat: liblcf (RPG Maker 2000/2003 maps) is built from its submodule, also with the system's SDL3 libraries
++if (FLATPAK AND NOT DEFINED EMSCRIPTEN)
++    set(LIBLCF_WITH_INI OFF)
++    set(LIBLCF_WITH_ICU OFF)
++    set(LIBLCF_WITH_XML OFF)
++    set(LIBLCF_MAIN_PROJECT OFF)
++    set(BUILD_SHARED_LIBS OFF)
++    add_subdirectory(external/liblcf)
++endif()
++
+ if (NOT FLATPAK)
+     set(SDL_TESTS OFF)
+     set(SDL_TEST_LIBRARY OFF)
+@@ -76,11 +86,8 @@ if (VSP_NETWORKING)
+     add_subdirectory(external/SDL_net)
+ endif()
+ 
+-#these are static and can be used on virtually any platform
+-set(ZLIB_BUILD_TESTING OFF)
+-set(ZLIB_BUILD_SHARED OFF)
+-add_subdirectory(external/zlib)
+-add_subdirectory(external/fmt)
++# Tiny Hat: the system's zlib, and no fmt (std::format is used)
++find_package(ZLIB REQUIRED)
+ 
+ # Your game and its CMakeLists.txt are in a subfolder named "src"
+ add_subdirectory(cmake)
+diff --git a/cmake/CMakeLists.txt b/cmake/CMakeLists.txt
+index 6526872..3469ba9 100644
+--- a/cmake/CMakeLists.txt
++++ b/cmake/CMakeLists.txt
+@@ -26,7 +26,7 @@ else()
+ endif()
+ 
+ if (RELEASE)
+-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
++    # Tiny Hat: the distribution's optimization flags
+ else()
+     add_definitions(-D_DEBUG=1)
+     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
+@@ -44,7 +44,8 @@ if (VITASDK_BUILD)
+     set(VITA_TITLEID  "CNTRPL039")
+     set(VITA_VERSION  "01.00")
+ else()
+-    add_definitions(-DVSP_USE_LIBAVIF=1)
++    # Tiny Hat: no AVIF (libavif is not in Tiny Hat)
++    add_definitions(-DVSP_USE_LIBAVIF=0)
+ endif()
+ add_definitions(-DVOIDSPRITE_JXL_ENABLED=0)
+ 
+@@ -169,12 +170,10 @@ endif()
+ target_link_libraries(voidsprite PRIVATE SDL3::SDL3)
+ target_link_libraries(voidsprite PRIVATE SDL3_ttf::SDL3_ttf)
+ target_link_libraries(voidsprite PRIVATE SDL3_image::SDL3_image)
+-if (NOT VITASDK_BUILD)
+-target_link_libraries(voidsprite PRIVATE avif)
+-else()
++if (VITASDK_BUILD)
+ #target_link_libraries(voidsprite PUBLIC pthread)
+ endif()
+-target_link_libraries(voidsprite PRIVATE ZLIB::ZLIBSTATIC)
++target_link_libraries(voidsprite PRIVATE ZLIB::ZLIB)
+ if (DEFINED WIN32)
+     target_link_libraries(voidsprite PRIVATE d3d9 dwmapi winhttp iphlpapi)
+ endif()

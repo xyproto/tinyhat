@@ -7,7 +7,9 @@ set url https://www.freedesktop.org/wiki/Software/dbus/
 set arch i686 x32
 set license 'AFL-2.1 OR GPL-2.0-or-later'
 set depends audit expat glibc libcap-ng systemd-libs
-set makedepends docbook-xsl git glib2 meson python systemd xmlto
+set makedepends docbook-xsl git meson python systemd xmlto
+# dbus and systemd need each other
+set bootstrap_without systemd systemd-libs
 set source "git+https://gitlab.freedesktop.org/dbus/dbus.git?signed#tag=dbus-$pkgver" \
     0001-Arch-Linux-tweaks.patch \
     dbus-reload.hook
@@ -34,7 +36,10 @@ function build
         -D x11_autolaunch=disabled \
         -D qt_help=disabled \
         -D doxygen_docs=disabled \
-        -D ducktype_docs=disabled
+        -D ducktype_docs=disabled \
+        -D modular_tests=disabled
+    # Without libsystemd (the first build in a bootstrap, see bootstrap_without): no systemd support
+    pkg-config --exists libsystemd; or set -a meson_options -D systemd=disabled -D user_session=false
     arch-meson dbus build $meson_options; or return
     meson compile -C build; or return
 end
@@ -59,7 +64,10 @@ function package_dbus
     set conflicts libdbus
     set replaces libdbus
     meson install -C build --destdir "$pkgdir"; or return
-    _pick unit "$pkgdir"/usr/lib/systemd/{system,user}/dbus.service; or return
+    # Without systemd support (the first build in a bootstrap) there are no units
+    if test -e "$pkgdir"/usr/lib/systemd/system/dbus.service
+        _pick unit "$pkgdir"/usr/lib/systemd/{system,user}/dbus.service; or return
+    end
     install -Dt "$pkgdir/usr/share/libalpm/hooks" -m644 *.hook; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 \
         dbus/COPYING dbus/LICENSES/AFL-2.1.txt; or return
@@ -70,7 +78,9 @@ function package_dbus-daemon-units
     set depends dbus
     set provides dbus-units
     set conflicts dbus-broker-units
-    mv unit/* "$pkgdir"; or return
+    if test -d unit
+        mv unit/* "$pkgdir"; or return
+    end
     mkdir -p "$pkgdir/usr/share/licenses"; or return
     ln -s dbus "$pkgdir/usr/share/licenses/$pkgname"; or return
 end

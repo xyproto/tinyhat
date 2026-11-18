@@ -6,16 +6,17 @@ set arch i686 x32
 set url https://github.com/linuxwacom/libwacom/wiki
 set license MIT
 set depends glib2 libevdev libgudev glibc libgcc
-set makedepends libxml2 meson python-pytest python-libevdev python-pyudev
+# No tests (python-pytest)
+set makedepends libxml2 meson
 set optdepends 'python-libevdev: for libwacom-show-stylus' \
     'python-pyudev: for libwacom-show-stylus'
-set source "https://github.com/linuxwacom/libwacom/releases/download/$pkgname-$pkgver/$pkgname-$pkgver.tar.xz"{,.sig}
+set source "https://github.com/linuxwacom/libwacom/releases/download/$pkgname-$pkgver/$pkgname-$pkgver.tar.xz"
 # https://github.com/linuxwacom/libwacom/releases
-set sha256sums 370b45b5e05a91960df0aeb9c9481ae05846aab92ab2d4ec66945a0da4216888 SKIP
+set sha256sums 370b45b5e05a91960df0aeb9c9481ae05846aab92ab2d4ec66945a0da4216888
 set flags arch
 
 function build
-    arch-meson $pkgname-$pkgver build; or return
+    arch-meson $pkgname-$pkgver build -D tests=disabled; or return
     # Print config
     meson configure build; or return
     meson compile -C build; or return

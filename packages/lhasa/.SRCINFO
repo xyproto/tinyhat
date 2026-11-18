@@ -10,8 +10,6 @@ pkgbase = lhasa
 	provides = lha
 	conflicts = lha
 	source = https://github.com/fragglet/lhasa/releases/download/v0.6.0/lhasa-0.6.0.tar.gz
-	source = https://github.com/fragglet/lhasa/releases/download/v0.6.0/lhasa-0.6.0.tar.gz.asc
 	sha256sums = 9840154367f73e9d9c3196f944a121ab4d398d84e921c8fe8fca8a931274aed7
-	sha256sums = a66b715195a72f3656d5190559bff376d931f02407690623ecb45d0ed11ddcaf
 
 pkgname = lhasa

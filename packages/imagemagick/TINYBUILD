@@ -14,7 +14,6 @@ set optdepends 'ghostscript: PS/PDF support' \
     'libjpeg-turbo: JPEG support' \
     'libjxl: JPEG XL support' \
     'libraw: DNG support' \
-    'librsvg: SVG support' \
     'libtiff: TIFF support' \
     'libultrahdr: UHDR support' \
     'libwebp: WEBP support' \
@@ -28,7 +27,8 @@ set optdepends 'ghostscript: PS/PDF support' \
 set options '!emptydirs' libtool
 set backup etc/ImageMagick-7/{colors,delegates,log,mime,policy,quantization-table,thresholds,type,type-{dejavu,ghostscript}}.xml
 set provides libmagick
-set makedepends djvulibre ghostscript git glu jbigkit libheif libjpeg-turbo libjxl libraw librsvg libultrahdr libwebp \
+# No ghostscript (gs is only run, PSDelegate is set), and no librsvg: the internal MSVG coder (libxml2) handles SVG
+set makedepends djvulibre git glu jbigkit libheif libjpeg-turbo libjxl libraw libultrahdr libwebp \
     libwmf libzip ocl-icd opencl-headers openexr openjpeg2
 set checkdepends gsfonts ttf-dejavu
 set replaces imagemagick-doc
@@ -59,7 +59,7 @@ function build
         --with-openexr \
         --with-openjp2 \
         --without-perl \
-        --with-rsvg \
+        --without-rsvg \
         --with-uhdr \
         --with-webp \
         --with-wmf \

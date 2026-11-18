@@ -12,6 +12,9 @@ set sha512sums 52428dc343a4fa0165d220752cc7f79460b2308cfa3f07a9142be3d73b7251bc2
 set flags arch
 
 # Sets the cargo environment globally, and is called before cd into the source directory
+# network: cargo fetch downloads its crates in prepare (builds have no network access otherwise)
+set -a options network
+
 function _srcenv
     set -gx CARGO_HOME "$srcdir"
     set -gx CARGO_PROFILE_RELEASE_DEBUG 2

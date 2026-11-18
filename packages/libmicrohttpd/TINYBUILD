@@ -8,9 +8,8 @@ set license LGPL-2.1-or-later
 set depends glibc gnutls
 set checkdepends curl
 set provides libmicrohttpd.so
-set source "https://ftp.gnu.org/gnu/libmicrohttpd/$pkgname-$pkgver.tar.gz"{,.sig}
-set sha256sums 04bfe8ef75db7d629a33de767599765cecadc56274a39822d5d081030d577685 \
-    SKIP
+set source "https://ftp.gnu.org/gnu/libmicrohttpd/$pkgname-$pkgver.tar.gz"
+set sha256sums 04bfe8ef75db7d629a33de767599765cecadc56274a39822d5d081030d577685
 set flags arch
 
 function prepare

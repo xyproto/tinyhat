@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Fan: full
+Icon=applications-system
+Comment=Full CPU speed, with the fans at full speed when warm
+Exec=tinyhat-fan full
+Terminal=false
+Categories=System;

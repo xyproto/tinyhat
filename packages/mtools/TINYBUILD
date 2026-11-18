@@ -7,16 +7,16 @@ set arch i686 x32
 set url https://www.gnu.org/software/mtools/
 set license GPL-3.0-or-later
 set depends bash glibc
-set makedepends texinfo
+# No info manual (texinfo): the install target no longer depends on install-info
 set backup etc/mtools.conf
-set source "https://ftp.gnu.org/gnu/mtools/mtools-$pkgver.tar.bz2" \
-    "https://ftp.gnu.org/gnu/mtools/mtools-$pkgver.tar.bz2.sig"
-set sha256sums 6fe5193583d6e7c59da75e63d7234f76c0b07caf33b103894f46f66a871ffc9f \
-    994e2a94dea4b32a07992e23f72207c4b8ef1348dc8888c904d8265f38d30622
+set source "https://ftp.gnu.org/gnu/mtools/mtools-$pkgver.tar.bz2"
+set sha256sums 6fe5193583d6e7c59da75e63d7234f76c0b07caf33b103894f46f66a871ffc9f
 set flags arch
 
 function prepare
     sed -e '/^SAMPLE FILE$/s:^:# :' -i $pkgname-$pkgver/mtools.conf; or return
+    # Do not build and install the info manual, which needs makeinfo (texinfo)
+    sed -i 's/ install-scripts install-info$/ install-scripts/' $pkgname-$pkgver/Makefile.in; or return
 end
 
 function build

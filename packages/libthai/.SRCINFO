@@ -7,7 +7,6 @@ pkgbase = libthai
 	arch = x32
 	license = LGPL-2.1-or-later
 	makedepends = autoconf-archive
-	makedepends = doxygen
 	makedepends = git
 	depends = glibc
 	depends = libdatrie

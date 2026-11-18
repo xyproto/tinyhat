@@ -8,10 +8,8 @@ set license GPL
 set depends glibc ncurses libassuan libsecret glib2
 set optdepends 'gcr: GNOME backend' 'gtk3: GTK backend' 'kguiaddons: Qt6 backend' 'kwindowsystem: Qt6 backend'
 set source "https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-$pkgver.tar.bz2" \
-    "https://www.gnupg.org/ftp/gcrypt/pinentry/pinentry-$pkgver.tar.bz2.sig" \
     pinentry
 set sha256sums c2970f16d6afb66ecddfca767d743936c86239bff936eed7fd7597a678414b63 \
-    fe7be7d1c2eb75b1d80cdc1e157974b5bd438b5c67f3000c88c0278f3964acba \
     b902d07c061e0cf6d661014516172f7a35f477362edb779f863935733d1c4dde
 set flags arch
 

@@ -9,8 +9,6 @@ pkgbase = arm-none-eabi-binutils
 	depends = zlib
 	depends = libelf
 	source = https://ftp.gnu.org/gnu/binutils/binutils-2.47.tar.bz2
-	source = https://ftp.gnu.org/gnu/binutils/binutils-2.47.tar.bz2.sig
 	sha256sums = 3068128c75cda9f898ccb4211d360246e8e195ffcc9dfb655b23ae23a54800e8
-	sha256sums = SKIP
 
 pkgname = arm-none-eabi-binutils

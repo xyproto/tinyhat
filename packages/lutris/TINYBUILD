@@ -15,8 +15,8 @@ set optdepends 'wine-staging: Windows games' \
 set makedepends git meson gettext
 set source "git+https://github.com/lutris/lutris.git#commit=$_commit" \
     tinyhat.patch
-set sha256sums SKIP \
-    SKIP
+set sha256sums 6f1d6ce8f9258008b1f199d90995636f4d7e3be6186e6a845b5c940ad9a4aca7 \
+    43fe6b381de2eb2b426eb504202a18ac0fcae9812cedfe6f317a1cc4f272ef61
 
 function prepare
     cd lutris; or return

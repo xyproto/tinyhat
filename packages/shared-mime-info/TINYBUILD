@@ -5,7 +5,8 @@ set pkgdesc 'Freedesktop.org Shared MIME Info'
 set arch i686 x32
 set license GPL-2.0-or-later
 set depends libxml2 glib2 glibc libstdc++ libgcc
-set makedepends gettext xmlto docbook-xsl meson
+# No HTML specification (xmlto, docbook-xsl)
+set makedepends gettext meson
 # https://gitlab.freedesktop.org/xdg/shared-mime-info
 set url https://www.freedesktop.org/wiki/Specifications/shared-mime-info-spec/
 set flags arch
@@ -20,7 +21,8 @@ set options '!makeflags'
 function build
     arch-meson $pkgname-$pkgver build \
         -D update-mimedb=false \
-        -D build-tests=false; or return
+        -D build-tests=false \
+        -D build-spec=false; or return
 
     # Print config
     meson configure build; or return

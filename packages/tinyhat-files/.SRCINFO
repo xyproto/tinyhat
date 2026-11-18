@@ -10,6 +10,6 @@ pkgbase = tinyhat-files
 	depends = libarchive
 	optdepends = 7zip: extract archive types that bsdtar cannot read
 	source = tinyhat-files.c
-	sha256sums = SKIP
+	sha256sums = d92c34068b8476631b61b4d3ab5d235e0430374207ca4d765d0d7c938d35f073
 
 pkgname = tinyhat-files

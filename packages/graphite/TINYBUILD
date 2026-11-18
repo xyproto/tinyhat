@@ -1,5 +1,5 @@
 set pkgbase graphite
-set pkgname graphite graphite-docs
+set pkgname graphite
 set pkgver 1.3.15
 set pkgrel 1
 set epoch 1
@@ -8,12 +8,9 @@ set url https://graphite.sil.org/
 set pkgdesc 'a "smart font" system to handle the complexities of lesser-known languages of the world'
 set license 'LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later'
 set depends glibc libstdc++ libgcc
-# doxygen, graphviz, asciidoc, texlive-xetex and dblatex are for documentation
-set makedepends cmake freetype2 python doxygen graphviz asciidoc texlive-xetex
-switch $CARCH
-    case i686
-        set -a makedepends dblatex
-end
+# No documentation package (doxygen, graphviz, asciidoc, TeX), and no freetype2: it is only for the comparison
+# renderer of the tests (GRAPHITE2_COMPARE_RENDERER=OFF), and freetype2 is built with graphite (harfbuzz)
+set makedepends cmake python
 set checkdepends python-fonttools
 set flags arch
 # https://github.com/silnrsi/graphite/releases/download/1.3.14/graphite2-1.3.14.sha256sum
@@ -38,7 +35,6 @@ function build
 
     cmake -S graphite2-$pkgver -B build $cmake_options; or return
     cmake --build build; or return
-    cmake --build build -t docs -j1; or return
 end
 
 function check
@@ -47,23 +43,9 @@ function check
 end
 
 function package_graphite
-    set optdepends 'graphite-docs: Documentation'
     set provides libgraphite2.so
 
     DESTDIR="$pkgdir" cmake --install build; or return
-
-    # licenses
-    install -Dm644 graphite2-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-end
-
-function package_graphite-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-
-    set -l docdir "$pkgdir/usr/share/doc/$pkgbase"
-    mkdir -p "$docdir/api"; or return
-    cp -vrf build/doc/doxygen/{html,latex/refman.pdf} "$docdir/api"; or return
-    cp -vrf build/doc/{GTF,manual}.html "$docdir"; or return
 
     # licenses
     install -Dm644 graphite2-$pkgver/COPYING -t "$pkgdir/usr/share/licenses/$pkgname"; or return

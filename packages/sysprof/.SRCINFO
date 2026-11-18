@@ -9,7 +9,6 @@ pkgbase = sysprof
 	makedepends = git
 	makedepends = meson
 	makedepends = glib2-devel
-	makedepends = yelp-tools
 	depends = cairo
 	depends = glib2
 	depends = glibc
@@ -23,7 +22,7 @@ pkgbase = sysprof
 	depends = polkit
 	depends = systemd-libs
 	source = git+https://gitlab.gnome.org/GNOME/sysprof.git#tag=51.0
-	sha256sums = SKIP
+	sha256sums = 6ea270ef138061a87d193bdd1a908e6457cd20db4551408b329444b0a634f798
 
 pkgname = sysprof
 	groups = gnome-extra

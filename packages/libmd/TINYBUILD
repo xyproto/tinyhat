@@ -6,10 +6,8 @@ set arch i686 x32
 set url https://www.hadrons.org/software/libmd/
 set license 'BSD-3-Clause AND BSD-2-Clause AND ISC AND Beerware AND CC-PDM-1.0'
 set depends glibc
-set source "https://libbsd.freedesktop.org/releases/libmd-$pkgver.tar.xz" \
-    "https://libbsd.freedesktop.org/releases/libmd-$pkgver.tar.xz.asc"
-set sha256sums fc0f1eb6b6766470326f2c014693809190e67dba84274a6fbae9d4912d066706 \
-    b6b3f40991ec85500b4294cabe58b971ff5b37b6adbe153cbd382e914b664065
+set source "https://libbsd.freedesktop.org/releases/libmd-$pkgver.tar.xz"
+set sha256sums fc0f1eb6b6766470326f2c014693809190e67dba84274a6fbae9d4912d066706
 set flags arch
 
 function build

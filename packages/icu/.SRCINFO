@@ -21,10 +21,8 @@ pkgbase = icu
 	provides = libicutu.so
 	provides = libicuuc.so
 	source = https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz
-	source = https://github.com/unicode-org/icu/releases/download/release-78.3/icu4c-78.3-sources.tgz.asc
 	source = ICU-22132.patch
 	sha256sums = 3a2e7a47604ba702f345878308e6fefeca612ee895cf4a5f222e7955fabfe0c0
-	sha256sums = a0ae1632af13549a5e8b934eaa4ffc972f32b4a58d0c5d15ba43d8c161551ebc
 	sha256sums = f534b472dd7a6961591466eef542e2c3ad698d3008c9b6af813c66cbc0b4dd8e
 
 pkgname = icu

@@ -1,20 +1,26 @@
 set pkgbase libjxl
-set pkgname libjxl libjxl-doc
+set pkgname libjxl
 set pkgver 0.12.0
 set pkgrel 1
 set pkgdesc 'JPEG XL image format reference implementation'
 set arch i686 x32
 set url https://jpeg.org/jpegxl/
 set license BSD-3-Clause
-set makedepends add-determinism asciidoc brotli cmake doxygen giflib git gperftools graphviz gtest highway \
+# No documentation (doxygen, graphviz), no man pages (asciidoc) and no tests (gtest)
+set makedepends add-determinism brotli cmake giflib git gperftools highway \
     java-environment libjpeg-turbo libpng python xdg-utils
 set source "git+https://github.com/libjxl/libjxl.git#tag=v$pkgver" \
-    git+https://github.com/mm2/Little-CMS.git \
-    git+https://github.com/webmproject/sjpeg.git \
-    git+https://github.com/google/skcms.git \
-    libjxl-testdata::git+https://github.com/libjxl/testdata.git \
-    git+https://github.com/libjpeg-turbo/libjpeg-turbo.git
-set sha256sums 7fcec90284ed317d3649e6a5a586ebb384798e9fd217920a57cc6b34bf535f57 SKIP SKIP SKIP SKIP SKIP
+    git+https://github.com/mm2/Little-CMS.git#commit=5176347635785e53ee5cee92328f76fda766ecc6 \
+    git+https://github.com/webmproject/sjpeg.git#commit=94e0df6d0f8b44228de5be0ff35efb9f946a13c9 \
+    git+https://github.com/google/skcms.git#commit=96d9171c94b937a1b5f0293de7309ac16311b722 \
+    libjxl-testdata::git+https://github.com/libjxl/testdata.git#commit=73695d303670c90e4d506ea89d9901b081385089 \
+    git+https://github.com/libjpeg-turbo/libjpeg-turbo.git#commit=8ecba3647edb6dd940463fedf38ca33a8e2a73d1
+set sha256sums 7fcec90284ed317d3649e6a5a586ebb384798e9fd217920a57cc6b34bf535f57 \
+    922bbf435ce143a095c8b03cd401fef30c38451399397ada857574b8240d5c55 \
+    e0dfdd91ee6dc53ea87b9a1ef8d482a34e114134d6128abe988308c911cd7376 \
+    23374b16f7c9d6e10d621c6734b770e7273315ea1b1b14e3b55cedbdb4db01d2 \
+    6566f5b0bb9df9f042863c20ac881ff59a89d549dbfd5fe92560047012f3ea92 \
+    017f210a6c32b0a3b9855ae1816c58d67ac0690fdf07fc4064d2ee8a19b7bd3f
 set flags arch
 
 function prepare
@@ -41,12 +47,12 @@ function build
     # No SSE2
     test $CARCH = i686; and set extra -DSJPEG_ENABLE_SIMD=OFF
     cmake -B build -S libjxl -G 'Unix Makefiles' $extra -DCMAKE_BUILD_TYPE:STRING=None -DCMAKE_INSTALL_PREFIX:PATH=/usr \
+        -DBUILD_TESTING:BOOL=OFF -DJPEGXL_ENABLE_DOXYGEN:BOOL=false -DJPEGXL_ENABLE_MANPAGES:BOOL=false \
         -DJPEGXL_BUNDLE_LIBPNG:BOOL=false -DJPEGXL_ENABLE_BENCHMARK:BOOL=false -DJPEGXL_ENABLE_EXAMPLES:BOOL=false \
         -DJPEGXL_ENABLE_FUZZERS:BOOL=false -DJPEGXL_ENABLE_OPENEXR:BOOL=false -DJPEGXL_ENABLE_PLUGINS:BOOL=false \
         -DJPEGXL_ENABLE_VIEWERS:BOOL=false -DJPEGXL_FORCE_SYSTEM_BROTLI:BOOL=true -DJPEGXL_FORCE_SYSTEM_GTEST:BOOL=true \
         -DJPEGXL_FORCE_SYSTEM_HWY:BOOL=true -DJPEGXL_INSTALL_JARDIR:STRING=/usr/share/java -Wno-dev; or return
     cmake --build build; or return
-    make -C build doc; or return
 end
 
 # No check(): the tests fail in various ways
@@ -61,11 +67,4 @@ function package_libjxl
     # Clamp timestamps to SOURCE_DATE_EPOCH and strip other metadata, to make
     # the package reproducible.
     add-det "$pkgdir/usr/share/java"/jpegxl.jar; or return
-end
-
-function package_libjxl-doc
-    set pkgdesc "$pkgdesc (documentation)"
-    install -d -m755 "$pkgdir/usr/share/doc"; or return
-    install -D -m644 libjxl/{LICENSE,PATENTS} -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-    cp -dr --no-preserve=ownership build/doc/html "$pkgdir/usr/share/doc/libjxl"; or return
 end

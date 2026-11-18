@@ -1,5 +1,5 @@
 set pkgbase libgphoto2
-set pkgname libgphoto2 libgphoto2-docs
+set pkgname libgphoto2
 set pkgver 2.5.34
 set pkgrel 1
 set pkgdesc 'Digital camera access library'
@@ -7,14 +7,15 @@ set url http://www.gphoto.org/
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends bash curl gd glibc libexif libjpeg-turbo libltdl libtiff libusb libxml2
-set makedepends doxygen git graphviz meson
+# No API documentation (doxygen, graphviz)
+set makedepends git meson
 set source "git+https://github.com/gphoto/libgphoto2#tag=v$pkgver"
 set b2sums a8d8159e3cda9046c1dbd4a79b88db7a716769d872e5b15241f78727bce5bcab91bd57a09407a0d6653af72ff44d407b08ec505195a7a76f5fe10d17d3bcfd2a
 set flags arch
 
 function build
     set -l meson_options \
-        -D docs=true
+        -D docs=false
 
     arch-meson $pkgbase build $meson_options; or return
     meson compile -C build; or return
@@ -44,15 +45,4 @@ function package_libgphoto2
         build/packaging/generic/print-camera-list udev-rules version 201 \
             | install -Dm644 /dev/stdin "$pkgdir/usr/lib/udev/rules.d/40-gphoto.rules"; or return
     end
-
-    # Split docs
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/doc; or return
-end
-
-function package_libgphoto2-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-
-    mv doc/* "$pkgdir"; or return
 end

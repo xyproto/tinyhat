@@ -98,7 +98,8 @@ function build
         --with-pic \
         --with-system-zlib; or return
 
-    make -O tooldir=/usr; or return
+    # The git sources have no generated info manuals, and the build environment has no makeinfo: build none
+    make -O MAKEINFO=true tooldir=/usr; or return
 
     # Extract the FSF All Permissive License
     # <https://www.gnu.org/prep/maintain/html_node/License-Notices-for-Other-Files.html>
@@ -122,7 +123,7 @@ end
 
 function package
     cd binutils-build; or return
-    make DESTDIR="$pkgdir" tooldir=/usr install; or return
+    make DESTDIR="$pkgdir" MAKEINFO=true tooldir=/usr install; or return
 
     # Files that clash with gdb (from archlinux32)
     set -l gdbfiles "$pkgdir"/usr/share/info/{annotate,gdb,stabs}.info* \

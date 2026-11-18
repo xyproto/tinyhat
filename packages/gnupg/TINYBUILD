@@ -5,7 +5,9 @@ set pkgdesc 'Complete and free implementation of the OpenPGP standard'
 set arch i686 x32
 set url https://www.gnupg.org/
 set license BSD-2-Clause BSD-3-Clause BSD-4-Clause CC0-1.0 GPL-2.0-or-later GPL-3.0-or-later LGPL-2.1-or-later 'LGPL-3.0-or-later OR GPL-2.0-or-later' MIT Unicode-TOU
-set depends glibc gnutls libgcrypt libgpg-error libksba libldap libusb pinentry sh sqlite tpm2-tss zlib
+# No LDAP keyservers in dirmngr (HKPS keyservers work): no libldap
+# No TPM2 daemon (tpm2d, tpm2-tss): Tiny Hat does not keep keys in a TPM
+set depends glibc gnutls libgcrypt libgpg-error libksba libusb pinentry sh sqlite zlib
 # The documentation is not built, so fig2dev, imagemagick and librsvg are not needed
 set makedepends git libassuan npth pcsclite readline bzip2
 set optdepends 'pcsclite: for using scdaemon not with the gnupg internal card driver'
@@ -66,8 +68,7 @@ set source \
     0031-tpm-Fix-possible-buffer-overflow-in-PKDECRYPT.patch \
     0032-agent-Fix-the-regression-in-pkdecrypt-with-TPM-RSA.patch \
     0033-dirmngr-Fix-a-call-of-calloc.patch
-set sha256sums \
-    383fd9720a966825b9d5e45a2b49b3b340ebed356252c73cca242b26dffec0ba \
+set sha256sums 383fd9720a966825b9d5e45a2b49b3b340ebed356252c73cca242b26dffec0ba \
     80a3a80f9f1f337da555a6838483e1baca44cde8a8a3d8c4ba7743626304b981 \
     8374255ce93a3c343019ab425963bcbc41982ea89e669d1ad1df0aa7be810de1 \
     ca55048f992824a24ab7f61cbc44a713a153f70a1a60d1cbba7ab4440302a204 \
@@ -142,7 +143,7 @@ end
 function build
     cd $pkgname; or return
     # --enable-large-secmem is needed for large RSA keys
-    ./configure --enable-g13 --enable-large-secmem --enable-maintainer-mode --disable-doc \
+    ./configure --enable-g13 --enable-large-secmem --enable-maintainer-mode --disable-doc --disable-ldap --disable-tpm2d \
         --libexecdir=/usr/lib/gnupg --prefix=/usr --sbindir=/usr/bin --sysconfdir=/etc; or return
     make; or return
 end

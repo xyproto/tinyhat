@@ -11,10 +11,10 @@ set provides libcap.so libpsx.so
 set options '!lto'
 set source "git+https://git.kernel.org/pub/scm/libs/libcap/libcap.git?signed#tag=sig-libcap-$pkgver" \
     libcap-2.73-cgo-flags.patch
-set sha256sums SKIP \
+set sha256sums a30c020d0dacd64cea02920ec054b9072f0784486667347ea61764a5b0ae636b \
     c6f7b96ddf8d537a9dc99940b49dee58b541e7da056a7d3731e250f34187749c
 set flags arch
-set -g _common_make_options CGO_CPPFLAGS= CGO_CFLAGS= CGO_CXXFLAGS= CGO_LDFLAGS= CGO_REQUIRED=1 'GOFLAGS=-buildmode=pie -mod=readonly -modcacherw' 'GO_BUILD_FLAGS=-ldflags \'-compressdwarf=false -linkmode=external\'' GOLANG=no
+set -g _common_make_options CGO_CPPFLAGS= CGO_CFLAGS= CGO_CXXFLAGS= CGO_LDFLAGS= CGO_REQUIRED=1 'GOFLAGS=-buildmode=pie -mod=readonly -modcacherw -trimpath' 'GO_BUILD_FLAGS=-ldflags \'-compressdwarf=false -linkmode=external\'' GOLANG=no
 set -g _url https://git.kernel.org/pub/scm/libs/libcap/libcap.git
 
 function prepare

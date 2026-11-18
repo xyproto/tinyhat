@@ -16,16 +16,14 @@ pkgbase = harfbuzz
 	makedepends = glibc
 	makedepends = gobject-introspection
 	makedepends = graphite
-	makedepends = icu
 	makedepends = libpng
 	makedepends = libstdc++
 	makedepends = meson
 	makedepends = python
-	makedepends = ragel
 	makedepends = zlib
 	makedepends = glib2-introspection
 	source = git+https://github.com/harfbuzz/harfbuzz?signed#tag=15.1.0
-	sha256sums = SKIP
+	sha256sums = fd57c6261122824f3a7a1e4afc81ece9b9852c91f2c95af6c2d1cbffd192df53
 
 pkgname = harfbuzz
 	depends = freetype2
@@ -57,12 +55,3 @@ pkgname = harfbuzz-cairo
 	depends = harfbuzz
 	depends = libharfbuzz.so
 	provides = libharfbuzz-cairo.so
-
-pkgname = harfbuzz-icu
-	pkgdesc = OpenType text shaping engine - ICU integration
-	depends = glibc
-	depends = harfbuzz
-	depends = libharfbuzz.so
-	depends = icu
-	depends = libicuuc.so
-	provides = libharfbuzz-icu.so

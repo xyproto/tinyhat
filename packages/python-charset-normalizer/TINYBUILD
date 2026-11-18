@@ -9,7 +9,7 @@ set depends python
 set makedepends git python-build python-installer python-setuptools python-wheel
 set checkdepends python-pytest
 set source "git+https://github.com/Ousret/charset_normalizer.git#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums 4846e586d01120fcea41d4a60b8d287d28e59b3060f46476f6844b83b3eb86cf
 set flags arch
 set -g _name charset_normalizer
 

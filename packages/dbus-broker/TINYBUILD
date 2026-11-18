@@ -8,17 +8,17 @@ set arch i686 x32
 set license Apache-2.0
 set depends audit expat glibc libcap-ng libgcc systemd-libs
 set makedepends meson python-docutils systemd
+# dbus-broker and systemd need each other
+set bootstrap_without systemd systemd-libs
 set flags arch
-set source https://github.com/bus1/dbus-broker/releases/download/v$pkgver/$pkgbase-$pkgver.tar.xz{,.asc} \
+set source https://github.com/bus1/dbus-broker/releases/download/v$pkgver/$pkgbase-$pkgver.tar.xz \
     0001-units-Enable-statically.patch \
     0002-test-sockopt-loosen-verification-of-stale-pidfds.patch
 set b2sums 151b176882b28190ff23dfdb5c57af18d365a21f7c7fc345df738f4a55388d929331fe4db917bb0dee51f2ebfc872c05f5310dc709cbf5d230944a94d382dd36 \
-    SKIP \
     02e30f49224835af2d327d6c3eecad5509913ad69b75c6b04d00cb4a8a0c9b8e0c043055d43172a215a4e3729527a2f807115117a9b1d1dc27c5f43259a12e36 \
     05b53d4c0aac956a0c5fc8f95b0b8c2caeb9b2e8bb7b28ecdc54fb733c41a88f7c46ede9201ae656ae101a37e7a7f587364e14e288852243c7b4c9b25a9ee783
 # https://github.com/bus1/dbus-broker/releases
 set sha256sums f819a8db8795fa08c767612e3823fd594694a0990f2543ecf35d6a1a6bf2ab5b \
-    SKIP \
     20dcaf03d837d0715f71ccce3d393cba06a4b96f89f4fec3b6e35c1de0592d7d \
     2fcc5cf3742d160b2cc54f1fb7727433645a46f229aeeb23a7df36f304eae668
 
@@ -40,6 +40,8 @@ function build
         -D docs=true \
         -D linux-4-17=true \
         -D system-console-users=gdm,sddm,lightdm,lxdm
+    # Without libsystemd (the first build in a bootstrap, see bootstrap_without): no launcher, which needs it
+    pkg-config --exists libsystemd; or set -a meson_options -D launcher=false
 
     arch-meson $pkgbase-$pkgver build $meson_options; or return
     meson compile -C build; or return
@@ -66,7 +68,10 @@ function package_dbus-broker
 
     meson install -C build --destdir "$pkgdir"; or return
 
-    _pick unit $pkgdir/usr/lib/systemd/{system,user}/dbus.service; or return
+    # The launcher installs the units
+    if test -e $pkgdir/usr/lib/systemd/system/dbus.service
+        _pick unit $pkgdir/usr/lib/systemd/{system,user}/dbus.service; or return
+    end
 end
 
 function package_dbus-broker-units
@@ -75,7 +80,9 @@ function package_dbus-broker-units
     set provides dbus-units
     set conflicts dbus-daemon-units
 
-    mv unit/* "$pkgdir"; or return
+    if test -d unit
+        mv unit/* "$pkgdir"; or return
+    end
 end
 
 function package_dbus-units

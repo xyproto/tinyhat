@@ -1,0 +1,32 @@
+set pkgname python-setuptools
+set pkgver 84.2.1
+set pkgrel 1
+set epoch 1
+set pkgdesc 'Easily download, build, install, upgrade, and uninstall Python packages'
+set arch any
+set url https://pypi.org/project/setuptools/
+set license MIT
+# The vendored dependencies (jaraco.*, more-itertools, packaging, platformdirs, wheel, ...) are kept
+set depends python
+set makedepends git python-build python-installer
+set provides python-distribute
+set replaces python-distribute
+set source "git+https://github.com/pypa/setuptools.git#tag=v$pkgver"
+set b2sums a358c1e5429333c78208691d8e4d5c74b68bce9789c05572b34026e4302fa55c582c8689646c558daf2fa65998a2baf9a5af5e26a7ac7bdf2d48182b6add4b4c
+set flags arch
+
+# setuptools builds itself (backend-path in pyproject.toml), so it does not makedepend on itself
+
+function build
+    cd setuptools; or return
+    set -lx SETUPTOOLS_INSTALL_WINDOWS_SPECIFIC_FILES 0
+    python -m build --wheel --skip-dependency-check --no-isolation; or return
+end
+
+function package
+    cd setuptools; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+    # Windows launcher executables
+    find "$pkgdir" -type f -name '*.exe' -delete; or return
+end

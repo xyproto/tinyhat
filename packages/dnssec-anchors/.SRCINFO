@@ -5,7 +5,6 @@ pkgbase = dnssec-anchors
 	url = https://data.iana.org/root-anchors/
 	arch = any
 	license = custom:none
-	makedepends = unbound
 	source = LICENSE
 	source = trusted-key-20250524.notkey
 	sha256sums = dd37e92942d5a4024f1c77df49d61ca77fc6284691814903a741785df61f78cb

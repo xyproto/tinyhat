@@ -7,9 +7,7 @@ pkgbase = p11-kit
 	arch = x32
 	license = BSD-3-Clause
 	checkdepends = gnutls
-	makedepends = bash-completion
 	makedepends = git
-	makedepends = gtk-doc
 	makedepends = libffi
 	makedepends = meson
 	makedepends = systemd
@@ -17,9 +15,9 @@ pkgbase = p11-kit
 	depends = glibc
 	depends = libtasn1
 	source = git+https://github.com/p11-glue/p11-kit?signed#tag=0.26.5
-	source = git+https://github.com/p11-glue/pkcs11-json
+	source = git+https://github.com/p11-glue/pkcs11-json#commit=6d56219d6cd640f3629fb621b01068d7e768efc6
 	b2sums = 2b2a785307cac88ab347e8a75aecfdafd933d9dbca6977368eca4c74e0a14bdcbdffd138e9dd86d390f6c1bcf044f1c9763f197ca79bd0877f26d0e00f0712c7
-	b2sums = SKIP
+	b2sums = f5a1519c43661be74c52441ab5c8afd74dd4887c06b787ef6f77b8d80b7555b111d471ae8cf242b43f0aaf0046423d5bc32a7453c9178fa1b6408fee9ba709fe
 
 pkgname = p11-kit
 	depends = coreutils
@@ -35,5 +33,3 @@ pkgname = libp11-kit
 	depends = libffi
 	depends = libtasn1
 	provides = libp11-kit.so
-
-pkgname = p11-kit-docs

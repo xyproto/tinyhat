@@ -6,7 +6,8 @@ set url https://gitlab.com/procps-ng/procps
 set license GPL LGPL
 set arch i686 x32
 set depends glibc ncurses libncursesw.so systemd-libs
-set makedepends gettext git po4a systemd
+# No translated man pages (po4a); configure skips them without po4a
+set makedepends gettext git systemd
 set checkdepends dejagnu
 set conflicts procps sysvinit-tools
 set provides procps sysvinit-tools libproc2.so

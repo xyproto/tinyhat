@@ -19,11 +19,9 @@ pkgbase = pcre
 	provides = libpcreposix.so
 	provides = libpcrecpp.so
 	source = https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2
-	source = https://sourceforge.net/projects/pcre/files/pcre/8.45/pcre-8.45.tar.bz2.sig
 	source = 0001-pcre-JIT-compiler-update-for-Intel-CET.patch
 	source = 0002-pcre-Pass-mshstk-to-the-compiler-when-Intel-CET-is-enable.patch
 	sha256sums = 4dae6fdcd2bb0bb6c37b5f97c33c2be954da743985369cddac3546e3218bffb8
-	sha256sums = SKIP
 	sha256sums = 86e2fe1193f2dfaa5e3f3866c6be42a9cd0dddc5623f1658203a4dc73a4526f7
 	sha256sums = a44ffb942d585c2c95036f91529063738b1c373fcd26a3e2dc95ae76b1f3c3db
 

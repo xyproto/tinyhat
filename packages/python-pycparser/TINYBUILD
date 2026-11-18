@@ -1,0 +1,23 @@
+set pkgname python-pycparser
+set pkgver 3.12
+set pkgrel 1
+set pkgdesc 'C parser and AST generator written in Python'
+set arch any
+set url https://github.com/eliben/pycparser
+set license BSD-3-Clause
+set depends python
+set makedepends git python-build python-installer python-setuptools
+set source "git+https://github.com/eliben/pycparser.git#tag=release_v$pkgver"
+set sha512sums 3b348c09b770d7ac67ee539018545f1c52334370dba4c9a9739ac66cc5c0d0c72b7919cf82e61a5897ef00d83000b1ffff95425559e5886080f875b84a69aa1c
+set flags arch
+
+function build
+    cd pycparser; or return
+    python -m build --wheel --no-isolation; or return
+end
+
+function package
+    cd pycparser; or return
+    python -m installer --destdir="$pkgdir" dist/*.whl; or return
+    install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

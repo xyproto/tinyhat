@@ -10,7 +10,7 @@ set makedepends git meson xorgproto
 set optdepends 'libvdpau-va-gl: driver using VAAPI' 'nvidia-utils: driver for NVIDIA'
 set provides libvdpau.so
 set source "git+https://gitlab.freedesktop.org/vdpau/libvdpau.git#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums 2f1b8ee2bed5efdf79dd4f5469237ac5394fcdab3b2b8d689772563a4f751eab
 set flags arch
 
 function build

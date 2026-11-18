@@ -1,0 +1,19 @@
+pkgbase = python-ply
+	pkgdesc = Implementation of lex and yacc parsing tools
+	pkgver = 3.11
+	pkgrel = 17
+	url = https://www.dabeaz.com/ply/
+	arch = any
+	license = BSD-3-Clause
+	makedepends = git
+	makedepends = python-build
+	makedepends = python-installer
+	makedepends = python-setuptools
+	makedepends = python-wheel
+	depends = python
+	source = git+https://github.com/dabeaz/ply.git#tag=3.11
+	source = license-from-upstream
+	sha512sums = 9f96e8ee99908003633f198f155893652b508dbfb3f5d063eab087839a3a0d66ef8341037df5236a13a2161cb3800b8b16400505ef03e3cfe21b5d51b28ece1c
+	sha512sums = 5cea085a23ed260afc9084380c1d59e3942c2385089a8eb2391a89c85cde4df2ceb7eed21bb8c4d0cad5b78e59742da69e4c5c78fd0e223f5c99c56e9296a075
+
+pkgname = python-ply

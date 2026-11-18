@@ -6,10 +6,8 @@ set arch i686 x32
 set license GPL-3.0-or-later LGPL-2.1-or-later GFDL-1.3-or-later
 set url https://www.gnu.org/software/libtasn1/
 set depends glibc
-set source "https://ftp.gnu.org/gnu/libtasn1/$pkgname-$pkgver.tar.gz" \
-    "https://ftp.gnu.org/gnu/libtasn1/$pkgname-$pkgver.tar.gz.sig"
-set sha256sums 1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87 \
-    SKIP
+set source "https://ftp.gnu.org/gnu/libtasn1/$pkgname-$pkgver.tar.gz"
+set sha256sums 1d8a444a223cc5464240777346e125de51d8e6abf0b8bac742ac84609167dc87
 set flags arch
 
 function build

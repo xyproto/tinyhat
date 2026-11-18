@@ -1,15 +1,16 @@
 set pkgbase harfbuzz
-set pkgname harfbuzz harfbuzz-cairo harfbuzz-icu
+set pkgname harfbuzz harfbuzz-cairo
 set pkgver 15.1.0
 set pkgrel 1
 set pkgdesc 'OpenType text shaping engine'
 set arch i686 x32
 set url https://harfbuzz.github.io/
 set license MIT
-set makedepends cairo freetype2 git glib2 glib2-devel glibc gobject-introspection graphite icu libpng libstdc++ meson python ragel zlib glib2-introspection
+# No ragel: the generated *-machine.hh shaper sources are in git and meson only regenerates them when ragel is found
+set makedepends cairo freetype2 git glib2 glib2-devel glibc gobject-introspection graphite libpng libstdc++ meson python zlib glib2-introspection
 set checkdepends python-fonttools python-setuptools
 set source "git+https://github.com/harfbuzz/harfbuzz?signed#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums fd57c6261122824f3a7a1e4afc81ece9b9852c91f2c95af6c2d1cbffd192df53
 set flags arch
 
 function prepare
@@ -17,7 +18,8 @@ function prepare
 end
 
 function build
-    set -l meson_options -D cpp_std=c++17 -D graphite2=enabled
+    # No ICU (harfbuzz-icu): ICU is large, and Tiny Hat's image leaves it out
+    set -l meson_options -D cpp_std=c++17 -D graphite2=enabled -D icu=disabled
     set CFLAGS "$(string replace -- '-fexceptions' '' "$CFLAGS")"
     set CXXFLAGS "$(string replace -- '-fexceptions' '' "$CXXFLAGS")"
     arch-meson -D chafa=disabled -D gpu_demo=disabled -D docs=disabled -D utilities=disabled harfbuzz build $meson_options; or return
@@ -43,13 +45,10 @@ function package_harfbuzz
     meson install -C build --destdir "$pkgdir" --no-rebuild; or return
     begin
         set -l __subshell_pwd $PWD
-    cd "$pkgdir"; or return
+        cd "$pkgdir"; or return
         _pick hb-cairo usr/lib/libharfbuzz-cairo*; or return
         _pick hb-cairo usr/lib/pkgconfig/harfbuzz-cairo.pc; or return
         _pick hb-cairo usr/include/harfbuzz/hb-cairo.h; or return
-        _pick hb-icu usr/lib/libharfbuzz-icu*; or return
-        _pick hb-icu usr/lib/pkgconfig/harfbuzz-icu.pc; or return
-        _pick hb-icu usr/include/harfbuzz/hb-icu.h; or return
         cd $__subshell_pwd
     end
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
@@ -66,14 +65,6 @@ end
 function package_harfbuzz-docs
     set pkgdesc "$pkgdesc - Documentation"
     mv hb-docs/* "$pkgdir"; or return
-    install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
-end
-
-function package_harfbuzz-icu
-    set pkgdesc "$pkgdesc - ICU integration"
-    set depends glibc harfbuzz libharfbuzz.so icu libicuuc.so
-    set provides libharfbuzz-icu.so
-    mv hb-icu/* "$pkgdir"; or return
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 harfbuzz/COPYING; or return
 end
 

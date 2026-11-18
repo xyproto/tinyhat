@@ -1,0 +1,46 @@
+# The /init of Tiny Hat's initramfs (scripts/mkinitramfs.sh): finds the boot medium, mounts the root file system with
+# persistence, and starts systemd, or shows the guru meditation screen. A static Go program, so the initramfs needs no
+# shell and no busybox
+set pkgname tinyhat-mountroot
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Tiny Hat initramfs init: finds the boot medium and mounts the root file system'
+set arch i686 x86_64 aarch64
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set makedepends go-tinyhat
+set options '!buildflags'
+set source main.go go.mod sysnum_386.go sysnum_amd64.go sysnum_arm64.go LICENSE
+set sha256sums cd4bc00ccd443f402f19f6365452bd6899cd05051b7bfed18d28b1cb8541dbf7 \
+    9470c9fc7e5c294bfd9e4d435d45d1a6a77ef0ba628168645164c5b3b573296a \
+    78188cb91b852b5a40f7917dc6ced432b7a3e261c3da03dd969c62ddbeb90ff4 \
+    2dc7251e7ca44591827ad61732767632ea035005af0aed33a7c3aa090bad2009 \
+    61afad17022ee9f07017ca117b8c140999bd37764c8dfc55a6db83181e46d060 \
+    063c654ab0d082a864581ae04b21076418c97dcdad978502f3f3f10c3fbc7d58
+
+function build
+    set -lx GOROOT /usr/lib/go-tinyhat
+    # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
+    test -d $GOROOT; or set GOROOT /usr/lib/go
+    set -lx GOPATH "$srcdir/gopath"
+    set -lx GOCACHE "$srcdir/gocache"
+    set -lx GOTOOLCHAIN local
+    set -lx CGO_ENABLED 0
+    set -lx GOARCH 386
+    set -lx GO386 softfloat
+    switch $CARCH
+        case aarch64
+            set GOROOT /usr/lib/go
+            set GOARCH arm64
+        case x86_64
+            set GOROOT /usr/lib/go
+            set GOARCH amd64
+    end
+    set -lx PATH $GOROOT/bin $PATH
+    go build -trimpath -buildvcs=false -ldflags '-s -w' -o tinyhat-mountroot .; or return
+end
+
+function package
+    install -Dm755 tinyhat-mountroot "$pkgdir/usr/bin/tinyhat-mountroot"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

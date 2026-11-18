@@ -5,7 +5,6 @@ pkgbase = ca-certificates
 	url = https://src.fedoraproject.org/rpms/ca-certificates
 	arch = any
 	license = GPL-2.0-or-later
-	makedepends = asciidoc
 	makedepends = p11-kit
 	source = 40-update-ca-trust.hook
 	source = README.etc

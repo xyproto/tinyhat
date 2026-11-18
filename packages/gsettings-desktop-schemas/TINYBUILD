@@ -6,9 +6,10 @@ set pkgdesc 'GSettings schemas for GNOME'
 set arch any
 set url https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas
 set license LGPL-2.1-or-later
-set makedepends adwaita-fonts dconf git glib2-devel meson
+# No adwaita-fonts: the schemas only name the default fonts (fontconfig falls back), and the build does not use them
+set makedepends dconf git glib2-devel meson
 set source "git+https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums cc85ec0b94215eee8481ca3cfeefbe57ab776d96ebad85911c98c6d22ac577bd
 set flags arch
 
 function prepare
@@ -35,7 +36,7 @@ end
 
 function package_gsettings-desktop-schemas
     set pkgdesc "$pkgdesc desktop components"
-    set depends "gsettings-system-schemas=$pkgver" adwaita-fonts dconf
+    set depends "gsettings-system-schemas=$pkgver" dconf
     meson install -C build --no-rebuild --destdir "$pkgdir"; or return
     cd "$pkgdir"; or return
     _pick system usr/share/glib-2.0/schemas/org.gnome.desktop.enums.xml; or return

@@ -12,7 +12,7 @@ pkgbase = desktop-file-utils
 	depends = glibc
 	source = git+https://gitlab.freedesktop.org/xdg/desktop-file-utils.git#tag=0.28
 	source = update-desktop-database.hook
-	sha256sums = SKIP
+	sha256sums = 59597b9a2e50225757a28fccc10d1dbf11f5a99b9b42421c928bdfd64501c0c7
 	sha256sums = 501f1eb35d9fbbd61666f40302b0ce63425299edf023c075986a24dc3ef18575
 
 pkgname = desktop-file-utils

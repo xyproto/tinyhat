@@ -20,16 +20,13 @@ pkgbase = libsndfile
 	optdepends = alsa-lib: for sndfile-play
 	provides = libsndfile.so
 	source = https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz
-	source = https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz.asc
-	source = libsndfile-1.2.2-CVE-2022-33065.patch::https://github.com/libsndfile/libsndfile/commit/0754562e13d2e63a248a1c82f90b30bc0ffe307c.patch
+	source = libsndfile-1.2.2-CVE-2022-33065.patch::https://github.com/libsndfile/libsndfile/commit/0754562e13d2e63a248a1c82f90b30bc0ffe307c.patch?full_index=1
 	source = libsndfile-1.0.31-no-sse2.patch
 	sha512sums = a6e3ea3ac5d91befaa99f6a31a3fac44e7b7c11f1de4698167317a461d5a19a2651d47486a920b34400f18367b4f6173bf0c1c9ba80eb682cece1b5beee352a0
-	sha512sums = SKIP
-	sha512sums = a91112f067e8267ad6448517c6dc7234b1f8664612990e5ef6a074259bbe61e5b389bc334cd4a36ddf7a0bfa5943b9a1c450fe601713dd887cb6bc5172cd0a49
+	sha512sums = 1fe061cb5757efadc4e77d786522beb59f7925cd89ba8f01a62cf8d26d00493dc9cbee5ac7ed903869ec7742c59c7041afd4ca5817c9042194768b92d84c9637
 	sha512sums = 3088df360db3e8a86e9586597594db0a2c633504bb2453ff17e9bd062ce29a8773ec35426dfda9391eac72cccb2ca12dbab11915f9c4313283b858f756a85f0b
 	b2sums = bc8e49983d9ad9dfd98984e2ffef501c6f576480e556e9f9ef91c7d597524cc1bb8baed15dfef8e239f72c42136c524117029eb8271f3a2c9d607fee490279b5
-	b2sums = SKIP
-	b2sums = 21116ed199bf97b151fd3d6c6684d45a0f5f246afd5b1389b778198445045b93fc5fbe9ae7509e8fa4312f70b4751017f5f2f947101ed6874a6db15a8754c63e
+	b2sums = 54d9b63e95692cec02360341ff5ad2f97a0605253e3acca3fe692322437b79b060fa269be8bf4f9d901add0cb71feaa2cb55c68081d0697d0ecba3ad6861d0c9
 	b2sums = 6066f0a0856c9ce8fdc88ce3fd62c4207be371e5854b14d40c60aa0bf920a5c2f42e6b8abf863fe8dcacf539419c90514cf511844814638df3cffa12514ceb76
 
 pkgname = libsndfile

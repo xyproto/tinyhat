@@ -11,6 +11,6 @@ pkgbase = spirv-headers
 	makedepends = git
 	makedepends = ninja
 	source = git+https://github.com/KhronosGroup/SPIRV-Headers#tag=vulkan-sdk-1.4.363.0
-	sha256sums = SKIP
+	sha256sums = c44aa584944201e4bb4ea5a301cd735c41b7fedeb717e8625b97cd9d7315a4b8
 
 pkgname = spirv-headers

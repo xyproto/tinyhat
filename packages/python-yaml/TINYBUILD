@@ -6,8 +6,9 @@ set pkgdesc 'Python bindings for YAML, using fast libYAML library'
 set arch i686 x32
 set url https://github.com/yaml/pyyaml
 set license MIT
-set depends glibc libyaml python
-set makedepends cython python-build python-installer python-setuptools python-wheel
+# Pure Python, without the libYAML C extension (cython, libyaml): mesa only needs it while building
+set depends python
+set makedepends python-build python-installer python-setuptools python-wheel
 set checkdepends python-pytest
 set provides python-pyyaml
 set flags arch
@@ -17,7 +18,8 @@ set b2sums 4cf50de6e2228072db914399072693d2b493c0d1ff099645397c0747fe67a3ec64f63
 
 function build
     cd $_name-$pkgver; or return
-    python -m build --wheel --no-isolation --config-setting=--with-libyaml; or return
+    # pyproject.toml lists Cython for the C extension, which is not built
+    python -m build --wheel --no-isolation --skip-dependency-check --config-setting=--without-libyaml; or return
 end
 
 function check

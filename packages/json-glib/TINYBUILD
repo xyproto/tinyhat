@@ -1,5 +1,5 @@
 set pkgbase json-glib
-set pkgname json-glib json-glib-docs
+set pkgname json-glib
 set pkgver 1.10.8
 set pkgrel 1
 set pkgdesc 'JSON library built on GLib'
@@ -7,9 +7,10 @@ set arch i686 x32
 set url https://gnome.pages.gitlab.gnome.org/json-glib/
 set license LGPL-2.1-or-later
 set depends glib2 glibc
-set makedepends docbook-xsl gi-docgen git glib2-devel meson python-docutils
+# No API documentation (gi-docgen, docbook-xsl); man pages only need python-docutils
+set makedepends git glib2-devel meson python-docutils
 set source "git+https://gitlab.gnome.org/GNOME/json-glib.git?signed#tag=$pkgver"
-set sha256sums SKIP
+set sha256sums e966cce7e9d24af59d368e0332022e8ccd5db6bb5926f867a177d6b8fa881d0e
 set flags arch
 
 function prepare
@@ -17,7 +18,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D installed_tests=false -D man=true
+    set -l meson_options -D documentation=disabled -D installed_tests=false -D man=true
     arch-meson -D introspection=disabled json-glib build $meson_options; or return
     meson compile -C build; or return
 end
@@ -26,12 +27,4 @@ function package_json-glib
     set -a depends libg{lib,object,io}-2.0.so
     set -a provides libjson-glib-1.0.so
     meson install -C build --destdir "$pkgdir"; or return
-    mkdir -p doc/usr/share; or return
-    mv {"$pkgdir",doc}/usr/share/doc; or return
-end
-
-function package_json-glib-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    set depends
-    mv doc/* "$pkgdir"; or return
 end
