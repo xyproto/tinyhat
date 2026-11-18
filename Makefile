@@ -53,7 +53,6 @@ export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 REPO := $(B)/repo
-SOUNDFONT_GU := vendor/soundfont/GeneralUser-GS-2.0.3.sf3
 ETC_CONFIG := $(shell find config/etc)
 SOURCES := $(addprefix vendor/src/,$(shell python3 scripts/distro.py sources | awk '{ print $$1 }'))
 QEMU_MEM ?= 1024
@@ -185,19 +184,19 @@ qemu: $(QEMU_TARS)
 
 all: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
 
-# The package builds run in ninja: scripts/buildplan.py writes the plan as data (build/plan.json) and as the builds
+# The package builds run in ninja: scripts/build_planner.py writes the plan as data (build/plan.json) and as the builds
 # (build/pkgs.ninja), and make asks ninja for a build (build/pkg/KIND/BASE) or a group of them (build/pkg/group/NAME).
 # A build's cache key (scripts/buildpackage.sh) decides whether it builds; its stamp changes only when its packages
 # did, so what depends on it runs only then
-$(B)/pkgs.ninja $(B)/plan.json &: scripts/buildplan.py scripts/pkg.py scripts/distro.py scripts/srcinfo.py distro.toml distro.lock $(shell find packages -type f ! -name .SRCINFO)
+$(B)/pkgs.ninja $(B)/plan.json &: scripts/build_planner.py scripts/pkg.py scripts/distro.py scripts/srcinfo.py distro.toml distro.lock $(shell find packages -type f ! -name .SRCINFO)
 	@mkdir -p $(B)
 	python3 scripts/srcinfo.py
 	@# The x86_64 and aarch64 locks follow the TINYBUILDs and distro.toml (like the build tools of the cross builds),
 	@# from the package databases already downloaded: newer Arch Linux packages come only with make lock-x86_64 and
 	@# make lock-aarch64 with REFRESH=1
-	python3 scripts/buildplan.py lock-arch x86_64
-	python3 scripts/buildplan.py lock-arch aarch64
-	python3 scripts/buildplan.py mk
+	python3 scripts/build_planner.py lock-arch x86_64
+	python3 scripts/build_planner.py lock-arch aarch64
+	python3 scripts/build_planner.py mk
 
 # How many packages build at once (PKG_JOBS, a heavy build counting as one), and one heavy build at a time
 $(B)/pools.ninja: FORCE
@@ -228,7 +227,7 @@ $(IMG_RPI4): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)
 	scripts/mkimg-rpi.sh $@ $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)/Image-arm64
 	@ls -l $@
 
-$(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/.buildroot-x86_64 $(B)/pkg/i686/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
+$(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/.buildroot-x86_64 $(B)/pkg/i686/grub $(B)/pkg/aarch64/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
 	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/Image-arm64
 	@ls -l $@
 
@@ -255,17 +254,17 @@ $(SB_KEYS)/tinyhat.cer:
 lock:
 	@mkdir -p $(B)
 	python3 scripts/srcinfo.py
-	python3 scripts/buildplan.py libs
+	python3 scripts/build_planner.py libs
 
 # Lock the prebuilt Arch Linux ARM packages for the aarch64 and rpi4 images
 lock-aarch64:
 	python3 scripts/srcinfo.py
-	python3 scripts/buildplan.py lock-arch aarch64
+	python3 scripts/build_planner.py lock-arch aarch64
 
 # Lock the prebuilt Arch Linux packages for the x86_64 image
 lock-x86_64:
 	python3 scripts/srcinfo.py
-	python3 scripts/buildplan.py lock-arch x86_64
+	python3 scripts/build_planner.py lock-arch x86_64
 
 lock-check:
 	@mkdir -p $(B)
@@ -392,48 +391,49 @@ aarch64packages: $(B)/pkg/group/aarch64
 x86_64packages: $(B)/pkg/group/x86_64
 
 $(B)/rootfs.lock: $(B)/.rootfs.lock.stamp ;
-$(B)/.rootfs.lock.stamp: $(B)/pkg/group/rootfs-i686 $(B)/image.toml
+$(B)/.rootfs.lock.stamp: $(B)/pkg/group/rootfs-i686 $(B)/image.toml $(B)/pkg/i686/linux-tinyhat
 	python3 scripts/pkg.py local image $(B)/rootfs.lock $(REPO)
+	python3 scripts/pkg.py addpkg $(B)/rootfs.lock $(REPO) i686 linux-tinyhat
 	@touch $@
 
 $(B)/rootfs-x32.lock: $(B)/.rootfs-x32.lock.stamp ;
-$(B)/.rootfs-x32.lock.stamp: $(B)/pkg/group/rootfs-x32 $(B)/image.toml
+$(B)/.rootfs-x32.lock.stamp: $(B)/pkg/group/rootfs-x32 $(B)/image.toml $(B)/pkg/x86_64/linux-tinyhat
 	python3 scripts/pkg.py local image $(B)/rootfs-x32.lock $(REPO) x32
+	python3 scripts/pkg.py addpkg $(B)/rootfs-x32.lock $(REPO) x86_64 linux-tinyhat
 	@touch $@
 
 $(B)/rootfs-aarch64.lock: $(B)/.rootfs-aarch64.lock.stamp ;
 $(B)/.rootfs-aarch64.lock.stamp: $(B)/pkg/group/aarch64 distro.lock
 	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $(B)/rootfs-aarch64.lock uefi
+	python3 scripts/pkg.py addpkg $(B)/rootfs-aarch64.lock $(B)/repo-aarch64 aarch64 linux-tinyhat
 	@touch $@
 
 $(B)/rootfs-x86_64.lock: $(B)/.rootfs-x86_64.lock.stamp ;
 $(B)/.rootfs-x86_64.lock.stamp: $(B)/pkg/group/x86_64 distro.lock
 	python3 scripts/pkg.py archrepo x86_64 $(B)/repo-x86_64 $(B)/rootfs-x86_64.lock
+	python3 scripts/pkg.py addpkg $(B)/rootfs-x86_64.lock $(B)/repo-x86_64 x86_64 linux-tinyhat
 	@touch $@
 
 $(B)/rootfs-rpi4.lock: $(B)/.rootfs-rpi4.lock.stamp ;
 $(B)/.rootfs-rpi4.lock.stamp: $(B)/pkg/group/aarch64 distro.lock
 	python3 scripts/pkg.py archrepo aarch64 $(B)/repo-aarch64 $(B)/rootfs-rpi4.lock rpi4
+	python3 scripts/pkg.py addpkg $(B)/rootfs-rpi4.lock $(B)/repo-aarch64 aarch64 linux-tinyhat
 	@touch $@
 
 $(B)/vmlinuz: $(B)/pkg/i686/linux-tinyhat scripts/kernelpkg.sh
-	scripts/kernelpkg.sh i686 $@ $(B)/modules
+	scripts/kernelpkg.sh i686 $@
 
 $(B)/vmlinuz-x32: $(B)/pkg/x86_64/linux-tinyhat scripts/kernelpkg.sh
-	scripts/kernelpkg.sh x86_64 $@ $(B)/modules-x86_64
+	scripts/kernelpkg.sh x86_64 $@
 
 $(B)/Image-arm64: $(B)/pkg/aarch64/linux-tinyhat scripts/kernelpkg.sh
-	scripts/kernelpkg.sh aarch64 $@ $(B)/modules-arm64
+	scripts/kernelpkg.sh aarch64 $@
 
 $(B)/initramfs.img: $(B)/pkg/i686/tinyhat-mountroot $(B)/pkg/i686/tinyhat-splash $(B)/pkg/i686/tinyhat-guru $(B)/rootfs.lock scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@
 
 $(B)/initramfs-aarch64.img: $(B)/rootfs-aarch64.lock $(B)/pkg/aarch64/tinyhat-mountroot scripts/mkinitramfs.sh
 	scripts/mkinitramfs.sh $@ aarch64
-
-$(SOUNDFONT_GU): | vendor/src/GeneralUser-GS-2.0.3.sf2
-	@mkdir -p $(dir $@)
-	python3 scripts/sf2tosf3.py vendor/src/GeneralUser-GS-2.0.3.sf2 $@
 
 licenses: $(B)/.licenses-i686
 
@@ -459,47 +459,47 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64 aarch64
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(SOUNDFONT_GU) vendor/src/pixelitos-icon-theme-20260721.tar.gz scripts/mkpixelitos.py scripts/mkfennelbook.py vendor/src/BASS-Floppy-1.3.zip vendor/src/soltys-en-v1.0.zip vendor/src/beej-bgc.zip vendor/src/beej-bgclr.zip vendor/src/open-watcom-2026-10-01.tar.xz $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/mkwallpaper.py scripts/mkhatwallpaper.py scripts/mkhundetann.py img/tinyhat.svg scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
+ROOTFS_BASE_DEPS := $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/pkg.py scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
 ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(ETC_CONFIG) scripts/forbidcheck.py scripts/sonamecheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
 
-$(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock $(B)/vmlinuz
-	$(MKROOTFS) base $(B)/rootfs $(B)/modules $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
+$(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock
+	$(MKROOTFS) base $(B)/rootfs $(B)/root.sfs $(B)/rootfs.lock $(B)/licenses
 	touch $@
 
-$(B)/rootfs-x32.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x32.lock $(B)/vmlinuz-x32
-	$(MKROOTFS) base $(B)/rootfs64 $(B)/modules-x86_64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
+$(B)/rootfs-x32.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x32.lock
+	$(MKROOTFS) base $(B)/rootfs64 $(B)/root64.sfs $(B)/rootfs-x32.lock $(B)/licenses-x32
 	touch $@
 
-$(B)/rootfs-x86_64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x86_64.lock $(B)/vmlinuz-x32
-	$(MKROOTFS) base $(B)/rootfs-x86_64 $(B)/modules-x86_64 $(B)/root-x86_64.sfs $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
+$(B)/rootfs-x86_64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-x86_64.lock
+	$(MKROOTFS) base $(B)/rootfs-x86_64 $(B)/root-x86_64.sfs $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
 	touch $@
 
-$(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock $(B)/Image-arm64
-	$(MKROOTFS) base $(B)/rootfs-aarch64 $(B)/modules-arm64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+$(B)/rootfs-aarch64.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-aarch64.lock
+	$(MKROOTFS) base $(B)/rootfs-aarch64 $(B)/root-aarch64.sfs $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	touch $@
 
-$(B)/rootfs-rpi4.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-rpi4.lock $(B)/Image-arm64
-	$(MKROOTFS) base $(B)/rootfs-rpi4 $(B)/modules-arm64 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+$(B)/rootfs-rpi4.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs-rpi4.lock
+	$(MKROOTFS) base $(B)/rootfs-rpi4 $(B)/root-rpi4.sfs $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	touch $@
 
 $(B)/root.sfs: $(B)/rootfs.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-i686
-	$(MKROOTFS) finalize $(B)/rootfs $(B)/modules $@ $(B)/rootfs.lock $(B)/licenses
+	$(MKROOTFS) finalize $(B)/rootfs $@ $(B)/rootfs.lock $(B)/licenses
 	@ls -l $@
 
 $(B)/root64.sfs: $(B)/rootfs-x32.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x32
-	$(MKROOTFS) finalize $(B)/rootfs64 $(B)/modules-x86_64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
+	$(MKROOTFS) finalize $(B)/rootfs64 $@ $(B)/rootfs-x32.lock $(B)/licenses-x32
 	@ls -l $@
 
 $(B)/root-x86_64.sfs: $(B)/rootfs-x86_64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-x86_64
-	$(MKROOTFS) finalize $(B)/rootfs-x86_64 $(B)/modules-x86_64 $@ $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
+	$(MKROOTFS) finalize $(B)/rootfs-x86_64 $@ $(B)/rootfs-x86_64.lock $(B)/licenses-x86_64
 	@ls -l $@
 
 $(B)/root-aarch64.sfs: $(B)/rootfs-aarch64.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-aarch64
-	$(MKROOTFS) finalize $(B)/rootfs-aarch64 $(B)/modules-arm64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
+	$(MKROOTFS) finalize $(B)/rootfs-aarch64 $@ $(B)/rootfs-aarch64.lock $(B)/licenses-aarch64
 	@ls -l $@
 
 $(B)/root-rpi4.sfs: $(B)/rootfs-rpi4.base.stamp $(ROOTFS_FINAL_DEPS) $(B)/.licenses-rpi4
-	$(MKROOTFS) finalize $(B)/rootfs-rpi4 $(B)/modules-arm64 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
+	$(MKROOTFS) finalize $(B)/rootfs-rpi4 $@ $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4
 	@ls -l $@
 
 $(B)/test-usb.img: $(IMG_I686)
