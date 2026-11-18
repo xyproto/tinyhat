@@ -1,0 +1,104 @@
+#!/usr/bin/make -f
+SHELL := sh -e
+
+include /usr/share/dpkg/pkg-info.mk
+VERSION_SOURCE = $(shell echo "$(DEB_VERSION)" | sed -r 's,\+b([0-9]+)$$,,')
+
+GENCONTROL = debian/bin/gencontrol.py
+
+binary binary-arch binary-indep build build-arch build-indep clean: debian/control
+	dh $@
+
+override_dh_auto_install override_dh_auto_test:
+	:
+
+CLEAN_PATTERNS := debian/build debian/lib/python/__pycache__ debian/lib/python/debian_linux/__pycache__ $$(find debian -maxdepth 1 -type d -name 'firmware-*') debian/*.substvars
+
+override_dh_auto_clean:
+	rm -rf $(CLEAN_PATTERNS)
+
+override_dh_installdocs:
+	dh_installdocs -XTODO
+
+override_dh_install:
+	debian/bin/install-files
+# Deduplicate firmware files within each binary package
+	cd debian/build && \
+	for dir in ../firmware-*/usr/lib/firmware; do \
+		../../dedup-firmware.sh "$$dir"; \
+	done
+# Check for any broken symlinks.  This excludes the intentional
+# cross-package symlinks from firmware-qcom-soc to firmware-atheros,
+# which it recommends, and the brcmfmac 43455 symlinks whose target
+# (cypress/cyfmac43455-sdio.bin) is provided at install time by
+# update-alternatives (standard/minimal variants).
+	! find debian/firmware-*/usr/lib/firmware -xtype l \
+	| grep -Ev '^debian/firmware-qcom-soc/usr/lib/firmware/qcom/.*/w(lanmdsp|pss)\.mbn$$|^debian/firmware-brcm80211/usr/lib/firmware/brcm/brcmfmac43455-sdio.*\.bin$$'
+
+CONTROL_FILES = debian/build/version-info $(wildcard debian/templates/*.in)
+CONTROL_FILES += debian/config/defines.toml debian/modinfo.json
+
+# debian/bin/gencontrol.py uses debian/changelog as input, but the
+# output only depends on the source name and version.  To avoid
+# frequent changes to debian/control.md5sum, include only those fields
+# in the checksum.
+debian/build/version-info: debian/changelog
+	mkdir -p $(@D)
+	printf >$@ 'Source: %s\nVersion: %s\n' $(DEB_SOURCE) $(VERSION_SOURCE)
+
+debian/control: $(GENCONTROL) $(CONTROL_FILES)
+ifeq ($(wildcard debian/control.md5sum),)
+	$(MAKE) -f debian/rules debian/control-real
+else
+	md5sum --check debian/control.md5sum --status || \
+		$(MAKE) -f debian/rules debian/control-real
+endif
+
+debian/control-real: $(GENCONTROL) $(CONTROL_FILES)
+	$(GENCONTROL)
+	md5sum $^ > debian/control.md5sum
+	@echo
+	@echo This target is made to fail intentionally, to make sure
+	@echo that it is NEVER run during the automated build. Please
+	@echo ignore the following error, the debian/control file has
+	@echo been generated SUCCESSFULLY.
+	@echo
+	exit 1
+
+DIR_ORIG = ../orig/$(DEB_SOURCE)-$(DEB_VERSION_UPSTREAM)
+TAR_ORIG_NAME = $(DEB_SOURCE)_$(DEB_VERSION_UPSTREAM).orig.tar.xz
+TAR_ORIG = $(firstword $(wildcard ../$(TAR_ORIG_NAME)) $(wildcard ../orig/$(TAR_ORIG_NAME)))
+
+orig: $(DIR_ORIG)
+	rsync --delete --exclude /debian --exclude /.git --link-dest=$(DIR_ORIG)/ -a $(DIR_ORIG)/ .
+	QUILT_PATCHES='$(CURDIR)/debian/patches' QUILT_PC=.pc quilt push --quiltrc - -a -q --fuzz=0
+
+$(DIR_ORIG):
+ifeq ($(TAR_ORIG),)
+	$(error Cannot find orig tarball $(TAR_ORIG_NAME))
+else
+	mkdir -p ../orig
+	tar -C ../orig -xaf $(TAR_ORIG)
+endif
+
+clean-generated:
+	rm -rf $(CLEAN_PATTERNS)
+# We cannot use dh_clean here because it requires debian/control to exist
+	rm -rf debian/.debhelper debian/*.debhelper* debian/debhelper-build-stamp debian/files debian/generated.*
+	rm -f \
+		debian/control \
+		debian/control.md5sum \
+		debian/*.bug-presubj \
+		debian/*.install \
+		debian/*.metainfo.xml \
+		debian/*.postinst \
+		debian/*.postrm \
+		debian/*.preinst \
+		debian/*.prerm \
+		debian/*.templates
+
+maintainerclean: clean-generated
+	rm -rf $(filter-out debian .git, $(wildcard * .[^.]*))
+
+.PHONY: clean build-indep build-arch build binary-indep binary-arch binary \
+	clean-generated maintainerclean

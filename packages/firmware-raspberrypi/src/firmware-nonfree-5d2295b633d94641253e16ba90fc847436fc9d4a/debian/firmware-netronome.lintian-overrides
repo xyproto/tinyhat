@@ -1,0 +1,4 @@
+# These binaries do not run on the host, so these rules don't apply
+firmware-netronome: arch-independent-package-contains-binary-or-object *lib/firmware/*
+firmware-netronome: statically-linked-binary *lib/firmware/*
+firmware-netronome: unstripped-binary-or-object *lib/firmware/*

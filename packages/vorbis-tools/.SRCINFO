@@ -1,0 +1,14 @@
+pkgbase = vorbis-tools
+	pkgdesc = Extra tools for Ogg-Vorbis (oggenc, oggdec, ogginfo, vorbiscomment, vcut)
+	pkgver = 1.4.3
+	pkgrel = 1
+	url = https://www.xiph.org/vorbis/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	depends = flac
+	depends = libvorbis
+	source = https://downloads.xiph.org/releases/vorbis/vorbis-tools-1.4.3.tar.gz
+	sha256sums = a1fe3ddc6777bdcebf6b797e7edfe0437954b24756ffcc8c6b816b63e0460dde
+
+pkgname = vorbis-tools

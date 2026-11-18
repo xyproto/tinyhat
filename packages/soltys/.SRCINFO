@@ -1,0 +1,12 @@
+pkgbase = soltys
+	pkgdesc = Soltys, a comedy adventure game (English, freeware), for ScummVM
+	pkgver = 1.0
+	pkgrel = 1
+	url = https://www.scummvm.org/games/#games-soltys
+	arch = any
+	license = LicenseRef-soltys-Freeware
+	optdepends = scummvm: to play the game
+	source = https://downloads.scummvm.org/frs/extras/Soltys/soltys-en-v1.0.zip
+	sha256sums = 87b89e654b8a5b8ebe342cb4c5c6049ab9a43a5efb474d9c49bafb77dcce48f6
+
+pkgname = soltys

@@ -290,11 +290,11 @@ int main(void)
 		}
 		if (mode != 'f' && t >= 0) {
 			int target = mode == 'm' ? 82 : 68, lo = mode == 'm' ? 30 : 20, next = percent;
-			if (t >= target + 6)
+			if (t >= target + 7)
 				next -= 10;
-			else if (t >= target + 2)
+			else if (t >= target + 3)
 				next -= 4;
-			else if (t <= target - 6)
+			else if (t <= target - 3)
 				next += 2;
 			next = next < lo ? lo : next > 100 ? 100 : next;
 			if (next != percent) {

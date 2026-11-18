@@ -1,0 +1,12 @@
+pkgbase = beneath-a-steel-sky
+	pkgdesc = Beneath a Steel Sky, a science fiction adventure game (floppy version, freeware), for ScummVM
+	pkgver = 1.3
+	pkgrel = 1
+	url = https://www.scummvm.org/games/#games-sky
+	arch = any
+	license = LicenseRef-BASS-Freeware
+	optdepends = scummvm: to play the game
+	source = https://downloads.scummvm.org/frs/extras/Beneath%20a%20Steel%20Sky/BASS-Floppy-1.3.zip
+	sha256sums = d0bac1bd61747a67e885fa44b78c78887bf2b15d3dfa2790c483fad651078818
+
+pkgname = beneath-a-steel-sky

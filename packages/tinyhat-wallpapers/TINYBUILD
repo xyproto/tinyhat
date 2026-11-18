@@ -1,0 +1,20 @@
+set pkgname tinyhat-wallpapers
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Tiny Hat wallpapers: the hat logo, the wireframe hat and houndstooth'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set makedepends_build python
+set source wallpapers.py hat.py tinyhat.svg
+set sha256sums ec9cb877272c5dd1884b27e45d8430a929a2a98098b1f2f7d8eee343fc2e5cc4 \
+    df7670e65614b927b0c8d97687dd58e6a7ca0dc91744acf423daeacfe39c4928 \
+    beeb30ba54560bd72876efc72bf3f721e284884c3a9f1eba69f4f1036f73955a
+
+function build
+    python3 wallpapers.py tinyhat.svg backgrounds; or return
+end
+
+function package
+    install -Dm644 backgrounds/tinyhat.png backgrounds/wirehat.png backgrounds/hundetann.png -t $pkgdir/usr/share/backgrounds/tinyhat/; or return
+end

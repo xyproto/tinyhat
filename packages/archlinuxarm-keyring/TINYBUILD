@@ -1,0 +1,21 @@
+set pkgname archlinuxarm-keyring
+set pkgver 20240419
+set pkgrel 2
+set pkgdesc 'Arch Linux ARM PGP keyring'
+set arch any
+set url http://archlinuxarm.org
+set license GPL
+set install $pkgname.install
+set depends pacman
+set -g _commit 29432c01130efc4ad297dfe8f487d5b79cbaf8e9
+set -g _files archlinuxarm.gpg archlinuxarm-trusted archlinuxarm-revoked
+set source (for f in $_files; echo "$pkgname-$pkgver-$f::https://raw.githubusercontent.com/archlinuxarm/PKGBUILDs/$_commit/core/archlinuxarm-keyring/$f"; end)
+set sha256sums 6ce771e853f04a38a5b533cb33e61f877b9b06b58b6db051eb8a15d737a2332f \
+    f2a7250f2a2b77542f82f4219b2bae7895f27b3dcfdf350b497e2be306af776d \
+    e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+function package
+    for f in $_files
+        install -Dm644 $pkgname-$pkgver-$f "$pkgdir/usr/share/pacman/keyrings/$f"; or return
+    end
+end
