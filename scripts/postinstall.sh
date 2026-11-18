@@ -4,8 +4,10 @@ root=$(readlink -f "$1")
 lock=$2
 pkgdir=$3
 
+# HOSTENV: the x86_64 build environment, at /host (the i686 build environment runs its shell from there,
+# scripts/mkbuildroot.sh)
 inroot() {
-  bwrap --bind "$root" / --dev /dev --proc /proc --tmpfs /tmp --unshare-all --clearenv \
+  bwrap --bind "$root" / ${HOSTENV:+--ro-bind "$HOSTENV" /host} --dev /dev --proc /proc --tmpfs /tmp --unshare-all --clearenv \
     --setenv PATH /usr/bin --setenv LANG C.UTF-8 "$@"
 }
 
@@ -21,7 +23,7 @@ while read -r _ name ver file _; do
 done < "$lock"
 rm -rf "$root/var/lib/tinyhat-install"
 
-inroot /usr/bin/update-ca-trust
+[ ! -x "$root/usr/bin/update-ca-trust" ] || inroot /usr/bin/update-ca-trust
 [ ! -x "$root/usr/bin/gdk-pixbuf-query-loaders" ] || [ ! -d "$root/usr/lib/gdk-pixbuf-2.0/2.10.0" ] || inroot /usr/bin/gdk-pixbuf-query-loaders --update-cache
 [ ! -x "$root/usr/bin/glib-compile-schemas" ] || inroot /usr/bin/glib-compile-schemas /usr/share/glib-2.0/schemas
 [ ! -x "$root/usr/bin/gio-querymodules" ] || inroot /usr/bin/gio-querymodules /usr/lib/gio/modules

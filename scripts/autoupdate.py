@@ -142,13 +142,11 @@ def arch_versions():
 
 
 def unneeded():
-    """The package directories that no image needs (none until build/pkgs.mk exists), which are left as they are."""
-    path = os.path.join(TOP, "build", "pkgs.mk")
-    if not os.path.exists(path):
+    """The package directories that no image needs (none until build/plan.json exists), which are left as they are."""
+    p = distro.plan()
+    if p is None:
         return set()
-    with open(path) as f:
-        need = buildplan.needed_package_dirs(buildplan.load(), f.read())
-    return set(os.listdir(os.path.join(TOP, "packages"))) - need
+    return set(os.listdir(os.path.join(TOP, "packages"))) - set(p["needed"])
 
 
 def arch_updates(report, only):
@@ -252,7 +250,7 @@ def bump(base, new, pkgrel="1"):
     try:
         info = importpkg.bump_tinybuild(base, new, pkgrel)
     except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"makefish --updsums failed with status {e.returncode}")
+        raise RuntimeError(f"makep --updsums failed with status {e.returncode}")
     check_source_version(base, new, info)
 
 

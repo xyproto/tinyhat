@@ -17,7 +17,7 @@ rm -rf "$work"
 mkdir -p "$work/root/boot/grub" "$work/root/tinyhat" "$work/grub" "$work/grubarm" "$work/kbd"
 cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
-bsdtar -xf "$(host grub)" -C "$work/grub" usr/bin/grub-mkimage usr/bin/grub-mkfont
+bsdtar -xf "$(host grub)" -C "$work/grub" usr/bin/grub-mkimage
 mkdir -p "$work/grubarm/usr/lib/grub"
 cp -a "$top/build/buildroot-aarch64/usr/lib/grub/arm64-efi" "$work/grubarm/usr/lib/grub/"
 bsdtar -xf "$(host kbd)" -C "$work/kbd" usr/share/kbd/consolefonts/default8x16.psfu.gz
@@ -27,9 +27,10 @@ cp "$sfs" "$work/root/tinyhat/root.sfs"
 cp "$top/config/grub-early.cfg" "$work/early.cfg"
 theme=$work/root/boot/grub/themes/tinyhat
 python3 "$top/scripts/mkgrubtheme.py" "$theme" "$work/kbd/usr/share/kbd/consolefonts/default8x16.psfu.gz"
+# grub-mkfont from the x86_64 build environment, as in mkimg.sh
 for size in 16 32; do
-  "$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
-    /img/grub/usr/bin/grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
+  "$top/scripts/inbuildroot.sh" "$top/build/buildroot-x86_64" --bind "$work" /img \
+    /usr/bin/grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
   rm -f "$theme/vga-$size.bdf"
 done
 mkdir -p "$work/efi/EFI/BOOT" "$work/efi/tinyhat"

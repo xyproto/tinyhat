@@ -8,7 +8,7 @@ import tomllib
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DISTRO = os.path.join(TOP, "distro.toml")
 LOCK = os.path.join(TOP, "distro.lock")
-SECTIONS = ["image", "image-x32", "image-aarch64", "image-x86_64", "buildroot", "providers", "mirrors", "sources"]
+SECTIONS = ["image", "image-orbiton", "image-x32", "image-aarch64", "image-x86_64", "buildroot", "providers", "mirrors", "sources"]
 FACTS = ("version", "nvchecker")
 THEME = ("name", "hat_color", "hat_highlight_color")
 
@@ -43,6 +43,15 @@ def packages():
     imports, tabs = lock().get("imports", {}), tables()
     return {base: {"source": "arch", **imports.get(base, {}), **tabs.get(base, {})}
             for base in sorted(set(tabs) | set(imports))}
+
+
+def plan():
+    """build/plan.json, the build plan that scripts/buildplan.py mk writes, or None before the first make."""
+    path = os.path.join(TOP, "build", "plan.json")
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        return json.load(f)
 
 
 def section(name):
@@ -188,6 +197,9 @@ def main():
         print("\n".join(pins()))
     elif cmd == "unignored":
         print("\n".join(unignored()))
+    elif cmd == "packages":
+        # packages SECTION [KEY]: a list of a section, "packages" by default (like buildroot i686)
+        print(" ".join(section(args[0]).get(args[1] if len(args) > 1 else "packages", [])))
     elif cmd == "local":
         print(" ".join(section(args[0]).get("local", [])))
     elif cmd == "heavy":
@@ -197,7 +209,7 @@ def main():
     elif cmd == "caps":
         print("\n".join(caps(args[0])))
     else:
-        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE | local SECTION | theme-env BASE")
+        sys.exit("usage: distro.py view theme|image OUT | lockfile buildroot OUT | source BASE | mirrors | sources | pins | unignored | caps ROOT | heavy BASE | packages SECTION | local SECTION | theme-env BASE")
 
 
 if __name__ == "__main__":

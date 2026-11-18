@@ -28,7 +28,11 @@ x() {
   shift
   bsdtar -xf "$(pkgfile "$libs" "$p")" -C "$work" "$@"
 }
-for p in busybox tinyhat-splash tinyhat-guru; do
+# /init is tinyhat-mountroot (static); the splash and the guru meditation screen are in /bin
+bsdtar -xf "$(pkgfile "$repo" tinyhat-mountroot)" -C "$work" usr/bin/tinyhat-mountroot
+mv "$work/usr/bin/tinyhat-mountroot" "$work/init"
+chmod 755 "$work/init"
+for p in tinyhat-splash tinyhat-guru; do
   bsdtar -xf "$(pkgfile "$repo" "$p")" -C "$work" "usr/bin/$p"
   mv "$work/usr/bin/$p" "$work/bin/$p"
   chmod 755 "$work/bin/$p"
@@ -42,6 +46,5 @@ x liburcu 'usr/lib/liburcu.so.8*' 'usr/lib/liburcu-common.so.8*'
 x ncurses 'usr/lib/libncursesw.so.6*'
 x readline 'usr/lib/libreadline.so.8*'
 ln -s usr/lib "$work/lib"
-install -m755 "$top/config/initramfs/init" "$work/init"
 find "$work" -exec touch -h -d "@${SOURCE_DATE_EPOCH:-315532800}" {} +
 (cd "$work" && find . -mindepth 1 | LC_ALL=C sort | cpio --quiet --reproducible -o -H newc -R 0:0) | zstd -q -19 -T0 -f -o "$out"

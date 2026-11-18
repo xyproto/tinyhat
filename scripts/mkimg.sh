@@ -11,7 +11,7 @@ sfs=$4
 efi64=${5-}
 sbkeys=${6-}
 work=$top/build/img/$(basename "$out" .img)
-# The root that the i686 GRUB tools run in
+# The root that our i686 grub-mkimage (and sbsign) run in; other tools come from the x86_64 build environment
 br=${TINYHAT_BR:-$top/build/buildroot}
 esp_mib=16
 efi_modules="fat part_msdos xfs search search_label normal linux echo test sleep reboot halt configfile cpuid efi_gop font gfxterm gfxmenu png loadenv smbios regexp"
@@ -29,7 +29,7 @@ cp "$kernel" "$work/root/boot/vmlinuz"
 cp "$initrd" "$work/root/boot/initramfs.img"
 bsdtar -xf "$(pkg amd-ucode)" -C "$work/root" boot/amd-ucode.img
 bsdtar -xf "$(pkg intel-ucode)" -C "$work/root" boot/intel-ucode.img
-bsdtar -xf "$(pkg grub)" -C "$work/grub" usr/bin/grub-mkimage usr/bin/grub-mkfont usr/lib/grub/i386-pc usr/lib/grub/i386-efi
+bsdtar -xf "$(pkg grub)" -C "$work/grub" usr/bin/grub-mkimage usr/lib/grub/i386-pc usr/lib/grub/i386-efi
 bsdtar -xf "$(pkg kbd)" -C "$work/kbd" usr/share/kbd/consolefonts/default8x16.psfu.gz
 cp "$top/config/grub.cfg" "$work/root/boot/grub/grub.cfg"
 # TINYHAT_DEFAULT: the id of the menu entry to start by default, such as orbiton
@@ -46,9 +46,11 @@ cp "$sfs" "$work/root/tinyhat/root.sfs"
 cp "$top/config/grub-early.cfg" "$work/early.cfg"
 theme=$work/root/boot/grub/themes/tinyhat
 python3 "$top/scripts/mkgrubtheme.py" "$theme" "$work/kbd/usr/share/kbd/consolefonts/default8x16.psfu.gz"
+# The theme's fonts: grub-mkfont from the x86_64 build environment (our grub is built without freetype2, and the
+# font format does not depend on the GRUB version)
 for size in 16 32; do
-  "$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
-    /img/grub/usr/bin/grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
+  "$top/scripts/inbuildroot.sh" "$top/build/buildroot-x86_64" --bind "$work" /img \
+    /usr/bin/grub-mkfont -s "$size" -o "/img/root/boot/grub/themes/tinyhat/vga-$size.pf2" "/img/root/boot/grub/themes/tinyhat/vga-$size.bdf"
   rm -f "$theme/vga-$size.bdf"
 done
 
@@ -92,8 +94,14 @@ cp "$work/grub/usr/lib/grub/i386-pc/boot.img" "$work/boot.img"
 rm -rf "$work/grub" "$work/kbd"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
-"$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
-  /bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI; mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat; for f in /img/efi/*.cer; do [ ! -f "$f" ] || mcopy -i /img/esp.img "$f" ::/; done'
+# mkfs.fat from the x86_64 build environment, like grub-mkfont, and mcopy from our x86_64 mtools package (mtools is
+# built from source, so the build environment has no prebuilt copy)
+mtools=$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import pkg; print(pkg.arch_files(sys.argv[2], "x86_64")["mtools"])' "$top/scripts" "$top/build/repo")
+mkdir -p "$work/mtools"
+bsdtar -xf "$mtools" -C "$work/mtools" usr/bin
+"$top/scripts/inbuildroot.sh" "$top/build/buildroot-x86_64" --bind "$work" /img \
+  /bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; m=/img/mtools/usr/bin/mcopy; $m -s -i /img/esp.img /img/efi/EFI ::/EFI; $m -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat; for f in /img/efi/*.cer; do [ ! -f "$f" ] || $m -i /img/esp.img "$f" ::/; done'
+rm -rf "$work/mtools"
 
 rm -f "$out.tmp"
 "$top/scripts/mkdisk.sh" "$out.tmp" "$work/root" "$work/esp.img" ef "$esp_mib"

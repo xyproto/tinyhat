@@ -11,10 +11,12 @@ out=${1:-build/tinyhat32.img}
 root=build/rootfs-orbiton
 sfs=build/root-orbiton.sfs
 initrd=build/initramfs-orbiton.img
-# What orbiton-init and the persist script use, and their runtime dependencies come along
-pkgs="filesystem glibc bash coreutils util-linux systemd kmod kbd orbiton tinyhat-system grep gawk sed xfsprogs findutils"
+# [image-orbiton] packages in distro.toml ("make cross" builds them), and what they need at run time
+pkgs=$(python3 scripts/distro.py packages image-orbiton)
 
-files=$(python3 scripts/buildplan.py pkgfiles build/repo i686 $pkgs)
+files=$(python3 scripts/buildplan.py pkgfiles --image build/repo i686 $pkgs)
+# filesystem first: it has the links (like usr/sbin -> bin) that the other packages' paths go through
+files="$(printf '%s\n' $files | grep '/filesystem-[^/]*$') $(printf '%s\n' $files | grep -v '/filesystem-[^/]*$')"
 rm -rf "$root"
 mkdir -p "$root"
 for f in $files; do
@@ -25,10 +27,21 @@ echo "mkimg-orbiton.sh: $(echo "$files" | wc -l) packages"
 
 # Machine configuration, and the tinyhat user that Orbiton runs as
 cp -a config/etc/. "$root/etc/"
-grep -q '^tinyhat:' "$root/etc/passwd" || echo 'tinyhat:x:1000:1000:Tiny Hat:/home/tinyhat:/usr/bin/bash' >> "$root/etc/passwd"
+# Modes from the checkout depend on the umask of whoever cloned it (cp -a copies config/etc's own mode to /etc too)
+(cd config/etc && find .) | while IFS= read -r p; do
+  if [ -d "config/etc/$p" ]; then
+    chmod 755 "$root/etc/$p"
+  else
+    chmod 644 "$root/etc/$p"
+  fi
+done
+grep -q '^tinyhat:' "$root/etc/passwd" || echo 'tinyhat:x:1000:1000:Tiny Hat:/home/tinyhat:/usr/bin/osh' >> "$root/etc/passwd"
 grep -q '^tinyhat:' "$root/etc/group" || echo 'tinyhat:x:1000:' >> "$root/etc/group"
 grep -q '^tinyhat:' "$root/etc/shadow" || echo 'tinyhat::20000::::::' >> "$root/etc/shadow"
 mkdir -p "$root/home/tinyhat"
+# An empty machine-id, like the full image (scripts/mkrootfs.sh): systemd makes one at boot, and does not see the boot
+# as a first boot, so systemd-firstboot does not stop it to ask for a timezone and a root password
+: > "$root/etc/machine-id"
 chown 1000:1000 "$root/home/tinyhat"
 chmod 700 "$root/home/tinyhat"
 
@@ -37,7 +50,7 @@ cp -a build/modules/. "$root/"
 python3 scripts/fwprune.py "$root"
 
 rm -f "$sfs"
-mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 1M -noappend -quiet -mkfs-time "$SOURCE_DATE_EPOCH" -all-time "$SOURCE_DATE_EPOCH"
+mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 1M -noappend -quiet
 ls -l "$sfs"
 
 TINYHAT_OWN=1 scripts/mkinitramfs.sh "$initrd"

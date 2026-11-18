@@ -21,8 +21,8 @@ os.umask(0o022)
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 GITLAB = os.environ.get("ARCH_GITLAB", "https://gitlab.archlinux.org/archlinux/packaging/packages")
 API = f"{re.match(r'https?://[^/]+', GITLAB).group(0)}/api/v4"
-MAKEFISH = os.path.join(TOP, "packages", "makefish", "root", "usr", "bin", "makefish")
-MAKEFISH_CONF = os.path.join(TOP, "packages", "makefish", "root", "etc", "makefish.conf")
+MAKEP = os.path.join(TOP, "packages", "makep", "root", "usr", "bin", "makep")
+MAKEP_CONF = os.path.join(TOP, "packages", "makep", "root", "etc", "makep.conf")
 PKGCONF = distro.DISTRO
 DROP = {".SRCINFO", "REUSE.toml", ".gitignore", ".gitlab-ci.yml", "LICENSES", "keys"}
 NV_CHECKER = ".nvchecker.toml"
@@ -180,8 +180,8 @@ def write_tree(dest, files):
 
 def srcinfo(dest):
     """Write DEST/.SRCINFO from DEST/TINYBUILD, and return it."""
-    out = subprocess.run(["fish", MAKEFISH, "-C", dest, "--srcinfo"], check=True, capture_output=True, text=True,
-                         env=dict(os.environ, LC_ALL="C", MAKEFISH_CONF=MAKEFISH_CONF)).stdout
+    out = subprocess.run(["fish", MAKEP, "-C", dest, "--srcinfo"], check=True, capture_output=True, text=True,
+                         env=dict(os.environ, LC_ALL="C", MAKEP_CONF=MAKEP_CONF)).stdout
     with open(os.path.join(dest, ".SRCINFO"), "w") as f:
         f.write(out)
     return out
@@ -228,8 +228,8 @@ def bump_tinybuild(base, pkgver, pkgrel="1"):
     with open(path, "w") as f:
         f.write(text)
     with tempfile.TemporaryDirectory() as tmp:
-        subprocess.run(["fish", MAKEFISH, "-C", d, "-s", tmp, "--updsums"], check=True,
-                       env=dict(os.environ, MAKEFISH_CONF=MAKEFISH_CONF))
+        subprocess.run(["fish", MAKEP, "-C", d, "-s", tmp, "--updsums"], check=True,
+                       env=dict(os.environ, MAKEP_CONF=MAKEP_CONF))
     return srcinfo(d)
 
 

@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+import glob
 import os
 import re
 import shutil
 import subprocess
 import sys
 import time
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import distro  # noqa: E402
 
 TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 B = os.path.join(TOP, "build")
@@ -16,46 +20,54 @@ NOISE = re.compile(r"(checking |Werror|-error|error\.[cho]\b|errors\.|strerror|f
 
 
 def graph(target):
-    rules, prebuilt, roots = {}, set(), []
-    path = os.path.join(B, "pkgs.mk")
-    if not os.path.exists(path):
-        sys.exit("buildstatus.py: build/pkgs.mk is missing, run make first")
-    with open(path) as f:
-        lines = f.read().splitlines()
-    var = "ROOTFS_X32_STAMPS" if "64x32" in target else "ROOTFS_I686_STAMPS"
-    for i, line in enumerate(lines):
-        m = re.match(r"^\$\(B\)/pkg/(\w+)/([^:]+):(.*)", line)
-        if m:
-            key = f"{m.group(1)}/{m.group(2)}"
-            rules[key] = [d for d in re.findall(r"\$\(B\)/pkg/(\w+/[^ ]+)", m.group(3)) if not d.startswith("mode/")]
-            if i + 2 < len(lines) and "pkg.py prebuilt" in lines[i + 2]:
-                prebuilt.add(key)
-        elif line.startswith(var + " :="):
-            roots = re.findall(r"pkg/(\w+/[^ ]+)", line)
-    with open(os.path.join(TOP, "Makefile")) as f:
-        mk = f.read()
-    boot = re.search(r"BOOT_PKGS := (.*)", mk)
-    if boot:
-        roots += ["i686/" + n for n in re.findall(r"\$\(B\)/pkg/i686/([^ \n]+)", boot.group(1))]
-    needed, stack = set(), list(roots)
+    """The builds that TARGET (an image, or cross) needs, the ones of them taken prebuilt, and the ones that ninja would
+    run (that may build, if their cache key changed), from build/plan.json."""
+    plan = distro.plan()
+    if plan is None:
+        sys.exit("buildstatus.py: build/plan.json is missing, run make first")
+    builds = plan["builds"]
+    group = "cross" if target == "cross" else "rootfs-x32" if "64x32" in target else "rootfs-i686"
+    roots = list(plan["groups"].get(group, []))
+    if target != "cross":
+        with open(os.path.join(TOP, "Makefile")) as f:
+            boot = re.search(r"BOOT_PKGS := (.*)", f.read())
+        if boot:
+            roots += ["i686/" + n for n in re.findall(r"\$\(B\)/pkg/i686/([^ \n]+)", boot.group(1))]
+    needed, stack = set(), [r for r in roots if r in builds]
     while stack:
         key = stack.pop()
         if key not in needed:
             needed.add(key)
-            stack += rules.get(key, [])
-    return needed, prebuilt
+            stack += builds[key]["deps"]
+    prebuilt = {k for k in needed if builds[k]["mode"] == "prebuilt"}
+    by_name = {b["name"]: k for k, b in builds.items()}
+    # ninja's targets are relative to the top directory
+    dry = subprocess.run(["ninja", "-f", "build/pkgs.ninja", "-n", f"build/pkg/group/{group}"],
+                         cwd=TOP, capture_output=True, text=True).stdout
+    stale = {by_name[m] for m in re.findall(r"^\[\d+/\d+\] (\S+)", dry, re.M) if m in by_name}
+    return needed, prebuilt, stale & needed
 
 
 def running():
+    """(seconds, build name) of the package builds that run now; the name is that of build/log/NAME.log."""
     out = subprocess.run(["ps", "-eo", "etimes=,args="], capture_output=True, text=True).stdout
     jobs = []
     for line in out.splitlines():
         parts = line.split()
-        if len(parts) >= 4 and parts[1] == "/bin/sh" and parts[2] == "scripts/buildpackage.sh":
-            args = [a for a in parts[3:] if not a.startswith("--") and a not in ("x32",)]
-            arch = "boot" if "--bootstrap" in parts else "x32" if "--arch" in parts and "x32" in parts else "i686"
-            jobs.append((int(parts[0]), arch, os.path.basename(args[0]) if args else "?"))
+        if len(parts) >= 5 and parts[1] == "/bin/sh" and parts[2] == "scripts/buildpackage.sh" and parts[3] == "--name":
+            jobs.append((int(parts[0]), parts[4]))
     return sorted(jobs, reverse=True)
+
+
+def states():
+    """build/state/NAME of every package build (scripts/buildpackage.sh --name): NAME -> {state, start, end, log, reason}."""
+    d = os.path.join(B, "state")
+    out = {}
+    for name in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        if not name.endswith(".tmp"):
+            with open(os.path.join(d, name), errors="replace") as f:
+                out[name] = dict(line.rstrip("\n").partition("=")[::2] for line in f if "=" in line)
+    return out
 
 
 def progress(log):
@@ -88,10 +100,9 @@ def minutes(s):
 
 def main():
     target = sys.argv[1] if len(sys.argv) > 1 else "build/tinyhat32.img"
-    needed, prebuilt = graph(target)
-    done = {k for k in needed if os.path.exists(os.path.join(B, "pkg", k))}
-    todo = needed - done
-    print(f"{target}: {len(done)}/{len(needed)} packages done "
+    needed, prebuilt, todo = graph(target)
+    done = needed - todo
+    print(f"{target}: {len(done)}/{len(needed)} package builds up to date "
           f"({len(needed & prebuilt)} prebuilt, {len(needed - prebuilt)} built here), {len(todo)} left")
     img = os.path.join(TOP, target)
     if os.path.exists(img):
@@ -100,26 +111,28 @@ def main():
     jobs = running()
     if jobs:
         print("running:")
-        for secs, arch, base in jobs:
-            p = progress(os.path.join(B, "log", f"{arch}-{base}.log"))
-            print(f"  {minutes(secs):>8}  {arch}/{base}  {p}")
-    full = os.path.join(B, "full.log")
-    if os.path.exists(full):
-        with open(full, errors="replace") as f:
+        for secs, name in jobs:
+            print(f"  {minutes(secs):>8}  {name}  {progress(os.path.join(B, 'log', name + '.log'))}")
+    # A failure stays listed until the same build succeeds (the build of needed key KIND/BASE is named KIND-BASE)
+    names = {k.replace("/", "-", 1) for k in needed}
+    failed = {n: st for n, st in states().items() if st.get("state") == "failed" and n in names}
+    if failed:
+        print(f"failed ({len(failed)}):")
+        for name, st in failed.items():
+            when = time.strftime("%F %H:%M", time.localtime(float(st.get("end", 0))))
+            print(f"  {name} ({when}): {first_error(os.path.join(TOP, st.get('log', '')))}")
+    # The newest make run log (scripts/failfast.py)
+    runs = glob.glob(os.path.join(B, "log", "make-*.log"))
+    if runs:
+        with open(max(runs, key=os.path.getmtime), errors="replace") as f:
             text = f.read()
-        failed = sorted(set(re.findall(r"build/pkgs.mk:\d+: build/pkg/(\w+/[^\]]+)\] Error", text)))
-        if failed:
-            print(f"failed in the last pass ({len(failed)}):")
-            for key in failed:
-                arch, base = key.split("/", 1)
-                print(f"  {key}: {first_error(os.path.join(B, 'log', f'{arch}-{base}.log'))}")
         missing = sorted(set(re.findall(r"^missing .*$", text, re.M)))
         if missing:
             print("missing libraries in the root filesystem:")
             for line in missing[:20]:
                 print(f"  {line}")
         if todo and not jobs and not failed:
-            print("not built yet: " + " ".join(sorted(k.split("/", 1)[1] for k in todo))[:400])
+            print("for ninja to run (each builds if its cache key changed): " + " ".join(sorted(k.split("/", 1)[1] for k in todo))[:400])
     free = shutil.disk_usage(TOP).free // 1073741824
     print(f"disk: {free} GiB free" + ("  (low!)" if free < 10 else ""))
 
