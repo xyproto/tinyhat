@@ -1,6 +1,8 @@
 package main
 
 import (
+	"cmp"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -38,18 +40,26 @@ type imageRow struct {
 type snapshot struct {
 	Start            float64
 	Failed           bool
-	Done, Total, Run [4]int
-	Todo             [4][]string
-	X32Image         [2]int
-	Kernels          [3]kernelRow
-	Jobs             []job
-	CPU, Mem, Load   []float64
-	Info             string
-	Images           []imageRow
-	Steps            []string
-	Logs             []string
-	LogName          string
-	Progress         float64
+	Done, Total, Run [5]int
+	Todo             [5][]string
+	// Active: the rows that the running build works on (what the running ninja was asked for)
+	Active [5]bool
+	// Goals: what the running ninja was asked for, like build/pkg/group/cross
+	Goals []string
+	// Failures: package builds that failed in this run; Recent: the last ones built in this run, newest first
+	Failures, Recent []string
+	// Pace: how many builds this run has done, and about how long the rest of what it builds takes at that pace
+	Pace           string
+	X32Image       [2]int
+	Kernels        [3]kernelRow
+	Jobs           []job
+	CPU, Mem, Load []float64
+	Info           string
+	Images         []imageRow
+	Steps          []string
+	Logs           []string
+	LogName        string
+	Progress       float64
 }
 
 type sampler struct {
@@ -57,8 +67,8 @@ type sampler struct {
 	cpu, mem, load      []float64
 	kmax, klast         [3]int
 	kstart              [3]float64
-	src                 map[string]float64
-	srcAt               time.Time
+	stale               map[string]bool
+	staleAt             time.Time
 	ccache              string
 	ccacheAt            time.Time
 	btime               float64
@@ -158,8 +168,6 @@ func stepFor(a []string) string {
 		script = base
 	}
 	switch {
-	case script == "mkkernel.sh":
-		return "compiling the " + arg(2) + " kernel"
 	case script == "mkrootfs.sh":
 		return "assembling " + rel(arg(2)) + " (" + arg(1) + " stage)"
 	case script == "mkinitramfs.sh":
@@ -212,18 +220,19 @@ func (s *sampler) procStart(pid string) float64 {
 	return s.btime + ticks/100
 }
 
-func newest(dir string) float64 {
-	t := 0.0
-	entries, _ := os.ReadDir(dir)
-	for _, e := range entries {
-		if strings.HasPrefix(e.Name(), ".") {
-			continue
-		}
-		if info, err := e.Info(); err == nil {
-			t = math.Max(t, float64(info.ModTime().UnixNano())/1e9)
-		}
+func kernelBuild(a []string) (int, bool) {
+	if len(a) < 3 || !strings.HasSuffix(a[1], "scripts/buildpackage.sh") || !slices.Contains(a, "packages/linux-tinyhat") {
+		return 0, false
 	}
-	return t
+	switch {
+	case slices.Contains(a, "--cross"):
+		return 0, true
+	case slices.Contains(a, "x86_64"):
+		return 1, true
+	case slices.Contains(a, "aarch64"):
+		return 2, true
+	}
+	return 0, false
 }
 
 func countObjects(dir string) int {
@@ -237,12 +246,7 @@ func countObjects(dir string) int {
 	return n
 }
 
-var ruleRe = regexp.MustCompile(`(?m)^\$\(B\)/pkg/(\w+)/([^:\s]+):(.*)$`)
-var wildRe = regexp.MustCompile(`^(?:\$\(filter-out [^,]*,)?\$\(wildcard (packages/[^/]+)/\*\)\)?$`)
-var stampRe = regexp.MustCompile(`^\$\(B\)/pkg/(\w+)/(.+)$`)
-var tokenRe = regexp.MustCompile(`\$\(filter-out [^,]*,\$\(wildcard [^)]*\)\)|\$\(wildcard [^)]*\)|\S+`)
-var listRe = regexp.MustCompile(`(?m)^(ROOTFS_I686_STAMPS|ROOTFS_X32_STAMPS|X32_STAMPS|X86_64_STAMPS|AARCH64_STAMPS) :=((?:.*\\\n)*.*)$`)
-var listStampRe = regexp.MustCompile(`\$\(B\)/pkg/(\w+)/([^\s\\]+)`)
+var dryRe = regexp.MustCompile(`(?m)^\[\d+/\d+\] (\S+)`)
 
 func (s *sampler) sample() *snapshot {
 	snap := &snapshot{}
@@ -323,6 +327,9 @@ func (s *sampler) sample() *snapshot {
 				if x == "--arch" && i+1 < len(a) {
 					arch = a[i+1]
 				}
+				if x == "--cross" {
+					arch = "cross"
+				}
 				if strings.HasPrefix(x, "packages/") && pkg == "?" {
 					pkg = x[9:]
 				}
@@ -331,6 +338,13 @@ func (s *sampler) sample() *snapshot {
 			key := arch + "/" + pkg
 			if old, ok := jobs[key]; !ok || secs > old.Secs {
 				jobs[key] = job{arch, pkg, secs}
+			}
+		}
+		if filepath.Base(a[0]) == "ninja" && slices.Contains(a, "-f") && !slices.Contains(a, "-n") {
+			for _, x := range a[1:] {
+				if strings.HasPrefix(x, "build/pkg/") && !slices.Contains(snap.Goals, x) {
+					snap.Goals = append(snap.Goals, x)
+				}
 			}
 		}
 		if step := stepFor(a); step != "" {
@@ -351,8 +365,7 @@ func (s *sampler) sample() *snapshot {
 				}
 			}
 		}
-		if len(a) > 3 && strings.HasSuffix(a[1], "scripts/mkkernel.sh") {
-			i := map[string]int{"i386": 0, "x86_64": 1, "arm64": 2}[a[3]]
+		if i, ok := kernelBuild(a); ok {
 			running[i] = true
 			t := s.procStart(p.pid)
 			if s.kstart[i] == 0 {
@@ -407,109 +420,114 @@ func (s *sampler) sample() *snapshot {
 		}
 	}
 
-	mk := readFile(filepath.Join(bdir, "pkgs.mk"))
-	rules := map[string][]string{}
-	for _, m := range ruleRe.FindAllStringSubmatch(mk, -1) {
-		rules[m[1]+"/"+m[2]] = tokenRe.FindAllString(m[3], -1)
+	// The plan (build/plan.json, from scripts/buildplan.py) and what ninja would run for each group (ninja -n), which
+	// is what may still build: the cache key of each build decides
+	var plan struct {
+		Builds map[string]struct {
+			Kind, Name string
+			Deps       []string
+		}
+		Groups map[string][]string
+	}
+	json.Unmarshal([]byte(readFile(filepath.Join(bdir, "plan.json"))), &plan)
+	if time.Since(s.staleAt) > 30*time.Second {
+		s.staleAt = time.Now()
+		s.stale = map[string]bool{}
+		byName := map[string]string{}
+		for key, b := range plan.Builds {
+			byName[b.Name] = key
+		}
+		for _, g := range []string{"rootfs-i686", "rootfs-x32", "x86_64", "aarch64", "cross"} {
+			if _, ok := plan.Groups[g]; !ok {
+				continue
+			}
+			// ninja's targets are relative to the top directory
+			cmd := exec.Command("ninja", "-f", "build/pkgs.ninja", "-n", "build/pkg/group/"+g)
+			cmd.Dir = top
+			out, _ := cmd.Output()
+			for _, m := range dryRe.FindAllStringSubmatch(string(out), -1) {
+				if key, ok := byName[m[1]]; ok {
+					s.stale[key] = true
+				}
+			}
+		}
 	}
 	wanted := map[string]bool{}
 	var want func(key string)
 	want = func(key string) {
-		if wanted[key] {
-			return
-		}
-		if _, ok := rules[key]; !ok {
+		b, ok := plan.Builds[key]
+		if wanted[key] || !ok {
 			return
 		}
 		wanted[key] = true
-		for _, tok := range rules[key] {
-			if m := stampRe.FindStringSubmatch(tok); m != nil {
-				want(m[1] + "/" + m[2])
-			}
+		for _, d := range b.Deps {
+			want(d)
 		}
 	}
-	lists := map[string][]string{}
-	for _, m := range listRe.FindAllStringSubmatch(mk, -1) {
-		for _, st := range listStampRe.FindAllStringSubmatch(m[2], -1) {
-			want(st[1] + "/" + st[2])
-			lists[m[1]] = append(lists[m[1]], st[1]+"/"+st[2])
+	lists := plan.Groups
+	for _, g := range []string{"rootfs-i686", "rootfs-x32", "x32", "x86_64", "aarch64", "cross"} {
+		for _, key := range lists[g] {
+			want(key)
 		}
 	}
-	if time.Since(s.srcAt) > time.Minute {
-		s.src, s.srcAt = map[string]float64{}, time.Now()
+	// What the running ninja builds: the builds its goals need
+	goal := map[string]bool{}
+	var mark func(key string)
+	mark = func(key string) {
+		b, ok := plan.Builds[key]
+		if goal[key] || !ok {
+			return
+		}
+		goal[key] = true
+		for _, d := range b.Deps {
+			mark(d)
+		}
 	}
-	mt := map[string]float64{}
-	stat := func(path string) (float64, bool) {
-		if v, ok := mt[path]; ok {
-			return v, v >= 0
-		}
-		v, ok := mtime(path)
-		if !ok {
-			v = -1
-		}
-		mt[path] = v
-		return v, ok
-	}
-	memo := map[string]bool{}
-	var stale func(key string) bool
-	stale = func(key string) bool {
-		if v, ok := memo[key]; ok {
-			return v
-		}
-		memo[key] = true
-		t, ok := stat(filepath.Join(bdir, "pkg", key))
-		result := !ok
-		for _, tok := range rules[key] {
-			if result || tok == "|" {
-				break
+	for _, g := range snap.Goals {
+		key := strings.TrimPrefix(g, "build/pkg/")
+		if name, ok := strings.CutPrefix(key, "group/"); ok {
+			for _, k := range lists[name] {
+				mark(k)
 			}
-			if m := wildRe.FindStringSubmatch(tok); m != nil {
-				d := filepath.Join(top, m[1])
-				if _, ok := s.src[d]; !ok {
-					s.src[d] = newest(d)
-				}
-				result = s.src[d] > t
-				continue
-			}
-			if m := stampRe.FindStringSubmatch(tok); m != nil {
-				if _, ok := rules[m[1]+"/"+m[2]]; ok {
-					dt, _ := stat(filepath.Join(bdir, "pkg", m[1], m[2]))
-					result = stale(m[1]+"/"+m[2]) || dt > t
-					continue
-				}
-			}
-			path := filepath.Join(top, tok)
-			if strings.HasPrefix(tok, "$(B)") {
-				path = bdir + tok[4:]
-			}
-			dt, ok := stat(path)
-			result = !ok || dt > t
+		} else {
+			mark(key)
 		}
-		memo[key] = result
-		return result
 	}
 	done, total := 0, 0
+	goalDone, goalTotal := 0, 0
+	for key := range goal {
+		goalTotal++
+		if !s.stale[key] {
+			goalDone++
+		}
+	}
 	for key := range wanted {
-		arch := key[:strings.IndexByte(key, '/')]
-		if arch == "boot" {
+		arch := plan.Builds[key].Kind
+		switch arch {
+		case "boot":
 			arch = "x32"
+		case "cross-boot":
+			arch = "cross"
 		}
 		for i, a := range pkgArches {
 			if a != arch {
 				continue
 			}
 			snap.Total[i]++
-			if !stale(key) {
+			if goal[key] {
+				snap.Active[i] = true
+			}
+			if !s.stale[key] {
 				snap.Done[i]++
 			} else {
 				snap.Todo[i] = append(snap.Todo[i], key[strings.IndexByte(key, '/')+1:])
 			}
-			if t, ok := stat(filepath.Join(bdir, "pkg", key)); ok && start > 0 && t >= start {
+			if t, ok := mtime(filepath.Join(bdir, "pkg", key)); ok && start > 0 && t >= start {
 				snap.Run[i]++
 			}
 		}
 	}
-	for _, key := range lists["ROOTFS_X32_STAMPS"] {
+	for _, key := range lists["rootfs-x32"] {
 		if strings.HasPrefix(key, "x32/") || strings.HasPrefix(key, "boot/") {
 			snap.X32Image[0]++
 		} else {
@@ -521,7 +539,10 @@ func (s *sampler) sample() *snapshot {
 		total += snap.Total[i]
 		slices.Sort(snap.Todo[i])
 	}
-	if total > 0 {
+	left := goalTotal - goalDone
+	if goalTotal > 0 {
+		snap.Progress = float64(goalDone) / float64(goalTotal)
+	} else if total > 0 {
 		snap.Progress = float64(done) / float64(total)
 	}
 
@@ -557,13 +578,14 @@ func (s *sampler) sample() *snapshot {
 	snap.Info = s.ccache + "     " + disk
 
 	if len(logFiles) == 0 {
+		// The newest make run log (scripts/failfast.py)
 		newestLog := 0.0
-		if es, err := os.ReadDir(bdir); err == nil {
+		if es, err := os.ReadDir(filepath.Join(bdir, "log")); err == nil {
 			for _, e := range es {
-				if !strings.HasSuffix(e.Name(), ".log") {
+				if !strings.HasPrefix(e.Name(), "make-") || !strings.HasSuffix(e.Name(), ".log") {
 					continue
 				}
-				p := filepath.Join(bdir, e.Name())
+				p := filepath.Join(bdir, "log", e.Name())
 				if t, ok := mtime(p); ok && t > newestLog {
 					newestLog = t
 					logFiles = []string{p}
@@ -585,6 +607,54 @@ func (s *sampler) sample() *snapshot {
 	for _, l := range snap.Logs {
 		if strings.Contains(l, "failfast.py: stopping") || strings.Contains(l, "*** ") {
 			snap.Failed = true
+		}
+	}
+	// Package builds that failed in this run, and the ones built in it (build/state/NAME, written by
+	// scripts/buildpackage.sh --name)
+	type finished struct {
+		end  float64
+		line string
+	}
+	var built []finished
+	if es, err := os.ReadDir(filepath.Join(bdir, "state")); err == nil {
+		for _, e := range es {
+			if strings.HasSuffix(e.Name(), ".tmp") {
+				continue
+			}
+			st := map[string]string{}
+			for line := range strings.SplitSeq(readFile(filepath.Join(bdir, "state", e.Name())), "\n") {
+				if k, v, ok := strings.Cut(line, "="); ok {
+					st[k] = v
+				}
+			}
+			end, _ := strconv.ParseFloat(st["end"], 64)
+			began, _ := strconv.ParseFloat(st["start"], 64)
+			if start <= 0 || end < start {
+				continue
+			}
+			switch st["state"] {
+			case "failed":
+				snap.Failed = true
+				snap.Failures = append(snap.Failures, fmt.Sprintf("%s  %s  %s", time.Unix(int64(end), 0).Format("15:04"), e.Name(), st["reason"]))
+			case "built":
+				secs := int(end - began)
+				built = append(built, finished{end, fmt.Sprintf("%s  %-32s %3d min %02d s", time.Unix(int64(end), 0).Format("15:04"), e.Name(), secs/60, secs%60)})
+			}
+		}
+	}
+	slices.SortFunc(built, func(a, b finished) int { return cmp.Compare(b.end, a.end) })
+	for i, b := range built {
+		if i == 6 {
+			break
+		}
+		snap.Recent = append(snap.Recent, b.line)
+	}
+	if start > 0 && len(built) > 0 {
+		mins := (float64(time.Now().Unix()) - start) / 60
+		snap.Pace = fmt.Sprintf("%d built in %.0f min this run", len(built), mins)
+		if len(built) >= 3 && left > 0 {
+			eta := float64(left) * mins / float64(len(built))
+			snap.Pace += fmt.Sprintf(", %d left: about %.0f h %02.0f min at this pace", left, math.Floor(eta/60), math.Mod(eta, 60))
 		}
 	}
 	if time.Since(s.imgAt) > 30*time.Second && s.imgBusy.CompareAndSwap(false, true) {

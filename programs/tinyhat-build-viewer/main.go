@@ -18,12 +18,15 @@ type rgb struct {
 }
 
 var (
-	top, bdir   string
-	arches      = []string{"i686", "x86_64", "aarch64"}
-	pkgArches   = []string{"i686", "x32", "x86_64", "aarch64"}
-	pkgColors   = []rgb{{0.95, 0.55, 0.2}, {0.85, 0.45, 0.85}, {0.3, 0.7, 1}, {0.5, 0.85, 0.4}}
-	kernelDirs  = []string{"linux-7.3.1", "linux-7.3.1-x86_64", "linux-7.3.1-arm64"}
-	kernelOuts  = []string{"vmlinuz", "vmlinuz-x32", "Image-arm64"}
+	top, bdir string
+	arches    = []string{"i686", "x86_64", "aarch64"}
+	// The package build rows: the i686 cross builds (make cross, make orbiton) first, then the i686 builds in the i686
+	// build environment, and the other architectures
+	pkgArches   = []string{"cross", "i686", "x32", "x86_64", "aarch64"}
+	pkgNames    = []string{"i686 cross builds (make cross, make orbiton)", "i686 desktop (tinyhat32)", "x32", "x86_64", "aarch64"}
+	pkgColors   = []rgb{{0.95, 0.85, 0.35}, {0.95, 0.55, 0.2}, {0.85, 0.45, 0.85}, {0.3, 0.7, 1}, {0.5, 0.85, 0.4}}
+	kernelDirs  = []string{"chroot/cross-linux-tinyhat/pkg/linux-tinyhat/src", "chroot/x86_64-linux-tinyhat/pkg/linux-tinyhat/src", "chroot/aarch64-linux-tinyhat/pkg/linux-tinyhat/src"}
+	kernelOuts  = []string{"pkg/i686/linux-tinyhat", "pkg/x86_64/linux-tinyhat", "pkg/aarch64/linux-tinyhat"}
 	imageNames  = []string{"build/tinyhat32.img", "build/tinyhat64x32.img", "build/tinyhat64.img", "build/tinyhat-aarch64.img", "build/tinyhat-rpi4.img"}
 	rpi4Color   = rgb{0.85, 0.3, 0.4}
 	kernelColor = rgb{0.85, 0.45, 0.9}
@@ -106,7 +109,7 @@ func main() {
 	r.SetDrawBlendMode(sdl.BLENDMODE_BLEND)
 	v := &viewer{r: r, win: win, fontPath: fontPath, k: 1, fonts: map[int]*ttf.Font{}, cache: map[string]*text{},
 		news: &news{summaries: map[string]string{}, inline: map[string]string{}}, seen: map[string]bool{}}
-	s := &sampler{src: map[string]float64{}}
+	s := &sampler{stale: map[string]bool{}}
 	for i, a := range arches {
 		s.kmax[i], _ = strconv.Atoi(strings.TrimSpace(readFile(filepath.Join(bdir, ".tinyhat-build-viewer-kernel-"+a))))
 	}
