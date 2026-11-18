@@ -5,7 +5,7 @@
 - [ ] Use fish instead of bash wherever possible: Tiny Hat's own scripts first, a small POSIX `/bin/sh`, then `pacman-key` and `ldd`. (Packages are TINYBUILDs, built by makep, since 2026-11-15.)
 - [ ] Cross-build fuzzel, mpg123 and SDL3 for i686 against our own sysroot, and compare with today's builds.
 - [ ] Build everything in the images from source, then the sysroot libraries.
-- [ ] Reduce archlinux32 to a one-time bootstrap, then remove it and the `buildplan.py` heuristics it needs.
+- [ ] Reduce archlinux32 to a one-time bootstrap, then remove it and the `build_planner.py` heuristics it needs.
 - [ ] Set up a signed Tiny Hat pacman repo for cnc-ddraw, JBR, CGoban and tomlc17.
 - [ ] Release monkeyjump, tinyhat-bootsplash and tinyhat-play, then bump their TINYBUILDs.
 - [ ] Set the keyboard layout first in QEMU tests, and check the window title width, Space in NetSurfy and the menu installers.
