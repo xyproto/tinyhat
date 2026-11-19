@@ -1,0 +1,27 @@
+set pkgname gnu-efi
+set pkgver 4.0.4
+set pkgrel 1
+set pkgdesc 'Develop EFI applications using the GNU toolchain and the EFI development environment'
+set arch i686 x32 x86_64
+set url https://github.com/ncroxon/gnu-efi
+set license BSD-2-Clause BSD-2-Clause-Patent BSD-3-Clause 'BSD-2-Clause OR GPL-2.0-or-later' GPL-3.0-or-later LGPL-3.0-or-later
+set source "$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/$pkgver.tar.gz"
+set sha256sums 40b61e842a4efcbf80f3e53b2f220c044e8cfe46eb4dd6396c83b751240b1c0d
+set options '!lto' '!strip'
+set flags arch
+
+function prepare
+    sed -e 's/-Werror//g' -i $pkgname-$pkgver/Make.defaults; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    set -l ld (string join ' ' -- $LDFLAGS | string replace -a -- -Wl '' | string replace -a , ' ')
+    CFLAGS=-O2 LDFLAGS="$ld" make PREFIX=/usr; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make INSTALLROOT="$pkgdir" PREFIX=/usr install; or return
+    install -Dm644 licenses/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
+end

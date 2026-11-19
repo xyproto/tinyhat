@@ -1,7 +1,7 @@
 set pkgbase mesa
 set pkgname mesa vulkan-asahi vulkan-broadcom vulkan-freedreno vulkan-gfxstream vulkan-intel vulkan-panfrost vulkan-powervr vulkan-radeon vulkan-swrast vulkan-virtio vulkan-mesa-implicit-layers vulkan-mesa-layers
 set pkgver 26.2.5
-set pkgrel 1
+set pkgrel 3
 set epoch 1
 set pkgdesc 'Open-source OpenGL drivers'
 set arch i686 x32
@@ -10,7 +10,9 @@ set license 'MIT AND BSD-3-Clause AND SGI-B-2.0'
 # No valgrind (only memcheck annotations for debugging, -D valgrind=disabled)
 # No microsoft-experimental (Dozen, Vulkan on D3D12) driver: the vulkan-dzn split package and directx-headers are dropped
 set makedepends clang expat glibc libdisplay-info libdrm libelf libgcc libglvnd libpng libstdc++ libxml2 llvm llvm-libs lm_sensors spirv-llvm-translator spirv-tools systemd-libs vulkan-icd-loader wayland zlib zstd clang cmake elfutils glslang libclc meson python-mako python-packaging python-ply python-pycparser python-yaml wayland-protocols
-set options '!lto'
+set options '!lto' sstrip
+set makedepends_build elfkickers
+set -g sstrip_files usr/lib/libgallium-*.so
 set source "https://archive.mesa3d.org/mesa-$pkgver.tar.xz" \
     xml-1.2.1.tar.gz::https://static.crates.io/crates/xml/1.2.1/download \
     zerocopy-0.8.13.tar.gz::https://static.crates.io/crates/zerocopy/0.8.13/download \

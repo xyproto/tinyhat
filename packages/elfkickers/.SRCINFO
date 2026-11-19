@@ -1,0 +1,13 @@
+pkgbase = elfkickers
+	pkgdesc = Collection of ELF utilities (includes sstrip)
+	pkgver = 3.2
+	pkgrel = 6
+	url = https://www.muppetlabs.com/~breadbox/software/elfkickers.html
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	depends = glibc
+	source = git+https://github.com/BR903/ELFKickers#commit=e7fba942df51e756897224cff5aa853de8fafd90
+	b2sums = 153735c74d387f3a4ebc9a37ba8957c02319e4d9b38a81082cf19d6e6c685e19983b4a87bb63b2560302fde2eddd291af7be7d50868ee6bf17663b3e56206642
+
+pkgname = elfkickers

@@ -1,11 +1,11 @@
 set pkgname terminus-font
 set pkgver 4.49.1
-set pkgrel 8
+set pkgrel 9
 set pkgdesc 'Monospace bitmap font (for X11 and console)'
 set url http://terminus-font.sourceforge.net/
 set arch any
 set license GPL2 custom:OFL
-set makedepends xorg-bdftopcf python grub freetype2
+set makedepends xorg-bdftopcf python
 set conflicts terminus-font-otb
 set replaces terminus-font-otb
 set source "https://downloads.sourceforge.net/project/terminus-font/terminus-font-$(string replace -r '\.1$' '' -- $pkgver)/terminus-font-$pkgver.tar.gz" \
@@ -27,10 +27,6 @@ function build
         --otbdir=/usr/share/fonts/misc \
         --psfdir=/usr/share/kbd/consolefonts; or return
     make all otb; or return
-    # build grub fonts
-    for i in *.bdf
-        grub-mkfont -o (basename $i .bdf).pf2 $i; or return
-    end
 end
 
 function package
@@ -42,9 +38,5 @@ function package
     install -d "$pkgdir/usr/share/fontconfig/conf.default"; or return
     ln -sr "$pkgdir/usr/share/fontconfig/conf.avail/75-yes-terminus.conf" \
         "$pkgdir/usr/share/fontconfig/conf.default/75-yes-terminus.conf"; or return
-    cd terminus-font-$pkgver; or return
-    for i in *.pf2
-        install -D -m644 $i "$pkgdir/usr/share/grub/$i"; or return
-    end
-    install -Dm644 README "$pkgdir/usr/share/$pkgname/README"; or return
+    install -Dm644 terminus-font-$pkgver/README "$pkgdir/usr/share/$pkgname/README"; or return
 end

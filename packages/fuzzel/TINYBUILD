@@ -1,10 +1,12 @@
 set pkgname fuzzel
 set pkgver 1.15.0
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Application launcher for Wayland'
 set arch i686 x32
 set url https://codeberg.org/dnkl/fuzzel
 set license MIT
+set options sstrip
+set makedepends_build elfkickers
 set depends libcairo.so fcft libpng libutf8proc libxkbcommon pixman wayland
 set makedepends meson ninja scdoc tllist wayland-protocols
 set source "fuzzel-$pkgver.tar.gz::https://codeberg.org/dnkl/fuzzel/archive/$pkgver.tar.gz" \

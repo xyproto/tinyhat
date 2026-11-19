@@ -1,10 +1,12 @@
 set pkgname dwl
 set pkgver 0.9
-set pkgrel 13
+set pkgrel 14
 set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
 set arch i686 x32
 set url https://codeberg.org/dwl/dwl
 set license GPL-3.0-only MIT CC0-1.0
+set options sstrip
+set makedepends_build elfkickers
 # Built without XWayland (config.mk leaves XWAYLAND and XLIBS empty), so libxcb and xcb-util-wm are dropped
 set depends wlroots0.20 fcft libpng libinput libxkbcommon pixman wayland
 set makedepends wayland-protocols tllist tomlc17

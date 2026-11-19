@@ -20,6 +20,8 @@ set sha256sums b8352186f14559127a324333c3378f4208a2de9aea855746bf2fcd1f883efef1
 set flags arch
 set -g _name BLAKE3
 
+set -a options network
+
 function prepare
     contains b3sum $pkgname; or return 0
     cd $_name/b3sum; or return

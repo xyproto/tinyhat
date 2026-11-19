@@ -1,6 +1,6 @@
 set pkgname dconf
 set pkgver 51.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Configuration database system'
 set arch i686 x32
 set url https://gitlab.gnome.org/GNOME/dconf
@@ -11,15 +11,20 @@ set makedepends dbus git glib2-devel meson python systemd
 set provides libdconf.so
 set install dconf.install
 set source "git+https://gitlab.gnome.org/GNOME/dconf.git#tag=$pkgver" \
+    "git+https://gitlab.gnome.org/GNOME/gvdb.git#commit=4758f6fb7f889e074e13df3f914328f3eecb1fd3" \
     dconf-update.hook \
     dconf-update.script
 set sha256sums 51c04d74e6505500b2d80383b2245a72e910a373866a3ce30dd30cfb69ae1a67 \
+    ebe771e60943547279fbf29acb6aea6346fc20df6388252f71bf2bf679d3a7a8 \
     8d02176ff001a13d15a7ac087edd2502725494668933fa2c6e6f9cb21ae24e6b \
     330142605370f82f4229e8a94b245f911407eb629b50f1497f415c70164a90ec
 set flags arch
 
 function prepare
     cd dconf; or return
+    git submodule init; or return
+    git submodule set-url subprojects/gvdb "$srcdir/gvdb"; or return
+    git -c protocol.file.allow=always submodule update; or return
 end
 
 function build

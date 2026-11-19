@@ -23,6 +23,6 @@ pkgbase = voidsprite
 	source = voidsprite-tinyhat.patch
 	sha256sums = c3fe43b980e165337de2ffb6b4364a853095f79521330adb497fc43968a84e0d
 	sha256sums = d88be765af6b0a90e0bb1aba97c85938db406b19c11d5e0ac46e8eac678e625a
-	sha256sums = e621d9645fcd7032d312d6c76e28201ed57a047bbe2a791f9802e5f4c40b5813
+	sha256sums = be3185d46a4d851092b9082f6890b6ea02471d3658991b7fad678835dafe25d0
 
 pkgname = voidsprite

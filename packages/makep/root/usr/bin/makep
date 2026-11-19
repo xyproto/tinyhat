@@ -193,7 +193,23 @@ function print_field -a key
     end
 end
 
+function arch_makedepends -a a
+    env CARCH=$a fish -c 'source $argv[1]; and printf "%s\n" $makedepends $makedepends_build $makedepends_host' $tinybuild
+end
+
 function print_srcinfo
+    set -l arches i686 x32 x86_64 aarch64
+    set -l common $makedepends $makedepends_build $makedepends_host
+    for a in $arches
+        set -l out (arch_makedepends $a); or die "$tinybuild fails for CARCH=$a"
+        set -g makedepends_of_$a (string match -v -- '' $out)
+        set -l var makedepends_of_$a
+        set -l keep
+        for d in $common
+            contains -- $d $$var; and set -a keep $d
+        end
+        set common $keep
+    end
     printf 'pkgbase = %s\n' $pkgbase
     print_field pkgdesc $pkgdesc
     print_field pkgver $pkgver
@@ -205,7 +221,13 @@ function print_srcinfo
     print_field groups $groups
     print_field license $license
     print_field checkdepends $checkdepends
-    print_field makedepends $makedepends $makedepends_build $makedepends_host
+    print_field makedepends $common
+    for a in $arches
+        set -l var makedepends_of_$a
+        for d in $$var
+            contains -- $d $common; or print_field makedepends_$a $d
+        end
+    end
     print_field makedepends_build $makedepends_build
     print_field makedepends_host $makedepends_host
     # Dependencies that the build can do without (it checks for them), so that in a dependency cycle it is built
@@ -564,6 +586,35 @@ function strip_binaries
     end
 end
 
+function drop_prefix_map
+    set -l flag -ffile-prefix-map=$srcdir=/usr/src/debug/$pkgbase
+    for f in (grep -rlIF -- $flag $pkgdir 2>/dev/null)
+        test -L $f; and continue
+        sed -i -e "s| $flag||g" -e "s|$flag ||g" -e "s|$flag||g" -- $f; or die "could not edit "(string replace -- $pkgdir/ '' $f)
+        if string match -q -- '*.py' $f
+            set -l stale (path dirname -- $f)/__pycache__/(path change-extension '' -- (path basename -- $f)).*.pyc
+            rm -f -- $stale
+        end
+    end
+end
+
+function sstrip_binaries
+    option sstrip; or return 0
+    command -q sstrip; or die "options sstrip needs sstrip (add elfkickers to makedepends_build)"
+    for f in (find $pkgdir -type f -perm -u+w)
+        switch (file -bi -- $f)
+            case 'application/x-executable*' 'application/x-pie-executable*'
+                sstrip -- $f; or die "sstrip failed on "(string replace -- $pkgdir/ '' $f)
+        end
+    end
+    for pat in $sstrip_files
+        set -l files $pkgdir/$pat
+        for f in $files
+            sstrip -- $f; or die "sstrip failed on "(string replace -- $pkgdir/ '' $f)
+        end
+    end
+end
+
 function zipman
     contains -- !zipman $options; and return 0
     for dir in $pkgdir/usr/share/man $pkgdir/usr/share/info
@@ -732,7 +783,9 @@ function package_split -a name
     set -g pkgarch $carch
     test "$arch" = any; and set pkgarch any
     tidy_package
+    drop_prefix_map
     strip_binaries
+    sstrip_binaries
     zipman
     set -g makep_problems
     emit makep_check $name $pkgdir

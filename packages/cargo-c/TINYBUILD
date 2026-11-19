@@ -12,6 +12,8 @@ set source "https://github.com/lu-zero/cargo-c/archive/v$pkgver/$pkgname-$pkgver
 set sha256sums 57700786539a322a50f1848332e3465bf15efa5af2fd8b6113f36cbfce46c830 \
     d3cb865d40625de197b71fa591f1f24c0593b5a24b46b7c126eae7fecf7be315
 
+set -a options network
+
 function cargo_env
     set -gx RUSTUP_TOOLCHAIN stable
     set -gx CARGO_TARGET_DIR "$pkgname-$pkgver/target"

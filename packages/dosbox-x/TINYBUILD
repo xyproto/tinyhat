@@ -1,10 +1,12 @@
 set pkgname dosbox-x
 set pkgver 2026.10.23
-set pkgrel 5
+set pkgrel 6
 set pkgdesc 'DOS emulator, Tiny Hat fork using SDL3'
 set arch i686
 set url https://github.com/xyproto/dosbox-x
 set license GPL-2.0-or-later
+set options sstrip
+set makedepends_build elfkickers
 set depends sdl3 libglvnd fluidsynth libslirp libpng zlib alsa-lib ncurses libpcap duktape freetype2
 set makedepends autoconf automake
 # surface-vsync.patch: vsyncmode=host also syncs the surface output with the display (until the next fork release)

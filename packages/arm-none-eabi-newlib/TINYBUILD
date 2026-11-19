@@ -60,7 +60,7 @@ function package
     cd "$srcdir"/build-newlib; or return
     make DESTDIR="$pkgdir" install -j1; or return
 
-    find "$pkgdir"/usr/$_target/lib \( -name '*.a' -or -name '*.o' \) -exec $_target-objcopy -R .comment -R .note -R .debug_info -R .debug_aranges -R .debug_pubnames -R .debug_pubtypes -R .debug_abbrev -R .debug_line -R .debug_str -R .debug_ranges -R .debug_loc '{}' \;; or return
+    find "$pkgdir"/usr/$_target/lib \( -name '*.a' -or -name '*.o' \) -exec $_target-objcopy --strip-debug -R .comment -R .note '{}' \;; or return
 
     install -d "$pkgdir"/usr/share/licenses/$pkgname/; or return
     install -m644 -t "$pkgdir"/usr/share/licenses/$pkgname/ "$srcdir"/newlib-$_upstream_ver/COPYING*; or return

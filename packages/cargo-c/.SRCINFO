@@ -19,6 +19,7 @@ pkgbase = cargo-c
 	depends = openssl
 	depends = libssl.so
 	depends = sqlite
+	options = network
 	source = https://github.com/lu-zero/cargo-c/archive/v0.10.26/cargo-c-0.10.26.tar.gz
 	source = cargo-c-0.10.26.Cargo.lock::https://github.com/lu-zero/cargo-c/releases/download/v0.10.26/Cargo.lock
 	sha256sums = 57700786539a322a50f1848332e3465bf15efa5af2fd8b6113f36cbfce46c830

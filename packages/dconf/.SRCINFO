@@ -1,7 +1,7 @@
 pkgbase = dconf
 	pkgdesc = Configuration database system
 	pkgver = 51.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://gitlab.gnome.org/GNOME/dconf
 	install = dconf.install
 	arch = i686
@@ -19,9 +19,11 @@ pkgbase = dconf
 	depends = libgcc
 	provides = libdconf.so
 	source = git+https://gitlab.gnome.org/GNOME/dconf.git#tag=51.0
+	source = git+https://gitlab.gnome.org/GNOME/gvdb.git#commit=4758f6fb7f889e074e13df3f914328f3eecb1fd3
 	source = dconf-update.hook
 	source = dconf-update.script
 	sha256sums = 51c04d74e6505500b2d80383b2245a72e910a373866a3ce30dd30cfb69ae1a67
+	sha256sums = ebe771e60943547279fbf29acb6aea6346fc20df6388252f71bf2bf679d3a7a8
 	sha256sums = 8d02176ff001a13d15a7ac087edd2502725494668933fa2c6e6f9cb21ae24e6b
 	sha256sums = 330142605370f82f4229e8a94b245f911407eb629b50f1497f415c70164a90ec
 

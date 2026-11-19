@@ -1,7 +1,7 @@
 pkgbase = vice
 	pkgdesc = Commodore 64, C128 and VIC-20 emulators (x64sc, x128 and xvic) with the SDL UI, ported to SDL3
 	pkgver = 3.10
-	pkgrel = 2
+	pkgrel = 3
 	url = https://vice-emu.sourceforge.io/
 	arch = i686
 	arch = x32
@@ -14,6 +14,7 @@ pkgbase = vice
 	depends = sdl3_image
 	depends = libpng
 	depends = zlib
+	depends = curl
 	source = vice-3.10.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-3.10.tar.gz/download
 	source = sdl3.patch
 	sha256sums = 8e5bac18cbcb9f192380ad3ef881f8790f5b75c41d7b3da65d831985d864d6d1

@@ -162,8 +162,8 @@ function package_gcc
     end
     install -Dm755 "$srcdir"/c89 "$pkgdir"/usr/bin/c89; or return
     install -Dm755 "$srcdir"/c99 "$pkgdir"/usr/bin/c99; or return
-    python -m compileall "$pkgdir"/usr/share/gcc-$(string replace -r -- '(.*?)\..*$' '$1' "$pkgver")/; or return
-    python -O -m compileall "$pkgdir"/usr/share/gcc-$(string replace -r -- '(.*?)\..*$' '$1' "$pkgver")/; or return
+    python -m compileall -s "$pkgdir" -p / "$pkgdir"/usr/share/gcc-$(string replace -r -- '(.*?)\..*$' '$1' "$pkgver")/; or return
+    python -O -m compileall -s "$pkgdir" -p / "$pkgdir"/usr/share/gcc-$(string replace -r -- '(.*?)\..*$' '$1' "$pkgver")/; or return
     _install_runtime_library_exception; or return
 end
 

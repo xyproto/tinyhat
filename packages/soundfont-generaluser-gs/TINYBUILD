@@ -6,7 +6,7 @@ set pkgdesc 'GeneralUser GS, a General MIDI sound font, as SF3, and the default 
 set arch any
 set url https://schristiancollins.com/generaluser.php
 set license LicenseRef-GeneralUser-GS
-set makedepends_build python vorbis-tools
+set makedepends_build python python-numpy vorbis-tools
 set source "GeneralUser-GS-$pkgver.sf2::https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/$_commit/GeneralUser-GS.sf2" \
     "GeneralUser-GS-$pkgver-LICENSE.txt::https://raw.githubusercontent.com/mrbumpy409/GeneralUser-GS/$_commit/documentation/LICENSE.txt" \
     sf2tosf3.py NOTICE

@@ -43,8 +43,13 @@ static void load(void)
 
 static void toggled(GtkCheckButton *b, gpointer key)
 {
-	if (gtk_check_button_get_active(b))
-		run("--preview", key);
+	if (!gtk_check_button_get_active(b))
+		return;
+	auto other = !strcmp(key, "typewriter") ? "fart" : !strcmp(key, "fart") ? "typewriter" : NULL;
+	for (gsize i = 0; other && i < G_N_ELEMENTS(options); i++)
+		if (!strcmp(options[i].key, other))
+			gtk_check_button_set_active(GTK_CHECK_BUTTON(checks[i]), FALSE);
+	run("--preview", key);
 }
 
 static void save(GtkButton *b, gpointer win)

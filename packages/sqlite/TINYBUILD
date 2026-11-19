@@ -52,7 +52,7 @@ function build
         --rtree \
         --disable-tcl \
         --soname=legacy; or return
-    sed -i 's/$(B.cc) -o \$@ $(TOP)\/tool\/lemon.c/$(B.cc) $(LDFLAGS) -o $@ $(TOP)\/tool\/lemon.c/' main.mk; or return
+    sed -i 's/$(B.cc) -o \$@ $(TOP)\/tool\/lemon.c/$(B.cc) $(CFLAGS) $(LDFLAGS) -o $@ $(TOP)\/tool\/lemon.c/' main.mk; or return
     sed -i -e 's/$(LDFLAGS.libsqlite3)/ -Wl,-O1,--as-needed \0/g' main.mk; or return
     make; or return
     # build additional tools - broken build: changeset rbu

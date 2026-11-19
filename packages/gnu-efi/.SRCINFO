@@ -1,0 +1,20 @@
+pkgbase = gnu-efi
+	pkgdesc = Develop EFI applications using the GNU toolchain and the EFI development environment
+	pkgver = 4.0.4
+	pkgrel = 1
+	url = https://github.com/ncroxon/gnu-efi
+	arch = i686
+	arch = x32
+	arch = x86_64
+	license = BSD-2-Clause
+	license = BSD-2-Clause-Patent
+	license = BSD-3-Clause
+	license = BSD-2-Clause OR GPL-2.0-or-later
+	license = GPL-3.0-or-later
+	license = LGPL-3.0-or-later
+	options = !lto
+	options = !strip
+	source = gnu-efi-4.0.4.tar.gz::https://github.com/ncroxon/gnu-efi/archive/refs/tags/4.0.4.tar.gz
+	sha256sums = 40b61e842a4efcbf80f3e53b2f220c044e8cfe46eb4dd6396c83b751240b1c0d
+
+pkgname = gnu-efi

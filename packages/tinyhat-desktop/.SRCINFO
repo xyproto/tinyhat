@@ -8,7 +8,6 @@ pkgbase = tinyhat-desktop
 	depends = tinyhat-system
 	depends = tinyhat-wallpapers
 	depends = pixelitos-icon-theme
-	backup = etc/gtk-3.0/settings.ini
 	backup = etc/gtk-4.0/settings.ini
 	backup = etc/swaylock/config
 	backup = etc/tinyhat/dosbox-x.conf

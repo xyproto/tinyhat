@@ -1,15 +1,13 @@
 pkgbase = terminus-font
 	pkgdesc = Monospace bitmap font (for X11 and console)
 	pkgver = 4.49.1
-	pkgrel = 8
+	pkgrel = 9
 	url = http://terminus-font.sourceforge.net/
 	arch = any
 	license = GPL2
 	license = custom:OFL
 	makedepends = xorg-bdftopcf
 	makedepends = python
-	makedepends = grub
-	makedepends = freetype2
 	conflicts = terminus-font-otb
 	replaces = terminus-font-otb
 	source = https://downloads.sourceforge.net/project/terminus-font/terminus-font-4.49/terminus-font-4.49.1.tar.gz

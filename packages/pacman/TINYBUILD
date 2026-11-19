@@ -1,6 +1,6 @@
 set pkgname pacman
 set pkgver 7.1.0.r9.g54d9411
-set pkgrel 3
+set pkgrel 4
 set -g _git_tag 7.1.0
 set -g _git_patch_level_commit 54d94116164b0b2202c6061c4a59c6f3e70820d8
 set pkgdesc 'A library-based package manager with dependency support'
@@ -8,7 +8,7 @@ set arch i686 x32
 set url https://www.archlinux.org/pacman/
 set license GPL-2.0-or-later
 set depends bash coreutils curl libcurl.so awk gettext glibc gnupg gpgme libgpgme.so grep libarchive libarchive.so \
-    openssl libcrypto.so pacman-mirrorlist systemd libmakepkg-dropins archlinux32-keyring
+    openssl libcrypto.so pacman-mirrorlist systemd libmakepkg-dropins
 # No documentation and no man pages (asciidoc, doxygen): -Ddoc=disabled -Ddoxygen=disabled
 set makedepends git meson
 set checkdepends fakechroot python

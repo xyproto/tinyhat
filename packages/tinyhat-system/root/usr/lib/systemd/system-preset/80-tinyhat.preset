@@ -19,7 +19,6 @@ enable tinyhat-pacman-sync.service
 enable tinyhat-midibench.service
 enable tinyhat-crashlogs.service
 enable fstrim.timer
-enable vboxservice.service
 disable bluetooth.service
 disable systemd-userdbd.socket
 disable systemd-networkd-wait-online.service

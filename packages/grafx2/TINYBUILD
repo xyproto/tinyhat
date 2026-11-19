@@ -1,12 +1,14 @@
 set pkgname grafx2
 set -g _commit 678a0f54ea7f3eeebc3fa4135213ea63f45a28bd
 set pkgver 0+678a0f54
-set pkgrel 1
+set pkgrel 2
 set -g _lua 5.4.9
 set pkgdesc 'Pixel art paint program, ported to SDL3'
 set arch i686 x32
 set url http://grafx2.eu/
 set license GPL-2.0-only MIT GPL-2.0-or-later GPL-3.0-or-later
+set options sstrip
+set makedepends_build elfkickers
 set depends sdl3 sdl3_image sdl3_ttf fontconfig libpng
 set source "https://gitlab.com/GrafX2/grafx2/-/archive/$_commit/grafx2-$_commit.tar.gz" \
     "https://www.lua.org/ftp/lua-$_lua.tar.gz" \

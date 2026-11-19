@@ -14,4 +14,8 @@ function package
     find $pkgdir -type d -exec chmod 755 '{}' +; or return
     find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
     find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
+    for l in sudo:doas ssh:dbclient ufw:tinyhat-firewall cowthink:cowsay natta:poweroff nightynight:poweroff sov:sleepmode suspend:sleepmode
+        set -l pair (string split : -- $l)
+        ln -s $pair[2] $pkgdir/usr/bin/$pair[1]; or return
+    end
 end

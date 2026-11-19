@@ -31,6 +31,6 @@ function package
     DESTDIR="$pkgdir" cmake --install build; or return
     install -Dm644 $pkgname/LICENSE.md -t "$pkgdir"/usr/share/licenses/$pkgname; or return
 
-    python -m compileall "$pkgdir"/usr/lib/python*; or return
-    python -Om compileall "$pkgdir"/usr/lib/python*; or return
+    python -m compileall -s "$pkgdir" -p / "$pkgdir"/usr/lib/python*; or return
+    python -Om compileall -s "$pkgdir" -p / "$pkgdir"/usr/lib/python*; or return
 end

@@ -14,6 +14,7 @@ pkgbase = rav1e
 	depends = glibc
 	depends = libgcc
 	provides = librav1e.so
+	options = network
 	source = git+https://github.com/xiph/rav1e.git#tag=v0.8.1
 	source = Cargo-rav1e-0.8.1.lock::https://github.com/xiph/rav1e/releases/download/v0.8.1/Cargo.lock
 	b2sums = 6d595597ae817653e8da4515c3649e8ad7618ed09f938525a91106ae059a91dba6ba2b7eb556c5abe1fcf99e8a99ba9f1933018669d0f2f85b2340f9a8ecf0af

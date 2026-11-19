@@ -13,6 +13,8 @@ set source "https://github.com/lsd-rs/lsd/archive/v$pkgver/lsd-$pkgver.tar.gz"
 set sha256sums dae8d43087686a4a1de0584922608e9cbab00727d0f72e4aa487860a9cbfeefa
 set flags arch
 
+set -a options network
+
 function prepare
     cd $pkgname-$pkgver; or return
     cargo fetch --target "$(rustc --print host-tuple)"; or return

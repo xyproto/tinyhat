@@ -11,9 +11,3 @@ pkgbase = sof-bin
 
 pkgname = sof-firmware
 	options = !strip
-
-pkgname = sof-tools
-	pkgdesc = Sound Open Firmware - tools
-	depends = alsa-lib
-	depends = glibc
-	depends = python

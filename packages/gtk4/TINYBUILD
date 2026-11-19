@@ -1,6 +1,6 @@
 set pkgname gtk4
 set pkgver 4.24.1
-set pkgrel 1
+set pkgrel 2
 set epoch 1
 set pkgdesc 'GObject-based multi-platform GUI toolkit'
 set arch i686 x32
@@ -8,7 +8,7 @@ set url https://www.gtk.org/
 set license LGPL-2.1-or-later
 # No iso-codes: meson only reads its prefix (required: false, falls back to /usr); it is only read at run time for the
 # language names in the font chooser, so it is an optdepend of gtk4
-set depends adwaita-icon-theme bash libcairo.so dconf desktop-file-utils fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene harfbuzz libegl libepoxy libgcc libjpeg-turbo libpng libtiff libxkbcommon pango shared-mime-info wayland
+set depends bash libcairo.so dconf desktop-file-utils fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene harfbuzz libegl libepoxy libgcc libjpeg-turbo libpng libtiff libxkbcommon pango shared-mime-info wayland
 # No documentation (gi-docgen, docbook-xsl), documentation and man-pages are off
 # No GObject introspection data (nothing in Tiny Hat uses GTK from Python or JavaScript): no gobject-introspection
 set makedepends git glib2-devel hicolor-icon-theme meson python-docutils sassc vulkan-headers wayland-protocols
@@ -23,7 +23,7 @@ set sha256sums b976fed0880f1e75462b377dcc46b5792068f49c9b3af220f2db966bd2b046fe 
     a5074ffc057a3041a4f851b4b4674cfc21f3cb9cc90c5414c3e91816a5d205e9 \
     92d08db5aa30bda276bc3d718e7ff9dd01dc40dcab45b359182dcc290054e24e
 set flags arch
-set -g _d adwaita-icon-theme bash cairo dconf desktop-file-utils fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene harfbuzz libegl libepoxy libgcc libjpeg-turbo libpng libtiff libxkbcommon pango shared-mime-info wayland
+set -g _d bash cairo dconf desktop-file-utils fontconfig fribidi gdk-pixbuf2 glib2 glibc graphene harfbuzz libegl libepoxy libgcc libjpeg-turbo libpng libtiff libxkbcommon pango shared-mime-info wayland
 set -g _p xdg-desktop-portal-gtk
 
 function prepare
