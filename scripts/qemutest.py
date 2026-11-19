@@ -17,12 +17,16 @@ KEYS = {" ": "spc", "\n": "ret", "-": "minus", "=": "equal", "/": "slash", ".": 
         ";": "semicolon", "'": "apostrophe", "\\": "backslash", "_": "shift-minus", "|": "shift-backslash",
         ">": "shift-dot", "<": "shift-comma", "(": "shift-9", ")": "shift-0", "&": "shift-7", ":": "shift-semicolon",
         "?": "shift-slash", "+": "shift-equal", '"': "shift-apostrophe", "$": "shift-4", "~": "shift-grave_accent"}
-REPORT = ("/usr/lib/tinyhat/startcheck >/tmp/th-start.txt 2>&1; doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain --no-pager; echo TH-MEMORY; free -m; "
+EXAMPLES = ("sh -c 'mkdir -p /tmp/th-ex; for n in $(ls $HOME/cprojects); do d=$HOME/cprojects/$n; "
+            "f=$(cd $d && ls main.c hello.c 2>/dev/null | head -n 1); test -n \"$f\" || continue; cp -r $d /tmp/th-ex/; "
+            "if (cd /tmp/th-ex/$n && timeout 300 o -b >/tmp/th-ex/$n.log 2>&1); then echo $n=ok; else echo $n=failed; "
+            "tail -n 4 /tmp/th-ex/$n.log | cut -c1-160; fi; done >/tmp/th-ex.txt 2>&1'; ")
+REPORT = (EXAMPLES + "/usr/lib/tinyhat/startcheck >/tmp/th-start.txt 2>&1; doas sh -c '(echo TH-FAILED; systemctl --failed --no-legend --plain --no-pager; echo TH-MEMORY; free -m; "
           "echo TH-PROCESSES; ps -eo rss=,comm= --sort=-rss | head -15; echo TH-BOOT; systemd-analyze | head -1; "
           "systemd-analyze blame --no-pager | head -8; systemd-analyze critical-chain --no-pager | tail -n +3 | head -12; echo TH-COMPILE; R=/usr/share/tinyhat-bootsplash; "
           "for c in cc tcc; do command -v $c >/dev/null || continue; $c -o /tmp/th-$c -I$R/runtime $R/templates/basic/anim.c "
           "$R/runtime/draw.c $R/runtime/main.c -lm >/dev/null 2>&1 && echo $c=ok || echo $c=failed; done; "
-          "echo TH-START; cat /tmp/th-start.txt; echo TH-END) >/dev/{tty} 2>&1'\n")
+          "echo TH-EXAMPLES; cat /tmp/th-ex.txt; echo TH-START; cat /tmp/th-start.txt; echo TH-END) >/dev/{tty} 2>&1'\n")
 SEARCH = "https://html.duckduckgo.com/html/?q=tiny+hat+linux"
 LOBSTERS = "https://lobste.rs"
 NETSURFY = ("sh -c 'netsurfy -v \"" + SEARCH + "\" 2>/tmp/th-ns1.log & sleep 30; kill $!; "
@@ -106,18 +110,18 @@ def type_text(sock, text):
 
 def health(serial):
     text = open(serial, errors="replace").read() if os.path.exists(serial) else ""
-    text = re.sub(r"(?i)\bth-(failed|memory|processes|boot|compile|start|end)\b", lambda m: "TH-" + m.group(1).upper(), text)
+    text = re.sub(r"(?i)\bth-(failed|memory|processes|boot|compile|examples|start|end)\b", lambda m: "TH-" + m.group(1).upper(), text)
     m = text.rfind("TH-FAILED")
     if m < 0 or "TH-END" not in text[m:]:
         return None
     block = text[m:text.index("TH-END", m)].replace("\r", "")
     sections = {}
-    for name in ("TH-FAILED", "TH-MEMORY", "TH-PROCESSES", "TH-BOOT", "TH-COMPILE", "TH-START"):
+    for name in ("TH-FAILED", "TH-MEMORY", "TH-PROCESSES", "TH-BOOT", "TH-COMPILE", "TH-EXAMPLES", "TH-START"):
         if name not in block:
             sections[name] = []
             continue
         start = block.index(name) + len(name)
-        ends = [block.index(n) for n in ("TH-MEMORY", "TH-PROCESSES", "TH-BOOT", "TH-COMPILE", "TH-START") if n in block and block.index(n) > start]
+        ends = [block.index(n) for n in ("TH-MEMORY", "TH-PROCESSES", "TH-BOOT", "TH-COMPILE", "TH-EXAMPLES", "TH-START") if n in block and block.index(n) > start]
         sections[name] = [l for l in block[start:min(ends) if ends else len(block)].splitlines() if l.strip()]
     return sections
 
@@ -265,6 +269,14 @@ def main():
             compiled = [l.strip() for l in report["TH-COMPILE"]]
             print("qemutest: building a C program: " + (", ".join(compiled) or "no compiler found"))
             if not compiled or any(l.endswith("=failed") for l in compiled):
+                ok = False
+            results = [l.strip() for l in report["TH-EXAMPLES"] if re.fullmatch(r"[\w.+-]+=(ok|failed)", l.strip())]
+            built = [r for r in results if r.endswith("=ok")]
+            print(f"qemutest: example projects that build with o -b: {len(built)} of {len(results)}")
+            for line in report["TH-EXAMPLES"]:
+                if line.strip().endswith("=failed") or line.strip() not in results:
+                    print("  " + line.rstrip())
+            if not results or len(built) < len(results):
                 ok = False
             started = [l.strip() for l in report["TH-START"]]
             failed = [l for l in started if l.startswith("FAILED")]

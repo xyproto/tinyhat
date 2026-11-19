@@ -7,8 +7,8 @@ pkgdir=$3
 # HOSTENV: the x86_64 build environment, at /host (the i686 build environment runs its shell from there,
 # scripts/mkbuildroot.sh)
 inroot() {
-  bwrap --bind "$root" / ${HOSTENV:+--ro-bind "$HOSTENV" /host} --dev /dev --proc /proc --tmpfs /tmp --unshare-all --clearenv \
-    --setenv PATH /usr/bin --setenv LANG C.UTF-8 "$@"
+  bwrap --bind "$root" / ${HOSTENV:+--ro-bind "$HOSTENV" /host} --dev /dev --proc /proc --tmpfs /tmp --unshare-all --clearenv --chdir / \
+    --setenv PATH /usr/bin --setenv LANG C.UTF-8 --setenv HOME /tmp "$@"
 }
 
 [ -f "$root/etc/ld.so.cache" ] || inroot /usr/bin/ldconfig

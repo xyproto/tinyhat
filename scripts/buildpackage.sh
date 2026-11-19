@@ -167,15 +167,16 @@ lookup() {
   kind=$1
   shift
   [ $# -gt 0 ] || return 0
+  files=${files:-repofiles}
   case $kind in
-    i686) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" i686 "$@") ;;
+    i686) out=$(python3 "$top/scripts/pkg.py" $files "$repo" i686 "$@") ;;
     # Our own builds of the packages and what they need at run time, never prebuilt ones, and never an older build
     # of this package directory's own packages
     cross) out=$(python3 "$top/scripts/build_planner.py" pkgfiles --without "$base${without:+,$without}" "$repo" i686 "$@") ;;
-    x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x32 "$@") ;;
-    aarch64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" aarch64 "$@") ;;
-    x86_64) out=$(python3 "$top/scripts/pkg.py" repofiles "$repo" x86_64 "$@") ;;
-    boot) out=$(python3 "$top/scripts/pkg.py" repofiles "$boot" x32 "$@") ;;
+    x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" $files "$repo" x32 "$@") ;;
+    aarch64) out=$(python3 "$top/scripts/pkg.py" $files "$repo" aarch64 "$@") ;;
+    x86_64) out=$(python3 "$top/scripts/pkg.py" $files "$repo" x86_64 "$@") ;;
+    boot) out=$(python3 "$top/scripts/pkg.py" $files "$boot" x32 "$@") ;;
   esac
   printf '%s\n' "$out" | sed "s|^$repo/|/repo/|; s|^$boot/|/bootstrap/|"
 }
@@ -206,6 +207,15 @@ i686deps=$(
 )
 x32deps="$(lookup x32 $want_x32) $(lookup boot $want_boot)"
 sysdeps=$(lookup sysroot $want_sysroot)
+keydeps=$(
+  files=keyfiles
+  lookup i686 $want_i686
+  lookup aarch64 $want_aarch64
+  lookup x86_64 $want_x86_64
+  lookup x32 $want_x32
+  lookup boot $want_boot
+  lookup sysroot $want_sysroot
+)
 
 # What the build depends on, and so what its cache key is made of: the build options, the theme, the files in the
 # package directory, the makep configuration, and the packages it is built with
@@ -215,16 +225,26 @@ inputs=$({
   printf '%s\n' "$themeenv"
   (cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
   env -i PATH="$PATH" MAKEP_CONF="$top/packages/makep/root/etc/makep.conf" fish "$top/packages/makep/root/usr/bin/makep" --print-config -a "$arch"
-  for f in $i686deps $x32deps $sysdeps $crossdeps; do echo "${f##*/}"; done
+  for f in $keydeps $crossdeps; do echo "${f##*/}"; done
 })
 key=$(printf '%s\n' "$inputs" | sha256sum | cut -d' ' -f1)
 cache=$dest/.cache/$arch-$base
-if [ -z "$nobuild" ] && [ -f "$cache" ] && [ "$(head -n1 "$cache")" = "$key" ]; then
+recorded() {
+  [ -f "$cache.inputs" ] || return 1
+  [ "$(printf '%s\n' "$inputs" | grep -v '\.pkg\.tar\.zst$')" = "$(grep -v '\.pkg\.tar\.zst$' "$cache.inputs")" ] || return 1
+  ! printf '%s\n' "$inputs" | grep '\.pkg\.tar\.zst$' | grep -qvxF -f "$cache.inputs"
+}
+if [ -z "$nobuild" ] && [ -f "$cache" ] && { [ "$(head -n1 "$cache")" = "$key" ] || recorded; }; then
   hit=1
   for f in $(tail -n +2 "$cache"); do
     [ -f "$dest/$f" ] || hit=
   done
   if [ -n "$hit" ]; then
+    if [ "$(head -n1 "$cache")" != "$key" ]; then
+      { echo "$key"; tail -n +2 "$cache"; } > "$cache.tmp"
+      printf '%s\n' "$inputs" > "$cache.inputs"
+      mv "$cache.tmp" "$cache"
+    fi
     echo "$base ($arch): up to date"
     result=up-to-date
     exit 0

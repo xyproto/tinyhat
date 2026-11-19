@@ -46,8 +46,9 @@ def main():
     for name in BOOT:
         if name in files and name not in {p["name"] for p in entries}:
             entries.append({"name": name, "version": pkg.pkginfo(files[name])["pkgver"][0], "path": files[name]})
-    kernel = pkg.arch_files(REPO, KERNEL_ARCH)["linux-tinyhat"]
-    entries.append({"name": "linux-tinyhat", "version": pkg.pkginfo(kernel)["pkgver"][0], "path": kernel})
+    if "linux-tinyhat" not in {p["name"] for p in entries}:
+        kernel = pkg.arch_files(REPO, KERNEL_ARCH)["linux-tinyhat"]
+        entries.append({"name": "linux-tinyhat", "version": pkg.pkginfo(kernel)["pkgver"][0], "path": kernel})
     for p in entries:
         path = os.path.join(OUT, p["name"])
         os.makedirs(path)

@@ -50,11 +50,17 @@ for t in $(python3 scripts/distro.py packages buildroot host_python_tools); do
   printf '#!/bin/sh\n# The x86_64 build environment'"'"'s %s, with its own Python (scripts/mkbuildroot.sh)\nPYTHONHOME=/host/usr exec /host/usr/bin/python3 /host/usr/bin/%s "$@"\n' "$t" "$t" > "$root/usr/bin/$t"
   chmod 755 "$root/usr/bin/$t"
 done
-for d in $(python3 scripts/distro.py packages buildroot host_dirs); do
-  [ -e "$host/$d" ] || { echo "mkbuildroot.sh: $host has no $d" >&2; exit 1; }
-  rm -rf "${root:?}/$d"
-  mkdir -p "$(dirname "$root/$d")"
-  ln -s "/host/$d" "$root/$d"
+for pat in $(python3 scripts/distro.py packages buildroot host_dirs); do
+  found=
+  for m in "$host"/$pat; do
+    [ -e "$m" ] || continue
+    d=${m#"$host"/}
+    found=1
+    rm -rf "${root:?}/$d"
+    mkdir -p "$(dirname "$root/$d")"
+    ln -s "/host/$d" "$root/$d"
+  done
+  [ -n "$found" ] || { echo "mkbuildroot.sh: $host has no $pat" >&2; exit 1; }
 done
 # No Info manuals: makeinfo (and texi2any) for what looks for the program (CMake's find_program) rather than MAKEINFO
 for t in makeinfo texi2any; do
