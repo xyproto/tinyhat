@@ -23,12 +23,7 @@ end
 
 function build
     cd pyxel-$pkgver/crates; or return
-    set -l lib /usr/lib
-    if test -d /host/usr/lib
-        set lib /host/usr/lib
-        set -fx LD_LIBRARY_PATH /host/usr/lib $LD_LIBRARY_PATH
-    end
-    set -l libclangs $lib/libclang.so.*
+    set -l libclangs /usr/lib/libclang.so.*
     set -l libclang (printf '%s\n' $libclangs | string match -r '.*\.so\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
     LIBCLANG_PATH=$libclang PYO3_PYTHON=python3 cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3; or return
 end

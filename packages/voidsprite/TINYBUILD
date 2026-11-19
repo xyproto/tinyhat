@@ -18,7 +18,7 @@ set source "voidsprite-$_commit.tar.gz::https://github.com/counter185/voidsprite
     voidsprite-tinyhat.patch
 set sha256sums c3fe43b980e165337de2ffb6b4364a853095f79521330adb497fc43968a84e0d \
     d88be765af6b0a90e0bb1aba97c85938db406b19c11d5e0ac46e8eac678e625a \
-    e621d9645fcd7032d312d6c76e28201ed57a047bbe2a791f9802e5f4c40b5813
+    be3185d46a4d851092b9082f6890b6ea02471d3658991b7fad678835dafe25d0
 
 function prepare
     cd voidsprite-$_commit; or return
@@ -29,7 +29,7 @@ end
 
 function build
     cmake -S voidsprite-$_commit -B build -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr \
-        -DFLATPAK=ON -DVSP_NETWORKING=OFF -DRELEASE=ON; or return
+        -DFLATPAK=ON -DVSP_NETWORKING=OFF -DRELEASE=ON -DVOIDSPRITE_UNITY_BUILD=OFF; or return
     cmake --build build; or return
 end
 
@@ -41,6 +41,5 @@ function package
         install -Dm644 icons/{$s}x{$s}.png "$pkgdir/usr/share/icons/hicolor/{$s}x{$s}/apps/com.github.counter185.voidsprite.png"; or return
     end
     cd "$srcdir"; or return
-    install -Dm644 voidsprite-$_commit/LICENSE voidsprite-$_commit/OPEN_SOURCE_LICENSES -t "$pkgdir/usr/share/licenses/$pkgname"; or return
-    install -Dm644 liblcf-$_lcf/COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING.liblcf"; or return
+    install -Dm644 voidsprite-$_commit/LICENSE voidsprite-$_commit/OPEN_SOURCE_LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname"; or return
 end

@@ -1,16 +1,17 @@
 pkgbase = tinyhat-fennel-book
 	pkgdesc = The Fennel documentation as one HTML book
-	pkgver = 1
+	pkgver = 1.6.1
 	pkgrel = 1
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = MIT
-	makedepends = fennel
 	makedepends = python
 	makedepends = python-markdown
 	makedepends_build = python
 	makedepends_build = python-markdown
+	source = fennel::git+https://git.sr.ht/~technomancy/fennel#tag=1.6.1
 	source = mkfennelbook.py
+	sha256sums = 98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd
 	sha256sums = b30d8bf8cc0e2c178d8a91f0524038a96e9abfc04dd9fe717ad196c0bc40dc7f
 
 pkgname = tinyhat-fennel-book

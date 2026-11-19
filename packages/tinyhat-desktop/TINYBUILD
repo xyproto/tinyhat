@@ -6,7 +6,7 @@ set arch any
 set url https://github.com/xyproto/tinyhat
 set license BSD-3-Clause
 set depends tinyhat-system tinyhat-wallpapers pixelitos-icon-theme
-set backup etc/gtk-3.0/settings.ini etc/gtk-4.0/settings.ini etc/swaylock/config etc/tinyhat/dosbox-x.conf etc/tinyhat/dwl.toml etc/tinyhat/help.toml
+set backup etc/gtk-4.0/settings.ini etc/swaylock/config etc/tinyhat/dosbox-x.conf etc/tinyhat/dwl.toml etc/tinyhat/help.toml
 
 function package
     cp -a $startdir/root/. $pkgdir/; or return

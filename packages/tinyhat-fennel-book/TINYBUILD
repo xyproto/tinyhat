@@ -1,17 +1,17 @@
 set pkgname tinyhat-fennel-book
-set pkgver 1
+set pkgver 1.6.1
 set pkgrel 1
 set pkgdesc 'The Fennel documentation as one HTML book'
 set arch any
 set url https://github.com/xyproto/tinyhat
 set license MIT
-set makedepends fennel
 set makedepends_build python python-markdown
-set source mkfennelbook.py
-set sha256sums b30d8bf8cc0e2c178d8a91f0524038a96e9abfc04dd9fe717ad196c0bc40dc7f
+set source "fennel::git+https://git.sr.ht/~technomancy/fennel#tag=$pkgver" mkfennelbook.py
+set sha256sums 98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd \
+    b30d8bf8cc0e2c178d8a91f0524038a96e9abfc04dd9fe717ad196c0bc40dc7f
 
 function build
-    python3 mkfennelbook.py /usr/share/doc/fennel fennel-book; or return
+    python3 mkfennelbook.py fennel fennel-book; or return
 end
 
 function package

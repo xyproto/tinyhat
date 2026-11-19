@@ -1,7 +1,7 @@
 pkgbase = pacman
 	pkgdesc = A library-based package manager with dependency support
 	pkgver = 7.1.0.r9.g54d9411
-	pkgrel = 3
+	pkgrel = 4
 	url = https://www.archlinux.org/pacman/
 	arch = i686
 	arch = x32
@@ -28,7 +28,6 @@ pkgbase = pacman
 	depends = pacman-mirrorlist
 	depends = systemd
 	depends = libmakepkg-dropins
-	depends = archlinux32-keyring
 	optdepends = base-devel: required to use makepkg
 	optdepends = perl-locale-gettext: translation support in makepkg-template
 	provides = libalpm.so

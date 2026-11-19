@@ -25,7 +25,8 @@ end
 
 function build
     cd c-octo-$_commit; or return
-    set -l sdl (pkg-config --cflags --libs sdl3 | string split -n ' '); or return
+    set -l sdl (pkg-config --cflags --libs sdl3); or return
+    set sdl (string split -n ' ' -- $sdl)
     for f in cli run de
         cc -std=c99 $CFLAGS -DVERSION='"1.2"' -o octo-$f src/octo_$f.c $LDFLAGS $sdl -lm; or return
     end

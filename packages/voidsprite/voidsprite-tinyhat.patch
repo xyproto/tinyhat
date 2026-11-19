@@ -71,3 +71,31 @@ index 6526872..3469ba9 100644
  if (DEFINED WIN32)
      target_link_libraries(voidsprite PRIVATE d3d9 dwmapi winhttp iphlpapi)
  endif()
+--- a/freesprite/shiftjis.h
++++ b/freesprite/shiftjis.h
+@@ -2,7 +2,12 @@
+ 
+ //automatically generated
+ 
+-inline std::map<uint16_t, std::string> shiftjisToUTF8Map = {
++struct ShiftJISEntry {
++    uint16_t code;
++    const char* utf8;
++};
++
++inline constexpr ShiftJISEntry shiftjisToUTF8Table[] = {
+ #ifndef __EMSCRIPTEN__
+ //???????????????????????
+ //we don't need it anyway on emscripten because liblcf is disabled
+@@ -6908,3 +6913,11 @@
+     { 0xEAA2, "\xe7\x91\xa4" }
+ #endif
+ };
++
++inline std::map<uint16_t, std::string> shiftjisToUTF8Map = [] {
++    std::map<uint16_t, std::string> m;
++    for (const auto& e : shiftjisToUTF8Table) {
++        m.emplace(e.code, e.utf8);
++    }
++    return m;
++}();

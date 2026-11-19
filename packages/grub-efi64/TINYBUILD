@@ -1,12 +1,12 @@
 set pkgname grub-efi64
 set pkgver 2.14
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'GRUB for 64-bit UEFI, used to build the x32 image'
 set arch i686
 set url https://www.gnu.org/software/grub/
 set license GPL-3.0-or-later
 set makedepends x32-gcc-stage1 flex bison python
-set options '!buildflags' '!strip'
+set options '!buildflags' '!strip' '!elfcheck'
 set source "https://ftp.gnu.org/gnu/grub/grub-$pkgver.tar.xz"
 set sha256sums bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43
 
@@ -29,5 +29,8 @@ end
 function package
     cd grub-$pkgver; or return
     make DESTDIR="$pkgdir/opt/grub-efi64" install; or return
+    set -l d "$pkgdir"/opt/grub-efi64/usr/lib/grub/x86_64-efi
+    set -l debug $d/*.module $d/*.image
+    rm -f $debug $d/kernel.exec $d/gdb_grub $d/gmodule.pl; or return
     install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
 end

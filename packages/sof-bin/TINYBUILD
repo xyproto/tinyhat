@@ -1,5 +1,10 @@
 set pkgbase sof-bin
-set pkgname sof-firmware sof-tools
+switch $CARCH
+    case x86_64
+        set pkgname sof-firmware sof-tools
+    case '*'
+        set pkgname sof-firmware
+end
 set pkgver 2026.09.2
 set pkgrel 1
 set pkgdesc 'Sound Open Firmware'

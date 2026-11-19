@@ -1,7 +1,7 @@
 set pkgname cc65
 set -g _commit 8d86ca7e7ed15300cc4bfaba61a40a3d00f3114d
 set pkgver 2.19+8d86ca7
-set pkgrel 1
+set pkgrel 2
 set pkgdesc '6502 and 65816 C compiler and assembler'
 set arch i686 x32
 set url https://cc65.github.io/
@@ -13,7 +13,7 @@ set sha256sums 8dfa14d7832a7171ab00c70b84cbede7a775ed22e325413e280e9256238e94e0
 function build
     cd cc65-$_commit; or return
     make PREFIX=/usr bin; or return
-    make PREFIX=/usr lib; or return
+    make PREFIX=/usr CC65_HOME=.. lib; or return
 end
 
 function package

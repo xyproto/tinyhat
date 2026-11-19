@@ -1,6 +1,6 @@
 set pkgname x32-gcc
 set pkgver 16.2.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'C and C++ compiler for the x86_64-pc-linux-gnux32 toolchain'
 set arch i686
 set url https://gcc.gnu.org/
@@ -37,4 +37,7 @@ function package
         set -l pair (string split -m1 : -- $p)
         ln -s ../../bin/$t-$pair[1] "$pkgdir/usr/$t/bin/$pair[2]"; or return
     end
+    set -l libs "$pkgdir"/usr/lib/gcc/$t
+    test -d "$pkgdir"/usr/$t/lib; and set -a libs "$pkgdir"/usr/$t/lib
+    find $libs -type f \( -name '*.a' -o -name '*.o' -o -name '*.so.[0-9]*' \) -not -name '*.py' -exec $t-objcopy --strip-debug -R .comment '{}' \;; or return
 end

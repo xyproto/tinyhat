@@ -1,7 +1,7 @@
 pkgbase = grub-efi64
 	pkgdesc = GRUB for 64-bit UEFI, used to build the x32 image
 	pkgver = 2.14
-	pkgrel = 2
+	pkgrel = 3
 	url = https://www.gnu.org/software/grub/
 	arch = i686
 	license = GPL-3.0-or-later
@@ -11,6 +11,7 @@ pkgbase = grub-efi64
 	makedepends = python
 	options = !buildflags
 	options = !strip
+	options = !elfcheck
 	source = https://ftp.gnu.org/gnu/grub/grub-2.14.tar.xz
 	sha256sums = bc8d3c73535b8838d8c8e2654d73edc4e6ae8c8acdb45d5df5dc9a1547446d43
 

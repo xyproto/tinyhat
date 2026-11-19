@@ -51,6 +51,7 @@ function build
         --disable-aspell \
         --with-screen=slang \
         --without-x; or return
+    sed -i "/MC_CONFIGURE_ARGS/s| *-ffile-prefix-map=$srcdir=/usr/src/debug/$pkgbase||g" config.h; or return
     make; or return
 end
 

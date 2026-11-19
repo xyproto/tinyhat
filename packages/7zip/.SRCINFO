@@ -6,6 +6,7 @@ pkgbase = 7zip
 	arch = i686
 	arch = x32
 	license = LGPL-2.1-or-later AND LicenseRef-UnRAR AND BSD-3-Clause AND BSD-2-Clause
+	makedepends_x86_64 = uasm
 	depends = sh
 	depends = libgcc
 	depends = libstdc++

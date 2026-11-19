@@ -22,4 +22,5 @@ end
 function package
     cd tinycc; or return
     make DESTDIR="$pkgdir" install; or return
+    find "$pkgdir"/usr/lib/tcc \( -name '*.o' -o -name '*.a' \) -exec objcopy -R .stab -R .stabstr -R .rel.stab -R .rela.stab '{}' \;; or return
 end

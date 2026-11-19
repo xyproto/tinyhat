@@ -34,6 +34,7 @@ function package_boost
     install -d "$pkgdir"/usr/lib; or return
     cp -a fakeinstall/lib/cmake "$pkgdir"/usr/lib; or return
     cp -a fakeinstall/{bin,include,share} "$pkgdir"/usr/; or return
+    find "$pkgdir"/usr/lib/cmake -name '*.cmake' -exec sed -i "s|$srcdir/fakeinstall|/usr|g" '{}' +; or return
 end
 
 function package_boost-libs

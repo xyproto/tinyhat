@@ -1,17 +1,12 @@
 set pkgbase fmt
-set pkgname fmt fmt-docs
+set pkgname fmt
 set pkgver 12.2.0
 set pkgrel 1
 set pkgdesc 'Open-source formatting library for C++'
 set arch i686 x32
 set url https://fmt.dev
 set license MIT
-# No doxygen: breaks a cycle with doxygen, spdlog and fmt, so the documentation is not built
-set makedepends cmake git mkdocs mkdocs-material mkdocstrings ninja python-pymdown-extensions python-regex
-switch $CARCH
-    case i686
-        set -a makedepends npm
-end
+set makedepends cmake git ninja
 # 32-bit has no __int128, and fmt's software uint128 fallback lacks operator~
 # ("no match for 'operator~' (operand type is 'fmt::v12::detail::uint128')");
 # upstream fix 588b3a0f (#4813), fixed in releases after 12.2.0
@@ -38,11 +33,5 @@ function package_fmt
     set depends glibc libgcc libstdc++
     set provides libfmt.so
     DESTDIR="$pkgdir" cmake --install build --component fmt_core; or return
-    install -Dm 644 -t "$pkgdir"/usr/share/licenses/$pkgname fmt/LICENSE; or return
-end
-
-function package_fmt-docs
-    set pkgdesc "$pkgdesc (documentation)"
-    DESTDIR="$pkgdir" cmake --install build --component fmt_doc; or return
     install -Dm 644 -t "$pkgdir"/usr/share/licenses/$pkgname fmt/LICENSE; or return
 end

@@ -1,10 +1,12 @@
 set pkgname zsnes
 set pkgver 2.3.9
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Super Nintendo emulator'
 set arch i686
 set url https://github.com/xyproto/zsnes
 set license GPL-2.0-or-later
+set options sstrip
+set makedepends_build elfkickers
 set depends sdl3 libglvnd libpng pipewire zlib
 set makedepends mesa
 set source "zsnes-$pkgver.tar.gz::https://github.com/xyproto/zsnes/archive/refs/tags/v$pkgver.tar.gz"

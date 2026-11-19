@@ -12,6 +12,7 @@ pkgbase = openldap
 	makedepends = unixodbc
 	makedepends = libsodium
 	makedepends = systemd
+	makedepends = metatar
 	options = !makeflags
 	options = emptydirs
 	options = !lto

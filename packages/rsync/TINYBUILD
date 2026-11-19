@@ -59,7 +59,8 @@ function build
         --disable-debug \
         --with-rrsync \
         --with-included-popt=no \
-        --with-included-zlib=no; or return
+        --with-included-zlib=no \
+        --disable-idn; or return
     make; or return
 end
 

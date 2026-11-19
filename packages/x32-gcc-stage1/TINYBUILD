@@ -1,6 +1,6 @@
 set pkgname x32-gcc-stage1
 set pkgver 16.2.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Stage 1 C compiler for the x86_64-pc-linux-gnux32 toolchain'
 set arch i686
 set url https://gcc.gnu.org/
@@ -33,4 +33,7 @@ function package
     ln -s ../../bin/$t-gcc "$pkgdir/usr/$t/bin/gcc"; or return
     ln -s ../../bin/$t-gcc "$pkgdir/usr/$t/bin/cc"; or return
     ln -s ../../bin/$t-cpp "$pkgdir/usr/$t/bin/cpp"; or return
+    set -l libs "$pkgdir"/usr/lib/gcc/$t
+    test -d "$pkgdir"/usr/$t/lib; and set -a libs "$pkgdir"/usr/$t/lib
+    find $libs -type f \( -name '*.a' -o -name '*.o' -o -name '*.so.[0-9]*' \) -not -name '*.py' -exec $t-objcopy --strip-debug -R .comment '{}' \;; or return
 end

@@ -12,6 +12,7 @@ pkgbase = lsd
 	depends = zlib
 	optdepends = nerd-fonts
 	optdepends = awesome-terminal-fonts
+	options = network
 	source = https://github.com/lsd-rs/lsd/archive/v1.2.0/lsd-1.2.0.tar.gz
 	sha256sums = dae8d43087686a4a1de0584922608e9cbab00727d0f72e4aa487860a9cbfeefa
 

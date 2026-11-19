@@ -1,10 +1,12 @@
 set pkgname scummvm
 set pkgver 2026.4.0
-set pkgrel 3
+set pkgrel 4
 set pkgdesc 'Engine for classic adventure games'
 set arch i686 x32
 set url https://www.scummvm.org/
 set license GPL-3.0-or-later
+set options sstrip
+set makedepends_build elfkickers
 set depends sdl3 fluidsynth a52dec faad2 flac freetype2 fribidi giflib libjpeg-turbo libmad libmikmod libmpeg2 libpng libtheora libvorbis zlib
 set source "https://downloads.scummvm.org/frs/scummvm/$pkgver/scummvm-$pkgver.tar.xz" \
     sdl3-palette.patch \

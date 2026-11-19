@@ -15,6 +15,8 @@ set b2sums 6d595597ae817653e8da4515c3649e8ad7618ed09f938525a91106ae059a91dba6ba2
     4c0e7e271f8cd96bf5d47162a0072a7ba4ddb6f40ec03fc6deddd7b3166fffcdc60ddf85829d49359a9d49fe9a3fba1ed4ef2ea8c4303475076eba9ea6ae1cc4
 set flags arch
 
+set -a options network
+
 function prepare
     cp -f Cargo-rav1e-$pkgver.lock rav1e/Cargo.lock; or return
     cargo fetch \

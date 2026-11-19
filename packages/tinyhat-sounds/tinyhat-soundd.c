@@ -110,6 +110,22 @@ static void config_path(char *buf, size_t size)
 		snprintf(buf, size, "%s/.config/tinyhat/sounds", getenv("HOME") ? getenv("HOME") : "/tmp");
 }
 
+static bool typewriter_wanted(void)
+{
+	auto d = opendir(rundir);
+	if (!d)
+		return false;
+	bool wanted = false;
+	for (struct dirent *e; !wanted && (e = readdir(d));) {
+		int pid;
+		char end;
+		if (sscanf(e->d_name, "tinyhat-typewriter.%d%c", &pid, &end) == 1 && pid > 0)
+			wanted = !kill(pid, 0) || errno == EPERM;
+	}
+	closedir(d);
+	return wanted;
+}
+
 static config load(void)
 {
 	config c = { 0 };
@@ -117,8 +133,11 @@ static config load(void)
 	int v;
 	config_path(path, sizeof path);
 	auto f = fopen(path, "r");
-	if (!f)
+	if (!f) {
+		if (typewriter_wanted())
+			c.typewriter = true;
 		return c;
+	}
 	while (fgets(line, sizeof line, f))
 		if (sscanf(line, "%63[a-z]=%d", key, &v) == 2) {
 			if (!strcmp(key, "startup"))
@@ -131,6 +150,10 @@ static config load(void)
 				c.shutdown = v;
 		}
 	fclose(f);
+	if (typewriter_wanted()) {
+		c.typewriter = true;
+		c.fart = false;
+	}
 	return c;
 }
 
@@ -505,7 +528,7 @@ static void key(char c, config cfg)
 		return;
 	if (cfg.typewriter)
 		typewriter(c);
-	if (cfg.fart)
+	else if (cfg.fart)
 		add_fart(c == 'r');
 	SDL_ResumeAudioStreamDevice(stream);
 }

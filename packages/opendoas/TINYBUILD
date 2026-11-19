@@ -24,7 +24,7 @@ end
 
 function package
     cd "$pkgname"; or return
-    make DESTDIR="$pkgdir" install; or return
+    make DESTDIR="$pkgdir" BINOWN=(id -u) BINGRP=(id -g) install; or return
     install -Dm644 LICENSE -t "$pkgdir/usr/share/licenses/$pkgname"; or return
     install -Dm400 ../doas.conf "$pkgdir/etc/doas.conf"; or return
 end

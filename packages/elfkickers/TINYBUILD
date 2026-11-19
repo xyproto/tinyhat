@@ -1,0 +1,27 @@
+set pkgname elfkickers
+set pkgver 3.2
+set pkgrel 6
+set pkgdesc 'Collection of ELF utilities (includes sstrip)'
+set arch i686 x32
+set url https://www.muppetlabs.com/~breadbox/software/elfkickers.html
+set license GPL-2.0-or-later
+set depends glibc
+set source "git+https://github.com/BR903/ELFKickers#commit=e7fba942df51e756897224cff5aa853de8fafd90"
+set b2sums 153735c74d387f3a4ebc9a37ba8957c02319e4d9b38a81082cf19d6e6c685e19983b4a87bb63b2560302fde2eddd291af7be7d50868ee6bf17663b3e56206642
+set flags arch
+
+function prepare
+    for tool in ebfc elfls elftoc infect objres rebind sstrip
+        sed -i -e "s|^CFLAGS *=.*|CFLAGS = -O2 -I ../elfrw $CFLAGS -Wl,-z,relro,-z,now|" \
+            -e "s|^LDFLAGS *=.*|LDFLAGS = $LDFLAGS -z,relro,-z,now|" ELFKickers/$tool/Makefile; or return
+    end
+end
+
+function build
+    make -C ELFKickers -j1; or return
+end
+
+function package
+    install -d $pkgdir/usr/bin $pkgdir/usr/share/man/man1; or return
+    make -C ELFKickers prefix=$pkgdir/usr install -j1; or return
+end

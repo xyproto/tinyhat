@@ -1,11 +1,11 @@
 set pkgname vice
 set pkgver 3.10
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Commodore 64, C128 and VIC-20 emulators (x64sc, x128 and xvic) with the SDL UI, ported to SDL3'
 set arch i686 x32
 set url https://vice-emu.sourceforge.io/
 set license GPL-2.0-or-later
-set depends sdl3 sdl3_image libpng zlib
+set depends sdl3 sdl3_image libpng zlib curl
 set makedepends flex xa autoconf automake
 set source "vice-$pkgver.tar.gz::https://sourceforge.net/projects/vice-emu/files/releases/vice-$pkgver.tar.gz/download" \
     sdl3.patch
