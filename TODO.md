@@ -1,5 +1,47 @@
 ## Plans
 
+- [ ] When booting straight into Orbiton, fix the mouse when running the RayLib example under VirtualBox.
+- [ ] When orbiton opens a file named "book*.md", the book mode should be used by default.
+- [ ] The window title looks excellent in dwl, but the window buttons behave weirdly.
+      If a window title is shown, the button for that window should be hidden.
+      If a window is shown, it should also be brought to the front.
+      If the title or window button for the active window is clicked, it should be sent to the back
+      (or hidden)?
+- [ ] When 2x ctrl-space building+running C64 programs, there is too much stdout+stderr noise.
+- [ ] People love to draw squares with the left mouse button on the background.
+      Draw squares the first three times, then draw triangles 2 times, then a circle, then flames.
+- [ ] fastfetch should have a Tiny Hat logo. Draw it in ASCII, then create a pull request.
+- [ ] Add an ASCII art drawing program?
+- [ ] The fan icon should either be a tiny fan, a normal fan or a normal fan in orange.
+      There should be no text to the right of it.
+      The fan icon should have mouse over text.
+      When running in a VM, there should be no fan icon.
+      If system sounds for the fan are enabled, the fans should have different "wroom wroom" sounds (racer, scooter, windgust).
+- [ ] ctrl-alt-left and ctrl-alt-right should be possible to use for cycling CPU+fan modes.
+      There should also be background help text about this (Ctrl+Alt+Left / Right   Fan/CPU mode).
+- [ ] monkeyjumpgo should open its own help contents just by extending the window to the right.
+      There should be a ">>" button for opening the help. The help should be opened by default the first time,
+      but not after that. The status should appear in the bottom left corner, like in NetSurfy, but with
+      a black background that is 20% transparent and with white text that is #e0e0e0.
+- [ ] "sudo pacman -S kitty" and "sudo pacman -S firefox" should work after booting tinyhat32.
+      If the user does this, then gtk3 + x + all sort of sillyness should just be dragged along and installed,
+      replacing the Tiny Hat packages. Perhaps tinyhat needs to use the "cairo-wayland" technique for more
+      packages, to achieve this. Also goes for wine, lutris etc.
+- [ ] "sudo pacman -S lutris" should also work, and there should be a menu entry to installing+launcing it.
+- [ ] There should not be a duplicate NetSurfy menu icon in the alt-space menu.
+- [ ] The address line should have focus when starting NetSurfy, and typing should clear it, like in many
+      other browsers. And ctrl-l should work even if the keyboard focus is in a search box on a page, to
+      bring focus to the address bar.
+- [ ] Bonzomatic has a larger window than what fits Tiny Hat when launched from Virtual Box (+3D enabled,
+      need to test if this is also with 3D disabled).
+- [ ] Installing and launching "nethack" does not work. How come?
+
+### Unsure about these
+
+- [ ] Enable 3D accelleration by default for the ova, but also check that Kitty + GLFW etc works.
+
+### Unsorted, maybe completed
+
 - [ ] Install exactly the planned package versions in build sandboxes, not the newest file in `build/repo`.
 - [ ] Verify the source checksums of all PKGBUILDs and TINYBUILDs before a build starts.
 - [ ] Use fish instead of bash wherever possible: Tiny Hat's own scripts first, a small POSIX `/bin/sh`, then `pacman-key` and `ldd`. (Packages are TINYBUILDs, built by makep, since 2026-11-15.)
