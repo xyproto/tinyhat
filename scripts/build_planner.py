@@ -52,6 +52,8 @@ def parse(path):
     epoch = base.get("epoch", ["0"])
     info = {"pkgbase": base.get("pkgbase"), "pkgnames": list(pkgs), "depends": {}, "provides": {}, "arch": {},
             "makedepends": get({}, "makedepends"), "makedepends_host": get({}, "makedepends_host"),
+            "makedepends_by_arch": {a: base.get("makedepends", []) + base.get(f"makedepends_{a}", [])
+                                    for a in ("i686", "x32", "x86_64", "aarch64")},
             "makedepends_build": get({}, "makedepends_build"),
             "bootstrap_without": get({}, "bootstrap_without"),
             "constraints": constraints,
@@ -400,8 +402,8 @@ def native_cycles(plans, base_of, full, wanted=None):
     return first, kind, unwanted
 
 
-def all_deps(info):
-    deps = list(info["makedepends"])
+def all_deps(info, arch=None):
+    deps = list(info["makedepends_by_arch"][arch] if arch else info["makedepends"])
     for name in info["pkgnames"]:
         deps += info["depends"].get(name, [])
     return deps
@@ -797,16 +799,17 @@ def arch_rules(arch, by_base, prefs):
     plans = {}
     for info in built:
         own = set(info["pkgnames"])
-        plans[info["base"]] = (here.closure(all_deps(info), runtime_deps(here), own),
-                               here.closure(info["makedepends"], runtime_deps(here), own))
+        plans[info["base"]] = (here.closure(all_deps(info, arch), runtime_deps(here), own),
+                               here.closure(info["makedepends_by_arch"][arch], runtime_deps(here), own))
     graph = {b: {names[d]["base"] for d in deps} - {b} for b, (deps, _) in plans.items()}
     for comp in sccs(graph):
         for b in comp if len(comp) > 1 else ():
             deps, make = plans[b]
             plans[b] = ([d for d in deps if names[d]["base"] not in comp or d in make], make)
     seeded = set(distro.lock().get(f"buildroot-{arch}", {}))
-    hard = break_seeded({b: deps for b, (deps, _) in plans.items()}, lambda d: names[d]["base"], seeded)
-    plans = {b: (hard[b], make) for b, (_, make) in plans.items()}
+    provided = set(distro.section("buildroot").get("provided", []))
+    env = seeded | {n for n in names if n in provided or set(names[n]["provides"].get(n, [])) & provided}
+    plans = {b: ([d for d in deps if d not in env], make) for b, (deps, make) in plans.items()}
     stamps = []
     for info in built:
         for n in info["pkgnames"]:
@@ -937,11 +940,16 @@ def cmd_lock_arch(arch, check=False):
     dbidx = pkg.arch_db(arch)
     infos = load()
     by_base = {i["base"]: i for i in infos}
-    own = indexes(infos)["i686"]
+    own = pkg.Index.new()
+    for info in infos:
+        for name in info["pkgnames"]:
+            if set(info["arch"][name]) & {arch, "i686", "any"}:
+                own.add(name, {"name": name, "arch": arch, "base": info["base"], "sub": info["sub"],
+                               "depends": info["depends"][name]}, info["provides"][name])
     missing = [t for t in targets if own.resolve(t, prefs) is None]
     if missing:
         sys.exit(f"build_planner.py: {section}: no TINYBUILD makes {' '.join(missing)}")
-    sel = pkg.resolve_targets(targets, {"i686": own}, "i686", prefs, skip)
+    sel = pkg.resolve_targets(targets, {arch: own}, arch, prefs, skip)
     prefs = {k: v for k, v in prefs.items() if k not in dbidx.pkgs}
 
     built = {}
@@ -971,7 +979,7 @@ def cmd_lock_arch(arch, check=False):
     if arch == "x86_64":
         todo += build_tools(cross_tools(by_base))
     while todo:
-        todo += build_tools(all_deps(by_base[todo.pop()]))
+        todo += build_tools(all_deps(by_base[todo.pop()], arch))
     built = {b: sorted(names) for b, names in sorted(built.items())}
     buildroot = arch_buildroot(arch, [by_base[b] for b in built], dbidx, prefs,
                                cross_tools(by_base) if arch == "x86_64" else [])
@@ -995,13 +1003,14 @@ def arch_buildroot(arch, built, db, prefs, tools=()):
     br = distro.section("buildroot")
     skip = set(br.get("skip", []))
     wanted = list(SEED_BASE) + list(br.get("packages", [])) + list(distro.section(f"image-{arch}").get("buildroot", []))
+    always = set(wanted) | set(tools)
     for info in built:
-        wanted += [d for d in all_deps(info) if d not in wanted]
+        wanted += [d for d in all_deps(info, arch) if d not in wanted]
     # And what the i686 cross builds run (cross_tools)
     wanted += [d for d in tools if d not in wanted]
     targets = list(RUNS_BUILDS)
     for dep in wanted:
-        if dep in own or dep in skip or dep.startswith("lib32-") or dep in targets:
+        if (dep in own and dep not in always) or dep in skip or dep.startswith("lib32-") or dep in targets:
             continue
         if db.resolve(dep, prefs) is None:
             print(f"build_planner.py: buildroot-{arch}: {dep} is not available prebuilt, leaving it out", file=sys.stderr)

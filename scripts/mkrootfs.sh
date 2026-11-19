@@ -42,7 +42,7 @@ case $mode in
     mkdir -p "$root"
     python3 scripts/pkg.py extract "$lock" "$repo" "$root" "$section"
     python3 scripts/pkg.py keep "$lock" "$repo" "$root" "$section"
-    ln -sf gcc "$root/usr/bin/cc"
+    ln -sf clang "$root/usr/bin/cc"
     python3 scripts/mklocaldb.py "$lock" "$repo" "$root" "$section"
 
     boost=$(find "$root/usr/bin" "$root/usr/lib" -path "$root/usr/lib/modules" -prune -o -path "$root/usr/lib/firmware" -prune -o \
@@ -67,11 +67,11 @@ case $mode in
       mkdir -p "$root/etc/ld.so.conf.d"
       echo /usr/lib32 > "$root/etc/ld.so.conf.d/lib32.conf"
     fi
-    for f in zsnes-bin dosbox-x scummvm dwl fuzzel grafx2-sdl3 algernon; do
-      [ ! -e "$root/usr/bin/$f" ] || sstrip "$root/usr/bin/$f"
+    for p in $(python3 scripts/distro.py packages image strip_unneeded); do
+      for f in "$root"/$p; do
+        [ ! -e "$f" ] || "$strip" --strip-unneeded "$f"
+      done
     done
-    sstrip "$root"/usr/lib/libgallium-*.so
-    "$strip" --strip-unneeded "$root"/usr/lib/libLLVM*.so* "$root"/usr/lib/libLTO*.so* "$root"/usr/lib/libRemarks*.so* "$root"/usr/lib/libclang-cpp*.so* "$root"/usr/lib/libSDL3.so.*.* "$root"/usr/lib/libwlroots-*.so "$root"/usr/lib/libdisplay-info.so.*.* "$root"/usr/lib/libfluidsynth.so.*.* "$root"/usr/lib/libSDL3_image.so.*.* "$root"/usr/lib/libSDL3_ttf.so.*.* "$root"/usr/lib/libraylib.so.*.* "$root"/usr/lib/libfontconfig.so.*.*
 
     for f in "$root"/usr/share/fontconfig/conf.default/*.conf; do
       case ${f##*/} in 10-sub-pixel-rgb.conf) continue ;; esac

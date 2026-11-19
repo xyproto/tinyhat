@@ -269,8 +269,8 @@ def planned_versions():
 
 
 def repo_files(repodir):
-    """The package file for each (name, arch) in repodir: the version its TINYBUILD plans if that was built,
-    or else the newest file (a prebuilt package)."""
+    """The package file for each (name, arch) in repodir: for a package in the build plan only the version that the
+    plan uses, never an older file, and for any other package the newest file (a prebuilt package)."""
     chosen = {}
     if not os.path.isdir(repodir):
         return chosen
@@ -279,17 +279,13 @@ def repo_files(repodir):
         parts = split_filename(fn)
         if parts is None:
             continue
+        want = planned.get(parts[0])
+        if want is not None and parts[1] != want:
+            continue
         key = (parts[0], parts[2])
         path = os.path.join(repodir, fn)
         old = chosen.get(key)
-        if old is None:
-            chosen[key] = path
-            continue
-        want = planned.get(parts[0])
-        if (split_filename(os.path.basename(old))[1] == want) != (parts[1] == want):
-            if parts[1] == want:
-                chosen[key] = path
-        elif os.path.getmtime(path) > os.path.getmtime(old):
+        if old is None or (want is None and os.path.getmtime(path) > os.path.getmtime(old)):
             chosen[key] = path
     return chosen
 
@@ -572,6 +568,23 @@ def cmd_repofiles(repodir, arch, *names):
         print(files[name])
 
 
+def cmd_keyfiles(repodir, arch, *names):
+    """The files of the requested packages, what a build waits for in pkgs.ninja and so what its cache key has,
+    while repofiles also gives what they need at run time."""
+    files = arch_files(repodir, arch)
+    idx = Index.new()
+    for name, path in files.items():
+        idx.add(name, path, repo_info(path).get("provides", []))
+    out = set()
+    for want in names:
+        name = idx.resolve(want)
+        if name is None:
+            die(f"package {want} ({arch}) was not found in {repodir}")
+        out.add(files[name])
+    for path in sorted(out):
+        print(path)
+
+
 def cmd_repofile(repodir, arch, name):
     files = arch_files(repodir, arch)
     if name not in files:
@@ -730,8 +743,6 @@ def cmd_archrepo(arch, repodir, lockfile, variant=None):
 
 
 def cmd_addpkg(lockfile, repodir, arch, name):
-    """Add our ARCH build of NAME to the lock file of a root file system, linked into repodir: for the kernel, whose
-    architecture is the boot medium's (the x32 image boots the x86_64 kernel)."""
     built = arch_files(os.path.join(TOP, "build", "repo"), arch)
     if name not in built:
         die(f"{name} ({arch}) has not been built")
@@ -800,8 +811,6 @@ def cmd_source(srcdir, *names):
 
 
 def cmd_extract(lockfile, pkgdir, root, excludes=(), everywhere=()):
-    """Extract the packages of the lock into root, without everywhere, and without excludes from the packages that are
-    not Tiny Hat's own."""
     os.makedirs(root, exist_ok=True)
     own = set((distro.plan() or {}).get("tinyhat_pkgs", []))
     base = [".PKGINFO", ".BUILDINFO", ".MTREE", ".INSTALL", ".CHANGELOG"] + list(everywhere)
@@ -819,7 +828,6 @@ def cmd_extract(lockfile, pkgdir, root, excludes=(), everywhere=()):
 
 
 def cmd_keep(lockfile, pkgdir, root, section):
-    """Extract the files that [image] keep (and keep in SECTION) names from the packages of the lock."""
     keep = dict(distro.section("image").get("keep", {}))
     if section != "image":
         keep.update(distro.section(section).get("keep", {}))
@@ -859,7 +867,7 @@ def extract_lib32(path, root, libs_only, excludes):
 
 def main():
     if len(sys.argv) < 2:
-        die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | repofile REPODIR ARCH NAME | "
+        die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | keyfiles REPODIR ARCH NAME... | repofile REPODIR ARCH NAME | "
             "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | addpkg LOCK REPODIR ARCH NAME | keep LOCK DIR ROOT SECTION | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
@@ -868,6 +876,8 @@ def main():
         cmd_local(*args)
     elif cmd == "repofiles":
         cmd_repofiles(*args)
+    elif cmd == "keyfiles":
+        cmd_keyfiles(*args)
     elif cmd == "repofile":
         cmd_repofile(*args)
     elif cmd == "fetch":
