@@ -1,0 +1,96 @@
+diff --git a/dwl.c b/dwl.c
+index c88171a..0f3c5d4 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -262,7 +262,7 @@ struct Monitor {
+ 	int nmaster;
+ 	char ltsymbol[16];
+ 	Client *tasks[32];
+-	int taskx[33], ntasks, taskhover;
++	int taskx[33], ntasks, taskhover, titlex0, titlex1;
+ 	int volx0, volx1;
+ 	int fanx0, fanx1;
+ 	int launchx[9], nlaunch;
+@@ -1820,6 +1820,8 @@ buttonpress(struct wl_listener *listener, void *data)
+ 				for (i = 0; i < (unsigned int)selmon->ntasks; i++)
+ 					if (cx >= selmon->taskx[i] && cx < selmon->taskx[i + 1])
+ 						arg.v = selmon->tasks[i];
++				if (!arg.v && cx >= selmon->titlex0 && cx < selmon->titlex1)
++					arg.v = focustop(selmon);
+ 			}
+ 		}
+ 
+@@ -3520,50 +3522,50 @@ drawtasks(Monitor *m, int x, int w)
+ {
+ 	Client *t, *sel = focustop(m);
+ 	int n = 0, bw, total = 0, bws[32], gap = 3, pad = m->b.height / 8 + 1, bh = m->b.height - 2 * pad - 1;
+-	int line = MAX(2, m->b.height / 12);
+ 
+ 	drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++	m->titlex0 = m->titlex1 = 0;
++	if (sel && sel->isminimized)
++		sel = NULL;
+ 	wl_list_for_each_reverse(t, &clients, link)
+-		if (t->mon == m && (t->tags & m->tagset[m->seltags]) && n < (int)LENGTH(m->tasks))
++		if (t != sel && t->mon == m && (t->tags & m->tagset[m->seltags]) && n < (int)LENGTH(m->tasks))
+ 			m->tasks[n++] = t;
+ 	m->ntasks = n;
+-	if (!n)
+-		return;
++	if (sel)
++		w -= m->b.height * 3;
+ 	for (int i = 0; i < n; i++)
+ 		total += bws[i] = MIN(m->b.height * 9, MAX(m->b.height * 2, TEXTW(m, client_get_title(m->tasks[i])) + gap));
+-	if (total > w - gap)
++	if (n && total > w - gap)
+ 		for (int i = 0; i < n; i++)
+ 			bws[i] = MIN((w - gap) / n, m->b.height * 9);
++	if (sel)
++		w += m->b.height * 3;
+ 	m->taskx[0] = x + gap;
+ 	for (int i = 0; i < n; i++) {
+-		int bx, active;
++		int bx;
+ 		t = m->tasks[i];
+-		active = t == sel && !t->isminimized;
+ 		bw = bws[i];
+ 		bx = m->taskx[i];
+ 		m->taskx[i + 1] = bx + bw;
+-		drwl_setscheme(m->drw, colors[active ? SchemeTaskSel
+-			: m->taskhover == i + 1 ? SchemeTaskHover
++		drwl_setscheme(m->drw, colors[m->taskhover == i + 1 ? SchemeTaskHover
+ 			: t->isminimized ? SchemeTaskMin : SchemeTask]);
+ 		drwl_text(m->drw, bx, pad, bw - gap, bh, m->lrpad / 2, client_get_title(t), 0);
+-		if (active) {
+-			drwl_setscheme(m->drw, colors[SchemeSel]);
+-			drwl_rect(m->drw, bx, pad + bh - line, bw - gap, line, 1, 1);
+-		}
+ 		drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 		drwl_rect(m->drw, bx, pad, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx + bw - gap - 1, pad, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx, pad + bh - 1, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
+ 	}
+-	if (sel && !sel->isminimized && x + w - m->taskx[n] > m->b.height * 3) {
++	if (sel && x + w - m->taskx[n] > m->b.height * 3) {
+ 		const char *title = client_get_title(sel);
+ 		int aw = x + w - m->taskx[n] - 2 * gap, tw = drwl_font_getwidth(m->drw, title);
+ 		int r = bh / 3, margin = MAX(r, m->lrpad);
+ 		int pw = MIN(tw + 2 * margin, MIN(aw, m->b.height * 20));
+ 		int px = m->taskx[n] + gap + (aw - pw) / 2;
+ 		drawpill(m, px, pad, pw, m->b.height - 1 - pad, r);
++		m->titlex0 = px;
++		m->titlex1 = px + pw;
+ 		drwl_setscheme(m->drw, colors[SchemeSel]);
+ 		drwl_text(m->drw, px + margin, pad, pw - 2 * margin, bh, tw < pw - 2 * margin ? (pw - 2 * margin - tw) / 2 : 0, title, 0);
+ 	}
+@@ -3890,6 +3892,8 @@ taskclick(const Arg *arg)
+ 	selmon = t->mon;
+ 	arrange(t->mon);
+ 	focusclient(t, 1);
++	if (!t->isfullscreen && t->isfloating)
++		wlr_scene_node_raise_to_top(&t->scene->node);
+ 	drawbars();
+ }
+ 

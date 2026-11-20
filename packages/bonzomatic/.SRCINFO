@@ -1,7 +1,7 @@
 pkgbase = bonzomatic
 	pkgdesc = Live shader coding tool
 	pkgver = 2023.06.15
-	pkgrel = 7
+	pkgrel = 8
 	url = https://github.com/Gargaj/bonzomatic
 	arch = i686
 	arch = x32
@@ -16,6 +16,8 @@ pkgbase = bonzomatic
 	depends = hicolor-icon-theme
 	depends = libglvnd
 	source = git+https://github.com/Gargaj/bonzomatic#tag=2023-06-15
+	source = bonzomatic-fullscreen-size.patch
 	sha256sums = 5a2aa89e4cb3d93df7ffd2a550e1311045393044c9fc975b9e11279d9638774e
+	sha256sums = 28502cc7bfe4d2030d0eb598b085c98429141449209dfef2d6c5569ba962a825
 
 pkgname = bonzomatic

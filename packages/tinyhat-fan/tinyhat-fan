@@ -13,11 +13,19 @@ case $1 in
       *) mode=full ;;
     esac
     ;;
+  prev)
+    case $(cat "$f" 2>/dev/null) in
+      chill) mode=medium ;;
+      medium) mode=full ;;
+      *) mode=chill ;;
+    esac
+    ;;
   *)
-    echo "usage: tinyhat-fan [full | medium | chill | next]" >&2
+    echo "usage: tinyhat-fan [full | medium | chill | next | prev]" >&2
     exit 2
     ;;
 esac
 printf '%s\n' "$mode" > "$f" || exit 1
 tinyhat-status --refresh > /dev/null 2>&1
+command -v tinyhat-soundd > /dev/null && setsid -f tinyhat-soundd --play "fan-$mode" > /dev/null 2>&1
 exit 0

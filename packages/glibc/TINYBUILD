@@ -71,8 +71,8 @@ function package_glibc
     sed -e '1,3d' -e 's|/| |g' -e 's|\\\\| |g' -e 's|^|#|g' localedata/SUPPORTED >>"$pkgdir"/etc/locale.gen; or return
     sed -e '1,3d' -e 's|/| |g' -e 's| \\\\||g' localedata/SUPPORTED >"$pkgdir"/usr/share/i18n/SUPPORTED; or return
     # C.UTF-8, so that it is always available
-    cp -r "$srcdir"/locales/usr/lib/locale/C.utf8 -t "$pkgdir"/usr/lib/locale; or return
-    sed -i '/#C\.UTF-8 /d' "$pkgdir"/etc/locale.gen; or return
+    cp -r "$srcdir"/locales/usr/lib/locale/C.utf8 "$srcdir"/locales/usr/lib/locale/en_US.utf8 -t "$pkgdir"/usr/lib/locale; or return
+    sed -i -e '/#C\.UTF-8 /d' -e 's/^#en_US\.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' "$pkgdir"/etc/locale.gen; or return
     # Tracing probes for libstdc++ exceptions, used by gdb's catch command
     install -Dm644 "$srcdir"/sdt.h "$pkgdir"/usr/include/sys/sdt.h; or return
     install -Dm644 "$srcdir"/sdt-config.h "$pkgdir"/usr/include/sys/sdt-config.h; or return
@@ -88,7 +88,7 @@ function package_glibc-locales
     set pkgdesc 'Pregenerated locales for GNU C Library'
     set depends "glibc=$pkgver"
     cp -r locales/* -t "$pkgdir"; or return
-    rm -r "$pkgdir"/usr/lib/locale/C.utf8; or return
+    rm -r "$pkgdir"/usr/lib/locale/C.utf8 "$pkgdir"/usr/lib/locale/en_US.utf8; or return
     # deduplicate locale data
     hardlink -c "$pkgdir"/usr/lib/locale; or return
 end

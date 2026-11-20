@@ -1,16 +1,21 @@
 set pkgname love
-set pkgver 12.0.r1835.gb7daef0
-set -g _commit b7daef0f7c1dc5888090f5d5b22d4eaf4ffd1d87
-set pkgrel 2
+set pkgver 12.0.r1853.gdef2451
+set -g _commit def245102c67909f9902095af613b1ae05249b62
+set pkgrel 1
 set pkgdesc 'An open-source 2D game engine which uses the versatile Lua scripting language to create dynamic gaming experiences'
 set arch i686
 set url http://love2d.org/
 set license zlib
-set depends luajit freetype2 harfbuzz openal libvorbis libogg libmodplug sdl3 zlib shared-mime-info hicolor-icon-theme desktop-file-utils libtheora
+set depends luajit freetype2 harfbuzz openal libvorbis libogg libmodplug sdl3 zlib shared-mime-info hicolor-icon-theme desktop-file-utils libtheora openssl
 set makedepends cmake ninja git
 set flags arch
-set source "love::git+https://github.com/love2d/love#commit=$_commit"
-set sha512sums 6f1e23c9456ce83be9227a0036373da8c17e7082d76c871acb7db801d24ab30a23ce1a7c6f72f9a4c67793cef5ce0226e7b2316f59367242926f894ab74eae7f
+set source "love::git+https://github.com/love2d/love#commit=$_commit" love-openssl4.patch
+set sha512sums bd159069b1e5dac11110d877d7d64a6606cce63dd77d48c0b8b00f272a1bccf56af044a9f9fa52323696672a4d0bcafe7f6a8134b6056eee15c1b3d1eb4f573f \
+    b8a953972858c962bbf902548da7a119bd00792cfd69be115711c61a409e16861db076f2a62049da26295396345462839e9c73171d800b5965bc75431be5db6a
+
+function prepare
+    patch -Np1 -d love -i "$srcdir/love-openssl4.patch"; or return
+end
 
 function build
     switch $CARCH

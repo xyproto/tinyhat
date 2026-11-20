@@ -1,0 +1,154 @@
+diff --git a/dwl.c b/dwl.c
+index db2ff5d..7171e7a 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -274,6 +274,13 @@ struct Monitor {
+ 	int lrpad;
+ };
+ 
++static struct {
++	int active, count;
++	double x0, y0;
++	Monitor *m;
++	struct wlr_scene_buffer *node;
++} doodle;
++
+ typedef struct {
+ 	const char *name;
+ 	float mfact;
+@@ -377,6 +384,8 @@ static void taskclick(const Arg *arg);
+ static void taskclose(const Arg *arg);
+ static void taskhover(void);
+ static void tipupdate(void);
++static void doodledraw(void);
++static void doodleend(void);
+ static void wallupdate(void);
+ static void togglelayout(const Arg *arg);
+ static void focusstack(const Arg *arg);
+@@ -1837,6 +1846,13 @@ buttonpress(struct wl_listener *listener, void *data)
+ 
+ 		keyboard = wlr_seat_get_keyboard(seat);
+ 		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
++		if (click == ClkRoot && event->button == BTN_LEFT && !CLEANMASK(mods)) {
++			doodle.active = 1;
++			doodle.m = selmon;
++			doodle.x0 = cursor->x;
++			doodle.y0 = cursor->y;
++			return;
++		}
+ 		for (b = buttons; b < END(buttons); b++) {
+ 			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
+ 				b->func((click == ClkTagBar && b->arg.i == 0) || click == ClkTitle ? &arg : &b->arg);
+@@ -1845,6 +1861,11 @@ buttonpress(struct wl_listener *listener, void *data)
+ 		}
+ 		break;
+ 	case WL_POINTER_BUTTON_STATE_RELEASED:
++		if (doodle.active) {
++			doodleend();
++			cursor_mode = CurNormal;
++			return;
++		}
+ 		/* If you released any buttons, we exit interactive move/resize mode. */
+ 		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
+ 			struct wlr_box snapb;
+@@ -3121,6 +3142,90 @@ wallplace(WallBuffer *b, Monitor *m, double x, double y)
+ 	wlr_scene_node_set_position(&sb->node, m->m.x + (int)(x / s), m->m.y + (int)(y / s));
+ }
+ 
++
++static uint32_t
++doodlepremul(uint32_t rgb, uint32_t a)
++{
++	return a << 24 | ((rgb >> 16 & 0xff) * a / 255) << 16 | ((rgb >> 8 & 0xff) * a / 255) << 8 | (rgb & 0xff) * a / 255;
++}
++
++static uint32_t
++doodlepixel(int shape, double px, double py, double w, double h, double lw, uint32_t accent)
++{
++	uint32_t line = doodlepremul(accent, 0xff), fill = doodlepremul(accent, 0x30);
++	double d, u = px / w, v = py / h;
++	switch (shape) {
++	case 0:
++		if (px < lw || px >= w - lw || py < lw || py >= h - lw)
++			return line;
++		return fill;
++	case 1:
++		if (segdist(px, py, w / 2, 0, 0, h) < lw || segdist(px, py, w / 2, 0, w, h) < lw || py >= h - lw)
++			return line;
++		return fabs(u - 0.5) * 2 < v ? fill : 0;
++	case 2:
++		d = hypot((px - w / 2) / (w / 2), (py - h / 2) / (h / 2));
++		if (fabs(d - 1) * MIN(w, h) / 2 < lw)
++			return line;
++		return d < 1 ? fill : 0;
++	default: {
++		int n = MAX(1, (int)(w / (h * 0.6) + 0.5));
++		double lx = u * n - floor(u * n) + 0.06 * sin(v * 9 + floor(u * n) * 2);
++		if (inflame(lx, v, 0.5, 0.86, 0.14, 0.45))
++			return doodlepremul(0xffe066, 0xff);
++		if (inflame(lx, v, 0.5, 0.8, 0.24, 0.2))
++			return doodlepremul(0xff9e3b, 0xff);
++		return inflame(lx, v, 0.5, 0.74, 0.34, 0.0) ? doodlepremul(0xf7768e, 0xff) : 0;
++	}
++	}
++}
++
++static void
++doodledraw(void)
++{
++	Monitor *m = doodle.m;
++	double s = m->wlr_output->scale;
++	double x0 = MAX(m->m.x, MIN(doodle.x0, cursor->x)), y0 = MAX(m->m.y, MIN(doodle.y0, cursor->y));
++	double x1 = MIN(m->m.x + m->m.width, MAX(doodle.x0, cursor->x)), y1 = MIN(m->m.y + m->m.height, MAX(doodle.y0, cursor->y));
++	int w = (int)((x1 - x0) * s), h = (int)((y1 - y0) * s);
++	int shape = doodle.count < 3 ? 0 : doodle.count < 5 ? 1 : doodle.count < 6 ? 2 : 3;
++	uint32_t accent = colors[SchemeSel][ColBg] >> 8;
++	WallBuffer *b;
++
++	if (doodle.node) {
++		wlr_scene_node_destroy(&doodle.node->node);
++		doodle.node = NULL;
++	}
++	if (w < 4 || h < 4)
++		return;
++	b = wallbuffer(w, h, 0);
++	b->format = DRM_FORMAT_ARGB8888;
++	for (int y = 0; y < h; y++) {
++		uint32_t *row = (uint32_t *)(b->data + (size_t)y * b->stride);
++		for (int x = 0; x < w; x++)
++			row[x] = doodlepixel(shape, x + 0.5, y + 0.5, w, h, MAX(2, 3 * s), accent);
++	}
++	doodle.node = wlr_scene_buffer_create(layers[LyrBottom], &b->base);
++	wlr_buffer_drop(&b->base);
++	if (!doodle.node)
++		return;
++	wlr_scene_buffer_set_dest_size(doodle.node, (int)(x1 - x0), (int)(y1 - y0));
++	wlr_scene_node_set_position(&doodle.node->node, (int)x0, (int)y0);
++}
++
++static void
++doodleend(void)
++{
++	if (!doodle.active)
++		return;
++	if (doodle.node) {
++		wlr_scene_node_destroy(&doodle.node->node);
++		doodle.node = NULL;
++		doodle.count++;
++	}
++	doodle.active = 0;
++}
++
+ static struct wlr_scene_buffer *tipnode;
+ static char tipshown[128];
+ 
+@@ -4483,6 +4588,9 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
+ 	struct wlr_surface *surface = NULL;
+ 	struct wlr_pointer_constraint_v1 *constraint;
+ 
++	if (doodle.active)
++		doodledraw();
++
+ 	/* Find the client under the pointer and send the event along. */
+ 	xytonode(cursor->x, cursor->y, &surface, &c, &l, &sx, &sy);
+ 

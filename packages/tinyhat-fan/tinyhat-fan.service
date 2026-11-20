@@ -1,5 +1,6 @@
 [Unit]
 Description=Tiny Hat fan and CPU power modes: full, medium and chill
+ConditionVirtualization=no
 
 [Service]
 ExecStart=/usr/bin/tinyhat-fand

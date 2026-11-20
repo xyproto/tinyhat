@@ -1,19 +1,8 @@
 #!/bin/sh
 if [ $# -eq 0 ] && [ ! -f config.json ]; then
-	mode=
-	for s in /sys/class/drm/card*-*/status; do
-		[ "$(cat "$s" 2>/dev/null)" = connected ] || continue
-		mode=$(head -n 1 "${s%/status}/modes" 2>/dev/null)
-		[ -n "$mode" ] && break
-	done
-	w=${mode%%x*}
-	h=${mode#*x}
-	h=${h%%[!0-9]*}
-	if [ -n "$w" ] && [ -n "$h" ]; then
-		conf=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bonzomatic.json
-		printf '{ "window": { "width": %s, "height": %s, "fullscreen": true } }\n' "$w" "$h" >"$conf"
-		set -- "$conf"
-	fi
+	conf=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bonzomatic.json
+	printf '{ "window": { "fullscreen": true } }\n' >"$conf"
+	set -- "$conf"
 fi
 major=${TINYHAT_GL_VERSION%%.*}
 minor=${TINYHAT_GL_VERSION#*.}

@@ -3,6 +3,7 @@ export PATH=/usr/bin TERM=linux LANG=C.UTF-8 HOME=/home/tinyhat USER=tinyhat
 mount -t proc proc /proc
 mount -t sysfs sys /sys
 mountpoint -q /dev || mount -t devtmpfs dev /dev
+mountpoint -q /run || mount -t tmpfs -o mode=755 run /run
 mkdir -p /dev/pts /dev/shm
 mount -t devpts -o gid=5,mode=620 devpts /dev/pts
 mount -t tmpfs -o mode=1777 tmp /tmp
@@ -13,11 +14,20 @@ udevadm settle -t 10
 /usr/lib/tinyhat/persist >/dev/null 2>&1
 /usr/lib/systemd/systemd-vconsole-setup /dev/tty1 2>/dev/null
 cd "$HOME"
+action=reboot
 if ! setsid -w -c setpriv --reuid=tinyhat --regid=tinyhat --init-groups o "$HOME" </dev/tty1 >/dev/tty1 2>&1; then
 	printf '\nOrbiton exited with an error. Press Enter to power off.\n' >/dev/tty1
 	read -r _ </dev/tty1
+	action=poweroff
 fi
+splash=
+[ "$action" = reboot ] && tinyhat-splash --shutdown /run/tinyhat/bootsplash-active 2>/dev/null && splash=1
 /usr/lib/tinyhat/persist stop >/dev/null 2>&1
+i=0
+while [ -n "$splash" ] && [ ! -e /run/tinyhat-splash.done ] && [ "$i" -lt 100 ]; do
+	sleep 0.1
+	i=$((i + 1))
+done
 udevadm control --exit
 sync
-exec systemctl poweroff -ff
+exec systemctl "$action" -ff

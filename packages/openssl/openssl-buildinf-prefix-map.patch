@@ -1,0 +1,10 @@
+--- a/util/mkbuildinf.pl
++++ b/util/mkbuildinf.pl
+@@ -11,6 +11,7 @@
+ 
+ my $platform = pop @ARGV;
+ my $cflags = join(' ', @ARGV);
++$cflags =~ s/\s*-f(?:file|debug|macro)-prefix-map=\S+//g;
+ $cflags =~ s(\\)(\\\\)g;
+ $cflags = "compiler: $cflags";
+ 
