@@ -1,0 +1,17 @@
+diff --git a/src/platform_glfw/Renderer.cpp b/src/platform_glfw/Renderer.cpp
+index 15f8be2..f3c147c 100644
+--- a/src/platform_glfw/Renderer.cpp
++++ b/src/platform_glfw/Renderer.cpp
+@@ -260,6 +260,12 @@ bool Open( Renderer::Settings * settings )
+   glfwWindowHint( GLFW_AUTO_ICONIFY, GL_FALSE );
+ 
+   GLFWmonitor * monitor = settings->windowMode == WINDOWMODE_FULLSCREEN ? glfwGetPrimaryMonitor() : NULL;
++  const GLFWvidmode * vidmode = monitor ? glfwGetVideoMode( monitor ) : NULL;
++  if ( vidmode )
++  {
++    nWidth = settings->nWidth = vidmode->width;
++    nHeight = settings->nHeight = vidmode->height;
++  }
+ 
+   mWindow = glfwCreateWindow( nWidth, nHeight, "BONZOMATIC - GLFW edition", monitor, NULL );
+   if ( !mWindow )

@@ -1,0 +1,14 @@
+diff --git a/src/libraries/luahttps/src/generic/OpenSSLConnection.cpp b/src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
+index ff5404e..73a0507 100644
+--- a/src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
++++ b/src/libraries/luahttps/src/generic/OpenSSLConnection.cpp
+@@ -29,7 +29,8 @@ OpenSSLConnection::SSLFuncs::SSLFuncs()
+ 	handle *sslhandle = nullptr;
+ 	handle *cryptohandle = nullptr;
+ 
+-	valid = TryOpenLibraries("libssl.so.3", sslhandle, "libcrypto.so.3", cryptohandle)
++	valid = TryOpenLibraries("libssl.so.4", sslhandle, "libcrypto.so.4", cryptohandle)
++		|| TryOpenLibraries("libssl.so.3", sslhandle, "libcrypto.so.3", cryptohandle)
+ 		|| TryOpenLibraries("libssl.so.1.1", sslhandle, "libcrypto.so.1.1", cryptohandle)
+ 		|| TryOpenLibraries("libssl.so.1.0.0", sslhandle, "libcrypto.so.1.0.0", cryptohandle)
+ 		// Try the version-less name last, it may not be compatible or tested

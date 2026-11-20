@@ -1,6 +1,6 @@
 set pkgname tinyhat-desktop
 set pkgver 1
-set pkgrel 4
+set pkgrel 5
 set pkgdesc 'Tiny Hat desktop: menu entries, icons, launchers and the dwl configuration'
 set arch any
 set url https://github.com/xyproto/tinyhat

@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=NetSurfy web browser
-Icon=web-browser
-Comment=NetSurfy web browser
-Exec=tinyhat-run -n NetSurfy netsurfy
-Terminal=false
-Categories=Network;WebBrowser;

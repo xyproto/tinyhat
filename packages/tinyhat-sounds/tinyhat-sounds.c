@@ -6,6 +6,7 @@ static const struct {
 	{ "startup", "Startup sound" },
 	{ "typewriter", "Typewriter sounds while typing" },
 	{ "fart", "Fart sounds while typing" },
+	{ "fan", "Fan sounds when the fan mode changes" },
 	{ "shutdown", "Shutdown sound" },
 };
 

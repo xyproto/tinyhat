@@ -24,7 +24,7 @@
 enum { RATE = 44100, VOICES = 6, EVENTS = 64, IDLE_MS = 2000, SAMPLES = 7, HISTORY = 3, THROTTLE_MS = 700 };
 
 typedef struct {
-	bool startup, typewriter, fart, shutdown;
+	bool startup, typewriter, fart, shutdown, fan;
 } config;
 
 typedef struct {
@@ -148,6 +148,8 @@ static config load(void)
 				c.fart = v;
 			else if (!strcmp(key, "shutdown"))
 				c.shutdown = v;
+			else if (!strcmp(key, "fan"))
+				c.fan = v;
 		}
 	fclose(f);
 	if (typewriter_wanted()) {
@@ -463,6 +465,54 @@ static void typewriter(char c)
 	}
 }
 
+static sample fan_sample;
+
+static float fan_noise(void)
+{
+	return (float)rand() / (float)RAND_MAX * 2.0f - 1.0f;
+}
+
+static int fan_sound(const char *mode)
+{
+	float secs = !strcmp(mode, "full") ? 1.1f : !strcmp(mode, "medium") ? 0.9f : 1.3f;
+	size_t n = (size_t)(secs * RATE);
+	float *d = calloc(2 * n, sizeof(float)), phase = 0.0f, lp = 0.0f;
+	if (!d)
+		return 0;
+	for (size_t i = 0; i < n; i++) {
+		float t = (float)i / RATE, u = t / secs, x;
+		float env = fminf(1.0f, fminf(t / 0.02f, (secs - t) / 0.25f));
+		if (!strcmp(mode, "full")) {
+			float f = t < 0.55f ? 70.0f + 230.0f * (1.0f - expf(-4.0f * t)) : 150.0f + 260.0f * (1.0f - expf(-4.0f * (t - 0.55f)));
+			phase += f / RATE;
+			phase -= floorf(phase);
+			x = 0.7f * (2.0f * phase - 1.0f) + 0.3f * (phase < 0.5f ? 1.0f : -1.0f);
+			lp += 0.35f * (x - lp);
+			x = lp;
+		} else if (!strcmp(mode, "medium")) {
+			float f = 110.0f + 50.0f * t;
+			phase += f / RATE;
+			phase -= floorf(phase);
+			x = (phase < 0.5f ? 1.0f : -1.0f) * (sinf(6.2832f * 22.0f * t) > 0.0f ? 1.0f : 0.25f);
+			lp += 0.2f * (x - lp);
+			x = lp;
+		} else {
+			float a = 0.01f + 0.06f * sinf(3.1416f * u);
+			lp += a * (fan_noise() - lp);
+			x = 4.0f * lp;
+			env = sinf(3.1416f * u) * sinf(3.1416f * u);
+		}
+		d[2 * i] = d[2 * i + 1] = 0.12f * env * x;
+	}
+	SDL_LockMutex(lock);
+	farts[0].s = nullptr;
+	free(fan_sample.data);
+	fan_sample = (sample){ d, n };
+	farts[0] = (fart){ &fan_sample, 0 };
+	SDL_UnlockMutex(lock);
+	return (int)(secs * 1000) + 100;
+}
+
 static bool plays_sound(const char *pid)
 {
 	static const char *const apps[] = {
@@ -552,6 +602,10 @@ static int preview(const char *what)
 			key(*p, c);
 			SDL_Delay(p[1] ? 140 : 1200);
 		}
+	} else if (!strcmp(what, "fan")) {
+		static const char *const modes[] = { "chill", "medium", "full" };
+		for (size_t i = 0; i < SDL_arraysize(modes); i++)
+			play_and_wait(fan_sound(modes[i]));
 	} else if (!strcmp(what, "fart")) {
 		add_fart(false);
 		SDL_ResumeAudioStreamDevice(stream);
@@ -717,6 +771,13 @@ int main(int argc, char *argv[])
 			return kill(pid, SIGHUP) ? 1 : 0;
 		return cfg.typewriter || cfg.fart ? start_daemon() : 0;
 	}
+	if (!strcmp(mode, "--play") && argc > 2 && !strncmp(argv[2], "fan-", 4)) {
+		if (!cfg.fan || !audio_open())
+			return 0;
+		play_and_wait(fan_sound(argv[2] + 4));
+		audio_close();
+		return 0;
+	}
 	if (!strcmp(mode, "--play") && argc > 2) {
 		bool up = !strcmp(argv[2], "startup");
 		if (!(up ? cfg.startup : cfg.shutdown) || !audio_open()) {
@@ -747,7 +808,7 @@ int main(int argc, char *argv[])
 		return r;
 	}
 	if (*mode) {
-		fprintf(stderr, "usage: tinyhat-soundd [--keys | --reload | --play startup|shutdown | --preview startup|typewriter|fart|shutdown]\n");
+		fprintf(stderr, "usage: tinyhat-soundd [--keys | --reload | --play startup|shutdown|fan-full|fan-medium|fan-chill | --preview startup|typewriter|fart|fan|shutdown]\n");
 		return 2;
 	}
 	if (!(cfg.startup || cfg.typewriter || cfg.fart) || !audio_open())

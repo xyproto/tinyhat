@@ -111,6 +111,12 @@ shown = "Ctrl+Alt+Up / Down"
 description = "Audio volume"
 
 [[key]]
+hotkey = "Ctrl+Alt+Right"
+run = "tinyhat-fan next"
+shown = "Ctrl+Alt+Left / Right"
+description = "Fan/CPU mode"
+
+[[key]]
 hotkey = "Alt+F2"
 run = "tinyhat-run"
 description = "Run a command (Win+R also works)"
@@ -288,6 +294,10 @@ separator = true
 [[key]]
 hotkey = "Ctrl+Alt+Down"
 run = "tinyhat-volume down"
+
+[[key]]
+hotkey = "Ctrl+Alt+Left"
+run = "tinyhat-fan prev"
 
 [[key]]
 hotkey = "Alt+F4"

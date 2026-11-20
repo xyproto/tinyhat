@@ -1,0 +1,13 @@
+{
+  "logo": {
+    "type": "file",
+    "source": "/usr/share/tinyhat/fastfetch-logo.txt",
+    "color": { "1": "38;2;220;50;47", "2": "38;2;224;224;224" },
+    "padding": { "top": 1 }
+  },
+  "modules": [
+    "title", "separator", "os", "host", "kernel", "uptime", "packages", "shell", "display", "de", "wm", "wmtheme",
+    "theme", "icons", "font", "cursor", "terminal", "terminalfont", "cpu", "gpu", "memory", "swap", "disk", "localip",
+    "battery", "poweradapter", "locale", "break", "colors"
+  ]
+}

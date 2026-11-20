@@ -1,6 +1,6 @@
 set pkgname bonzomatic
 set pkgver 2023.06.15
-set pkgrel 7
+set pkgrel 8
 set pkgdesc 'Live shader coding tool'
 set arch i686 x32
 set url https://github.com/Gargaj/bonzomatic
@@ -8,9 +8,14 @@ set license Unlicense
 set depends alsa-lib fontconfig glew glfw hicolor-icon-theme libglvnd
 # No chrpath: CMAKE_SKIP_INSTALL_RPATH=ON keeps the $ORIGIN/../lib RPATH that CMakeLists.txt sets out of the binary
 set makedepends cmake git glu
-set source 'git+https://github.com/Gargaj/bonzomatic#tag=2023-06-15'
-set sha256sums 5a2aa89e4cb3d93df7ffd2a550e1311045393044c9fc975b9e11279d9638774e
+set source 'git+https://github.com/Gargaj/bonzomatic#tag=2023-06-15' bonzomatic-fullscreen-size.patch
+set sha256sums 5a2aa89e4cb3d93df7ffd2a550e1311045393044c9fc975b9e11279d9638774e \
+    28502cc7bfe4d2030d0eb598b085c98429141449209dfef2d6c5569ba962a825
 set flags arch
+
+function prepare
+    patch -Np1 -d bonzomatic -i "$srcdir/bonzomatic-fullscreen-size.patch"; or return
+end
 
 function build
     cmake -B build -D BONZOMATIC_USE_SYSTEM_GLFW=on -D BONZOMATIC_USE_SYSTEM_GLEW=on -D CMAKE_BUILD_TYPE=Release -D CMAKE_C_FLAGS="$CFLAGS -fPIC -w" -D CMAKE_CXX_FLAGS="$CXXFLAGS -fPIC -w" -D CMAKE_INSTALL_LIBDIR=lib -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_POLICY_VERSION_MINIMUM=3.5 -D CMAKE_SKIP_INSTALL_RPATH=ON -S $pkgname; or return

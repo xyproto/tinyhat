@@ -1,5 +1,5 @@
 set pkgname openssl
-set pkgver 3.6.5
+set pkgver 4.1.0
 set pkgrel 1
 set pkgdesc 'The Open Source toolkit for cryptography and Transport Layer Security'
 set arch i686 x32
@@ -12,53 +12,31 @@ set provides libcrypto.so libssl.so
 set replaces openssl-perl openssl-doc
 set backup etc/ssl/openssl.cnf
 set source "https://github.com/openssl/openssl/releases/download/openssl-$pkgver/openssl-$pkgver.tar.gz" \
-    ca-dir.patch
-set sha256sums a2157c2830efdec3788939b00c9b0638306d3f0bbb76dc4832ee503bb397df98 \
-    0a32d9ca68e8d985ce0bfef6a4c20b46675e06178cc2d0bf6d91bd6865d648b7
+    ca-dir.patch \
+    openssl-buildinf-prefix-map.patch
+set sha256sums 50c17baf54cb008f6ce42d50deb4b28050a1aad711636cabd4b241c7e90cc2fd \
+    0a32d9ca68e8d985ce0bfef6a4c20b46675e06178cc2d0bf6d91bd6865d648b7 \
+    77d13fce0874cae441895af07406ea908e52f2d3e5299479c780567253efbc3b
 set flags arch
 
 function prepare
     cd "$srcdir/$pkgname-$pkgver"; or return
     patch -Np1 -i "$srcdir/ca-dir.patch"; or return
+    patch -Np1 -i "$srcdir/openssl-buildinf-prefix-map.patch"; or return
 end
 
-switch $CARCH
-    case x32
-        function build
-            cd "$srcdir/$pkgname-$pkgver"; or return
-            set -l _platform linux-x32
-            switch "$CARCH"
-                case riscv64
-                    set _platform "linux64-$CARCH"
-            end
-            ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls enable-brotli enable-zlib enable-zstd $_platform; or return
-            make depend; or return
-            make; or return
-        end
-    case x86_64 aarch64
-        function build
-            cd "$srcdir/$pkgname-$pkgver"; or return
-            set -l _platform linux-generic32
-            switch "$CARCH"
-                case riscv64
-                    set _platform "linux64-$CARCH"
-            end
-            ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls enable-brotli enable-zlib enable-zstd $_platform; or return
-            make depend; or return
-            make; or return
-        end
-    case '*'
-        function build
-            cd "$srcdir/$pkgname-$pkgver"; or return
-            set -l _platform linux-generic32
-            switch "$CARCH"
-                case riscv64
-                    set _platform "linux64-$CARCH"
-            end
-            ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls no-sse2 enable-brotli enable-zlib enable-zstd $_platform; or return
-            make depend; or return
-            make; or return
-        end
+function build
+    cd "$srcdir/$pkgname-$pkgver"; or return
+    set -l platform linux-generic32 no-sse2
+    switch $CARCH
+        case x32
+            set platform linux-x32
+        case x86_64 aarch64
+            set platform linux-$CARCH enable-ec_nistp_64_gcc_128
+    end
+    ./Configure --prefix=/usr --openssldir=/etc/ssl --libdir=lib shared enable-ktls enable-brotli enable-zlib enable-zstd $platform; or return
+    make depend; or return
+    make; or return
 end
 
 function package

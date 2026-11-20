@@ -1,5 +1,5 @@
 diff --git a/dwl.c b/dwl.c
-index 80c2a23..c88171a 100644
+index 80c2a23..1147b8b 100644
 --- a/dwl.c
 +++ b/dwl.c
 @@ -264,6 +264,7 @@ struct Monitor {
@@ -26,10 +26,10 @@ index 80c2a23..c88171a 100644
  			return fg;
  		return x >= 0.62 && x < 0.95 && y >= 0.62 && y < 0.69 ? fg : 0;
 +	case 'F': {
-+		uint32_t c = arg == 'c' ? 0x7dcfffff : arg == 'f' ? 0xff9e3bff : fg;
-+		double a;
-+		dx = x - 0.5;
-+		dy = y - 0.5;
++		uint32_t c = arg == 'f' ? 0xff9e3bff : fg;
++		double a, k = arg == 'c' ? 0.6 : 1.0;
++		dx = (x - 0.5) / k;
++		dy = (y - 0.5) / k;
 +		d = hypot(dx, dy);
 +		if (d < 0.1)
 +			return c;
@@ -79,15 +79,17 @@ index 80c2a23..c88171a 100644
  				default: t[0] = '\0';
  				}
  				if (t[0]) {
-@@ -3003,6 +3024,8 @@ statusitems(Monitor *m, int x, char *s, int draw)
+@@ -3003,7 +3024,9 @@ statusitems(Monitor *m, int x, char *s, int draw)
  			x += iconw(m, kind);
  			if (draw && (kind == 'V' || kind == 'M'))
  				m->volx1 = x;
+-			if (strchr("VMBCW", kind))
 +			if (draw && kind == 'F')
-+				m->fanx1 = x + (*text ? space + (int)drwl_font_getwidth(m->drw, text) : 0);
- 			if (strchr("VMBCW", kind))
++				m->fanx1 = x;
++			if (strchr("VMBCWF", kind))
  				text = "";
  			else if (*text)
+ 				x += space;
 @@ -3405,7 +3428,7 @@ drawbar(Monitor *m)
  	if (m == selmon) { /* status is only drawn on selected monitor */
  		drwl_setscheme(m->drw, colors[SchemeStatus]);
