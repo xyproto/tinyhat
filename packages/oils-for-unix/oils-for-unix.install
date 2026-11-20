@@ -2,6 +2,8 @@ post_install() {
   for _sh in /bin/osh /bin/ysh /usr/bin/osh /usr/bin/ysh; do
     grep -Fqx "$_sh" etc/shells || echo "$_sh" >> etc/shells
   done
+
+  ln -sf /usr/bin/osh /bin/sh
 }
 
 post_upgrade() {
