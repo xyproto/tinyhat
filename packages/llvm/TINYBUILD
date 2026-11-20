@@ -16,6 +16,7 @@ function build
         -DCMAKE_CXX_FLAGS_RELEASE="-Os -DNDEBUG" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_SKIP_INSTALL_RPATH=ON \
+        -DCMAKE_BUILD_RPATH='$ORIGIN/../lib' \
         -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
         -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld" \
         -DLLVM_BUILD_LLVM_DYLIB=ON \
