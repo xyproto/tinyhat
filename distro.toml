@@ -18,6 +18,7 @@ x32 = []
 # everywhere: never built, installed or used as a build dependency either.
 # files: no root filesystem may contain these, whichever package they come from.
 image = [
+    "openssl<4", "openssl-3",
     "perl", "perl-*",
     "sdl2-*", "sdl2_*",
     "guile", "portaudio", "libheif", "libavif", "libjxl",

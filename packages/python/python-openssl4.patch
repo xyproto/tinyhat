@@ -1,0 +1,19 @@
+--- a/Modules/_ssl.c
++++ b/Modules/_ssl.c
+@@ -136,6 +136,16 @@
+ #error Unsupported OpenSSL version
+ #endif
+ 
++#if (OPENSSL_VERSION_NUMBER >= 0x40000000L)
++/* OpenSSL 4.0 removed SSLv3 and the version-specific methods,
++ * but TLS 1.0, 1.1 and 1.2 are still available via TLS_method(). */
++#  define OPENSSL_NO_SSL3
++#  define OPENSSL_NO_SSL3_METHOD
++#  define OPENSSL_NO_TLS1_METHOD
++#  define OPENSSL_NO_TLS1_1_METHOD
++#  define OPENSSL_NO_TLS1_2_METHOD
++#endif
++
+ /* OpenSSL API 1.1.0+ does not include version methods */
+ #ifndef OPENSSL_NO_SSL3_METHOD
+ extern const SSL_METHOD *SSLv3_method(void);

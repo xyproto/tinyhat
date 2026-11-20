@@ -1,6 +1,6 @@
 pkgbase = tinyhat-boot-animations
 	pkgdesc = Tiny Hat Boot Animations gallery, for choosing and previewing boot and shutdown animations
-	pkgver = 1.0.2
+	pkgver = 1.0.2.r1.g018ff5e
 	pkgrel = 1
 	url = https://github.com/xyproto/tinyhat-bootsplash
 	arch = i686
@@ -11,7 +11,7 @@ pkgbase = tinyhat-boot-animations
 	depends = glibc
 	depends = gtk4
 	depends = tinyhat-splash
-	source = tinyhat-bootsplash-1.0.2.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/refs/tags/v1.0.2.tar.gz
-	sha256sums = 2e34888904ce48004dfdd8b2e893c3dac72ac460fa2165e58ac85406f32124f9
+	source = tinyhat-bootsplash-018ff5e819d6510557ab4e7f492054e0a8d42fc2.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/018ff5e819d6510557ab4e7f492054e0a8d42fc2.tar.gz
+	sha256sums = cbe45ea33a776fe05058eaa5a8302b4c4c1953ac268c919147509d6659aaa83b
 
 pkgname = tinyhat-boot-animations
