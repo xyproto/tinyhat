@@ -20,6 +20,7 @@ def main():
     root, lockfile, arch = sys.argv[1:4]
     warn = DBS[arch] is None
     index = arch_index(arch)
+    needed = {d for e in index.values() for d in e.get("depends", [])}
     missing = []
     for p in pkg.read_lock(lockfile):
         if p["repo"] != "tinyhat":
@@ -29,7 +30,7 @@ def main():
             continue
         for pv in theirs.get("provides_full", []):
             m = re.fullmatch(r"(lib[^=]+\.so)=(\d+)-(32|64)", pv)
-            if not m:
+            if not m or m.group(1) not in needed:
                 continue
             lib = f"{m.group(1)}.{m.group(2)}"
             dirs = [os.path.join(root, d) for d in ("usr/lib", "usr/lib32")]
