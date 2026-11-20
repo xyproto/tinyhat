@@ -1,7 +1,8 @@
 # The Boot Animations gallery from tinyhat-bootsplash: a GTK 4 program for choosing and previewing the boot and
 # shutdown animations. The splash itself is packages/tinyhat-splash
 set pkgname tinyhat-boot-animations
-set pkgver 1.0.2
+set pkgver 1.0.2.r1.g018ff5e
+set -g _commit 018ff5e819d6510557ab4e7f492054e0a8d42fc2
 set pkgrel 1
 set pkgdesc 'Tiny Hat Boot Animations gallery, for choosing and previewing boot and shutdown animations'
 set arch i686 x32
@@ -9,11 +10,11 @@ set url https://github.com/xyproto/tinyhat-bootsplash
 set license BSD-3-Clause
 set depends glibc gtk4 tinyhat-splash
 set makedepends_host gtk4
-set source "tinyhat-bootsplash-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/refs/tags/v$pkgver.tar.gz"
-set sha256sums 2e34888904ce48004dfdd8b2e893c3dac72ac460fa2165e58ac85406f32124f9
+set source "tinyhat-bootsplash-$_commit.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/$_commit.tar.gz"
+set sha256sums cbe45ea33a776fe05058eaa5a8302b4c4c1953ac268c919147509d6659aaa83b
 
 function build
-    cd tinyhat-bootsplash-$pkgver; or return
+    cd tinyhat-bootsplash-$_commit; or return
     # The theme colours come from the environment, as #rrggbb
     set -l hat (string replace -r '^#' '' -- "$TINYHAT_THEME_HAT_COLOR")
     set -l highlight (string replace -r '^#' '' -- "$TINYHAT_THEME_HAT_HIGHLIGHT_COLOR")
@@ -21,8 +22,7 @@ function build
 end
 
 function package
-    cd tinyhat-bootsplash-$pkgver; or return
+    cd tinyhat-bootsplash-$_commit; or return
     install -Dm755 tinyhat-boot-animations "$pkgdir"/usr/bin/tinyhat-boot-animations; or return
-    install -Dm644 system/tinyhat-boot-animations.desktop "$pkgdir"/usr/share/applications/tinyhat-boot-animations.desktop; or return
     install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE; or return
 end

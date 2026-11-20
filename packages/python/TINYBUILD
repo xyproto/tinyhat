@@ -8,12 +8,14 @@ set url https://www.python.org/
 set license PSF-2.0
 set depends bzip2 expat gdbm libffi libnsl libxcrypt openssl zlib tzdata mpdecimal zstd sqlite
 set provides "python3=$pkgver"
-set source "https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz"
-set sha512sums 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a
+set source "https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz" python-openssl4.patch
+set sha512sums 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a \
+    a21bd0012f52c4308cbe4ba025054174512d5f8179e995501c29906f0bfad0eb7b53a15467dfd058fe335fcb4400cd694b3b346134eddc58b7470c389a429d2e
 
 function prepare
     cd Python-$pkgver; or return
     rm -r Modules/expat Modules/_decimal/libmpdec; or return
+    patch -Np1 -i ../python-openssl4.patch; or return
 end
 
 function build
@@ -39,6 +41,11 @@ function package
     ln -s pydoc3 "$pkgdir/usr/bin/pydoc"; or return
     ln -s python$_pybasever.1 "$pkgdir/usr/share/man/man1/python.1"; or return
     rm -rf "$pkgdir/usr/lib/python$_pybasever"/{test,idlelib,tkinter,turtledemo,turtle.py}; or return
+    set -l lib "$pkgdir/usr/lib/python$_pybasever"
+    for f in $lib/_sysconfigdata_*.py $lib/_sysconfig_vars_*.json $lib/config-$_pybasever-*/Makefile
+        sed -i "s|$srcdir/Python-$pkgver|.|g" -- $f; or return
+    end
+    rm -f $lib/__pycache__/_sysconfigdata_*.pyc; or return
     rm -f "$pkgdir"/usr/bin/{idle,idle3,"idle$_pybasever"}; or return
     printf '%s\n' \
         '[externally-managed]' \

@@ -1,5 +1,6 @@
 set pkgname netsurfy
-set pkgver 1.1.7
+set pkgver 1.1.7.r1.g92954bf3
+set -g _commit 92954bf332ee19d926e7624db907b67187f4ea88
 set pkgrel 1
 set pkgdesc 'Lightweight and fast web browser, forked from NetSurf'
 set arch i686 x32
@@ -10,15 +11,15 @@ set makedepends bison cmake flex ninja perl
 set provides netsurf
 set conflicts netsurf
 set replaces netsurf
-set source "$pkgname-$pkgver.tar.gz::https://github.com/xyproto/netsurfy/archive/refs/tags/v$pkgver.tar.gz" \
+set source "$pkgname-$_commit.tar.gz::https://github.com/xyproto/netsurfy/archive/$_commit.tar.gz" \
     netsurfy-sandbox
-set sha256sums 613ba291d82b70c0bdb4e716c820b693a90361a35e09e2b6096b0c72b9d253f0 \
+set sha256sums b22061267d45f8aacc743471beef8330912e309d3fe4fe37906733edb6b13d48 \
     ea5a5076aca2aa426835ae8ccd3b4afd0359de1052c50f01a20c4ea576fb6763
-set b2sums 769de89d48e4f4a76f37dc3cf29f79ec253c12ea8c262b60c25f149a07072eea2a18fa139676bff34974ddc752bf0f450ddf420bef5c2cad868c387dbd61bd4f \
+set b2sums fbc250128be2d2dce296478029e1f760c51d3038a66c7e98dfe27587acdd3cb734fbadcc6e81e49c271e300a8ece5fa2d9724987788a0174243aec72e3933ed0 \
     02289e48d8faa822a3e80a0bc34be200fbad9235252644339962d86e8fba79ee0481a803aaeec604274c43602f8a88920f1f4fef8931e12ded149e0be277ece1
 
 function build
-    cmake -B build -S $pkgname-$pkgver -G Ninja \
+    cmake -B build -S $pkgname-$_commit -G Ninja \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_BUILD_TYPE=None \
         -DBUILD_TESTING=OFF \
@@ -33,7 +34,7 @@ function package
     install -Dm755 netsurfy-sandbox "$pkgdir/usr/bin/$pkgname"; or return
     # netsurfy-headless: the same browser without a window, driven on stdin and stdout (no install rule upstream)
     install -Dm755 build/netsurfy-headless "$pkgdir/usr/bin/netsurfy-headless"; or return
-    cd $pkgname-$pkgver; or return
+    cd $pkgname-$_commit; or return
     install -Dm644 img/gtk/$pkgname.xpm "$pkgdir/usr/share/pixmaps/$pkgname.xpm"; or return
     install -Dm644 src/frontends/gtk/res/$pkgname.desktop "$pkgdir/usr/share/applications/$pkgname.desktop"; or return
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
