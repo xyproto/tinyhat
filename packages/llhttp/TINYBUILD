@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Port of http_parser to llparse'
 set arch i686 x32
 set url https://llhttp.org
+set nvchecker source=git git=https://github.com/nodejs/llhttp.git prefix=v
 set license MIT
 set depends glibc
 set makedepends cmake

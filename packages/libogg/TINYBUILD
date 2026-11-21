@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Ogg bitstream and framing library'
 set arch i686 x32
 set url https://www.xiph.org/ogg/
+set nvchecker source=git git=https://github.com/xiph/ogg.git prefix=v
 set license BSD
 set depends glibc
 set makedepends cmake git ninja

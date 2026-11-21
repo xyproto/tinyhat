@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'The blessed package to manage your versions by vcs metadata'
 set arch any
 set url https://github.com/pypa/setuptools-scm
+set nvchecker source=git git=https://github.com/pypa/setuptools-scm.git prefix=vcs-versioning-v 'include_regex=vcs-versioning-v.*'
 set license MIT
 set depends python python-packaging python-setuptools
 set makedepends git python-build python-installer

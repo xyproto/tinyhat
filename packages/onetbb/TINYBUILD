@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'oneAPI Threading Building Blocks - a high level abstract threading library'
 set arch i686 x32
 set url https://uxlfoundation.github.io/oneTBB/
+set nvchecker source=git git=https://github.com/oneapi-src/oneTBB.git prefix=v 'exclude_regex=.*(pre|a|alpha|b|beta|rc).*'
 set license Apache-2.0
 set depends glibc hwloc libgcc libstdc++
 # No Python module (swig, pip) and no test programs (the tests hang anyway, see below)

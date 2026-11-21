@@ -3,6 +3,7 @@ set pkgver 3.8.0
 set pkgrel 1
 set pkgdesc 'Free OpenGL Utility Toolkit'
 set url https://freeglut.sourceforge.net/
+set nvchecker source=git git=https://github.com/FreeGLUTProject/freeglut.git 'include_regex=v\d+(\.\d+)*' prefix=v 'from_pattern=-([a-z])' 'to_pattern=\1'
 set arch i686 x32
 set license X11
 set depends glibc \

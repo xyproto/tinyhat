@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'JSON library built on GLib'
 set arch i686 x32
 set url https://gnome.pages.gitlab.gnome.org/json-glib/
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/json-glib.git 'include_regex=\d+\.\d*[02468]\.\d+'
 set license LGPL-2.1-or-later
 set depends glib2 glibc
 # No API documentation (gi-docgen, docbook-xsl); man pages only need python-docutils

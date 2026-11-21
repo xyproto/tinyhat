@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A high quality MPEG Audio Layer III (MP3) encoder'
 set arch i686 x32
 set url http://lame.sourceforge.net/
+set nvchecker source=regex url=https://sourceforge.net/projects/lame/best_release.json 'regex=lame-([\d.]+).tar'
 set license LGPL-2.0-only
 set depends glibc mpg123 ncurses
 set makedepends nasm

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'C library to read HRTFs if they are stored in the AES69-2015 SOFA format'
 set arch i686 x32
 set url https://github.com/hoene/libmysofa/
+set nvchecker source=git git=https://github.com/hoene/libmysofa.git prefix=v
 set license BSD-3-Clause
 set depends glibc zlib
 # No tests (cunit), so no mysofa2json test tool either

@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'The GL Vendor-Neutral Dispatch library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/glvnd/libglvnd
+set nvchecker source=git git=https://gitlab.freedesktop.org/glvnd/libglvnd.git prefix=v
 set license custom:BSD-like
 set makedepends python meson
 # mesa (the OpenGL vendor libraries that libglvnd loads) is only needed at run time, and mesa is built with libglvnd

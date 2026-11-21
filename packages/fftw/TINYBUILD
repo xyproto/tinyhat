@@ -6,6 +6,7 @@ set pkgrel 1
 set pkgdesc 'A library for computing the discrete Fourier transform (DFT)'
 set arch i686 x32
 set url http://www.fftw.org/
+set nvchecker source=regex url=http://www.fftw.org/download.html 'regex=FFTW [\d.]+' 'prefix=FFTW '
 set license GPL-2.0-or-later
 set makedepends bash cmake gcc-fortran glibc libgcc libgomp libquadmath
 set flags arch

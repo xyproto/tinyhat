@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A template library written in Python'
 set arch any
 set url https://github.com/sqlalchemy/mako
+set nvchecker source=pypi pypi=mako
 set license MIT
 set depends python python-markupsafe
 set makedepends git python-build python-installer python-setuptools python-wheel

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Compiler cache that speeds up recompilation by caching previous compilations'
 set arch i686 x32
 set url https://ccache.dev/
+set nvchecker source=git git=https://github.com/ccache/ccache.git prefix=v
 set license GPL-3.0-or-later
 set depends fmt glibc libblake3 libgcc libstdc++ xxhash libxxhash.so zstd libzstd.so
 # Its own copy of tl-expected (header only), no tests (doctest) and no remote storage (Redis, HTTP): a local cache

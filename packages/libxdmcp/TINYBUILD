@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'X11 Display Manager Control Protocol library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/xorg/lib/libxdmcp
+set nvchecker source=gitlab gitlab=xorg/lib/libxdmcp host=gitlab.freedesktop.org use_max_tag=true 'include_regex=.*libXdmcp-.*' prefix=libXdmcp-
 set license MIT-open-group
 set depends glibc xorgproto
 set makedepends xorg-util-macros

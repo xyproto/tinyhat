@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'A lightweight C library for storing RDF data in memory'
 set arch i686 x32
 set url https://drobilla.net/software/sord.html
+set nvchecker source=git git=https://gitlab.com/drobilla/sord prefix=v
 set license ISC
 # No documentation (doxygen, python-sphinx)
 set makedepends glibc meson pcre2 serd zix

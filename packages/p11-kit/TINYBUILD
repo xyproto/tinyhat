@@ -4,6 +4,7 @@ set pkgver 0.26.5
 set pkgrel 1
 set pkgdesc 'Loads and enumerates PKCS#11 modules'
 set url https://p11-glue.freedesktop.org
+set nvchecker source=git git=https://github.com/p11-glue/p11-kit.git
 set arch i686 x32
 set license BSD-3-Clause
 set depends coreutils glibc libtasn1

@@ -11,6 +11,7 @@ set pkgrel 2
 set pkgdesc 'Command line implementation of the BLAKE3 hash function'
 set arch i686 x32
 set url https://github.com/BLAKE3-team/BLAKE3
+set nvchecker source=git git=https://github.com/BLAKE3-team/BLAKE3.git
 set license 'CC0-1.0 OR Apache-2.0 OR Apache-2.0 WITH LLVM-exception'
 set depends glibc libgcc
 set -g makedepends cmake git

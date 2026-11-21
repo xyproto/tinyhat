@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A highly accurate clone of the classic ProTracker 2.3D software for Amiga'
 set arch i686 x32
 set url https://16-bits.org/pt2.php
+set nvchecker source=git git=https://github.com/8bitbubsy/pt2-clone.git prefix=v
 set license BSD-3-Clause
 set depends glibc alsa-lib sdl3 hicolor-icon-theme
 set makedepends git cmake

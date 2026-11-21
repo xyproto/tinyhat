@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A feature-rich and performance oriented neofetch like system information tool'
 set arch i686 x32
 set url https://github.com/fastfetch-cli/fastfetch
+set nvchecker source=git git=https://github.com/fastfetch-cli/fastfetch.git prefix=v
 set license MIT
 set depends glibc yyjson
 # No image logos (imagemagick, chafa), X11 (xcb, xrandr, glx), VA-API/VDPAU, OpenCL, dconf or xfconf: Tiny Hat has none

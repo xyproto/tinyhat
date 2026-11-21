@@ -10,6 +10,7 @@ set pkgrel 5
 set pkgdesc 'Cyrus Simple Authentication Service Layer (SASL) library'
 set arch i686 x32
 set url https://www.cyrusimap.org/sasl/
+set nvchecker source=git git=https://github.com/cyrusimap/cyrus-sasl prefix=cyrus-sasl-
 set -g _url https://github.com/cyrusimap/cyrus-sasl
 set license BSD-3-Clause-Attribution
 set depends glibc

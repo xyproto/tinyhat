@@ -1,4 +1,5 @@
 #!/bin/sh
+command -v tinyhat-notify >/dev/null && tinyhat-notify send "$1" ${2:+"$2"} >/dev/null 2>&1 && exit 0
 bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
 stamp=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-notice
 [ -p "$bar" ] || exit 0

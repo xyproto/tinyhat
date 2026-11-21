@@ -5,6 +5,7 @@ set pkgdesc 'Lean cryptographic library usable for bare-metal environments'
 set arch i686 x32
 set license GPL-2.0-or-later LicenseRef-BSDvariant LicenseRef-leancrypto
 set url https://leancrypto.org
+set nvchecker source=github github=smuellerDD/leancrypto use_max_tag=true prefix=v
 set depends glibc
 set makedepends meson
 set source "$pkgname-$pkgver.tar.gz::https://github.com/smuellerDD/leancrypto/archive/refs/tags/v$pkgver.tar.gz"

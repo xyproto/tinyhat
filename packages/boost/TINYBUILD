@@ -7,6 +7,7 @@ set pkgrel 1
 set pkgdesc 'Free peer-reviewed portable C++ source libraries'
 set arch i686 x32
 set url https://www.boost.org/
+set nvchecker source=git git=https://github.com/boostorg/boost.git prefix=boost- 'exclude_regex=.*beta.*'
 set license BSL-1.0
 # No ICU (Boost.Locale uses iconv, Boost.Regex without ICU): ICU is large, and Tiny Hat's image leaves it out
 set makedepends bzip2 zlib zstd

@@ -6,6 +6,7 @@ set pkgrel 6
 set pkgdesc 'A tool for generating text-scanning programs'
 set arch i686 x32
 set url https://github.com/westes/flex
+set nvchecker source=git git=https://github.com/westes/flex.git prefix=v
 set license custom:flex
 set depends glibc m4 sh
 set source "https://github.com/westes/flex/releases/download/v$pkgver/flex-$pkgver.tar.gz"

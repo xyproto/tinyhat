@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Python syntax highlighter'
 set arch any
 set url https://pygments.org/
+set nvchecker source=pypi pypi=pygments
 set license BSD-2-Clause
 set depends python
 set makedepends python-build python-hatchling python-installer

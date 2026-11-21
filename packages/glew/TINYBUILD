@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'The OpenGL Extension Wrangler Library'
 set arch i686 x32
 set url https://github.com/nigels-com/glew
+set nvchecker source=github github=nigels-com/glew use_max_tag=true prefix=glew-
 set license LicenseRef-glew
 set depends glibc libegl libgl glu
 set provides libGLEW.so

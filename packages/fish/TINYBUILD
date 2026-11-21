@@ -3,6 +3,7 @@ set pkgver 4.9.3
 set pkgrel 4
 set pkgdesc 'Smart and user friendly shell intended mostly for interactive use'
 set url https://fishshell.com/
+set nvchecker source=git git=https://github.com/fish-shell/fish-shell.git 'exclude_regex=.*(pre|release|weekly|rc|alpha|beta|dev).*'
 set arch i686
 set license 'GPL-2.0-only AND BSD-3-Clause AND ISC AND MIT AND PSF-2.0'
 set depends glibc libgcc pcre2

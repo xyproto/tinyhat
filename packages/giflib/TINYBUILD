@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Library for reading and writing gif images'
 set arch i686 x32
 set url https://giflib.sourceforge.net/
+set nvchecker source=git git=https://git.code.sf.net/p/giflib/code
 set license MIT
 set depends glibc
 # No documentation (xmlto, docbook, imagemagick), so no man pages either

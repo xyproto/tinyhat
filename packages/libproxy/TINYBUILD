@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Automatic proxy configuration management library'
 set arch i686 x32
 set url https://libproxy.github.io/libproxy/
+set nvchecker source=git git=https://github.com/libproxy/libproxy.git
 set license LGPL-2.1-or-later
 set depends curl duktape gcc-libs glib2 glibc
 # No documentation (gi-docgen)

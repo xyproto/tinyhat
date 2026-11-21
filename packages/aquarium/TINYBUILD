@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Port of ASCIIAquarium from Perl to Go'
 set arch i686
 set url https://github.com/xyproto/aquarium
+set nvchecker source=github github=xyproto/aquarium prefix=v use_max_tag=true
 set license GPL-2.0-only
 set depends glibc
 set makedepends go-tinyhat

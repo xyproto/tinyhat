@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Python HTTP for Humans'
 set arch any
 set url https://requests.readthedocs.io/
+set nvchecker source=git git=https://github.com/psf/requests.git prefix=v 'exclude_regex=.*(weekly|rc|alpha|beta|dev).*'
 set license Apache-2.0
 set depends ca-certificates python python-charset-normalizer python-idna python-urllib3 python-certifi
 set makedepends git python-build python-installer python-setuptools python-wheel

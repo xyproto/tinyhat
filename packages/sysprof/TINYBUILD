@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Kernel based performance profiler'
 set arch i686 x32
 set url https://apps.gnome.org/Sysprof/
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/sysprof.git 'include_regex=\d+(\.\d+)*' 'from_pattern=\.([a-z])' 'to_pattern=\1'
 set license GPL-3.0-or-later
 set depends cairo glib2 glibc json-glib libdex libelf libgcc libstdc++ libunwind pango polkit systemd-libs
 # No help (yelp-tools)

@@ -5,6 +5,7 @@ set epoch 2
 set pkgdesc 'GNU GRand Unified Bootloader (2)'
 set arch i686
 set url https://gnu-grub.freedesktop.org/
+set nvchecker source=git git=https://gitlab.freedesktop.org/gnu-grub/grub.git prefix=grub- 'include_regex=grub-\d+\.\d+'
 set license GPL-3.0-or-later
 set depends gettext sh xz
 # Libraries that grub is built against (for the machine it runs on), and tools that run during the build. No

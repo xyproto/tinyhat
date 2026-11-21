@@ -4,6 +4,7 @@ set pkgver 2.7.1
 set pkgrel 1
 set arch i686 x32
 set url https://www.openldap.org/
+set nvchecker source=regex url=https://www.openldap.org/software/download/OpenLDAP/openldap-release/ encoding=utf8 'regex=openldap-([\d.]+).tgz'
 set license custom
 set makedepends libtool libsasl util-linux chrpath unixodbc libsodium systemd metatar
 set owners 'etc/openldap/slapd.conf 0:439 640' 'etc/openldap/slapd.ldif 0:439 640'

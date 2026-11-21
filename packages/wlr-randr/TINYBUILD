@@ -3,6 +3,7 @@ set pkgver 0.5.0
 set pkgrel 1
 set pkgdesc 'Utility to manage outputs of a Wayland compositor'
 set url https://gitlab.freedesktop.org/emersion/wlr-randr
+set nvchecker source=git git=https://gitlab.freedesktop.org/emersion/wlr-randr.git prefix=v 'exclude_regex=.*(pre|a|alpha|b|beta|r|rc).*'
 set arch i686 x32
 set license MIT
 set depends wayland glibc

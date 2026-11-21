@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'GNU database library'
 set arch i686 x32
 set url https://www.gnu.org/software/gdbm/gdbm.html
+set nvchecker source=git git=https://git.gnu.org.ua/gdbm.git prefix=v
 set license GPL-3.0-or-later
 set depends glibc sh
 set makedepends readline

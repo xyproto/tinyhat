@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Module player library supporting many formats, including MOD, S3M, IT and XM'
 set arch i686 x32
 set url https://mikmod.sourceforge.net
+set nvchecker source=git git=https://git.code.sf.net/p/mikmod/mikmod 'include_regex=libmikmod-.*' prefix=libmikmod-
 set license LGPL-2.0-or-later
 set depends glibc sh
 # ALSA output (PipeWire takes it through pipewire-alsa): no PulseAudio driver

@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'Python bindings for YAML, using fast libYAML library'
 set arch i686 x32
 set url https://github.com/yaml/pyyaml
+set nvchecker source=pypi pypi=pyyaml
 set license MIT
 # Pure Python, without the libYAML C extension (cython, libyaml): mesa only needs it while building
 set depends python

@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'Thin layer of graphic data types'
 set arch i686 x32
 set url https://ebassi.github.io/graphene/
+set nvchecker source=github github=ebassi/graphene use_max_tag=true
 set license MIT
 set depends glib2 glibc
 # No documentation package (gtk-doc)

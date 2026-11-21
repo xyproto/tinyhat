@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'OpenCL ICD Bindings'
 set arch i686 x32
 set url https://github.com/OCL-dev/ocl-icd
+set nvchecker source=git git=https://github.com/OCL-dev/ocl-icd.git prefix=v
 set license BSD-2-Clause
 set depends glibc
 # No man page and HTML documentation (asciidoc, xmlto); configure skips them when the tools are missing

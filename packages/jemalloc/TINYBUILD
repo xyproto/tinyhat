@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'General-purpose scalable concurrent malloc implementation'
 set arch i686 x32
 set url https://jemalloc.net/
+set nvchecker source=git git=https://github.com/jemalloc/jemalloc.git
 set license BSD-2-Clause
 set depends glibc libgcc libgcc_s.so libstdc++ libstdc++.so
 set makedepends git

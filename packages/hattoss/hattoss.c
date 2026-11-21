@@ -728,11 +728,11 @@ static int title(void)
 	}
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
 	int winner, first = 0, mode_;
 	srand((unsigned)time(NULL));
-	adlib = adlibdetect();
+	adlib = (argc > 1 && !stricmp(argv[1], "/ADLIB")) || adlibdetect();
 	if (adlib)
 		adlibinit();
 	mode(0x13);

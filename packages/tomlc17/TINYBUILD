@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'TOML parser library in C17, as a static library'
 set arch i686 x86_64 aarch64
 set url https://github.com/cktan/tomlc17
+set nvchecker source=github github=cktan/tomlc17 use_max_tag=true
 set license MIT
 set options staticlibs
 set source "tomlc17-$pkgver.tar.gz::https://github.com/cktan/tomlc17/archive/refs/tags/$pkgver.tar.gz"

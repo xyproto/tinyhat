@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'ALSA Use Case Manager configuration (and topologies)'
 set arch any
 set url https://alsa-project.org/
+set nvchecker source=git git=https://github.com/alsa-project/alsa-ucm-conf prefix=v
 set license BSD-3-Clause
 set flags arch
 set source "$url/files/pub/lib/$pkgname-$pkgver.tar.bz2"

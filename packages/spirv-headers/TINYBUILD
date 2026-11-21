@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'SPIR-V header files and registry'
 set arch any
 set url https://www.khronos.org/spirv/
+set nvchecker source=git git=https://github.com/KhronosGroup/SPIRV-Headers.git 'include_regex=vulkan-sdk-\d+(\.\d+)*' prefix=vulkan-sdk-
 set license MIT
 set groups vulkan-devel
 set makedepends cmake git ninja

@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'GObject wrapper for libusb1'
 set arch i686 x32
 set url https://github.com/hughsie/libgusb
+set nvchecker source=git git=https://github.com/hughsie/libgusb.git
 set license LGPL-2.1-or-later
 set depends glib2 libjson-glib-1.0.so libusb-1.0.so
 # No documentation (gi-docgen, gtk-doc)

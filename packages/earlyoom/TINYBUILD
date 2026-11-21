@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Early OOM Daemon for Linux'
 set arch i686 x32
 set url https://github.com/rfjakob/earlyoom
+set nvchecker source=git git=https://github.com/rfjakob/earlyoom.git prefix=v
 set license MIT
 set depends glibc
 set optdepends 'systembus-notify: desktop notifications'

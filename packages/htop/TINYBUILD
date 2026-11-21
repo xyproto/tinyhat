@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Interactive process viewer'
 set arch i686 x32
 set url https://htop.dev/
+set nvchecker source=git git=https://github.com/htop-dev/htop.git
 set license GPL
 set depends libcap libcap.so libnl ncurses libncursesw.so
 set makedepends git lm_sensors

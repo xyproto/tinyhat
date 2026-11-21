@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Style-preserving TOML library for Python'
 set arch any
 set url https://github.com/sdispater/tomlkit
+set nvchecker source=pypi pypi=tomlkit
 set license MIT
 set depends python
 set makedepends python-build python-installer python-poetry-core

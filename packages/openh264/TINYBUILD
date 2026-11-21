@@ -5,6 +5,7 @@ set -g _gtestver 1.8.1
 set pkgdesc 'H.264 encoder and decoder'
 set arch i686 x32
 set url https://www.openh264.org/
+set nvchecker source=git git=https://github.com/cisco/openh264.git prefix=v
 set license BSD-2-Clause
 set depends glibc libgcc libstdc++
 set makedepends nasm

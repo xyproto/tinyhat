@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'An image loading library'
 set arch i686 x32
 set url https://gitlab.gnome.org/GNOME/gdk-pixbuf
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/gdk-pixbuf.git 'include_regex=\d+\.[1-8]\d*[02468]\.\d+'
 set license LGPL-2.0-or-later
 set depends giflib glib2 glibc libjpeg-turbo libpng libtiff shared-mime-info
 set makedepends git glib2-devel gobject-introspection meson python-docutils glib2-introspection

@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Library requirements of the OpenCL C programming language'
 set arch any
 set url https://libclc.llvm.org/
+set nvchecker source=git git=https://github.com/llvm/llvm-project.git 'include_regex=llvmorg-\d+\.\d+\.\d+' prefix=llvmorg-
 set license 'Apache-2.0 WITH LLVM-exception'
 set makedepends cmake ninja clang llvm python spirv-llvm-translator
 set source "https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz"

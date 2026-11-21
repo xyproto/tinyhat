@@ -5,6 +5,7 @@ set pkgdesc 'X keyboard configuration files'
 set arch any
 set license LicenseRef-xkeyboard-config
 set url https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config
+set nvchecker source=gitlab gitlab=xkeyboard-config/xkeyboard-config host=gitlab.freedesktop.org use_max_tag=true prefix=xkeyboard-config-
 set makedepends xorg-xkbcomp libxslt python meson
 set checkdepends python-pytest python-pytest-xdist libxkbcommon
 set provides xkbdata

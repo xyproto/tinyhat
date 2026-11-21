@@ -6,6 +6,7 @@ set pkgdesc 'A terminal based program for viewing text files'
 set license 'GPL-3.0-or-later OR LicenseRef-Less'
 set arch i686 x32
 set url https://www.greenwoodsoftware.com/less/
+set nvchecker source=regex url=https://www.greenwoodsoftware.com/less/ 'regex=The current released version is less-(\d+).'
 set depends glibc ncurses pcre2
 set makedepends git
 set source https://www.greenwoodsoftware.com/$pkgname/$pkgname-$pkgver.tar.gz

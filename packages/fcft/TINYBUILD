@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Simple library for font loading and glyph rasterization'
 set arch i686 x32
 set url https://codeberg.org/dnkl/fcft
+set nvchecker source=git git=https://codeberg.org/dnkl/fcft.git
 set license MIT
 set depends fontconfig freetype2 harfbuzz libutf8proc pixman
 set makedepends meson scdoc tllist

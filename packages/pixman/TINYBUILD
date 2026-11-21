@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'The pixel-manipulation library for X and cairo'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/pixman/pixman
+set nvchecker source=gitlab gitlab=pixman/pixman host=gitlab.freedesktop.org use_max_tag=true prefix=pixman-
 set license MIT
 set depends glibc
 set makedepends meson libpng

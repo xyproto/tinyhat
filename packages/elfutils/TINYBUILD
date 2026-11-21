@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'Handle ELF object files and DWARF debugging information'
 set arch i686 x32
 set url https://sourceware.org/elfutils/
+set nvchecker source=git git=https://forge.sourceware.org/elfutils/elfutils-mirror.git prefix=elfutils- use_max_tag=true
 # No debuginfod: libelf would otherwise pull in curl and its network and TLS libraries everywhere it is used,
 # such as in systemd
 set makedepends bzip2 git libgcc libstdc++ xz zlib zstd

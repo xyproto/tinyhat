@@ -5,6 +5,7 @@ set pkgdesc "An open source JPEG 2000 codec, version $pkgver"
 set arch i686 x32
 set license BSD-2-Clause MIT
 set url https://github.com/uclouvain/openjpeg
+set nvchecker source=github github=uclouvain/openjpeg use_max_tag=true prefix=v
 # No documentation (doxygen, graphviz)
 set makedepends cmake
 set depends libpng libtiff lcms2 glibc

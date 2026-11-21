@@ -61,17 +61,35 @@ while set -q argv[1]
     set -e argv[1]
 end
 if test $sup -eq 1
-    set -l nvconf $package_dir/.nvchecker.toml
     set -l tinybuild $package_dir/TINYBUILD
     test -f $tinybuild; or die "no TINYBUILD in $package_dir"
-    test -f $nvconf; or die "no .nvchecker.toml in $package_dir"
+    set -l nvline (string match -r '^set nvchecker .*' <$tinybuild)
+    test (count $nvline) -eq 1; or die "--sup needs one 'set nvchecker key=value...' line in $tinybuild"
     command -q nvchecker; or die "--sup needs nvchecker"
+    set -l nvchecker
+    eval (string replace -r '^set nvchecker' 'set nvchecker' -- $nvline[1])
+    set -l nvdir (mktemp -d)
+    test -n "$nvdir" -a -d "$nvdir"; or die "could not make a temporary directory"
+    set -l nvconf $nvdir/nvchecker.toml
+    echo '[package]' >$nvconf
+    for kv in $nvchecker
+        set -l k (string split -m 1 = -- $kv)
+        test (count $k) -eq 2; or continue
+        if contains -- $k[2] true false
+            printf '%s = %s\n' $k[1] $k[2] >>$nvconf
+        else if not string match -q "*'*" -- $k[2]
+            printf "%s = '%s'\n" $k[1] $k[2] >>$nvconf
+        else
+            printf '%s = "%s"\n' $k[1] (string replace -a '\\' '\\\\' -- $k[2] | string replace -a '"' '\\"') >>$nvconf
+        end
+    end
     set -l lines (string match -r '^set pkgver .*' <$tinybuild)
     test (count $lines) -eq 1; or die "--sup needs exactly one 'set pkgver' line in $tinybuild"
     set -l old (string replace -r '^set pkgver ' '' -- $lines[1] | string trim -c "'\"")
     string match -qr '^[A-Za-z0-9._+~-]+$' -- $old; or die "--sup needs a plain pkgver, not $old"
     set -l new (nvchecker -c $nvconf --logger json 2>/dev/null | string match -r '"version": *"[^"]*"' | string replace -r '.*"version": *"([^"]*)"' '$1')
-    test -n "$new[1]"; or die "nvchecker found no version with $nvconf"
+    rm -rf -- $nvdir
+    test -n "$new[1]"; or die "nvchecker found no version for the 'set nvchecker' settings in $tinybuild"
     set new $new[1]
     string match -qr '^[A-Za-z0-9._+~]+$' -- $new; or die "nvchecker gave an unusable version: $new"
     if test "$new" = "$old"

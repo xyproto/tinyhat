@@ -5,6 +5,7 @@ set -g _gcem 012ae73c6d0a2cb09ffe86475f5c6fba3926e200
 set pkgdesc 'SoundFont synthesizer with PipeWire output'
 set arch i686 x32
 set url https://www.fluidsynth.org/
+set nvchecker source=github github=FluidSynth/fluidsynth prefix=v use_latest_release=true
 set license LGPL-2.1-or-later Apache-2.0
 set depends alsa-lib glib2 libsndfile pipewire
 set makedepends cmake ninja

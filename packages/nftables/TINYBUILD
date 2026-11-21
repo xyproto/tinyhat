@@ -5,6 +5,7 @@ set pkgrel 3
 set pkgdesc 'Netfilter tables userspace tools'
 set arch i686 x32
 set url https://netfilter.org/projects/nftables/
+set nvchecker source=git git=https://git.netfilter.org/nftables prefix=v
 set license GPL-2.0-only
 set depends glibc gmp jansson libmnl libnftnl readline
 set optdepends 'python: Python bindings' \

@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'GSettings schemas for GNOME'
 set arch any
 set url https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git 'include_regex=\d+(\.\d+)*' 'from_pattern=\.([a-z])' 'to_pattern=\1'
 set license LGPL-2.1-or-later
 # No adwaita-fonts: the schemas only name the default fonts (fontconfig falls back), and the build does not use them
 set makedepends dconf git glib2-devel meson

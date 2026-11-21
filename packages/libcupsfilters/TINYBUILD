@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'OpenPrinting CUPS Filters - contains all the code of the filters of the former cups-filters package as library functions'
 set arch i686 x32
 set url https://github.com/OpenPrinting/libcupsfilters
+set nvchecker source=github github=OpenPrinting/libcupsfilters use_max_tag=true prefix=v
 set license 'Apache-2.0 WITH LLVM-exception'
 # keep poppler for pdftoppm
 set depends libcups libexif pdfio libjxl poppler \

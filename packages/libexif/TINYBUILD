@@ -3,6 +3,7 @@ set pkgver 0.6.26
 set pkgrel 1
 set pkgdesc 'Library to parse an EXIF file and read the data from those tags'
 set url https://github.com/libexif/libexif
+set nvchecker source=git git=https://github.com/libexif/libexif.git prefix=v
 set arch i686 x32
 set license LGPL
 set depends glibc

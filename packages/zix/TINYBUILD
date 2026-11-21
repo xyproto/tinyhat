@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'A lightweight C99 portability and data structure library'
 set arch i686 x32
 set url https://gitlab.com/drobilla/zix
+set nvchecker source=git git=https://github.com/drobilla/zix.git prefix=v
 set license '0BSD OR ISC'
 # No documentation (doxygen, python-sphinx)
 set makedepends glibc meson

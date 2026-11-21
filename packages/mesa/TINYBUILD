@@ -6,6 +6,7 @@ set epoch 1
 set pkgdesc 'Open-source OpenGL drivers'
 set arch i686 x32
 set url https://www.mesa3d.org/
+set nvchecker source=git git=https://gitlab.freedesktop.org/mesa/mesa.git 'include_regex=mesa-\d+\.\d+\.[1-9]\d*' prefix=mesa- 'from_pattern=-([a-z])' 'to_pattern=\1'
 set license 'MIT AND BSD-3-Clause AND SGI-B-2.0'
 # No valgrind (only memcheck annotations for debugging, -D valgrind=disabled)
 # No microsoft-experimental (Dozen, Vulkan on D3D12) driver: the vulkan-dzn split package and directx-headers are dropped

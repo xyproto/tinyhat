@@ -6,6 +6,7 @@ set epoch 1
 set pkgdesc 'Low-latency audio/video router and processor'
 set arch i686 x32 x86_64 aarch64
 set url https://pipewire.org
+set nvchecker source=git git=https://gitlab.freedesktop.org/pipewire/pipewire.git 'include_regex=\d+\.\d*[02468]\.\d+'
 set license MIT
 # No documentation (doxygen, graphviz), FireWire audio (libffado) or client of a JACK2 server (jack2): pipewire-jack
 # is the JACK of Tiny Hat. No valgrind (only an optional test setup)

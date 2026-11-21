@@ -5,6 +5,7 @@ set pkgrel 7
 set pkgdesc 'A mouse server for the console and xterm'
 set arch i686 x32
 set url https://www.nico.schottelius.org/software/gpm/
+set nvchecker source=git git=https://github.com/telmich/gpm.git 'exclude_regex=^1\.99\..*'
 set license GPL
 set depends bash procps-ng
 set makedepends git

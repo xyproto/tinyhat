@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'A suite of applications used to implement SNMP v1, SNMP v2c and SNMP v3 using both IPv4 and IPv6'
 set arch i686 x32
 set url http://www.net-snmp.org/
+set nvchecker source=git git=https://github.com/net-snmp/net-snmp.git prefix=v 'exclude_regex=.*(alpha|beta|pre|rc).*'
 set license BSD
 set depends libnsl libpcap lm_sensors openssl pciutils pcre2 perl
 set makedepends git python-setuptools

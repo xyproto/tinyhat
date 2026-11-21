@@ -6,6 +6,7 @@ set epoch 2
 set arch i686 x32
 set license 'Apache-2.0 WITH LLVM-exception AND BSD-3-Clause AND Zlib AND BSD-2-Clause'
 set url https://openprinting.github.io/cups/
+set nvchecker source=github github=OpenPrinting/cups use_max_tag=true prefix=v
 set makedepends acl pam gnutls colord libusb systemd libpaper
 set source https://github.com/OpenPrinting/cups/releases/download/v$pkgver/cups-$pkgver-source.tar.gz \
     cups.logrotate \

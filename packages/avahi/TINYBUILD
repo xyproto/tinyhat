@@ -6,6 +6,7 @@ set epoch 1
 set pkgdesc 'Service Discovery for Linux using mDNS/DNS-SD (compatible with Bonjour)'
 set arch i686 x32
 set url https://github.com/avahi/avahi
+set nvchecker source=git git=https://github.com/avahi/avahi.git prefix=v 'from_pattern=-([a-z])' 'to_pattern=\1'
 set license LGPL-2.1-or-later
 set depends bash dbus expat gdbm glib2 glibc libcap libdaemon systemd-libs
 # No man pages (xmltoman) and no Python tools (avahi-bookmarks split, avahi-discover, the python module and the

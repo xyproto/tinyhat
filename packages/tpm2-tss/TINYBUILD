@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Implementation of the TCG Trusted Platform Module 2.0 Software Stack (TSS2)'
 set arch i686 x32
 set url https://github.com/tpm2-software/tpm2-tss
+set nvchecker source=git git=https://github.com/tpm2-software/tpm2-tss.git 'exclude_regex=.*(alpha|beta|rc).*'
 set license BSD-2-Clause
 set depends curl glibc json-c openssl util-linux-libs
 # No documentation (doxygen), no unit tests (cmocka) and no libtpms TCTI (--disable-tcti-libtpms, so no libtpms)

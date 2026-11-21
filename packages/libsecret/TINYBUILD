@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Library for storing and retrieving passwords and other secrets'
 set arch i686 x32
 set url https://gnome.pages.gitlab.gnome.org/libsecret/
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/libsecret.git
 set license LGPL-2.1-or-later
 # No TPM2 (tpm2-tss)
 set depends glib2 glibc libgcrypt

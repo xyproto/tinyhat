@@ -5,6 +5,7 @@ set pkgdesc 'Scientific tools for Python'
 set arch i686 x32
 set license custom
 set url https://www.numpy.org/
+set nvchecker source=git git=https://github.com/numpy/numpy.git prefix=v 'exclude_regex=.*(dev|pre|a|alpha|b|beta|rc).*'
 set depends cblas lapack python
 set optdepends 'blas-openblas: faster linear algebra'
 set makedepends git python-build python-installer meson-python cmake gcc-fortran cython

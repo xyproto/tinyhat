@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Handles managing your python package versions in scm metadata'
 set arch any
 set url https://github.com/pypa/setuptools-scm
+set nvchecker source=git git=https://github.com/pypa/setuptools_scm.git prefix=setuptools-scm-v 'include_regex=setuptools-scm-v.*'
 set license MIT
 set depends python python-packaging python-setuptools python-vcs-versioning
 set makedepends git python-build python-installer python-wheel

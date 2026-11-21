@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'PEP 621 metadata parsing'
 set arch any
 set url https://github.com/pypa/python-pyproject-metadata
+set nvchecker source=pypi pypi=pyproject-metadata
 set license MIT
 set depends python python-packaging
 set makedepends python-build python-flit-core python-installer

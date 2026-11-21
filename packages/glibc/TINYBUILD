@@ -4,6 +4,7 @@ set pkgver 2.44+r50+g1848099f063e
 set pkgrel 2
 set arch i686 x32
 set url https://www.gnu.org/software/libc
+set nvchecker source=git git=https://sourceware.org/git/glibc.git prefix=glibc- 'include_regex=^glibc-[.0-9]+$' 'exclude_regex=.*\.9000$'
 set license GPL-2.0-or-later LGPL-2.1-or-later
 set makedepends git python
 set options staticlibs '!lto'

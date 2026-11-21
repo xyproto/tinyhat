@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Cross-platform 3D audio library, software implementation'
 set arch i686 x32
 set url https://github.com/kcat/openal-soft
+set nvchecker source=git git=https://github.com/kcat/openal-soft.git
 set license LGPL-2.0-or-later
 set depends glibc libgcc libstdc++
 # PipeWire, ALSA, JACK (pipewire-jack) and SDL3 output: no PulseAudio or PortAudio backends

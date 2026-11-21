@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A high performance JSON library written in ANSI C'
 set arch i686 x32
 set url https://ibireme.github.io/yyjson
+set nvchecker source=git git=https://github.com/ibireme/yyjson.git
 set license MIT
 set depends glibc
 set makedepends cmake

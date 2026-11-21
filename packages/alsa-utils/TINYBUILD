@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Advanced Linux Sound Architecture - Utilities'
 set arch i686 x32
 set url https://www.alsa-project.org
+set nvchecker source=git git=https://github.com/alsa-project/alsa-utils prefix=v
 set license GPL-2.0-or-later
 set depends bash glibc libgcc pciutils psmisc
 # No alsactl_init.7 man page (xmlto, docbook-xsl)

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'GNU charset conversion library'
 set arch i686 x32
 set url http://www.gnu.org/software/libiconv/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/libiconv/ 'regex=libiconv-([\d\.]+).tar'
 set license LGPL-2.1-only GPL-3.0-only
 set depends glibc
 set source "https://ftp.gnu.org/pub/gnu/$pkgname/$pkgname-$pkgver.tar.gz"

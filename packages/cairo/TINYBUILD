@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc '2D graphics library with support for multiple output devices'
 set arch i686 x32
 set url https://cairographics.org/
+set nvchecker source=git git=https://gitlab.freedesktop.org/cairo/cairo.git 'include_regex=\d+\.\d*[02468]\.\d*[02468]'
 set license 'LGPL-2.1-only OR MPL-1.1'
 set depends bash fontconfig freetype2 glib2 glibc libpng lzo pixman zlib
 # No documentation (gtk-doc) and no tests (valgrind)

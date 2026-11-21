@@ -4,6 +4,7 @@ set pkgrel 17
 set pkgdesc 'Implementation of lex and yacc parsing tools'
 set arch any
 set url https://www.dabeaz.com/ply/
+set nvchecker source=pypi pypi=ply
 set license BSD-3-Clause
 set depends python
 set makedepends git python-build python-installer python-setuptools python-wheel

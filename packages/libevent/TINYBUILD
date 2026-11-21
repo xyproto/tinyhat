@@ -4,6 +4,7 @@ set pkgver 2.1.13
 set pkgrel 2
 set pkgdesc 'Event notification library'
 set url https://libevent.org/
+set nvchecker source=git git=https://github.com/libevent/libevent.git 'from_pattern=release-(.*)-stable' 'to_pattern=\1' 'exclude_regex=.*(alpha|beta|rc|pre).*'
 set arch i686 x32
 set license BSD-3-Clause-Modification
 # No documentation (doxygen)

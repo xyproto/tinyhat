@@ -5,6 +5,7 @@ set pkgdesc 'XFS filesystem utilities'
 set arch i686 x32
 set license GPL-2.0-only LGPL-2.1-only
 set url https://xfs.wiki.kernel.org
+set nvchecker source=git git=https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git prefix=v
 # Without device-mapper: only xfs_io (a debugging and test tool) would use it, and Tiny Hat has no LVM
 set depends libedit liburcu sh util-linux-libs
 set optdepends 'python-dbus: for xfs_scrub_all script' \

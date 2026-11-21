@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Vulkan Installable Client Driver (ICD) Loader'
 set arch i686 x32
 set url https://www.vulkan.org/
+set nvchecker source=git git=https://github.com/KhronosGroup/Vulkan-Loader.git 'include_regex=vulkan-sdk-\d+(\.\d+)*' prefix=vulkan-sdk-
 set license Apache-2.0
 set groups vulkan-devel
 set depends glibc

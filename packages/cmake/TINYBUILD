@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A cross-platform open-source make system'
 set arch i686 x32
 set url https://www.cmake.org/
+set nvchecker source=gitlab gitlab=cmake/cmake host=gitlab.kitware.com use_max_tag=true prefix=v 'exclude_regex=.*rc.*'
 set license BSD-3-Clause
 # Bundled curl, jsoncpp and librhash (--no-system-curl --no-system-jsoncpp --no-system-librhash): curl is built with
 # cmake, so a cmake that needs curl would be a cycle; no cmake-gui, so no hicolor-icon-theme. jsoncpp and rhash dropped;

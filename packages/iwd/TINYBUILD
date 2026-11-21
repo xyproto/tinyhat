@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Internet Wireless Daemon'
 set arch i686 x32
 set url https://git.kernel.org/cgit/network/wireless/iwd.git/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/network/wireless/iwd.git use_max_tag=true
 set license LGPL-2.1-or-later
 set depends glibc readline libreadline.so ell libgcc
 set makedepends python-docutils dbus systemd

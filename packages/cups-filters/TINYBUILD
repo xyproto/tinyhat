@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'OpenPrinting CUPS Filters'
 set arch i686 x32
 set url https://wiki.linuxfoundation.org/openprinting/cups-filters
+set nvchecker source=github github=OpenPrinting/cups-filters use_max_tag=true prefix=v
 set license 'Apache-2.0 WITH LLVM-exception'
 set depends libcups libppd libcupsfilters glibc sh
 set makedepends ghostscript mupdf-tools

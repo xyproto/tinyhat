@@ -5,6 +5,7 @@ set pkgrel 7
 set pkgdesc 'Low-level signal processing library that modulates and demodulates signals commonly used in telephony'
 set arch i686 x32
 set url https://www.soft-switch.org/
+set nvchecker source=regex url=https://www.soft-switch.org/downloads/spandsp/ 'regex=spandsp-([^"]*).tar.gz'
 set license LGPL-2.1-only
 set depends glibc libtiff
 # No documentation package (docbook-xsl, doxygen)

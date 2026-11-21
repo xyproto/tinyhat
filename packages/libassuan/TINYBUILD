@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'IPC library used by some GnuPG related software'
 set arch i686 x32
 set url https://www.gnupg.org/related_software/libassuan/
+set nvchecker source=git git=https://dev.gnupg.org/source/libassuan.git 'include_regex=libassuan-([\d.]+)' prefix=libassuan-
 set license FSFULLR GPL-2.0-or-later LGPL-2.1-or-later
 set depends glibc libgpg-error sh
 set provides libassuan.so

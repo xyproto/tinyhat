@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Library for manipulation of TIFF images'
 set arch i686 x32
 set url http://www.simplesystems.org/libtiff/
+set nvchecker source=git git=https://gitlab.com/libtiff/libtiff.git prefix=v 'exclude_regex=.*(pre|alpha|beta|rc|RC).*'
 set license libtiff
 set depends libstdc++ glibc jbigkit libdeflate libjpeg-turbo libjpeg.so libwebp xz zlib zstd
 switch $CARCH

@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'Nvidia VDPAU library'
 set arch i686 x32
 set url https://www.freedesktop.org/wiki/Software/VDPAU/
+set nvchecker source=git git=https://gitlab.freedesktop.org/vdpau/libvdpau.git
 set license MIT
 set depends glibc libx11 libxext
 set makedepends git meson xorgproto

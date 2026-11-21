@@ -3,6 +3,7 @@ set pkgver 1.9
 set pkgrel 17
 set pkgdesc 'A tool to extract installers created by Inno Setup'
 set url https://constexpr.org/innoextract/
+set nvchecker source=git git=https://github.com/dscharrer/innoextract.git use_latest_tag=true
 set arch i686 x32
 set license ZLIB
 set depends boost-libs xz

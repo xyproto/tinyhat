@@ -5,6 +5,7 @@ string match -q '*.*' -- $_pkgvermajor; or set _pkgvermajor $pkgver
 set pkgrel 2
 set pkgdesc 'The Kerberos network authentication system'
 set url https://web.mit.edu/kerberos/
+set nvchecker source=git git=https://github.com/krb5/krb5.git prefix=krb5- 'include_regex=krb5\-(.*)\-final.*' 'from_pattern=(.*)-final.*' 'to_pattern=\1'
 set arch i686 x32
 set license custom
 # No LDAP database for the KDC (servers only): no libldap, whose libsasl needs krb5

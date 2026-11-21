@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'TUI for managing bluetooth devices'
 set arch i686
 set url https://github.com/pythops/bluetui
+set nvchecker source=git git=https://github.com/pythops/bluetui.git prefix=v
 set license GPL-3.0-only
 set depends bluez dbus glibc libgcc
 set makedepends cargo

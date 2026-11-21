@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Save, edit and apply the metadata of tar archives, such as file owners and permissions'
 set arch i686 x32 x86_64 aarch64
 set url https://github.com/xyproto/metatar
+set nvchecker source=github github=xyproto/metatar prefix=v use_max_tag=true
 set license BSD-3-Clause
 set makedepends go-tinyhat
 set source "metatar-$pkgver.tar.gz::https://github.com/xyproto/metatar/archive/refs/tags/v$pkgver.tar.gz"

@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Cross-vendor public domain suffix database'
 set arch any
 set url https://github.com/publicsuffix/list
+set nvchecker source=manual
 set license MPL-2.0
 set source "$pkgname-$_gitcommit.tar.gz::https://github.com/publicsuffix/list/archive/$_gitcommit.tar.gz"
 set sha256sums e8273a038785f7172cb7399e8063d02d6c02357775f280e4047ec4db6e51bd0f

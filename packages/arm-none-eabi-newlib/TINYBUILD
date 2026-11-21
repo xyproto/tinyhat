@@ -6,6 +6,7 @@ set -g _upstream_ver $pkgver
 set pkgdesc 'A C standard library implementation intended for use on embedded systems (ARM bare metal)'
 set arch any
 set url https://www.sourceware.org/newlib/
+set nvchecker source=regex url=https://sourceware.org/pub/newlib/ 'regex=newlib-([\d.]+).tar'
 set license BSD
 set makedepends $_target-gcc
 set options '!emptydirs' '!strip'

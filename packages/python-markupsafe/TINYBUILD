@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Implements a XML/HTML/XHTML Markup safe string for Python'
 set arch i686 x32
 set url https://pypi.python.org/pypi/MarkupSafe
+set nvchecker source=git git=https://github.com/pallets/markupsafe.git
 set license BSD-3-Clause
 set depends glibc python
 set makedepends git python-build python-installer python-setuptools python-wheel

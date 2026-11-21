@@ -4,6 +4,7 @@ set pkgver 2.42.4
 set pkgrel 1
 set pkgdesc 'Miscellaneous system utilities for Linux'
 set url https://github.com/util-linux/util-linux
+set nvchecker source=git git=https://github.com/util-linux/util-linux.git prefix=v 'exclude_regex=.*rc.*'
 set arch i686 x32
 # No bash completions (Tiny Hat's interactive shell is fish), no Python bindings to libmount (nothing uses them),
 # and none of the optional features that need libraries Tiny Hat does not have or use (see build)

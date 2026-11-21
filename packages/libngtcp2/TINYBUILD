@@ -3,6 +3,7 @@ set pkgver 1.25.0
 set pkgrel 1
 set pkgdesc 'Implementation of IETF QUIC protocol'
 set url https://github.com/ngtcp2/ngtcp2
+set nvchecker source=github github=ngtcp2/ngtcp2 prefix=v use_latest_release=true
 set arch i686 x32
 set license MIT
 set depends \

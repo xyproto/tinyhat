@@ -5,6 +5,7 @@ set pkgdesc 'MaxMind GeoIP2 database - split package with library and utilities'
 set license Apache-2.0
 set arch i686 x32
 set url https://maxmind.github.io/libmaxminddb/
+set nvchecker source=git git=https://github.com/maxmind/libmaxminddb.git
 set optdepends 'geoip2-database: IP geolocation databases'
 set flags arch
 set source "https://github.com/maxmind/libmaxminddb/releases/download/$pkgver/libmaxminddb-$pkgver.tar.gz"

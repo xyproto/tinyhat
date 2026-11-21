@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc "Python package for providing Mozilla's CA Bundle (using system CA store)"
 set arch any
 set url https://github.com/certifi/python-certifi
+set nvchecker source=git git=https://github.com/certifi/python-certifi
 set license MPL-2.0
 set depends ca-certificates python
 set makedepends git python-build python-installer python-setuptools python-wheel

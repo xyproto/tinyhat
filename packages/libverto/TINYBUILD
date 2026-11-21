@@ -4,6 +4,7 @@ set pkgrel 6
 set pkgdesc 'Main event loop abstraction library'
 set arch i686 x32
 set url https://github.com/latchset/libverto
+set nvchecker source=git git=https://github.com/latchset/libverto.git
 set license MIT
 set depends glibc libevent
 set provides libverto.so libverto-libevent.so libverto-module-base

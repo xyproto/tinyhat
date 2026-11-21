@@ -24,6 +24,7 @@ set license BSD-2-Clause \
     MIT \
     Spencer-94
 set url https://www.kernel.org/doc/man-pages/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git use_max_tag=true prefix=man-pages-
 # No man2html: only man pages are installed (make install), no HTML output
 set makedepends git
 # https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/

@@ -5,6 +5,7 @@ set pkgrel 4
 set pkgdesc 'Scanner Access Now Easy'
 set arch i686 x32
 set url https://gitlab.com/sane-project/backends
+set nvchecker source=git git=https://gitlab.com/sane-project/backends
 set license GPL-2.0-or-later LicenseRef-GPL-2.0-or-later-with-linking-exception
 set depends bash cairo glibc libgcc libpng libieee1284 libstdc++ net-snmp v4l-utils
 # No documentation (texlive-latexextra)

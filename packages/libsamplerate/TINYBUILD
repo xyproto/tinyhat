@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'An audio sample rate conversion library'
 set arch i686 x32
 set url https://libsndfile.github.io/libsamplerate/
+set nvchecker source=git git=https://github.com/libsndfile/libsamplerate.git
 set license BSD
 set depends glibc
 set makedepends alsa-lib cmake libsndfile opus

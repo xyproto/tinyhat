@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Modern ls with a lot of pretty colors and awesome icons'
 set arch i686
 set url https://github.com/lsd-rs/lsd
+set nvchecker source=git git=https://github.com/lsd-rs/lsd.git prefix=v
 set license Apache-2.0
 set depends libgcc libgit2 zlib
 set makedepends cargo

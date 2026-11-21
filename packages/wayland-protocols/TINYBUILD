@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Specifications of extended Wayland protocols'
 set arch any
 set url https://wayland.freedesktop.org/
+set nvchecker source=git git=https://gitlab.freedesktop.org/wayland/wayland-protocols.git
 set license MIT
 set makedepends wayland meson
 set source "https://gitlab.freedesktop.org/wayland/$pkgname/-/releases/$pkgver/downloads/$pkgname-$pkgver.tar.xz"

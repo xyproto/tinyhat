@@ -1,7 +1,7 @@
 pkgbase = dwl
 	pkgdesc = dwm for Wayland, with the Tiny Hat patches
 	pkgver = 0.9
-	pkgrel = 18
+	pkgrel = 19
 	url = https://codeberg.org/dwl/dwl
 	arch = i686
 	arch = x32
@@ -66,6 +66,7 @@ pkgbase = dwl
 	source = fan.patch
 	source = taskbuttons.patch
 	source = doodle.patch
+	source = tray.patch
 	source = config.h
 	sha256sums = 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d
 	sha256sums = b302f62ccc46c6ef2dd9499a1634a6c87148d11db0a6ede71b589fd3339f1ce2
@@ -112,6 +113,7 @@ pkgbase = dwl
 	sha256sums = 18712af91444da3e0483d42a02b5497a023b374d4cd80e65cb82a4386312d534
 	sha256sums = 49620b48f9df83907f999de9f43a72ea2227937ab8b374cc123089a5e1c817ac
 	sha256sums = 3cc5a996782f894d97c582473d9c78bb08bc393fc7dce0e78946dcdbbf9e42d5
+	sha256sums = 90ae3ed424a36f19213430a7fffadd400c1860188d1faf8ee9c0bc411ff7e127
 	sha256sums = dfc35d33148f2610975e6febbb8d149caef594fba9a6e810eb812725d0624ab2
 
 pkgname = dwl

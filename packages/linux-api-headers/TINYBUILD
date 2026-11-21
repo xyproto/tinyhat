@@ -6,6 +6,7 @@ set pkgrel 1
 set pkgdesc 'Kernel headers sanitized for use in userspace'
 set arch i686 x32
 set url https://www.gnu.org/software/libc
+set nvchecker source=git git=https://github.com/torvalds/linux.git 'include_regex=v\d+\.\d+' 'from_pattern=-([a-z])' 'to_pattern=.\1' prefix=v
 set license GPL-2.0-only
 set makedepends rsync
 set source https://www.kernel.org/pub/linux/kernel/v(string sub -l 1 -- $pkgver).x/linux-$pkgver.tar.xz

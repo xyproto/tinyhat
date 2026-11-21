@@ -4,6 +4,7 @@ set pkgrel 5
 set pkgdesc 'The SoX Resampler library that aims to give fast and high quality results for any constant resampling ratio'
 set arch i686 x32
 set url https://sourceforge.net/p/soxr/wiki/Home/
+set nvchecker source=git git=https://github.com/chirlu/soxr.git
 set license LGPL-2.1-only LicenseRef-soxr
 set depends glibc libgcc libgomp
 set makedepends git cmake ninja

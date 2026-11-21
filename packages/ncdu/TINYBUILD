@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Disk usage analyzer with an ncurses interface'
 set arch i686 x32
 set url https://dev.yorhel.nl/ncdu
+set nvchecker source=git git=https://code.blicky.net/yorhel/ncdu.git prefix=v
 set license MIT
 set depends ncurses glibc
 set source "https://dev.yorhel.nl/download/ncdu-$pkgver.tar.gz"

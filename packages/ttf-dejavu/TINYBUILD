@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'Font family based on the Bitstream Vera Fonts with a wider range of characters'
 set arch any
 set url https://dejavu-fonts.github.io
+set nvchecker source=github github=dejavu-fonts/dejavu-fonts 'from_pattern=version_(\d+)_(\d+)' 'to_pattern=\1.\2' use_max_tag=true
 set license custom
 set provides ttf-font
 set source "https://github.com/dejavu-fonts/dejavu-fonts/releases/download/version_"(string replace -a . _ -- $pkgver)"/dejavu-fonts-ttf-$pkgver.tar.bz2"

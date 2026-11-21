@@ -4,6 +4,7 @@ set pkgrel 5
 set pkgdesc 'A deprecated library that implements Perl 5-style regular expressions'
 set arch i686 x32
 set url https://www.pcre.org/
+set nvchecker source=regex url=https://sourceforge.net/projects/pcre/best_release.json 'regex=pcre-([\d.]+).tar'
 set license BSD
 set depends glibc libgcc libstdc++ readline zlib bzip2 bash
 set provides libpcre{,16,32,posix,cpp}.so

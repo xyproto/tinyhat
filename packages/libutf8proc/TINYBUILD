@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'C library for processing UTF-8 encoded Unicode strings'
 set arch i686 x32
 set url https://github.com/JuliaStrings/utf8proc
+set nvchecker source=git git=https://github.com/JuliaStrings/utf8proc.git prefix=v
 set license MIT custom
 set depends glibc
 set makedepends cmake git

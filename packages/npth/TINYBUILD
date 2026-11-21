@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'The new GNU portable threads library'
 set arch i686 x32
 set url https://www.gnupg.org/software/npth/index.html
+set nvchecker source=git git=https://dev.gnupg.org/source/npth.git prefix=npth-
 set license LGPL-2.1-or-later
 set depends glibc sh
 set provides libnpth.so

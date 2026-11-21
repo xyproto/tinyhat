@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A low-level library for calling build-backends in pyproject.toml-based project'
 set arch any
 set url https://github.com/pypa/pyproject-hooks
+set nvchecker source=pypi pypi=pyproject-hooks
 set license MIT
 set depends python
 set makedepends python-flit-core python-installer

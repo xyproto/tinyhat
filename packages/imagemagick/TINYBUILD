@@ -4,6 +4,7 @@ set -g _pkgver (string replace -r -- '\.([^.]*)$' '-$1' $pkgver)
 set pkgrel 2
 set pkgdesc 'An image viewing/manipulation program'
 set url https://www.imagemagick.org/
+set nvchecker source=github github=ImageMagick/ImageMagick use_max_tag=true from_pattern=- to_pattern=.
 set arch i686 x32
 set license ImageMagick
 set depends bzip2 cairo fftw fontconfig freetype2 glib2 glibc lcms2 liblqr libltdl libpng libraqm libxext libxml2 \

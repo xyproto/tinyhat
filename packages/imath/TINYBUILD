@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A C++ and python library of 2D and 3D vector, matrix, and math operations for computer graphics'
 set arch i686 x32
 set url https://www.openexr.com/
+set nvchecker source=github github=AcademySoftwareFoundation/Imath use_max_tag=true prefix=v 'exclude_regex=.*rc.*'
 set license BSD-3-Clause
 set depends glibc libgcc libstdc++
 set makedepends boost boost-libs cmake git python python-numpy

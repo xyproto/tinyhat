@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'The GNU Compiler Collection - cross compiler for ARM EABI (bare-metal) target'
 set arch i686 x32
 set url https://gcc.gnu.org/
+set nvchecker source=git git=https://gcc.gnu.org/git/gcc.git 'include_regex=releases/gcc.*' prefix=releases/gcc-
 set license GPL LGPL FDL
 set depends arm-none-eabi-binutils zlib libmpc libisl zstd
 set makedepends gmp mpfr arm-none-eabi-newlib

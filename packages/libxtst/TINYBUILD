@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'library for XTEST & RECORD extensions'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/xorg/lib/libxtst
+set nvchecker source=gitlab gitlab=xorg/lib/libXtst host=gitlab.freedesktop.org 'include_regex=.*libXtst-.*' use_max_tag=true prefix=libXtst-
 set license MIT-open-group HPND-sell-variant X11 HPND-doc HPND-doc-sell
 set depends libxext libxi libx11 glibc xorgproto
 set makedepends git xorg-util-macros

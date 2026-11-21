@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'The Open Source toolkit for cryptography and Transport Layer Security'
 set arch i686 x32
 set url https://www.openssl.org
+set nvchecker source=git git=https://github.com/openssl/openssl.git prefix=openssl- 'include_regex=openssl-[0-9]+\.[0-9]+\.[0-9]+'
 set license Apache-2.0
 set depends brotli glibc zlib zstd
 set makedepends perl

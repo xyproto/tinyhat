@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Message Digest functions from BSD systems'
 set arch i686 x32
 set url https://www.hadrons.org/software/libmd/
+set nvchecker source=git git=https://git.hadrons.org/git/libmd.git use_max_tag=true
 set license 'BSD-3-Clause AND BSD-2-Clause AND ISC AND Beerware AND CC-PDM-1.0'
 set depends glibc
 set source "https://libbsd.freedesktop.org/releases/libmd-$pkgver.tar.xz"

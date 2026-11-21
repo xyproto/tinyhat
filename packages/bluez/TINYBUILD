@@ -3,6 +3,7 @@ set pkgname bluez bluez-utils bluez-libs bluez-deprecated-tools bluez-hid2hci
 set pkgver 5.87
 set pkgrel 2
 set url http://www.bluez.org/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/bluetooth/bluez.git use_max_tag=true
 set arch i686 x32
 set license GPL-2.0-only
 # No CUPS printer backend (bluez-cups): Tiny Hat does not print, and it would need the whole CUPS stack

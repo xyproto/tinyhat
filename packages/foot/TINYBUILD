@@ -4,6 +4,7 @@ set pkgname $pkgbase $pkgbase-terminfo
 set pkgver 1.28.0
 set pkgrel 3
 set url "https://codeberg.org/dnkl/$pkgbase"
+set nvchecker source=git git=https://codeberg.org/dnkl/foot.git
 set arch i686 x32
 set license MIT
 set makedepends fcft fontconfig git libutf8proc libxkbcommon llvm meson ncurses ninja pixman python scdoc \

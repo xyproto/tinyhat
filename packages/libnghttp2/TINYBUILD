@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Framing layer of HTTP/2 is implemented as a reusable C library'
 set arch i686 x32
 set url https://nghttp2.org/
+set nvchecker source=git git=https://github.com/nghttp2/nghttp2.git prefix=v
 set license MIT
 set depends glibc
 set provides libnghttp2.so

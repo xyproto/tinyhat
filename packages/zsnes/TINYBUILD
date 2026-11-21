@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Super Nintendo emulator'
 set arch i686
 set url https://github.com/xyproto/zsnes
+set nvchecker source=github github=xyproto/zsnes use_max_tag=true prefix=v
 set license GPL-2.0-or-later
 set options sstrip
 set makedepends_build elfkickers

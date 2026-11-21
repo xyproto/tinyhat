@@ -5,6 +5,7 @@ set pkgrel 5
 set pkgdesc 'Utility used to store, backup, and transport files'
 set arch i686 x32
 set url https://www.gnu.org/software/tar/
+set nvchecker source=git git=https://git.savannah.gnu.org/git/tar.git prefix=v
 set license GPL-3.0-or-later
 # From the release tarball (generated configure and translations): Arch builds from git with ./bootstrap, which needs
 # autoconf, automake and makeinfo

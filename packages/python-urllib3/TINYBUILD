@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'HTTP library with thread-safe connection pooling and file post support'
 set arch any
 set url https://github.com/urllib3/urllib3
+set nvchecker source=git git=https://github.com/urllib3/urllib3.git prefix=v
 set license MIT
 set depends python
 set makedepends python-build python-hatch-vcs python-hatchling python-installer python-wheel

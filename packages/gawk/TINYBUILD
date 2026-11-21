@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'GNU version of awk'
 set arch i686 x32
 set url https://www.gnu.org/software/gawk/
+set nvchecker source=git git=https://git.savannah.gnu.org/git/gawk.git prefix=gawk-
 set license GPL-3.0-or-later
 set depends sh glibc mpfr
 set source "https://ftp.gnu.org/pub/gnu/gawk/gawk-$pkgver.tar.gz"

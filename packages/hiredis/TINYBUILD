@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Minimalistic C client library for Redis'
 set arch i686 x32
 set url https://github.com/redis/hiredis/
+set nvchecker source=git git=https://github.com/redis/hiredis.git prefix=v
 set license BSD-3-Clause
 set depends glibc
 set checkdepends valkey

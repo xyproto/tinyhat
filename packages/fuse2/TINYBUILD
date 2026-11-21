@@ -3,6 +3,7 @@ set pkgver 2.9.9
 set pkgrel 6
 set pkgdesc 'Interface for userspace programs to export a filesystem to the Linux kernel'
 set url https://github.com/libfuse/libfuse
+set nvchecker source=git git=https://github.com/libfuse/libfuse.git
 set arch i686 x32
 set license GPL-2.0-only LGPL-2.1-only
 set depends glibc fuse-common

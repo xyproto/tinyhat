@@ -4,6 +4,7 @@ set pkgrel 5
 set pkgdesc 'The Linux-native asynchronous I/O facility (aio) library'
 set arch i686 x32
 set url https://codeberg.org/jmoyer/libaio
+set nvchecker source=git git=https://codeberg.org/jmoyer/libaio prefix=libaio- 'include_regex=(libaio)-([\d.*]+)'
 set license LGPL-2.0-or-later
 set depends glibc
 set provides libaio.so

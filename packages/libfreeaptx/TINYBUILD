@@ -3,6 +3,7 @@ set pkgver 0.2.2
 set pkgrel 1
 set pkgdesc 'Open Source aptX codec library'
 set url https://github.com/regularhunter/libfreeaptx
+set nvchecker source=git git=https://github.com/iamthehorker/libfreeaptx.git
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glibc

@@ -6,6 +6,7 @@ set pkgrel 1
 set pkgdesc 'Sources for time zone and daylight saving time data'
 set arch i686 x32
 set url https://www.iana.org/time-zones
+set nvchecker source=git git=https://github.com/eggert/tz.git sort_version_key=vercmp
 set license LicenseRef-tz
 set optdepends 'bash: for tzselect' \
     'glibc: for zdump, zic'

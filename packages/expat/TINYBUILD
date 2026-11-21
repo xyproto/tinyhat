@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'An XML parser library'
 set arch i686 x32
 set url https://libexpat.github.io/
+set nvchecker source=git git=https://github.com/libexpat/libexpat/ 'include_regex=(R_)([\d.*][_].*)' 'from_pattern=R_(\d)_(\d)_(\d)' 'to_pattern=\1.\2.\3'
 set -g _url https://github.com/libexpat/libexpat
 set license MIT
 set depends glibc

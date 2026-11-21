@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Meson PEP 517 Python build backend'
 set arch any
 set url https://github.com/mesonbuild/meson-python
+set nvchecker source=github github=mesonbuild/meson-python use_max_tag=true
 set license MIT
 set depends meson patchelf python python-packaging python-pyproject-metadata
 set makedepends git ninja python-build python-installer

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc "Python implementation of John Gruber's Markdown"
 set arch any
 set url https://python-markdown.github.io/
+set nvchecker source=git git=https://github.com/Python-Markdown/markdown.git
 set license BSD-3-Clause
 set depends python
 set makedepends python-build python-installer python-setuptools python-wheel

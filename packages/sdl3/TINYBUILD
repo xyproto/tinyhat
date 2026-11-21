@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Simple DirectMedia Layer 3 with the Tiny Hat Wayland framebuffer patch'
 set arch i686 x32
 set url https://libsdl.org/
+set nvchecker source=github github=libsdl-org/SDL prefix=release- use_max_tag=true 'include_regex=release-3\.\d*[02468]\.\d+'
 set license Zlib
 set depends glibc
 set replaces sdl3-man

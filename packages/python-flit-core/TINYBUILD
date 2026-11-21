@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A PEP 517 build backend for packages using Flit'
 set arch any
 set url https://github.com/pypa/flit/tree/main/flit_core
+set nvchecker source=git git=https://github.com/pypa/flit.git
 set license BSD-3-Clause
 set depends python
 set makedepends

@@ -3,6 +3,7 @@ set pkgver 1.9.0
 set pkgrel 4
 set pkgdesc 'Linux OS platform information API'
 set url https://github.com/python-distro/distro
+set nvchecker source=git git=https://github.com/python-distro/distro.git prefix=v
 set arch any
 set license Apache-2.0
 set depends python

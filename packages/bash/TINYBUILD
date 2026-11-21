@@ -7,6 +7,7 @@ set pkgdesc 'The GNU Bourne Again shell'
 set arch i686 x32
 set license GPL-3.0-or-later
 set url https://www.gnu.org/software/bash/bash.html
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/bash/ 'regex=bash-([\.\d]+)\.tar\.gz' 'exclude_regex=.*(pre|a|alpha|b|beta|r|rc|RC|BETA|ALPHA).*'
 set backup etc/bash.bash{rc,_logout} etc/skel/.bash{rc,_profile,_logout}
 set depends readline libreadline.so glibc ncurses
 set optdepends 'bash-completion: for tab completion'

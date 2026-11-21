@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'High performance message passing library (MPI)'
 set arch i686 x32
 set url https://www.open-mpi.org
+set nvchecker source=git git=https://github.com/open-mpi/ompi prefix=v 'exclude_regex=.*(pre|rc|alpha|beta).*'
 set license 'BSD-3-Clause AND LicenseRef-MPICH'
 # nvidia-utils is for libcuda.so
 # No valgrind: the memchecker (valgrind memory checks of MPI buffers, a debugging aid) is not built

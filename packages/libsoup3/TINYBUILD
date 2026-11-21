@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'HTTP client/server library for GNOME'
 set arch i686 x32
 set url https://libsoup.gnome.org/
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/libsoup.git 'include_regex=\d+\.\d*[02468]\.\d+'
 set license LGPL-2.0-or-later
 set depends brotli glib-networking glib2 glibc krb5 libnghttp2 libpsl sqlite zlib zstd
 # No documentation (gi-docgen) and no tests (-D tests=false -D pkcs11_tests=disabled: python-quart, apache, php-apache).

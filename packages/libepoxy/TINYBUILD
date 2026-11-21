@@ -5,6 +5,7 @@ set pkgrel 3
 set pkgdesc 'Library handling OpenGL function pointer management'
 set arch i686 x32
 set url https://github.com/anholt/libepoxy
+set nvchecker source=git git=https://github.com/anholt/libepoxy.git prefix=v
 set license MIT
 set depends glibc libglvnd
 # No documentation (doxygen, graphviz)

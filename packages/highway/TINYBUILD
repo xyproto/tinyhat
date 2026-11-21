@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A C++ library that provides portable SIMD/vector intrinsics'
 set arch i686 x32
 set url https://github.com/google/highway/
+set nvchecker source=git git=https://github.com/google/highway.git prefix=v
 set license 'Apache-2.0 OR BSD-3-Clause'
 set depends glibc gtest libgcc libstdc++
 set makedepends cmake

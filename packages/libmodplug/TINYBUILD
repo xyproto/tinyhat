@@ -4,6 +4,7 @@ set pkgrel 7
 set pkgdesc 'A MOD playing library'
 set arch i686 x32
 set url http://modplug-xmms.sourceforge.net/
+set nvchecker source=regex url=https://sourceforge.net/projects/modplug-xmms/best_release.json 'regex=libmodplug-([\d.]+).tar'
 set license LicenseRef-PublicDomain
 set depends glibc libstdc++
 set source "https://downloads.sourceforge.net/modplug-xmms/$pkgname-$pkgver.tar.gz" \

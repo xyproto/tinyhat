@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Chiptune tracker for many old sound chips'
 set arch i686 x32
 set url https://tildearrow.org/furnace/
+set nvchecker source=github github=tildearrow/furnace prefix=v use_latest_release=true
 set license GPL-2.0-or-later MIT Unlicense
 set depends sdl3 freetype2 zlib libglvnd
 set makedepends cmake ninja mesa

@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Mesa OpenGL utility library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/mesa/glu
+set nvchecker source=gitlab gitlab=mesa/glu host=gitlab.freedesktop.org use_max_tag=true prefix=glu-
 # no license file included, can be found inside the source files
 set license SGI-B-2.0 MIT
 set depends libgl glibc libstdc++ libgcc

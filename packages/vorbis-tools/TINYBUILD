@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Extra tools for Ogg-Vorbis (oggenc, oggdec, ogginfo, vorbiscomment, vcut)'
 set arch i686 x32
 set url https://www.xiph.org/vorbis/
+set nvchecker source=git git=https://gitlab.xiph.org/xiph/vorbis-tools.git prefix=v
 set license GPL-2.0-or-later
 set depends flac libvorbis
 set source "https://downloads.xiph.org/releases/vorbis/vorbis-tools-$pkgver.tar.gz"

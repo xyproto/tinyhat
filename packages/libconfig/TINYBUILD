@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'C/C++ Configuration File Library'
 set arch i686 x32
 set url https://github.com/hyperrealm/libconfig
+set nvchecker source=git git=https://github.com/hyperrealm/libconfig.git prefix=v
 set license LGPL-2.1-only
 set depends libgcc libstdc++ glibc
 # No documentation (texinfo), so no makedepends

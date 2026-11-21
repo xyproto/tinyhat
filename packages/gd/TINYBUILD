@@ -4,6 +4,7 @@ set pkgrel 9
 set pkgdesc 'Library for the dynamic creation of images by programmers'
 set arch i686 x32
 set url https://libgd.github.io/
+set nvchecker source=github github=libgd/libgd use_max_tag=true prefix=gd-
 set license custom
 set depends fontconfig libxpm libwebp libavif libheif
 set makedepends git

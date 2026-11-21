@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Text-mode interface for Git.'
 set arch i686 x32
 set url https://jonas.github.io/tig/
+set nvchecker source=git git=https://github.com/jonas/tig.git prefix=tig-
 set license GPL
 set depends git ncurses libncursesw.so pcre2 libpcre2-posix.so libpcre2-8.so readline libreadline.so
 # The man pages are prebuilt in the release tarball, no need for asciidoc and xmlto

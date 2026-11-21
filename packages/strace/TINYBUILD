@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A diagnostic, debugging and instructional userspace tracer'
 set arch i686 x32
 set url https://strace.io/
+set nvchecker source=git git=https://github.com/strace/strace.git prefix=v
 set license LGPL-2.1-or-later
 set depends glibc libunwind
 set source "https://github.com/strace/strace/releases/download/v$pkgver/strace-$pkgver.tar.xz"

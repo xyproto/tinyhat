@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'A library supporting \'Deferred Execution\''
 set arch i686 x32
 set url https://gitlab.gnome.org/GNOME/libdex
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/libdex.git 'include_regex=\d+(\.\d+)*' 'from_pattern=\.([a-z])' 'to_pattern=\1'
 set license LGPL-2.1-or-later
 set depends glib2 glibc libatomic libgcc liburing
 # No documentation (gi-docgen), examples (libsoup3), tests (python-dbusmock, xorg-server-xvfb) or PyGObject overrides

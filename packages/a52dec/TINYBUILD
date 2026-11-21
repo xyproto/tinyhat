@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Library for decoding ATSC A/52 (AC-3) audio streams'
 set arch i686 x32
 set url https://git.adelielinux.org/community/a52dec/
+set nvchecker source=git git=https://git.adelielinux.org/community/a52dec.git prefix=v
 set license GPL-2.0-or-later
 set depends glibc
 set makedepends git

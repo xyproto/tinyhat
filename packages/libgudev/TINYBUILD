@@ -5,6 +5,7 @@ set pkgrel 4
 set pkgdesc 'GObject bindings for libudev'
 set arch i686 x32
 set url https://gitlab.gnome.org/GNOME/libgudev
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/libgudev.git
 set license LGPL-2.1-or-later
 set depends glib2 glibc libgcc libsystemd
 # No documentation (gtk-doc) and no tests (-D tests=disabled, so no umockdev)

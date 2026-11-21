@@ -10,6 +10,7 @@ set pkgrel 1
 set pkgdesc 'Multiple-precision floating-point library'
 set arch i686 x32
 set url https://www.mpfr.org/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/mpfr/ 'regex=mpfr-([\d.]+)\.[a-z]'
 set license GPL-3.0-or-later LGPL-3.0-or-later
 set depends glibc gmp
 set provides libmpfr.so

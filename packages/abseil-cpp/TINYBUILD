@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Collection of C++ library code designed to augment the C++ standard library'
 set arch i686 x32
 set url https://abseil.io
+set nvchecker source=git git=https://github.com/abseil/abseil-cpp.git 'exclude_regex=.*(pre|rc|alpha|beta).*'
 set license Apache-2.0
 set depends glibc gtest libgcc libstdc++
 set makedepends cmake

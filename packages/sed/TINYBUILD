@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'GNU stream editor'
 set arch i686 x32
 set url https://www.gnu.org/software/sed/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/sed/ 'regex=sed-([\d\.]+).tar'
 set license GPL-3.0-or-later
 set depends glibc acl
 set makedepends gettext

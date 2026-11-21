@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Miscellaneous procfs tools'
 set arch i686 x32
 set url https://gitlab.com/psmisc/psmisc
+set nvchecker source=git git=https://gitlab.com/psmisc/psmisc.git prefix=v
 set license GPL
 set depends ncurses
 # No translated man pages (po4a); configure skips them without po4a

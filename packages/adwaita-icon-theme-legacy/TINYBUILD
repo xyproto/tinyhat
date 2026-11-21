@@ -3,6 +3,7 @@ set pkgver 46.2
 set pkgrel 3
 set pkgdesc 'GNOME fallback icons for legacy apps'
 set url https://gitlab.gnome.org/GNOME/adwaita-icon-theme-legacy
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/adwaita-icon-theme-legacy.git 'include_regex=\d+(\.\d+)*'
 set arch any
 set license 'CC-BY-SA-3.0 OR LGPL-3.0-only'
 set depends hicolor-icon-theme

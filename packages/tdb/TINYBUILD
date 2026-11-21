@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Trivial Database similar to GDBM but allows simultaneous commits'
 set arch i686 x32
 set url https://tdb.samba.org/
+set nvchecker source=regex url=https://www.samba.org/ftp/tdb/ 'regex=tdb-(\d+\.\d+\.\d+).tar.gz'
 set license GPL-3.0-or-later
 set depends glibc
 # No man pages (docbook-xsl); waf skips them when the stylesheets are missing

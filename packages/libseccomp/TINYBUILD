@@ -6,6 +6,7 @@ set pkgdesc 'Enhanced seccomp library'
 set arch i686 x32
 set license LGPL-2.1-only
 set url https://github.com/seccomp/libseccomp
+set nvchecker source=git git=https://github.com/seccomp/libseccomp.git prefix=v
 set checkdepends valgrind
 set makedepends git glibc gperf
 set depends glibc

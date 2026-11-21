@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Sound effect and chip sound generator'
 set arch i686 x32
 set url https://github.com/raysan5/rfxgen
+set nvchecker source=github github=raysan5/rfxgen use_max_tag=true
 set license Zlib
 set depends raylib
 set source "rfxgen-$pkgver.tar.gz::https://github.com/raysan5/rfxgen/archive/refs/tags/$pkgver.tar.gz"

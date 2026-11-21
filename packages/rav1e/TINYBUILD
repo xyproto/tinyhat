@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'An AV1 encoder focused on speed and safety'
 set arch i686
 set url https://github.com/xiph/rav1e/
+set nvchecker source=git git=https://github.com/xiph/rav1e.git 'include_regex=v[\d\.]+' prefix=v
 set license BSD-2-Clause
 set depends glibc libgcc
 # still using llvm14, openssl-1.1 for rust (archlinux32)

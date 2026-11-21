@@ -3,6 +3,7 @@ set pkgver 1.3
 set pkgrel 6
 set pkgdesc "AudioProcessing library based on Google's implementation of WebRTC (legacy)"
 set url https://freedesktop.org/software/pulseaudio/webrtc-audio-processing/
+set nvchecker source=git git=https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git 'include_regex=v1(\.\d+)*' prefix=v
 set arch i686 x32
 set license BSD-3-Clause
 set depends abseil-cpp glibc libgcc libstdc++

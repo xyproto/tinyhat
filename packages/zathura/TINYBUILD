@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Minimalistic document viewer'
 set arch i686 x32
 set url https://pwmt.org/projects/zathura/
+set nvchecker source=git git=https://github.com/pwmt/zathura.git
 set license Zlib
 set depends girara sqlite desktop-file-utils file libseccomp gtk4 glib2 json-glib xxhash
 set makedepends meson ninja

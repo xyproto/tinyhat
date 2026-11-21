@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Portable Hardware Locality is a portable abstraction of hierarchical architectures'
 set arch i686 x32
 set url https://www.open-mpi.org/projects/hwloc/
+set nvchecker source=git git=https://github.com/open-mpi/hwloc.git prefix=hwloc- 'include_regex=^hwloc-\d+\.\d+(\.\d+)?$'
 set license BSD-3-Clause
 set depends glibc libpciaccess ncurses systemd-libs
 switch $CARCH

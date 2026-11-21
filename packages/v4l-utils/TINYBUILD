@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Userspace tools and conversion library for Video 4 Linux'
 set arch i686 x32
 set url https://linuxtv.org/
+set nvchecker source=git git=https://git.linuxtv.org/v4l-utils.git prefix=v4l-utils-
 set license LGPL
 set depends hicolor-icon-theme libgcc libbpf libjpeg-turbo systemd-libs json-c
 # No documentation (doxygen)

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'LLVM <-> SPIR-V converter for compilers targeting SPIR-V'
 set arch i686 x32
 set url https://www.khronos.org/spirv/
+set nvchecker source=git git=https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git prefix=v
 set license NCSA
 set depends glibc libstdc++ llvm-libs spirv-tools
 set makedepends cmake git llvm ninja spirv-headers

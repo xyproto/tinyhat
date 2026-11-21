@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Application launcher for Wayland'
 set arch i686 x32
 set url https://codeberg.org/dnkl/fuzzel
+set nvchecker source=gitea gitea=dnkl/fuzzel host=codeberg.org use_max_tag=true
 set license MIT
 set options sstrip
 set makedepends_build elfkickers

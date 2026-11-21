@@ -4,6 +4,7 @@ set pkgrel 11
 set pkgdesc 'Library for decoding MPEG-1 and MPEG-2 video streams'
 set arch i686 x32
 set url https://libmpeg2.sourceforge.io/
+set nvchecker source=regex url=https://libmpeg2.sourceforge.io/downloads.html 'regex=libmpeg2-([^"]*).tar.gz'
 set license GPL-2.0-or-later
 set depends glibc
 set flags arch

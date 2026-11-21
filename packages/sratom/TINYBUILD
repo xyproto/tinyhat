@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'An LV2 Atom RDF serialisation library'
 set arch i686 x32
 set url https://drobilla.net/software/sratom.html
+set nvchecker source=git git=https://gitlab.com/lv2/sratom prefix=v
 set license ISC
 # No documentation (doxygen, python-sphinx)
 set makedepends lv2 meson serd sord

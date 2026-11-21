@@ -3,6 +3,7 @@ set pkgver 2026.4
 set pkgrel 1
 set pkgdesc 'Collection of tools, libraries and tests for shader compilation'
 set url https://github.com/google/shaderc
+set nvchecker source=git git=https://github.com/google/shaderc.git prefix=v
 set arch i686 x32
 set license Apache-2.0
 set depends glibc glslang libgcc libstdc++ spirv-tools

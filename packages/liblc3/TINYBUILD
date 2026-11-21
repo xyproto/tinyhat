@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Low Complexity Communication Codec library and tools'
 set arch i686 x32
 set url https://github.com/google/liblc3
+set nvchecker source=github github=google/liblc3 use_max_tag=true prefix=v
 set license Apache-2.0
 set depends glibc
 set makedepends git meson python

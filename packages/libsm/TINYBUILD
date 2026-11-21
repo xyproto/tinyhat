@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X11 Session Management library'
 set arch i686 x32
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libsm host=gitlab.freedesktop.org 'include_regex=.*libSM-.*' use_max_tag=true prefix=libSM-
 set license MIT MIT-open-group
 set depends libice util-linux-libs xorgproto glibc
 set makedepends xorg-util-macros xtrans

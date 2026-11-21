@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'the fast distributed version control system'
 set arch i686 x32
 set url https://git-scm.com/
+set nvchecker source=git git=https://github.com/git/git.git prefix=v 'exclude_regex=v.*(pre|rc|alpha|beta).*'
 set license GPL-2.0-only
 # No Perl (NO_PERL): without git svn, send-email, cvsimport/cvsserver/archimport, gitweb and instaweb; the rest of git
 # is C and shell

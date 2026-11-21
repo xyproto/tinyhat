@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'A complete, highly portable implementation of the DNS protocol'
 set arch i686 x32
 set url https://www.isc.org/software/bind/
+set nvchecker source=git git=https://gitlab.isc.org/isc-projects/bind9.git prefix=v 'exclude_regex=v[0-9]+\.[0-9]?[13579]\.[0-9]+'
 set license MPL2
 set depends bash dnssec-anchors e2fsprogs glibc libedit json-c krb5 libcap libidn2 libnsl libuv libxml2 openssl readline xz zlib jemalloc libnghttp2 liburcu
 set makedepends git metatar

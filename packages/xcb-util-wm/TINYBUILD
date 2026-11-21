@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Utility libraries for XC Binding - client and window-manager helpers for ICCCM'
 set arch i686 x32
 set url https://xcb.freedesktop.org
+set nvchecker source=gitlab gitlab=xorg/lib/libxcb-wm host=gitlab.freedesktop.org 'include_regex=.*xcb-util-wm-.*' use_max_tag=true prefix=xcb-util-wm-
 set license X11-distribute-modifications-variant
 set depends libxcb glibc
 set makedepends xorg-util-macros xorgproto

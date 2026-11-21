@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A simple, correct Python build frontend'
 set arch any
 set url https://github.com/pypa/build
+set nvchecker source=git git=https://github.com/pypa/build.git prefix=v
 set license MIT
 set depends python python-packaging python-pyproject-hooks
 set makedepends git python-flit-core python-installer

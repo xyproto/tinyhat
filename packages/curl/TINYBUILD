@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'command line tool and library for transferring data with URLs'
 set arch i686 x32
 set url https://curl.se/
+set nvchecker source=git git=https://github.com/curl/curl.git prefix=curl- from_pattern=_ to_pattern=. 'exclude_regex=.*(tiny|beta).*'
 set license curl
 # for building: git patchelf, the rest are the actual package dependencies
 set makedepends git patchelf brotli gnutls krb5 libidn2 libnghttp2 libnghttp3 libngtcp2 libpsl \

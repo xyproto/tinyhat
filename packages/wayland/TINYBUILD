@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'A computer display server protocol'
 set arch i686 x32
 set url https://wayland.freedesktop.org/
+set nvchecker source=git git=https://gitlab.freedesktop.org/wayland/wayland.git 'exclude_regex=.*\.9\d'
 set license MIT
 set depends glibc libffi expat libxml2 default-cursors
 # No documentation (doxygen, xmlto, graphviz, docbook-xsl)

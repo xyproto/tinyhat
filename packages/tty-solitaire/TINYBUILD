@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'ncurses-based klondike solitaire game'
 set arch i686 x32
 set url https://github.com/mpereira/tty-solitaire
+set nvchecker source=git git=https://github.com/mpereira/tty-solitaire.git prefix=v
 set license MIT
 set depends git ncurses
 set source "git+https://github.com/mpereira/tty-solitaire.git#tag=v$pkgver"

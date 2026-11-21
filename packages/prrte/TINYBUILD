@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'PMIx Reference RunTime Environment'
 set arch i686 x32
 set url https://github.com/openpmix/prrte
+set nvchecker source=git git=https://github.com/openpmix/prrte prefix=v 'exclude_regex=.*(pre|rc|alpha|beta).*'
 set license BSD-3-Clause
 set makedepends glibc hwloc libevent openpmix perl
 # prrte does not support LTO https://github.com/openpmix/prrte/pull/1998

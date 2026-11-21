@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'exFAT filesystem userspace utilities for the Linux Kernel exfat driver'
 set arch i686 x32
 set url https://github.com/exfatprogs/exfatprogs
+set nvchecker source=git git=https://github.com/exfatprogs/exfatprogs.git
 set license GPL-2.0-or-later
 set depends glibc
 set provides exfat-utils

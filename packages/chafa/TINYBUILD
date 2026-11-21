@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Image-to-text converter supporting a wide range of symbols and palettes, transparency, animations, etc.'
 set arch i686 x32
 set url https://hpjansson.org/chafa/
+set nvchecker source=git git=https://github.com/hpjansson/chafa.git
 set license LGPL-3.0-or-later
 set depends libavif libheif libjxl librsvg libwebp libxslt
 # No documentation (gtk-doc) and no man page (docbook-xsl)

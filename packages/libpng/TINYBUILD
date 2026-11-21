@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A collection of routines used to create PNG format graphics files'
 set arch i686 x32
 set url http://www.libpng.org/pub/png/libpng.html
+set nvchecker source=git git=https://github.com/pnggroup/libpng.git prefix=v 'exclude_regex=.*(beta|alpha|rc).*'
 set license libpng-2.0
 set depends zlib sh
 set makedepends git

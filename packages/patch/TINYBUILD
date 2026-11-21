@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A utility to apply patch files to original sources'
 set arch i686 x32
 set url https://www.gnu.org/software/patch/
+set nvchecker source=git git=https://git.savannah.gnu.org/git/patch.git prefix=v
 set license GPL-3.0-or-later
 set depends glibc attr
 # From the release tarball: Arch builds from git with ./bootstrap (autoconf, automake, makeinfo)

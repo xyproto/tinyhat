@@ -3,6 +3,7 @@ set pkgver 1.2.1
 set pkgrel 3
 set pkgdesc 'DSP library derived from Speex'
 set url https://www.speex.org/
+set nvchecker source=git git=https://gitlab.xiph.org/xiph/speexdsp.git prefix=SpeexDSP-
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc

@@ -6,6 +6,7 @@ set pkgrel 1
 set pkgdesc 'General purpose cryptographic library based on the code from GnuPG'
 set arch i686 x32
 set url https://www.gnupg.org
+set nvchecker source=regex 'regex=libgcrypt-([\d.]+)\.' url=https://www.gnupg.org/download/integrity_check.html
 set license BSD-3-Clause \
     'BSD-3-Clause OR GPL-2.0-only' \
     GPL-2.0-or-later \

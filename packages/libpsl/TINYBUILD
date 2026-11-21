@@ -3,6 +3,7 @@ set pkgver 0.21.5
 set pkgrel 2
 set pkgdesc 'Public Suffix List library'
 set url https://github.com/rockdaboot/libpsl
+set nvchecker source=git git=https://github.com/rockdaboot/libpsl.git
 set arch i686 x32
 set license MIT
 set depends libidn2 libunistring

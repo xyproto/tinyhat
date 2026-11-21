@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A modern, portable, easy to use crypto library'
 set arch i686 x32
 set url https://github.com/jedisct1/libsodium
+set nvchecker source=git git=https://github.com/jedisct1/libsodium.git
 set license custom:ISC
 set depends glibc
 set makedepends git

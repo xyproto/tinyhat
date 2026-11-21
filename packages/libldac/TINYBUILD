@@ -3,6 +3,7 @@ set pkgver 2.0.2.6
 set pkgrel 1
 set pkgdesc 'LDAC Bluetooth encoder library'
 set url https://github.com/EHfive/ldacBT
+set nvchecker source=git git=https://github.com/EHfive/ldacBT.git prefix=v
 set arch i686 x32
 set license Apache-2.0
 set depends glibc

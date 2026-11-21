@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Plugin and hook calling mechanisms for python'
 set arch any
 set url https://github.com/pytest-dev/pluggy
+set nvchecker source=git git=https://github.com/pytest-dev/pluggy.git
 set license MIT
 set depends python
 set makedepends git python-build python-installer python-setuptools python-setuptools-scm python-wheel

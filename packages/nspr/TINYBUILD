@@ -3,6 +3,7 @@ set pkgver 4.40
 set pkgrel 1
 set pkgdesc 'Netscape Portable Runtime'
 set url https://developer.mozilla.org/en-US/docs/Mozilla/Projects/NSPR
+set nvchecker source=git git=https://github.com/mozilla/nspr.git 'include_regex=NSPR_(\d+_)+RTM' 'from_pattern=NSPR_(\d+)_(\d+)_RTM' 'to_pattern=\1.\2'
 set arch i686 x32
 set license MPL-2.0
 set depends glibc sh

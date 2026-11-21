@@ -4,6 +4,7 @@ set pkgver 2.66.10
 set pkgrel 1
 set pkgdesc 'C++ bindings for GLib'
 set url https://www.gtkmm.org/
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/glibmm.git 'include_regex=2\.66\.\d+'
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glib2 glibc libgcc libsigc++ libstdc++ perl

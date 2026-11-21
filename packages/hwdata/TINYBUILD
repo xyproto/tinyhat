@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'hardware identification databases'
 set arch any
 set url https://github.com/vcrhonek/hwdata
+set nvchecker source=git git=https://github.com/vcrhonek/hwdata.git prefix=v
 set license GPL-2.0-or-later
 set makedepends git
 set replaces hwids

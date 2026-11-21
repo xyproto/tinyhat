@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Minimal Scheme implementation for use as an extension language'
 set arch i686 x32
 set url https://github.com/ashinn/chibi-scheme
+set nvchecker source=github github=ashinn/chibi-scheme use_max_tag=true
 set license BSD-3-Clause
 set depends glibc
 set source "chibi-scheme-$pkgver.tar.gz::https://github.com/ashinn/chibi-scheme/archive/refs/tags/$pkgver.tar.gz"

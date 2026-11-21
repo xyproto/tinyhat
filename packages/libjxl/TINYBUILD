@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'JPEG XL image format reference implementation'
 set arch i686 x32
 set url https://jpeg.org/jpegxl/
+set nvchecker source=git git=https://github.com/libjxl/libjxl.git prefix=v
 set license BSD-3-Clause
 # No documentation (doxygen, graphviz), no man pages (asciidoc) and no tests (gtest)
 set makedepends add-determinism brotli cmake giflib git gperftools highway \

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'International Components for Unicode library'
 set arch i686 x32
 set url https://icu.unicode.org
+set nvchecker source=git git=https://github.com/unicode-org/icu.git 'include_regex=release-\d+((-|\.)\d+)*' prefix=release- from_pattern=- to_pattern=.
 set license LicenseRef-Unicode-3.0 BSD-2-Clause BSD-3-Clause NAIST-2003
 set depends glibc libstdc++ libgcc sh
 set makedepends python

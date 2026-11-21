@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'Engine for classic adventure games'
 set arch i686 x32
 set url https://www.scummvm.org/
+set nvchecker source=github github=scummvm/scummvm prefix=v use_latest_release=true
 set license GPL-3.0-or-later
 set options sstrip
 set makedepends_build elfkickers

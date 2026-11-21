@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Game Boy Advance emulator, SDL3 frontend'
 set arch i686 x32
 set url https://mgba.io/
+set nvchecker source=github github=mgba-emu/mgba use_latest_release=true
 set license MPL-2.0
 set depends sdl3 libpng zlib
 set makedepends cmake ninja

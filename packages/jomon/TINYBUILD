@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Network forensics and sniffer tool'
 set arch i686 x32 x86_64 aarch64
 set url https://github.com/jo-lund/jomon
+set nvchecker source=git git=https://github.com/jo-lund/jomon.git prefix=v
 set license MIT
 set depends geoip glibc libgcc ncurses
 set makedepends git python re2c

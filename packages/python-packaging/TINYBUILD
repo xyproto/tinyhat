@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Core utilities for Python packages'
 set arch any
 set url https://github.com/pypa/packaging
+set nvchecker source=git git=https://github.com/pypa/packaging.git 'exclude_regex=.*(beta|rc).*'
 set license 'Apache-2.0 OR BSD-2-Clause'
 set depends python
 set makedepends python-flit-core python-installer

@@ -5,6 +5,7 @@ set -g _protocols protocol-numbers-20260310
 set pkgrel 1
 set pkgdesc '/etc/protocols and /etc/services provided by IANA'
 set url https://www.iana.org/protocols
+set nvchecker source=regex url=https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml 'regex=([0-9]{4}-[0-9]{2}-[0-9]{2})' 'from_pattern=([0-9]{4})-([0-9]{2})-([0-9]{2})' 'to_pattern=\1\2\3'
 set arch any
 set license custom:none
 set backup etc/{protocols,services}

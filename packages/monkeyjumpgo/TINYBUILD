@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Minimalistic GUI for playing Go against GNU Go (the Go port of Monkeyjump)'
 set arch i686
 set url https://github.com/xyproto/monkeyjumpgo
+set nvchecker source=github github=xyproto/monkeyjumpgo prefix=v use_max_tag=true
 set license GPL-2.0-only
 set depends glibc gnugo sdl3 sdl3_image
 set makedepends go-tinyhat

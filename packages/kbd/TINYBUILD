@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Keytable files and keyboard utilities'
 set arch i686 x32
 set url http://www.kbd-project.org
+set nvchecker source=git git=https://git.kernel.org/pub/scm/linux/kernel/git/legion/kbd.git prefix=v
 set license GPL-2.0-or-later
 set depends glibc gzip pam
 set makedepends check git

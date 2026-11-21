@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Google Test - C++ testing utility'
 set arch i686 x32
 set url https://github.com/google/googletest
+set nvchecker source=git git=https://github.com/google/googletest.git prefix=v
 set license BSD-3-Clause
 set depends glibc libgcc libstdc++
 set makedepends cmake python

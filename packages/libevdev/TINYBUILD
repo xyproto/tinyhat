@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Wrapper library for evdev devices'
 set arch i686 x32
 set url https://www.freedesktop.org/wiki/Software/libevdev/
+set nvchecker source=gitlab gitlab=libevdev/libevdev host=gitlab.freedesktop.org use_max_tag=true prefix=libevdev-
 set license MIT
 set depends glibc
 # No tests (check, valgrind)

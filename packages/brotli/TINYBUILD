@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Generic-purpose lossless compression algorithm'
 set arch i686 x32
 set url https://github.com/google/brotli
+set nvchecker source=git git=https://github.com/google/brotli.git prefix=v
 set license MIT
 set depends glibc
 set provides libbrotlicommon.so libbrotlidec.so libbrotlienc.so

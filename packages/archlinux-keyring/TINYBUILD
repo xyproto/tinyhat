@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Arch Linux PGP keyring'
 set arch any
 set url https://gitlab.archlinux.org/archlinux/archlinux-keyring/
+set nvchecker source=gitlab gitlab=archlinux/archlinux-keyring host=gitlab.archlinux.org use_max_tag=true prefix=v
 set license GPL-3.0-or-later
 set install $pkgname.install
 set depends pacman

@@ -3,6 +3,7 @@ set pkgver 1.9.2
 set pkgrel 2
 set pkgdesc 'Fast DNS library supporting recent RFCs'
 set url https://www.nlnetlabs.nl/projects/ldns/
+set nvchecker source=git git=https://github.com/NLnetLabs/ldns.git 'include_regex=[\d\.]+'
 set license custom:BSD
 set arch i686 x32
 set depends openssl dnssec-anchors

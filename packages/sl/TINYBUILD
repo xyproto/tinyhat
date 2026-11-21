@@ -6,6 +6,7 @@ set arch i686 x32
 # The original project: https://github.com/mtoyoda/sl
 # We use a slightly-less dead fork that contains useful patches, such as SIGINT support
 set url https://github.com/eyJhb/sl
+set nvchecker source=git git=https://github.com/eyJhb/sl.git
 set license custom
 set depends ncurses
 set source "$pkgname-$pkgver.tar.gz::https://github.com/eyJhb/sl/archive/$pkgver.tar.gz" \

@@ -7,6 +7,7 @@ set pkgrel 1
 set pkgdesc 'Just-in-time compiler and drop-in replacement for Lua 5.1'
 set arch i686
 set url https://luajit.org/
+set nvchecker source=jq url=https://api.github.com/repos/LuaJIT/LuaJIT/commits/v2.1 'filter="2.1.\(.commit.committer.date | fromdate)+\(.sha[0:7])"'
 set license MIT
 set depends glibc libgcc
 # c7815e1a1b49871e645252bb12e722fb4879df11.patch is applied on i686 only (see prepare)

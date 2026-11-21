@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Modular Wayland compositor library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/wlroots/wlroots
+set nvchecker source=gitlab gitlab=wlroots/wlroots host=gitlab.freedesktop.org use_max_tag=true 'include_regex=0\.20\.\d+'
 set license MIT
 # No XWayland support (Tiny Hat has no Xwayland binary): xorg-xwayland, libxcb and xcb-util-wm are dropped
 set depends libdisplay-info libdrm libinput libxkbcommon mesa pixman seatd systemd-libs wayland

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'JSON implementation in C'
 set arch i686 x32
 set url https://github.com/json-c/json-c/wiki
+set nvchecker source=git git=https://github.com/json-c/json-c.git 'include_regex=^json-c-([\d.]+)-\d+$' 'from_pattern=^json-c-([\d.]+)-\d+$' 'to_pattern=\1'
 set license MIT
 set depends glibc
 set makedepends cmake git ninja

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A collection of USB tools to query connected USB devices'
 set arch i686 x32
 set url https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usbutils.git/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usbutils.git prefix=v
 set license GPL-2.0-only GPL-2.0-or-later GPL-3.0-only LGPL-2.1-or-later MIT
 set depends glibc hwdata
 set makedepends libusb meson systemd

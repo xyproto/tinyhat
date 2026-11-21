@@ -5,6 +5,7 @@ set pkgrel 3
 set pkgdesc 'Communication framework for data-centric and high-performance applications'
 set arch i686 x32
 set url https://openucx.org/
+set nvchecker source=git git=https://github.com/openucx/ucx prefix=v 'exclude_regex=.*(pre|rc|alpha|beta).*'
 set license BSD-3-Clause
 set depends binutils glibc libgcc libgomp libstdc++ zlib zstd
 set makedepends rdma-core cuda rocm-language-runtime

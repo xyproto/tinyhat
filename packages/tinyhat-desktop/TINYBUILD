@@ -1,11 +1,11 @@
 set pkgname tinyhat-desktop
 set pkgver 1
-set pkgrel 6
+set pkgrel 7
 set pkgdesc 'Tiny Hat desktop: menu entries, icons, launchers and the dwl configuration'
 set arch any
 set url https://github.com/xyproto/tinyhat
 set license BSD-3-Clause
-set depends tinyhat-system tinyhat-wallpapers pixelitos-icon-theme tinyhat-gtk-theme
+set depends tinyhat-system tinyhat-wallpapers pixelitos-icon-theme tinyhat-gtk-theme tinyhat-notify
 set backup etc/gtk-4.0/settings.ini etc/swaylock/config etc/tinyhat/dosbox-x.conf etc/tinyhat/dwl.toml etc/tinyhat/help.toml
 
 function package

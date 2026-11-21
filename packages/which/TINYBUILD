@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A utility to show the full path of commands'
 set arch i686 x32
 set url https://savannah.gnu.org/projects/which/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/which/ 'regex=which-([\d.]+).tar'
 set license GPL-3.0-or-later
 set depends bash glibc
 set source "https://ftp.gnu.org/gnu/which/which-$pkgver.tar.gz"

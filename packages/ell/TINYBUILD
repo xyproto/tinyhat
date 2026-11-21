@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Embedded Linux library'
 set arch i686 x32
 set url https://git.kernel.org/pub/scm/libs/ell/ell.git/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/libs/ell/ell.git use_max_tag=true
 set license LGPL-2.1-or-later
 set depends libgcc glibc
 set checkdepends dbus procps-ng

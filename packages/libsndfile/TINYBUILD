@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'A C library for reading and writing files containing sampled audio data'
 set arch i686 x32
 set url https://libsndfile.github.io/libsndfile/
+set nvchecker source=git git=https://github.com/libsndfile/libsndfile.git prefix=v
 set license LGPL-2.1-or-later
 set depends glibc
 set makedepends alsa-lib cmake flac lame libogg libvorbis mpg123 opus python sqlite

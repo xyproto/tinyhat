@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A library that implements Perl 5-style regular expressions. 2nd version'
 set arch i686 x32
 set url https://github.com/PCRE2Project/pcre2
+set nvchecker source=git git=https://github.com/PCRE2Project/pcre2 'exclude_regex=.*(alpha|beta|pre|rc|RC).*' prefix=pcre2-
 set license BSD-2-Clause 'BSD-3-Clause WITH PCRE2-exception'
 set depends bzip2 glibc readline zlib
 set makedepends git

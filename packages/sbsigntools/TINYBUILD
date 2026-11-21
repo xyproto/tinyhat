@@ -5,6 +5,7 @@ set pkgrel 4
 set pkgdesc 'Tools to add signatures to EFI binaries and Drivers'
 set arch i686 x32
 set url https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git/about
+set nvchecker source=git git=https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git prefix=v
 set license GPL-3.0-or-later
 set depends glibc openssl
 set makedepends git gnu-efi help2man util-linux sed

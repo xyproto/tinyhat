@@ -5,6 +5,7 @@ set pkgdesc 'X11 pixmap library'
 set arch i686 x32
 set license MIT X11-distribute-modifications-variant
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libXpm host=gitlab.freedesktop.org 'include_regex=.*libXpm-.*' use_max_tag=true prefix=libXpm-
 set depends libxt libxext libx11 glibc
 set makedepends git xorg-util-macros
 set source "git+https://gitlab.freedesktop.org/xorg/lib/libxpm.git?signed#tag=libXpm-$pkgver"

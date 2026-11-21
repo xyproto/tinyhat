@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'C parser and AST generator written in Python'
 set arch any
 set url https://github.com/eliben/pycparser
+set nvchecker source=git git=https://github.com/eliben/pycparser.git prefix=release_v 'include_regex=release_v.*'
 set license BSD-3-Clause
 set depends python
 set makedepends git python-build python-installer python-setuptools

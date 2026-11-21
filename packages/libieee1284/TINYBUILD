@@ -6,6 +6,7 @@ set pkgdesc 'A library to query devices connected in parallel port'
 set arch i686 x32
 set license GPL-2.0-or-later
 set url https://github.com/twaugh/libieee1284
+set nvchecker source=git git=https://github.com/twaugh/libieee1284 from_pattern=_ to_pattern=. prefix=V 'include_regex=V\d+_\d+_\d+'
 set depends glibc
 # No man pages (xmlto, docbook-xml, docbook-xsl): man3_MANS is emptied for make
 set makedepends python

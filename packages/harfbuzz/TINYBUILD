@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'OpenType text shaping engine'
 set arch i686 x32
 set url https://harfbuzz.github.io/
+set nvchecker source=git git=https://github.com/harfbuzz/harfbuzz.git
 set license MIT
 # No ragel: the generated *-machine.hh shaper sources are in git and meson only regenerates them when ragel is found
 set makedepends cairo freetype2 git glib2 glib2-devel glibc gobject-introspection graphite libpng libstdc++ meson python zlib glib2-introspection

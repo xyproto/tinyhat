@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Access control list utilities, libraries and headers'
 set arch i686 x32
 set url https://savannah.nongnu.org/projects/acl
+set nvchecker source=git git=https://git.savannah.gnu.org/git/acl.git prefix=v
 set license 'LGPL-2.1-or-later AND GPL-2.0-or-later'
 set depends glibc
 set makedepends attr git

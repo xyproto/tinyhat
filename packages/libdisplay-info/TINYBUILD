@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'EDID and DisplayID library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/emersion/libdisplay-info
+set nvchecker source=gitlab gitlab=emersion/libdisplay-info host=gitlab.freedesktop.org use_max_tag=true
 set license MIT
 set depends glibc
 set makedepends meson ninja hwdata python

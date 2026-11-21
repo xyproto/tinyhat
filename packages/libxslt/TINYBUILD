@@ -4,6 +4,7 @@ set pkgver 1.1.45
 set pkgrel 2
 set pkgdesc 'XML stylesheet transformation library'
 set url https://gitlab.gnome.org/GNOME/libxslt/-/wikis/home
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/libxslt.git prefix=v
 set arch i686 x32
 set license MIT
 set depends bash glibc libgcrypt libxml2 xz

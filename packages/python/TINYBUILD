@@ -5,6 +5,7 @@ set -g _pybasever (string replace -r '\.[^.]*$' '' -- $pkgver)
 set pkgdesc 'The Python programming language'
 set arch i686 x32
 set url https://www.python.org/
+set nvchecker source=git git=https://github.com/python/cpython.git prefix=v 'exclude_regex=.*(a|b|rc).*'
 set license PSF-2.0
 set depends bzip2 expat gdbm libffi libnsl libxcrypt openssl zlib tzdata mpdecimal zstd sqlite
 set provides "python3=$pkgver"

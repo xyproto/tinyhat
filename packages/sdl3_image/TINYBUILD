@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'SDL3 image loading library (PNG, JPEG, GIF, BMP and more)'
 set arch i686 x32
 set url https://github.com/libsdl-org/SDL_image
+set nvchecker source=github github=libsdl-org/SDL_image prefix=release- use_max_tag=true 'include_regex=release-3\.\d*[02468]\.\d+'
 set license Zlib
 set depends sdl3 libtiff libwebp
 set makedepends perl cmake ninja

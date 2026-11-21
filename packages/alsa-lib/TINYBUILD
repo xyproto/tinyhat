@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'An alternative implementation of Linux sound support'
 set arch i686 x32
 set url https://www.alsa-project.org
+set nvchecker source=git git=https://github.com/alsa-project/alsa-lib prefix=v
 set license LGPL-2.1-or-later
 set depends alsa-topology-conf alsa-ucm-conf glibc
 set provides libasound.so libatopology.so

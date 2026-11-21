@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Userspace interface to kernel DRM services'
 set arch i686 x32
 set url https://dri.freedesktop.org/
+set nvchecker source=gitlab gitlab=mesa/drm host=gitlab.freedesktop.org use_max_tag=true prefix=libdrm-
 set license MIT
 set depends libpciaccess glibc
 set makedepends python-docutils meson

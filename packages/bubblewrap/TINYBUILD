@@ -3,6 +3,7 @@ set pkgver 0.13.1
 set pkgrel 1
 set pkgdesc 'Unprivileged sandboxing tool'
 set url https://github.com/containers/bubblewrap
+set nvchecker source=git git=https://github.com/containers/bubblewrap.git prefix=v
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glibc libcap libgcc

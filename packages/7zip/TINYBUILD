@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'File archiver for extremely high compression'
 set arch i686 x32
 set url https://www.7-zip.org
+set nvchecker source=git git=https://github.com/ip7z/7zip.git
 set license 'LGPL-2.1-or-later AND LicenseRef-UnRAR AND BSD-3-Clause AND BSD-2-Clause'
 set depends sh libgcc libstdc++ glibc
 set provides p7zip

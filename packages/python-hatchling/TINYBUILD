@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Extensible, standards compliant build backend used by Hatch'
 set arch any
 set url https://github.com/pypa/hatch/tree/master/backend
+set nvchecker source=pypi pypi=hatchling
 set license MIT
 # python-editables is only needed for editable installs (Arch has it as a depend; upstream does not)
 set depends python python-packaging python-pathspec python-pluggy python-tomlkit python-trove-classifiers

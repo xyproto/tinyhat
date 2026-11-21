@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Free LZH/LHA archive tool'
 set arch i686 x32
 set url https://github.com/fragglet/lhasa
+set nvchecker source=git git=https://github.com/fragglet/lhasa.git prefix=v
 set license ISC
 set depends glibc
 set provides lha

@@ -3,6 +3,7 @@ set pkgver 1.5.7
 set pkgrel 3
 set pkgdesc 'Zstandard - Fast real-time compression algorithm'
 set url https://facebook.github.io/zstd/
+set nvchecker source=git git=https://github.com/facebook/zstd.git prefix=v
 set arch i686 x32
 set license BSD-3-Clause GPL-2.0-only
 set depends glibc libgcc libstdc++ zlib xz lz4

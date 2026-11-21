@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Tiny C Compiler (tinycc)'
 set arch i686
 set url https://bellard.org/tcc/
+set nvchecker source=git git=https://repo.or.cz/tinycc.git 'from_pattern=release_(\d+)_(\d+)_(\d+)' 'to_pattern=\1.\2.\3'
 set license LGPL-2.0-or-later
 set depends glibc
 set makedepends git

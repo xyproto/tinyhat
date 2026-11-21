@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Simple NUMA policy support'
 set arch i686 x32
 set url https://github.com/numactl/numactl
+set nvchecker source=git git=https://github.com/numactl/numactl.git prefix=v
 set license GPL-2.0-only LGPL-2.1-only
 set depends glibc
 set provides libnuma.so

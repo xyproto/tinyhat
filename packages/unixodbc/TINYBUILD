@@ -5,6 +5,7 @@ set pkgdesc 'ODBC is an open specification for providing application developers 
 set arch i686 x32
 set license GPL-2.0-or-later LGPL-2.1-or-later
 set url http://www.unixodbc.org/
+set nvchecker source=github github=lurcher/unixODBC use_max_tag=true prefix=v 'exclude_regex=.*(pre|a|alpha|b|beta|rc).*'
 set backup etc/odbc.ini etc/odbcinst.ini
 set depends readline libltdl glibc
 set provides libodbc.so libodbccr.so libodbcinst.so

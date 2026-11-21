@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A built-package format for Python'
 set arch any
 set url https://pypi.python.org/pypi/wheel
+set nvchecker source=pypi pypi=wheel
 set license MIT
 set depends python python-packaging
 set makedepends python-build python-flit-core python-installer

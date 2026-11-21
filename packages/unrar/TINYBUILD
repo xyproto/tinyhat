@@ -5,6 +5,7 @@ set pkgrel 1
 set epoch 1
 set arch i686 x32
 set url https://www.rarlab.com/rar_add.htm
+set nvchecker source=regex url=https://www.rarlab.com/rar_add.htm 'regex=rar/unrarsrc-([\d.]+).tar.gz'
 set depends glibc libgcc libstdc++
 set license LicenseRef-UnRAR
 set source "https://www.rarlab.com/rar/unrarsrc-$pkgver.tar.gz"

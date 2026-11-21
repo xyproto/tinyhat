@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Encoding and language detection alternative to chardet'
 set arch any
 set url https://github.com/Ousret/charset_normalizer
+set nvchecker source=git git=https://github.com/Ousret/charset_normalizer.git
 set license MIT
 set depends python
 set makedepends git python-build python-installer python-setuptools python-wheel

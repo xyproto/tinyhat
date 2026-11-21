@@ -5,6 +5,7 @@ set -g _commit 05ac953c23f90b2328d393f7eecde96e41aed067
 set pkgrel 5
 set pkgdesc 'Collection of boot loaders that boot from FAT, ext2/3/4 and btrfs filesystems, from CDs and via PXE'
 set url https://www.syslinux.org/
+set nvchecker source=git git=https://repo.or.cz/syslinux.git prefix=syslinux- 'include_regex=^syslinux-.*'
 set arch i686 x32
 set install syslinux.install
 set license GPL-2.0-or-later

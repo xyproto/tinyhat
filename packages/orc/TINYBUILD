@@ -4,6 +4,7 @@ set pkgver 0.4.44
 set pkgrel 1
 set pkgdesc 'Optimized Inner Loop Runtime Compiler'
 set url https://gstreamer.freedesktop.org/modules/orc.html
+set nvchecker source=git git=https://gitlab.freedesktop.org/gstreamer/orc.git
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc

@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'A cargo subcommand to build and install C-ABI compatible dynamic and static libraries'
 set arch i686 x32
 set url https://github.com/lu-zero/cargo-c/
+set nvchecker source=git git=https://github.com/lu-zero/cargo-c.git prefix=v
 set license MIT
 set depends cargo curl libcurl.so glibc libgcc libgcc_s.so libgit2 libgit2.so libssh2 libssh2.so openssl libssl.so sqlite
 set flags arch

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'raylib 6.0 on SDL3 and OpenGL 2.1'
 set arch i686 x32
 set url https://www.raylib.com/
+set nvchecker source=github github=raysan5/raylib use_latest_release=true
 set license Zlib
 set depends sdl3
 set makedepends cmake ninja mesa libglvnd

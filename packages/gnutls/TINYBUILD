@@ -5,6 +5,7 @@ set pkgdesc 'A library which provides a secure layer over a reliable transport l
 set arch i686 x32
 set license 'GPL-3.0-or-later AND LGPL-2.1-or-later'
 set url https://www.gnutls.org/
+set nvchecker source=gitlab gitlab=gnutls/gnutls use_max_tag=true
 set options '!zipman'
 set depends glibc gmp libtasn1 zlib nettle leancrypto libstdc++ libgcc \
     libp11-kit libidn2 zstd libidn2.so libunistring brotli

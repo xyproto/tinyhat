@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Python binding for the libxml2 and libxslt libraries'
 set arch i686 x32
 set url https://lxml.de/
+set nvchecker source=git git=https://github.com/lxml/lxml.git prefix=lxml- from_pattern=- to_pattern=_ 'exclude_regex=.*(a|b).*'
 set license BSD-3-Clause MIT MIT-CMU GPL-2.0-only LicenseRef-RNG2Schtrn LicenseRef-XSD2Schtrn
 set depends glibc python libxslt libxml2
 set makedepends git python-build python-installer python-setuptools python-wheel python-pygments cython

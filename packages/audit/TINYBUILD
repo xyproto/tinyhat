@@ -3,6 +3,7 @@ set pkgver 4.2.1
 set pkgrel 2
 set pkgdesc 'Userspace components of the audit framework'
 set url https://github.com/linux-audit/audit-userspace
+set nvchecker source=git git=https://github.com/linux-audit/audit-userspace prefix=v
 set arch i686 x32
 set license GPL-2.0-or-later LGPL-2.0-or-later
 # No Kerberos (GSSAPI), z/OS (LDAP), AppArmor or Python bindings: libaudit is what systemd and pam need

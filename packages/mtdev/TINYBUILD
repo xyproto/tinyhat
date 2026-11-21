@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A stand-alone library which transforms all variants of kernel MT events to the slotted type B protocol'
 set arch i686 x32
 set url https://bitmath.org/code/mtdev/
+set nvchecker source=regex 'regex=mtdev v(\d+.\d+.\d+)' url=https://bitmath.org/code/mtdev/
 set license MIT
 set depends glibc
 set source "https://bitmath.org/code/mtdev/mtdev-$pkgver.tar.bz2"

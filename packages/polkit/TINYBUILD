@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Application development toolkit for controlling system-wide privileges'
 set arch i686 x32
 set url https://github.com/polkit-org/polkit
+set nvchecker source=git git=https://github.com/polkit-org/polkit.git
 set license LGPL-2.0-or-later
 set depends duktape expat glib2 glibc libgcc pam systemd systemd-libs
 # No documentation (gtk-doc) and no man pages (xsltproc with docbook-xsl, which came with gtk-doc)

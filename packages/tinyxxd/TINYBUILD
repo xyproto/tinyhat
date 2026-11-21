@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Drop-in replacement and standalone version of the hex dump utility that comes with Vim'
 set arch i686 x32
 set url https://github.com/xyproto/tinyxxd
+set nvchecker source=github github=xyproto/tinyxxd prefix=v use_max_tag=true
 set license GPL-2.0-only MIT
 set depends glibc
 set provides xxd

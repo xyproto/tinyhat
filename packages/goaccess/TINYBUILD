@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'An open source real-time web log analyzer and interactive viewer'
 set arch i686 x32
 set url https://goaccess.io
+set nvchecker source=git git=https://github.com/allinurl/goaccess.git prefix=v
 set license MIT
 set depends ncurses libmaxminddb openssl
 set makedepends git

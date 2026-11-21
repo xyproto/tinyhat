@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'A collection of utilities to access MS-DOS disks'
 set arch i686 x32
 set url https://www.gnu.org/software/mtools/
+set nvchecker source=regex 'regex=mtools-([\d.]+)\.tar\.bz2?' url=https://ftp.gnu.org/gnu/mtools/
 set license GPL-3.0-or-later
 set depends bash glibc
 # No info manual (texinfo): the install target no longer depends on install-info

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Multi-format archive and compression library'
 set arch i686 x32
 set url https://libarchive.org/
+set nvchecker source=git git=https://github.com/libarchive/libarchive.git prefix=v
 set license BSD-2-Clause BSD-4-Clause-UC 'Apache-2.0 OR CC0-1.0 OR OpenSSL'
 set depends acl bzip2 glibc libxml2 lz4 openssl xz zlib zstd
 set makedepends git

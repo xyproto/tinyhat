@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Screen locker for Wayland'
 set arch i686 x32
 set url https://github.com/swaywm/swaylock
+set nvchecker source=github github=swaywm/swaylock prefix=v use_latest_release=true
 set license MIT
 set depends libcairo.so libxkbcommon pam wayland
 set makedepends meson ninja wayland-protocols

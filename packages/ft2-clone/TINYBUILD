@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Portable Fasttracker II clone'
 set arch i686 x32
 set url https://16-bits.org/ft2.php
+set nvchecker source=git git=https://github.com/8bitbubsy/ft2-clone.git prefix=v
 set license BSD-3-Clause MIT CC-BY-NC-SA-4.0
 set depends glibc libgcc libstdc++ alsa-lib sdl3 hicolor-icon-theme
 # No libicns or gendesk: the .desktop file and 512x512 icon shipped in release/other/Freedesktop.org Resources are used

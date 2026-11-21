@@ -4,6 +4,7 @@ set pkgrel 7
 set pkgdesc 'A password-hashing function (reference C implementation)'
 set arch i686 x32
 set url https://github.com/P-H-C/phc-winner-argon2
+set nvchecker source=git git=https://github.com/P-H-C/phc-winner-argon2.git
 set license Apache custom:CC0
 set depends glibc
 set provides libargon2.so

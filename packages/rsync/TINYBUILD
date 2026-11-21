@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'A fast and versatile file copying tool for remote and local files'
 set arch i686 x32
 set url https://rsync.samba.org/
+set nvchecker source=git git=https://github.com/RsyncProject/rsync.git prefix=v 'exclude_regex=.*pre.*'
 set license GPL-3.0-or-later
 set depends acl libacl.so lz4 openssl popt xxhash libxxhash.so \
     zlib zstd

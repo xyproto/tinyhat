@@ -5,6 +5,7 @@ set pkgver 3.131
 set pkgrel 1
 set pkgdesc 'Network Security Services'
 set url https://firefox-source-docs.mozilla.org/security/nss/index.html
+set nvchecker source=jq url=https://hg.mozilla.org/projects/nss/json-tags 'filter=.tags[].tag | select(test("NSS_.*_RTM")) | split("_")[1:-1] | join(".")'
 set arch i686 x32
 set license MPL-2.0
 set depends glibc nspr p11-kit sh sqlite zlib

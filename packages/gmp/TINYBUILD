@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'A free library for arbitrary precision arithmetic'
 set arch i686 x32
 set url https://gmplib.org/
+set nvchecker source=regex url=https://gmplib.org/download/gmp/ 'regex=gmp-([\d.]+)\.[a-z]'
 set depends libgcc libstdc++ glibc
 set license GPL-2.0-or-later LGPL-3.0-or-later
 set source https://ftp.gnu.org/gnu/gmp/gmp-$pkgver.tar.lz \

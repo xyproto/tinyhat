@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Central Regulatory Domain Database'
 set arch any
 set url https://wireless.wiki.kernel.org/en/developers/regulatory/wireless-regdb
+set nvchecker source=git git=https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git prefix=master-
 set license LicenseRef-custom
 set depends bash iw
 set makedepends git

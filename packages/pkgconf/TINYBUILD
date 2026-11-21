@@ -3,6 +3,7 @@ set pkgver 3.0.10
 set pkgrel 1
 set pkgdesc 'Package compiler and linker metadata toolkit'
 set url https://github.com/pkgconf/pkgconf
+set nvchecker source=git git=https://github.com/pkgconf/pkgconf 'include_regex=pkgconf-(\d+\.)*([1-8]\d*)?\d' prefix=pkgconf-
 set license ISC
 set arch i686 x32
 set depends glibc

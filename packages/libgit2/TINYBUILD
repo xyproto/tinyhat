@@ -7,6 +7,7 @@ set pkgrel 1
 set pkgdesc 'A linkable library for Git'
 set arch i686 x32
 set url https://github.com/libgit2/libgit2
+set nvchecker source=git git=https://github.com/libgit2/libgit2 'include_regex=v\d+\.\d+\.\d+' prefix=v
 set license LicenseRef-GPL-2.0-only-with-linking-exception
 set depends libgcc glibc llhttp zlib
 set makedepends cmake libssh2 openssl pcre2 python

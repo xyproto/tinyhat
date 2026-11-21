@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'OpenPrinting - the legacy support library for PPD files'
 set arch i686 x32
 set url https://github.com/OpenPrinting/libppd
+set nvchecker source=github github=OpenPrinting/libppd use_max_tag=true prefix=v
 # the CUPS exception text is the same as LLVM exception
 set license 'Apache-2.0 WITH LLVM-exception'
 set depends libcups libcupsfilters \

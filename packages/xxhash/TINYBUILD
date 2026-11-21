@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Extremely fast non-cryptographic hash algorithm'
 set arch i686 x32
 set url https://cyan4973.github.io/xxHash/
+set nvchecker source=git git=https://github.com/Cyan4973/xxHash.git prefix=v
 set license GPL2 BSD
 set depends glibc
 set makedepends git

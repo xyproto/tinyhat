@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Modern library for one-way hashing of passwords'
 set arch i686 x32
 set url https://github.com/besser82/libxcrypt/
+set nvchecker source=git git=https://github.com/besser82/libxcrypt.git prefix=v
 set license LGPL
 set depends glibc
 set provides libcrypt.so

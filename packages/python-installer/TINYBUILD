@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Low-level library for installing a Python package from a wheel distribution'
 set arch any
 set url https://github.com/pypa/installer
+set nvchecker source=git git=https://github.com/pypa/installer.git
 set license MIT
 set depends python
 set makedepends python-flit-core

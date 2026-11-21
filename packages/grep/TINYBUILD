@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'A string search utility'
 set arch i686 x32
 set url https://www.gnu.org/software/grep/
+set nvchecker source=git git=https://git.savannah.gnu.org/git/grep.git prefix=v
 set license GPL3
 set depends glibc pcre2
 set makedepends gperf python

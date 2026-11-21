@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Library and command line tools for XZ and LZMA compressed files'
 set arch i686 x32
 set url https://tukaani.org/xz/
+set nvchecker source=git git=https://github.com/tukaani-project/xz.git prefix=v 'exclude_regex=.*(pre|a|alpha|b|beta|r|rc|RC|BETA|ALPHA).*'
 set license 'GPL-2.0-or-later AND 0BSD AND LicenseRef-Public-Domain AND LGPL-2.1-or-later'
 set depends glibc sh
 set makedepends git po4a doxygen

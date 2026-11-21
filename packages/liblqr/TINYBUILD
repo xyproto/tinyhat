@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A seam-carving C/C++ library called Liquid Rescale'
 set arch i686 x32
 set url https://liblqr.wikidot.com/
+set nvchecker source=github github=carlobaldassi/liblqr use_max_tag=true prefix=v
 set license GPL-3.0-or-later
 set depends glib2 glibc
 set makedepends git

@@ -3,6 +3,7 @@ set pkgver 1.0
 set pkgrel 2
 set pkgdesc 'GNU internationalization library'
 set url https://www.gnu.org/software/gettext/
+set nvchecker source=git git=https://git.savannah.gnu.org/git/gettext.git prefix=v
 set arch i686 x32
 set license GFDL-1.2-only GPL-2.0-only GPL-2.0-or-later LGPL-2.0-only
 # Without curl and json-c: they are only for spit, the online machine translation helper, which Tiny Hat does

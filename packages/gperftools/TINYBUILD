@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Fast, multi-threaded malloc and nifty performance analysis tools'
 set arch i686 x32
 set url https://github.com/gperftools/gperftools
+set nvchecker source=git git=https://github.com/gperftools/gperftools.git 'include_regex=gperftools-.*' 'exclude_regex=gperftools-\d+\.\d+\.90' prefix=gperftools-
 set license BSD-3-Clause
 set depends glibc libgcc libstdc++ libunwind
 set makedepends git

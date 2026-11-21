@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Powerful, easy-to-learn dynamic programming language'
 set arch i686 x32
 set url http://tcl.sourceforge.net/
+set nvchecker source=httpheader url=https://sourceforge.net/projects/tcl/files/latest/download 'regex=tcl(\d+\.\d+\.\d+)-src.tar.gz'
 set license TCL
 set depends zlib
 set options staticlibs '!lto'

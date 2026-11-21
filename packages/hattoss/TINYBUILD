@@ -1,6 +1,6 @@
 set pkgname hattoss
 set pkgver 1.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Hat Toss, a DOS artillery game where gorillas throw tiny hats, with a launcher for DOSBox-X'
 set arch any
 set url https://github.com/xyproto/tinyhat
@@ -13,8 +13,8 @@ set source "open-watcom-$_ow.tar.xz::https://github.com/open-watcom/open-watcom-
     hattoss.desktop
 set noextract open-watcom-$_ow.tar.xz
 set sha256sums e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe \
-    f32bc76c3e92af70d5d1ebee338b91fe854f5e13d3cfb158b9e5f6c5a7852c5e \
-    230e71795b0d542a058a23504405d2a0ddb2853dd98f6fb419f5f5a065f9bad3 \
+    ef0a7645cb2f4c8d37b1c2f0dd3c30cb1a26c29dc760f4f590e96b80bc319071 \
+    c970203e64dfa7c275e71e6233ae3c3558f29ca188693b0c1def549663cdc6e1 \
     4830b3e89c3d0466487c5b8c47e90ad103450234bbf9ee4cdb7ff95636b4e053
 
 function build

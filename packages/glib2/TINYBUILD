@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Low level core library'
 set arch i686 x32
 set url https://gitlab.gnome.org/GNOME/glib
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/glib.git 'include_regex=\d+\.\d*[02468]\.\d+'
 set license LGPL-2.1-or-later
 # No sysprof tracing (libsysprof-capture: sysprof needs glib2) and no shared-mime-info (only for tests)
 set depends bash glibc libffi pcre2 util-linux-libs zlib

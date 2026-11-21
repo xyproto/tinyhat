@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Heavily optimized library for DEFLATE/zlib/gzip compression and decompression'
 set arch i686 x32
 set url https://github.com/ebiggers/libdeflate
+set nvchecker source=git git=https://github.com/ebiggers/libdeflate.git prefix=v
 set license MIT
 set depends glibc
 set makedepends cmake git ninja

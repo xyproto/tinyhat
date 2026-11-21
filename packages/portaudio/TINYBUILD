@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'A free, cross-platform, open source, audio I/O library.'
 set arch i686 x32
 set url https://github.com/portaudio/portaudio/
+set nvchecker source=git git=https://github.com/portaudio/portaudio.git prefix=v
 set license MIT
 set depends glibc libgcc libstdc++
 set makedepends alsa-lib cmake jack

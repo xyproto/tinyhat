@@ -1,6 +1,6 @@
 set pkgname dwl
 set pkgver 0.9
-set pkgrel 18
+set pkgrel 19
 set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
 set arch i686 x32
 set url https://codeberg.org/dwl/dwl
@@ -10,7 +10,7 @@ set makedepends_build elfkickers
 # Built without XWayland (config.mk leaves XWAYLAND and XLIBS empty), so libxcb and xcb-util-wm are dropped
 set depends wlroots0.20 fcft libpng libinput libxkbcommon pixman wayland
 set makedepends wayland-protocols tllist tomlc17
-set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems fan taskbuttons doodle
+set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems fan taskbuttons doodle tray
 set source "dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz" \
     $_patches.patch \
     config.h
@@ -60,6 +60,7 @@ set sha256sums 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d 
     18712af91444da3e0483d42a02b5497a023b374d4cd80e65cb82a4386312d534 \
     49620b48f9df83907f999de9f43a72ea2227937ab8b374cc123089a5e1c817ac \
     3cc5a996782f894d97c582473d9c78bb08bc393fc7dce0e78946dcdbbf9e42d5 \
+    90ae3ed424a36f19213430a7fffadd400c1860188d1faf8ee9c0bc411ff7e127 \
     dfc35d33148f2610975e6febbb8d149caef594fba9a6e810eb812725d0624ab2
 
 function prepare

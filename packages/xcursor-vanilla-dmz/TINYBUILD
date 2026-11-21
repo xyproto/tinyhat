@@ -4,6 +4,7 @@ set pkgver 0.4.5.3
 set pkgrel 1
 set arch any
 set url http://jimmac.musichall.cz/
+set nvchecker source=regex url=http://ftp.debian.org/debian/pool/main/d/dmz-cursor-theme/ 'regex=dmz-cursor-theme_([\d.]+).tar'
 set license CCPL:by-nc-sa
 set makedepends xorg-xcursorgen
 set source "https://ftp.debian.org/debian/pool/main/d/dmz-cursor-theme/dmz-cursor-theme_$pkgver.tar.xz"

@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'The GNU macro processor'
 set arch i686 x32
 set url https://www.gnu.org/software/m4
+set nvchecker source=git git=https://git.savannah.gnu.org/git/m4.git prefix=v
 set license GPL-3.0-or-later
 set depends glibc
 set source "https://ftp.gnu.org/gnu/m4/m4-$pkgver.tar.xz"

@@ -6,6 +6,7 @@ set arch i686 x32
 # Using a fork of the_silver_searcher to get pcre2 support.
 # The last commit in ggreer/the_silver_searcher was in 2020.
 set url https://github.com/aswild/the_silver_searcher
+set nvchecker source=git git=https://github.com/aswild/the_silver_searcher.git
 set license Apache-2.0
 set depends pcre2 xz
 set makedepends git

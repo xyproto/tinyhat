@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'Linux Key Management Utilities'
 set arch i686 x32
 set url https://www.kernel.org/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git prefix=v
 set license GPL-2.0-or-later LGPL-2.1-or-later
 set depends glibc sh
 set makedepends git

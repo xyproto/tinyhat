@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Classic text editor' # Joe's Own Editor, since 1988
 set arch i686 x32
 set url https://joe-editor.sourceforge.io/
+set nvchecker source=git git=https://github.com/joe-editor/joe prefix=releases/
 set license GPL-2.0-or-later
 set makedepends git
 set depends glibc ncurses

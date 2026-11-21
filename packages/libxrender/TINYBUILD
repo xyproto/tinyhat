@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X Rendering Extension client library'
 set arch i686 x32
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libXrender host=gitlab.freedesktop.org 'include_regex=.*libXrender-.*' use_max_tag=true prefix=libXrender-
 set license HPND-sell-variant
 set depends libx11 glibc xorgproto
 set makedepends git xorg-util-macros

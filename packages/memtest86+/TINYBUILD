@@ -5,6 +5,7 @@ set pkgver 9.00
 set pkgrel 2
 set pkgdesc 'Advanced memory diagnostic tool, legacy BIOS version'
 set url https://www.memtest.org
+set nvchecker source=git git=https://github.com/memtest86plus/memtest86plus.git prefix=v
 set arch any
 set license GPL-2.0-only
 set makedepends git

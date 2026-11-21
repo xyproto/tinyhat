@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Setuptools extension for CalVer package versions'
 set arch any
 set url https://github.com/di/calver
+set nvchecker source=git git=https://github.com/di/calver.git
 set license Apache-2.0
 set depends python
 set makedepends git python-build python-installer python-setuptools python-wheel

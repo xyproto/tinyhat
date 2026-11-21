@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'A Lua Lisp language'
 set arch any
 set url https://fennel-lang.org
+set nvchecker source=git 'git=https://git.sr.ht/~technomancy/fennel'
 set license MIT
 set depends lua54
 set makedepends git

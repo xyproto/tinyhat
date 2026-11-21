@@ -4,6 +4,7 @@ set pkgver 1.6.1
 set pkgrel 1
 set pkgdesc 'Totally open, royalty-free, highly versatile audio codec'
 set url https://www.opus-codec.org/
+set nvchecker source=git git=https://gitlab.xiph.org/xiph/opus.git prefix=v
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc

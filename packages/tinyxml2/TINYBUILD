@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Simple XML parser made for easy integration'
 set arch i686 x32
 set url https://github.com/leethomason/tinyxml2
+set nvchecker source=git git=https://github.com/leethomason/tinyxml2.git
 set license LicenseRef-zlib
 set depends glibc libgcc libstdc++
 set makedepends git cmake

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Extended attribute support library for ACL support'
 set arch i686 x32
 set url https://savannah.nongnu.org/projects/attr
+set nvchecker source=git git=https://git.savannah.gnu.org/git/attr.git prefix=v
 set license 'LGPL-2.1-or-later AND GPL-2.0-or-later'
 set depends glibc
 # Tools that run during the build (msgfmt), from the build environment

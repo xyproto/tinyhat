@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'ALSA topology configuration files'
 set arch any
 set url https://alsa-project.org/
+set nvchecker source=git git=https://github.com/alsa-project/alsa-topology-conf prefix=v
 set license BSD
 set source "https://www.alsa-project.org/files/pub/lib/$pkgname-$pkgver.tar.bz2"
 set sha512sums b34176b213e1afcb61fee19b569d6422a7692b62cf08b0ef651f2fbb1eefe49f25ca6386d0bfcec7152d4b5ed3daa84edb900181d40169e777751ae033125374

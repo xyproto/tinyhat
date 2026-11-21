@@ -4,6 +4,7 @@ set pkgver 2.5.34
 set pkgrel 1
 set pkgdesc 'Digital camera access library'
 set url http://www.gphoto.org/
+set nvchecker source=git git=https://github.com/gphoto/libgphoto2.git 'include_regex=v\d+(\.\d+)*' prefix=v
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends bash curl gd glibc libexif libjpeg-turbo libltdl libtiff libusb libxml2

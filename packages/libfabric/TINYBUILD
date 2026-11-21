@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'User-space API for OpenFabrics Interfaces (OFI)'
 set arch i686 x32
 set url https://ofiwg.github.io/libfabric/
+set nvchecker source=git git=https://github.com/ofiwg/libfabric.git prefix=v 'exclude_regex=.*(pre|rc|alpha|beta).*'
 set license 'BSD-2-Clause OR GPL-2.0-or-later'
 set depends glibc numactl
 set options '!lto'

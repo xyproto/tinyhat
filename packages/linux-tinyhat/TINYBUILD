@@ -5,6 +5,7 @@ set -g _xpadneo 0.10.5
 set pkgdesc 'The Tiny Hat Linux kernel, its modules and the xpadneo driver'
 set arch i686 x86_64 aarch64
 set url https://www.kernel.org/
+set nvchecker source=regex url=https://www.kernel.org/releases.json 'regex="latest_stable":\s*\{\s*"version":\s*"([\d.]+)"'
 set license GPL-2.0-only
 set provides NTSYNC-MODULE VIRTUALBOX-GUEST-MODULES
 set makedepends_build bc bison cpio flex kmod libelf python xz zstd

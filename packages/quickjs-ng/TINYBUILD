@@ -4,6 +4,7 @@ set pkgver 0.18.0
 set pkgrel 1
 set pkgdesc 'A mighty JavaScript engine'
 set url https://quickjs-ng.github.io/quickjs
+set nvchecker source=git git=https://github.com/quickjs-ng/quickjs.git prefix=v
 set arch i686 x32
 set license MIT
 set depends glibc

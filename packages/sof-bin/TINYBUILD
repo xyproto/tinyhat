@@ -9,6 +9,7 @@ set pkgver 2026.09.2
 set pkgrel 1
 set pkgdesc 'Sound Open Firmware'
 set url https://www.sofproject.org/
+set nvchecker source=git git=https://github.com/thesofproject/sof-bin.git prefix=v
 set arch i686 x32
 set license 'BSD-3-Clause AND ISC'
 set flags arch

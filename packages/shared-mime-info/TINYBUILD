@@ -9,6 +9,7 @@ set depends libxml2 glib2 glibc libstdc++ libgcc
 set makedepends gettext meson
 # https://gitlab.freedesktop.org/xdg/shared-mime-info
 set url https://www.freedesktop.org/wiki/Specifications/shared-mime-info-spec/
+set nvchecker source=git git=https://gitlab.freedesktop.org/xdg/shared-mime-info.git
 set flags arch
 set source "https://gitlab.freedesktop.org/xdg/shared-mime-info/-/archive/$pkgver/shared-mime-info-$pkgver.tar.bz2" \
     update-mime-database.hook \

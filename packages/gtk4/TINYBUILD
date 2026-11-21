@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'GObject-based multi-platform GUI toolkit'
 set arch i686 x32
 set url https://www.gtk.org/
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/gtk.git 'include_regex=4\.\d*[02468]\.\d+'
 set license LGPL-2.1-or-later
 # No iso-codes: meson only reads its prefix (required: false, falls back to /usr); it is only read at run time for the
 # language names in the font chooser, so it is an optdepend of gtk4

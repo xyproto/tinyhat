@@ -1,8 +1,7 @@
 #!/bin/sh
 dir=$HOME/pub
 pidfile=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-share.pid
-bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
-notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
+notice() { tinyhat-notice "$1"; }
 if [ -f "$pidfile" ] && kill "$(cat "$pidfile")" 2>/dev/null; then
 	rm -f "$pidfile"
 	tinyhat-status --refresh

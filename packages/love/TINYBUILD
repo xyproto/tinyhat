@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'An open-source 2D game engine which uses the versatile Lua scripting language to create dynamic gaming experiences'
 set arch i686
 set url http://love2d.org/
+set nvchecker source=git git=https://github.com/love2d/love.git
 set license zlib
 set depends luajit freetype2 harfbuzz openal libvorbis libogg libmodplug sdl3 zlib shared-mime-info hicolor-icon-theme desktop-file-utils libtheora openssl
 set makedepends cmake ninja git

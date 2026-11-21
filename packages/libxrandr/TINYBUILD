@@ -5,6 +5,7 @@ set pkgdesc 'X11 RandR extension library'
 set arch i686 x32
 set license HPND-sell-variant
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libXrandr host=gitlab.freedesktop.org use_max_tag=true 'include_regex=.*libXrandr-.*' prefix=libXrandr-
 set depends libxext libxrender libx11 glibc
 set makedepends xorg-util-macros xorgproto
 set source "$url/releases/individual/lib/libXrandr-$pkgver.tar.xz"

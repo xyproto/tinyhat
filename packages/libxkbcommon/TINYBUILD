@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Keymap handling library for toolkits and window systems'
 set arch i686 x32
 set url https://xkbcommon.org/
+set nvchecker source=git git=https://github.com/xkbcommon/libxkbcommon.git prefix=xkbcommon-
 set license MIT
 # Without X11 and without the Wayland xkbcli tools (interactive-wayland), which Tiny Hat does not need
 set makedepends_host glibc libxml2 xkeyboard-config

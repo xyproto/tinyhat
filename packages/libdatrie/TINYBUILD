@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Double-array trie library'
 set arch i686 x32
 set url https://linux.thai.net/projects/datrie
+set nvchecker source=git git=https://github.com/tlwg/libdatrie.git prefix=v
 set license LGPL-2.1-or-later
 set depends glibc
 # No documentation (doxygen)

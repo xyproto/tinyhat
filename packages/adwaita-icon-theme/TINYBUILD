@@ -4,6 +4,7 @@ set pkgver 51.0
 set pkgrel 1
 set pkgdesc 'GNOME standard icons'
 set url https://gitlab.gnome.org/GNOME/adwaita-icon-theme
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git 'include_regex=\d+(\.\d+)*' 'from_pattern=\.([a-z])' 'to_pattern=\1'
 set arch any
 set license 'CC-BY-SA-3.0 OR LGPL-3.0-only'
 set depends adwaita-icon-theme-legacy hicolor-icon-theme

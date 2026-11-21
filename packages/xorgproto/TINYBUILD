@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'combined X.Org X11 Protocol headers'
 set arch any
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/proto/xorgproto host=gitlab.freedesktop.org use_max_tag=true 'include_regex=.*xorgproto-.*' prefix=xorgproto-
 set license BSD-2-Clause HPND HPND-sell-variant ICU MIT MIT-open-group SGI-B-2.0 SMLNJ X11 X11-distribute-modifications-variant
 set makedepends meson
 set source "https://xorg.freedesktop.org/archive/individual/proto/$pkgname-$pkgver.tar.xz"

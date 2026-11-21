@@ -10,6 +10,7 @@ set epoch 1
 set pkgdesc 'Linux Infrared Remote Control utilities'
 set arch i686 x32
 set url https://www.lirc.org/
+set nvchecker source=git git=https://git.code.sf.net/p/lirc/git prefix=lirc- 'include_regex=lirc-.*'
 set license GPL-2.0-or-later
 set depends alsa-lib libx11 libftdi libusb-compat
 set makedepends help2man alsa-lib libx11 libxslt python python-setuptools \

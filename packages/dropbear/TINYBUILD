@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Lightweight SSH server'
 set arch i686 x32
 set url https://github.com/mkj/dropbear
+set nvchecker source=github github=mkj/dropbear use_latest_release=true prefix=DROPBEAR_
 set license MIT
 set options emptydirs
 set depends glibc

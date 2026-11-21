@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'OpenGL and OpenGL ES shader front end and validator'
 set arch i686 x32
 set url https://github.com/KhronosGroup/glslang
+set nvchecker source=git git=https://github.com/KhronosGroup/glslang.git 'include_regex=vulkan-sdk-\d+(\.\d+)*' prefix=vulkan-sdk-
 set license BSD-3-Clause
 set depends glibc libstdc++ spirv-tools
 set makedepends cmake ninja spirv-headers python git

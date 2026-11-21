@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X transport library'
 set arch any
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libxtrans host=gitlab.freedesktop.org use_max_tag=true 'include_regex=.*xtrans-.*' prefix=xtrans-
 set license HPND HPND-sell-variant MIT MIT-open-group X11
 set options '!emptydirs'
 set source "https://xorg.freedesktop.org/releases/individual/lib/$pkgname-$pkgver.tar.xz"

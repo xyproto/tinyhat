@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A collection of common network programs'
 set arch i686 x32
 set url https://www.gnu.org/software/inetutils/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/inetutils/ 'regex=inetutils-([\d\.]+).tar'
 set license GPL-3.0-or-later
 set depends glibc pam libcap readline ncurses libxcrypt \
     libpam.so libcrypt.so libreadline.so libncursesw.so

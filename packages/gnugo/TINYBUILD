@@ -3,6 +3,7 @@ set pkgver 3.8
 set pkgrel 8
 set pkgdesc 'Program that plays the game of Go'
 set url https://www.gnu.org/software/gnugo/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/gnugo/ 'regex=gnugo-([\d.]+)\.[a-z]'
 set license GPL-3.0-or-later
 set arch i686 x32
 set depends glibc ncurses

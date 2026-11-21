@@ -4,6 +4,7 @@ set pkgver 2.3.3
 set pkgrel 1
 set pkgdesc 'zlib replacement with optimizations for next generation systems'
 set url https://github.com/zlib-ng/zlib-ng
+set nvchecker source=git git=https://github.com/zlib-ng/zlib-ng.git prefix=v 'exclude_regex=.+(alpha|beta|rc).+'
 set arch i686 x32
 set license Zlib
 set depends glibc

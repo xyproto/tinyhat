@@ -4,6 +4,7 @@ set pkgver 3.15.2
 set pkgrel 1
 set pkgdesc 'Alliance for Open Media video codec'
 set url https://aomedia.org/
+set nvchecker source=git git=https://aomedia.googlesource.com/aom 'include_regex=v\d+(\.\d+)*' prefix=v 'from_pattern=-([a-z])' 'to_pattern=\1'
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc libgcc libstdc++

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Pretty, minimal and fast fish prompt'
 set arch any
 set url https://github.com/pure-fish/pure
+set nvchecker source=github github=pure-fish/pure prefix=v use_latest_release=true
 set license MIT
 set depends fish
 set source "pure-fish-$pkgver.tar.gz::https://github.com/pure-fish/pure/archive/refs/tags/v$pkgver.tar.gz"

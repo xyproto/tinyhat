@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'C-Extensions for Python'
 set arch i686 x32
 set url https://cython.org
+set nvchecker source=pypi pypi=cython
 set license Apache-2.0
 set depends glibc python python-pygments python-setuptools
 set makedepends git python-build python-installer python-wheel

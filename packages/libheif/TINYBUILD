@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'An HEIF and AVIF file format decoder and encoder'
 set arch i686 x32
 set url https://github.com/strukturag/libheif
+set nvchecker source=git git=https://github.com/strukturag/libheif.git 'exclude_regex=.*(beta|rc).*' prefix=v
 set license LGPL-3.0-or-later
 set depends aom libaom.so glibc libgcc_s.so libde265 libgcc libgcc_s.so libstdc++ libstdc++.so libwebp libsharpyuv.so openh264 libopenh264.so openh264 libopenh264.so x264 libx264.so x265 libx265.so
 set makedepends cmake dav1d ffmpeg git libjpeg-turbo libpng libtiff openjpeg2 svt-av1

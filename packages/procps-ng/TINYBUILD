@@ -3,6 +3,7 @@ set pkgver 4.0.7
 set pkgrel 1
 set pkgdesc 'Utilities for monitoring your system and its processes'
 set url https://gitlab.com/procps-ng/procps
+set nvchecker source=git git=https://gitlab.com/procps-ng/procps.git prefix=v 'exclude_regex=.*rc.*'
 set license GPL LGPL
 set arch i686 x32
 set depends glibc ncurses libncursesw.so systemd-libs

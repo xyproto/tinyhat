@@ -22,6 +22,7 @@ set pkgver 20260916
 set pkgrel 1
 set pkgdesc 'Firmware files for Linux'
 set url https://gitlab.com/kernel-firmware/linux-firmware
+set nvchecker source=git git=https://gitlab.com/kernel-firmware/linux-firmware.git
 set license LicenseRef-WHENCE
 set arch any
 set makedepends git parallel python rdfind

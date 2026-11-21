@@ -4,6 +4,7 @@ set pkgver 3.2.6
 set pkgrel 1
 set pkgdesc 'C++ bindings to libxml2'
 set url https://libxmlplusplus.github.io/libxmlplusplus/
+set nvchecker source=git git=https://github.com/libxmlplusplus/libxmlplusplus.git 'include_regex=3\.\d*[02468]\.\d+'
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glibc glibmm libgcc libstdc++ libxml2

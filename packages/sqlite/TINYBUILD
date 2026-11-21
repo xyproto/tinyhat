@@ -9,6 +9,7 @@ set pkgdesc 'A C library that implements an SQL database engine'
 set arch i686 x32
 set license LicenseRef-Sqlite
 set url https://www.sqlite.org/
+set nvchecker source=regex 'regex=Version (\d+.\d+.\d+)' url=https://www.sqlite.org/index.html
 set makedepends readline zlib
 set options '!emptydirs'
 set source https://www.sqlite.org/2026/sqlite-src-$_srcver.zip \

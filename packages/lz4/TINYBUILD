@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'Extremely fast compression algorithm'
 set arch i686 x32
 set url https://lz4.github.io/lz4/
+set nvchecker source=git git=https://github.com/lz4/lz4.git prefix=v
 set license GPL-2.0-or-later
 set makedepends git meson ninja
 set checkdepends diffutils

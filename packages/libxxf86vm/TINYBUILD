@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X11 XFree86 video mode extension library'
 set arch i686 x32
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libXxf86vm host=gitlab.freedesktop.org 'include_regex=.*libXxf86vm-.*' use_max_tag=true prefix=libXxf86vm-
 set license X11-distribute-modifications-variant
 set depends libxext libx11 glibc xorgproto
 set source "https://xorg.freedesktop.org//releases/individual/lib/libXxf86vm-$pkgver.tar.xz"

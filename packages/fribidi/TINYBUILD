@@ -3,6 +3,7 @@ set pkgver 1.0.17
 set pkgrel 1
 set pkgdesc 'A Free Implementation of the Unicode Bidirectional Algorithm'
 set url https://github.com/fribidi/fribidi
+set nvchecker source=git git=https://github.com/fribidi/fribidi.git prefix=v
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glibc

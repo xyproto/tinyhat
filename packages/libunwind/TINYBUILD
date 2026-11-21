@@ -3,6 +3,7 @@ set pkgver 1.8.3
 set pkgrel 1
 set pkgdesc 'Determine and manipulate the call-chain of a program'
 set url https://www.nongnu.org/libunwind/
+set nvchecker source=git git=https://github.com/libunwind/libunwind.git prefix=v 'include_regex=v[\d\.]+'
 set arch i686
 set license MIT
 set depends glibc xz zlib

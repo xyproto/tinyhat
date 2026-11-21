@@ -1,6 +1,5 @@
 #!/bin/sh
-bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
-notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; return 0; }
+notice() { tinyhat-notice "$1"; return 0; }
 
 if [ $# -eq 0 ]; then
 	f=$(tinyhat-pick "Import a game" "$HOME") || exit 0

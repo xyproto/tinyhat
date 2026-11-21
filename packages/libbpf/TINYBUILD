@@ -3,6 +3,7 @@ set pkgver 1.7.0
 set pkgrel 1
 set pkgdesc 'Library for loading eBPF programs and reading and manipulating eBPF objects from user-space'
 set url https://github.com/libbpf/libbpf
+set nvchecker source=git git=https://github.com/libbpf/libbpf.git prefix=v
 set arch i686 x32
 set license 'LGPL-2.1-only OR BSD-2-Clause'
 set depends glibc libelf linux-api-headers zlib

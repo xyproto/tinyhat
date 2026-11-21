@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X11 toolkit intrinsics library'
 set arch i686 x32
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libXt host=gitlab.freedesktop.org 'include_regex=.*libXt-.*' use_max_tag=true prefix=libXt-
 set license MIT HPND-sell-variant SMLNJ MIT-open-group X11
 set depends libsm libx11 libice glibc xorgproto
 set makedepends xorg-util-macros

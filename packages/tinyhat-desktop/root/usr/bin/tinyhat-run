@@ -38,9 +38,10 @@ if [ -n "$gpu" ]; then
 	set -- nice -n -5 "$@"
 fi
 [ -n "$launch" ] || exec "$@"
-bar=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-bar
-notice() { [ -p "$bar" ] && printf 'notice %s\n' "$1" >"$bar"; }
-notice "Launching $name..."
-(sleep 30; notice "") &
+id=$(tinyhat-notify send "Launching $name..." 30 2>/dev/null) || tinyhat-notice "Launching $name..." 30
 "$@"
-notice ""
+if [ -n "$id" ]; then
+	tinyhat-notify close "$id" 2>/dev/null
+else
+	tinyhat-notice ""
+fi

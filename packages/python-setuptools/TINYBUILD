@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'Easily download, build, install, upgrade, and uninstall Python packages'
 set arch any
 set url https://pypi.org/project/setuptools/
+set nvchecker source=git git=https://github.com/pypa/setuptools.git prefix=v
 set license MIT
 # The vendored dependencies (jaraco.*, more-itertools, packaging, platformdirs, wheel, ...) are kept
 set depends python

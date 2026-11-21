@@ -6,6 +6,7 @@ set pkgdesc 'Ext2/3/4 filesystem utilities'
 set arch i686 x32
 set license GPL LGPL MIT
 set url http://e2fsprogs.sourceforge.net
+set nvchecker source=git git=https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git prefix=v
 # No fuse2fs (mounting ext2/3/4 images through FUSE): no fuse3
 set makedepends git systemd util-linux
 set flags arch

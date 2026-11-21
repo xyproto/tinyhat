@@ -5,6 +5,7 @@ set pkgrel 4
 set pkgdesc 'Reference implementation of the Ogg Vorbis audio format'
 set arch i686 x32
 set url https://www.xiph.org/vorbis/
+set nvchecker source=git git=https://github.com/xiph/vorbis.git prefix=v
 set license BSD-3-Clause
 set depends glibc libogg
 set makedepends git

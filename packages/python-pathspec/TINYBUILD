@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Utility library for gitignore style pattern matching of file paths'
 set arch any
 set url https://github.com/cpburnz/python-pathspec
+set nvchecker source=git git=https://github.com/cpburnz/python-pathspec.git prefix=v
 set license MPL-2.0
 set depends python
 set makedepends git python-build python-flit-core python-installer

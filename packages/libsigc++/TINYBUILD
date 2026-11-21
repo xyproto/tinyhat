@@ -4,6 +4,7 @@ set pkgver 2.12.2
 set pkgrel 1
 set pkgdesc 'Callback Framework for C++'
 set url https://libsigcplusplus.github.io/libsigcplusplus/
+set nvchecker source=git git=https://github.com/libsigcplusplus/libsigcplusplus.git 'include_regex=2\.\d*[02468]\.\d+'
 set arch i686 x32
 set license LGPL-2.1-or-later
 set depends glibc libgcc libstdc++

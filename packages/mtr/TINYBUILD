@@ -4,6 +4,7 @@ set pkgver 0.96
 set pkgrel 1
 set pkgdesc 'Combines the functionality of traceroute and ping into one tool'
 set url https://www.bitwizard.nl/mtr/
+set nvchecker source=git git=https://github.com/traviscross/mtr.git prefix=v
 set arch i686 x32
 set license GPL-2.0-only
 set makedepends glibc jansson libcap ncurses

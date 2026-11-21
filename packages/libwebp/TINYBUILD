@@ -4,6 +4,7 @@ set pkgver 1.6.0
 set pkgrel 2
 set pkgdesc 'WebP image codec library'
 set url https://developers.google.com/speed/webp/
+set nvchecker source=git git=https://chromium.googlesource.com/webm/libwebp 'include_regex=v\d+(\.\d+)*' 'from_pattern=-([a-z])' 'to_pattern=\1' prefix=v
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc

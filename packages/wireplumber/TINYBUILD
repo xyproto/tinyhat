@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'Session / policy manager implementation for PipeWire'
 set arch i686 x32 x86_64 aarch64
 set url https://pipewire.pages.freedesktop.org/wireplumber/
+set nvchecker source=git git=https://gitlab.freedesktop.org/pipewire/wireplumber.git 'include_regex=\d+\.\d+\.[1-7]?\d'
 set license MIT
 # No documentation (doxygen, graphviz, python-breathe, python-sphinx, python-sphinx_rtd_theme)
 set makedepends git glib2 glib2-devel glibc libgcc libpipewire lua meson pipewire systemd systemd-libs

@@ -4,6 +4,7 @@ set pkgver 2026.9.28
 set pkgrel 1
 set pkgdesc 'NTFS filesystem driver and utilities'
 set url https://www.tuxera.com/community/open-source-ntfs-3g/
+set nvchecker source=git git=https://github.com/tuxera/ntfs-3g.git prefix=v
 set arch i686 x32
 set license GPL-2.0-or-later
 set depends glibc

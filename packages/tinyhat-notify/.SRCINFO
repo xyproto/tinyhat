@@ -1,0 +1,20 @@
+pkgbase = tinyhat-notify
+	pkgdesc = Tiny Hat notifications and tray icons: shows desktop notifications and StatusNotifierItem icons in the dwl bar
+	pkgver = 1.0
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	makedepends = systemd
+	depends = systemd-libs
+	depends = libpng
+	optdepends = fuzzel: menus of tray icons
+	source = tinyhat-notify.c
+	source = org.freedesktop.Notifications.service
+	source = org.kde.StatusNotifierWatcher.service
+	sha256sums = 7c09b558789a13f2517c1ec21c1db7bc5da7b2c3aa5b048f392e77109fc18df8
+	sha256sums = d64b60492561a770aff48778ce4a3b4a247e278d5d38298e752fa89fb705634a
+	sha256sums = ffedc85a83549e3df8ae64e257426ace384e18eb17166a252fe55282eaaae269
+
+pkgname = tinyhat-notify

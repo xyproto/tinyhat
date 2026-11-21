@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'nl80211 based CLI configuration utility for wireless devices'
 set arch i686 x32
 set url https://wireless.wiki.kernel.org/en/users/documentation/iw
+set nvchecker source=git git=https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git prefix=v
 set license GPL
 set depends libnl
 set makedepends git linux-api-headers

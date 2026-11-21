@@ -4,6 +4,7 @@ set pkgver 26.10.0
 set pkgrel 1
 set arch i686 x32
 set url https://poppler.freedesktop.org/
+set nvchecker source=gitlab gitlab=poppler/poppler host=gitlab.freedesktop.org use_max_tag=true prefix=poppler-
 set license GPL-2.0-only GPL-3.0-or-later LGPL-2.0-or-later LGPL-2.1-or-later MIT HPND-sell-variant
 # No documentation (gtk-doc)
 # No poppler-data at build time: without its .pc file POPPLER_DATADIR defaults to the same /usr/share/poppler

@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'General purpose TCP-IP emulator'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/slirp/libslirp
+set nvchecker source=git git=https://gitlab.freedesktop.org/slirp/libslirp.git prefix=v 'include_regex=v.*' use_max_tag=true
 set license BSD MIT
 set depends glib2
 set makedepends meson

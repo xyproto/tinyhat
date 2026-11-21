@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Small utility to modify the dynamic linker and RPATH of ELF executables'
 set arch i686 x32
 set url https://nixos.org/patchelf.html
+set nvchecker source=git git=https://github.com/NixOS/patchelf.git
 set license GPL-3.0-or-later
 set depends libgcc libstdc++
 set makedepends git

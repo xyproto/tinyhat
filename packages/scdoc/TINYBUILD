@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Tool for generating roff manual pages'
 set arch i686 x32
 set url https://git.sr.ht/~sircmpwn/scdoc/
+set nvchecker source=git 'git=https://git.sr.ht/~sircmpwn/scdoc'
 set license MIT
 set depends glibc
 set source "$pkgname-$pkgver.tar.gz::https://git.sr.ht/~sircmpwn/$pkgname/archive/$pkgver.tar.gz"

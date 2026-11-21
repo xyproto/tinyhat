@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'A free, open source, portable framework for graphical application development'
 set arch i686 x32
 set url https://www.glfw.org/
+set nvchecker source=git git=https://github.com/glfw/glfw.git
 set license custom:ZLIB
 set depends libgl libxkbcommon
 # No documentation (doxygen). No extra-cmake-modules: GLFW's CMake files do not use ECM

@@ -8,6 +8,7 @@ set pkgrel 1
 set pkgdesc 'GNU readline library'
 set arch i686 x32
 set url https://tiswww.case.edu/php/chet/readline/rltop.html
+set nvchecker source=htmlparser url=https://cgit.git.savannah.gnu.org/cgit/readline.git/commit/ 'xpath=//div[@class=\'commit-subject\']' 'from_pattern=[rR]eadline-([\d.]+)(\s+patch\s+(\d+))?.*' 'to_pattern=\1\2'
 set license GPL-3.0-or-later
 set backup etc/inputrc
 set depends glibc libncursesw.so ncurses

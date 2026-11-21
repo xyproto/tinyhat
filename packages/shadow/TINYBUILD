@@ -6,6 +6,7 @@ set pkgrel 1
 set pkgdesc 'Password and account management tool suite with support for shadow files and PAM'
 set arch i686 x32
 set url https://github.com/shadow-maint/shadow
+set nvchecker source=git git=https://gitlab.archlinux.org/archlinux/packaging/upstream/shadow 'include_regex=^[\d.]+-(arch[\d]+)$' 'from_pattern=([\d.]+)-(arch[\d]+)' 'to_pattern=\1.\2'
 set license \
     0BSD \
     BSD-3-Clause

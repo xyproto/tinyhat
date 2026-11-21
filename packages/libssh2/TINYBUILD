@@ -3,6 +3,7 @@ set pkgver 1.11.1
 set pkgrel 7
 set pkgdesc 'A library implementing the SSH2 protocol as defined by Internet Drafts'
 set url https://www.libssh2.org/
+set nvchecker source=git git=https://github.com/libssh2/libssh2 prefix=libssh2- 'include_regex=libssh2-.*'
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc openssl zlib

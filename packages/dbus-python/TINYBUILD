@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Python bindings for D-Bus'
 set arch i686 x32
 set url https://www.freedesktop.org/wiki/Software/dbus/
+set nvchecker source=git git=https://gitlab.freedesktop.org/dbus/dbus-python.git prefix=dbus-python-
 set license MIT
 set depends dbus glib2 glibc python
 # No documentation package (python-sphinx, python-sphinx_rtd_theme)

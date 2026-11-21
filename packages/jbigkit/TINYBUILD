@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Data compression library/utilities for bi-level high-resolution images'
 set arch i686 x32
 set url 'https://www.cl.cam.ac.uk/~mgk25/jbigkit/'
+set nvchecker source=git 'git=https://www.cl.cam.ac.uk/~mgk25/git/jbigkit' prefix=v
 set license GPL-2.0-or-later
 set depends glibc
 set makedepends git

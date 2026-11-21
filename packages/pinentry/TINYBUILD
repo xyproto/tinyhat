@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Collection of simple PIN or passphrase entry dialogs which utilize the Assuan protocol'
 set arch i686 x32
 set url https://gnupg.org/related_software/pinentry/
+set nvchecker source=regex url=https://www.gnupg.org/ftp/gcrypt/pinentry/ 'regex=pinentry-([^"]*)\.tar' 'exclude_regex=.*diff.*'
 set license GPL
 set depends glibc ncurses libassuan libsecret glib2
 set optdepends 'gcr: GNOME backend' 'gtk3: GTK backend' 'kguiaddons: Qt6 backend' 'kwindowsystem: Qt6 backend'

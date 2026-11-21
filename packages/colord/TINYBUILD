@@ -5,6 +5,7 @@ set pkgrel 2
 set pkgdesc 'System daemon for managing color devices'
 set arch i686 x32
 set url https://www.freedesktop.org/software/colord/
+set nvchecker source=git git=https://github.com/hughsie/colord.git
 set license GPL-2.0-or-later
 set depends dbus dconf glib2 glibc lcms2 libgcc libgudev libgusb polkit shared-mime-info sqlite systemd-libs
 # No documentation (gtk-doc) and no man pages (docbook-xsl)

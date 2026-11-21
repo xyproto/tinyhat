@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Library for the arithmetic of complex numbers with arbitrarily high precision'
 set arch i686 x32
 set url http://www.multiprecision.org/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/mpc/ 'regex=mpc-([\d.]+)\.[a-z]'
 set license LGPL-3.0-only
 set depends glibc gmp mpfr
 set source "https://ftp.gnu.org/gnu/mpc/mpc-$(string replace -a _ - -- $pkgver).tar.xz"

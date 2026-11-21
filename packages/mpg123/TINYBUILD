@@ -3,6 +3,7 @@ set pkgver 1.33.7
 set pkgrel 1
 set pkgdesc 'Console based real time MPEG Audio Player for Layer 1, 2 and 3'
 set url https://mpg123.de/
+set nvchecker source=httpheader url=https://sourceforge.net/projects/mpg123/files/latest/download 'regex=mpg123-(.*)\.tar.bz2'
 set arch i686 x32
 set license LGPL-2.1-only
 set depends alsa-lib glibc

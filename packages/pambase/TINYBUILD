@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Base PAM configuration for services'
 set arch any
 set url https://www.archlinux.org
+set nvchecker source=manual
 set license GPL-3.0-or-later
 set backup \
     etc/pam.d/system-auth \

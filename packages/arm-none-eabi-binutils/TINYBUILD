@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'A set of programs to assemble and manipulate binary and object files for the ARM EABI (bare-metal) target'
 set arch i686 x32
 set url https://www.gnu.org/software/binutils/
+set nvchecker source=git git=https://sourceware.org/git/binutils-gdb.git prefix=binutils- 'include_regex=binutils-.*' from_pattern=_ to_pattern=.
 set license GPL
 set depends zlib libelf
 set flags arch

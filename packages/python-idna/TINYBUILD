@@ -5,6 +5,7 @@ set pkgdesc 'Internationalized Domain Names in Applications (IDNA)'
 set arch any
 set license BSD-3-Clause
 set url https://github.com/kjd/idna
+set nvchecker source=git git=https://github.com/kjd/idna.git prefix=v
 set depends python
 set makedepends git python-build python-installer python-flit-core
 set checkdepends python-pytest python-hypothesis

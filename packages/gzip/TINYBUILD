@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'GNU compression utility'
 set arch i686 x32
 set url https://www.gnu.org/software/gzip/
+set nvchecker source=git git=https://git.savannah.gnu.org/git/gzip.git prefix=v
 set license GPL-3.0-or-later
 set depends glibc sh coreutils sed
 set makedepends less python

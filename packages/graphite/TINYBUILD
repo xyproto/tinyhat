@@ -5,6 +5,7 @@ set pkgrel 1
 set epoch 1
 set arch i686 x32
 set url https://graphite.sil.org/
+set nvchecker source=github github=silnrsi/graphite use_max_tag=true
 set pkgdesc 'a "smart font" system to handle the complexities of lesser-known languages of the world'
 set license 'LGPL-2.1-or-later OR MPL-2.0 OR GPL-2.0-or-later'
 set depends glibc libstdc++ libgcc

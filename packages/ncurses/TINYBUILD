@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'System V Release 4.0 curses emulation library'
 set arch i686 x32
 set url https://invisible-island.net/ncurses/ncurses.html
+set nvchecker source=regex 'regex=ncurses-([\d.]+)\.tar\.gz?' url=https://invisible-mirror.net/archives/ncurses/
 set license MIT-open-group
 set depends glibc libgcc libstdc++
 set makedepends autoconf-archive git

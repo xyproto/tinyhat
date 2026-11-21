@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Open-source formatting library for C++'
 set arch i686 x32
 set url https://fmt.dev
+set nvchecker source=git git=https://github.com/fmtlib/fmt.git prefix=v
 set license MIT
 set makedepends cmake git ninja
 # 32-bit has no __int128, and fmt's software uint128 fallback lacks operator~

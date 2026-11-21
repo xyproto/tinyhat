@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X11 Inter-Client Exchange library'
 set arch i686 x32
 set url https://xorg.freedesktop.org/
+set nvchecker source=gitlab gitlab=xorg/lib/libICE host=gitlab.freedesktop.org 'include_regex=.*libICE-.*' use_max_tag=true prefix=libICE-
 set license MIT-open-group
 set depends glibc xorgproto
 set makedepends xtrans xorg-util-macros

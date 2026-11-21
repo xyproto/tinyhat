@@ -5,6 +5,7 @@ set pkgdesc 'A program to extract Microsoft cabinet (.CAB) files'
 set arch i686 x32
 set license GPL-2.0-or-later
 set url https://www.cabextract.org.uk/
+set nvchecker source=git git=https://github.com/kyz/libmspack.git prefix=v
 set depends glibc
 set makedepends git
 set source "git+https://github.com/kyz/libmspack.git#tag=v$pkgver"

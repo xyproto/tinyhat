@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'A collection of freely re-usable Autoconf macros'
 set arch any
 set url https://www.gnu.org/software/autoconf-archive/
+set nvchecker source=regex url=https://ftpmirror.gnu.org/autoconf-archive 'regex=autoconf-archive-(\d+\.\d+\.\d+)\.tar\.xz'
 set license 'GPL-3.0-or-later WITH Autoconf-exception-3.0'
 set depends autoconf
 set optdepends 'automake: macros for use with it'

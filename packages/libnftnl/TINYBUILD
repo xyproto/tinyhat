@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Netfilter library providing interface to the nf_tables subsystem'
 set arch i686 x32
 set url https://netfilter.org/projects/libnftnl/
+set nvchecker source=git git=https://git.netfilter.org/libnftnl prefix=libnftnl-
 set license GPL-2.0-or-later
 set depends glibc libmnl
 set makedepends git

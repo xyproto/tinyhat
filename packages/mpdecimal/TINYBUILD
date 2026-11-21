@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Package for correctly-rounded arbitrary precision decimal floating point arithmetic'
 set arch i686 x32
 set url https://www.bytereef.org/mpdecimal/index.html
+set nvchecker source=regex url=https://www.bytereef.org/mpdecimal/download.html 'regex=>mpdecimal-(.*)\.tar.gz<'
 set license BSD-2-Clause
 set depends glibc libgcc libstdc++
 set noextract dectest.zip

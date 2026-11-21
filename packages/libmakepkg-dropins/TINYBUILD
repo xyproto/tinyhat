@@ -3,6 +3,7 @@ set pkgver 20
 set pkgrel 2
 set pkgdesc 'Features that can be dropped into libmakepkg to extend the functionality of makepkg'
 set url https://gitlab.archlinux.org/pacman/libmakepkg-dropins
+set nvchecker source=git git=https://gitlab.archlinux.org/pacman/libmakepkg-dropins.git
 set arch any
 set license GPL-2.0-or-later
 set depends awk bash coreutils findutils grep sed binutils

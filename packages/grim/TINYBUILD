@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Screenshot utility for Wayland'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/emersion/grim
+set nvchecker source=git 'git=https://git.sr.ht/~emersion/grim' prefix=v
 set license MIT
 set depends libcairo.so libjpeg-turbo wayland
 set makedepends fish git meson ninja pango scdoc wayland-protocols

@@ -7,6 +7,7 @@ set pkgver 17.0+r134+g77d25a1e6
 set pkgrel 1
 set pkgdesc 'A featureful, general-purpose sound server (client library)'
 set url https://www.freedesktop.org/wiki/Software/PulseAudio/
+set nvchecker source=git git=https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git prefix=v
 set arch i686 x32
 set license LGPL-2.1-or-later
 set makedepends dbus git glib2 glibc libsndfile meson

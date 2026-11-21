@@ -4,6 +4,7 @@ set pkgrel 6
 set pkgdesc 'DOS emulator, Tiny Hat fork using SDL3'
 set arch i686
 set url https://github.com/xyproto/dosbox-x
+set nvchecker source=github github=xyproto/dosbox-x use_max_tag=true
 set license GPL-2.0-or-later
 set options sstrip
 set makedepends_build elfkickers

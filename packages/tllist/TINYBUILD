@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'A typed linked list C header file only library'
 set arch i686 x32
 set url https://codeberg.org/dnkl/tllist
+set nvchecker source=git git=https://codeberg.org/dnkl/tllist.git
 set license MIT
 set makedepends meson
 set source "tllist-$pkgver.tar.gz::https://codeberg.org/dnkl/tllist/archive/$pkgver.tar.gz"

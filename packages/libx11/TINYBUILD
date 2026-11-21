@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X11 client-side library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/xorg/lib/libx11
+set nvchecker source=gitlab gitlab=xorg/lib/libX11 host=gitlab.freedesktop.org use_max_tag=true 'include_regex=.*libX11-.*' prefix=libX11-
 # keep xorgproto runtime dependency
 # https://lists.archlinux.org/pipermail/arch-dev-public/2019-December/029767.html
 set depends libxcb glibc xorgproto

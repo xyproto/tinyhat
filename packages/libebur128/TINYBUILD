@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'A library that implements the EBU R 128 standard for loudness normalisation'
 set arch i686 x32
 set url https://github.com/jiixyj/libebur128
+set nvchecker source=github github=jiixyj/libebur128 use_max_tag=true prefix=v
 set license MIT
 set depends glibc
 set makedepends cmake git

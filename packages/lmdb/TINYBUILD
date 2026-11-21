@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Symas Lightning Memory-Mapped Database'
 set arch i686 x32
 set url https://symas.com/lmdb
+set nvchecker source=git git=https://git.openldap.org/openldap/openldap.git prefix=LMDB_ 'exclude_regex=^(?!LMDB_).*'
 set license custom:OpenLDAP
 set depends glibc
 set makedepends git

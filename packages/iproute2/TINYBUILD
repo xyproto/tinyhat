@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'IP Routing Utilities'
 set arch i686 x32
 set url https://git.kernel.org/pub/scm/network/iproute2/iproute2.git
+set nvchecker source=git git=https://git.kernel.org/pub/scm/network/iproute2/iproute2.git prefix=v
 set license GPL-2.0-or-later
 set depends glibc libcap libcap.so libelf libbpf libbpf.so
 # No arpd (configure only builds it when Berkeley DB is found) and no ATM (gone from iproute2): db and linux-atm dropped

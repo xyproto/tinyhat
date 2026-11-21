@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'X11 Input extension library'
 set arch i686 x32
 set url https://xorg.freedesktop.org
+set nvchecker source=gitlab gitlab=xorg/lib/libXi host=gitlab.freedesktop.org 'include_regex=.*libXi-.*' use_max_tag=true prefix=libXi-
 set depends libxext libxfixes libx11 glibc xorgproto
 set makedepends git xorg-util-macros
 set license MIT-open-group SMLNJ MIT

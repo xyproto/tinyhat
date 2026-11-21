@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc '80x86 assembler designed for portability and modularity'
 set arch i686 x32
 set url https://www.nasm.us
+set nvchecker source=git git=https://github.com/netwide-assembler/nasm.git 'include_regex=nasm-[\d\.]+' prefix=nasm-
 set license BSD-2-Clause
 set depends glibc zlib
 # No documentation (asciidoc, ghostscript, xmlto, and the fonts and Perl modules for the PDF manual);

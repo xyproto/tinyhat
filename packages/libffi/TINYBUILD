@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Portable foreign function interface library'
 set arch i686 x32
 set url https://sourceware.org/libffi/
+set nvchecker source=git git=https://github.com/libffi/libffi prefix=v
 set -g _url https://github.com/libffi/libffi
 set license MIT
 set depends glibc

@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Input device management and event handling library'
 set arch i686 x32
 set url https://wayland.freedesktop.org/libinput/doc/latest/
+set nvchecker source=git git=https://gitlab.freedesktop.org/libinput/libinput.git 'exclude_regex=.*\.9\d\d'
 set license MIT
 set depends glibc libevdev libgcc libwacom lua54 mtdev systemd-libs
 # No tests (check)

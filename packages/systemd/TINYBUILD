@@ -4,6 +4,7 @@ set pkgver 262.1
 set pkgrel 1
 set arch i686 x32
 set url https://www.github.com/systemd/systemd
+set nvchecker source=git git=https://github.com/systemd/systemd.git prefix=v 'exclude_regex=.*rc.*'
 set license LGPL-2.1-or-later
 # Libraries (and pkg-config data) that systemd is built against, and programs that run during the build
 set makedepends_host acl audit gcc-libs kmod libelf libgcrypt libidn2 libseccomp libxcrypt libxkbcommon \

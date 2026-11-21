@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'A library for Linux that makes using posix capabilities easy'
 set arch i686 x32
 set url https://people.redhat.com/sgrubb/libcap-ng/
+set nvchecker source=git git=https://github.com/stevegrubb/libcap-ng prefix=v
 set license \
     GPL-2.0-or-later \
     LGPL-2.1-or-later

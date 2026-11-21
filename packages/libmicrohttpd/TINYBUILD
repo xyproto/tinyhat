@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'a small C library that is supposed to make it easy to run an HTTP server as part of another application.'
 set arch i686 x32
 set url https://www.gnu.org/software/libmicrohttpd/
+set nvchecker source=regex url=https://ftp.gnu.org/gnu/libmicrohttpd/ 'regex=libmicrohttpd-([\d\.]+).tar'
 set license LGPL-2.1-or-later
 set depends glibc gnutls
 set checkdepends curl

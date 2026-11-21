@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Open h.265 video codec implementation'
 set arch i686 x32
 set url https://github.com/strukturag/libde265
+set nvchecker source=github github=strukturag/libde265 use_max_tag=true prefix=v
 set license LGPL-3.0-or-later
 set depends glibc libgcc libstdc++
 set makedepends cmake git

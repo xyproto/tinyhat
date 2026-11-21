@@ -4,6 +4,7 @@ set pkgrel 5
 set pkgdesc 'DOS filesystem utilities'
 set arch i686 x32
 set url https://github.com/dosfstools/dosfstools
+set nvchecker source=git git=https://github.com/dosfstools/dosfstools.git prefix=v
 set license GPL-3.0-or-later
 set depends glibc
 set source "https://github.com/dosfstools/dosfstools/releases/download/v$pkgver/dosfstools-$pkgver.tar.gz" \

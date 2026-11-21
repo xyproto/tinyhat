@@ -1,0 +1,23 @@
+set pkgname tinyhat-notify
+set pkgver 1.0
+set pkgrel 1
+set pkgdesc 'Tiny Hat notifications and tray icons: shows desktop notifications and StatusNotifierItem icons in the dwl bar'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends systemd-libs libpng
+set makedepends systemd
+set optdepends 'fuzzel: menus of tray icons'
+set source tinyhat-notify.c org.freedesktop.Notifications.service org.kde.StatusNotifierWatcher.service
+set sha256sums 7c09b558789a13f2517c1ec21c1db7bc5da7b2c3aa5b048f392e77109fc18df8 \
+    d64b60492561a770aff48778ce4a3b4a247e278d5d38298e752fa89fb705634a \
+    ffedc85a83549e3df8ae64e257426ace384e18eb17166a252fe55282eaaae269
+
+function build
+    cc (string split -n " " -- "$CFLAGS $LDFLAGS") -o tinyhat-notify tinyhat-notify.c (pkg-config --cflags --libs libsystemd libpng | string split -n " "); or return
+end
+
+function package
+    install -Dm755 tinyhat-notify "$pkgdir/usr/bin/tinyhat-notify"; or return
+    install -Dm644 -t "$pkgdir/usr/share/dbus-1/services" org.freedesktop.Notifications.service org.kde.StatusNotifierWatcher.service; or return
+end

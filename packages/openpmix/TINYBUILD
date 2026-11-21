@@ -7,6 +7,7 @@ set pkgrel 1
 set pkgdesc 'Extended version of the PMI standard'
 set arch i686 x32
 set url https://github.com/openpmix/openpmix
+set nvchecker source=git git=https://github.com/openpmix/openpmix prefix=v 'exclude_regex=.*(pre|rc|alpha|beta).*'
 set license BSD-3-Clause
 set makedepends glibc hwloc perl libevent python zlib
 # openpmix does not support LTO https://github.com/openpmix/openpmix/pull/3383

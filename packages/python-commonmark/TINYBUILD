@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Python parser for the CommonMark Markdown spec'
 set arch any
 set url https://pypi.org/project/commonmark/
+set nvchecker source=github github=readthedocs/commonmark.py use_max_tag=true
 set license BSD
 set depends python-docutils
 set makedepends python-build python-installer python-wheel python-setuptools

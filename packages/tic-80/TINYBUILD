@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'TIC-80 fantasy console with Lua and Fennel'
 set arch i686 x32
 set url https://tic80.com/
+set nvchecker source=github github=nesbox/TIC-80 prefix=v use_latest_release=true
 set license MIT LGPL-2.1-or-later Libpng Zlib Unlicense
 set depends sdl3
 set makedepends cmake ninja

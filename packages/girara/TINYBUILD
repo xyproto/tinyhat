@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'User interface library focused on simplicity and minimalism'
 set arch i686 x32
 set url https://pwmt.org/projects/girara
+set nvchecker source=git git=https://github.com/pwmt/girara.git
 set license Zlib
 set depends glib2 glibc
 set makedepends meson ninja

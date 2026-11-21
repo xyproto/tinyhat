@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A minimal seat management daemon, and a universal seat management library'
 set arch i686 x32
 set url 'https://sr.ht/~kennylevinsen/seatd/'
+set nvchecker source=git 'git=https://git.sr.ht/~kennylevinsen/seatd'
 set license MIT
 set provides libseat.so
 set replaces libseat

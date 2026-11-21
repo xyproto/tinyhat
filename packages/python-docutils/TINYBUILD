@@ -5,6 +5,7 @@ set epoch 1
 set pkgdesc 'Set of tools for processing plaintext docs into formats such as HTML, XML, or LaTeX'
 set arch any
 set url http://docutils.sourceforge.net
+set nvchecker source=pypi pypi=docutils
 set license LicenseRef-Public-Domain BSD-2-Clause
 set depends python
 set makedepends python-build python-flit-core python-installer

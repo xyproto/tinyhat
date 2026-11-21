@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'LGPLv2.1 userspace RCU (read-copy-update) library'
 set arch i686 x32
 set url https://lttng.org/urcu
+set nvchecker source=git git=https://git.liburcu.org/userspace-rcu.git prefix=v
 set license LGPL2.1
 set depends glibc
 set source "https://lttng.org/files/urcu/userspace-rcu-$pkgver.tar.bz2"

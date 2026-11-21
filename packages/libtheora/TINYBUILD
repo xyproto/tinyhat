@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Standard encoder and decoder library for the Theora video compression format'
 set arch i686 x32
 set url https://www.theora.org/
+set nvchecker source=git git=https://github.com/xiph/theora.git prefix=v 'exclude_regex=.*(alpha|beta|RC).*'
 set license BSD-3-Clause
 set depends glibc libogg
 # No documentation (doxygen) and no examples (--disable-examples): sdl, libpng and libvorbis were only for the examples

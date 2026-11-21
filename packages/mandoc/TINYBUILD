@@ -4,6 +4,7 @@ set pkgrel 5
 set pkgdesc 'A suite of tools compiling mdoc from the OpenBSD project'
 set arch i686 x32
 set url https://mdocml.bsd.lv
+set nvchecker source=regex url=https://mandoc.bsd.lv/ 'regex=current version (\d+\.\d+\.\d+) '
 set license ISC
 set depends zlib
 set makedepends less

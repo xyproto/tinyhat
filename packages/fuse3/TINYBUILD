@@ -5,6 +5,7 @@ set pkgver 3.18.3
 set pkgrel 1
 set pkgdesc 'Interface for userspace programs to export a filesystem to the Linux kernel'
 set url https://github.com/libfuse/libfuse
+set nvchecker source=git git=https://github.com/libfuse/libfuse.git 'include_regex=fuse-3.[\d\.]+' prefix=fuse-
 set arch i686 x32
 set makedepends glibc libiconv liburing meson numactl systemd
 set options '!emptydirs'

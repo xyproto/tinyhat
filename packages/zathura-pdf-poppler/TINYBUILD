@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Adds pdf support to zathura by using the poppler engine'
 set arch i686 x32
 set url https://pwmt.org/projects/zathura-pdf-poppler/
+set nvchecker source=git git=https://github.com/pwmt/zathura-pdf-poppler.git
 set license Zlib
 set depends poppler-glib zathura
 set makedepends meson ninja desktop-file-utils

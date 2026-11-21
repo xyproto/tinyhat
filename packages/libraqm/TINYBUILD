@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A library that encapsulates the logic for complex text layout'
 set arch i686 x32
 set url https://github.com/HOST-Oman/libraqm/
+set nvchecker source=github github=HOST-Oman/libraqm use_max_tag=true prefix=v
 set license MIT
 set depends freetype2 fribidi glibc harfbuzz
 # No documentation (gtk-doc)

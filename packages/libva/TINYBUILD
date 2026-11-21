@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Video Acceleration (VA) API for Linux'
 set arch i686 x32
 set url https://intel.github.io/libva/
+set nvchecker source=git git=https://github.com/intel/libva.git 'exclude_regex=.*(2009|Alpha).*'
 set license MIT
 set depends \
     glibc \

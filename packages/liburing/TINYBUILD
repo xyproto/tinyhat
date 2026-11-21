@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Linux-native io_uring I/O access library'
 set arch i686 x32
 set url https://github.com/axboe/liburing
+set nvchecker source=git git=https://github.com/axboe/liburing.git prefix=liburing- 'exclude_regex=.*(rc).*'
 set license 'GPL-2.0-only WITH Linux-syscall-note OR MIT' LGPL-2.0-or-later MIT
 set makedepends git
 set provides liburing.so liburing-ffi.so

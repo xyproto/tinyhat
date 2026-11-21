@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A system-independent interface for user-level packet capture'
 set arch i686 x32
 set url https://www.tcpdump.org/
+set nvchecker source=git git=https://github.com/the-tcpdump-group/libpcap prefix=libpcap-
 set -g _url https://github.com/the-tcpdump-group/libpcap
 set license BSD-3-Clause
 set depends glibc libnl sh

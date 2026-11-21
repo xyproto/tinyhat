@@ -5,6 +5,7 @@ set pkgdesc 'Tools for ABC and MIDI files'
 set groups pro-audio
 set arch i686 x32
 set url https://github.com/sshlien/abcmidi
+set nvchecker source=git git=https://github.com/sshlien/abcmidi.git
 set license GPL-2.0-or-later
 set makedepends git
 set depends glibc

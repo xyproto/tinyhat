@@ -5,6 +5,7 @@ set pkgdesc 'PCI bus configuration space access library and tools'
 set arch i686 x32
 set license GPL-2.0-only
 set url https://mj.ucw.cz/sw/pciutils/
+set nvchecker source=git git=https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git prefix=v
 set depends glibc hwdata kmod systemd-libs
 set makedepends git
 set optdepends 'which: for update-pciids' \

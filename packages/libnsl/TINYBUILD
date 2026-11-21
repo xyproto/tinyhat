@@ -4,6 +4,7 @@ set pkgrel 2
 set pkgdesc 'Public client interface library for NIS(YP)'
 set arch i686 x32
 set url https://github.com/thkukuk/libnsl
+set nvchecker source=git git=https://github.com/thkukuk/libnsl.git prefix=v
 set license LGPL-2.1-only
 set depends glibc libtirpc
 set provides libnsl.so

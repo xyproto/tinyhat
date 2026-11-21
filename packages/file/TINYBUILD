@@ -5,6 +5,7 @@ set pkgdesc 'File type identification utility'
 set arch i686 x32
 set license BSD-2-Clause-Darwin
 set url https://www.darwinsys.com/file/
+set nvchecker source=git git=https://github.com/file/file.git prefix=FILE from_pattern=_ to_pattern=.
 set depends glibc bzip2 libbz2.so libseccomp libseccomp.so xz liblzma.so zlib libz.so zstd libzstd.so
 set makedepends git
 set provides libmagic.so

@@ -4,6 +4,7 @@ set pkgver 1.86.0
 set pkgrel 1
 set pkgdesc 'Introspection system for GObject-based libraries'
 set url https://wiki.gnome.org/Projects/GObjectIntrospection
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/gobject-introspection.git 'include_regex=\d+\.\d*[02468]\.\d+'
 set arch i686 x32
 set license GPL-2.0-or-later LGPL-2.0-or-later
 set -g _glibver 2.90.1

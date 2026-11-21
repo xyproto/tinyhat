@@ -4,6 +4,7 @@ set pkgrel 3
 set pkgdesc 'Configuration database system'
 set arch i686 x32
 set url https://gitlab.gnome.org/GNOME/dconf
+set nvchecker source=git git=https://gitlab.gnome.org/GNOME/dconf.git 'include_regex=\d+(\.\d+)*' 'from_pattern=\.([a-z])' 'to_pattern=\1'
 set license LGPL-2.1-or-later
 set depends bash glib2 glibc libgcc
 # No documentation (gtk-doc) and no man pages (docbook-xsl, which came with gtk-doc)

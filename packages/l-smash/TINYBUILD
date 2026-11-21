@@ -4,6 +4,7 @@ set pkgrel 4
 set pkgdesc 'MP4 muxer and other tools'
 set arch i686 x32
 set url https://github.com/l-smash/l-smash
+set nvchecker source=git git=https://github.com/l-smash/l-smash.git prefix=v
 set license custom
 set depends glibc
 set provides liblsmash.so

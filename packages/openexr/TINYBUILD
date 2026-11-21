@@ -3,6 +3,7 @@ set pkgver 3.5.2
 set pkgrel 1
 set pkgdesc 'A high dynamic-range image file format library'
 set url https://www.openexr.com/
+set nvchecker source=github github=AcademySoftwareFoundation/openexr use_latest_release=true prefix=v
 set arch i686 x32
 set license BSD-3-Clause
 set depends glibc imath libdeflate libgcc libstdc++ openjph zstd

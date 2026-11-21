@@ -4,6 +4,7 @@ set -g _pkgver (string replace . '' -- $pkgver)
 set pkgrel 14
 set pkgdesc 'Compressor/archiver for creating and modifying zipfiles'
 set url http://www.info-zip.org/Zip.html
+set nvchecker source=regex url=https://infozip.sourceforge.net/Zip.html 'regex= Zip ([\d.]+)'
 set arch i686 x32
 set license LicenseRef-Info-ZIP
 set depends bzip2

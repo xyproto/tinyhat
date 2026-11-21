@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Microcode update files for Intel CPUs'
 set arch any
 set url https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files
+set nvchecker source=git git=https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files.git prefix=microcode-
 set replaces microcode_ctl
 set makedepends iucode-tool
 set license custom

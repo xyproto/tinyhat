@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'A file manager that emulates Norton Commander'
 set arch i686 x32
 set url https://midnight-commander.org/
+set nvchecker source=github github=MidnightCommander/mc 'include_regex=\d+\.\d+\.\d+' use_max_tag=true
 set license GPL-3.0-or-later
 set depends e2fsprogs glib2 glibc gpm libssh2 sh slang which
 # No spell checking in the editor (--disable-aspell), so aspell is dropped

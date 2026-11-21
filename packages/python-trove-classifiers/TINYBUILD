@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Canonical source for classifiers on PyPI (pypi.org)'
 set arch any
 set url https://github.com/pypa/trove-classifiers
+set nvchecker source=git git=https://github.com/pypa/trove-classifiers.git
 set license Apache-2.0
 set depends python
 set makedepends git python-build python-calver python-installer python-setuptools python-wheel

@@ -5,6 +5,7 @@ set pkgrel 1
 set pkgdesc 'Lightweight C library for RDF syntax supporting reading/ writing Turtle and NTriples'
 set arch i686 x32
 set url https://drobilla.net/software/serd.html
+set nvchecker source=git git=https://gitlab.com/drobilla/serd prefix=v
 set license '0BSD OR ISC' BSD-3-Clause ISC
 # No documentation (doxygen, python-sphinx)
 set makedepends meson

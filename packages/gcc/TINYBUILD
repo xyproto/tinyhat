@@ -7,6 +7,7 @@ set pkgrel 1
 set pkgdesc 'The GNU Compiler Collection'
 set arch i686
 set url https://gcc.gnu.org
+set nvchecker source=git git=https://sourceware.org/git/gcc.git prefix=releases/gcc- 'include_regex=^releases/gcc-[.0-9]+$'
 set license 'GPL-3.0-or-later WITH GCC-exception-3.1' GFDL-1.3-or-later
 set makedepends binutils git glibc libisl libmpc python zstd
 set checkdepends dejagnu expect inetutils python-pytest tcl
@@ -33,6 +34,7 @@ function prepare
     cd gcc; or return
     patch -Np0 <"$srcdir"/gcc-ada-repro.patch; or return
     patch -Np1 <../tune_branch_prediction_cost.patch; or return
+    sed -i '/m64=/s/lib64/lib/' gcc/config/i386/t-linux64; or return
     mkdir -p "$srcdir"/gcc-build; or return
 end
 

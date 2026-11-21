@@ -4,6 +4,7 @@ set pkgrel 1
 set pkgdesc 'Poetry PEP 517 Build Backend & Core Utilities'
 set arch any
 set url https://github.com/python-poetry/poetry-core
+set nvchecker source=github github=python-poetry/poetry-core use_max_tag=true
 set license MIT
 # The vendored fastjsonschema, lark, packaging and tomli are kept
 set depends python

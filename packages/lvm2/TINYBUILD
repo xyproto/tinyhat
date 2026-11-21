@@ -5,6 +5,7 @@ set pkgver 2.03.43
 set pkgrel 2
 set arch i686 x32
 set url https://sourceware.org/lvm2/
+set nvchecker source=git git=https://gitlab.com/lvmteam/lvm2.git use_latest_tag=true 'from_pattern=v(\d+)_(\d+)_(\d+)' 'to_pattern=\1.\2.\3'
 set license GPL-2.0-only LGPL-2.1-only
 set makedepends git systemd libaio thin-provisioning-tools
 set flags arch
