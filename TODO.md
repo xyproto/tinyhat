@@ -17,12 +17,6 @@
 - [ ] Enable 3D acceleration by default for the OVA, and check that kitty, GLFW and similar programs still work.
 - [ ] Find out why installing and starting nethack does not work, and fix it.
 
-### Yes, but later
-
-- [ ] Version checking in the package files: patch nvchecker to read its settings from TINYBUILD and PKGBUILD files,
-      not only .nvchecker.toml; then move the nvchecker settings out of distro.toml/distro.lock into the TINYBUILDs,
-      and let autoupdate.py and makep --sup use them.
-
 ### Maybe
 
 - [ ] Add an ASCII art drawing program?
@@ -35,9 +29,6 @@
 - [ ] Set the keyboard layout first in QEMU tests, and check the window title width, Space in TinySurf and the menu installers.
 - [ ] Start XWayland on demand for X11-only programs, without having it in the images.
 - [ ] Let `pacman -S` of poppler-glib (evince) work without downgrading Tiny Hat's newer poppler, and make `sonamecheck.py` report only sonames that something depends on.
-
-### Possibly never
-
 - [ ] Include Lutris from its GTK4 branch, with wlr-randr, cabextract, psmisc, Pillow and the Python request libraries.
 
 ### To test
