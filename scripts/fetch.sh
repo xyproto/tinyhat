@@ -6,7 +6,7 @@ name=${name##*/}
 top=$(dirname "$(dirname "$(readlink -f "$0")")")
 try() {
   rm -f "$out"
-  curl -qgb "" -fL --retry 2 --retry-delay 3 --connect-timeout 20 -o "$out" "$1"
+  curl -qgb "" -fL --retry 2 --retry-delay 3 --connect-timeout 20 --speed-limit 1 --speed-time 60 -o "$out" "$1"
 }
 for m in ${TINYHAT_SOURCE_MIRROR-}; do
   try "${m%/}/$name" && exit 0

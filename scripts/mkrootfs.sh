@@ -140,6 +140,10 @@ EOF
     mkdir -p "$root/usr/share/licenses/tinyhat"
     cp -a "$licdir/." "$root/usr/share/licenses/tinyhat/"
 
+    if [ "${SOURCE_DATE_EPOCH:-0}" -lt "$(date -u -d 2026-10-05T00:00:00Z +%s)" ]; then
+      echo "mkrootfs.sh: SOURCE_DATE_EPOCH ($SOURCE_DATE_EPOCH) is before 2026-10-05; mksquashfs stamps /usr/lib/clock-epoch with it, and systemd would then reset a correct clock to it" >&2
+      exit 1
+    fi
     touch -d 2026-10-05T00:00:00Z "$root/usr/lib/clock-epoch"
     grep -qx /usr/bin/fish "$root/etc/shells" || printf '/bin/fish\n/usr/bin/fish\n' >> "$root/etc/shells"
     term=$(sed -n 's/^term=//p' "$root/etc/xdg/foot/foot.ini")
@@ -201,7 +205,7 @@ systemctl set-default multi-user.target
     python3 scripts/elfshrink.py "$root"
     rm -f "$sfs"
     python3 scripts/distro.py caps "$root" > "$sfs.caps"
-    mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 128K -noappend -quiet -no-progress \
+    scripts/x86_64-tool.sh mksquashfs "$root" "$sfs" -comp xz -Xbcj "$bcj" -b 128K -noappend -quiet -no-progress \
       -xattrs-include '^security\.capability$' -pf "$sfs.caps" \
       -wildcards -e 'dev/*' 'proc/*' 'sys/*' 'run/*' 'tmp/*'
     rm -f "$sfs.caps"

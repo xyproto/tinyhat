@@ -16,10 +16,6 @@ pkg() { python3 "$top/scripts/pkg.py" repofile "$top/build/repo" i686 "$1"; }
 efi_modules="fat part_msdos part_gpt part_apple iso9660 efi_gop font gfxterm gfxmenu png search search_label normal linux echo test sleep reboot halt configfile cpuid loadenv smbios regexp"
 pc_modules="biosdisk iso9660 search search_label normal linux linux16 chain vbe echo test sleep reboot halt configfile cpuid font gfxterm gfxmenu png loadenv smbios regexp"
 arm_modules="fat part_msdos part_gpt iso9660 efi_gop font gfxterm gfxmenu png search search_label normal linux echo test sleep reboot halt configfile loadenv smbios regexp"
-if ! command -v xorriso > /dev/null 2>&1; then
-  echo "xorriso not found in PATH (pacman -S libisoburn)" >&2
-  exit 1
-fi
 [ -f "$work/root/boot/vmlinuz" ] || {
   echo "missing boot tree in $work (is $name.img built?)" >&2
   exit 1
@@ -42,7 +38,7 @@ if [ "$name" = tinyhat-aarch64 ]; then
   "$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
     /bin/sh -c 'mkfs.fat --invariant -F 16 /img/iso/efi.img >/dev/null && mcopy -s -i /img/iso/efi.img /img/iso/efi ::/'
   find "$isod" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
-  xorriso -as mkisofs -rational-rock \
+  "$top/scripts/x86_64-tool.sh" xorriso -as mkisofs -rational-rock \
     --modification-date="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)" \
     -V TINYHAT -A TINYHAT \
     --efi-boot efi.img -efi-boot-part --efi-boot-image \
@@ -69,7 +65,7 @@ truncate -s "${esp_mib}M" "$isod/efi.img"
 "$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
   /bin/sh -c 'mkfs.fat --invariant -F 16 /img/iso/efi.img >/dev/null && mcopy -s -i /img/iso/efi.img /img/iso/efi ::/'
 find "$isod" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
-xorriso -as mkisofs -rational-rock \
+"$top/scripts/x86_64-tool.sh" xorriso -as mkisofs -rational-rock \
   --modification-date="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)" \
   -V TINYHAT -A TINYHAT \
   -b boot/grub/i386-pc/eltorito.img -no-emul-boot -boot-load-size 4 -boot-info-table \

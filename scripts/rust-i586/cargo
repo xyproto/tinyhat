@@ -1,0 +1,56 @@
+#!/bin/sh
+t=i586-unknown-linux-gnu
+export CARGO_BUILD_TARGET=$t
+export CARGO_TARGET_I586_UNKNOWN_LINUX_GNU_LINKER=cc
+export CC_i586_unknown_linux_gnu=cc CXX_i586_unknown_linux_gnu=c++ AR_i586_unknown_linux_gnu=ar
+export PKG_CONFIG_ALLOW_CROSS=1
+export RUSTFLAGS="${RUSTFLAGS:+$RUSTFLAGS }-C target-cpu=i686"
+n=$#
+while [ "$n" -gt 0 ]; do
+	a=$1
+	shift
+	case $a in
+	i686-unknown-linux-gnu) a=$t ;;
+	--target=i686-unknown-linux-gnu) a=--target=$t ;;
+	esac
+	set -- "$@" "$a"
+	n=$((n - 1))
+done
+case ${1-} in
+cbuild | cinstall | ctest | capi)
+	sub=$1
+	shift
+	set -- "$sub" --target $t "$@"
+	;;
+esac
+/usr/lib/rustlib/cargo "$@"
+rc=$?
+dirs=${CARGO_TARGET_DIR:-target}
+prev=
+for a; do
+	case $prev in
+	--target-dir) dirs="$dirs $a" ;;
+	--manifest-path) dirs="$dirs $(dirname "$a")/target" ;;
+	esac
+	case $a in
+	--target-dir=*) dirs="$dirs ${a#--target-dir=}" ;;
+	--manifest-path=*) dirs="$dirs $(dirname "${a#--manifest-path=}")/target" ;;
+	esac
+	prev=$a
+done
+for d in $dirs; do
+	[ -d "$d/$t" ] || continue
+	[ -e "$d/i686-unknown-linux-gnu" ] || ln -s "$t" "$d/i686-unknown-linux-gnu"
+	for p in "$d/$t"/*/; do
+		[ -d "$p" ] || continue
+		n=$(basename "$p")
+		if [ ! -e "$d/$n" ]; then
+			ln -s "$t/$n" "$d/$n"
+		elif [ ! -L "$d/$n" ]; then
+			for f in "$p"*; do
+				[ -f "$f" ] && ln -sf "../$t/$n/${f##*/}" "$d/$n/${f##*/}"
+			done
+		fi
+	done
+done
+exit $rc

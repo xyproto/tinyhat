@@ -29,11 +29,11 @@ REPORT = (EXAMPLES + "/usr/lib/tinyhat/startcheck >/tmp/th-start.txt 2>&1; doas 
           "echo TH-EXAMPLES; cat /tmp/th-ex.txt; echo TH-START; cat /tmp/th-start.txt; echo TH-END) >/dev/{tty} 2>&1'\n")
 SEARCH = "https://html.duckduckgo.com/html/?q=tiny+hat+linux"
 LOBSTERS = "https://lobste.rs"
-NETSURFY = ("sh -c 'netsurfy -v \"" + SEARCH + "\" 2>/tmp/th-ns1.log & sleep 30; kill $!; "
-            "netsurfy -v " + LOBSTERS + " 2>/tmp/th-ns2.log & sleep 30; kill $!; "
-            "doas sh -c \"(echo TH-NETSURFY; grep -c ip3/ /tmp/th-ns1.log; grep -c done.https://lobste.rs /tmp/th-ns2.log; "
+TINYSURF = ("sh -c 'tinysurf -v \"" + SEARCH + "\" 2>/tmp/th-ns1.log & sleep 30; kill $!; "
+            "tinysurf -v " + LOBSTERS + " 2>/tmp/th-ns2.log & sleep 30; kill $!; "
+            "doas sh -c \"(echo TH-TINYSURF; grep -c ip3/ /tmp/th-ns1.log; grep -c done.https://lobste.rs /tmp/th-ns2.log; "
             "grep -i -e curl -e ssl -e cert -e error -e llcache /tmp/th-ns1.log | head -n 40 | cut -c1-220; "
-            "echo TH-NETSURFY-END) >/dev/ttyS0\"' &\n")
+            "echo TH-TINYSURF-END) >/dev/ttyS0\"' &\n")
 QEMU_RPI4_SUPPLIES = [("/emmc2-bus@fe000000/mmc@7e340000", "vqmmc-supply"), ("/emmc2-bus@fe000000/mmc@7e340000", "vmmc-supply"),
                       ("/soc/mmc@7e300000", "mmc-pwrseq")]
 QEMU_RPI4_MISSING = ["/soc/clock@7ef00000", "/soc/interrupt-controller@7ef00100", "/soc/i2c@7ef04500", "/soc/i2c@7ef09500"]
@@ -126,12 +126,12 @@ def health(serial):
     return sections
 
 
-def netsurfy_report(serial):
+def tinysurf_report(serial):
     text = open(serial, errors="replace").read().replace("\r", "") if os.path.exists(serial) else ""
-    m = text.rfind("TH-NETSURFY\n")
-    if m < 0 or "TH-NETSURFY-END" not in text[m:]:
+    m = text.rfind("TH-TINYSURF\n")
+    if m < 0 or "TH-TINYSURF-END" not in text[m:]:
         return None
-    lines = text[m:text.index("TH-NETSURFY-END", m)].splitlines()[1:]
+    lines = text[m:text.index("TH-TINYSURF-END", m)].splitlines()[1:]
     counts = [int(n.strip()) if n.strip().isdigit() else 0 for n in lines[:2]] + [0, 0]
     return counts[:2] + [lines[2:]]
 
@@ -221,14 +221,14 @@ def main():
                     if report:
                         break
                 if k in ("i686", "x32"):
-                    type_text(sock, NETSURFY)
+                    type_text(sock, TINYSURF)
                     time.sleep(25)
                     monitor(sock, f"screendump {web[0]}")
                     time.sleep(30)
                     monitor(sock, f"screendump {web[1]}")
                     for _ in range(20):
                         time.sleep(1)
-                        web_report = netsurfy_report(serial)
+                        web_report = tinysurf_report(serial)
                         if web_report:
                             break
                 break
@@ -287,15 +287,15 @@ def main():
                 ok = False
         if k in ("i686", "x32"):
             if web_report is None:
-                print("qemutest: no NetSurfy report on the serial port")
+                print("qemutest: no TinySurf report on the serial port")
                 ok = False
             else:
                 results, lobsters = web_report[0], web_report[1]
                 blue = [link_pixels(f) for f in web]
-                print(f"qemutest: NetSurfy found {results} DuckDuckGo results for \"tiny hat linux\" ({blue[0]} link pixels on screen)")
-                print(f"qemutest: NetSurfy {'loaded' if lobsters else 'did not load'} {LOBSTERS} ({blue[1]} link pixels on screen)")
+                print(f"qemutest: TinySurf found {results} DuckDuckGo results for \"tiny hat linux\" ({blue[0]} link pixels on screen)")
+                print(f"qemutest: TinySurf {'loaded' if lobsters else 'did not load'} {LOBSTERS} ({blue[1]} link pixels on screen)")
                 if results < 3 or not lobsters or min(blue) < 300:
-                    print("qemutest: NetSurfy failed (screenshots in build/qmt)")
+                    print("qemutest: TinySurf failed (screenshots in build/qmt)")
                     for line in web_report[2]:
                         print("  " + line.strip())
                     ok = False
