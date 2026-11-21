@@ -1,0 +1,7 @@
+[org.gnome.desktop.interface]
+color-scheme='prefer-dark'
+gtk-theme='TinyHat'
+icon-theme='tinyhat'
+font-name='JetBrains Mono NL 10'
+cursor-theme='Vanilla-DMZ'
+enable-animations=false

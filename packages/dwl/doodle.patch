@@ -38,7 +38,29 @@
  static void wallupdate(void);
  static void togglelayout(const Arg *arg);
  static void focusstack(const Arg *arg);
-@@ -1145,6 +1169,7 @@
+@@ -386,6 +410,7 @@
+ static void handlesig(int signo);
+ static int reloadkeymap(int signo, void *data);
+ static void nextbackground(const Arg *arg);
++static void rootright(const Arg *arg);
+ static void setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data);
+ static void unblocksignals(void);
+ static void incnmaster(const Arg *arg);
+@@ -1141,10 +1166,21 @@
+ }
+ 
+ static void
++rootright(const Arg *arg)
++{
++	if (doodle.count) {
++		doodle.count = 0;
++		return;
++	}
++	nextbackground(arg);
++}
++
++static void
+ nextbackground(const Arg *arg)
  {
  	char path[PATH_MAX], dir[PATH_MAX];
  	FILE *f;
@@ -46,7 +68,7 @@
  	if (!conf.nbgs)
  		return;
  	bgindex++;
-@@ -1837,6 +1862,25 @@
+@@ -1837,6 +1873,25 @@
  
  		keyboard = wlr_seat_get_keyboard(seat);
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
@@ -72,7 +94,7 @@
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
  				b->func((click == ClkTagBar && b->arg.i == 0) || click == ClkTitle ? &arg : &b->arg);
-@@ -1845,6 +1889,11 @@
+@@ -1845,6 +1900,11 @@
  		}
  		break;
  	case WL_POINTER_BUTTON_STATE_RELEASED:
@@ -84,7 +106,7 @@
  		/* If you released any buttons, we exit interactive move/resize mode. */
  		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
  			struct wlr_box snapb;
-@@ -3121,6 +3170,332 @@
+@@ -3121,6 +3181,342 @@
  	wlr_scene_node_set_position(&sb->node, m->m.x + (int)(x / s), m->m.y + (int)(y / s));
  }
  
@@ -108,6 +130,12 @@
 +doodlefrand(void)
 +{
 +	return (float)(doodlerand() & 0xffff) / 65535.0f;
++}
++
++static bool
++doodlenoinput(struct wlr_scene_buffer *buffer, double *sx, double *sy)
++{
++	return false;
 +}
 +
 +static void
@@ -255,6 +283,8 @@
 +	if (doodle.node)
 +		wlr_scene_node_destroy(&doodle.node->node);
 +	doodle.node = wlr_scene_buffer_create(layers[LyrBottom], &b->base);
++	if (doodle.node)
++		doodle.node->point_accepts_input = doodlenoinput;
 +	wlr_buffer_drop(&b->base);
 +	if (doodle.node) {
 +		wlr_scene_node_lower_to_bottom(&doodle.node->node);
@@ -362,6 +392,8 @@
 +	if (doodle.node)
 +		wlr_scene_node_destroy(&doodle.node->node);
 +	doodle.node = wlr_scene_buffer_create(layers[LyrBottom], &b->base);
++	if (doodle.node)
++		doodle.node->point_accepts_input = doodlenoinput;
 +	wlr_buffer_drop(&b->base);
 +	if (!doodle.node)
 +		return;
@@ -417,7 +449,7 @@
  static struct wlr_scene_buffer *tipnode;
  static char tipshown[128];
  
-@@ -4483,6 +4858,9 @@
+@@ -4483,6 +4879,9 @@
  	struct wlr_surface *surface = NULL;
  	struct wlr_pointer_constraint_v1 *constraint;
  

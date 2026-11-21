@@ -268,7 +268,7 @@ static const Button buttons[] = {
     { ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
     { ClkTitle,    0,      BTN_MIDDLE, taskclose,      {0} },
     { ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },
-    { ClkRoot,     0,      BTN_RIGHT,  nextbackground, {0} },
+    { ClkRoot,     0,      BTN_RIGHT,  rootright,      {0} },
     { ClkMenu,     0,      BTN_LEFT,   spawn,          {.v = menucmd} },
     { ClkStatus,   0,      BTN_MIDDLE, spawn,          {.v = termcmd} },
     { ClkClient,   MODKEY, BTN_LEFT,   moveresize,     {.ui = CurMove} },

@@ -1,0 +1,14 @@
+pkgbase = tinyhat-gtk-theme
+	pkgdesc = Tiny Hat GTK 4 theme: the GTK dark theme in the Tiny Hat colours
+	pkgver = 1.0
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	license = LGPL-2.1-or-later
+	makedepends = gtk4
+	depends = gtk4
+	source = tinyhat-gtk-theme.c
+	sha256sums = b9f0b6c47be504320b9952a43f28a59c16c145addb22746021469945dd9c8e32
+
+pkgname = tinyhat-gtk-theme
