@@ -3,14 +3,14 @@
 # No upx: the image is a compressed squashfs, which compresses unpacked executables better than upx does, and packed
 # executables cannot share their pages in RAM
 import os
-import shutil
 import struct
 import subprocess
 import sys
 
 root = sys.argv[1]
-if not shutil.which("sstrip"):
-    sys.exit("elfshrink.py: sstrip not found")
+tool = os.path.join(os.path.dirname(os.path.abspath(__file__)), "x86_64-tool.sh")
+if subprocess.run([tool, "sstrip", "--version"], capture_output=True).returncode != 0:
+    sys.exit("elfshrink.py: sstrip not found in the x86_64 build environment")
 
 
 def executable(path):
@@ -54,7 +54,7 @@ for top in ("usr/bin", "usr/lib"):
             before = st.st_size
             if ".so" in name:
                 continue
-            if subprocess.run(["sstrip", path], capture_output=True).returncode == 0:
+            if subprocess.run([tool, "sstrip", path], capture_output=True).returncode == 0:
                 saved += before - os.path.getsize(path)
                 os.chmod(path, st.st_mode & 0o7777)
 print(f"elfshrink.py: sstrip saved {saved >> 10} KiB (uncompressed)")

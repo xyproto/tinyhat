@@ -36,7 +36,7 @@ cp -a config/etc/. "$root/etc/"
     chmod 644 "$root/etc/$p"
   fi
 done
-grep -q '^tinyhat:' "$root/etc/passwd" || echo 'tinyhat:x:1000:1000:Tiny Hat:/home/tinyhat:/usr/bin/osh' >> "$root/etc/passwd"
+grep -q '^tinyhat:' "$root/etc/passwd" || echo 'tinyhat:x:1000:1000:Tiny Hat:/home/tinyhat:/usr/bin/bash' >> "$root/etc/passwd"
 grep -q '^tinyhat:' "$root/etc/group" || echo 'tinyhat:x:1000:' >> "$root/etc/group"
 grep -q '^tinyhat:' "$root/etc/shadow" || echo 'tinyhat::20000::::::' >> "$root/etc/shadow"
 mkdir -p "$root/home/tinyhat"
@@ -50,7 +50,7 @@ chmod 700 "$root/home/tinyhat"
 python3 scripts/fwprune.py "$root"
 
 rm -f "$sfs"
-mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 1M -noappend -quiet
+scripts/x86_64-tool.sh mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 1M -noappend -quiet
 ls -l "$sfs"
 
 TINYHAT_OWN=1 scripts/mkinitramfs.sh "$initrd"
