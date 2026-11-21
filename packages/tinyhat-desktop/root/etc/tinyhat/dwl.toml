@@ -131,8 +131,8 @@ description = "Terminal"
 
 [[key]]
 hotkey = "Ctrl+Alt+N"
-run = "tinyhat-run -n NetSurfy netsurfy"
-description = "NetSurfy web browser"
+run = "tinyhat-run -n TinySurf tinysurf"
+description = "TinySurf web browser"
 
 [[key]]
 hotkey = "Ctrl+Alt+K"

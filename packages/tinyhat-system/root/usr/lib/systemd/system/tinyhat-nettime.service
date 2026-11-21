@@ -3,7 +3,7 @@ Description=Tiny Hat: set the timezone and clock from the network
 After=tinyhat-persist.service systemd-networkd.service
 
 [Service]
-Type=oneshot
+Type=exec
 TimeoutStartSec=5min
 ExecStart=-/usr/bin/tinyhat-nettime
 

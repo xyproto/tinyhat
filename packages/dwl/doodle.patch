@@ -1,36 +1,62 @@
-diff --git a/dwl.c b/dwl.c
-index db2ff5d..7171e7a 100644
 --- a/dwl.c
 +++ b/dwl.c
-@@ -274,6 +274,13 @@ struct Monitor {
+@@ -274,6 +274,27 @@
  	int lrpad;
  };
  
++#define FIREPARTS 700
++#define FIREPOINTS 2048
++typedef struct {
++	float x, y, xo, xi, yi, life, fade, size, grow, r, g, b;
++} FirePart;
++
 +static struct {
-+	int active, count;
-+	double x0, y0;
++	int active, count, shape, lastw, lasth, lastx, lasty;
++	double x0, y0, px, py;
 +	Monitor *m;
 +	struct wlr_scene_buffer *node;
++	uint32_t seed;
++	struct wl_event_source *timer, *shapetimer;
++	int shapepending;
++	FirePart part[FIREPARTS];
++	int nparts, npoints, firstpoint;
++	struct { float x, y; int age; } points[FIREPOINTS];
++	float *acc;
++	size_t accsize;
 +} doodle;
 +
  typedef struct {
  	const char *name;
  	float mfact;
-@@ -377,6 +384,8 @@ static void taskclick(const Arg *arg);
+@@ -377,6 +398,9 @@
  static void taskclose(const Arg *arg);
  static void taskhover(void);
  static void tipupdate(void);
 +static void doodledraw(void);
 +static void doodleend(void);
++static void doodlestop(void);
  static void wallupdate(void);
  static void togglelayout(const Arg *arg);
  static void focusstack(const Arg *arg);
-@@ -1837,6 +1846,13 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -1145,6 +1169,7 @@
+ {
+ 	char path[PATH_MAX], dir[PATH_MAX];
+ 	FILE *f;
++	doodle.count = 0;
+ 	if (!conf.nbgs)
+ 		return;
+ 	bgindex++;
+@@ -1837,6 +1862,18 @@
  
  		keyboard = wlr_seat_get_keyboard(seat);
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
 +		if (click == ClkRoot && event->button == BTN_LEFT && !CLEANMASK(mods)) {
 +			doodle.active = 1;
++			doodle.shape = doodle.count < 3 ? 0 : doodle.count < 5 ? 1 : doodle.count < 6 ? 2 : 3;
++			if (doodle.shape != 3)
++				doodlestop();
++			doodle.px = cursor->x;
++			doodle.py = cursor->y;
 +			doodle.m = selmon;
 +			doodle.x0 = cursor->x;
 +			doodle.y0 = cursor->y;
@@ -39,7 +65,7 @@ index db2ff5d..7171e7a 100644
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
  				b->func((click == ClkTagBar && b->arg.i == 0) || click == ClkTitle ? &arg : &b->arg);
-@@ -1845,6 +1861,11 @@ buttonpress(struct wl_listener *listener, void *data)
+@@ -1845,6 +1882,11 @@
  		}
  		break;
  	case WL_POINTER_BUTTON_STATE_RELEASED:
@@ -51,7 +77,7 @@ index db2ff5d..7171e7a 100644
  		/* If you released any buttons, we exit interactive move/resize mode. */
  		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
  			struct wlr_box snapb;
-@@ -3121,6 +3142,90 @@ wallplace(WallBuffer *b, Monitor *m, double x, double y)
+@@ -3121,6 +3163,326 @@
  	wlr_scene_node_set_position(&sb->node, m->m.x + (int)(x / s), m->m.y + (int)(y / s));
  }
  
@@ -63,61 +89,266 @@ index db2ff5d..7171e7a 100644
 +}
 +
 +static uint32_t
-+doodlepixel(int shape, double px, double py, double w, double h, double lw, uint32_t accent)
++doodlerand(void)
 +{
-+	uint32_t line = doodlepremul(accent, 0xff), fill = doodlepremul(accent, 0x30);
-+	double d, u = px / w, v = py / h;
-+	switch (shape) {
-+	case 0:
-+		if (px < lw || px >= w - lw || py < lw || py >= h - lw)
-+			return line;
-+		return fill;
-+	case 1:
-+		if (segdist(px, py, w / 2, 0, 0, h) < lw || segdist(px, py, w / 2, 0, w, h) < lw || py >= h - lw)
-+			return line;
-+		return fabs(u - 0.5) * 2 < v ? fill : 0;
-+	case 2:
-+		d = hypot((px - w / 2) / (w / 2), (py - h / 2) / (h / 2));
-+		if (fabs(d - 1) * MIN(w, h) / 2 < lw)
-+			return line;
-+		return d < 1 ? fill : 0;
-+	default: {
-+		int n = MAX(1, (int)(w / (h * 0.6) + 0.5));
-+		double lx = u * n - floor(u * n) + 0.06 * sin(v * 9 + floor(u * n) * 2);
-+		if (inflame(lx, v, 0.5, 0.86, 0.14, 0.45))
-+			return doodlepremul(0xffe066, 0xff);
-+		if (inflame(lx, v, 0.5, 0.8, 0.24, 0.2))
-+			return doodlepremul(0xff9e3b, 0xff);
-+		return inflame(lx, v, 0.5, 0.74, 0.34, 0.0) ? doodlepremul(0xf7768e, 0xff) : 0;
-+	}
-+	}
++	doodle.seed ^= doodle.seed << 13;
++	doodle.seed ^= doodle.seed >> 17;
++	doodle.seed ^= doodle.seed << 5;
++	return doodle.seed;
++}
++
++static float
++doodlefrand(void)
++{
++	return (float)(doodlerand() & 0xffff) / 65535.0f;
 +}
 +
 +static void
-+doodledraw(void)
++doodlestop(void)
++{
++	if (doodle.timer)
++		wl_event_source_timer_update(doodle.timer, 0);
++	if (doodle.node) {
++		wlr_scene_node_destroy(&doodle.node->node);
++		doodle.node = NULL;
++	}
++	doodle.nparts = doodle.npoints = doodle.firstpoint = 0;
++}
++
++static void
++doodlepoint(float x, float y)
++{
++	int i;
++	if (doodle.npoints == FIREPOINTS) {
++		doodle.firstpoint = (doodle.firstpoint + 1) % FIREPOINTS;
++		doodle.npoints--;
++	}
++	i = (doodle.firstpoint + doodle.npoints++) % FIREPOINTS;
++	doodle.points[i].x = x;
++	doodle.points[i].y = y;
++	doodle.points[i].age = 0;
++}
++
++static void
++doodlespawn(void)
++{
++	int want = MIN(FIREPARTS / 3, doodle.npoints * 2 / 3 + 1);
++	if (!doodle.npoints)
++		return;
++	if (doodle.nparts + want > FIREPARTS) {
++		int drop = doodle.nparts + want - FIREPARTS;
++		memmove(doodle.part, doodle.part + drop, (size_t)(doodle.nparts - drop) * sizeof(*doodle.part));
++		doodle.nparts -= drop;
++	}
++	while (want-- > 0) {
++		int r = (int)(doodlerand() % doodle.npoints), i = (doodle.firstpoint + doodle.npoints - 1 - r * r / doodle.npoints) % FIREPOINTS;
++		FirePart *p = &doodle.part[doodle.nparts++];
++		float v = doodlefrand();
++		p->x = p->xo = doodle.points[i].x;
++		p->y = doodle.points[i].y;
++		p->life = 1;
++		p->fade = (v * 0.3f + 0.06f) * 0.33f;
++		p->size = 7;
++		p->grow = 2.5f * doodlefrand();
++		p->xi = (doodlefrand() * 20 - 10) * 0.2f;
++		p->yi = (doodlefrand() * 20 - 15) * 0.2f;
++		v = doodlefrand() / 1.7f;
++		p->r = 1 - v;
++		p->g = 0.5f - v * 0.5f;
++		p->b = 0.15f - v * 0.15f;
++	}
++}
++
++static int
++doodletick(void *data)
++{
++	float minx = 1e9f, miny = 1e9f, maxx = -1e9f, maxy = -1e9f, q = 3;
++	int bw, bh, n = 0, again;
++	WallBuffer *b;
++	float *acc;
++
++	again = 0;
++	for (int i = 0; i < doodle.npoints; i++) {
++		int k = (doodle.firstpoint + i) % FIREPOINTS;
++		doodle.points[k].age++;
++	}
++	while (doodle.npoints && doodle.points[doodle.firstpoint].age > 45) {
++		doodle.firstpoint = (doodle.firstpoint + 1) % FIREPOINTS;
++		doodle.npoints--;
++	}
++	doodlespawn();
++	for (int i = 0; i < doodle.nparts; i++) {
++		FirePart p = doodle.part[i];
++		p.x += p.xi;
++		p.y += p.yi;
++		p.xi += (p.x < p.xo ? 1.0f : -1.0f) * 0.12f;
++		p.yi -= 0.25f;
++		p.life -= p.fade;
++		if (p.life > 0)
++			doodle.part[n++] = p;
++	}
++	doodle.nparts = n;
++	if (!doodle.nparts && !doodle.npoints) {
++		doodlestop();
++		return 0;
++	}
++	for (int i = 0; i < doodle.nparts; i++) {
++		FirePart *p = &doodle.part[i];
++		float r = p->size * (1 + p->grow * p->life);
++		minx = MIN(minx, p->x - r);
++		miny = MIN(miny, p->y - r);
++		maxx = MAX(maxx, p->x + r);
++		maxy = MAX(maxy, p->y + r);
++	}
++	if (!doodle.nparts) {
++		again = 1;
++		goto rearm;
++	}
++	bw = MAX(1, (int)((maxx - minx) / q) + 1);
++	bh = MAX(1, (int)((maxy - miny) / q) + 1);
++	if ((size_t)bw * bh * 3 > doodle.accsize) {
++		free(doodle.acc);
++		doodle.accsize = (size_t)bw * bh * 3;
++		doodle.acc = ecalloc(doodle.accsize, sizeof(float));
++	}
++	acc = doodle.acc;
++	memset(acc, 0, (size_t)bw * bh * 3 * sizeof(float));
++	for (int i = 0; i < doodle.nparts; i++) {
++		FirePart *p = &doodle.part[i];
++		float r = p->size * (1 + p->grow * p->life) / q, cx = (p->x - minx) / q, cy = (p->y - miny) / q;
++		float a = p->life * 0.35f;
++		int x0 = MAX(0, (int)(cx - r)), x1 = MIN(bw - 1, (int)(cx + r)), y0 = MAX(0, (int)(cy - r)), y1 = MIN(bh - 1, (int)(cy + r));
++		for (int y = y0; y <= y1; y++) {
++			float dy = (y + 0.5f - cy) / r;
++			for (int x = x0; x <= x1; x++) {
++				float dx = (x + 0.5f - cx) / r, d = dx * dx + dy * dy, w;
++				if (d >= 1)
++					continue;
++				w = (1 - d) * (1 - d) * a;
++				acc[(y * bw + x) * 3] += p->r * w;
++				acc[(y * bw + x) * 3 + 1] += p->g * w;
++				acc[(y * bw + x) * 3 + 2] += p->b * w;
++			}
++		}
++	}
++	b = wallbuffer(bw, bh, 0);
++	b->format = DRM_FORMAT_ARGB8888;
++	for (int y = 0; y < bh; y++) {
++		uint32_t *row = (uint32_t *)((char *)b->data + (size_t)y * b->stride);
++		for (int x = 0; x < bw; x++) {
++			float *c = &acc[(y * bw + x) * 3];
++			float r = MIN(1, c[0]), g = MIN(1, c[1]), bl = MIN(1, c[2]), al = MAX(r, MAX(g, bl));
++			row[x] = (uint32_t)(al * 255) << 24 | (uint32_t)(r * 255) << 16 | (uint32_t)(g * 255) << 8 | (uint32_t)(bl * 255);
++		}
++	}
++	if (doodle.node)
++		wlr_scene_node_destroy(&doodle.node->node);
++	doodle.node = wlr_scene_buffer_create(layers[LyrBottom], &b->base);
++	wlr_buffer_drop(&b->base);
++	if (doodle.node) {
++		wlr_scene_buffer_set_dest_size(doodle.node, (int)(bw * q), (int)(bh * q));
++		wlr_scene_node_set_position(&doodle.node->node, (int)minx, (int)miny);
++	}
++	again = 1;
++rearm:
++	if (again)
++		wl_event_source_timer_update(doodle.timer, 33);
++	return 0;
++}
++
++static void
++doodlefire(void)
++{
++	double dx = cursor->x - doodle.px, dy = cursor->y - doodle.py, len = hypot(dx, dy);
++	int steps = MAX(1, (int)(len / 4));
++	for (int i = 1; i <= steps; i++)
++		doodlepoint((float)(doodle.px + dx * i / steps), (float)(doodle.py + dy * i / steps));
++	doodle.px = cursor->x;
++	doodle.py = cursor->y;
++	if (!doodle.seed)
++		doodle.seed = 0x9e3779b9u ^ (uint32_t)(size_t)&doodle;
++	if (!doodle.timer)
++		doodle.timer = wl_event_loop_add_timer(event_loop, doodletick, NULL);
++	if (!doodle.nparts)
++		wl_event_source_timer_update(doodle.timer, 1);
++}
++
++static void
++doodlespan(uint32_t *row, int w, int x0, int x1, uint32_t c)
++{
++	x0 = MAX(0, x0);
++	x1 = MIN(w, x1);
++	for (int x = x0; x < x1; x++)
++		row[x] = c;
++}
++
++static void
++doodleshape(void)
 +{
 +	Monitor *m = doodle.m;
 +	double s = m->wlr_output->scale;
 +	double x0 = MAX(m->m.x, MIN(doodle.x0, cursor->x)), y0 = MAX(m->m.y, MIN(doodle.y0, cursor->y));
 +	double x1 = MIN(m->m.x + m->m.width, MAX(doodle.x0, cursor->x)), y1 = MIN(m->m.y + m->m.height, MAX(doodle.y0, cursor->y));
-+	int w = (int)((x1 - x0) * s), h = (int)((y1 - y0) * s);
-+	int shape = doodle.count < 3 ? 0 : doodle.count < 5 ? 1 : doodle.count < 6 ? 2 : 3;
-+	uint32_t accent = colors[SchemeSel][ColBg] >> 8;
++	int w = (int)((x1 - x0) * s), h = (int)((y1 - y0) * s), lw;
++	uint32_t accent = colors[SchemeSel][ColBg] >> 8, line, fill;
 +	WallBuffer *b;
 +
-+	if (doodle.node) {
-+		wlr_scene_node_destroy(&doodle.node->node);
-+		doodle.node = NULL;
-+	}
-+	if (w < 4 || h < 4)
++	if (w < 4 || h < 4) {
++		if (doodle.node) {
++			wlr_scene_node_destroy(&doodle.node->node);
++			doodle.node = NULL;
++		}
 +		return;
++	}
++	if (doodle.node && w == doodle.lastw && h == doodle.lasth && (int)x0 == doodle.lastx && (int)y0 == doodle.lasty)
++		return;
++	doodle.lastw = w;
++	doodle.lasth = h;
++	doodle.lastx = (int)x0;
++	doodle.lasty = (int)y0;
++	lw = (int)MAX(2, 3 * s);
++	line = doodlepremul(accent, 0xff);
++	fill = doodlepremul(accent, 0x30);
 +	b = wallbuffer(w, h, 0);
 +	b->format = DRM_FORMAT_ARGB8888;
 +	for (int y = 0; y < h; y++) {
-+		uint32_t *row = (uint32_t *)(b->data + (size_t)y * b->stride);
-+		for (int x = 0; x < w; x++)
-+			row[x] = doodlepixel(shape, x + 0.5, y + 0.5, w, h, MAX(2, 3 * s), accent);
++		uint32_t *row = (uint32_t *)((char *)b->data + (size_t)y * b->stride);
++		double yc = y + 0.5;
++		if (doodle.shape == 0) {
++			if (y < lw || y >= h - lw) {
++				doodlespan(row, w, 0, w, line);
++			} else {
++				doodlespan(row, w, 0, lw, line);
++				doodlespan(row, w, lw, w - lw, fill);
++				doodlespan(row, w, w - lw, w, line);
++			}
++		} else if (doodle.shape == 1) {
++			double hw = yc / h * w / 2, t = lw * hypot(w / 2.0, h) / h, l = w / 2.0 - hw, r = w / 2.0 + hw;
++			if (y >= h - lw || r - l <= 2 * t) {
++				doodlespan(row, w, (int)l, (int)ceil(r), line);
++			} else {
++				doodlespan(row, w, (int)l, (int)ceil(l + t), line);
++				doodlespan(row, w, (int)ceil(l + t), (int)(r - t), fill);
++				doodlespan(row, w, (int)(r - t), (int)ceil(r), line);
++			}
++		} else {
++			double rx = MAX(1, w / 2.0 - lw), ry = MAX(1, h / 2.0 - lw), mr = MIN(rx, ry), cx = w / 2.0;
++			double dy = (yc - h / 2.0) / ry, dout = 1 + lw / mr, din = 1 - lw / mr, xo, xi;
++			if (dy * dy >= dout * dout)
++				continue;
++			xo = rx * sqrt(dout * dout - dy * dy);
++			xi = din > 0 && dy * dy < din * din ? rx * sqrt(din * din - dy * dy) : 0;
++			if (xi > 0) {
++				doodlespan(row, w, (int)(cx - xo), (int)ceil(cx - xi), line);
++				doodlespan(row, w, (int)ceil(cx - xi), (int)(cx + xi), fill);
++				doodlespan(row, w, (int)(cx + xi), (int)ceil(cx + xo), line);
++			} else {
++				doodlespan(row, w, (int)(cx - xo), (int)ceil(cx + xo), line);
++			}
++		}
 +	}
++	if (doodle.node)
++		wlr_scene_node_destroy(&doodle.node->node);
 +	doodle.node = wlr_scene_buffer_create(layers[LyrBottom], &b->base);
 +	wlr_buffer_drop(&b->base);
 +	if (!doodle.node)
@@ -126,23 +357,54 @@ index db2ff5d..7171e7a 100644
 +	wlr_scene_node_set_position(&doodle.node->node, (int)x0, (int)y0);
 +}
 +
++static int
++doodleshapetick(void *data)
++{
++	doodle.shapepending = 0;
++	if (doodle.active && doodle.shape != 3)
++		doodleshape();
++	return 0;
++}
++
++static void
++doodledraw(void)
++{
++	if (doodle.shape == 3) {
++		doodlefire();
++		return;
++	}
++	if (!doodle.shapetimer)
++		doodle.shapetimer = wl_event_loop_add_timer(event_loop, doodleshapetick, NULL);
++	if (!doodle.shapepending) {
++		doodle.shapepending = 1;
++		wl_event_source_timer_update(doodle.shapetimer, 16);
++	}
++}
++
 +static void
 +doodleend(void)
 +{
 +	if (!doodle.active)
 +		return;
++	doodle.active = 0;
++	if (doodle.shape == 3) {
++		doodle.count++;
++		return;
++	}
++	if (doodle.shapetimer)
++		wl_event_source_timer_update(doodle.shapetimer, 0);
++	doodle.shapepending = 0;
 +	if (doodle.node) {
 +		wlr_scene_node_destroy(&doodle.node->node);
 +		doodle.node = NULL;
 +		doodle.count++;
 +	}
-+	doodle.active = 0;
 +}
 +
  static struct wlr_scene_buffer *tipnode;
  static char tipshown[128];
  
-@@ -4483,6 +4588,9 @@ motionnotify(uint32_t time, struct wlr_input_device *device, double dx, double d
+@@ -4483,6 +4845,9 @@
  	struct wlr_surface *surface = NULL;
  	struct wlr_pointer_constraint_v1 *constraint;
  

@@ -8,6 +8,7 @@ set license 'Apache-2.0 WITH LLVM-exception'
 set makedepends cmake ninja clang llvm python spirv-llvm-translator
 set source "https://github.com/llvm/llvm-project/releases/download/llvmorg-$pkgver/llvm-project-$pkgver.src.tar.xz"
 set sha256sums ebe9be46fe8756d58c5b198ffad0fa2a766257add81a4dc52179bfacc7888ee6
+set -a options leakpath
 set flags arch
 set -g _source_base https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.1
 set -g _targets spirv32-unknown-unknown spirv64-unknown-unknown amdgcn-amd-amdhsa

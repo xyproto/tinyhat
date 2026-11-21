@@ -7,7 +7,7 @@ else
     set -g pkgname b3sum libblake3
 end
 set pkgver 1.8.7
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Command line implementation of the BLAKE3 hash function'
 set arch i686 x32
 set url https://github.com/BLAKE3-team/BLAKE3

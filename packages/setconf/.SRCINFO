@@ -1,0 +1,12 @@
+pkgbase = setconf
+	pkgdesc = Utility for easily changing settings in configuration files
+	pkgver = 0.7.7.r20.gbe98cda3
+	pkgrel = 1
+	url = https://setconf.roboticoverlords.org/
+	arch = any
+	license = GPL-2.0-only
+	depends = python
+	source = setconf-be98cda31a4491bbf6790921df0c138ddcce20fd.tar.gz::https://github.com/xyproto/setconf/archive/be98cda31a4491bbf6790921df0c138ddcce20fd.tar.gz
+	sha256sums = d105dd282fec1b9e68cf8e433a620c9af59fe687c858613b5bffe994bffee808
+
+pkgname = setconf

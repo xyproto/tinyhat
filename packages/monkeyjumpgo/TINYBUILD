@@ -1,21 +1,20 @@
 set pkgname monkeyjumpgo
-set -g _commit 7222c4240e5b73b0514d7f113ce66d7526e60bd1
-set pkgver 1.0.0+7222c42
+set pkgver 1.0.0
 set pkgrel 1
 set pkgdesc 'Minimalistic GUI for playing Go against GNU Go (the Go port of Monkeyjump)'
 set arch i686
-set url https://github.com/xyproto/monkeyjump
+set url https://github.com/xyproto/monkeyjumpgo
 set license GPL-2.0-only
 set depends glibc gnugo sdl3 sdl3_image
 set makedepends go-tinyhat
 set options '!buildflags'
-set source "monkeyjump-$_commit.tar.gz::https://github.com/xyproto/monkeyjump/archive/$_commit.tar.gz"
-set sha256sums 651b54a6a11c18ced22cd5e0047f944fa9739416fa891264a13b49e183bc6382
+set source "$pkgname-$pkgver.tar.gz::https://github.com/xyproto/monkeyjumpgo/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums 627fee5f57afd52ea5c898b0e31767a709a76fc961673a91a69faa17fd4cf6bf
 # network: go build downloads its Go modules (builds have no network access otherwise)
 set -a options network
 
 function build
-    cd monkeyjump-$_commit/go; or return
+    cd $pkgname-$pkgver; or return
     set -lx GOROOT /usr/lib/go-tinyhat
     # A cross build on x86_64 has no go-tinyhat: the build environment's Go builds the same 386 binaries
     test -d $GOROOT; or set GOROOT /usr/lib/go
@@ -38,7 +37,6 @@ function build
 end
 
 function package
-    cd monkeyjump-$_commit/go; or return
+    cd $pkgname-$pkgver; or return
     make DESTDIR="$pkgdir" install; or return
-    install -Dm644 ../COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
 end

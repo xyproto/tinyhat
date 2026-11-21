@@ -40,7 +40,7 @@ image = [
 everywhere = [
     "appstream",
     "at-spi2-core",
-    # The initramfs runs tinyhat-mountroot, and the shells are Oils and fish
+    # The initramfs runs tinyhat-mountroot, and the shells are bash and fish
     "busybox",
     "ffmpeg",
     "gstreamer",
@@ -68,14 +68,14 @@ files = [
 # tinyhat32.img while it is built only from our own TINYBUILDs (scripts/mkimg-orbiton.sh): what it takes to boot GRUB,
 # Linux and Orbiton. These and everything they need are built for i686 in the x86_64 build environment, with the
 # i686-cross toolchain ("make cross")
-packages = ["filesystem", "glibc", "oils-for-unix", "coreutils", "util-linux", "systemd", "kmod", "kbd", "orbiton", "tinyhat-system", "grep", "nawk", "sed", "xfsprogs", "findutils", "linux-tinyhat"]
+packages = ["filesystem", "glibc", "bash", "coreutils", "util-linux", "systemd", "kmod", "kbd", "orbiton", "tinyhat-system", "grep", "nawk", "sed", "xfsprogs", "findutils", "linux-tinyhat"]
 # Built for the boot medium, not installed in the root file system: GRUB and its menu entries (memtest86+, FreeDOS via
 # syslinux's memdisk), CPU microcode, and what the initramfs runs
 boot = ["grub", "syslinux", "memtest86+", "tinyhat-freedos", "amd-ucode", "intel-ucode", "tinyhat-mountroot", "tinyhat-splash", "tinyhat-guru"]
 
 [image]
 packages = [
-    "filesystem", "tinyhat-keyring", "glibc", "oils-for-unix", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "nawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
+    "filesystem", "tinyhat-keyring", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "nawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
     "systemd", "shadow",
     "xfsprogs", "dosfstools", "exfatprogs", "mtools",
     "alsa-utils", "pipewire", "pipewire-alsa", "pipewire-jack", "wireplumber", "tinyhat-pipewire-wait",
@@ -89,10 +89,10 @@ packages = [
     "opendoas",
     "libmnl",
     "dropbear-scp", "zip", "unzip", "unrar", "7zip", "unarj", "lhasa", "cabextract", "innoextract", "rsync", "ncdu",
-    "ripgrep",
+    "ripgrep", "setconf",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "libglvnd-glx", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "netsurfy", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "libglvnd-glx", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "raylib", "fluidsynth", "fontconfig", "libxml2",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-desktop", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
@@ -413,6 +413,8 @@ exclude = [
     "var/named",
     "usr/share/applications/libresprite.desktop",
     "usr/share/applications/love.desktop",
+    "usr/share/applications/com.dosbox_x.DOSBox-X.desktop",
+    "usr/share/applications/org.scummvm.scummvm.desktop",
     "usr/bin/alsoft-config",
     "usr/bin/makemhr",
     "usr/bin/autopoint",
@@ -514,7 +516,7 @@ buildroot = ["go", "python-sphinx", "doxygen", "xorg-bdftopcf", "xorg-xcursorgen
 # what they need at run time. Everything else that a build needs comes from its TINYBUILD (depends, makedepends).
 # Perl is banned from Tiny Hat, so what only runs at build time (perl, autoconf, automake...) is the x86_64 build
 # environment's, at /host (host_tools, host_dirs, scripts/mkbuildroot.sh). So is the shell that runs the builds (bash,
-# as for the cross builds): Oils is /bin/sh in the images, not in the build environment
+# as for the cross builds)
 i686 = [
     "filesystem", "glibc", "gcc", "binutils", "coreutils", "sed", "grep", "gawk", "nawk", "findutils",
     "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "make", "pkgconf",
@@ -545,6 +547,7 @@ host_dirs = [
 # The x86_64 and aarch64 build environments: prebuilt from Arch Linux (ARM)
 packages = [
     "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
+    "squashfs-tools", "xfsprogs", "libisoburn", "qemu-img", "elfkickers",
     "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson", "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
     "wayland", "wayland-protocols", "libglvnd", "mesa", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
     "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile",
@@ -707,6 +710,7 @@ xdg-desktop-portal-impl = "xdg-desktop-portal-gtk"
 [sources]
 "rust-1.99.1-i686-unknown-linux-gnu.tar.xz" = { url = "https://static.rust-lang.org/dist/rust-1.99.1-i686-unknown-linux-gnu.tar.xz", sha256 = "f5fae4c94233314fef8cc186e0bb8b7cd4165ee39268fcdb5d1fcd69afd7d7ae" }
 "rust-1.99.1-x86_64-unknown-linux-gnu.tar.xz" = { url = "https://static.rust-lang.org/dist/2026-10-15/rust-1.99.1-x86_64-unknown-linux-gnu.tar.xz", sha256 = "231fcae47ee950621374725b5fc3b5441d2fbda2955ac45dd7dc816d8876cfe7" }
+"rust-std-1.99.1-i586-unknown-linux-gnu.tar.xz" = { url = "https://static.rust-lang.org/dist/2026-10-15/rust-std-1.99.1-i586-unknown-linux-gnu.tar.xz", sha256 = "0a0d01938461c2cea3d9771f6a2f9b0bc42e8adbf5b45ecb9cb92b5371688ddf" }
 "rust-std-1.99.1-aarch64-unknown-linux-gnu.tar.xz" = { url = "https://static.rust-lang.org/dist/2026-10-15/rust-std-1.99.1-aarch64-unknown-linux-gnu.tar.xz", sha256 = "e25668477083d6a9ddb87b9beb9c00742225f38233ccb4bfba3afa7a07427f52" }
 "shim-x64-16.1-10.x86_64.rpm" = { url = "https://kojipkgs.fedoraproject.org/packages/shim/16.1/10/x86_64/shim-x64-16.1-10.x86_64.rpm", sha256 = "50ca8ad0f0893a9b69d257b232cc38fe572d7f2c814bc9aec4df5e492800cdc7" }
 
@@ -995,7 +999,7 @@ source = "sources"
 [ncurses]
 build_from_source = true
 
-[netsurfy]
+[tinysurf]
 source = "sources"
 
 [nss]

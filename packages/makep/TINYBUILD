@@ -1,12 +1,12 @@
 set pkgname makep
 set pkgver 0.1.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Builds pacman packages from TINYBUILD files, the fish-based package format of Tiny Hat'
 set arch any
 set url https://github.com/xyproto/tinyhat
 set license BSD-3-Clause
 set depends fish coreutils findutils file binutils libarchive zstd gzip curl
-set optdepends 'git: for git+ sources' 'metatar: for packages that set owners'
+set optdepends 'git: for git+ sources' 'metatar: for packages that set owners' 'nvchecker: for --sup'
 set backup etc/makep.conf
 
 function package

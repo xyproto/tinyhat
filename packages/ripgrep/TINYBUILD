@@ -1,6 +1,6 @@
 set pkgname ripgrep
 set pkgver 15.2.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'A search tool that combines the usability of ag with the raw speed of grep'
 set arch i686
 set url https://github.com/BurntSushi/ripgrep

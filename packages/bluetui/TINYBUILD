@@ -1,6 +1,6 @@
 set pkgname bluetui
 set pkgver 0.8.2
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'TUI for managing bluetooth devices'
 set arch i686
 set url https://github.com/pythops/bluetui

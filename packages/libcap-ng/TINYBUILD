@@ -9,7 +9,7 @@ set license \
     GPL-2.0-or-later \
     LGPL-2.1-or-later
 set depends glibc
-# No bash completion: Tiny Hat's shells are Oils and fish
+# No bash completion: Tiny Hat's interactive shell is fish
 set provides libcap-ng.so libdrop_ambient.so
 set source \
     "https://github.com/stevegrubb/libcap-ng/archive/v$pkgver/$pkgname-$pkgver.tar.gz"

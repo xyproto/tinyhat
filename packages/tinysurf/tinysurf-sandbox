@@ -1,15 +1,15 @@
 #!/bin/sh
-real=/usr/lib/netsurfy/netsurfy
+real=/usr/lib/tinysurf/tinysurf
 home=${HOME:?}
 run=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 config=${XDG_CONFIG_HOME:-$home/.config}
 cache=${XDG_CACHE_HOME:-$home/.cache}
-nsconfig=$config/netsurfy
-[ ! -d "$home/.netsurfy" ] || nsconfig=$home/.netsurfy
+nsconfig=$config/tinysurf
+[ ! -d "$home/.tinysurf" ] || nsconfig=$home/.tinysurf
 downloads=$(sed -n 's/^downloads_directory://p' "$nsconfig/Choices" 2>/dev/null | tail -n 1)
 [ -n "$downloads" ] || downloads=$(xdg-user-dir DOWNLOAD 2>/dev/null) || downloads=
 [ -n "$downloads" ] && [ "$downloads" != "$home" ] || downloads=$home/downloads
-mkdir -p "$nsconfig" "$cache/netsurfy" "$downloads"
+mkdir -p "$nsconfig" "$cache/tinysurf" "$downloads"
 
 n=$#
 for a; do
@@ -26,8 +26,8 @@ for d in bin sbin lib lib64; do
 	[ -L "/$d" ] && set -- "$@" --symlink "$(readlink "/$d")" "/$d"
 done
 [ -n "${WAYLAND_DISPLAY-}" ] && set -- "$@" --ro-bind-try "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY"
-set -- "$@" --bind-try "$config/netsurfy" "$config/netsurfy" --bind "$cache/netsurfy" "$cache/netsurfy" \
-	--bind-try "$home/.netsurfy" "$home/.netsurfy" --bind "$downloads" "$downloads"
+set -- "$@" --bind-try "$config/tinysurf" "$config/tinysurf" --bind "$cache/tinysurf" "$cache/tinysurf" \
+	--bind-try "$home/.tinysurf" "$home/.tinysurf" --bind "$downloads" "$downloads"
 for f in gtk-4.0 fontconfig user-dirs.dirs; do
 	set -- "$@" --ro-bind-try "$config/$f" "$config/$f"
 done

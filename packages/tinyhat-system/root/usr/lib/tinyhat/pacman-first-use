@@ -1,0 +1,17 @@
+#!/bin/sh
+case $1 in
+-S* | -U* | --sync | --upgrade) ;;
+*) exit 0 ;;
+esac
+[ -e /run/tinyhat/pacman-first-use ] && exit 0
+[ -d /run/systemd/system ] || exit 0
+if [ "$(systemctl show -P ActiveState tinyhat-pacman-init.service)" != active ]; then
+	echo "Tiny Hat: setting up the pacman keyring. This is done once and takes a while." >&2
+	systemctl start tinyhat-pacman-init.service || exit 0
+fi
+mkdir -p /run/tinyhat && : >/run/tinyhat/pacman-first-use
+case $1 in -U* | --upgrade) exit 0 ;; esac
+keyrings=$(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null)
+[ -n "$keyrings" ] || exit 0
+echo "Tiny Hat: refreshing the package databases and keyrings." >&2
+/usr/lib/pacman/pacman -Sy --needed --noconfirm $keyrings >&2 || echo "Tiny Hat: could not refresh the keyrings, continuing." >&2

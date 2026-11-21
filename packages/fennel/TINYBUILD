@@ -8,6 +8,7 @@ set license MIT
 set depends lua54
 set makedepends git
 set source "fennel::git+https://git.sr.ht/~technomancy/fennel#tag=$pkgver"
+set fallbackurl "fennel::git+https://github.com/bakpakin/Fennel.git"
 set sha256sums 98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd
 set flags arch
 

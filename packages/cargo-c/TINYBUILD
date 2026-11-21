@@ -1,6 +1,6 @@
 set pkgname cargo-c
 set pkgver 0.10.26
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'A cargo subcommand to build and install C-ABI compatible dynamic and static libraries'
 set arch i686 x32
 set url https://github.com/lu-zero/cargo-c/

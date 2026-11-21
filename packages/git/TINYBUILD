@@ -1,7 +1,7 @@
 set pkgbase git
 set pkgname git git-zsh-completion
 set pkgver 2.56.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'the fast distributed version control system'
 set arch i686 x32
 set url https://git-scm.com/
@@ -12,7 +12,7 @@ set depends curl expat openssl pcre2 grep shadow zlib-ng
 # The man pages come from upstream's git-manpages tarball (built with asciidoc and xmlto, which Tiny Hat does not
 # build). No keyring credential helpers (libgnome-keyring, libsecret): Tiny Hat has no keyring service
 switch $CARCH
-    case x32
+    case x32 i686
         set -g makedepends python git
     case '*'
         set -g makedepends python git rust
@@ -39,20 +39,20 @@ function build
 end
 
 switch $CARCH
-    case x32
+    case x32 i686
         function _make
-            set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL=YesPlease USE_LIBPCRE2=1 ZLIB_NG=1
+            set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL=YesPlease NO_TCLTK=YesPlease NO_RUST=1 USE_LIBPCRE2=1 ZLIB_NG=1
             make $make_options $argv; or return
         end
     case '*'
         function _make
-            set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL=YesPlease USE_LIBPCRE2=1 ZLIB_NG=1 WITH_RUST=1
+            set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL=YesPlease NO_TCLTK=YesPlease USE_LIBPCRE2=1 ZLIB_NG=1
             make $make_options $argv; or return
         end
 end
 
 function package_git
-    set optdepends 'git-zsh-completion: upstream zsh completion' 'tk: gitk and git gui' 'openssh: ssh transport and crypto' 'man: show help with `git command --help`' 'python: git p4' 'less: the default pager for git'
+    set optdepends 'git-zsh-completion: upstream zsh completion' 'openssh: ssh transport and crypto' 'man: show help with `git command --help`' 'python: git p4' 'less: the default pager for git'
     cd "$pkgbase"; or return
     _make DESTDIR="$pkgdir" install; or return
     mkdir -p "$pkgdir"/usr/share/bash-completion/completions/; or return

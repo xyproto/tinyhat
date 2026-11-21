@@ -46,7 +46,8 @@ set source "https://archive.mesa3d.org/mesa-$pkgver.tar.xz" \
     equivalent-1.0.1.tar.gz::https://static.crates.io/crates/equivalent/1.0.1/download \
     pest_generator-2.8.0.tar.gz::https://static.crates.io/crates/pest_generator/2.8.0/download \
     once_cell-1.8.0.tar.gz::https://static.crates.io/crates/once_cell/1.8.0/download \
-    syn-2.0.87.tar.gz::https://static.crates.io/crates/syn/2.0.87/download
+    syn-2.0.87.tar.gz::https://static.crates.io/crates/syn/2.0.87/download \
+    "git+https://gitlab.freedesktop.org/virgl/venus-protocol.git#tag=v1.1.3"
 set sha256sums 4e4e438eac7b840a9383988cbb7c08dad8041da544b9319fc26d319fa7348961 \
     c637763ede739aaedd7527e2cc224243d661156fde7983e6ed52a30a7db8961d \
     91306d2f4d5373d6db98ea53dc4824ccf2ddd5d6c8be352081aabe75f4000a56 \
@@ -80,7 +81,8 @@ set sha256sums 4e4e438eac7b840a9383988cbb7c08dad8041da544b9319fc26d319fa7348961 
     5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5 \
     db7d01726be8ab66ab32f9df467ae8b1148906685bbe75c82d1e65d7f5b3f841 \
     692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56 \
-    25aa4ce346d03a6dcd68dd8b4010bcb74e54e62c90c573f394c46eae99aba32d
+    25aa4ce346d03a6dcd68dd8b4010bcb74e54e62c90c573f394c46eae99aba32d \
+    04c974767429b93fc79050d177b81a309b9e3c7b0fc67651ca6c9d780aa47d9e
 # No VA-API (gallium-va): the images leave out the VA drivers, and libva needs X11
 set flags arch
 set -g _crate syn
@@ -110,26 +112,27 @@ function prepare
         patch -Np1 <"../$src"; or return
     end
     echo "$_pkgver-arch$epoch.$pkgrel" >VERSION; or return
+    cp -a ../venus-protocol subprojects/venus-protocol-1.1.3; or return
 end
 
 switch $CARCH
     case x32 x86_64
         function build
-            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
+            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
             arch-meson mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
         end
     case aarch64
         function build
-            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
+            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
             arch-meson mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
         end
     case '*'
         function build
-            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,anti-lag,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
+            set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=r300,r600,radeonsi,crocus,i915,iris,nouveau,svga,virgl,llvmpipe,softpipe -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
             arch-meson -Dsse2=false mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
@@ -185,7 +188,6 @@ function package_mesa
         _pick vkswrast usr/share/vulkan/icd.d/lvp_icd.json; or return
         _pick vkvirtio $libdir/libvulkan_virtio.so; or return
         _pick vkvirtio usr/share/vulkan/icd.d/virtio_icd.json; or return
-        _pick vkdevice $libdir/libVkLayer_MESA_anti_lag.so; or return
         _pick vkdevice $libdir/libVkLayer_MESA_device_select.so; or return
         _pick vkdevice usr/share/vulkan/implicit_layer.d; or return
         _pick vklayer $libdir/libVkLayer_*.so; or return

@@ -1,4 +1,4 @@
-: "${BROWSER:=/usr/bin/netsurfy}"
+: "${BROWSER:=/usr/bin/tinysurf}"
 : "${EDITOR:=/usr/bin/o}"
 : "${MANPAGER:=/usr/bin/o}"
 export BROWSER EDITOR MANPAGER

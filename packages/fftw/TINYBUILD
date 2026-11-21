@@ -84,6 +84,7 @@ function build
         end
         # fix overlinking because of libtool
         sed -i -e 's/ -shared / -Wl,-O1,--as-needed\0/g' libtool; or return
+        sed -i -E '/#define FFTW_CC /s/ -f(file|debug|macro)-prefix-map=[^ "]*//g' config.h; or return
     end
     cd "$srcdir"; or return
 

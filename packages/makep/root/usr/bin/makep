@@ -9,7 +9,7 @@ function die
 end
 
 function usage
-    echo "usage: makep [-C DIR] [-o OUTDIR] [-s SRCDEST] [-a ARCH] [-v] [-A] [--nobuild | --updsums | --srcinfo | --packagelist | --print-config]" >&2
+    echo "usage: makep [-C DIR] [-o OUTDIR] [-s SRCDEST] [-a ARCH] [-v] [-A] [--nobuild | --updsums | --sup | --srcinfo | --packagelist | --print-config]" >&2
     exit 2
 end
 
@@ -19,6 +19,7 @@ set -g srcdest
 set -g carch $TINYHAT_ARCH
 set -g nobuild 0
 set -g updsums 0
+set -g sup 0
 set -g ignorearch 0
 set -g srcinfo 0
 set -g printconfig 0
@@ -44,6 +45,8 @@ while set -q argv[1]
             set nobuild 1
         case --updsums
             set updsums 1
+        case --sup
+            set sup 1
         case --srcinfo
             set srcinfo 1
         case --print-config
@@ -56,6 +59,37 @@ while set -q argv[1]
             usage
     end
     set -e argv[1]
+end
+if test $sup -eq 1
+    set -l nvconf $package_dir/.nvchecker.toml
+    set -l tinybuild $package_dir/TINYBUILD
+    test -f $tinybuild; or die "no TINYBUILD in $package_dir"
+    test -f $nvconf; or die "no .nvchecker.toml in $package_dir"
+    command -q nvchecker; or die "--sup needs nvchecker"
+    set -l lines (string match -r '^set pkgver .*' <$tinybuild)
+    test (count $lines) -eq 1; or die "--sup needs exactly one 'set pkgver' line in $tinybuild"
+    set -l old (string replace -r '^set pkgver ' '' -- $lines[1] | string trim -c "'\"")
+    string match -qr '^[A-Za-z0-9._+~-]+$' -- $old; or die "--sup needs a plain pkgver, not $old"
+    set -l new (nvchecker -c $nvconf --logger json 2>/dev/null | string match -r '"version": *"[^"]*"' | string replace -r '.*"version": *"([^"]*)"' '$1')
+    test -n "$new[1]"; or die "nvchecker found no version with $nvconf"
+    set new $new[1]
+    string match -qr '^[A-Za-z0-9._+~]+$' -- $new; or die "nvchecker gave an unusable version: $new"
+    if test "$new" = "$old"
+        echo "makep: $old is the latest version"
+        exit 0
+    end
+    test (vercmp $new $old 2>/dev/null; or echo 1) -gt 0; or die "nvchecker found $new, which is older than $old"
+    sed -i -e "s/^set pkgver .*/set pkgver $new/" -e 's/^set pkgrel .*/set pkgrel 1/' $tinybuild; or die "could not update $tinybuild"
+    echo "makep: $old -> $new"
+    set -l tmp (mktemp -d)
+    test -n "$tmp" -a -d "$tmp"; or die "could not make a temporary directory"
+    fish (status filename) -C $package_dir -s $tmp --updsums
+    set -l rc $status
+    rm -rf -- $tmp
+    test $rc -eq 0; or die "--updsums failed for $new; $tinybuild has the new version"
+    fish (status filename) -C $package_dir --srcinfo >$package_dir/.SRCINFO.new; and mv -f -- $package_dir/.SRCINFO.new $package_dir/.SRCINFO; or die "could not write .SRCINFO"
+    echo "makep: updated $tinybuild to $new"
+    exit 0
 end
 test -n "$carch"; or set carch (test $srcinfo -eq 1 -o $updsums -eq 1; and echo i686; or uname -m)
 set -gx CARCH $carch
@@ -90,7 +124,7 @@ set -g tinybuild $package_dir/TINYBUILD
 test -f $tinybuild; or die "no TINYBUILD in $package_dir"
 
 set -g meta_vars pkgdesc arch url license groups depends optdepends provides conflicts replaces backup options install
-for v in pkgname pkgbase pkgver pkgrel epoch flags owners makedepends makedepends_build makedepends_host bootstrap_without checkdepends source sha256sums sha512sums b2sums noextract style builddir meson_args cmake_args configure_args make_args install_args install_license $meta_vars
+for v in pkgname pkgbase pkgver pkgrel epoch flags owners makedepends makedepends_build makedepends_host bootstrap_without checkdepends source fallbackurl sha256sums sha512sums b2sums noextract style builddir meson_args cmake_args configure_args make_args install_args install_license $meta_vars
     set -e $v
 end
 fish -n $tinybuild; or die "$tinybuild has syntax errors"
@@ -362,8 +396,22 @@ function source_url -a entry
     echo $parts[-1]
 end
 
+function fallback_urls -a name
+    for entry in $fallbackurl
+        test (source_name $entry) = $name; and source_url $entry
+    end
+end
+
+function git_repo -a url
+    string replace -r '^git\+' '' -- $url | string replace -r '[#?].*' ''
+end
+
 function fetch_git -a name url i
-    set -l repo (string replace -r '^git\+' '' -- $url | string replace -r '[#?].*' '')
+    set -l repo (git_repo $url)
+    set -l repos $repo
+    for u in (fallback_urls $name)
+        set -a repos (git_repo $u)
+    end
     set -l fragment (string match -r '#([^?]*)' -- $url)[2]
     set -l kind (string split -m1 = -- $fragment)[1]
     set -l value (string split -m1 = -- $fragment)[2]
@@ -383,14 +431,23 @@ function fetch_git -a name url i
     set -lx GIT_CONFIG_SYSTEM /dev/null
     set -l mirror $srcdest/$name
     if not test -d $mirror
-        echo "makep: cloning $repo"
-        git clone -q --mirror -- $repo $mirror; or die "could not clone $repo"
+        for r in $repos
+            echo "makep: cloning $r"
+            git clone -q --mirror -- $r $mirror; and break
+        end
+        test -d $mirror; or die "could not clone $repo"
     else if not git -C $mirror rev-parse -q --verify "$ref^{commit}" >/dev/null
-        git -C $mirror fetch -q --all -p; or die "could not update $repo"
+        for r in $repos
+            git -C $mirror fetch -q -p -- $r '+refs/*:refs/*'; and break
+        end
+        or die "could not update $repo"
     end
     # A commit that no branch or tag points to any more can still be fetched by its hash
     if test "$kind" = commit; and not git -C $mirror rev-parse -q --verify "$ref^{commit}" >/dev/null
-        git -C $mirror fetch -q origin $value; or die "could not fetch commit $value from $repo"
+        for r in $repos
+            git -C $mirror fetch -q -- $r $value; and break
+        end
+        or die "could not fetch commit $value from $repo"
     end
     mkdir -p $mirror/info
     echo '* -export-subst -export-ignore' >$mirror/info/attributes
@@ -419,11 +476,15 @@ function fetch_sources
             set file $srcdest/$name
             if not test -f $file
                 echo "makep: downloading $name"
-                # MAKEP_FETCH is a command run as: COMMAND OUTFILE URL (Tiny Hat's build uses it for source mirrors)
-                if set -q MAKEP_FETCH[1]
-                    $MAKEP_FETCH $file.part $url
-                else
-                    curl -fL --no-progress-meter --retry 3 -o $file.part -- $url
+                for u in $url (fallback_urls $name)
+                    rm -f $file.part
+                    # MAKEP_FETCH is a command run as: COMMAND OUTFILE URL (Tiny Hat's build uses it for source mirrors)
+                    if set -q MAKEP_FETCH[1]
+                        $MAKEP_FETCH $file.part $u
+                    else
+                        curl -fL --no-progress-meter --retry 3 --connect-timeout 20 --speed-limit 1 --speed-time 60 -o $file.part -- $u
+                    end
+                    and break
                 end
                 or begin
                     rm -f $file.part
@@ -645,6 +706,27 @@ function zipman
     end
 end
 
+function lib_provides -a p
+    set -l readelf readelf
+    set -q READELF; and set readelf $READELF
+    set -l out
+    for f in (find $pkgdir -type f -name "$p*" | LC_ALL=C sort)
+        set -l header (LC_ALL=C $readelf -h -- $f 2>/dev/null)
+        string match -q '*Type:*DYN (Shared object file)*' -- $header; or continue
+        set -l soname (LC_ALL=C $readelf -d -- $f 2>/dev/null | string replace -rf '.*Library soname: \[(.*)\].*' '$1')
+        string match -q "$p.*" -- $soname[1]; or continue
+        set -l class (string replace -rf '.*Class:\s+ELF(32|64).*' '$1' -- $header)
+        set -q class[1]; or continue
+        set -a out $p=(string replace -- "$p." '' $soname[1])-$class[1]
+    end
+    if set -q out[1]
+        printf '%s\n' $out | sort -u
+    else
+        echo "makep: $current: no versioned shared object for $p in provides" >&2
+        echo $p
+    end
+end
+
 function pkginfo
     set -l size (find $pkgdir -type f -printf '%i %s\n' | sort -u -k1,1 | awk '{ s += $2 } END { print s + 0 }')
     printf '%s = %s\n' pkgname $current pkgbase $pkgbase xdata pkgtype=(test (count $pkgnames) -gt 1; and echo split; or echo pkg)
@@ -662,7 +744,13 @@ function pkginfo
         printf 'conflict = %s\n' $p
     end
     for p in $provides
-        printf 'provides = %s\n' $p
+        if string match -q -- '*.so' $p
+            for v in (lib_provides $p)
+                printf 'provides = %s\n' $v
+            end
+        else
+            printf 'provides = %s\n' $p
+        end
     end
     for p in $backup
         printf 'backup = %s\n' $p
