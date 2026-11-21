@@ -1,7 +1,7 @@
 set pkgname libresprite
 set pkgver 1.3.r49.g0a62d62
 set -g _commit 0a62d62e6700b1d9b072f815cded5397a4cb0150
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Animated sprite editor and pixel art tool, based on the last GPL2 commit of Aseprite'
 set arch i686 x32
 set url https://github.com/LibreSprite/LibreSprite
@@ -10,10 +10,12 @@ set depends freetype2 giflib libjpeg-turbo libpng libwebp pixman sdl3 sdl3_image
 set makedepends cmake git ninja
 set source "$pkgname::git+$url#commit=$_commit" \
     'simpleini::git+https://github.com/aseprite/simpleini#commit=c94997d4d64394833e4b9d21f4573c66600c9a9a' \
-    'flic::git+https://github.com/aseprite/flic#commit=876ef60df5fec606f8eb0638ee893e4967db4673'
+    'flic::git+https://github.com/aseprite/flic#commit=876ef60df5fec606f8eb0638ee893e4967db4673' \
+    coalesce-motion.patch
 set b2sums b9f1cf9be23ffb6be138630bf40d42042ac6cb97313da7ae5723cc5757165542f0d8cbd8e2fef40a209c87e9e795d33a75372e22372a7bddae1d1573e7c14c89 \
     1605b2800bfad15e5b9250d49118aca83d2040c1b389c9dd8659d2e75ed083cd597467a16ddf7905252e6970a47afc5468cbdb374d9147e35e3f62d618ed6ee1 \
-    e62e0dadfe48758108bd81364387c796eb9ccc26ff0da6cf6983c32bdc04c4449dbfcea998bf7092eda1c2320ee517427744ed73634a22ea735f79b9f2000ace
+    e62e0dadfe48758108bd81364387c796eb9ccc26ff0da6cf6983c32bdc04c4449dbfcea998bf7092eda1c2320ee517427744ed73634a22ea735f79b9f2000ace \
+    e3ffc21c1c24f0c9d36e3e82b0477ae787791157aaa6c2a83651dfed08bee3658e42110b50aea449032a279301435035e1394ffc727b007a847db5c85670aaa6
 set flags arch
 
 function prepare
@@ -21,6 +23,7 @@ function prepare
     rm -r third_party/simpleini src/flic; or return
     cp -r "$srcdir"/simpleini third_party/; or return
     cp -r "$srcdir"/flic src/; or return
+    patch -Np1 -i "$srcdir"/coalesce-motion.patch; or return
     find . -name CMakeLists.txt -exec sed -i 's/cmake_minimum_required(VERSION 4.1)/cmake_minimum_required(VERSION 3.25)/' {} +; or return
     sed -i 's/^  find_package(X11 REQUIRED)/  set(X11_LIBRARIES)/; s/^  check_library_exists(Xxf86dga .*/  set(XDGA_FOUND OFF)/; /^    "${X11_LIB_SEARCH_PATH}" XDGA_FOUND)/d' CMakeLists.txt; or return
     sed -i 's/^  check_include_files(xcb\/xcb.h HAVE_XCB_XLIB_H)/  set(HAVE_XCB_XLIB_H OFF)/' src/clip/CMakeLists.txt; or return

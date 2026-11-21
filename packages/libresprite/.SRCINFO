@@ -1,7 +1,7 @@
 pkgbase = libresprite
 	pkgdesc = Animated sprite editor and pixel art tool, based on the last GPL2 commit of Aseprite
 	pkgver = 1.3.r49.g0a62d62
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/LibreSprite/LibreSprite
 	arch = i686
 	arch = x32
@@ -23,8 +23,10 @@ pkgbase = libresprite
 	source = libresprite::git+https://github.com/LibreSprite/LibreSprite#commit=0a62d62e6700b1d9b072f815cded5397a4cb0150
 	source = simpleini::git+https://github.com/aseprite/simpleini#commit=c94997d4d64394833e4b9d21f4573c66600c9a9a
 	source = flic::git+https://github.com/aseprite/flic#commit=876ef60df5fec606f8eb0638ee893e4967db4673
+	source = coalesce-motion.patch
 	b2sums = b9f1cf9be23ffb6be138630bf40d42042ac6cb97313da7ae5723cc5757165542f0d8cbd8e2fef40a209c87e9e795d33a75372e22372a7bddae1d1573e7c14c89
 	b2sums = 1605b2800bfad15e5b9250d49118aca83d2040c1b389c9dd8659d2e75ed083cd597467a16ddf7905252e6970a47afc5468cbdb374d9147e35e3f62d618ed6ee1
 	b2sums = e62e0dadfe48758108bd81364387c796eb9ccc26ff0da6cf6983c32bdc04c4449dbfcea998bf7092eda1c2320ee517427744ed73634a22ea735f79b9f2000ace
+	b2sums = e3ffc21c1c24f0c9d36e3e82b0477ae787791157aaa6c2a83651dfed08bee3658e42110b50aea449032a279301435035e1394ffc727b007a847db5c85670aaa6
 
 pkgname = libresprite

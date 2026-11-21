@@ -1,0 +1,17 @@
+--- a/src/she/sdl3/she.cpp
++++ b/src/she/sdl3/she.cpp
+@@ -424,6 +424,14 @@
+             m_events.push(ev);
+           }
+ 
++          if (sdlEvent.motion.state == 0) {
++            SDL_Event next;
++            while (SDL_PeepEvents(&next, 1, SDL_PEEKEVENT, SDL_EVENT_FIRST, SDL_EVENT_LAST) == 1 &&
++                   next.type == SDL_EVENT_MOUSE_MOTION && next.motion.state == 0 &&
++                   next.motion.windowID == sdlEvent.motion.windowID && next.motion.which == sdlEvent.motion.which)
++              SDL_PeepEvents(&sdlEvent, 1, SDL_GETEVENT, SDL_EVENT_MOUSE_MOTION, SDL_EVENT_MOUSE_MOTION);
++          }
++
+           event.setType(Event::MouseMove);
+           event.setModifiers(getSheModifiers());
+           event.setPosition(gfx::Point(
