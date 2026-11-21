@@ -1,6 +1,6 @@
 set pkgname fish
 set pkgver 4.9.3
-set pkgrel 3
+set pkgrel 4
 set pkgdesc 'Smart and user friendly shell intended mostly for interactive use'
 set url https://fishshell.com/
 set arch i686
@@ -30,6 +30,7 @@ set -a options leakpath
 function prepare
     cd $pkgname; or return
     cargo update -p chacha20 --precise 0.10.2; or return
+    git update-index --assume-unchanged Cargo.lock; or return
 end
 
 function build

@@ -1,0 +1,33 @@
+set pkgname hattoss
+set pkgver 1.0
+set pkgrel 1
+set pkgdesc 'Hat Toss, a DOS artillery game where gorillas throw tiny hats, with a launcher for DOSBox-X'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set optdepends 'dosbox-x: to play it on Linux'
+set -g _ow 2026-10-01
+set source "open-watcom-$_ow.tar.xz::https://github.com/open-watcom/open-watcom-v2/releases/download/$_ow-Build/ow-snapshot.tar.xz" \
+    hattoss.c \
+    hattoss.sh \
+    hattoss.desktop
+set noextract open-watcom-$_ow.tar.xz
+set sha256sums e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe \
+    f32bc76c3e92af70d5d1ebee338b91fe854f5e13d3cfb158b9e5f6c5a7852c5e \
+    230e71795b0d542a058a23504405d2a0ddb2853dd98f6fb419f5f5a065f9bad3 \
+    4830b3e89c3d0466487c5b8c47e90ad103450234bbf9ee4cdb7ff95636b4e053
+
+function build
+    rm -rf ow
+    mkdir -p ow; or return
+    bsdtar -xf open-watcom-$_ow.tar.xz -C ow ./binl ./h ./lib286; or return
+    env WATCOM=$srcdir/ow INCLUDE=$srcdir/ow/h PATH=$srcdir/ow/binl:$PATH \
+        wcl -q -bt=dos -ms -ox -fe=HATTOSS.EXE hattoss.c; or return
+end
+
+function package
+    install -Dm644 HATTOSS.EXE $pkgdir/usr/share/tinyhat/dos/HATTOSS.EXE; or return
+    install -Dm644 hattoss.c $pkgdir/usr/share/hattoss/HATTOSS.C; or return
+    install -Dm755 hattoss.sh $pkgdir/usr/bin/hattoss; or return
+    install -Dm644 hattoss.desktop $pkgdir/usr/share/applications/hattoss.desktop
+end

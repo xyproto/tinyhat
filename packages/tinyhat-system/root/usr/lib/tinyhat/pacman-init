@@ -6,8 +6,12 @@ for k in archlinux32 archlinux archlinuxarm tinyhat; do
 done
 [ -n "$keyring" ] || exit 1
 ver=$(for k in $keyring; do pacman -Q "$k-keyring"; done 2>/dev/null | tr '\n' ' ')
-[ -f "$dir/trustdb.gpg" ] || pacman-key --init || exit 1
+if [ ! -f "$dir/trustdb.gpg" ]; then
+	echo "Creating the local signing key (step 1 of 2)"
+	pacman-key --init || exit 1
+fi
 [ "$(cat "$dir/.tinyhat-keyring" 2>/dev/null)" = "$ver" ] && exit 0
+echo "Adding and checking the keys of:$keyring (step 2 of 2)"
 pacman-key --populate $keyring || exit 1
 case " $keyring " in *" archlinux32 "*) pacman-key --lsign-key 80EC18799E8BCD375C6E64ABE4D41569196B1160 ;; esac
 echo "$ver" >"$dir/.tinyhat-keyring"
