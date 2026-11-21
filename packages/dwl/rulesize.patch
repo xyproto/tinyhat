@@ -1,0 +1,59 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -180,6 +180,7 @@
+ 	unsigned int bw;
+ 	uint32_t tags;
+ 	int isfloating, isurgent, isfullscreen, isminimized, desktophidden, wasfullscreen;
++	int rulesize;
+ 	struct wlr_box presnap;
+ 	int issnapped;
+ } Client;
+@@ -634,6 +635,7 @@
+ 	char *appid, *title;
+ 	uint32_t tags;
+ 	int isfloating;
++	int size;
+ } ConfRule;
+ 
+ typedef struct {
+@@ -1038,7 +1040,7 @@
+ 	confint(&c->dwt, r.toptab, "touchpad.disable_while_typing");
+ 	list = toml_get(r.toptab, "rule");
+ 	for (int i = 0; list.type == TOML_ARRAY && i < list.u.arr.size; i++) {
+-		toml_datum_t t = list.u.arr.elem[i], fl, dk;
++		toml_datum_t t = list.u.arr.elem[i], fl, dk, sz;
+ 		ConfRule *nr;
+ 		if (t.type != TOML_TABLE)
+ 			continue;
+@@ -1048,8 +1050,10 @@
+ 		nr->title = tomlstr(t, "title");
+ 		fl = toml_get(t, "float");
+ 		dk = toml_get(t, "desktop");
++		sz = toml_get(t, "size");
+ 		nr->isfloating = fl.type == TOML_BOOLEAN ? fl.u.boolean : 0;
+ 		nr->tags = dk.type == TOML_INT64 && dk.u.int64 > 0 ? 1u << (dk.u.int64 - 1) : 0;
++		nr->size = sz.type == TOML_INT64 && sz.u.int64 > 0 && sz.u.int64 <= 100 ? (int)sz.u.int64 : 0;
+ 	}
+ 	list = toml_get(r.toptab, "launcher");
+ 	if (list.type == TOML_ARRAY) {
+@@ -1522,6 +1526,8 @@
+ 				&& (!conf.rules[i].appid || strstr(appid, conf.rules[i].appid))) {
+ 			c->isfloating = conf.rules[i].isfloating;
+ 			newtags |= conf.rules[i].tags;
++			if (conf.rules[i].size)
++				c->rulesize = conf.rules[i].size;
+ 		}
+ 	}
+ 	for (r = rules; !(confloaded && conf.nrules) && r < END(rules); r++) {
+@@ -4899,7 +4905,10 @@
+ 	if (c->mon && !c->isfullscreen && (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)) {
+ 		Client *o;
+ 		int moved = 1, step = 32;
+-		if (!client_is_float_type(c)) {
++		if (c->rulesize && !client_is_float_type(c)) {
++			c->geom.width = c->mon->w.width * c->rulesize / 100;
++			c->geom.height = c->mon->w.height * c->rulesize / 100;
++		} else if (!client_is_float_type(c)) {
+ 			c->geom.width = MIN(c->geom.width, c->mon->w.width * 3 / 4);
+ 			c->geom.height = MIN(c->geom.height, c->mon->w.height * 3 / 4);
+ 		}
