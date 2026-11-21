@@ -4,11 +4,4 @@ dir=$HOME/books
 mkdir -p "$dir"
 [ -e "$dir/book.md" ] || cp /etc/skel/books/book.md "$dir/book.md"
 cd "$dir" || exit 1
-mark=${XDG_RUNTIME_DIR:-/tmp}/tinyhat-typewriter.$$
-: > "$mark"
-tinyhat-soundd --reload
-IMAGEPREVIEW_SIXEL=0 foot -T "Writing a book" o --book-mode-text book.md
-status=$?
-rm -f "$mark"
-tinyhat-soundd --reload
-exit $status
+IMAGEPREVIEW_SIXEL=0 exec foot -T "Writing a book" o --book-mode-text book.md

@@ -1,6 +1,6 @@
 set pkgname python-pyxel
 set pkgver 3.0.1
-set pkgrel 3
+set pkgrel 4
 set pkgdesc 'Retro game engine for Python, built with SDL3'
 set arch i686 x32
 set url https://github.com/kitao/pyxel
@@ -10,7 +10,7 @@ set makedepends cargo clang llvm python
 set source "pyxel-$pkgver.tar.gz::https://github.com/kitao/pyxel/archive/refs/tags/v$pkgver.tar.gz" \
     sdl3.patch
 set sha256sums 068686e5dda57828a071cdb8ca877057f0ab28fa33a035bebf2087b667d3a6c8 \
-    5426b5452a374b37d2a56393ccfdcce0f8b72b37099f5bd77717530abd0f8330
+    a8d11a17bf98647441fa2417ab9c5dace72b5d5ce792edb0363a12905060d4a3
 # network: cargo fetch downloads its crates in prepare (builds have no network access otherwise)
 set -a options network
 

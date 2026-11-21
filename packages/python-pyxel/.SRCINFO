@@ -1,7 +1,7 @@
 pkgbase = python-pyxel
 	pkgdesc = Retro game engine for Python, built with SDL3
 	pkgver = 3.0.1
-	pkgrel = 3
+	pkgrel = 4
 	url = https://github.com/kitao/pyxel
 	arch = i686
 	arch = x32
@@ -18,6 +18,6 @@ pkgbase = python-pyxel
 	source = pyxel-3.0.1.tar.gz::https://github.com/kitao/pyxel/archive/refs/tags/v3.0.1.tar.gz
 	source = sdl3.patch
 	sha256sums = 068686e5dda57828a071cdb8ca877057f0ab28fa33a035bebf2087b667d3a6c8
-	sha256sums = 5426b5452a374b37d2a56393ccfdcce0f8b72b37099f5bd77717530abd0f8330
+	sha256sums = a8d11a17bf98647441fa2417ab9c5dace72b5d5ce792edb0363a12905060d4a3
 
 pkgname = python-pyxel

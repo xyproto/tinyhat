@@ -67,7 +67,7 @@ diff --git a/crates/pyxel-core/src/graphics.rs b/crates/pyxel-core/src/graphics.
 index e38ce7b..c187f25 100644
 --- a/crates/pyxel-core/src/graphics.rs
 +++ b/crates/pyxel-core/src/graphics.rs
-@@ -115,47 +115,12 @@ impl Graphics {
+@@ -115,47 +115,11 @@ impl Graphics {
          let mut screen_shaders = Vec::new();
  
          for &screen_frag in &SCREEN_FRAGS {
@@ -113,8 +113,7 @@ index e38ce7b..c187f25 100644
 -            gl.detach_shader(program, fragment_shader);
 -            gl.delete_shader(fragment_shader);
 +            let program = Self::create_screen_program(gl, glsl_version, screen_frag)
-+                .or_else(|err| {
-+                    eprintln!("pyxel: using the crisp screen shader instead: {err}");
++                .or_else(|_| {
 +                    Self::create_screen_program(gl, glsl_version, SCREEN_FRAGS[0])
 +                })
 +                .unwrap_or_else(|err| panic!("{err}"));

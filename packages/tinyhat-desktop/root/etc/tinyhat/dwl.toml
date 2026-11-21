@@ -80,6 +80,82 @@ float = true
 title = "Fasttracker II"
 float = true
 
+[[rule]]
+app_id = "foot"
+size = 75
+
+[[rule]]
+app_id = "kitty"
+size = 75
+
+[[rule]]
+app_id = "Alacritty"
+size = 75
+
+[[rule]]
+app_id = "org.wezfurlong.wezterm"
+size = 75
+
+[[rule]]
+app_id = "com.mitchellh.ghostty"
+size = 75
+
+[[rule]]
+app_id = "org.gnome.Console"
+size = 75
+
+[[rule]]
+app_id = "org.gnome.Terminal"
+size = 75
+
+[[rule]]
+app_id = "org.gnome.Ptyxis"
+size = 75
+
+[[rule]]
+app_id = "org.kde.konsole"
+size = 75
+
+[[rule]]
+app_id = "xfce4-terminal"
+size = 75
+
+[[rule]]
+app_id = "com.gexperts.Tilix"
+size = 75
+
+[[rule]]
+app_id = "terminator"
+size = 75
+
+[[rule]]
+app_id = "lxterminal"
+size = 75
+
+[[rule]]
+app_id = "qterminal"
+size = 75
+
+[[rule]]
+app_id = "sakura"
+size = 75
+
+[[rule]]
+app_id = "contour"
+size = 75
+
+[[rule]]
+app_id = "com.raggesilver.BlackBox"
+size = 75
+
+[[rule]]
+app_id = "cool-retro-term"
+size = 75
+
+[[rule]]
+app_id = "libresprite"
+size = 80
+
 [[key]]
 separator = true
 
@@ -130,7 +206,7 @@ run = "tinyhat-term"
 description = "Terminal"
 
 [[key]]
-hotkey = "Ctrl+Alt+N"
+hotkey = "Ctrl+Alt+T"
 run = "tinyhat-run -n TinySurf tinysurf"
 description = "TinySurf web browser"
 
@@ -155,12 +231,12 @@ run = "tinyhat-sounds"
 description = "System sound settings"
 
 [[key]]
-hotkey = "Ctrl+Alt+M"
+hotkey = "Ctrl+Alt+N"
 run = "tinyhat-run -l tinyhat-play"
 description = "Download and run a homebrew game"
 
 [[key]]
-hotkey = "Ctrl+Alt+T"
+hotkey = "Ctrl+Alt+8"
 run = "tinyhat-run -l tic80"
 description = "TIC-80 fantasy console"
 
@@ -190,7 +266,7 @@ run = "tinyhat-run -l tinyhat-emulate c64"
 description = "C64 (VICE)"
 
 [[key]]
-hotkey = "Ctrl+Alt+8"
+hotkey = "Ctrl+Alt+0"
 run = "tinyhat-run -l octo-de"
 description = "CHIP-8 (Octo)"
 
@@ -228,7 +304,7 @@ run = "tinyhat-fennel"
 description = "Example game in Fennel and LÖVE (2x Ctrl+Space to run)"
 
 [[key]]
-hotkey = "Ctrl+Alt+P"
+hotkey = "Ctrl+Alt+M"
 run = "tinyhat-adventure"
 description = "Example point-and-click game in Lua (2x Ctrl+Space to run)"
 
@@ -258,7 +334,7 @@ run = "tinyhat-intro"
 description = "Example 256 byte demoscene intro (2x Ctrl+Space to run)"
 
 [[key]]
-hotkey = "Ctrl+Alt+0"
+hotkey = "Ctrl+Alt+P"
 run = "tinyhat-pyxel"
 description = "Example game in Python and Pyxel (2x Ctrl+Space to run)"
 
