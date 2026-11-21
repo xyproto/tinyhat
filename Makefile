@@ -49,7 +49,10 @@ run: container
 		-audiodev coreaudio,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000 -display cocoa,zoom-to-fit=on
 else
-export SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
+ifndef SOURCE_DATE_EPOCH
+SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
+endif
+export SOURCE_DATE_EPOCH
 DIST_HOME ?= https://github.com/xyproto/tinyhat
 B := build
 REPO := $(B)/repo
@@ -95,6 +98,7 @@ QEMU_TARS := $(IMG_AARCH64:.img=.tar.gz)
 OVAS := $(X86_IMGS:.img=.ova)
 X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(OVAS)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
+RUST_STD_I586 := vendor/src/rust-std-1.99.1-i586-unknown-linux-gnu.tar.xz
 MKROOTFS = TINYHAT_VERSION="$(VERSION)" scripts/userns.sh scripts/mkrootfs.sh
 $(shell mkdir -p $(B) && [ "$$(cat $(B)/version 2>/dev/null)" = "$(VERSION)" ] || echo "$(VERSION)" > $(B)/version)
 MKDIST := DIST_HOME=$(DIST_HOME) DIST_URL=$(DIST_HOME)/releases/download scripts/mkdist.sh $(VERSION)
@@ -231,7 +235,7 @@ $(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sf
 	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/Image-arm64
 	@ls -l $@
 
-%.ova: %.img scripts/mkova.sh
+%.ova: %.img scripts/mkova.sh scripts/x86_64-tool.sh $(B)/.buildroot-x86_64
 	scripts/mkova.sh $< $@ $(if $(filter $(IMG_I686),$<),ArchLinux,ArchLinux_64) $(VERSION) $(DISK_SIZE)
 	@ls -l $@
 
@@ -335,7 +339,7 @@ sign:
 	gpg --batch --yes --armor --detach-sign $${GPG_KEY:+-u "$$GPG_KEY"} -o $(B)/dist/SHA256SUMS.asc $(B)/dist/SHA256SUMS
 	@ls -l $(B)/dist/SHA256SUMS.asc
 
-$(ISOS): %.iso: %.img scripts/mkiso.sh config/grub.cfg config/grub-early.cfg
+$(ISOS): %.iso: %.img scripts/mkiso.sh scripts/x86_64-tool.sh config/grub.cfg config/grub-early.cfg
 	scripts/mkiso.sh $< $@
 
 fetch: sources
@@ -347,9 +351,9 @@ vendor/src/%:
 
 # The i686 build environment, from our own packages ([buildroot] i686, built by "make cross"), with the x86_64 build
 # environment at /host for what only runs at build time (scripts/mkbuildroot.sh), and the Rust toolchain
-$(B)/.buildroot: $(B)/pkg/group/cross $(B)/.buildroot-x86_64 scripts/mkbuildroot.sh scripts/makeinfo-stub scripts/postinstall.sh scripts/installrust.sh $(RUST_DIST) distro.toml
+$(B)/.buildroot: $(B)/pkg/group/cross $(B)/.buildroot-x86_64 scripts/mkbuildroot.sh scripts/makeinfo-stub scripts/postinstall.sh scripts/installrust.sh scripts/rust-i586/cargo $(RUST_DIST) $(RUST_STD_I586) distro.toml
 	scripts/mkbuildroot.sh
-	scripts/installrust.sh $(B)/buildroot $(RUST_DIST)
+	scripts/installrust.sh $(B)/buildroot $(RUST_DIST) $(RUST_STD_I586)
 	@touch $@
 
 
@@ -459,7 +463,7 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64 aarch64
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/pkg.py scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
+ROOTFS_BASE_DEPS := $(B)/.buildroot-x86_64 scripts/x86_64-tool.sh $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/pkg.py scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
 ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(ETC_CONFIG) scripts/forbidcheck.py scripts/sonamecheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock
