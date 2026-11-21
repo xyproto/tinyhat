@@ -84,17 +84,17 @@ def starfield(path, w=1280, h=800):
     png(path, w, h, rows)
 
 
-def bdf(path, glyphs, scale):
+def bdf(path, glyphs, codes, scale):
     w, h, descent = 8 * scale, 16 * scale, 4 * scale
     with open(path, "w") as f:
         f.write(f"STARTFONT 2.1\nFONT -tinyhat-vga-medium-r-normal--{h}-{h * 10}-75-75-c-{w * 10}-iso10646-1\n")
         f.write(f"SIZE {h} 75 75\nFONTBOUNDINGBOX {w} {h} 0 -{descent}\n")
         f.write(f'STARTPROPERTIES 5\nFAMILY_NAME "VGA"\nWEIGHT_NAME "Medium"\nPIXEL_SIZE {h}\n')
         f.write(f"FONT_ASCENT {h - descent}\nFONT_DESCENT {descent}\nENDPROPERTIES\n")
-        f.write(f"CHARS {0x7f - 0x20}\n")
-        for code in range(0x20, 0x7f):
+        f.write(f"CHARS {len(codes)}\n")
+        for code, index in sorted(codes.items()):
             f.write(f"STARTCHAR U+{code:04X}\nENCODING {code}\nSWIDTH 500 0\nDWIDTH {w} 0\nBBX {w} {h} 0 -{descent}\nBITMAP\n")
-            for row in glyphs[code * 16:code * 16 + 16]:
+            for row in glyphs[index * 16:index * 16 + 16]:
                 bits = 0
                 for i in range(8):
                     if row & (0x80 >> i):
@@ -179,18 +179,26 @@ terminal-border: "0"
 def main():
     out, psf = sys.argv[1], sys.argv[2]
     data = gzip.open(psf).read()
-    magic, _, header, _, count, glyph, height, width = struct.unpack("<8I", data[:32])
+    magic, _, header, flags, count, glyph, height, width = struct.unpack("<8I", data[:32])
     if magic != 0x864AB572 or count < 256 or glyph != 16 or height != 16 or width != 8:
         sys.exit(f"{psf}: expected an 8x16 PSF2 font")
-    glyphs = data[header:header + 256 * 16]
+    glyphs = data[header:header + count * 16]
+    codes = {code: code for code in range(0x20, 0x7f)}
+    if flags & 1:
+        table = data[header + count * 16:]
+        for index, entry in enumerate(table.split(b"\xff")[:count]):
+            for ch in entry.split(b"\xfe")[0].decode("utf-8", "replace"):
+                c = ord(ch)
+                if 0x2500 <= c <= 0x257f or 0x2190 <= c <= 0x2193 or c in (0x25b2, 0x25bc, 0x25ba, 0x25c4):
+                    codes.setdefault(c, index)
     os.makedirs(out, exist_ok=True)
     png(os.path.join(out, "hat.png"), LOW * HAT_SCALE, LOW * HAT_SCALE, hat(0.45))
     starfield(os.path.join(out, "stars.png"))
     slices(out, "select", ITEM, TEAL)
     slices(out, "bar", BAR, GRAY)
     slices(out, "fill", BAR, TEAL)
-    bdf(os.path.join(out, "vga-16.bdf"), glyphs, 1)
-    bdf(os.path.join(out, "vga-32.bdf"), glyphs, 2)
+    bdf(os.path.join(out, "vga-16.bdf"), glyphs, codes, 1)
+    bdf(os.path.join(out, "vga-32.bdf"), glyphs, codes, 2)
     with open(os.path.join(out, "theme.txt"), "w") as f:
         f.write(theme())
     with open(os.path.join(out, "theme.cfg"), "w") as f:
@@ -199,6 +207,7 @@ def main():
         f.write("  set gfxmode=auto\n")
         f.write("  if terminal_output gfxterm; then\n")
         f.write("    set theme=$theme_dir/theme.txt\n")
+        f.write("    export theme\n")
         f.write("  fi\n")
         f.write("fi\n")
 
