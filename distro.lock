@@ -386,6 +386,7 @@ libpkgs = [
     "tinyhat-keyring",
     "tinyhat-midibench",
     "tinyhat-mountroot",
+    "tinyhat-notify",
     "tinyhat-pipewire-wait",
     "tinyhat-play",
     "tinyhat-skel",
@@ -772,6 +773,7 @@ tinyhat-guru = ["tinyhat-guru"]
 tinyhat-keyring = ["tinyhat-keyring"]
 tinyhat-midibench = ["tinyhat-midibench"]
 tinyhat-mountroot = []
+tinyhat-notify = ["tinyhat-notify"]
 tinyhat-pipewire-wait = ["tinyhat-pipewire-wait"]
 tinyhat-play = ["tinyhat-play"]
 tinyhat-skel = ["tinyhat-skel"]
@@ -1151,6 +1153,7 @@ tinyhat-gui = ["tinyhat-gui"]
 tinyhat-guru = ["tinyhat-guru"]
 tinyhat-keyring = ["tinyhat-keyring"]
 tinyhat-midibench = ["tinyhat-midibench"]
+tinyhat-notify = ["tinyhat-notify"]
 tinyhat-pipewire-wait = ["tinyhat-pipewire-wait"]
 tinyhat-play = ["tinyhat-play"]
 tinyhat-skel = ["tinyhat-skel"]
@@ -2509,507 +2512,506 @@ zsh = { repo = "extra", version = "5.9.2-1", file = "zsh-5.9.2-1-x86_64.pkg.tar.
 zstd = { repo = "core", version = "1.5.7-3", file = "zstd-1.5.7-3-x86_64.pkg.tar.zst", sha256 = "d4cf0049137124c8a025eedfad267a3e8a02310c9efb9d1ae4a61aa1d02789fc" }
 
 [imports]
-7zip = { version = "26.04-1", nvchecker = "[7zip]\nsource = \"git\"\ngit = \"https://github.com/ip7z/7zip.git\"\n" }
-a52dec = { version = "0.8.0-3", nvchecker = "[a52dec]\nsource = \"git\"\ngit = \"https://git.adelielinux.org/community/a52dec.git\"\nprefix = \"v\"\n" }
-abcmidi = { version = "2026_10_09-1", nvchecker = "[abcmidi]\nsource = \"git\"\ngit = \"https://github.com/sshlien/abcmidi.git\"\n" }
-abseil-cpp = { version = "20260817.0-2", nvchecker = "[abseil-cpp]\nsource = \"git\"\ngit = \"https://github.com/abseil/abseil-cpp.git\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
-acl = { version = "2.4.0-1", nvchecker = "[acl]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/acl.git\"\nprefix = \"v\"\n" }
-adwaita-icon-theme = { version = "51.0-1", nvchecker = "[adwaita-icon-theme]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/adwaita-icon-theme.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
-adwaita-icon-theme-legacy = { version = "46.2-3", nvchecker = "[adwaita-icon-theme-legacy]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/adwaita-icon-theme-legacy.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\n" }
-alsa-lib = { version = "1.2.16.1-1", nvchecker = "[alsa-lib]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-lib\"\nprefix = \"v\"\n" }
-alsa-topology-conf = { version = "1.2.5.1-4", nvchecker = "[alsa-topology-conf]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-topology-conf\"\nprefix = \"v\"\n" }
-alsa-ucm-conf = { version = "1.2.16.1-1", nvchecker = "[alsa-ucm-conf]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-ucm-conf\"\nprefix = \"v\"\n" }
-alsa-utils = { version = "1.2.16-1", nvchecker = "[alsa-utils]\nsource = \"git\"\ngit = \"https://github.com/alsa-project/alsa-utils\"\nprefix = \"v\"\n" }
-aom = { version = "3.15.2-1", nvchecker = "[aom]\nsource = \"git\"\ngit = \"https://aomedia.googlesource.com/aom\"\ninclude_regex = 'v\\d+(\\.\\d+)*'\nprefix = \"v\"\nfrom_pattern = '-([a-z])'\nto_pattern = '\\1'\n" }
-archlinux-keyring = { version = "20250807.1-1", nvchecker = "[archlinux-keyring]\nsource = \"gitlab\"\ngitlab = \"archlinux/archlinux-keyring\"\nhost = \"gitlab.archlinux.org\"\nuse_max_tag = true\nprefix = \"v\"\n" }
+7zip = { version = "26.04-1" }
+a52dec = { version = "0.8.0-3" }
+abcmidi = { version = "2026_10_09-1" }
+abseil-cpp = { version = "20260817.0-2" }
+acl = { version = "2.4.0-1" }
+adwaita-icon-theme = { version = "51.0-1" }
+adwaita-icon-theme-legacy = { version = "46.2-3" }
+alsa-lib = { version = "1.2.16.1-1" }
+alsa-topology-conf = { version = "1.2.5.1-4" }
+alsa-ucm-conf = { version = "1.2.16.1-1" }
+alsa-utils = { version = "1.2.16-1" }
+aom = { version = "3.15.2-1" }
+archlinux-keyring = { version = "20250807.1-1" }
 archlinux-wallpaper = { version = "1.6.1-7" }
 archlinux32-keyring = { version = "20261017-1" }
-argon2 = { version = "20190702-7", nvchecker = "[argon2]\nsource = \"git\"\ngit = \"https://github.com/P-H-C/phc-winner-argon2.git\"\n" }
-arm-none-eabi-binutils = { version = "2.47-1", nvchecker = "[arm-none-eabi-binutils]\nsource = 'git'\ngit = 'https://sourceware.org/git/binutils-gdb.git'\nprefix ='binutils-'\ninclude_regex = 'binutils-.*'\nfrom_pattern = '_'\nto_pattern = '.'\n" }
-arm-none-eabi-gcc = { version = "16.2.0-1", nvchecker = "[arm-none-eabi-gcc]\nsource = 'git'\ngit = 'https://gcc.gnu.org/git/gcc.git'\ninclude_regex = 'releases/gcc.*'\nprefix = 'releases/gcc-'\n" }
-arm-none-eabi-newlib = { version = "4.6.0.20260123-1", nvchecker = "[arm-none-eabi-newlib]\nsource = 'regex'\nurl = 'https://sourceware.org/pub/newlib/'\nregex = 'newlib-([\\d.]+).tar'\n" }
-attr = { version = "2.6.0-1", nvchecker = "[attr]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/attr.git\"\nprefix = \"v\"\n" }
-audit = { version = "4.2.1-1", nvchecker = "[audit]\nsource = \"git\"\ngit = \"https://github.com/linux-audit/audit-userspace\"\nprefix = \"v\"\n" }
-autoconf-archive = { version = "1:2024.10.16-4", nvchecker = "[autoconf-archive]\nsource = \"regex\"\nurl = \"https://ftpmirror.gnu.org/autoconf-archive\"\nregex = 'autoconf-archive-(\\d+\\.\\d+\\.\\d+)\\.tar\\.xz'\n" }
-avahi = { version = "1:0.9rc5-2", nvchecker = "[avahi]\nsource = \"git\"\ngit = \"https://github.com/avahi/avahi.git\"\n#include_regex = 'v\\d+(\\.\\d+)*'\nprefix = \"v\"\nfrom_pattern = '-([a-z])'\nto_pattern = '\\1'\n" }
-b3sum = { version = "1.8.7-1", nvchecker = "[b3sum]\nsource = \"git\"\ngit = \"https://github.com/BLAKE3-team/BLAKE3.git\"\n" }
-bash = { version = "5.3.20-1", nvchecker = "[\"bash:major\"]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/bash/\"\nregex = 'bash-([\\.\\d]+)\\.tar\\.gz'\nexclude_regex = \".*(pre|a|alpha|b|beta|r|rc|RC|BETA|ALPHA).*\"\n\n[\"bash:patch\"]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/bash/bash-5.3-patches/\"\nregex = 'bash[\\d]+-0*([\\.\\d]+)'\nexclude_regex = \".*(pre|a|alpha|b|beta|r|rc|RC|BETA|ALPHA).*\"\n\n[bash]\nsource = \"combiner\"\nfrom = [\"bash:major\", \"bash:patch\"]\nformat = \"$1.$2\"\n" }
-bind = { version = "9.20.30-2", nvchecker = "# BIND versions are typically in the form of X.Y.Z where \"Y\"\n# is an even number for stable releases or an odd number for\n# development releases.\n# https://kb.isc.org/docs/aa-01540\n\n[bind]\nsource = \"git\"\ngit = \"https://gitlab.isc.org/isc-projects/bind9.git\"\nprefix = \"v\"\nexclude_regex = \"v[0-9]+\\\\.[0-9]?[13579]\\\\.[0-9]+\"\n" }
-binutils = { version = "2.47-4", nvchecker = "[binutils]\nsource = \"git\"\ngit = \"https://sourceware.org/git/binutils-gdb.git\"\nprefix = \"binutils-\"\ninclude_regex = \"^binutils-[_0-9]+$\"\nfrom_pattern = \"_\"\nto_pattern = \".\"\n" }
-bison = { version = "3.8.2-8", nvchecker = "[bison]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/bison.git\"\nprefix = \"v\"" }
-bluetui = { version = "0.8.2-1", nvchecker = "[bluetui]\nsource = \"git\"\ngit = \"https://github.com/pythops/bluetui.git\"\nprefix = \"v\"\n" }
-bluez = { version = "5.87-2", nvchecker = "[bluez]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/bluetooth/bluez.git\"\n\nuse_max_tag = true\n#prefix = \"v\"\n" }
-bonzomatic = { version = "2023.06.15-6", nvchecker = "[bonzomatic]\nsource = \"git\"\ngit = \"https://github.com/Gargaj/bonzomatic.git\"\nfrom_pattern = '^(\\d+)-(\\d+)-(\\d+)$'\nto_pattern = '\\1.\\2.\\3'\n" }
-boost = { version = "1.92.0-1", nvchecker = "[boost]\nsource = \"git\"\ngit = \"https://github.com/boostorg/boost.git\"\nprefix = \"boost-\"\nexclude_regex = \".*beta.*\"\n" }
+argon2 = { version = "20190702-7" }
+arm-none-eabi-binutils = { version = "2.47-1" }
+arm-none-eabi-gcc = { version = "16.2.0-1" }
+arm-none-eabi-newlib = { version = "4.6.0.20260123-1" }
+attr = { version = "2.6.0-1" }
+audit = { version = "4.2.1-1" }
+autoconf-archive = { version = "1:2024.10.16-4" }
+avahi = { version = "1:0.9rc5-2" }
+b3sum = { version = "1.8.7-1" }
+bash = { version = "5.3.20-1" }
+bind = { version = "9.20.30-2" }
+binutils = { version = "2.47-4" }
+bison = { version = "3.8.2-8" }
+bluetui = { version = "0.8.2-1" }
+bluez = { version = "5.87-2" }
+bonzomatic = { version = "2023.06.15-6" }
+boost = { version = "1.92.0-1" }
 brightnessctl = { version = "0.5.1-3" }
-brotli = { version = "1.2.0-1", nvchecker = "[brotli]\nsource = \"git\"\ngit = \"https://github.com/google/brotli.git\"\nprefix = \"v\"\n" }
-bubblewrap = { version = "0.13.1-1", nvchecker = "[bubblewrap]\nsource = \"git\"\ngit = \"https://github.com/containers/bubblewrap.git\"\nprefix = \"v\"\n" }
-busybox = { version = "1.36.1-4", nvchecker = "[busybox]\nsource = \"git\"\ngit = \"https://git.busybox.net/busybox/\"\ninclude_regex = \"1_\\\\d*[02468]_\\\\d+\"\nfrom_pattern = \"_\"\nto_pattern = \".\"\n" }
+brotli = { version = "1.2.0-1" }
+bubblewrap = { version = "0.13.1-1" }
+busybox = { version = "1.36.1-4" }
 bzip2 = { version = "1.0.8-6" }
-c3c = { version = "0.8.6-1", nvchecker = "[c3c]\nsource = \"git\"\ngit = \"https://github.com/c3lang/c3c.git\"\nprefix = \"v\"\n" }
+c3c = { version = "0.8.6-1" }
 ca-certificates = { version = "20240618-1" }
-cabextract = { version = "1.11-3", nvchecker = "[cabextract]\nsource = \"git\"\ngit = \"https://github.com/kyz/libmspack.git\"\nprefix = \"v\"\n" }
-cairo = { version = "1.18.6-1", nvchecker = "[cairo]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/cairo/cairo.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d*[02468]'\n" }
-cargo-c = { version = "0.10.26-1", nvchecker = "[cargo-c]\nsource = \"git\"\ngit = \"https://github.com/lu-zero/cargo-c.git\"\nprefix = \"v\"\n" }
-ccache = { version = "4.14.1-1", nvchecker = "[ccache]\nsource = \"git\"\ngit = \"https://github.com/ccache/ccache.git\"\nprefix = \"v\"\n" }
-chafa = { version = "1.18.3-1", nvchecker = "[chafa]\nsource = \"git\"\ngit = \"https://github.com/hpjansson/chafa.git\"\n" }
-cmake = { version = "4.4.5-1", nvchecker = "[cmake]\nsource = 'gitlab'\ngitlab = 'cmake/cmake'\nhost = 'gitlab.kitware.com'\nuse_max_tag = true\nprefix = 'v'\nexclude_regex = '.*rc.*'\n" }
-colord = { version = "1.4.8-2", nvchecker = "[colord]\nsource = \"git\"\ngit = \"https://github.com/hughsie/colord.git\"\n" }
-confuse = { version = "3.4-1", nvchecker = "[confuse]\nsource = \"git\"\ngit = \"https://github.com/libconfuse/libconfuse.git\"\nprefix = \"v\"\n" }
-coreutils = { version = "9.12-2", nvchecker = "[coreutils]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/coreutils.git\"\nprefix = \"v\"\n" }
-cryptsetup = { version = "2.8.8-1", nvchecker = "[cryptsetup]\nsource = \"git\"\ngit = \"https://gitlab.com/cryptsetup/cryptsetup.git\"\nprefix = \"v\"\nexclude_regex = \".*rc.*\"\n" }
-cups = { version = "2:2.4.20-1", nvchecker = "[cups]\nsource = \"github\"\ngithub = \"OpenPrinting/cups\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-cups-filters = { version = "2.0.1-3", nvchecker = "[cups-filters]\nsource = \"github\"\ngithub = \"OpenPrinting/cups-filters\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-curl = { version = "8.23.0-1", nvchecker = "[curl]\nsource = 'git'\ngit = 'https://github.com/curl/curl.git'\nprefix = 'curl-'\nfrom_pattern = '_'\nto_pattern = '.'\nexclude_regex = \".*(tiny|beta).*\"\n" }
-cython = { version = "3.3.1-1", nvchecker = "[cython]\nsource = 'pypi'\npypi = 'cython'\n" }
-dav1d = { version = "1.5.4-1", nvchecker = "[dav1d]\nsource = \"git\"\ngit = \"https://code.videolan.org/videolan/dav1d.git\"\n" }
-dbus = { version = "1.16.2-2", nvchecker = "[dbus]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/dbus/dbus.git\"\ninclude_regex = 'dbus-\\d+\\.\\d*[02468]\\.\\d+'\nprefix = \"dbus-\"\n" }
-dbus-broker = { version = "37-3", nvchecker = "[dbus-broker]\nsource = \"git\"\ngit = \"https://github.com/bus1/dbus-broker.git\"\nprefix = \"v\"\n" }
-"dbus-c++" = { version = "0.9.0-13", nvchecker = "[\"dbus-c++\"]\nsource = \"regex\"\nregex = 'libdbus-c\\+\\+-([\\d.]+)\\.tar\\.gz?'\nurl = \"https://sourceforge.net/projects/dbus-cplusplus/files/dbus-c++/0.9.0/\"\n" }
-dbus-python = { version = "1.5.0-1", nvchecker = "[dbus-python]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/dbus/dbus-python.git\"\nprefix = \"dbus-python-\"\n" }
-dconf = { version = "51.0-1", nvchecker = "[dconf]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/dconf.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
+cabextract = { version = "1.11-3" }
+cairo = { version = "1.18.6-1" }
+cargo-c = { version = "0.10.26-1" }
+ccache = { version = "4.14.1-1" }
+chafa = { version = "1.18.3-1" }
+cmake = { version = "4.4.5-1" }
+colord = { version = "1.4.8-2" }
+confuse = { version = "3.4-1" }
+coreutils = { version = "9.12-2" }
+cryptsetup = { version = "2.8.8-1" }
+cups = { version = "2:2.4.20-1" }
+cups-filters = { version = "2.0.1-3" }
+curl = { version = "8.23.0-1" }
+cython = { version = "3.3.1-1" }
+dav1d = { version = "1.5.4-1" }
+dbus = { version = "1.16.2-2" }
+dbus-broker = { version = "37-3" }
+"dbus-c++" = { version = "0.9.0-13" }
+dbus-python = { version = "1.5.0-1" }
+dconf = { version = "51.0-1" }
 default-cursors = { version = "3-1" }
-desktop-file-utils = { version = "0.28-1", nvchecker = "[desktop-file-utils]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/xdg/desktop-file-utils.git\"\n" }
-diffutils = { version = "3.12-2", nvchecker = "[diffutils]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/diffutils/\"\nregex = \"diffutils-([\\\\d\\\\.]+).tar\"\n" }
+desktop-file-utils = { version = "0.28-1" }
+diffutils = { version = "3.12-2" }
 dnssec-anchors = { version = "20250524-1" }
-dosfstools = { version = "4.2-5", nvchecker = "[dosfstools]\nsource = \"git\"\ngit = \"https://github.com/dosfstools/dosfstools.git\"\nprefix = \"v\"\n" }
-dropbear = { version = "2026.94-1", nvchecker = "[dropbear]\nsource = \"github\"\ngithub = \"mkj/dropbear\"\nuse_latest_release = true\nprefix = \"DROPBEAR_\"\n" }
+dosfstools = { version = "4.2-5" }
+dropbear = { version = "2026.94-1" }
 duktape = { version = "2.7.0-7" }
-e2fsprogs = { version = "1.47.4-1", nvchecker = "[e2fsprogs]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/fs/ext2/e2fsprogs.git\"\nprefix = \"v\"\n" }
-earlyoom = { version = "1.9.0-1", nvchecker = "[earlyoom]\nsource = \"git\"\ngit = \"https://github.com/rfjakob/earlyoom.git\"\nprefix = \"v\"\n" }
-elfkickers = { version = "3.2-6", nvchecker = "[elfkickers]\nsource = \"regex\"\nurl = \"https://www.muppetlabs.com/~breadbox/software/elfkickers.html\"\nregex = 'ELFkickers-(\\d+\\.\\d+)\\.tar\\.gz'\n" }
-elfutils = { version = "0.196-1", nvchecker = "[elfutils]\nsource = \"git\"\ngit = \"https://forge.sourceware.org/elfutils/elfutils-mirror.git\"\nprefix = \"elfutils-\"\nuse_max_tag = true\n" }
-ell = { version = "0.83-1", nvchecker = "[ell]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/libs/ell/ell.git\"\n\nuse_max_tag = true\n" }
-exfatprogs = { version = "1.4.3-1", nvchecker = "[exfatprogs]\nsource = \"git\"\ngit = \"https://github.com/exfatprogs/exfatprogs.git\"\n" }
-expat = { version = "2.9.0-1", nvchecker = "[expat]\nsource = \"git\"\ngit = \"https://github.com/libexpat/libexpat/\"\ninclude_regex = \"(R_)([\\\\d.*][_].*)\"\nfrom_pattern = 'R_(\\d)_(\\d)_(\\d)'\nto_pattern = '\\1.\\2.\\3'\n" }
-faad2 = { version = "2.11.4-1", nvchecker = "[faad2]\nsource = \"git\"\ngit = \"https://github.com/knik0/faad2.git\"\n" }
-fakeroot = { version = "1:2.1.4-1", nvchecker = "[fakeroot]\nsource = \"git\"\ngit = \"https://salsa.debian.org/clint/fakeroot\"\nprefix = \"upstream/\"\n" }
-fastfetch = { version = "2.70.0-1", nvchecker = "[fastfetch]\nsource = \"git\"\ngit = \"https://github.com/fastfetch-cli/fastfetch.git\"\nprefix = \"v\"\n" }
-fcft = { version = "3.3.3-1", nvchecker = "[fcft]\nsource = \"git\"\ngit = \"https://codeberg.org/dnkl/fcft.git\"\n" }
-fennel = { version = "1.6.1-3", nvchecker = "[fennel]\nsource = \"git\"\ngit = \"https://git.sr.ht/~technomancy/fennel\"\n" }
-fftw = { version = "3.3.11-1", nvchecker = "[fftw]\nsource = \"regex\"\nurl = \"http://www.fftw.org/download.html\"\nregex = \"FFTW [\\\\d.]+\"\nprefix = \"FFTW \"\n" }
-file = { version = "5.48-1", nvchecker = "[file]\nsource = 'git'\ngit = 'https://github.com/file/file.git'\nprefix = 'FILE'\nfrom_pattern = '_'\nto_pattern = '.'\n" }
+e2fsprogs = { version = "1.47.4-1" }
+earlyoom = { version = "1.9.0-1" }
+elfkickers = { version = "3.2-6" }
+elfutils = { version = "0.196-1" }
+ell = { version = "0.83-1" }
+exfatprogs = { version = "1.4.3-1" }
+expat = { version = "2.9.0-1" }
+faad2 = { version = "2.11.4-1" }
+fakeroot = { version = "1:2.1.4-1" }
+fastfetch = { version = "2.70.0-1" }
+fcft = { version = "3.3.3-1" }
+fennel = { version = "1.6.1-3" }
+fftw = { version = "3.3.11-1" }
+file = { version = "5.48-1" }
 filesystem = { version = "2025.10.12-1" }
-findutils = { version = "4.11.0-1", nvchecker = "[findutils]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/findutils.git\"\nprefix = \"v\"\n" }
-fish = { version = "4.9.3-1", nvchecker = "[fish]\nsource = \"git\"\ngit = \"https://github.com/fish-shell/fish-shell.git\"\nexclude_regex = \".*(pre|release|weekly|rc|alpha|beta|dev).*\"\n" }
-flac = { version = "1.5.0-1", nvchecker = "[flac]\nsource = \"github\"\ngithub = \"xiph/flac\"\nuse_max_tag = true\ninclude_regex = '\\d+(\\.\\d+)*'\n" }
-flex = { version = "2.6.4-6", nvchecker = "[flex]\nsource = \"git\"\ngit = \"https://github.com/westes/flex.git\"\nprefix = \"v\"\n" }
-fmt = { version = "12.2.0-1", nvchecker = "[fmt]\nsource = \"git\"\ngit = \"https://github.com/fmtlib/fmt.git\"\nprefix = \"v\"\n" }
-foot = { version = "1.28.0-2", nvchecker = "[foot]\nsource = \"git\"\ngit = \"https://codeberg.org/dnkl/foot.git\"\n" }
-freeglut = { version = "3.8.0-1", nvchecker = "[freeglut]\nsource = \"git\"\ngit = \"https://github.com/FreeGLUTProject/freeglut.git\"\ninclude_regex = 'v\\d+(\\.\\d+)*'\nprefix = \"v\"\nfrom_pattern = '-([a-z])'\nto_pattern = '\\1'\n" }
-freetype2 = { version = "2.15.0-1", nvchecker = "[freetype2]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/freetype/freetype.git\"\nfrom_pattern = 'VER-(\\d+)-(\\d+)-(\\d+)'\nto_pattern = '\\1.\\2.\\3'\n" }
-fribidi = { version = "1.0.17-1", nvchecker = "[fribidi]\nsource = \"git\"\ngit = \"https://github.com/fribidi/fribidi.git\"\nprefix = \"v\"\n" }
-ft2-clone = { version = "2.25-1", nvchecker = "[ft2-clone]\nsource = \"git\"\ngit = \"https://github.com/8bitbubsy/ft2-clone.git\"\nprefix = \"v\"\n" }
-fuse2 = { version = "2.9.9-6", nvchecker = "[fuse2]\nsource = \"git\"\ngit = \"https://github.com/libfuse/libfuse.git\"\n" }
-fuse3 = { version = "3.18.3-1", nvchecker = "[fuse3]\nsource = \"git\"\ngit = \"https://github.com/libfuse/libfuse.git\"\ninclude_regex = \"fuse-3.[\\\\d\\\\.]+\"\nprefix = \"fuse-\"\n" }
-gawk = { version = "5.4.1-1", nvchecker = "[gawk]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/gawk.git\"\nprefix = \"gawk-\"\n" }
-gcc = { version = "16.2.1+r23+gd564253eb6c8-1", nvchecker = "[gcc]\nsource = \"git\"\ngit = \"https://sourceware.org/git/gcc.git\"\nprefix = \"releases/gcc-\"\ninclude_regex = \"^releases/gcc-[.0-9]+$\"\n" }
-gd = { version = "2.3.3-9", nvchecker = "[gd]\nsource = 'github'\ngithub = 'libgd/libgd'\nuse_max_tag = true\nprefix = 'gd-'\n" }
-gdbm = { version = "1.26-2", nvchecker = "[gdbm]\nsource = \"git\"\ngit = \"https://git.gnu.org.ua/gdbm.git\"\nprefix = \"v\"\n" }
-gdk-pixbuf2 = { version = "2.44.8-1", nvchecker = "[gdk-pixbuf2]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/gdk-pixbuf.git\"\ninclude_regex = '\\d+\\.[1-8]\\d*[02468]\\.\\d+'\n" }
+findutils = { version = "4.11.0-1" }
+fish = { version = "4.9.3-1" }
+flac = { version = "1.5.0-1" }
+flex = { version = "2.6.4-6" }
+fmt = { version = "12.2.0-1" }
+foot = { version = "1.28.0-2" }
+freeglut = { version = "3.8.0-1" }
+freetype2 = { version = "2.15.0-1" }
+fribidi = { version = "1.0.17-1" }
+ft2-clone = { version = "2.25-1" }
+fuse2 = { version = "2.9.9-6" }
+fuse3 = { version = "3.18.3-1" }
+gawk = { version = "5.4.1-1" }
+gcc = { version = "16.2.1+r23+gd564253eb6c8-1" }
+gd = { version = "2.3.3-9" }
+gdbm = { version = "1.26-2" }
+gdk-pixbuf2 = { version = "2.44.8-1" }
 geoip = { version = "1.6.12-3" }
-gettext = { version = "1.0-2", nvchecker = "[gettext]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/gettext.git\"\nprefix = \"v\"\n" }
-giflib = { version = "6.1.3-2", nvchecker = "[giflib]\nsource = \"git\"\ngit = \"https://git.code.sf.net/p/giflib/code\"\n" }
-girara = { nvchecker = "[girara]\nsource = \"git\"\ngit = \"https://github.com/pwmt/girara.git\"\n", version = "2026.07.18-1" }
-git = { version = "2.56.0-1", nvchecker = "[git]\nsource = \"git\"\ngit = \"https://github.com/git/git.git\"\nprefix = \"v\"\nexclude_regex = \"v.*(pre|rc|alpha|beta).*\"\n" }
-glew = { version = "2.3.1-1", nvchecker = "[glew]\nsource = \"github\"\ngithub = \"nigels-com/glew\"\nuse_max_tag = true\nprefix = \"glew-\"\n" }
-glfw = { version = "1:3.5.1-1", nvchecker = "[glfw]\nsource = \"git\"\ngit = \"https://github.com/glfw/glfw.git\"\n" }
-glib-networking = { version = "1:2.90.0-1", nvchecker = "[glib-networking]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/glib-networking.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
-glib2 = { version = "2.90.1-1", nvchecker = "[glib2]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/glib.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
-glibc = { version = "2.44+r50+g1848099f063e-1", nvchecker = "[glibc]\nsource = \"git\"\ngit = \"https://sourceware.org/git/glibc.git\"\nprefix = \"glibc-\"\n# There are also open branch tags ending with .90 but they moved on\n# to sticky with .9000 only.\ninclude_regex = \"^glibc-[.0-9]+$\"\nexclude_regex = \".*\\\\.9000$\"\n" }
-glibmm = { version = "2.66.10-1", nvchecker = "[\"glibmm\"]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/glibmm.git\"\ninclude_regex = '2\\.66\\.\\d+'\n" }
-glslang = { version = "1:1.4.363.0-1", nvchecker = "[glslang]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/glslang.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
-glu = { version = "9.0.3-3", nvchecker = "[glu]\nsource = \"gitlab\"\ngitlab = \"mesa/glu\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\nprefix = \"glu-\"\n" }
-gmp = { version = "6.3.0-3", nvchecker = "[gmp]\nsource = 'regex'\nurl = 'https://gmplib.org/download/gmp/'\nregex = 'gmp-([\\d.]+)\\.[a-z]'\n" }
-gnugo = { version = "3.8-8", nvchecker = "[gnugo]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/gnugo/'\nregex = 'gnugo-([\\d.]+)\\.[a-z]'\n" }
+gettext = { version = "1.0-2" }
+giflib = { version = "6.1.3-2" }
+girara = { version = "2026.07.18-1" }
+git = { version = "2.56.0-1" }
+glew = { version = "2.3.1-1" }
+glfw = { version = "1:3.5.1-1" }
+glib-networking = { version = "1:2.90.0-1" }
+glib2 = { version = "2.90.1-1" }
+glibc = { version = "2.44+r50+g1848099f063e-1" }
+glibmm = { version = "2.66.10-1" }
+glslang = { version = "1:1.4.363.0-1" }
+glu = { version = "9.0.3-3" }
+gmp = { version = "6.3.0-3" }
+gnugo = { version = "3.8-8" }
 gnulib-l10n = { version = "20241231-1" }
-gnupg = { version = "2.4.9-3", nvchecker = "[gnupg]\nsource = \"git\"\ngit = \"https://dev.gnupg.org/source/gnupg.git\"\ninclude_regex = \"gnupg-(2.4.[\\\\d.*]+)\"\nprefix = \"gnupg-\"\n" }
-gnutls = { version = "3.8.13-3", nvchecker = "[gnutls]\nsource = \"gitlab\"\ngitlab = \"gnutls/gnutls\"\nuse_max_tag = true\n" }
-goaccess = { version = "1.12-1", nvchecker = "[goaccess]\nsource = \"git\"\ngit = \"https://github.com/allinurl/goaccess.git\"\nprefix = \"v\"\n" }
-gobject-introspection = { version = "1.86.0-1", nvchecker = "[gobject-introspection]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/gobject-introspection.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
-gperftools = { version = "2.18.1-1", nvchecker = "[gperftools]\nsource = \"git\"\ngit = \"https://github.com/gperftools/gperftools.git\"\ninclude_regex = \"gperftools-.*\"\nexclude_regex = 'gperftools-\\d+\\.\\d+\\.90'\nprefix = \"gperftools-\"\n" }
-gpgme = { version = "2.2.0-1", nvchecker = "[gpgme]\nsource = \"git\"\ngit = \"https://github.com/gpg/gpgme.git\"\nprefix = \"gpgme-\"\ninclude_regex = \"^gpgme-.*\"\n" }
-gpm = { version = "1.20.7.r38.ge82d1a6-7", nvchecker = "[gpm]\nsource = \"git\"\ngit = \"https://github.com/telmich/gpm.git\"\nexclude_regex = \"^1\\\\.99\\\\..*\"\n" }
-graphene = { version = "1.10.8-2", nvchecker = "[graphene]\nsource = \"github\"\ngithub = \"ebassi/graphene\"\nuse_max_tag = true\n" }
-graphite = { version = "1:1.3.15-1", nvchecker = "[graphite]\nsource = \"github\"\ngithub = \"silnrsi/graphite\"\nuse_max_tag = true\n#prefix = \"v\"\n" }
-grep = { version = "3.12-2", nvchecker = "[grep]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/grep.git\"\nprefix = \"v\"\n" }
-grim = { version = "1.5.0-2", nvchecker = "[grim]\nsource = \"git\"\ngit = \"https://git.sr.ht/~emersion/grim\"\nprefix = \"v\"\n" }
-grub = { version = "2:2.16-1", nvchecker = "[grub]\nsource = 'git'\ngit = 'https://gitlab.freedesktop.org/gnu-grub/grub.git'\nprefix = 'grub-'\ninclude_regex = 'grub-\\d+\\.\\d+'\n" }
-gsettings-desktop-schemas = { version = "51.0-1", nvchecker = "[gsettings-desktop-schemas]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/gsettings-desktop-schemas.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
-gtest = { version = "1.18.0-1", nvchecker = "[gtest]\nsource = \"git\"\ngit = \"https://github.com/google/googletest.git\"\nprefix = \"v\"\n" }
-gtk4 = { version = "1:4.24.1-1", nvchecker = "[gtk4]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/gtk.git\"\ninclude_regex = '4\\.\\d*[02468]\\.\\d+'\n" }
-gzip = { version = "1.15-1", nvchecker = "[gzip]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/gzip.git\"\nprefix = \"v\"\n" }
-harfbuzz = { version = "14.6.0-1", nvchecker = "[harfbuzz]\nsource = \"git\"\ngit = \"https://github.com/harfbuzz/harfbuzz.git\"\n" }
+gnupg = { version = "2.4.9-3" }
+gnutls = { version = "3.8.13-3" }
+goaccess = { version = "1.12-1" }
+gobject-introspection = { version = "1.86.0-1" }
+gperftools = { version = "2.18.1-1" }
+gpgme = { version = "2.2.0-1" }
+gpm = { version = "1.20.7.r38.ge82d1a6-7" }
+graphene = { version = "1.10.8-2" }
+graphite = { version = "1:1.3.15-1" }
+grep = { version = "3.12-2" }
+grim = { version = "1.5.0-2" }
+grub = { version = "2:2.16-1" }
+gsettings-desktop-schemas = { version = "51.0-1" }
+gtest = { version = "1.18.0-1" }
+gtk4 = { version = "1:4.24.1-1" }
+gzip = { version = "1.15-1" }
+harfbuzz = { version = "14.6.0-1" }
 hicolor-icon-theme = { version = "0.18-1" }
-highway = { version = "1.4.0-1", nvchecker = "[highway]\nsource = \"git\"\ngit = \"https://github.com/google/highway.git\"\nprefix = \"v\"\n" }
-hiredis = { version = "1.4.1-1", nvchecker = "[hiredis]\nsource = \"git\"\ngit = \"https://github.com/redis/hiredis.git\"\nprefix = \"v\"\n" }
-htop = { version = "3.5.3-1", nvchecker = "[htop]\nsource = \"git\"\ngit = \"https://github.com/htop-dev/htop.git\"\n" }
-hwdata = { version = "0.412-1", nvchecker = "[hwdata]\nsource = \"git\"\ngit = \"https://github.com/vcrhonek/hwdata.git\"\nprefix = \"v\"\n" }
-hwloc = { version = "2.15.0-1", nvchecker = "[hwloc]\nsource = \"git\"\ngit = \"https://github.com/open-mpi/hwloc.git\"\nprefix = \"hwloc-\"\ninclude_regex = '^hwloc-\\d+\\.\\d+(\\.\\d+)?$'\n" }
-iana-etc = { version = "20260617-1", nvchecker = "[iana-etc]\nsource = \"regex\"\nurl = \"https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xml\"\nregex = \"([0-9]{4}-[0-9]{2}-[0-9]{2})\"\nfrom_pattern = \"([0-9]{4})-([0-9]{2})-([0-9]{2})\"\nto_pattern = \"\\\\1\\\\2\\\\3\"\n" }
-icu = { version = "78.3-1", nvchecker = "[icu]\nsource = \"git\"\ngit = \"https://github.com/unicode-org/icu.git\"\ninclude_regex = 'release-\\d+((-|\\.)\\d+)*'\nprefix = \"release-\"\nfrom_pattern = '-'\nto_pattern = '.'\n" }
-imagemagick = { version = "7.1.2.34-2", nvchecker = "[imagemagick]\nsource = 'github'\ngithub = 'ImageMagick/ImageMagick'\nuse_max_tag = true\nfrom_pattern = '-'\nto_pattern = '.'\n" }
-imath = { version = "3.2.3-1", nvchecker = "[imath]\nsource = 'github'\ngithub = 'AcademySoftwareFoundation/Imath'\nuse_max_tag = true\nprefix = 'v'\nexclude_regex = '.*rc.*'\n" }
-impala = { version = "0.9.0-1", nvchecker = "[impala]\nsource = \"git\"\ngit = \"https://github.com/pythops/impala.git\"\nprefix = \"v\"\n" }
-inetutils = { version = "2.8-1", nvchecker = "[inetutils]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/inetutils/\"\nregex = \"inetutils-([\\\\d\\\\.]+).tar\"\n" }
-innoextract = { version = "1.9-17", nvchecker = "[innoextract]\nsource = \"git\"\ngit = \"https://github.com/dscharrer/innoextract.git\"\nuse_latest_tag = true\n" }
-intel-ucode = { version = "20260925-1", nvchecker = "[intel-ucode]\nsource = \"git\"\ngit = \"https://github.com/intel/Intel-Linux-Processor-Microcode-Data-Files.git\"\nprefix = \"microcode-\"\n" }
-iproute2 = { version = "7.3.0-1", nvchecker = "[iproute2]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/network/iproute2/iproute2.git\"\nprefix = \"v\"\n" }
-iputils = { version = "20250605-1", nvchecker = "[iputils]\nsource = \"git\"\ngit = \"https://github.com/iputils/iputils.git\"\n" }
-iw = { version = "6.17-1", nvchecker = "[iw]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git\"\nprefix = \"v\"\n" }
-iwd = { version = "3.12-2", nvchecker = "[iwd]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/network/wireless/iwd.git\"\n\nuse_max_tag = true\n" }
-jansson = { version = "2.15.1-1", nvchecker = "[jansson]\nsource = \"git\"\ngit = \"https://github.com/akheron/jansson.git\"\nprefix = \"v\"\n" }
-jbigkit = { version = "2.2-1", nvchecker = "[jbigkit]\nsource = \"git\"\ngit = \"https://www.cl.cam.ac.uk/~mgk25/git/jbigkit\"\nprefix = \"v\"\n" }
-jemalloc = { version = "1:5.4.0-1", nvchecker = "[jemalloc]\nsource = \"git\"\ngit = \"https://github.com/jemalloc/jemalloc.git\"\n" }
-joe = { version = "4.8-1", nvchecker = "[joe]\nsource = \"git\"\ngit = \"https://github.com/joe-editor/joe\"\nprefix = \"releases/\"\n" }
-jomon = { version = "0.6.4-1", nvchecker = "[jomon]\nsource = \"git\"\ngit = \"https://github.com/jo-lund/jomon.git\"\nprefix = \"v\"\n" }
-json-c = { version = "0.19-1", nvchecker = "[json-c]\nsource = \"git\"\ngit = \"https://github.com/json-c/json-c.git\"\ninclude_regex = '^json-c-([\\d.]+)-\\d+$'\nfrom_pattern = '^json-c-([\\d.]+)-\\d+$'\nto_pattern = '\\1'\n" }
-json-glib = { version = "1.10.8-1", nvchecker = "[json-glib]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/json-glib.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
-kbd = { version = "2.10.0-1", nvchecker = "[kbd]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/legion/kbd.git\"\nprefix = \"v\"\n" }
-keyutils = { version = "1.6.3-4", nvchecker = "[keyutils]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/dhowells/keyutils.git\"\nprefix = \"v\"\n" }
+highway = { version = "1.4.0-1" }
+hiredis = { version = "1.4.1-1" }
+htop = { version = "3.5.3-1" }
+hwdata = { version = "0.412-1" }
+hwloc = { version = "2.15.0-1" }
+iana-etc = { version = "20260617-1" }
+icu = { version = "78.3-1" }
+imagemagick = { version = "7.1.2.34-2" }
+imath = { version = "3.2.3-1" }
+impala = { version = "0.9.0-1" }
+inetutils = { version = "2.8-1" }
+innoextract = { version = "1.9-17" }
+intel-ucode = { version = "20260925-1" }
+iproute2 = { version = "7.3.0-1" }
+iputils = { version = "20250605-1" }
+iw = { version = "6.17-1" }
+iwd = { version = "3.12-2" }
+jansson = { version = "2.15.1-1" }
+jbigkit = { version = "2.2-1" }
+jemalloc = { version = "1:5.4.0-1" }
+joe = { version = "4.8-1" }
+jomon = { version = "0.6.4-1" }
+json-c = { version = "0.19-1" }
+json-glib = { version = "1.10.8-1" }
+kbd = { version = "2.10.0-1" }
+keyutils = { version = "1.6.3-4" }
 kmod = { version = "34.2-1" }
-krb5 = { version = "1.22.2-1", nvchecker = "[krb5]\nsource = \"git\"\ngit = \"https://github.com/krb5/krb5.git\"\nprefix = \"krb5-\"\ninclude_regex = \"krb5\\\\-(.*)\\\\-final.*\"\nfrom_pattern = \"(.*)-final.*\"\nto_pattern = \"\\\\1\"\n" }
-l-smash = { version = "2.14.5-4", nvchecker = "[l-smash]\nsource = \"git\"\ngit = \"https://github.com/l-smash/l-smash.git\"\nprefix = \"v\"\n" }
-lame = { version = "4.0-1", nvchecker = "[lame]\nsource = 'regex'\nurl = 'https://sourceforge.net/projects/lame/best_release.json'\nregex = 'lame-([\\d.]+).tar'\n" }
-lcms2 = { version = "2.19.1-1", nvchecker = "[lcms2]\nsource = 'git'\ngit = 'https://github.com/mm2/Little-CMS.git'\ninclude_regex = '(lcms).*\\..*'\nprefix = 'lcms'\n" }
-ldns = { version = "1.9.2-1", nvchecker = "[ldns]\nsource = \"git\"\ngit = \"https://github.com/NLnetLabs/ldns.git\"\ninclude_regex = \"[\\\\d\\\\.]+\"\n" }
-leancrypto = { version = "1.9.1-1", nvchecker = "[leancrypto]\nsource = \"github\"\ngithub = \"smuellerDD/leancrypto\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-less = { version = "1:710-1", nvchecker = "[less]\n# GitHub tags are first in \"beta\" stage before released for general use.\n# Hence use the proper version from the homepage.\nsource = \"regex\"\nurl = \"https://www.greenwoodsoftware.com/less/\"\nregex = 'The current released version is less-(\\d+).'\n" }
-lhasa = { version = "0.6.0-1", nvchecker = "[lhasa]\nsource = \"git\"\ngit = \"https://github.com/fragglet/lhasa.git\"\nprefix = \"v\"\n" }
-libaio = { version = "0.3.113-5", nvchecker = "[libaio]\nsource = \"git\"\ngit = \"https://codeberg.org/jmoyer/libaio\"\nprefix = \"libaio-\"\ninclude_regex = '(libaio)-([\\d.*]+)'\n" }
-libarchive = { version = "3.8.10-1", nvchecker = "[libarchive]\nsource = \"git\"\ngit = \"https://github.com/libarchive/libarchive.git\"\nprefix = \"v\"\n" }
-libassuan = { version = "3.0.1-1", nvchecker = "[libassuan]\nsource = \"git\"\ngit = \"https://dev.gnupg.org/source/libassuan.git\"\ninclude_regex = \"libassuan-([\\\\d.]+)\"\nprefix = \"libassuan-\"\n" }
+krb5 = { version = "1.22.2-1" }
+l-smash = { version = "2.14.5-4" }
+lame = { version = "4.0-1" }
+lcms2 = { version = "2.19.1-1" }
+ldns = { version = "1.9.2-1" }
+leancrypto = { version = "1.9.1-1" }
+less = { version = "1:710-1" }
+lhasa = { version = "0.6.0-1" }
+libaio = { version = "0.3.113-5" }
+libarchive = { version = "3.8.10-1" }
+libassuan = { version = "3.0.1-1" }
 libasyncns = { version = "1:0.8+r3+g68cd5af-3" }
-libavif = { version = "1.4.2-1", nvchecker = "[libavif]\nsource = 'github'\ngithub = 'AOMediaCodec/libavif'\nuse_max_tag = true\nprefix = 'v'\n" }
-libbpf = { version = "1.7.0-1", nvchecker = "[libbpf]\nsource = \"git\"\ngit = \"https://github.com/libbpf/libbpf.git\"\nprefix = \"v\"\n" }
+libavif = { version = "1.4.2-1" }
+libbpf = { version = "1.7.0-1" }
 libbsd = { version = "0.12.2-2" }
-libcap = { version = "2.78-1", nvchecker = "[libcap]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/libs/libcap/libcap.git\"\ninclude_regex = 'libcap-([\\d.]+)'\nexclude_regex = 'libcap-(20070813|20071031)'\nprefix = \"libcap-\"\n" }
-libcap-ng = { version = "0.9.6-1", nvchecker = "[libcap-ng]\nsource = \"git\"\ngit = \"https://github.com/stevegrubb/libcap-ng\"\nprefix = \"v\"\n" }
-libclc = { version = "23.1.1-2", nvchecker = "[libclc]\nsource = \"git\"\ngit = \"https://github.com/llvm/llvm-project.git\"\ninclude_regex = 'llvmorg-\\d+\\.\\d+\\.\\d+'\nprefix = \"llvmorg-\"\n" }
-libconfig = { version = "1.8.2-2", nvchecker = "[libconfig]\nsource = \"git\"\ngit = \"https://github.com/hyperrealm/libconfig.git\"\nprefix = \"v\"\n" }
-libcupsfilters = { version = "2.2.1.r32.gd49e9284-1", nvchecker = "[libcupsfilters]\nsource = \"github\"\ngithub = \"OpenPrinting/libcupsfilters\"\nuse_max_tag = true\nprefix = \"v\"\n" }
+libcap = { version = "2.78-1" }
+libcap-ng = { version = "0.9.6-1" }
+libclc = { version = "23.1.1-2" }
+libconfig = { version = "1.8.2-2" }
+libcupsfilters = { version = "2.2.1.r32.gd49e9284-1" }
 libdaemon = { version = "0.14-6" }
-libdatrie = { version = "0.2.14-1", nvchecker = "[libdatrie]\nsource = \"git\"\ngit = \"https://github.com/tlwg/libdatrie.git\"\nprefix = \"v\"\n" }
-libde265 = { version = "1.1.3-1", nvchecker = "[libde265]\nsource = 'github'\ngithub = 'strukturag/libde265'\nuse_max_tag = true\nprefix = 'v'\n" }
-libdeflate = { version = "1.26-1", nvchecker = "[libdeflate]\nsource = \"git\"\ngit = \"https://github.com/ebiggers/libdeflate.git\"\nprefix = \"v\"\n" }
-libdex = { version = "1.2.0-1", nvchecker = "[libdex]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/libdex.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
-libdrm = { version = "2.4.134-1", nvchecker = "[libdrm]\nsource = \"gitlab\"\ngitlab = \"mesa/drm\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\nprefix = \"libdrm-\"\n" }
-libebur128 = { version = "1.2.6-2", nvchecker = "[libebur128]\nsource = 'github'\ngithub = 'jiixyj/libebur128'\nuse_max_tag = true\nprefix = 'v'\n" }
-libedit = { version = "20260512_3.1-1", nvchecker = "[libedit]\nsource = \"regex\"\nurl = \"https://thrysoee.dk/editline/\"\nregex = \"libedit-([0-9\\\\.\\\\-]+).tar.gz\"\nfrom_pattern = \"\\\\-\"\nto_pattern = \"_\"\n" }
-libepoxy = { version = "1.5.10-3", nvchecker = "[libepoxy]\nsource = \"git\"\ngit = \"https://github.com/anholt/libepoxy.git\"\nprefix = \"v\"\n" }
-libevdev = { version = "1.14.0-1", nvchecker = "[libevdev]\nsource = \"gitlab\"\ngitlab = \"libevdev/libevdev\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\nprefix = \"libevdev-\"\n" }
-libevent = { version = "2.1.13-2", nvchecker = "[libevent]\nsource = \"git\"\ngit = \"https://github.com/libevent/libevent.git\"\nfrom_pattern = 'release-(.*)-stable'\nto_pattern = '\\1'\nexclude_regex = \".*(alpha|beta|rc|pre).*\"\n" }
-libexif = { version = "0.6.26-1", nvchecker = "[libexif]\nsource = \"git\"\ngit = \"https://github.com/libexif/libexif.git\"\nprefix = \"v\"\n" }
-libfabric = { version = "2.7.0-1", nvchecker = "[libfabric]\nsource = \"git\"\ngit = \"https://github.com/ofiwg/libfabric.git\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
-libfdk-aac = { version = "3.0.0-1", nvchecker = "[libfdk-aac]\nsource = \"git\"\ngit = \"https://github.com/mstorsjo/fdk-aac.git\"\nprefix = \"v\"\n" }
-libffado = { version = "2.5.0-1", nvchecker = "[libffado]\nsource = \"regex\"\nregex = \"libffado-([\\\\d.]+)\\\\.tgz?\"\nurl = \"http://ffado.org/\"\n" }
-libffi = { version = "3.8.0-1", nvchecker = "[libffi]\nsource = \"git\"\ngit = \"https://github.com/libffi/libffi\"\nprefix = \"v\"\n" }
-libfreeaptx = { version = "0.2.2-1", nvchecker = "[libfreeaptx]\nsource = \"git\"\ngit = \"https://github.com/iamthehorker/libfreeaptx.git\"\n" }
-libftdi = { version = "1.5-10", nvchecker = "[libftdi]\nsource = \"git\"\ngit = \"git://developer.intra2net.com/libftdi\"\nprefix = \"v\"\nexclude_regex = \".*(pre|release|weekly|rc|alpha|beta|dev).*\"\n" }
-libgcrypt = { version = "1.12.4-1", nvchecker = "[libgcrypt]\n#source = \"git\"\n#git = \"https://git.gnupg.org/libgcrypt.git\"\n#git = \"git://git.gnupg.org/libgcrypt.git\"\n#use_max_tag = true\n\nsource = \"regex\"\nregex = \"libgcrypt-([\\\\d.]+)\\\\.\"\nurl = \"https://www.gnupg.org/download/integrity_check.html\"\n" }
-libgit2 = { version = "1:1.9.7-1", nvchecker = "[libgit2]\nsource = \"git\"\ngit = \"https://github.com/libgit2/libgit2\"\ninclude_regex = 'v\\d+\\.\\d+\\.\\d+'\nprefix = \"v\"\n" }
-libglvnd = { version = "1.7.0-3", nvchecker = "[libglvnd]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/glvnd/libglvnd.git\"\nprefix = \"v\"\n" }
-libgpg-error = { version = "1.61-1", nvchecker = "[libgpg-error]\n#source = \"git\"\n#git = \"https://git.gnupg.org/libgpg-error.git\"\n#git = \"git://git.gnupg.org/libgcrypt-error.git\"\n#use_max_tag = true\n\nsource = \"regex\"\nregex = \"libgpg-error-([\\\\d.]+)\\\\.\"\nurl = \"https://www.gnupg.org/download/integrity_check.html\"\n" }
-libgphoto2 = { version = "2.5.34-1", nvchecker = "[libgphoto2]\nsource = \"git\"\ngit = \"https://github.com/gphoto/libgphoto2.git\"\ninclude_regex = 'v\\d+(\\.\\d+)*'\nprefix = \"v\"\n" }
-libgudev = { version = "238-4", nvchecker = "[libgudev]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/libgudev.git\"\n" }
-libgusb = { version = "0.4.9-2", nvchecker = "[libgusb]\nsource = \"git\"\ngit = \"https://github.com/hughsie/libgusb.git\"\n" }
-libheif = { version = "1.23.6-1", nvchecker = "[libheif]\nsource = \"git\"\ngit = \"https://github.com/strukturag/libheif.git\"\nexclude_regex= '.*(beta|rc).*'\nprefix = \"v\"\n" }
-libical = { version = "4.0.7-1", nvchecker = "[libical]\nsource = \"git\"\ngit = \"https://github.com/libical/libical.git\"\nprefix = \"v\"\n" }
-libice = { version = "1.1.2-1", nvchecker = "[libice]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libICE\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libICE-.*\"\nuse_max_tag = true\nprefix = \"libICE-\"\n" }
-libiconv = { version = "1.19-1", nvchecker = "[libiconv]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/libiconv/\"\nregex = \"libiconv-([\\\\d\\\\.]+).tar\"\n" }
-libidn2 = { version = "2.3.8-1", nvchecker = "[libidn2]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/libidn/\"\nregex = \"libidn2-([\\\\d\\\\.]+).tar\"\n" }
+libdatrie = { version = "0.2.14-1" }
+libde265 = { version = "1.1.3-1" }
+libdeflate = { version = "1.26-1" }
+libdex = { version = "1.2.0-1" }
+libdrm = { version = "2.4.134-1" }
+libebur128 = { version = "1.2.6-2" }
+libedit = { version = "20260512_3.1-1" }
+libepoxy = { version = "1.5.10-3" }
+libevdev = { version = "1.14.0-1" }
+libevent = { version = "2.1.13-2" }
+libexif = { version = "0.6.26-1" }
+libfabric = { version = "2.7.0-1" }
+libfdk-aac = { version = "3.0.0-1" }
+libffado = { version = "2.5.0-1" }
+libffi = { version = "3.8.0-1" }
+libfreeaptx = { version = "0.2.2-1" }
+libftdi = { version = "1.5-10" }
+libgcrypt = { version = "1.12.4-1" }
+libgit2 = { version = "1:1.9.7-1" }
+libglvnd = { version = "1.7.0-3" }
+libgpg-error = { version = "1.61-1" }
+libgphoto2 = { version = "2.5.34-1" }
+libgudev = { version = "238-4" }
+libgusb = { version = "0.4.9-2" }
+libheif = { version = "1.23.6-1" }
+libical = { version = "4.0.7-1" }
+libice = { version = "1.1.2-1" }
+libiconv = { version = "1.19-1" }
+libidn2 = { version = "2.3.8-1" }
 libiec61883 = { version = "1.2.0-9" }
-libieee1284 = { version = "0.2.11-19", nvchecker = "[libieee1284]\nsource = \"git\"\ngit = \"https://github.com/twaugh/libieee1284\"\nfrom_pattern = '_'\nto_pattern = '.'\nprefix = \"V\"\ninclude_regex = 'V\\d+_\\d+_\\d+'\n" }
-libinput = { version = "1.32.0-1", nvchecker = "[libinput]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/libinput/libinput.git\"\nexclude_regex = '.*\\.9\\d\\d'\n" }
-libisl = { version = "0.28-1", nvchecker = "[libisl]\nsource = 'git'\ngit = 'https://repo.or.cz/isl.git'\nprefix = 'isl-'\n" }
-libjpeg-turbo = { version = "3.2.0-2", nvchecker = "[libjpeg-turbo]\nsource = \"git\"\ngit = \"https://github.com/libjpeg-turbo/libjpeg-turbo\"\nexclude_regex = \".*(rc|RC|alpha|beta|90).*\"\n" }
-libjxl = { version = "0.12.0-1", nvchecker = "[libjxl]\nsource = \"git\"\ngit = \"https://github.com/libjxl/libjxl.git\"\nprefix = \"v\"\n" }
-libksba = { version = "1.8.1-1", nvchecker = "[libksba]\nsource = 'git'\ngit = 'git://git.gnupg.org/libksba.git'\nprefix = 'libksba-'\n" }
-liblc3 = { version = "1.1.3-2", nvchecker = "[liblc3]\nsource = \"github\"\ngithub = \"google/liblc3\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-libldac = { version = "2.0.2.6-1", nvchecker = "[libldac]\nsource = \"git\"\ngit = \"https://github.com/EHfive/ldacBT.git\"\nprefix = \"v\"\n" }
-liblqr = { version = "0.4.3-1", nvchecker = "[liblqr]\nsource = 'github'\ngithub = 'carlobaldassi/liblqr'\nuse_max_tag = true\nprefix = 'v'\n" }
+libieee1284 = { version = "0.2.11-19" }
+libinput = { version = "1.32.0-1" }
+libisl = { version = "0.28-1" }
+libjpeg-turbo = { version = "3.2.0-2" }
+libjxl = { version = "0.12.0-1" }
+libksba = { version = "1.8.1-1" }
+liblc3 = { version = "1.1.3-2" }
+libldac = { version = "2.0.2.6-1" }
+liblqr = { version = "0.4.3-1" }
 libmad = { version = "0.15.1b-10" }
-libmakepkg-dropins = { version = "20-2", nvchecker = "[libmakepkg-dropins]\nsource = \"git\"\ngit = \"https://gitlab.archlinux.org/pacman/libmakepkg-dropins.git\"\n" }
-libmaxminddb = { version = "1.14.1-1", nvchecker = "[libmaxminddb]\nsource = \"git\"\ngit = \"https://github.com/maxmind/libmaxminddb.git\"\n" }
-libmd = { version = "1.3.0-1", nvchecker = "[libmd]\nsource = \"git\"\ngit = \"https://git.hadrons.org/git/libmd.git\"\nuse_max_tag = true\n" }
-libmicrohttpd = { version = "1.0.10-1", nvchecker = "[libmicrohttpd]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/libmicrohttpd/\"\nregex = \"libmicrohttpd-([\\\\d\\\\.]+).tar\"\n" }
-libmikmod = { version = "3.3.15-1", nvchecker = "[libmikmod]\nsource = \"git\"\ngit = \"https://git.code.sf.net/p/mikmod/mikmod\"\ninclude_regex = 'libmikmod-.*'\nprefix = \"libmikmod-\"\n" }
+libmakepkg-dropins = { version = "20-2" }
+libmaxminddb = { version = "1.14.1-1" }
+libmd = { version = "1.3.0-1" }
+libmicrohttpd = { version = "1.0.10-1" }
+libmikmod = { version = "3.3.15-1" }
 libmnl = { version = "1.0.5-2" }
-libmodplug = { version = "0.8.9.0-7", nvchecker = "[libmodplug]\nsource = 'regex'\nurl = 'https://sourceforge.net/projects/modplug-xmms/best_release.json'\nregex = 'libmodplug-([\\d.]+).tar'\n" }
-libmpc = { version = "1.4.1-1", nvchecker = "[libmpc]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/mpc/'\nregex = 'mpc-([\\d.]+)\\.[a-z]'\n" }
-libmpeg2 = { version = "0.5.1-11", nvchecker = "[libmpeg2]\nsource = \"regex\"\nurl = \"https://libmpeg2.sourceforge.io/downloads.html\"\nregex = \"libmpeg2-([^\\\"]*).tar.gz\"\n" }
-libmysofa = { version = "1.3.5-1", nvchecker = "[libmysofa]\nsource = \"git\"\ngit = \"https://github.com/hoene/libmysofa.git\"\nprefix = \"v\"\n" }
-libnftnl = { version = "1.3.2-1", nvchecker = "[libnftnl]\nsource = \"git\"\ngit = \"https://git.netfilter.org/libnftnl\"\nprefix = \"libnftnl-\"\n" }
-libnghttp2 = { version = "1.70.0-1", nvchecker = "[libnghttp2]\nsource = \"git\"\ngit = \"https://github.com/nghttp2/nghttp2.git\"\nprefix = \"v\"\n" }
-libnghttp3 = { version = "1.18.0-1", nvchecker = "[libnghttp3]\nsource = \"git\"\ngit = \"https://github.com/ngtcp2/nghttp3.git\"\nprefix = \"v\"\n" }
-libngtcp2 = { version = "1.25.0-1", nvchecker = "[libngtcp2]\nsource = \"github\"\ngithub = \"ngtcp2/ngtcp2\"\nprefix = \"v\"\nuse_latest_release = true\n" }
-libnl = { version = "3.12.0-1", nvchecker = "[libnl]\nsource = \"git\"\ngit = \"https://github.com/thom311/libnl.git\"\nfrom_pattern = 'libnl(\\d+)_(\\d+)_(\\d+)'\nto_pattern = '\\1.\\2.\\3'\n" }
-libnsl = { version = "2.0.1-2", nvchecker = "[libnsl]\nsource = \"git\"\ngit = \"https://github.com/thkukuk/libnsl.git\"\nprefix = \"v\"\n" }
-libogg = { version = "1.3.6-1", nvchecker = "[libogg]\nsource = \"git\"\ngit = \"https://github.com/xiph/ogg.git\"\nprefix = \"v\"\n" }
-libpaper = { version = "2.2.8-1", nvchecker = "[libpaper]\nsource = \"github\"\ngithub = \"rrthomas/libpaper\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-libpcap = { version = "1.11.0-1", nvchecker = "[libpcap]\nsource = \"git\"\ngit = \"https://github.com/the-tcpdump-group/libpcap\"\nprefix = \"libpcap-\"\n" }
-libpciaccess = { version = "0.19-1", nvchecker = "[libpciaccess]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libpciaccess\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libpciaccess-.*\"\nuse_max_tag = true\nprefix = \"libpciaccess-\"\n" }
-libpng = { version = "1.6.59-1", nvchecker = "[libpng]\nsource = \"git\"\ngit = \"https://github.com/pnggroup/libpng.git\"\nprefix = \"v\"\nexclude_regex = \".*(beta|alpha|rc).*\"\n" }
-libppd = { version = "2.1.1-2", nvchecker = "[libppd]\nsource = \"github\"\ngithub = \"OpenPrinting/libppd\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-libproxy = { version = "0.5.12-1", nvchecker = "[libproxy]\nsource = \"git\"\ngit = \"https://github.com/libproxy/libproxy.git\"\n" }
-libpsl = { version = "0.21.5-2", nvchecker = "[libpsl]\nsource = \"git\"\ngit = \"https://github.com/rockdaboot/libpsl.git\"\n" }
-libraqm = { version = "0.11.0-1", nvchecker = "[libraqm]\nsource = 'github'\ngithub = 'HOST-Oman/libraqm'\nuse_max_tag = true\nprefix = 'v'\n" }
+libmodplug = { version = "0.8.9.0-7" }
+libmpc = { version = "1.4.1-1" }
+libmpeg2 = { version = "0.5.1-11" }
+libmysofa = { version = "1.3.5-1" }
+libnftnl = { version = "1.3.2-1" }
+libnghttp2 = { version = "1.70.0-1" }
+libnghttp3 = { version = "1.18.0-1" }
+libngtcp2 = { version = "1.25.0-1" }
+libnl = { version = "3.12.0-1" }
+libnsl = { version = "2.0.1-2" }
+libogg = { version = "1.3.6-1" }
+libpaper = { version = "2.2.8-1" }
+libpcap = { version = "1.11.0-1" }
+libpciaccess = { version = "0.19-1" }
+libpng = { version = "1.6.59-1" }
+libppd = { version = "2.1.1-2" }
+libproxy = { version = "0.5.12-1" }
+libpsl = { version = "0.21.5-2" }
+libraqm = { version = "0.11.0-1" }
 libraw1394 = { version = "2.1.2-4" }
-libsamplerate = { version = "0.2.2-3", nvchecker = "[libsamplerate]\nsource = \"git\"\ngit = \"https://github.com/libsndfile/libsamplerate.git\"\n" }
-libsasl = { version = "2.1.28-5", nvchecker = "[libsasl]\nsource = \"git\"\ngit = \"https://github.com/cyrusimap/cyrus-sasl\"\nprefix = \"cyrus-sasl-\"\n" }
-libseccomp = { version = "2.6.0-1", nvchecker = "[libseccomp]\nsource = \"git\"\ngit = \"https://github.com/seccomp/libseccomp.git\"\nprefix = \"v\"\n" }
-libsecret = { version = "0.21.8.2-1", nvchecker = "[libsecret]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/libsecret.git\"\n" }
-"libsigc++" = { version = "2.12.2-1", nvchecker = "[\"libsigc++\"]\nsource = \"git\"\ngit = \"https://github.com/libsigcplusplus/libsigcplusplus.git\"\ninclude_regex = '2\\.\\d*[02468]\\.\\d+'\n" }
-libslirp = { version = "4.9.5-1", nvchecker = "[libslirp]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/slirp/libslirp.git\"\nprefix = \"v\"\ninclude_regex = 'v.*'\nuse_max_tag = true\n" }
-libsm = { version = "1.2.6-1", nvchecker = "[libsm]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libsm\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libSM-.*\"\nuse_max_tag = true\nprefix = \"libSM-\"\n" }
-libsndfile = { version = "1.2.2-4", nvchecker = "[libsndfile]\nsource = \"git\"\ngit = \"https://github.com/libsndfile/libsndfile.git\"\nprefix = \"v\"\n" }
-libsodium = { version = "1.0.22-1", nvchecker = "[libsodium]\nsource = \"git\"\ngit = \"https://github.com/jedisct1/libsodium.git\"\n" }
-libsoup3 = { version = "3.8.0-1", nvchecker = "[libsoup3]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/libsoup.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
-libsoxr = { version = "0.1.3-5", nvchecker = "[libsoxr]\nsource = \"git\"\ngit = \"https://github.com/chirlu/soxr.git\"\n" }
-libssh2 = { version = "1.11.1-7", nvchecker = "[libssh2]\nsource = 'git'\ngit = 'https://github.com/libssh2/libssh2'\nprefix = 'libssh2-'\ninclude_regex = 'libssh2-.*'\n" }
-libtasn1 = { version = "4.21.0-1", nvchecker = "[libtasn1]\nsource = \"gitlab\"\ngitlab = \"gnutls/libtasn1\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-libthai = { version = "0.1.30-1", nvchecker = "[libthai]\nsource = \"git\"\ngit = \"https://github.com/tlwg/libthai.git\"\nprefix = \"v\"\n" }
-libtheora = { version = "1.2.0-1", nvchecker = "[libtheora]\nsource = \"git\"\ngit = \"https://github.com/xiph/theora.git\"\nprefix = \"v\"\nexclude_regex = \".*(alpha|beta|RC).*\"\n" }
-libtiff = { version = "4.7.2-2", nvchecker = "[libtiff]\nsource = \"git\"\ngit = \"https://gitlab.com/libtiff/libtiff.git\"\nprefix = \"v\"\nexclude_regex = \".*(pre|alpha|beta|rc|RC).*\"\n" }
-libtirpc = { version = "1.3.8-1", nvchecker = "[libtirpc]\nsource = \"git\"\ngit = \"git://git.linux-nfs.org/projects/steved/libtirpc.git\"\nignored = \"0.0.10\"\nexclude_regex = \".*(rc).*\"\nfrom_pattern = 'libtirpc-(\\d+)-(\\d+)-(\\d+)'\nto_pattern = '\\1.\\2.\\3'\n" }
-libtool = { version = "2.6.2-5", nvchecker = "[libtool]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/libtool.git\"\nprefix = \"v\"\n" }
-libunistring = { version = "1.4.2-1", nvchecker = "[libunistring]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/libunistring.git\"\nprefix = \"v\"\n" }
-libunwind = { version = "1.8.3-1", nvchecker = "[libunwind]\nsource = \"git\"\ngit = \"https://github.com/libunwind/libunwind.git\"\nprefix = \"v\"\ninclude_regex = \"v[\\\\d\\\\.]+\"\n" }
-liburcu = { version = "0.15.7-1", nvchecker = "[liburcu]\nsource = \"git\"\ngit = \"https://git.liburcu.org/userspace-rcu.git\"\nprefix = \"v\"\n" }
-liburing = { version = "2.15-1", nvchecker = "[liburing]\nsource = \"git\"\ngit = \"https://github.com/axboe/liburing.git\"\nprefix = \"liburing-\"\nexclude_regex = \".*(rc).*\"\n" }
-libusb = { version = "1.0.30-1", nvchecker = "[libusb]\nsource = \"git\"\ngit = \"https://github.com/libusb/libusb.git\"\nprefix = \"v\"\nexclude_regex = \".*(alpha|beta|rc|pre).*\"\n" }
-libusb-compat = { version = "0.1.9-1", nvchecker = "[libusb-compat]\nsource = \"git\"\ngit = \"https://github.com/libusb/libusb-compat-0.1.git\"\nprefix = \"v\"\nexclude_regex = \".*(beta|rc).*\"\n" }
-libutf8proc = { version = "2.12.0-1", nvchecker = "[libutf8proc]\nsource = \"git\"\ngit = \"https://github.com/JuliaStrings/utf8proc.git\"\nprefix = \"v\"\n" }
-libuv = { version = "1.53.0-1", nvchecker = "[libuv]\nsource = \"git\"\ngit = \"https://github.com/libuv/libuv.git\"\nprefix = \"v\"\n" }
-libva = { version = "2.24.1-1", nvchecker = "[libva]\nsource = \"git\"\ngit = \"https://github.com/intel/libva.git\"\nexclude_regex = \".*(2009|Alpha).*\"\n" }
-libvdpau = { version = "1.5-4", nvchecker = "[libvdpau]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/vdpau/libvdpau.git\"\n" }
-libverto = { version = "0.3.2-6", nvchecker = "[libverto]\nsource = \"git\"\ngit = \"https://github.com/latchset/libverto.git\"\n#prefix = \"v\"\n" }
-libvorbis = { version = "1.3.7-4", nvchecker = "[libvorbis]\nsource = \"git\"\ngit = \"https://github.com/xiph/vorbis.git\"\nprefix = \"v\"\n" }
-libwacom = { version = "2.20.0-1", nvchecker = "[libwacom]\nsource = \"github\"\ngithub = \"linuxwacom/libwacom\"\nuse_max_tag = true\n#prefix = \"v\"\nprefix = \"libwacom-\"\n" }
-libwebp = { version = "1.6.0-2", nvchecker = "[libwebp]\nsource = \"git\"\ngit = \"https://chromium.googlesource.com/webm/libwebp\"\ninclude_regex = 'v\\d+(\\.\\d+)*'\nfrom_pattern = '-([a-z])'\nto_pattern = '\\1'\nprefix = \"v\"\n" }
-libx11 = { version = "1.8.14-1", nvchecker = "[libx11]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libX11\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libX11-.*\"\nprefix = \"libX11-\"\n" }
-libxau = { version = "1.0.12-1", nvchecker = "[libxau]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXau\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libXau-.*\"\nprefix = \"libXau-\"\n" }
-libxcb = { version = "1.17.0-1", nvchecker = "[libxcb]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libxcb\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libxcb-.*\"\nprefix = \"libxcb-\"\n" }
-libxcrypt = { version = "4.5.2-1", nvchecker = "[libxcrypt]\nsource = \"git\"\ngit = \"https://github.com/besser82/libxcrypt.git\"\nprefix = \"v\"\n" }
-libxcursor = { version = "1.2.3-1", nvchecker = "[libxcursor]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libxcursor\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libXcursor-.*\"\nprefix = \"libXcursor-\"\n" }
-libxdmcp = { version = "1.1.5-2", nvchecker = "[libxdmcp]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libxdmcp\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libXdmcp-.*\"\nprefix = \"libXdmcp-\"\n" }
-libxext = { version = "1.3.7-1", nvchecker = "[libxext]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXext\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libXext-.*\"\nprefix = \"libXext-\"\n" }
-libxfixes = { version = "6.0.2-1", nvchecker = "[libxfixes]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXfixes\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXfixes-.*\"\nuse_max_tag = true\nprefix = \"libXfixes-\"\n" }
-libxi = { version = "1.8.4-1", nvchecker = "[libxi]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXi\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXi-.*\"\nuse_max_tag = true\nprefix = \"libXi-\"\n" }
-libxinerama = { version = "1.1.6-1", nvchecker = "[libxinerama]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXinerama\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXinerama-.*\"\nuse_max_tag = true\nprefix = \"libXinerama-\"\n" }
-libxkbcommon = { version = "1.13.2-1", nvchecker = "[libxkbcommon]\nsource = \"git\"\ngit = \"https://github.com/xkbcommon/libxkbcommon.git\"\nprefix = \"xkbcommon-\"\n" }
-"libxml++" = { version = "3.2.6-1", nvchecker = "[\"libxml++\"]\nsource = \"git\"\ngit = \"https://github.com/libxmlplusplus/libxmlplusplus.git\"\ninclude_regex = '3\\.\\d*[02468]\\.\\d+'\n" }
-libxpm = { version = "3.5.20-1", nvchecker = "[libxpm]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXpm\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXpm-.*\"\nuse_max_tag = true\nprefix = \"libXpm-\"\n" }
-libxrandr = { version = "1.5.5-1", nvchecker = "[libxrandr]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXrandr\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*libXrandr-.*\"\nprefix = \"libXrandr-\"\n" }
-libxrender = { version = "0.9.13-1", nvchecker = "[libxrender]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXrender\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXrender-.*\"\nuse_max_tag = true\nprefix = \"libXrender-\"\n" }
-libxslt = { version = "1.1.45-2", nvchecker = "[libxslt]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/libxslt.git\"\nprefix = \"v\"\n" }
-libxt = { version = "1.3.1-1", nvchecker = "[libxt]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXt\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXt-.*\"\nuse_max_tag = true\nprefix = \"libXt-\"\n" }
-libxtst = { version = "1.2.6-1", nvchecker = "[libxtst]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXtst\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXtst-.*\"\nuse_max_tag = true\nprefix = \"libXtst-\"\n" }
-libxxf86vm = { version = "1.1.7-1", nvchecker = "[libxxf86vm]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libXxf86vm\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*libXxf86vm-.*\"\nuse_max_tag = true\nprefix = \"libXxf86vm-\"\n" }
+libsamplerate = { version = "0.2.2-3" }
+libsasl = { version = "2.1.28-5" }
+libseccomp = { version = "2.6.0-1" }
+libsecret = { version = "0.21.8.2-1" }
+"libsigc++" = { version = "2.12.2-1" }
+libslirp = { version = "4.9.5-1" }
+libsm = { version = "1.2.6-1" }
+libsndfile = { version = "1.2.2-4" }
+libsodium = { version = "1.0.22-1" }
+libsoup3 = { version = "3.8.0-1" }
+libsoxr = { version = "0.1.3-5" }
+libssh2 = { version = "1.11.1-7" }
+libtasn1 = { version = "4.21.0-1" }
+libthai = { version = "0.1.30-1" }
+libtheora = { version = "1.2.0-1" }
+libtiff = { version = "4.7.2-2" }
+libtirpc = { version = "1.3.8-1" }
+libtool = { version = "2.6.2-5" }
+libunistring = { version = "1.4.2-1" }
+libunwind = { version = "1.8.3-1" }
+liburcu = { version = "0.15.7-1" }
+liburing = { version = "2.15-1" }
+libusb = { version = "1.0.30-1" }
+libusb-compat = { version = "0.1.9-1" }
+libutf8proc = { version = "2.12.0-1" }
+libuv = { version = "1.53.0-1" }
+libva = { version = "2.24.1-1" }
+libvdpau = { version = "1.5-4" }
+libverto = { version = "0.3.2-6" }
+libvorbis = { version = "1.3.7-4" }
+libwacom = { version = "2.20.0-1" }
+libwebp = { version = "1.6.0-2" }
+libx11 = { version = "1.8.14-1" }
+libxau = { version = "1.0.12-1" }
+libxcb = { version = "1.17.0-1" }
+libxcrypt = { version = "4.5.2-1" }
+libxcursor = { version = "1.2.3-1" }
+libxdmcp = { version = "1.1.5-2" }
+libxext = { version = "1.3.7-1" }
+libxfixes = { version = "6.0.2-1" }
+libxi = { version = "1.8.4-1" }
+libxinerama = { version = "1.1.6-1" }
+libxkbcommon = { version = "1.13.2-1" }
+"libxml++" = { version = "3.2.6-1" }
+libxpm = { version = "3.5.20-1" }
+libxrandr = { version = "1.5.5-1" }
+libxrender = { version = "0.9.13-1" }
+libxslt = { version = "1.1.45-2" }
+libxt = { version = "1.3.1-1" }
+libxtst = { version = "1.2.6-1" }
+libxxf86vm = { version = "1.1.7-1" }
 libyaml = { version = "0.2.5-3" }
 libyuv = { version = "r2921+644251f25-1" }
 licenses = { version = "20240728-1" }
-lilv = { version = "0.28.0-1", nvchecker = "[lilv]\nsource = \"git\"\ngit = \"https://gitlab.com/lv2/lilv\"\nprefix = \"v\"\n" }
-linux-api-headers = { version = "7.3-1", nvchecker = "[linux-api-headers]\nsource = \"git\"\ngit = \"https://github.com/torvalds/linux.git\"\ninclude_regex = 'v\\d+\\.\\d+'\nfrom_pattern = '-([a-z])'\nto_pattern = '.\\1'\nprefix = \"v\"\n" }
-linux-firmware = { version = "20260916-1", nvchecker = "[linux-firmware]\nsource = \"git\"\ngit = \"https://gitlab.com/kernel-firmware/linux-firmware.git\"\n" }
-lirc = { version = "1:0.10.2-6", nvchecker = "[lirc]\nsource = 'git'\ngit = 'https://git.code.sf.net/p/lirc/git'\nprefix = 'lirc-'\ninclude_regex = 'lirc-.*'\n" }
-llhttp = { version = "9.3.1-1", nvchecker = "[llhttp]\nsource = \"git\"\ngit = \"https://github.com/nodejs/llhttp.git\"\nprefix = \"v\"\n" }
+lilv = { version = "0.28.0-1" }
+linux-api-headers = { version = "7.3-1" }
+linux-firmware = { version = "20260916-1" }
+lirc = { version = "1:0.10.2-6" }
+llhttp = { version = "9.3.1-1" }
 lm_sensors = { version = "1:3.6.2-1" }
-lmdb = { version = "0.9.35-1", nvchecker = "[lmdb]\nsource = \"git\"\ngit = \"https://git.openldap.org/openldap/openldap.git\"\nprefix = \"LMDB_\"\nexclude_regex = \"^(?!LMDB_).*\"\n" }
-love = { version = "11.5-3", nvchecker = "[love]\nsource = \"git\"\ngit = \"https://github.com/love2d/love.git\"\n" }
-lsd = { version = "1.2.0-2", nvchecker = "[lsd]\nsource = \"git\"\ngit = \"https://github.com/lsd-rs/lsd.git\"\nprefix = \"v\"\n" }
-lua = { version = "5.5.1-1", nvchecker = "[lua]\nsource = \"regex\"\nurl = \"https://www.lua.org/download.html\"\nregex = 'Lua (5\\.[45]\\.\\d+)'\n" }
-lua54 = { version = "5.4.9-1", nvchecker = "[lua54]\nsource = \"regex\"\nurl = \"https://www.lua.org/versions.html\"\nregex = 'ftp/lua-(5\\.4\\.\\d+)\\.tar\\.gz'\n" }
-luajit = { version = "2.1.1792349434+dd3b243-1", nvchecker = "[luajit]\nsource = \"jq\"\nurl = \"https://api.github.com/repos/LuaJIT/LuaJIT/commits/v2.1\"\nfilter = \"\\\"2.1.\\\\(.commit.committer.date | fromdate)+\\\\(.sha[0:7])\\\"\"\n" }
+lmdb = { version = "0.9.35-1" }
+love = { version = "11.5-3" }
+lsd = { version = "1.2.0-2" }
+lua = { version = "5.5.1-1" }
+lua54 = { version = "5.4.9-1" }
+luajit = { version = "2.1.1792349434+dd3b243-1" }
 lv2 = { version = "1.18.10-2" }
-lvm2 = { version = "2.03.43-2", nvchecker = "[lvm2]\nsource = \"git\"\ngit = \"https://gitlab.com/lvmteam/lvm2.git\"\nuse_latest_tag = true\nfrom_pattern = 'v(\\d+)_(\\d+)_(\\d+)'\nto_pattern = '\\1.\\2.\\3'\n" }
-lz4 = { version = "1:1.10.0-2", nvchecker = "[lz4]\nsource = \"git\"\ngit = \"https://github.com/lz4/lz4.git\"\nprefix = \"v\"\n" }
+lvm2 = { version = "2.03.43-2" }
+lz4 = { version = "1:1.10.0-2" }
 lzo = { version = "2.10-5" }
-m4 = { version = "1.4.21-2", nvchecker = "[m4]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/m4.git\"\nprefix = \"v\"\n" }
-man-pages = { version = "6.19-1", nvchecker = "[man-pages]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git\"\nuse_max_tag = true\nprefix = \"man-pages-\"\n" }
-mandoc = { version = "1.14.6-5", nvchecker = "[mandoc]\nsource = \"regex\"\nurl = \"https://mandoc.bsd.lv/\"\nregex = 'current version (\\d+\\.\\d+\\.\\d+) '\n" }
-mc = { version = "4.8.33-1", nvchecker = "[mc]\nsource = \"github\"\ngithub = \"MidnightCommander/mc\"\ninclude_regex = '\\d+\\.\\d+\\.\\d+'\nuse_max_tag = true\n" }
-"memtest86+" = { version = "9.00-1", nvchecker = "[\"memtest86+\"]\nsource = \"git\"\ngit = \"https://github.com/memtest86plus/memtest86plus.git\"\nprefix = \"v\"\n" }
-mesa = { version = "1:26.2.5-1", nvchecker = "[mesa]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/mesa/mesa.git\"\ninclude_regex = 'mesa-\\d+\\.\\d+\\.[1-9]\\d*'\n#include_regex = 'mesa-.*'  # Unstable\nprefix = \"mesa-\"\nfrom_pattern = '-([a-z])'\nto_pattern = '\\1'\n" }
-meson-python = { version = "0.22.1-1", nvchecker = "[meson-python]\nsource = 'github'\ngithub = 'mesonbuild/meson-python'\nuse_max_tag = true\n" }
-mpdecimal = { version = "4.0.1-3", nvchecker = "[mpdecimal]\nsource = \"regex\"\nurl = \"https://www.bytereef.org/mpdecimal/download.html\"\nregex = \">mpdecimal-(.*)\\\\.tar.gz<\"\n" }
-mpfr = { version = "4.2.2-1", nvchecker = "[mpfr]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/mpfr/'\nregex = 'mpfr-([\\d.]+)\\.[a-z]'\n" }
-mpg123 = { version = "1.33.7-1", nvchecker = "[mpg123]\nsource = \"httpheader\"\nurl = \"https://sourceforge.net/projects/mpg123/files/latest/download\"\nregex = \"mpg123-(.*)\\\\.tar.bz2\"\n\n#source = \"regex\"\n#url = \"https://www.mpg123.de/\"\n#regex = 'Releasing mpg123 version (\\d+\\.\\d+\\.\\d+)'\n" }
-mtdev = { version = "1.1.7-1", nvchecker = "[mtdev]\nsource = \"regex\"\nregex = \"mtdev v(\\\\d+.\\\\d+.\\\\d+)\"\nurl = \"https://bitmath.org/code/mtdev/\"\n" }
-mtools = { version = "1:4.0.49-1", nvchecker = "[mtools]\nsource = \"regex\"\nregex = \"mtools-([\\\\d.]+)\\\\.tar\\\\.bz2?\"\nurl = \"https://ftp.gnu.org/gnu/mtools/\"\n" }
-mtr = { version = "0.96-1", nvchecker = "[mtr]\nsource = \"git\"\ngit = \"https://github.com/traviscross/mtr.git\"\nprefix = \"v\"\n" }
-nasm = { version = "3.02-1", nvchecker = "[nasm]\nsource = \"git\"\ngit = \"https://github.com/netwide-assembler/nasm.git\"\ninclude_regex = \"nasm-[\\\\d\\\\.]+\"\nprefix = \"nasm-\"\n" }
-ncdu = { version = "2.9.2-1", nvchecker = "[ncdu]\nsource = \"git\"\ngit = \"https://code.blicky.net/yorhel/ncdu.git\"\nprefix = \"v\"\n" }
-ncurses = { version = "6.6-2", nvchecker = "[ncurses]\nsource = \"regex\"\nregex = 'ncurses-([\\d.]+)\\.tar\\.gz?'\nurl = \"https://invisible-mirror.net/archives/ncurses/\"\n" }
-net-snmp = { version = "5.9.5.2-2", nvchecker = "[net-snmp]\nsource = \"git\"\ngit = \"https://github.com/net-snmp/net-snmp.git\"\nprefix = \"v\"\nexclude_regex = \".*(alpha|beta|pre|rc).*\"\n" }
-nettle = { version = "4.0-1", nvchecker = "[nettle]\nsource = \"gitlab\"\ngitlab = \"nettle/nettle\"\nhost = \"git.lysator.liu.se\"\nuse_max_tag = true\n# from_pattern = 'nettle_(\\d+).(\\d+).(\\d+)_release_(\\d+)'\n# to_pattern = '\\1.\\2.\\3'\nfrom_pattern = 'nettle_(\\d+).(\\d+)_release_(\\d+)'\nto_pattern = '\\1.\\2'\n# exclude_regex = \".*(pre|a|alpha|b|beta|rc).*\"\nexclude_regex = \".*rc.*\"\n" }
-nftables = { version = "1:1.1.7-3", nvchecker = "[nftables]\nsource = \"git\"\ngit = \"https://git.netfilter.org/nftables\"\nprefix = \"v\"\n" }
-ninja = { version = "1.13.2-3", nvchecker = "[ninja]\nsource = \"git\"\ngit = \"https://github.com/ninja-build/ninja.git\"\nprefix = \"v\"\n" }
-npth = { version = "1.8-1", nvchecker = "[npth]\nsource = \"git\"\ngit = \"https://dev.gnupg.org/source/npth.git\"\nprefix = \"npth-\"\n" }
-nspr = { version = "4.40-1", nvchecker = "[nspr]\nsource = \"git\"\ngit = \"https://github.com/mozilla/nspr.git\"\ninclude_regex = 'NSPR_(\\d+_)+RTM'\nfrom_pattern = 'NSPR_(\\d+)_(\\d+)_RTM'\nto_pattern = '\\1.\\2'\n" }
-nss = { version = "3.131-1", nvchecker = "[nss]\nsource = \"jq\"\nurl = \"https://hg.mozilla.org/projects/nss/json-tags\"\nfilter = '.tags[].tag | select(test(\"NSS_.*_RTM\")) | split(\"_\")[1:-1] | join(\".\")'\n" }
-ntfs-3g = { version = "2026.9.28-1", nvchecker = "[ntfs-3g]\nsource = \"git\"\ngit = \"https://github.com/tuxera/ntfs-3g.git\"\nprefix = \"v\"\n" }
-numactl = { version = "2.0.19-1", nvchecker = "[numactl]\nsource = \"git\"\ngit = \"https://github.com/numactl/numactl.git\"\nprefix = \"v\"\n" }
-ocl-icd = { version = "2.3.5-1", nvchecker = "[ocl-icd]\nsource = \"git\"\ngit = \"https://github.com/OCL-dev/ocl-icd.git\"\nprefix = \"v\"\n" }
-onetbb = { version = "2023.1.0-1", nvchecker = "[onetbb]\nsource = \"git\"\ngit = \"https://github.com/oneapi-src/oneTBB.git\"\nprefix = \"v\"\nexclude_regex = \".*(pre|a|alpha|b|beta|rc).*\"\n" }
-openal = { version = "1.25.2-2", nvchecker = "[openal]\nsource = \"git\"\ngit = \"https://github.com/kcat/openal-soft.git\"\n" }
+m4 = { version = "1.4.21-2" }
+man-pages = { version = "6.19-1" }
+mandoc = { version = "1.14.6-5" }
+mc = { version = "4.8.33-1" }
+"memtest86+" = { version = "9.00-1" }
+mesa = { version = "1:26.2.5-1" }
+meson-python = { version = "0.22.1-1" }
+mpdecimal = { version = "4.0.1-3" }
+mpfr = { version = "4.2.2-1" }
+mpg123 = { version = "1.33.7-1" }
+mtdev = { version = "1.1.7-1" }
+mtools = { version = "1:4.0.49-1" }
+mtr = { version = "0.96-1" }
+nasm = { version = "3.02-1" }
+ncdu = { version = "2.9.2-1" }
+ncurses = { version = "6.6-2" }
+net-snmp = { version = "5.9.5.2-2" }
+nettle = { version = "4.0-1" }
+nftables = { version = "1:1.1.7-3" }
+ninja = { version = "1.13.2-3" }
+npth = { version = "1.8-1" }
+nspr = { version = "4.40-1" }
+nss = { version = "3.131-1" }
+ntfs-3g = { version = "2026.9.28-1" }
+numactl = { version = "2.0.19-1" }
+ocl-icd = { version = "2.3.5-1" }
+onetbb = { version = "2023.1.0-1" }
+openal = { version = "1.25.2-2" }
 opendoas = { version = "6.8.2-3" }
-openexr = { version = "3.5.2-1", nvchecker = "[openexr]\nsource = 'github'\ngithub = 'AcademySoftwareFoundation/openexr'\nuse_latest_release = true\nprefix = 'v'\n" }
-openh264 = { version = "2.6.0-2", nvchecker = "[openh264]\nsource = \"git\"\ngit = \"https://github.com/cisco/openh264.git\"\nprefix = \"v\"\n" }
-openjpeg2 = { version = "2.5.4-1", nvchecker = "[openjpeg2]\nsource = \"github\"\ngithub = \"uclouvain/openjpeg\"\nuse_max_tag = true\nprefix = \"v\"\n" }
-openjph = { version = "0.32.0-1", nvchecker = "[openjph]\nsource = 'git'\ngit = 'https://github.com/aous72/OpenJPH/'\n" }
-openldap = { version = "2.7.1-1", nvchecker = "[openldap]\nsource = 'regex'\nurl = 'https://www.openldap.org/software/download/OpenLDAP/openldap-release/'\nencoding = 'utf8'\nregex = 'openldap-([\\d.]+).tgz'\n" }
-openmpi = { version = "5.0.11-1", nvchecker = "[openmpi]\nsource = \"git\"\ngit = \"https://github.com/open-mpi/ompi\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
-openpmix = { version = "5.0.11-1", nvchecker = "[openpmix]\nsource = \"git\"\ngit = \"https://github.com/openpmix/openpmix\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
-openssl = { version = "3.6.5-1", nvchecker = "[openssl]\nsource = 'git'\ngit = 'https://github.com/openssl/openssl.git'\nprefix = 'openssl-'\ninclude_regex = 'openssl-[0-9]+\\.[0-9]+\\.[0-9]+'\n\n#source = \"regex\"\n#url = \"https://openssl-library.org/source/index.html\"\n#regex = \"openssl-(\\\\d+\\\\.\\\\d+\\\\.\\\\d+).tar.gz\"\n" }
-openucx = { version = "1.20.1-3", nvchecker = "[openucx]\nsource = \"git\"\ngit = \"https://github.com/openucx/ucx\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
-opus = { version = "1.6.1-1", nvchecker = "[opus]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/opus.git\"\nprefix = \"v\"\n" }
-orc = { version = "0.4.44-1", nvchecker = "[orc]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/gstreamer/orc.git\"\n" }
-p11-kit = { version = "0.26.5-1", nvchecker = "[p11-kit]\nsource = \"git\"\ngit = \"https://github.com/p11-glue/p11-kit.git\"\n" }
-pacman = { version = "7.1.0.r9.g54d9411-3", nvchecker = "[pacman]\nsource = \"gitlab\"\ngitlab = \"pacman/pacman\"\nhost = \"gitlab.archlinux.org\"\nuse_max_tag = true\nprefix = \"v\"\n" }
+openexr = { version = "3.5.2-1" }
+openh264 = { version = "2.6.0-2" }
+openjpeg2 = { version = "2.5.4-1" }
+openjph = { version = "0.32.0-1" }
+openldap = { version = "2.7.1-1" }
+openmpi = { version = "5.0.11-1" }
+openpmix = { version = "5.0.11-1" }
+openssl = { version = "3.6.5-1" }
+openucx = { version = "1.20.1-3" }
+opus = { version = "1.6.1-1" }
+orc = { version = "0.4.44-1" }
+p11-kit = { version = "0.26.5-1" }
+pacman = { version = "7.1.0.r9.g54d9411-3" }
 pacman-mirrorlist = { version = "20260322-1" }
-pam = { version = "1.7.3-1", nvchecker = "[pam]\nsource = \"git\"\ngit = \"https://github.com/linux-pam/linux-pam.git\"\nprefix = \"v\"\n" }
-pambase = { version = "20260616-1", nvchecker = "[pambase]\nsource = \"manual\"\n" }
-pango = { nvchecker = "[pango]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/pango.git\"\n# include_regex = '\\d+\\.\\d*[02468]\\.\\d+'\ninclude_regex = '\\d+\\.\\d+\\.\\d+'\n" }
-patch = { version = "2.8.1-1", nvchecker = "[patch]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/patch.git\"\nprefix = \"v\"\n" }
-patchelf = { version = "0.19.3-1", nvchecker = "[patchelf]\nsource = \"git\"\ngit = \"https://github.com/NixOS/patchelf.git\"\n" }
-pciutils = { version = "3.15.0-1", nvchecker = "[pciutils]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git\"\nprefix = \"v\"\n" }
-pcre = { version = "8.45-5", nvchecker = "[pcre]\nsource = 'regex'\nurl = 'https://sourceforge.net/projects/pcre/best_release.json'\nregex = 'pcre-([\\d.]+).tar'\n" }
-pcre2 = { version = "10.49-1", nvchecker = "[pcre2]\nsource = \"git\"\ngit = \"https://github.com/PCRE2Project/pcre2\"\nexclude_regex = '.*(alpha|beta|pre|rc|RC).*'\nprefix = \"pcre2-\"\n" }
+pam = { version = "1.7.3-1" }
+pambase = { version = "20260616-1" }
+patch = { version = "2.8.1-1" }
+patchelf = { version = "0.19.3-1" }
+pciutils = { version = "3.15.0-1" }
+pcre = { version = "8.45-5" }
+pcre2 = { version = "10.49-1" }
 picocom = { version = "3.1-3" }
-pinentry = { version = "1.3.3-1", nvchecker = "[pinentry]\nsource = \"regex\"\nurl = \"https://www.gnupg.org/ftp/gcrypt/pinentry/\"\nregex = \"pinentry-([^\\\"]*)\\\\.tar\"\nexclude_regex = \".*diff.*\"\n" }
-pipewire = { version = "1:1.6.9-1", nvchecker = "[pipewire]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pipewire/pipewire.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
-pixman = { version = "0.46.4-1", nvchecker = "[pixman]\nsource = \"gitlab\"\ngitlab = \"pixman/pixman\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\nprefix = \"pixman-\"\n" }
-pkgconf = { version = "3.0.10-1", nvchecker = "[pkgconf]\nsource = \"git\"\ngit = \"https://github.com/pkgconf/pkgconf\"\ninclude_regex = 'pkgconf-(\\d+\\.)*([1-8]\\d*)?\\d'\nprefix = \"pkgconf-\"\n" }
-polkit = { version = "128-1", nvchecker = "[polkit]\nsource = \"git\"\ngit = \"https://github.com/polkit-org/polkit.git\"\n" }
-poppler = { version = "26.10.0-1", nvchecker = "[poppler]\nsource = \"gitlab\"\ngitlab = \"poppler/poppler\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\nprefix = \"poppler-\"\n" }
-popt = { version = "1.19-2", nvchecker = "[popt]\nsource = \"git\"\ngit = \"https://github.com/rpm-software-management/popt.git\"\nfrom_pattern = 'popt-(\\d+).(\\d+)-release'\nto_pattern = '\\1.\\2'\nuse_max_tag = true\n" }
-portaudio = { version = "1:19.7.0-4", nvchecker = "[portaudio]\nsource = \"git\"\ngit = \"https://github.com/portaudio/portaudio.git\"\nprefix = \"v\"\n" }
-procps-ng = { version = "4.0.7-1", nvchecker = "[procps-ng]\nsource = \"git\"\ngit = \"https://gitlab.com/procps-ng/procps.git\"\nprefix = \"v\"\nexclude_regex = \".*rc.*\"\n" }
-prrte = { version = "3.0.14-1", nvchecker = "[prrte]\nsource = \"git\"\ngit = \"https://github.com/openpmix/prrte\"\nprefix = \"v\"\nexclude_regex = \".*(pre|rc|alpha|beta).*\"\n" }
-psmisc = { version = "23.7-2", nvchecker = "[psmisc]\nsource = \"git\"\ngit = \"https://gitlab.com/psmisc/psmisc.git\"\nprefix = \"v\"\n" }
-pt2-clone = { version = "1.92-1", nvchecker = "[pt2-clone]\nsource = \"git\"\ngit = \"https://github.com/8bitbubsy/pt2-clone.git\"\nprefix = \"v\"\n" }
-publicsuffix-list = { version = "20260507.2070.ee780bcf-1", nvchecker = "[publicsuffix-list]\nsource = \"manual\"\n" }
-pulseaudio = { version = "17.0+r134+g77d25a1e6-1", nvchecker = "[pulseaudio]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git\"\nprefix = \"v\"\n" }
-pygobject = { version = "3.58.1-1", nvchecker = "[pygobject]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/pygobject.git\"\ninclude_regex = '\\d+\\.\\d*[02468]\\.\\d+'\n" }
-python = { version = "3.14.10-1", nvchecker = "[python]\nsource = \"git\"\ngit = \"https://github.com/python/cpython.git\"\nprefix = \"v\"\nexclude_regex = \".*(a|b|rc).*\"\n" }
-python-build = { version = "1.6.1-1", nvchecker = "[python-build]\nsource = \"git\"\ngit = \"https://github.com/pypa/build.git\"\nprefix = \"v\"\n" }
-python-cairo = { version = "1.29.2-1", nvchecker = "[python-cairo]\nsource = \"github\"\ngithub = \"pygobject/pycairo\"\nprefix = \"v\"\nuse_max_tag = true\n" }
-python-calver = { version = "2025.10.20-1", nvchecker = "[python-calver]\nsource = \"git\"\ngit = \"https://github.com/di/calver.git\"\n" }
-python-certifi = { version = "2026.10.23-1", nvchecker = "[python-certifi]\nsource = \"git\"\ngit = \"https://github.com/certifi/python-certifi\"\n" }
-python-charset-normalizer = { version = "3.5.1-1", nvchecker = "[python-charset-normalizer]\nsource = \"git\"\ngit = \"https://github.com/Ousret/charset_normalizer.git\"\n" }
-python-commonmark = { version = "0.9.2-1", nvchecker = "[python-commonmark]\nsource = \"github\"\ngithub = \"readthedocs/commonmark.py\"\nuse_max_tag = true\n" }
-python-distro = { version = "1.9.0-4", nvchecker = "[python-distro]\nsource = \"git\"\ngit = \"https://github.com/python-distro/distro.git\"\nprefix = \"v\"\n" }
-python-docutils = { version = "1:0.23-1", nvchecker = "[python-docutils]\nsource = \"pypi\"\npypi = \"docutils\"\n" }
-python-evdev = { version = "2.0.0-1", nvchecker = "[python-evdev]\nsource = \"git\"\ngit = \"https://github.com/gvalkov/python-evdev.git\"\nprefix = \"v\"\n" }
-python-flit-core = { version = "4.2.0-1", nvchecker = "[python-flit-core]\nsource = \"git\"\ngit = \"https://github.com/pypa/flit.git\"\n" }
-python-hatchling = { version = "1.32.4-1", nvchecker = "[python-hatchling]\nsource = \"pypi\"\npypi = \"hatchling\"\n" }
-python-idna = { version = "3.20-1", nvchecker = "[python-idna]\nsource = \"git\"\ngit = \"https://github.com/kjd/idna.git\"\nprefix = \"v\"\n" }
-python-installer = { version = "1.1.0-1", nvchecker = "[python-installer]\nsource = \"git\"\ngit = \"https://github.com/pypa/installer.git\"\n" }
-python-lxml = { version = "6.1.3_1-1", nvchecker = "[python-lxml]\nsource = \"git\"\ngit = \"https://github.com/lxml/lxml.git\"\nprefix=\"lxml-\"\nfrom_pattern = \"-\"\nto_pattern = \"_\"\nexclude_regex = \".*(a|b).*\"\n" }
-python-mako = { version = "1.4.3-1", nvchecker = "[python-mako]\nsource = \"pypi\"\npypi = \"mako\"\n" }
-python-markdown = { version = "3.11.3-1", nvchecker = "[python-markdown]\nsource = \"git\"\ngit = \"https://github.com/Python-Markdown/markdown.git\"\n" }
-python-markupsafe = { version = "3.0.4-1", nvchecker = "[python-markupsafe]\nsource = \"git\"\ngit = \"https://github.com/pallets/markupsafe.git\"\n" }
-python-numpy = { version = "2.5.4-1", nvchecker = "[python-numpy]\nsource = \"git\"\ngit = \"https://github.com/numpy/numpy.git\"\nprefix = \"v\"\nexclude_regex = \".*(dev|pre|a|alpha|b|beta|rc).*\"\n" }
-python-packaging = { version = "26.3-1", nvchecker = "[python-packaging]\nsource = \"git\"\ngit = \"https://github.com/pypa/packaging.git\"\nexclude_regex = \".*(beta|rc).*\"\n" }
-python-pathspec = { version = "1.1.1-1", nvchecker = "[python-pathspec]\nsource = \"git\"\ngit = \"https://github.com/cpburnz/python-pathspec.git\"\nprefix = \"v\"\n" }
-python-pluggy = { version = "1.7.0-1", nvchecker = "[python-pluggy]\nsource = \"git\"\ngit = \"https://github.com/pytest-dev/pluggy.git\"\n" }
-python-ply = { version = "3.11-17", nvchecker = "[python-ply]\nsource = \"pypi\"\npypi = \"ply\"\n" }
-python-poetry-core = { version = "2.5.0-1", nvchecker = "[python-poetry-core]\nsource = \"github\"\ngithub = \"python-poetry/poetry-core\"\nuse_max_tag = true\n" }
-python-pycparser = { version = "3.12-1", nvchecker = "[python-pycparser]\nsource = \"git\"\ngit = \"https://github.com/eliben/pycparser.git\"\nprefix = \"release_v\"\ninclude_regex = \"release_v.*\"\n" }
-python-pygments = { version = "2.21.0-1", nvchecker = "[python-pygments]\nsource = \"pypi\"\npypi = \"pygments\"\n" }
-python-pyproject-hooks = { version = "1.3.3-1", nvchecker = "[python-pyproject-hooks]\nsource = \"pypi\"\npypi = \"pyproject-hooks\"\n" }
-python-pyproject-metadata = { version = "0.9.0-3", nvchecker = "[python-pyproject-metadata]\nsource = \"pypi\"\npypi = \"pyproject-metadata\"\n" }
-python-requests = { version = "2.34.2-1", nvchecker = "[python-requests]\nsource = \"git\"\ngit = \"https://github.com/psf/requests.git\"\nprefix = \"v\"\nexclude_regex = \".*(weekly|rc|alpha|beta|dev).*\"\n" }
-python-setuptools = { version = "1:84.2.1-1", nvchecker = "[python-setuptools]\nsource = \"git\"\ngit = \"https://github.com/pypa/setuptools.git\"\nprefix = \"v\"\n" }
-python-setuptools-scm = { version = "10.3.4-1", nvchecker = "[python-setuptools-scm]\nsource = \"git\"\ngit = \"https://github.com/pypa/setuptools_scm.git\"\nprefix = \"setuptools-scm-v\"\ninclude_regex = 'setuptools-scm-v.*'\n" }
-python-tomlkit = { version = "0.15.2-1", nvchecker = "[python-tomlkit]\nsource = \"pypi\"\npypi = \"tomlkit\"\n" }
-python-trove-classifiers = { version = "2026.9.21.13-1", nvchecker = "[python-trove-classifiers]\nsource = \"git\"\ngit = \"https://github.com/pypa/trove-classifiers.git\"\n" }
-python-urllib3 = { version = "2.8.0-1", nvchecker = "[python-urllib3]\nsource = \"git\"\ngit = \"https://github.com/urllib3/urllib3.git\"\nprefix = \"v\"\n" }
-python-vcs-versioning = { version = "2.6.0-1", nvchecker = "[python-vcs-versioning]\nsource = 'git'\ngit = 'https://github.com/pypa/setuptools-scm.git'\nprefix = 'vcs-versioning-v'\ninclude_regex = 'vcs-versioning-v.*'\n" }
-python-wheel = { version = "0.48.0-1", nvchecker = "[python-wheel]\nsource = \"pypi\"\npypi = \"wheel\"\n" }
-python-yaml = { version = "6.0.3-2", nvchecker = "[python-yaml]\nsource = \"pypi\"\npypi = \"pyyaml\"\n" }
-quickjs-ng = { version = "0.18.0-1", nvchecker = "[quickjs-ng]\nsource = \"git\"\ngit = \"https://github.com/quickjs-ng/quickjs.git\"\nprefix = \"v\"\n" }
-rav1e = { version = "0.8.1-3", nvchecker = "[rav1e]\nsource = \"git\"\ngit = \"https://github.com/xiph/rav1e.git\"\ninclude_regex = \"v[\\\\d\\\\.]+\"\nprefix = \"v\"\n" }
-readline = { version = "8.3.6-1", nvchecker = "[\"readline:base\"]\nsource = \"htmlparser\"\nurl = \"https://cgit.git.savannah.gnu.org/cgit/readline.git/commit/\"\nxpath = \"//div[@class='commit-subject']\"\nfrom_pattern = '[rR]eadline-([\\d.]+)(\\s+patch\\s+(\\d+))?.*'\nto_pattern = '\\1\\2'\n\n[readline]\nsource = \"combiner\"\nfrom = [\"readline:base\"]\nformat = \"$1\"\nfrom_pattern = \" patch \"\nto_pattern = \".\"\n" }
-ripgrep = { version = "15.2.0-1", nvchecker = "[ripgrep]\nsource = \"git\"\ngit = \"https://github.com/BurntSushi/ripgrep.git\"\n" }
-rsync = { version = "3.5.1-3", nvchecker = "[rsync]\nsource = \"git\"\ngit = \"https://github.com/RsyncProject/rsync.git\"\nprefix = \"v\"\nexclude_regex = \".*pre.*\"\n" }
-sane = { version = "1.4.0-4", nvchecker = "[sane]\nsource = \"git\"\ngit = \"https://gitlab.com/sane-project/backends\"\n" }
-sbc = { version = "2.2-1", nvchecker = "[sbc]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/bluetooth/sbc.git\"\n" }
-sbsigntools = { version = "0.9.5-4", nvchecker = "[sbsigntools]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git\"\nprefix = \"v\"\n" }
-scdoc = { version = "1.11.5-1", nvchecker = "[scdoc]\nsource = \"git\"\ngit = \"https://git.sr.ht/~sircmpwn/scdoc\"\n" }
-seatd = { version = "0.9.3-1", nvchecker = "[seatd]\nsource = \"git\"\ngit = \"https://git.sr.ht/~kennylevinsen/seatd\"\n" }
-sed = { version = "4.10-2", nvchecker = "[sed]\nsource = \"regex\"\nurl = \"https://ftp.gnu.org/gnu/sed/\"\nregex = \"sed-([\\\\d\\\\.]+).tar\"\n" }
-serd = { version = "0.32.10-1", nvchecker = "[serd]\nsource = \"git\"\ngit = \"https://gitlab.com/drobilla/serd\"\nprefix = \"v\"\n" }
-shaderc = { version = "2026.4-1", nvchecker = "[shaderc]\nsource = \"git\"\ngit = \"https://github.com/google/shaderc.git\"\nprefix = \"v\"\n" }
-shadow = { version = "4.20.0.arch1-1", nvchecker = "[shadow]\nsource = \"git\"\ngit = \"https://gitlab.archlinux.org/archlinux/packaging/upstream/shadow\"\ninclude_regex = '^[\\d.]+-(arch[\\d]+)$'\nfrom_pattern = '([\\d.]+)-(arch[\\d]+)'\nto_pattern = '\\1.\\2'\n" }
-shared-mime-info = { version = "2.5.1-2", nvchecker = "[shared-mime-info]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/xdg/shared-mime-info.git\"\n" }
-sl = { version = "5.05-6", nvchecker = "[sl]\nsource = \"git\"\ngit = \"https://github.com/eyJhb/sl.git\"\n" }
+pinentry = { version = "1.3.3-1" }
+pipewire = { version = "1:1.6.9-1" }
+pixman = { version = "0.46.4-1" }
+pkgconf = { version = "3.0.10-1" }
+polkit = { version = "128-1" }
+poppler = { version = "26.10.0-1" }
+popt = { version = "1.19-2" }
+portaudio = { version = "1:19.7.0-4" }
+procps-ng = { version = "4.0.7-1" }
+prrte = { version = "3.0.14-1" }
+psmisc = { version = "23.7-2" }
+pt2-clone = { version = "1.92-1" }
+publicsuffix-list = { version = "20260507.2070.ee780bcf-1" }
+pulseaudio = { version = "17.0+r134+g77d25a1e6-1" }
+pygobject = { version = "3.58.1-1" }
+python = { version = "3.14.10-1" }
+python-build = { version = "1.6.1-1" }
+python-cairo = { version = "1.29.2-1" }
+python-calver = { version = "2025.10.20-1" }
+python-certifi = { version = "2026.10.23-1" }
+python-charset-normalizer = { version = "3.5.1-1" }
+python-commonmark = { version = "0.9.2-1" }
+python-distro = { version = "1.9.0-4" }
+python-docutils = { version = "1:0.23-1" }
+python-evdev = { version = "2.0.0-1" }
+python-flit-core = { version = "4.2.0-1" }
+python-hatchling = { version = "1.32.4-1" }
+python-idna = { version = "3.20-1" }
+python-installer = { version = "1.1.0-1" }
+python-lxml = { version = "6.1.3_1-1" }
+python-mako = { version = "1.4.3-1" }
+python-markdown = { version = "3.11.3-1" }
+python-markupsafe = { version = "3.0.4-1" }
+python-numpy = { version = "2.5.4-1" }
+python-packaging = { version = "26.3-1" }
+python-pathspec = { version = "1.1.1-1" }
+python-pluggy = { version = "1.7.0-1" }
+python-ply = { version = "3.11-17" }
+python-poetry-core = { version = "2.5.0-1" }
+python-pycparser = { version = "3.12-1" }
+python-pygments = { version = "2.21.0-1" }
+python-pyproject-hooks = { version = "1.3.3-1" }
+python-pyproject-metadata = { version = "0.9.0-3" }
+python-requests = { version = "2.34.2-1" }
+python-setuptools = { version = "1:84.2.1-1" }
+python-setuptools-scm = { version = "10.3.4-1" }
+python-tomlkit = { version = "0.15.2-1" }
+python-trove-classifiers = { version = "2026.9.21.13-1" }
+python-urllib3 = { version = "2.8.0-1" }
+python-vcs-versioning = { version = "2.6.0-1" }
+python-wheel = { version = "0.48.0-1" }
+python-yaml = { version = "6.0.3-2" }
+quickjs-ng = { version = "0.18.0-1" }
+rav1e = { version = "0.8.1-3" }
+readline = { version = "8.3.6-1" }
+ripgrep = { version = "15.2.0-1" }
+rsync = { version = "3.5.1-3" }
+sane = { version = "1.4.0-4" }
+sbc = { version = "2.2-1" }
+sbsigntools = { version = "0.9.5-4" }
+scdoc = { version = "1.11.5-1" }
+seatd = { version = "0.9.3-1" }
+sed = { version = "4.10-2" }
+serd = { version = "0.32.10-1" }
+shaderc = { version = "2026.4-1" }
+shadow = { version = "4.20.0.arch1-1" }
+shared-mime-info = { version = "2.5.1-2" }
+sl = { version = "5.05-6" }
 slang = { version = "2.3.3-4" }
-sof-bin = { version = "2026.09.2-1", nvchecker = "[sof-bin]\nsource = \"git\"\ngit = \"https://github.com/thesofproject/sof-bin.git\"\nprefix = \"v\"\n" }
-sord = { version = "0.16.22-1", nvchecker = "[sord]\nsource = \"git\"\ngit = \"https://gitlab.com/drobilla/sord\"\nprefix = \"v\"\n" }
-spandsp = { version = "0.0.6-7", nvchecker = "[spandsp]\nsource = \"regex\"\nurl = \"https://www.soft-switch.org/downloads/spandsp/\"\nregex = \"spandsp-([^\\\"]*).tar.gz\"\n" }
-speexdsp = { version = "1.2.1-3", nvchecker = "[speexdsp]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/speexdsp.git\"\nprefix = \"SpeexDSP-\"\n" }
-spirv-headers = { version = "1:1.4.363.0-1", nvchecker = "[spirv-headers]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/SPIRV-Headers.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
-spirv-llvm-translator = { version = "23.1.2-1", nvchecker = "[spirv-llvm-translator]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/SPIRV-LLVM-Translator.git\"\nprefix = \"v\"\n" }
-spirv-tools = { version = "1:1.4.363.0-1", nvchecker = "[spirv-tools]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/SPIRV-Tools.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
-sqlite = { version = "3.54.0-1", nvchecker = "[sqlite]\nsource = \"regex\"\nregex = \"Version (\\\\d+.\\\\d+.\\\\d+)\"\nurl = \"https://www.sqlite.org/index.html\"\n" }
-sratom = { version = "0.6.22-1", nvchecker = "[sratom]\nsource = \"git\"\ngit = \"https://gitlab.com/lv2/sratom\"\nprefix = \"v\"\n" }
-strace = { version = "7.3-1", nvchecker = "[strace]\nsource = \"git\"\ngit = \"https://github.com/strace/strace.git\"\nprefix = \"v\"\n" }
-syslinux = { version = "6.04.pre3.r3.g05ac953c-5", nvchecker = "[syslinux]\nsource = \"git\"\ngit = \"https://repo.or.cz/syslinux.git\"\nprefix = \"syslinux-\"\ninclude_regex = \"^syslinux-.*\"\n" }
-sysprof = { version = "51.0-1", nvchecker = "[sysprof]\nsource = \"git\"\ngit = \"https://gitlab.gnome.org/GNOME/sysprof.git\"\ninclude_regex = '\\d+(\\.\\d+)*'\nfrom_pattern = '\\.([a-z])'\nto_pattern = '\\1'\n" }
-systemd = { version = "262.1-1", nvchecker = "[systemd]\nsource = \"git\"\ngit = \"https://github.com/systemd/systemd.git\"\nprefix = \"v\"\nexclude_regex = \".*rc.*\"\n" }
-tar = { version = "1.35-5", nvchecker = "[tar]\nsource = \"git\"\ngit = \"https://git.savannah.gnu.org/git/tar.git\"\nprefix = \"v\"\n" }
-tcc = { version = "0.9.27.r1337.gb39cbc70-1", nvchecker = "[tcc]\nsource = \"git\"\ngit = \"https://repo.or.cz/tinycc.git\"\nfrom_pattern = 'release_(\\d+)_(\\d+)_(\\d+)'\nto_pattern = '\\1.\\2.\\3'\n" }
-tcl = { version = "9.0.1-1", nvchecker = "[tcl]\nsource = \"httpheader\"\nurl = \"https://sourceforge.net/projects/tcl/files/latest/download\"\nregex = 'tcl(\\d+\\.\\d+\\.\\d+)-src.tar.gz'\n\n" }
-tdb = { version = "1.4.15-2", nvchecker = "[tdb]\nsource = \"regex\"\nurl = \"https://www.samba.org/ftp/tdb/\"\nregex = \"tdb-(\\\\d+\\\\.\\\\d+\\\\.\\\\d+).tar.gz\"\n" }
+sof-bin = { version = "2026.09.2-1" }
+sord = { version = "0.16.22-1" }
+spandsp = { version = "0.0.6-7" }
+speexdsp = { version = "1.2.1-3" }
+spirv-headers = { version = "1:1.4.363.0-1" }
+spirv-llvm-translator = { version = "23.1.2-1" }
+spirv-tools = { version = "1:1.4.363.0-1" }
+sqlite = { version = "3.54.0-1" }
+sratom = { version = "0.6.22-1" }
+strace = { version = "7.3-1" }
+syslinux = { version = "6.04.pre3.r3.g05ac953c-5" }
+sysprof = { version = "51.0-1" }
+systemd = { version = "262.1-1" }
+tar = { version = "1.35-5" }
+tcc = { version = "0.9.27.r1337.gb39cbc70-1" }
+tcl = { version = "9.0.1-1" }
+tdb = { version = "1.4.15-2" }
 terminus-font = { version = "4.49.1-8" }
-the_silver_searcher = { version = "2.2.0-4", nvchecker = "[the_silver_searcher]\nsource = \"git\"\ngit = \"https://github.com/aswild/the_silver_searcher.git\"\n" }
-tig = { version = "2.6.1-1", nvchecker = "[tig]\nsource = \"git\"\ngit = \"https://github.com/jonas/tig.git\"\nprefix = \"tig-\"\n" }
-tinyionice = { version = "1.0.4-3", nvchecker = "[tinyionice]\nsource = \"git\"\ngit = \"https://github.com/xyproto/tinyionice.git\"\nprefix = \"v\"\n" }
-tinyxml2 = { version = "11.0.0-2", nvchecker = "[tinyxml2]\nsource = \"git\"\ngit = \"https://github.com/leethomason/tinyxml2.git\"\n" }
-tllist = { version = "1.1.0-2", nvchecker = "[tllist]\nsource = \"git\"\ngit = \"https://codeberg.org/dnkl/tllist.git\"\n" }
-tpm2-tss = { version = "4.2.0-2", nvchecker = "[tpm2-tss]\nsource = \"git\"\ngit = \"https://github.com/tpm2-software/tpm2-tss.git\"\nexclude_regex = \".*(alpha|beta|rc).*\"\n" }
-ttf-dejavu = { version = "2.37+18+g9b5d1b2f-8", nvchecker = "[ttf-dejavu]\nsource = \"github\"\ngithub = \"dejavu-fonts/dejavu-fonts\"\nfrom_pattern = \"version_(\\\\d+)_(\\\\d+)\"\nto_pattern = \"\\\\1.\\\\2\"\nuse_max_tag = true\n" }
-ttf-jetbrains-mono = { version = "2.304-2", nvchecker = "[ttf-jetbrains-mono]\nsource = \"git\"\ngit = \"https://github.com/JetBrains/JetBrainsMono.git\"\nprefix = \"v\"\n" }
-tty-solitaire = { version = "1.4.1-1", nvchecker = "[tty-solitaire]\nsource = \"git\"\ngit = \"https://github.com/mpereira/tty-solitaire.git\"\nprefix = \"v\"\n" }
+the_silver_searcher = { version = "2.2.0-4" }
+tig = { version = "2.6.1-1" }
+tinyionice = { version = "1.0.4-3" }
+tinyxml2 = { version = "11.0.0-2" }
+tllist = { version = "1.1.0-2" }
+tpm2-tss = { version = "4.2.0-2" }
+ttf-dejavu = { version = "2.37+18+g9b5d1b2f-8" }
+ttf-jetbrains-mono = { version = "2.304-2" }
+tty-solitaire = { version = "1.4.1-1" }
 twolame = { version = "0.4.0-4" }
-tzdata = { version = "2026e-1", nvchecker = "[tzdata]\nsource = \"git\"\ngit = \"https://github.com/eggert/tz.git\"\nsort_version_key = \"vercmp\"\n" }
+tzdata = { version = "2026e-1" }
 unarj = { version = "2.65-2" }
-unixodbc = { version = "2.3.14-1", nvchecker = "[unixodbc]\nsource = \"github\"\ngithub = \"lurcher/unixODBC\"\nuse_max_tag = true\nprefix = \"v\"\nexclude_regex = \".*(pre|a|alpha|b|beta|rc).*\"\n# include_regex = 'v\\d+\\.\\d+\\.\\d+'\n" }
-unrar = { version = "1:7.3.1-1", nvchecker = "[unrar]\nsource = 'regex'\nurl = 'https://www.rarlab.com/rar_add.htm'\nregex = 'rar/unrarsrc-([\\d.]+).tar.gz'\n" }
+unixodbc = { version = "2.3.14-1" }
+unrar = { version = "1:7.3.1-1" }
 unzip = { version = "6.0-23" }
-usbutils = { version = "020-1", nvchecker = "[usbutils]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usbutils.git\"\nprefix = \"v\"\n" }
-util-linux = { version = "2.42.4-1", nvchecker = "[util-linux]\nsource = \"git\"\ngit = \"https://github.com/util-linux/util-linux.git\"\nprefix = \"v\"\nexclude_regex = \".*rc.*\"\n" }
-v4l-utils = { version = "1.32.0-2", nvchecker = "[v4l-utils]\nsource = \"git\"\ngit = \"https://git.linuxtv.org/v4l-utils.git\"\nprefix = \"v4l-utils-\"\n" }
-vorbis-tools = { version = "1.4.3-1", nvchecker = "[vorbis-tools]\nsource = \"git\"\ngit = \"https://gitlab.xiph.org/xiph/vorbis-tools.git\"\nprefix = \"v\"\n" }
-vulkan-headers = { version = "1:1.4.363.0-1", nvchecker = "[vulkan-headers]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/Vulkan-Headers.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
-vulkan-icd-loader = { version = "1.4.363.0-1", nvchecker = "[vulkan-icd-loader]\nsource = \"git\"\ngit = \"https://github.com/KhronosGroup/Vulkan-Loader.git\"\ninclude_regex = 'vulkan-sdk-\\d+(\\.\\d+)*'\nprefix = \"vulkan-sdk-\"\n" }
-wayland = { version = "1.26.0-1", nvchecker = "[wayland]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/wayland/wayland.git\"\nexclude_regex = '.*\\.9\\d'\n" }
-wayland-protocols = { version = "1.50-1", nvchecker = "[wayland-protocols]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/wayland/wayland-protocols.git\"\n" }
-"webrtc-audio-processing-0.3" = { version = "0.3.1-6", nvchecker = "[\"webrtc-audio-processing-0.3\"]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git\"\ninclude_regex = 'v0\\.3\\..*'\nprefix = \"v\"\n" }
-webrtc-audio-processing-1 = { version = "1.3-6", nvchecker = "[webrtc-audio-processing-1]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing.git\"\ninclude_regex = 'v1(\\.\\d+)*'\nprefix = \"v\"\n" }
-which = { version = "2.25-1", nvchecker = "[which]\nsource = 'regex'\nurl = 'https://ftp.gnu.org/gnu/which/'\nregex = 'which-([\\d.]+).tar'\n" }
-wireless-regdb = { version = "2026.09.03-1", nvchecker = "[wireless-regdb]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/linux/kernel/git/wens/wireless-regdb.git\"\nprefix = \"master-\"\n" }
-wireplumber = { version = "0.5.18-1", nvchecker = "[wireplumber]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/pipewire/wireplumber.git\"\ninclude_regex = '\\d+\\.\\d+\\.[1-7]?\\d'\n" }
-wlr-randr = { version = "0.5.0-1", nvchecker = "[wlr-randr]\nsource = \"git\"\ngit = \"https://gitlab.freedesktop.org/emersion/wlr-randr.git\"\nprefix = \"v\"\nexclude_regex = \".*(pre|a|alpha|b|beta|r|rc).*\"\n" }
+usbutils = { version = "020-1" }
+util-linux = { version = "2.42.4-1" }
+v4l-utils = { version = "1.32.0-2" }
+vorbis-tools = { version = "1.4.3-1" }
+vulkan-headers = { version = "1:1.4.363.0-1" }
+vulkan-icd-loader = { version = "1.4.363.0-1" }
+wayland = { version = "1.26.0-1" }
+wayland-protocols = { version = "1.50-1" }
+"webrtc-audio-processing-0.3" = { version = "0.3.1-6" }
+webrtc-audio-processing-1 = { version = "1.3-6" }
+which = { version = "2.25-1" }
+wireless-regdb = { version = "2026.09.03-1" }
+wireplumber = { version = "0.5.18-1" }
+wlr-randr = { version = "0.5.0-1" }
 x264 = { version = "3:0.165.r3222.b35605a-2" }
-x265 = { version = "4.3-1", nvchecker = "[x265]\nsource = \"git\"\ngit = \"https://github.com/Multicorewareinc/x265.git\"\n" }
-xcb-proto = { version = "1.17.0-4", nvchecker = "[xcb-proto]\nsource = \"gitlab\"\ngitlab = \"xorg/proto/xcbproto\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*xcb-proto-.*\"\nprefix = \"xcb-proto-\"\n" }
-xcb-util-wm = { version = "0.4.2-2", nvchecker = "[xcb-util-wm]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libxcb-wm\"\nhost = \"gitlab.freedesktop.org\"\n\ninclude_regex = \".*xcb-util-wm-.*\"\nuse_max_tag = true\nprefix = \"xcb-util-wm-\"\n" }
-xcursor-vanilla-dmz = { version = "0.4.5.3-1", nvchecker = "[xcursor-vanilla-dmz]\nsource = 'regex'\nurl = 'http://ftp.debian.org/debian/pool/main/d/dmz-cursor-theme/'\nregex = 'dmz-cursor-theme_([\\d.]+).tar'\n" }
-xfsprogs = { version = "7.2.0-1", nvchecker = "[xfsprogs]\nsource = \"git\"\ngit = \"https://git.kernel.org/pub/scm/fs/xfs/xfsprogs-dev.git\"\nprefix = \"v\"\n" }
-xkeyboard-config = { version = "2.48-1", nvchecker = "[xkeyboard-config]\nsource = \"gitlab\"\ngitlab = \"xkeyboard-config/xkeyboard-config\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\nprefix = \"xkeyboard-config-\"\n" }
-xorg-util-macros = { version = "1.20.2-1", nvchecker = "[xorg-util-macros]\nsource = \"gitlab\"\ngitlab = \"xorg/util/macros\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*util-macros-.*\"\nprefix = \"util-macros-\"\n" }
-xorgproto = { version = "2026.1-1", nvchecker = "[xorgproto]\nsource = \"gitlab\"\ngitlab = \"xorg/proto/xorgproto\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*xorgproto-.*\"\nprefix = \"xorgproto-\"\n" }
-xtrans = { version = "1.6.0-1", nvchecker = "[xtrans]\nsource = \"gitlab\"\ngitlab = \"xorg/lib/libxtrans\"\nhost = \"gitlab.freedesktop.org\"\nuse_max_tag = true\n\ninclude_regex = \".*xtrans-.*\"\nprefix = \"xtrans-\"\n" }
-xxhash = { version = "0.8.4-1", nvchecker = "[xxhash]\nsource = \"git\"\ngit = \"https://github.com/Cyan4973/xxHash.git\"\nprefix = \"v\"\n" }
-xz = { version = "5.8.4-1", nvchecker = "[xz]\nsource = \"git\"\ngit = \"https://github.com/tukaani-project/xz.git\"\nprefix = \"v\"\nexclude_regex = \".*(pre|a|alpha|b|beta|r|rc|RC|BETA|ALPHA).*\"\n" }
-yyjson = { version = "0.13.0-1", nvchecker = "[yyjson]\nsource = \"git\"\ngit = \"https://github.com/ibireme/yyjson.git\"\n" }
-zathura = { nvchecker = "[zathura]\nsource = \"git\"\ngit = \"https://github.com/pwmt/zathura.git\"\n", version = "2026.10.23-2" }
-zathura-pdf-poppler = { nvchecker = "[zathura-pdf-poppler]\nsource = \"git\"\ngit = \"https://github.com/pwmt/zathura-pdf-poppler.git\"\n", version = "2026.07.18-3" }
-zip = { version = "3.0-14", nvchecker = "[zip]\nsource = 'regex'\nurl = 'https://infozip.sourceforge.net/Zip.html'\nregex = ' Zip ([\\d.]+)'\n" }
-zix = { version = "0.8.2-1", nvchecker = "[zix]\nsource = \"git\"\ngit = \"https://github.com/drobilla/zix.git\"\nprefix = \"v\"\n" }
-zlib = { version = "1:1.3.2-4", nvchecker = "[zlib]\nsource = \"git\"\ngit = \"https://github.com/madler/zlib.git\"\nprefix = \"v\"\nignored = \"v1.3.1.2\"" }
-zlib-ng = { version = "2.3.3-1", nvchecker = "[zlib-ng]\nsource = \"git\"\ngit = \"https://github.com/zlib-ng/zlib-ng.git\"\nprefix = \"v\"\nexclude_regex = \".+(alpha|beta|rc).+\"" }
-zstd = { version = "1.5.7-3", nvchecker = "[zstd]\nsource = \"git\"\ngit = \"https://github.com/facebook/zstd.git\"\nprefix = \"v\"\n" }
+x265 = { version = "4.3-1" }
+xcb-proto = { version = "1.17.0-4" }
+xcb-util-wm = { version = "0.4.2-2" }
+xcursor-vanilla-dmz = { version = "0.4.5.3-1" }
+xfsprogs = { version = "7.2.0-1" }
+xkeyboard-config = { version = "2.48-1" }
+xorg-util-macros = { version = "1.20.2-1" }
+xorgproto = { version = "2026.1-1" }
+xtrans = { version = "1.6.0-1" }
+xxhash = { version = "0.8.4-1" }
+xz = { version = "5.8.4-1" }
+yyjson = { version = "0.13.0-1" }
+zathura = { version = "2026.10.23-2" }
+zathura-pdf-poppler = { version = "2026.07.18-3" }
+zip = { version = "3.0-14" }
+zix = { version = "0.8.2-1" }
+zlib = { version = "1:1.3.2-4" }
+zlib-ng = { version = "2.3.3-1" }
+zstd = { version = "1.5.7-3" }

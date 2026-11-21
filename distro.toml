@@ -94,7 +94,7 @@ packages = [
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
     "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "libglvnd-glx", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "raylib", "fluidsynth", "fontconfig", "libxml2",
-    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-desktop", "tinyhat-gtk-theme", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
+    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-desktop", "tinyhat-gtk-theme", "tinyhat-notify", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
     "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo", "hattoss",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
@@ -735,7 +735,6 @@ build_from_source = true
 
 [aquarium]
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/aquarium", prefix = "v", use_max_tag = true }
 
 [arm-none-eabi-gcc]
 heavy = true
@@ -773,7 +772,6 @@ source = "sources"
 
 [chibi-scheme]
 source = "sources"
-nvchecker = { source = "github", github = "ashinn/chibi-scheme", use_max_tag = true }
 
 [compose-tables]
 source = "sources"
@@ -788,7 +786,6 @@ build_from_source = true
 [dosbox-x]
 heavy = true
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/dosbox-x", use_max_tag = true }
 
 [dwl]
 source = "sources"
@@ -801,7 +798,6 @@ build_from_source = true
 
 [fluidsynth]
 source = "sources"
-nvchecker = { source = "github", github = "FluidSynth/fluidsynth", prefix = "v", use_latest_release = true }
 
 [fontconfig]
 source = "sources"
@@ -815,11 +811,9 @@ build_from_source = true
 [furnace]
 heavy = true
 source = "sources"
-nvchecker = { source = "github", github = "tildearrow/furnace", prefix = "v", use_latest_release = true }
 
 [fuzzel]
 source = "sources"
-nvchecker = { source = "gitea", gitea = "dnkl/fuzzel", host = "codeberg.org", use_max_tag = true }
 
 [gba-dev]
 source = "sources"
@@ -915,7 +909,6 @@ build_from_source = true
 
 [libdisplay-info]
 source = "sources"
-nvchecker = { source = "gitlab", gitlab = "emersion/libdisplay-info", host = "gitlab.freedesktop.org", use_max_tag = true }
 
 [libepoxy]
 build_from_source = true
@@ -977,11 +970,9 @@ build_from_source = true
 
 [metatar]
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/metatar", prefix = "v", use_max_tag = true }
 
 [mgba]
 source = "sources"
-nvchecker = { source = "github", github = "mgba-emu/mgba", use_latest_release = true }
 
 [hattoss]
 source = "sources"
@@ -1040,7 +1031,6 @@ build_from_source = true
 
 [pure-fish]
 source = "sources"
-nvchecker = { source = "github", github = "pure-fish/pure", prefix = "v", use_latest_release = true }
 
 [pvsneslib]
 source = "sources"
@@ -1055,31 +1045,25 @@ build_from_source = true
 
 [raylib]
 source = "sources"
-nvchecker = { source = "github", github = "raysan5/raylib", use_latest_release = true }
 
 [rfxgen]
 source = "sources"
-nvchecker = { source = "github", github = "raysan5/rfxgen", use_max_tag = true }
 
 [ripgrep]
 
 [scummvm]
 heavy = true
 source = "sources"
-nvchecker = { source = "github", github = "scummvm/scummvm", prefix = "v", use_latest_release = true }
 
 [sdl3]
 source = "sources"
-nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 
 [sdl3_image]
 source = "sources"
-nvchecker = { source = "github", github = "libsdl-org/SDL_image", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [sdl3_ttf]
 source = "sources"
-nvchecker = { source = "github", github = "libsdl-org/SDL_ttf", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [spirv-headers]
 build_from_source = true
@@ -1093,7 +1077,6 @@ prebuilt = true
 
 [swaylock]
 source = "sources"
-nvchecker = { source = "github", github = "swaywm/swaylock", prefix = "v", use_latest_release = true }
 
 [syslinux]
 prebuilt = true
@@ -1109,11 +1092,9 @@ build_from_source = true
 
 [testcontroller]
 source = "sources"
-nvchecker = { source = "github", github = "libsdl-org/SDL", prefix = "release-", use_max_tag = true, include_regex = "release-3\\.\\d*[02468]\\.\\d+" }
 
 [tic-80]
 source = "sources"
-nvchecker = { source = "github", github = "nesbox/TIC-80", prefix = "v", use_latest_release = true }
 
 [makep]
 source = "sources"
@@ -1132,7 +1113,6 @@ source = "sources"
 
 [tinyhat-play]
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/tinyhat-play", prefix = "v", use_max_tag = true }
 
 [tinyhat-skel]
 source = "sources"
@@ -1144,6 +1124,9 @@ source = "sources"
 source = "sources"
 
 [tinyhat-gtk-theme]
+source = "sources"
+
+[tinyhat-notify]
 source = "sources"
 
 [tinyhat-splash]
@@ -1200,7 +1183,6 @@ source = "sources"
 [linux-tinyhat]
 source = "sources"
 heavy = true
-nvchecker = { source = "regex", url = "https://www.kernel.org/releases.json", regex = '"latest_stable":\s*\{\s*"version":\s*"([\d.]+)"' }
 
 [tinyhat-mountroot]
 source = "sources"
@@ -1237,11 +1219,9 @@ source = "sources"
 
 [tinyxxd]
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/tinyxxd", prefix = "v", use_max_tag = true }
 
 [tomlc17]
 source = "sources"
-nvchecker = { source = "github", github = "cktan/tomlc17", use_max_tag = true }
 
 [util-linux]
 build_from_source = true
@@ -1258,7 +1238,6 @@ arch = "i686"
 
 ["wlroots0.20"]
 source = "sources"
-nvchecker = { source = "gitlab", gitlab = "wlroots/wlroots", host = "gitlab.freedesktop.org", use_max_tag = true, include_regex = "0\\.20\\.\\d+" }
 
 [wireplumber]
 build_from_source = true
@@ -1286,4 +1265,3 @@ build_from_source = true
 
 [zsnes]
 source = "sources"
-nvchecker = { source = "github", github = "xyproto/zsnes", use_max_tag = true, prefix = "v" }
