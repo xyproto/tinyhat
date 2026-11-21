@@ -1,0 +1,21 @@
+set pkgname tinyhat-gtk-theme
+set pkgver 1.0
+set pkgrel 1
+set pkgdesc 'Tiny Hat GTK 4 theme: the GTK dark theme in the Tiny Hat colours'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat
+set license LGPL-2.1-or-later
+set depends gtk4
+set makedepends gtk4
+set source tinyhat-gtk-theme.c
+set sha256sums b9f0b6c47be504320b9952a43f28a59c16c145addb22746021469945dd9c8e32
+
+function build
+    cc (string split -n " " -- "$CFLAGS $LDFLAGS") -o tinyhat-gtk-theme tinyhat-gtk-theme.c (pkg-config --cflags --libs gtk4 | string split -n " ") -lm; or return
+    env -u WAYLAND_DISPLAY -u DISPLAY ./tinyhat-gtk-theme >gtk.css; or return
+end
+
+function package
+    install -Dm644 gtk.css "$pkgdir/usr/share/themes/TinyHat/gtk-4.0/gtk.css"; or return
+    ln -s gtk.css "$pkgdir/usr/share/themes/TinyHat/gtk-4.0/gtk-dark.css"; or return
+end

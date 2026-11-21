@@ -380,6 +380,7 @@ libpkgs = [
     "tinyhat-fennel-book",
     "tinyhat-files",
     "tinyhat-freedos",
+    "tinyhat-gtk-theme",
     "tinyhat-gui",
     "tinyhat-guru",
     "tinyhat-keyring",
@@ -551,6 +552,7 @@ gtest = ["gtest"]
 gtk4 = ["gtk4"]
 gzip = ["gzip"]
 harfbuzz = ["harfbuzz"]
+hattoss = ["hattoss"]
 htop = ["htop"]
 hwdata = ["hwdata"]
 iana-etc = ["iana-etc"]
@@ -764,6 +766,7 @@ tinyhat-desktop = ["tinyhat-desktop"]
 tinyhat-fan = ["tinyhat-fan"]
 tinyhat-fennel-book = ["tinyhat-fennel-book"]
 tinyhat-files = ["tinyhat-files"]
+tinyhat-gtk-theme = ["tinyhat-gtk-theme"]
 tinyhat-gui = ["tinyhat-gui"]
 tinyhat-guru = ["tinyhat-guru"]
 tinyhat-keyring = ["tinyhat-keyring"]
@@ -928,6 +931,7 @@ gtest = ["gtest"]
 gtk4 = ["gtk4"]
 gzip = ["gzip"]
 harfbuzz = ["harfbuzz"]
+hattoss = ["hattoss"]
 htop = ["htop"]
 hwdata = ["hwdata"]
 i686-cross = []
@@ -1142,6 +1146,7 @@ tinyhat-desktop = ["tinyhat-desktop"]
 tinyhat-fan = ["tinyhat-fan"]
 tinyhat-fennel-book = ["tinyhat-fennel-book"]
 tinyhat-files = ["tinyhat-files"]
+tinyhat-gtk-theme = ["tinyhat-gtk-theme"]
 tinyhat-gui = ["tinyhat-gui"]
 tinyhat-guru = ["tinyhat-guru"]
 tinyhat-keyring = ["tinyhat-keyring"]
