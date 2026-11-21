@@ -6,8 +6,18 @@ esac
 [ -e /run/tinyhat/pacman-first-use ] && exit 0
 [ -d /run/systemd/system ] || exit 0
 if [ "$(systemctl show -P ActiveState tinyhat-pacman-init.service)" != active ]; then
-	echo "Tiny Hat: setting up the pacman keyring. This is done once and takes a while." >&2
-	systemctl start tinyhat-pacman-init.service || exit 0
+	echo "Tiny Hat: setting up the pacman keyring, once after booting. On older computers this takes a few minutes." >&2
+	journalctl -f -n 0 -o cat -u tinyhat-pacman-init.service >&2 &
+	log=$!
+	systemctl start tinyhat-pacman-init.service
+	ok=$?
+	sleep 1
+	kill "$log" 2>/dev/null
+	if [ "$ok" -ne 0 ]; then
+		echo "Tiny Hat: setting up the pacman keyring failed (see journalctl -u tinyhat-pacman-init), continuing." >&2
+		exit 0
+	fi
+	echo "Tiny Hat: the pacman keyring is ready." >&2
 fi
 mkdir -p /run/tinyhat && : >/run/tinyhat/pacman-first-use
 case $1 in -U* | --upgrade) exit 0 ;; esac

@@ -19,7 +19,7 @@
 +	struct wl_event_source *timer, *shapetimer;
 +	int shapepending;
 +	FirePart part[FIREPARTS];
-+	int nparts, npoints, firstpoint;
++	int nparts, npoints, firstpoint, strokepoints;
 +	struct { float x, y; int age; } points[FIREPOINTS];
 +	float *acc;
 +	size_t accsize;
@@ -46,15 +46,22 @@
  	if (!conf.nbgs)
  		return;
  	bgindex++;
-@@ -1837,6 +1862,18 @@
+@@ -1837,6 +1862,25 @@
  
  		keyboard = wlr_seat_get_keyboard(seat);
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
 +		if (click == ClkRoot && event->button == BTN_LEFT && !CLEANMASK(mods)) {
 +			doodle.active = 1;
 +			doodle.shape = doodle.count < 3 ? 0 : doodle.count < 5 ? 1 : doodle.count < 6 ? 2 : 3;
-+			if (doodle.shape != 3)
++			if (doodle.shape != 3) {
 +				doodlestop();
++			} else {
++				for (int k = 0; k < doodle.npoints; k++) {
++					int idx = (doodle.firstpoint + k) % FIREPOINTS;
++					doodle.points[idx].age = MAX(doodle.points[idx].age, 38);
++				}
++				doodle.strokepoints = 0;
++			}
 +			doodle.px = cursor->x;
 +			doodle.py = cursor->y;
 +			doodle.m = selmon;
@@ -65,7 +72,7 @@
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
  				b->func((click == ClkTagBar && b->arg.i == 0) || click == ClkTitle ? &arg : &b->arg);
-@@ -1845,6 +1882,11 @@
+@@ -1845,6 +1889,11 @@
  		}
  		break;
  	case WL_POINTER_BUTTON_STATE_RELEASED:
@@ -77,7 +84,7 @@
  		/* If you released any buttons, we exit interactive move/resize mode. */
  		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
  			struct wlr_box snapb;
-@@ -3121,6 +3163,326 @@
+@@ -3121,6 +3170,332 @@
  	wlr_scene_node_set_position(&sb->node, m->m.x + (int)(x / s), m->m.y + (int)(y / s));
  }
  
@@ -124,6 +131,7 @@
 +		doodle.npoints--;
 +	}
 +	i = (doodle.firstpoint + doodle.npoints++) % FIREPOINTS;
++	doodle.strokepoints = MIN(doodle.strokepoints + 1, doodle.npoints);
 +	doodle.points[i].x = x;
 +	doodle.points[i].y = y;
 +	doodle.points[i].age = 0;
@@ -141,7 +149,9 @@
 +		doodle.nparts -= drop;
 +	}
 +	while (want-- > 0) {
-+		int r = (int)(doodlerand() % doodle.npoints), i = (doodle.firstpoint + doodle.npoints - 1 - r * r / doodle.npoints) % FIREPOINTS;
++		int fresh = doodle.active && doodle.strokepoints > 0 && doodlerand() % 4 != 0;
++		int n = fresh ? MIN(doodle.strokepoints, doodle.npoints) : doodle.npoints;
++		int r = (int)(doodlerand() % n), i = (doodle.firstpoint + doodle.npoints - 1 - r * r / n) % FIREPOINTS;
 +		FirePart *p = &doodle.part[doodle.nparts++];
 +		float v = doodlefrand();
 +		p->x = p->xo = doodle.points[i].x;
@@ -176,6 +186,7 @@
 +		doodle.firstpoint = (doodle.firstpoint + 1) % FIREPOINTS;
 +		doodle.npoints--;
 +	}
++	doodle.strokepoints = MIN(doodle.strokepoints, doodle.npoints);
 +	doodlespawn();
 +	for (int i = 0; i < doodle.nparts; i++) {
 +		FirePart p = doodle.part[i];
@@ -246,6 +257,7 @@
 +	doodle.node = wlr_scene_buffer_create(layers[LyrBottom], &b->base);
 +	wlr_buffer_drop(&b->base);
 +	if (doodle.node) {
++		wlr_scene_node_lower_to_bottom(&doodle.node->node);
 +		wlr_scene_buffer_set_dest_size(doodle.node, (int)(bw * q), (int)(bh * q));
 +		wlr_scene_node_set_position(&doodle.node->node, (int)minx, (int)miny);
 +	}
@@ -353,6 +365,7 @@
 +	wlr_buffer_drop(&b->base);
 +	if (!doodle.node)
 +		return;
++	wlr_scene_node_lower_to_bottom(&doodle.node->node);
 +	wlr_scene_buffer_set_dest_size(doodle.node, (int)(x1 - x0), (int)(y1 - y0));
 +	wlr_scene_node_set_position(&doodle.node->node, (int)x0, (int)y0);
 +}
@@ -404,7 +417,7 @@
  static struct wlr_scene_buffer *tipnode;
  static char tipshown[128];
  
-@@ -4483,6 +4845,9 @@
+@@ -4483,6 +4858,9 @@
  	struct wlr_surface *surface = NULL;
  	struct wlr_pointer_constraint_v1 *constraint;
  

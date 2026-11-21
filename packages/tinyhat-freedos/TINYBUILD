@@ -1,34 +1,31 @@
 set pkgname tinyhat-freedos
 set pkgver 1.4
 set pkgrel 4
-set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games and the EDIT text editor, for the GRUB menu'
+set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu'
 set arch any
 set url https://www.freedos.org/
-set license GPL-2.0-or-later GPL-2.0-only BSD-2-Clause BSD-3-Clause LicenseRef-CWSDPMI LicenseRef-PSRINVAD
-set makedepends mtools
+set license GPL-2.0-or-later GPL-2.0-only BSD-2-Clause BSD-3-Clause MIT LicenseRef-CWSDPMI LicenseRef-PSRINVAD
+set makedepends mtools hattoss
 set _games https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/games
-set -g _ow 2026-10-01
 set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/distributions/$pkgver/FD14-FloppyEdition.zip \
     blkdrop-$pkgver.zip::$_games/blkdrop.zip \
     vitetris-$pkgver.zip::$_games/vitetris.zip \
     sudoku86-$pkgver.zip::$_games/sudoku86.zip \
-    senet-$pkgver.zip::$_games/senet.zip \
     psrinvad-$pkgver.zip::$_games/psrinvad.zip \
     ctmouse-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/ctmouse.zip \
     edit-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/edit.zip \
-    "open-watcom-$_ow.tar.xz::https://github.com/open-watcom/open-watcom-v2/releases/download/$_ow-Build/ow-snapshot.tar.xz" \
-    hattoss.c
-set noextract FD14-FloppyEdition.zip blkdrop-$pkgver.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip senet-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip open-watcom-$_ow.tar.xz
+    debug-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/debug.zip \
+    nasm-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/devel/nasm.zip
+set noextract FD14-FloppyEdition.zip blkdrop-$pkgver.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip debug-$pkgver.zip nasm-$pkgver.zip
 set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a \
     af4670b67866db841292a8c52ba61334ea7745262e921f13ff814152d8387fcc \
     53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843 \
     12c13caecd098748f5a8ace6667bbcacc333da209a70f26e49504fd11cb21eb3 \
-    c672da413252e356341832519423c1e5efe16a6d79097dfc77d0c5ac78618100 \
     ae391d32165e83625da8fbed772d1571269399e62116da30a55ee0207a922818 \
     fd47069fb3d9559604dcaef34ca4f3705a7f2f2cff3e4b205e361b79f10a8200 \
     6fc7bb68283f22387d0d5f310bf0cfc40af37324ad6bea7a574b57287bbb9841 \
-    e6aa1b1e40ac8bbf97658d2c70fff8a4242d6ca4a1c60806f2baa5317083d4fe \
-    5918742284b4d034277ad26af4b4b47c73ca260c3f0b24c777ff041ac776fa3a
+    edece56e84709d23c745733bcd1fbd076b8a6ee2aea2e2bd814f9dd1ca9ca479 \
+    f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe
 
 function _dosfile -a path
     string join \r\n -- $argv[2..] '' >$path
@@ -60,31 +57,26 @@ function build
     rm -r games/SOURCE
     bsdtar -xf vitetris-$pkgver.zip -C games GAMES/VITETRIS/TETRIS.EXE GAMES/VITETRIS/CWSDPMI.EXE GAMES/VITETRIS/CWSDPMI.DOC GAMES/VITETRIS/LICENCE.TXT GAMES/VITETRIS/README.TXT GAMES/VITETRIS/VITETRIS.CFG; or return
     bsdtar -xf sudoku86-$pkgver.zip -C games GAMES/SUDOKU86/SUDOKU86.EXE GAMES/SUDOKU86/SUDOKU86.DAT GAMES/SUDOKU86/SUDOKU86.LEV GAMES/SUDOKU86/README.TXT; or return
-    bsdtar -xf senet-$pkgver.zip -C games GAMES/SENET/SENET.EXE BATLINKS/SENET.BAT DOC/SENET/COPYING; or return
-    mv games/DOC/SENET/COPYING games/GAMES/SENET/COPYING; or return
     _dosfile games/BATLINKS/TETRIS.BAT '@echo off' 'cd %DOSDRV%\GAMES\VITETRIS' 'CWSDPMI.EXE -p -s- >NUL' 'vcls /fGray /bBlack' 'TETRIS.EXE %1 %2 %3' 'CWSDPMI.EXE -u >NUL' 'cd \\'
     _dosfile games/BATLINKS/SUDOKU.BAT '@echo off' 'cd %DOSDRV%\GAMES\SUDOKU86' 'SUDOKU86.EXE %1 %2 %3' 'cd \\'
     bsdtar -xf psrinvad-$pkgver.zip -C games GAMES/PSRINVAD/INVADERS.COM GAMES/PSRINVAD/INVADERS.DOC APPINFO/PSRINVAD.LSM; or return
-    rm -rf ow
-    mkdir -p ow games/GAMES/HATTOSS; or return
-    bsdtar -xf open-watcom-$_ow.tar.xz -C ow ./binl ./h ./lib286; or return
-    cp hattoss.c games/GAMES/HATTOSS/HATTOSS.C; or return
-    env WATCOM=$srcdir/ow INCLUDE=$srcdir/ow/h PATH=$srcdir/ow/binl:$PATH \
-        wcl -q -bt=dos -ms -ox -fe=games/GAMES/HATTOSS/HATTOSS.EXE hattoss.c; or return
-    rm -f hattoss.o
+    mkdir -p games/GAMES/HATTOSS; or return
+    cp /usr/share/tinyhat/dos/HATTOSS.EXE /usr/share/hattoss/HATTOSS.C games/GAMES/HATTOSS/; or return
     _dosfile games/BATLINKS/HATTOSS.BAT '@echo off' 'cd %DOSDRV%\GAMES\HATTOSS' 'HATTOSS.EXE' 'cd \\'
     bsdtar -xf edit-$pkgver.zip -C games BIN/EDIT.EXE BIN/EDIT.HLP DOC/EDIT/COPYING; or return
-    _dosfile games/BATLINKS/MENU.BAT '@echo off' ':Menu' 'vcursor hide' 'vcls /fBlue /bBlack /c0xb0' \
-        'vframe /x22 /y1 /w36 /h3 /fYellow /bRed Single Shadow' "vecho /n /fYellow /bRed \"           FreeDOS $pkgver\"" \
-        'vgotoxy /x17 /y22' 'vecho /fBlack /bCyan "    Use the arrow keys and Enter to choose    "' \
-        'vframe /x18 /y5 /w44 /h15 /fLightCyan /bBlue Double Shadow' \
-        'vecho /fYellow "  Choose a game"' 'vline hidden' \
+    bsdtar -xf debug-$pkgver.zip -C games BIN/DEBUG.COM; or return
+    bsdtar -xf nasm-$pkgver.zip -C games DEVEL/NASM/nasm.exe DEVEL/NASM/ndisasm.exe DEVEL/NASM/cwsdpmi.exe DEVEL/NASM/LICENSE; or return
+    _dosfile games/BATLINKS/MENU.BAT '@echo off' ':Menu' 'vcursor hide' 'vcls /fDarkGray /bBlack /c0xfa' \
+        'vframe /x22 /y1 /w36 /h3 /fBlack /bCyan Single Shadow' "vecho /n /fBlack /bCyan \"           FreeDOS $pkgver\"" \
+        'vgotoxy /x21 /y22' 'vecho /fDarkGray /bBlack "Use the arrow keys and Enter to choose"' \
+        'vframe /x18 /y5 /w44 /h14 /fLightCyan /bBlue Double Shadow' \
+        'vecho /fWhite "  Choose a game"' 'vline hidden' \
         'vecho /fLightGreen "  Hat Toss"' 'vecho /fLightGreen "  Invaders"' 'vecho /fLightCyan "  Block Drop"' \
-        'vecho /fLightCyan "  Tetris"' 'vecho /fLightCyan "  Sudoku"' 'vecho /fLightCyan "  Senet"' 'vecho /fYellow "  Text editor"' \
-        'vecho /fYellow "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  Return to DOS"' 'vecho /fYellow "  Restart the computer"' \
-        'vchoice /fWhite /bRed /d1' \
-        'if errorlevel 100 goto Prompt' 'if errorlevel 10 goto Restart' 'if errorlevel 9 goto Prompt' \
-        'if errorlevel 8 goto Setup' 'if errorlevel 7 goto Edit' 'if errorlevel 6 set GAME=SENET' 'if errorlevel 6 goto Run' \
+        'vecho /fLightCyan "  Tetris"' 'vecho /fLightCyan "  Sudoku"' 'vecho /fYellow "  Text editor"' \
+        'vecho /fYellow "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  DOS Prompt"' 'vecho /fYellow "  Restart the computer"' \
+        'vchoice /fBlack /bCyan /d1' \
+        'if errorlevel 100 goto Prompt' 'if errorlevel 9 goto Restart' 'if errorlevel 8 goto Prompt' \
+        'if errorlevel 7 goto Setup' 'if errorlevel 6 goto Edit' \
         'if errorlevel 5 set GAME=SUDOKU' 'if errorlevel 5 goto Run' 'if errorlevel 4 set GAME=TETRIS' 'if errorlevel 4 goto Run' \
         'if errorlevel 3 set GAME=BLKDROP' 'if errorlevel 3 goto Run' 'if errorlevel 2 set GAME=INVADERS' 'if errorlevel 2 goto Run' \
         'set GAME=HATTOSS' \
@@ -92,10 +84,11 @@ function build
         ':Edit' 'vcls /fGray /bBlack' 'vcursor small' 'EDIT' 'goto Menu' \
         ':Setup' 'vcls /fGray /bBlack' 'vcursor small' 'cd \\' 'if exist %DOSDRV%\SETUP.BAT call %DOSDRV%\SETUP.BAT' 'goto Menu' \
         ':Restart' 'fdapm warmboot' \
-        ':Prompt' 'vcls /fGray /bBlack' 'vcursor small' 'echo Type MENU to return to the menu.'
+        ':Prompt' 'vcls /fGray /bBlack' 'vcursor small' 'echo Type MENU to return to the menu.' \
+        'echo Programming tools: EDIT (text editor), NASM (assembler) and DEBUG.'
     _dosfile games/BATLINKS/INVADERS.BAT '@echo off' 'cd %DOSDRV%\GAMES\PSRINVAD' 'INVADERS.COM %1 %2 %3' 'cd \\'
     bsdtar -xf ctmouse-$pkgver.zip -C games BIN/CTMOUSE.EXE; or return
-    mcopy -i $img games/BIN/CTMOUSE.EXE games/BIN/EDIT.EXE games/BIN/EDIT.HLP ::/FREEDOS/BIN/; or return
+    mcopy -i $img games/BIN/CTMOUSE.EXE games/BIN/EDIT.EXE games/BIN/EDIT.HLP games/BIN/DEBUG.COM ::/FREEDOS/BIN/; or return
     rm -rf files
     mkdir files; or return
     mcopy -s -n -i $img '::*' files/; or return
@@ -110,6 +103,9 @@ function build
     end
     mcopy -s -i $disk games/GAMES ::/; or return
     mcopy -i $disk games/BATLINKS/*.BAT ::/FREEDOS/BIN/; or return
+    mcopy -i $disk games/DEVEL/NASM/nasm.exe ::/FREEDOS/BIN/NASM.EXE; or return
+    mcopy -i $disk games/DEVEL/NASM/ndisasm.exe ::/FREEDOS/BIN/NDISASM.EXE; or return
+    mcopy -i $disk games/DEVEL/NASM/cwsdpmi.exe ::/FREEDOS/BIN/CWSDPMI.EXE; or return
     minfo -i $disk >/dev/null; or return
     mdir -i $disk ::/GAMES >/dev/null
 end
@@ -119,8 +115,8 @@ function package
     install -Dm644 games/GAMES/BLKDROP/LICENSE $pkgdir/usr/share/licenses/$pkgname/BLKDROP; or return
     install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $pkgdir/usr/share/licenses/$pkgname/VITETRIS; or return
     install -Dm644 games/GAMES/SUDOKU86/README.TXT $pkgdir/usr/share/licenses/$pkgname/SUDOKU86; or return
-    install -Dm644 games/GAMES/SENET/COPYING $pkgdir/usr/share/licenses/$pkgname/SENET; or return
     install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI; or return
     install -Dm644 games/APPINFO/PSRINVAD.LSM $pkgdir/usr/share/licenses/$pkgname/PSRINVAD; or return
-    install -Dm644 games/DOC/EDIT/COPYING $pkgdir/usr/share/licenses/$pkgname/EDIT
+    install -Dm644 games/DOC/EDIT/COPYING $pkgdir/usr/share/licenses/$pkgname/EDIT; or return
+    install -Dm644 games/DEVEL/NASM/LICENSE $pkgdir/usr/share/licenses/$pkgname/NASM
 end

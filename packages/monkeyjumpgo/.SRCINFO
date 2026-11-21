@@ -1,6 +1,6 @@
 pkgbase = monkeyjumpgo
 	pkgdesc = Minimalistic GUI for playing Go against GNU Go (the Go port of Monkeyjump)
-	pkgver = 1.0.0
+	pkgver = 1.0.1
 	pkgrel = 1
 	url = https://github.com/xyproto/monkeyjumpgo
 	arch = i686
@@ -12,7 +12,7 @@ pkgbase = monkeyjumpgo
 	depends = sdl3_image
 	options = !buildflags
 	options = network
-	source = monkeyjumpgo-1.0.0.tar.gz::https://github.com/xyproto/monkeyjumpgo/archive/refs/tags/v1.0.0.tar.gz
-	sha256sums = 627fee5f57afd52ea5c898b0e31767a709a76fc961673a91a69faa17fd4cf6bf
+	source = monkeyjumpgo-1.0.1.tar.gz::https://github.com/xyproto/monkeyjumpgo/archive/refs/tags/v1.0.1.tar.gz
+	sha256sums = a32634c7257e0d2a591494d407d2ee0cd3d1cfe2216d825e9656b3d407ab976c
 
 pkgname = monkeyjumpgo

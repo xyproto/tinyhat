@@ -9,8 +9,10 @@
 #define W 320
 #define H 200
 #define SKY 0
-#define STAR 15
-#define MOON 14
+#define SUN 14
+#define SUNFACE 12
+#define POLE 7
+#define SOCKW 15
 #define WINLIT 44
 #define WINDARK 8
 #define FUR 6
@@ -18,6 +20,12 @@
 #define HATRED 40
 #define HATBAND 4
 #define TEXT 15
+#define BANANA 50
+#define BANTIP 51
+#define GHOST 52
+#define PUPIL 53
+#define BARREL 54
+#define HOOP 55
 #define BUILD0 20
 #define GRAV 9.8
 
@@ -28,6 +36,14 @@ static int gx[2], gy[2];
 static int score[2];
 static double wind;
 static int cpu;
+static int sunhappy;
+static int sockx, socky;
+
+#define SUNX 160
+#define SUNY 20
+
+static void beep(int freq);
+static void nobeep(void);
 
 static const char *ape[] = {
 	"....aaaaa....",
@@ -190,6 +206,53 @@ static void tone(int fnum, int block, int feedback, int decay)
 	adlibw(0xb0, 0x20 | (block << 2) | ((fnum >> 8) & 3));
 }
 
+static void sfx(int kind)
+{
+	int i;
+	if (adlib) {
+		switch (kind) {
+		case 0:
+			tone(0x2ae, 4, 2, 6);
+			break;
+		case 1:
+			tone(0x100, 2, 7, 3);
+			break;
+		case 2:
+			tone(0x241, 5, 0, 4);
+			break;
+		case 3:
+			tone(0x2ae, 6, 0, 5);
+			break;
+		}
+		return;
+	}
+	switch (kind) {
+	case 0:
+		for (i = 400; i < 1000; i += 60) {
+			beep(i);
+			delay(4);
+		}
+		nobeep();
+		break;
+	case 2:
+		beep(523);
+		delay(120);
+		beep(659);
+		delay(120);
+		beep(784);
+		delay(220);
+		nobeep();
+		break;
+	case 3:
+		beep(1319);
+		delay(50);
+		beep(1760);
+		delay(90);
+		nobeep();
+		break;
+	}
+}
+
 static void quiet(void)
 {
 	if (adlib)
@@ -199,15 +262,23 @@ static void quiet(void)
 static void palette(void)
 {
 	int i;
-	setpal(SKY, 2, 4, 16);
-	setpal(STAR, 63, 63, 63);
-	setpal(MOON, 60, 60, 48);
+	setpal(SKY, 18, 36, 58);
+	setpal(SUN, 63, 56, 12);
+	setpal(SUNFACE, 40, 20, 0);
+	setpal(POLE, 30, 30, 34);
+	setpal(SOCKW, 63, 63, 63);
 	setpal(WINLIT, 63, 56, 20);
 	setpal(WINDARK, 10, 10, 14);
 	setpal(FUR, 30, 18, 6);
 	setpal(FACE, 50, 36, 24);
 	setpal(HATRED, 58, 8, 8);
 	setpal(HATBAND, 20, 0, 0);
+	setpal(BANANA, 63, 58, 10);
+	setpal(BANTIP, 30, 20, 4);
+	setpal(GHOST, 63, 30, 46);
+	setpal(PUPIL, 8, 12, 50);
+	setpal(BARREL, 40, 24, 10);
+	setpal(HOOP, 18, 12, 6);
 	setpal(BUILD0, 22, 24, 30);
 	setpal(BUILD0 + 1, 28, 18, 22);
 	setpal(BUILD0 + 2, 16, 26, 26);
@@ -229,6 +300,68 @@ static void drawsprite(const char **s, int rows, int x, int y)
 				pset(x + i, y + j, HATRED);
 			else if (c == 'b')
 				pset(x + i, y + j, HATBAND);
+		}
+}
+
+static const char *things[4][6] = {
+	{ "......", ".rrrr.", ".rrrr.", ".bbbb.", "rrrrrr", "......" },
+	{ "......", "k....k", "y....y", "yy..yy", ".yyyy.", "......" },
+	{ ".gggg.", "gggggg", "gwegwe", "gggggg", "gggggg", "g.gg.g" },
+	{ ".oooo.", "hhhhhh", "oooooo", "oooooo", "hhhhhh", ".oooo." },
+};
+
+static int thing;
+
+static void drawspin(int x, int y, int frame)
+{
+	int i, j, si, sj;
+	for (j = 0; j < 6; j++)
+		for (i = 0; i < 6; i++) {
+			char c;
+			switch (frame & 3) {
+			case 0:
+				si = i, sj = j;
+				break;
+			case 1:
+				si = j, sj = 5 - i;
+				break;
+			case 2:
+				si = 5 - i, sj = 5 - j;
+				break;
+			default:
+				si = 5 - j, sj = i;
+				break;
+			}
+			c = things[thing][sj][si];
+			switch (c) {
+			case 'r':
+				pset(x + i, y + j, HATRED);
+				break;
+			case 'b':
+				pset(x + i, y + j, HATBAND);
+				break;
+			case 'y':
+				pset(x + i, y + j, BANANA);
+				break;
+			case 'k':
+				pset(x + i, y + j, BANTIP);
+				break;
+			case 'g':
+				pset(x + i, y + j, GHOST);
+				break;
+			case 'w':
+				pset(x + i, y + j, SOCKW);
+				break;
+			case 'e':
+				pset(x + i, y + j, PUPIL);
+				break;
+			case 'o':
+				pset(x + i, y + j, BARREL);
+				break;
+			case 'h':
+				pset(x + i, y + j, HOOP);
+				break;
+			}
 		}
 }
 
@@ -255,12 +388,6 @@ static void city(void)
 {
 	int x = 0, i, j, k;
 	rect(0, 0, W, H, SKY);
-	for (i = 0; i < 70; i++)
-		pset(rand() % W, rand() % 120, STAR);
-	for (j = -6; j <= 6; j++)
-		for (i = -6; i <= 6; i++)
-			if (i * i + j * j <= 36 && (i + 3) * (i + 3) + (j - 1) * (j - 1) > 25)
-				pset(280 + i, 22 + j, MOON);
 	while (x < W) {
 		int w = 24 + rand() % 22, h = 40 + rand() % 90, c = BUILD0 + rand() % 3;
 		if (x + w > W)
@@ -289,16 +416,70 @@ static void placeapes(void)
 	}
 }
 
-static void showwind(void)
+static int solid(int c)
 {
-	int x, len = (int)(wind * 3);
-	rect(100, H - 6, 120, 4, SKY);
-	if (!len)
+	return c == WINLIT || c == WINDARK || (c >= BUILD0 && c <= BUILD0 + 2);
+}
+
+static void beep(int freq)
+{
+	unsigned div = (unsigned)(1193182L / freq);
+	outp(0x43, 0xb6);
+	outp(0x42, div & 0xff);
+	outp(0x42, div >> 8);
+	outp(0x61, inp(0x61) | 3);
+}
+
+static void nobeep(void)
+{
+	outp(0x61, inp(0x61) & 0xfc);
+}
+
+static void drawsun(void)
+{
+	int i, j, k;
+	static const int rays[8][2] = { { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 }, { 0, -1 }, { 1, -1 } };
+	rect(SUNX - 16, SUNY - 16, 33, 33, SKY);
+	for (j = -9; j <= 9; j++)
+		for (i = -9; i <= 9; i++)
+			if (i * i + j * j <= 81)
+				pset(SUNX + i, SUNY + j, SUN);
+	for (k = 0; k < 8; k++)
+		for (i = 11; i <= 14; i++)
+			pset(SUNX + rays[k][0] * (rays[k][0] && rays[k][1] ? i * 3 / 4 : i), SUNY + rays[k][1] * (rays[k][0] && rays[k][1] ? i * 3 / 4 : i), SUN);
+	pset(SUNX - 3, SUNY - 2, SUNFACE);
+	pset(SUNX + 3, SUNY - 2, SUNFACE);
+	if (sunhappy) {
+		for (i = -4; i <= 4; i++)
+			pset(SUNX + i, SUNY + 4 - (i * i) / 8, SUNFACE);
+		pset(SUNX - 5, SUNY + 1, SUNFACE);
+		pset(SUNX + 5, SUNY + 1, SUNFACE);
+		drawsprite(hat, 4, SUNX - 3, SUNY - 13);
+	} else {
+		for (i = -3; i <= 3; i++)
+			pset(SUNX + i, SUNY + 3, SUNFACE);
+	}
+}
+
+static void drawsock(void)
+{
+	int len, i, j, dir;
+	for (j = 0; j < 12; j++)
+		pset(sockx, socky - j, POLE);
+	if (wind == 0) {
+		for (j = 0; j < 7; j++)
+			for (i = 1; i <= 2; i++)
+				pset(sockx + i, socky - 11 + j, (j / 2) % 2 ? SOCKW : HATRED);
 		return;
-	for (x = 0; abs(x) < abs(len); x += len > 0 ? 1 : -1)
-		pset(160 + x, H - 4, STAR);
-	pset(160 + len - (len > 0 ? 1 : -1), H - 5, STAR);
-	pset(160 + len - (len > 0 ? 1 : -1), H - 3, STAR);
+	}
+	dir = wind > 0 ? 1 : -1;
+	len = 4 + (int)(fabs(wind) * 4);
+	for (i = 1; i <= len; i++) {
+		int h = i < len * 2 / 3 ? 3 : 2, c = ((i - 1) / 3) % 2 ? SOCKW : HATRED;
+		int droop = i * (4 - (int)fabs(wind)) / 8;
+		for (j = 0; j < h; j++)
+			pset(sockx + dir * i, socky - 11 + j + droop, c);
+	}
 }
 
 static void showscore(void)
@@ -362,7 +543,7 @@ static int simulate(int p, double angle, double speed, int *tx)
 			return 0;
 		if (hits(!p, ix, iy))
 			return 2;
-		if (iy >= 0 && !hits(p, ix, iy) && pget(ix, iy) != SKY && pget(ix, iy) != STAR && pget(ix, iy) != MOON)
+		if (iy >= 0 && !hits(p, ix, iy) && solid(pget(ix, iy)))
 			return 1;
 	}
 	return 0;
@@ -371,14 +552,17 @@ static int simulate(int p, double angle, double speed, int *tx)
 static void explode(int x, int y, int r)
 {
 	int k, i, j;
-	tone(0x100, 2, 7, 3);
+	sfx(1);
 	for (k = 1; k <= r; k++) {
+		if (!adlib)
+			beep(60 + rand() % 240);
 		for (j = -k; j <= k; j++)
 			for (i = -k; i <= k; i++)
 				if (i * i + j * j <= k * k)
 					pset(x + i, y + j, 64 + (i * i + j * j) * 7 / (k * k + 1));
 		delay(15);
 	}
+	nobeep();
 	delay(80);
 	for (j = -r; j <= r; j++)
 		for (i = -r; i <= r; i++)
@@ -391,18 +575,19 @@ static int throwhat(int p, double angle, double speed)
 {
 	double a = angle * 3.14159265 / 180, vx = cos(a) * speed, vy = -sin(a) * speed;
 	double x0 = gx[p] + (p ? 0 : 12), y0 = gy[p] - 4, t;
-	unsigned char under[4][6];
+	unsigned char under[6][6];
 	int ox = -100, oy = -100, i, j, result = 0;
 	if (p)
 		vx = -vx;
+	thing = rand() % 4;
 	drawape(p, 1);
-	tone(0x2ae, 4, 2, 6);
+	sfx(0);
 	for (t = 0; t < 40; t += 0.05) {
 		int ix = (int)(x0 + vx * t + wind * t * t / 2), iy = (int)(y0 + vy * t + GRAV * t * t / 2);
 		if (t > 0.3 && gy[p] >= 0)
 			drawape(p, 0);
 		if (ox > -100)
-			for (j = 0; j < 4; j++)
+			for (j = 0; j < 6; j++)
 				for (i = 0; i < 6; i++)
 					if (oy + j >= 0)
 						pset(ox + i, oy + j, under[j][i]);
@@ -414,19 +599,24 @@ static int throwhat(int p, double angle, double speed)
 			result = 2;
 			break;
 		}
-		if (iy >= 0 && !hits(p, ix, iy) && pget(ix, iy) != SKY && pget(ix, iy) != STAR && pget(ix, iy) != MOON) {
+		if (!sunhappy && (ix - SUNX) * (ix - SUNX) + (iy - SUNY) * (iy - SUNY) < 144) {
+			sunhappy = 1;
+			drawsun();
+			sfx(3);
+		}
+		if (iy >= 0 && !hits(p, ix, iy) && solid(pget(ix, iy))) {
 			explode(ix, iy, 6);
 			result = 1;
 			ox = -100;
 			break;
 		}
-		for (j = 0; j < 4; j++)
+		for (j = 0; j < 6; j++)
 			for (i = 0; i < 6; i++)
-				under[j][i] = (unsigned char)pget(ix - 3 + i, iy - 2 + j);
+				under[j][i] = (unsigned char)pget(ix - 3 + i, iy - 3 + j);
 		ox = ix - 3;
-		oy = iy - 2;
-		if (iy >= -4)
-			drawsprite(hat, 4, ox, oy);
+		oy = iy - 3;
+		if (iy >= -6)
+			drawspin(ox, oy, p ? 3 - (int)(t * 10) % 4 : (int)(t * 10) % 4);
 		delay(6);
 	}
 	quiet();
@@ -467,8 +657,12 @@ static int round_(int first)
 	int p = first, miss[2] = { 0, 0 };
 	city();
 	placeapes();
-	wind = (rand() % 21 - 10) / 2.0;
-	showwind();
+	wind = (rand() % 13 - 6) / 2.0;
+	sunhappy = 0;
+	drawsun();
+	sockx = 150 + rand() % 21;
+	socky = skyline[sockx] - 1;
+	drawsock();
 	showscore();
 	text(0, 0, cpu ? "You" : "Player 1", TEXT);
 	text(32, 0, cpu ? "Computer" : "Player 2", TEXT);
@@ -501,7 +695,7 @@ static int round_(int first)
 		if (throwhat(p, angle, speed)) {
 			score[p]++;
 			showscore();
-			tone(0x241, 5, 0, 4);
+			sfx(2);
 			delay(400);
 			quiet();
 			delay(800);

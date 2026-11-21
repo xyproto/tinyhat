@@ -1,6 +1,5 @@
 set pkgname tinyhat-play
-set pkgver 1.3.0.r1.g840c16b
-set -g _commit 840c16b2d15739bafc103a43be46dde4477908ac
+set pkgver 1.3.2
 set pkgrel 1
 set pkgdesc 'Search for, download and launch homebrew games for classic gaming platforms'
 set arch i686 x32
@@ -11,13 +10,13 @@ set makedepends fontconfig
 set provides tinyhat-retro
 set conflicts tinyhat-retro
 set replaces tinyhat-retro
-set source "tinyhat-play-$_commit.tar.gz::https://github.com/xyproto/tinyhat-play/archive/$_commit.tar.gz"
-set sha256sums 8cf26ffb59b32c322224d3a4bd740e778c415e6bb6db270dfc442ae20e9db0cf
+set source "tinyhat-play-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums d50c69b6ab8a556c9afd6b8f1859bf4d00140e1d0f16a0c2e50eb867d88d6f2a
 
 function build
-    make -C tinyhat-play-$_commit; or return
+    make -C tinyhat-play-$pkgver; or return
 end
 
 function package
-    make -C tinyhat-play-$_commit DESTDIR="$pkgdir" PREFIX=/usr install; or return
+    make -C tinyhat-play-$pkgver DESTDIR="$pkgdir" PREFIX=/usr install; or return
 end

@@ -91,6 +91,7 @@ libpkgs = [
     "gtk4",
     "harfbuzz",
     "harfbuzz-cairo",
+    "hattoss",
     "highway",
     "hiredis",
     "hwloc",

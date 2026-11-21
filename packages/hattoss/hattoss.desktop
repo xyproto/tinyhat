@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Hat Toss
+Icon=applications-games
+Comment=Two gorillas on the rooftops throw tiny hats at each other (DOS game, in DOSBox-X)
+Exec=hattoss
+Terminal=false
+Categories=Game;ArcadeGame;

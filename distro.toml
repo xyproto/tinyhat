@@ -95,7 +95,7 @@ packages = [
     "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "libglvnd-glx", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "raylib", "fluidsynth", "fontconfig", "libxml2",
     "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-desktop", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
-    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo",
+    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo", "hattoss",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
@@ -982,6 +982,9 @@ nvchecker = { source = "github", github = "xyproto/metatar", prefix = "v", use_m
 [mgba]
 source = "sources"
 nvchecker = { source = "github", github = "mgba-emu/mgba", use_latest_release = true }
+
+[hattoss]
+source = "sources"
 
 [monkeyjumpgo]
 source = "sources"
