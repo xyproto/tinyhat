@@ -26,6 +26,7 @@ MAKEP_CONF = os.path.join(TOP, "packages", "makep", "root", "etc", "makep.conf")
 PKGCONF = distro.DISTRO
 DROP = {".SRCINFO", "REUSE.toml", ".gitignore", ".gitlab-ci.yml", "LICENSES", "keys"}
 NV_CHECKER = ".nvchecker.toml"
+PKGDIR = os.path.join(TOP, "packages")
 GROUP = urllib.parse.urlparse(GITLAB).path.strip("/")
 
 
@@ -140,10 +141,10 @@ def upsert(base, fields):
 
 
 def assign_nvcheckers(map):
-    imports = {n: dict(r) for n, r in distro.lock().get("imports", {}).items()}
     for n, text in map.items():
-        imports.setdefault(n, {})["nvchecker"] = text
-    distro.write_lock(imports=imports)
+        table = distro.nvchecker_from_toml(text)
+        if table and os.path.exists(distro.tinybuild_path(n)):
+            distro.set_nvchecker(n, table)
 
 
 def array_end(text, start):
@@ -292,14 +293,10 @@ def import_one(base, entry, src):
         files = fetch_upstream(base, version, tag)
     if files is None or "PKGBUILD" not in files:
         die(f"{base} {version}: no Arch PKGBUILD for tag {tag}")
-    nvc = files.pop(NV_CHECKER, None)
     write_tree(dest, files)
-    if nvc is not None and nvc[0]:
-        e = dict(entry)
-        e["nvchecker"] = nvc[0].decode("utf-8", "replace")
-        upsert(base, fields_for(e))
     print(f"packages/{base}: Arch's files for {version}. Write packages/{base}/TINYBUILD from the PKGBUILD "
-          f"(with 'set flags arch'), then delete the PKGBUILD", file=sys.stderr)
+          f"(with 'set flags arch'), delete the PKGBUILD, then run 'importpkg.py nvchecker' to move "
+          f"{NV_CHECKER} into the TINYBUILD", file=sys.stderr)
 
 
 def entries():
@@ -313,10 +310,26 @@ def entries():
     return out
 
 
+def move_nvcheckers():
+    moved = 0
+    for base in sorted(os.listdir(PKGDIR)):
+        path = os.path.join(PKGDIR, base, NV_CHECKER)
+        if os.path.exists(path) and os.path.exists(distro.tinybuild_path(base)):
+            with open(path) as f:
+                table = distro.nvchecker_from_toml(f.read())
+            if table:
+                distro.set_nvchecker(base, table)
+            os.remove(path)
+            moved += 1
+    return moved
+
+
 def backfill_nvcheckers():
+    moved = move_nvcheckers()
     jobs = [(base, e) for base, e in sorted(packages().items())
             if e.get("source") == "arch" and e.get("version")
-            and e.get("version") not in ("main", "latest") and "nvchecker" not in e]
+            and e.get("version") not in ("main", "latest") and os.path.exists(distro.tinybuild_path(base))
+            and distro.nvchecker(base) is None]
 
     def get(job):
         base, e = job
@@ -333,7 +346,8 @@ def backfill_nvcheckers():
                 found[base] = text
     if found:
         assign_nvcheckers(found)
-    print(f"nvchecker: {len(jobs)} checked, {len(found)} recorded", file=sys.stderr)
+    print(f"nvchecker: {moved} moved from {NV_CHECKER}, {len(jobs)} checked at Arch, {len(found)} written into TINYBUILDs",
+          file=sys.stderr)
 
 
 def main():

@@ -218,12 +218,18 @@ keydeps=$(
 )
 
 # What the build depends on, and so what its cache key is made of: the build options, the theme, the files in the
-# package directory, the makep configuration, and the packages it is built with
+# package directory (the TINYBUILD without its nvchecker settings), the makep configuration, and the packages it is built with
 inputs=$({
   echo "$arch $bootstrap $nobuild${cross:+ cross}"
   for t in $env; do echo "tool $t"; done
   printf '%s\n' "$themeenv"
-  (cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | xargs -d '\n' sha256sum)
+  (cd "$dir" && find -L . -type f ! -name .SRCINFO | LC_ALL=C sort | while IFS= read -r f; do
+    if [ "$f" = ./TINYBUILD ]; then
+      printf '%s  %s\n' "$(grep -v '^set nvchecker ' "$f" | sha256sum | cut -d' ' -f1)" "$f"
+    else
+      sha256sum "$f"
+    fi
+  done)
   env -i PATH="$PATH" MAKEP_CONF="$top/packages/makep/root/etc/makep.conf" fish "$top/packages/makep/root/usr/bin/makep" --print-config -a "$arch"
   for f in $keydeps $crossdeps; do echo "${f##*/}"; done
 })

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import json
 import os
+import re
 import shlex
 import sys
 import tomllib
@@ -9,7 +10,7 @@ TOP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DISTRO = os.path.join(TOP, "distro.toml")
 LOCK = os.path.join(TOP, "distro.lock")
 SECTIONS = ["image", "image-orbiton", "image-x32", "image-aarch64", "image-x86_64", "buildroot", "providers", "mirrors", "sources"]
-FACTS = ("version", "nvchecker")
+FACTS = ("version",)
 THEME = ("name", "hat_color", "hat_highlight_color")
 
 _cache = {}
@@ -43,6 +44,109 @@ def packages():
     imports, tabs = lock().get("imports", {}), tables()
     return {base: {"source": "arch", **imports.get(base, {}), **tabs.get(base, {})}
             for base in sorted(set(tabs) | set(imports))}
+
+
+NVCHECKER_LINE = re.compile(r"^set nvchecker .*$", re.M)
+FISH_BARE = re.compile(r"[A-Za-z0-9_.,:/@+=-]+")
+
+
+def fish_words(text):
+    """The words of a fish command line, with fish's quoting and escapes undone."""
+    words, i, n = [], 0, len(text)
+    while i < n:
+        while i < n and text[i] in " \t":
+            i += 1
+        if i >= n or text[i] == "#":
+            break
+        w = []
+        while i < n and text[i] not in " \t":
+            c = text[i]
+            if c == "'":
+                i += 1
+                while i < n and text[i] != "'":
+                    if text[i] == "\\" and i + 1 < n and text[i + 1] in "\\'":
+                        i += 1
+                    w.append(text[i])
+                    i += 1
+                i += 1
+            elif c == '"':
+                i += 1
+                while i < n and text[i] != '"':
+                    if text[i] == "\\" and i + 1 < n and text[i + 1] in '\\"$':
+                        i += 1
+                    w.append(text[i])
+                    i += 1
+                i += 1
+            elif c == "\\" and i + 1 < n:
+                w.append(text[i + 1])
+                i += 2
+            else:
+                w.append(c)
+                i += 1
+        words.append("".join(w))
+    return words
+
+
+def fish_quote(word):
+    if FISH_BARE.fullmatch(word):
+        return word
+    out = []
+    for i, c in enumerate(word):
+        if c == "'" or (c == "\\" and (i + 1 == len(word) or word[i + 1] in "\\'")):
+            out.append("\\")
+        out.append(c)
+    return "'" + "".join(out) + "'"
+
+
+def tinybuild_path(base):
+    return os.path.join(TOP, "packages", base, "TINYBUILD")
+
+
+def nvchecker(base):
+    """The nvchecker settings of a package directory, from 'set nvchecker key=value...' in its TINYBUILD, or None."""
+    path = tinybuild_path(base)
+    if not os.path.exists(path):
+        return None
+    with open(path) as f:
+        m = NVCHECKER_LINE.search(f.read())
+    if not m:
+        return None
+    out = {}
+    for word in fish_words(m.group(0))[2:]:
+        k, sep, v = word.partition("=")
+        if sep:
+            out[k] = {"true": True, "false": False}.get(v, v)
+    return out or None
+
+
+def nvchecker_line(table):
+    items = sorted(table.items(), key=lambda kv: kv[0] != "source")
+    return "set nvchecker " + " ".join(fish_quote(f"{k}={str(v).lower() if isinstance(v, bool) else v}") for k, v in items)
+
+
+def set_nvchecker(base, table):
+    """Write the nvchecker settings into the TINYBUILD of a package directory, after its 'set url' line."""
+    path = tinybuild_path(base)
+    with open(path) as f:
+        text = f.read()
+    line = nvchecker_line(table)
+    if NVCHECKER_LINE.search(text):
+        new = NVCHECKER_LINE.sub(lambda m: line, text, count=1)
+    else:
+        for anchor in ("url", "pkgdesc", "pkgver"):
+            m = re.search(rf"^set {anchor} .*$", text, re.M)
+            if m:
+                break
+        if not m:
+            raise ValueError(f"{path}: no 'set url' line to put the nvchecker settings after")
+        new = text[:m.end()] + "\n" + line + text[m.end():]
+    write_if_changed(path, new)
+
+
+def nvchecker_from_toml(text):
+    """The first table of an nvchecker TOML file (like Arch's .nvchecker.toml), or None."""
+    tabs = [v for v in tomllib.loads(text).values() if isinstance(v, dict) and "source" in v]
+    return tabs[0] if tabs else None
 
 
 def plan():

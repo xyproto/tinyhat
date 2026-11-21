@@ -4,7 +4,7 @@
 1. TINYBUILDs ported from Arch PKGBUILDs whose upstream version is newer in the Arch Linux package databases (core and extra)
    get their pkgver/pkgrel bumped to Arch's version, with checksums regenerated from the upstream sources.
    Releases that only repackage the same upstream version are reported, not applied.
-2. Tiny Hat's own TINYBUILDs that have an nvchecker entry in distro.toml move to the latest upstream release.
+2. Tiny Hat's own TINYBUILDs that have 'set nvchecker' settings move to the latest upstream release.
 3. TINYBUILDs ported from Arch where upstream (nvchecker) is ahead of Arch are only reported.
 4. The archlinux32 package databases and the buildroot lock are refreshed (like "make lock").
 
@@ -22,7 +22,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import tomllib
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import distro
@@ -184,17 +183,11 @@ def arch_updates(report, only):
 
 
 def nvchecker_entries():
-    """nvchecker settings per package directory: strings imported from Arch (distro.lock), or tables in distro.toml."""
+    """nvchecker settings per package directory, from 'set nvchecker' in its TINYBUILD."""
     out = {}
-    for base, e in distro.packages().items():
-        conf = e.get("nvchecker")
-        if isinstance(conf, str):
-            try:
-                tables = [v for v in tomllib.loads(conf).values() if isinstance(v, dict) and "source" in v]
-            except tomllib.TOMLDecodeError:
-                continue
-            conf = tables[0] if tables else None
-        if isinstance(conf, dict) and FORBIDDEN_HOST not in json.dumps(conf):
+    for base in distro.packages():
+        conf = distro.nvchecker(base)
+        if conf and FORBIDDEN_HOST not in json.dumps(conf):
             out[base] = conf
     return out
 
