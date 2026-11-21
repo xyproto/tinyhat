@@ -1,6 +1,6 @@
 set pkgname impala
 set pkgver 0.9.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'TUI for managing wifi'
 set url https://github.com/pythops/impala
 set depends libgcc glibc iwd

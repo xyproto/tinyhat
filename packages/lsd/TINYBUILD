@@ -1,6 +1,6 @@
 set pkgname lsd
 set pkgver 1.2.0
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Modern ls with a lot of pretty colors and awesome icons'
 set arch i686
 set url https://github.com/lsd-rs/lsd

@@ -1,7 +1,7 @@
 pkgbase = git
 	pkgdesc = the fast distributed version control system
 	pkgver = 2.56.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://git-scm.com/
 	install = git.install
 	arch = i686
@@ -10,7 +10,6 @@ pkgbase = git
 	checkdepends = openssh
 	makedepends = python
 	makedepends = git
-	makedepends_i686 = rust
 	makedepends_x86_64 = rust
 	makedepends_aarch64 = rust
 	depends = curl
@@ -33,7 +32,6 @@ pkgbase = git
 
 pkgname = git
 	optdepends = git-zsh-completion: upstream zsh completion
-	optdepends = tk: gitk and git gui
 	optdepends = openssh: ssh transport and crypto
 	optdepends = man: show help with `git command --help`
 	optdepends = python: git p4

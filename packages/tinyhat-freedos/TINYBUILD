@@ -1,10 +1,10 @@
 set pkgname tinyhat-freedos
 set pkgver 1.4
-set pkgrel 2
-set pkgdesc 'FreeDOS 1.4 live boot floppy with free DOS games, for the GRUB menu'
+set pkgrel 3
+set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games, for the GRUB menu'
 set arch any
 set url https://www.freedos.org/
-set license GPL-2.0-or-later BSD-2-Clause BSD-3-Clause LicenseRef-CWSDPMI
+set license GPL-2.0-or-later BSD-2-Clause BSD-3-Clause MIT Unlicense LicenseRef-CWSDPMI LicenseRef-PSRINVAD
 set makedepends mtools
 set _games https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/games
 set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/distributions/$pkgver/FD14-FloppyEdition.zip \
@@ -12,13 +12,23 @@ set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/fr
     vitetris-$pkgver.zip::$_games/vitetris.zip \
     sudoku86-$pkgver.zip::$_games/sudoku86.zip \
     senet-$pkgver.zip::$_games/senet.zip \
+    noudar-$pkgver.zip::$_games/noudar.zip \
+    mirmagic-$pkgver.zip::$_games/mirmagic.zip \
+    flpybird-$pkgver.zip::$_games/flpybird.zip \
+    dosdef-$pkgver.zip::$_games/dosdef.zip \
+    psrinvad-$pkgver.zip::$_games/psrinvad.zip \
     ctmouse-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/ctmouse.zip
-set noextract FD14-FloppyEdition.zip blkdrop-$pkgver.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip senet-$pkgver.zip ctmouse-$pkgver.zip
+set noextract FD14-FloppyEdition.zip blkdrop-$pkgver.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip senet-$pkgver.zip noudar-$pkgver.zip mirmagic-$pkgver.zip flpybird-$pkgver.zip dosdef-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip
 set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a \
     af4670b67866db841292a8c52ba61334ea7745262e921f13ff814152d8387fcc \
     53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843 \
     12c13caecd098748f5a8ace6667bbcacc333da209a70f26e49504fd11cb21eb3 \
     c672da413252e356341832519423c1e5efe16a6d79097dfc77d0c5ac78618100 \
+    86faa9a6d27f847082e419ffe018f14bcd419e0c9720e005b64a04b4dbda52d1 \
+    e5cba89357adff4fb9bda8847fa81f8616071489fc386f1274cfae7850063998 \
+    a6f5c0c1bf5aa1746c9a335714c58835d4ce1ed90caa8de9072d9fb7f1d08ac9 \
+    25cf5805ef369dc0297a9e27dca6d23b89a29c2a2a004f530968b76b6c95d3da \
+    ae391d32165e83625da8fbed772d1571269399e62116da30a55ee0207a922818 \
     fd47069fb3d9559604dcaef34ca4f3705a7f2f2cff3e4b205e361b79f10a8200
 
 function _dosfile -a path
@@ -33,14 +43,18 @@ function build
     set -l img floppy/x86BOOT.img
     set -l cr \r
     mtype -i $img ::/FDAUTO.BAT | while read -l line
-        if string match -q 'if exist SETUP.BAT CALL SETUP.BAT BOOT*' -- $line
-            printf '%s\n' "CTMOUSE.EXE$cr" "echo FreeDOS 1.4, started from Tiny Hat. Nothing is installed on this computer.$cr" \
-                "echo Games: BLKDROP, TETRIS, SUDOKU and SENET. SETUP installs FreeDOS on a hard disk.$cr" "echo.$cr"
+        if string match -q 'if exist %DOSDIR%\\BIN\\FDBANNER.COM*' -- $line
+            continue
+        else if string match -q 'if exist SETUP.BAT CALL SETUP.BAT BOOT*' -- $line
+            printf '%s\n' "CTMOUSE.EXE >NUL$cr" "call MENU.BAT$cr" "goto Done$cr"
         else
             printf '%s\n' $line
         end
     end >floppy/FDAUTO.BAT
-    grep -q 'Games: BLKDROP' floppy/FDAUTO.BAT; or return
+    grep -q 'call MENU.BAT' floppy/FDAUTO.BAT; or return
+    _dosfile floppy/FDCONFIG.SYS '!COUNTRY=001,858:\FREEDOS\BIN\COUNTRY.SYS' '!LASTDRIVE=Z' '!BUFFERS=20' '!FILES=40' \
+        'SHELL=\FREEDOS\BIN\COMMAND.COM \FREEDOS\BIN /E:2048 /P=\FDAUTO.BAT'
+    mcopy -o -i $img floppy/FDCONFIG.SYS ::/FDCONFIG.SYS; or return
     mcopy -o -i $img floppy/FDAUTO.BAT ::/FDAUTO.BAT; or return
     bsdtar -xf blkdrop-$pkgver.zip -C games GAMES/BLKDROP/BLKDROP.EXE GAMES/BLKDROP/README.TXT BATLINKS/BLKDROP.BAT SOURCE/BLKDROP/SOURCES.ZIP; or return
     bsdtar -xf games/SOURCE/BLKDROP/SOURCES.ZIP -C games/GAMES/BLKDROP LICENSE; or return
@@ -49,21 +63,65 @@ function build
     bsdtar -xf sudoku86-$pkgver.zip -C games GAMES/SUDOKU86/SUDOKU86.EXE GAMES/SUDOKU86/SUDOKU86.DAT GAMES/SUDOKU86/SUDOKU86.LEV GAMES/SUDOKU86/README.TXT; or return
     bsdtar -xf senet-$pkgver.zip -C games GAMES/SENET/SENET.EXE BATLINKS/SENET.BAT DOC/SENET/COPYING; or return
     mv games/DOC/SENET/COPYING games/GAMES/SENET/COPYING; or return
-    _dosfile games/BATLINKS/TETRIS.BAT '@echo off' 'cd %DOSDRV%\GAMES\VITETRIS' 'TETRIS.EXE %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/TETRIS.BAT '@echo off' 'cd %DOSDRV%\GAMES\VITETRIS' 'CWSDPMI.EXE -p -s- >NUL' 'vcls /fGray /bBlack' 'TETRIS.EXE %1 %2 %3' 'CWSDPMI.EXE -u >NUL' 'cd \\'
     _dosfile games/BATLINKS/SUDOKU.BAT '@echo off' 'cd %DOSDRV%\GAMES\SUDOKU86' 'SUDOKU86.EXE %1 %2 %3' 'cd \\'
+    bsdtar -xf noudar-$pkgver.zip -C games GAMES/NOUDAR/NOUDAR.EXE GAMES/NOUDAR/CWSDPMI.EXE GAMES/NOUDAR/DATA.PFS GAMES/NOUDAR/LICENSE.MD; or return
+    bsdtar -xf mirmagic-$pkgver.zip -C games --exclude 'SOURCE/*' --exclude 'APPINFO/*' GAMES/MIRMAGIC; or return
+    bsdtar -xf flpybird-$pkgver.zip -C games GAMES/FLPYBIRD/FLPYBIRD.COM GAMES/FLPYBIRD/LICENSE GAMES/FLPYBIRD/README.MD; or return
+    bsdtar -xf dosdef-$pkgver.zip -C games GAMES/DOSDEF/DOSDEF.COM APPINFO/DOSDEF.LSM; or return
+    bsdtar -xf psrinvad-$pkgver.zip -C games GAMES/PSRINVAD/INVADERS.COM GAMES/PSRINVAD/INVADERS.DOC APPINFO/PSRINVAD.LSM; or return
+    _dosfile games/BATLINKS/NOUDAR.BAT '@echo off' 'cd %DOSDRV%\GAMES\NOUDAR' 'CWSDPMI.EXE -p -s- >NUL' 'vcls /fGray /bBlack' 'NOUDAR.EXE %1 %2 %3' 'CWSDPMI.EXE -u >NUL' 'cd \\'
+    _dosfile games/BATLINKS/MIRROR.BAT '@echo off' 'cd %DOSDRV%\GAMES\MIRMAGIC' 'CWSDPMI.EXE -p -s- >NUL' 'vcls /fGray /bBlack' 'MIRROR.EXE %1 %2 %3' 'CWSDPMI.EXE -u >NUL' 'cd \\'
+    _dosfile games/BATLINKS/FLPYBIRD.BAT '@echo off' 'cd %DOSDRV%\GAMES\FLPYBIRD' 'FLPYBIRD.COM %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/DOSDEF.BAT '@echo off' 'cd %DOSDRV%\GAMES\DOSDEF' 'DOSDEF.COM %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/MENU.BAT '@echo off' ':Menu' 'vcursor hide' 'vcls /fDarkGray /bBlack /c0xb0' \
+        'vframe /x18 /y3 /w44 /h19 /fBlack /bCyan Double Shadow' 'vecho' \
+        'vecho /fWhite "  Tiny Hat DOS games"' 'vecho /fBlue "  Arrow keys and Enter, Esc for DOS"' 'vline hidden' \
+        'vecho "  Dungeons of Noudar 3D"' 'vecho "  Mirror Magic"' 'vecho "  Floppy Bird"' 'vecho "  DOS Defender"' \
+        'vecho "  Invaders"' 'vecho "  Block Drop"' 'vecho "  Tetris"' 'vecho "  Sudoku"' 'vecho "  Senet"' \
+        'vecho "  DOS prompt"' 'vecho "  Install FreeDOS on a hard disk"' 'vecho "  Restart the computer"' \
+        'vchoice /fWhite /bBlue /d1' \
+        'if errorlevel 100 goto Prompt' 'if errorlevel 12 goto Restart' 'if errorlevel 11 goto Setup' \
+        'if errorlevel 10 goto Prompt' 'if errorlevel 9 set GAME=SENET' 'if errorlevel 9 goto Run' \
+        'if errorlevel 8 set GAME=SUDOKU' 'if errorlevel 8 goto Run' 'if errorlevel 7 set GAME=TETRIS' 'if errorlevel 7 goto Run' \
+        'if errorlevel 6 set GAME=BLKDROP' 'if errorlevel 6 goto Run' 'if errorlevel 5 set GAME=INVADERS' 'if errorlevel 5 goto Run' \
+        'if errorlevel 4 set GAME=DOSDEF' 'if errorlevel 4 goto Run' 'if errorlevel 3 set GAME=FLPYBIRD' 'if errorlevel 3 goto Run' \
+        'if errorlevel 2 set GAME=MIRROR' 'if errorlevel 2 goto Run' 'set GAME=NOUDAR' \
+        ':Run' 'vcls /fGray /bBlack' 'vcursor normal' 'call %GAME%.BAT' 'set GAME=' 'goto Menu' \
+        ':Setup' 'vcls /fGray /bBlack' 'vcursor normal' 'cd \\' 'if exist %DOSDRV%\SETUP.BAT call %DOSDRV%\SETUP.BAT' 'goto Menu' \
+        ':Restart' 'fdapm warmboot' \
+        ':Prompt' 'vcls /fGray /bBlack' 'vcursor normal' 'echo Type MENU to return to the games menu.' 'echo.'
+    _dosfile games/BATLINKS/INVADERS.BAT '@echo off' 'cd %DOSDRV%\GAMES\PSRINVAD' 'INVADERS.COM %1 %2 %3' 'cd \\'
     bsdtar -xf ctmouse-$pkgver.zip -C games BIN/CTMOUSE.EXE; or return
     mcopy -i $img games/BIN/CTMOUSE.EXE ::/FREEDOS/BIN/; or return
-    mcopy -s -i $img games/GAMES ::/; or return
-    mcopy -i $img games/BATLINKS/BLKDROP.BAT games/BATLINKS/SENET.BAT games/BATLINKS/TETRIS.BAT games/BATLINKS/SUDOKU.BAT ::/FREEDOS/BIN/; or return
-    minfo -i $img >/dev/null; or return
-    mdir -i $img ::/GAMES >/dev/null
+    rm -rf files
+    mkdir files; or return
+    mcopy -s -n -i $img '::*' files/; or return
+    dd if=$img of=boot.bin bs=512 count=1 status=none; or return
+    set -l disk floppy/freedos.img
+    rm -f $disk
+    mformat -C -i $disk -t 80 -h 2 -s 63 -v FREEDOS -B boot.bin ::; or return
+    mcopy -i $disk files/KERNEL.SYS ::; or return
+    for f in files/*
+        test (path basename -- $f) = KERNEL.SYS; and continue
+        mcopy -s -i $disk $f ::; or return
+    end
+    mcopy -s -i $disk games/GAMES ::/; or return
+    mcopy -i $disk games/BATLINKS/*.BAT ::/FREEDOS/BIN/; or return
+    minfo -i $disk >/dev/null; or return
+    mdir -i $disk ::/GAMES >/dev/null
 end
 
 function package
-    install -Dm644 floppy/x86BOOT.img $pkgdir/usr/share/tinyhat/freedos.img; or return
+    install -Dm644 floppy/freedos.img $pkgdir/usr/share/tinyhat/freedos.img; or return
     install -Dm644 games/GAMES/BLKDROP/LICENSE $pkgdir/usr/share/licenses/$pkgname/BLKDROP; or return
     install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $pkgdir/usr/share/licenses/$pkgname/VITETRIS; or return
     install -Dm644 games/GAMES/SUDOKU86/README.TXT $pkgdir/usr/share/licenses/$pkgname/SUDOKU86; or return
     install -Dm644 games/GAMES/SENET/COPYING $pkgdir/usr/share/licenses/$pkgname/SENET; or return
-    install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI
+    install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI; or return
+    install -Dm644 games/GAMES/NOUDAR/LICENSE.MD $pkgdir/usr/share/licenses/$pkgname/NOUDAR; or return
+    install -Dm644 games/GAMES/MIRMAGIC/COPYING $pkgdir/usr/share/licenses/$pkgname/MIRMAGIC; or return
+    install -Dm644 games/GAMES/FLPYBIRD/LICENSE $pkgdir/usr/share/licenses/$pkgname/FLPYBIRD; or return
+    install -Dm644 games/APPINFO/DOSDEF.LSM $pkgdir/usr/share/licenses/$pkgname/DOSDEF; or return
+    install -Dm644 games/APPINFO/PSRINVAD.LSM $pkgdir/usr/share/licenses/$pkgname/PSRINVAD
 end

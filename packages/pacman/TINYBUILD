@@ -1,6 +1,6 @@
 set pkgname pacman
 set pkgver 7.1.0.r9.g54d9411
-set pkgrel 4
+set pkgrel 5
 set -g _git_tag 7.1.0
 set -g _git_patch_level_commit 54d94116164b0b2202c6061c4a59c6f3e70820d8
 set pkgdesc 'A library-based package manager with dependency support'
@@ -66,12 +66,12 @@ end
 
 function build
     cd $pkgname; or return
-    # -Ddoc=disabled: broken Python/asciidoc. Install scriptlets run in osh: Tiny Hat has no bash
+    # -Ddoc=disabled: broken Python/asciidoc
     meson --prefix=/usr \
         --buildtype=plain \
         -Ddoc=disabled \
         -Ddoxygen=disabled \
-        -Dscriptlet-shell=/usr/bin/osh \
+        -Dscriptlet-shell=/usr/bin/bash \
         -Dldconfig=/usr/bin/ldconfig \
         build; or return
     meson compile -C build; or return
@@ -101,4 +101,12 @@ function package
     for unit in dirmngr gpg-agent gpg-agent-{browser,extra,ssh} keyboxd
         ln -s "../$unit@.socket" "$wantsdir/$unit@etc-pacman.d-gnupg.socket"; or return
     end
+    install -dm755 "$pkgdir/usr/lib/pacman"; or return
+    mv "$pkgdir/usr/bin/pacman" "$pkgdir/usr/lib/pacman/pacman"; or return
+    printf '%s\n' '#!/bin/sh' \
+        'if [ -x /usr/lib/tinyhat/pacman-first-use ] && [ "$(id -u)" = 0 ]; then' \
+        '	/usr/lib/tinyhat/pacman-first-use "$@"' \
+        'fi' \
+        'exec /usr/lib/pacman/pacman "$@"' >"$pkgdir/usr/bin/pacman"; or return
+    chmod 755 "$pkgdir/usr/bin/pacman"; or return
 end

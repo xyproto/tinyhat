@@ -56,6 +56,7 @@ function package_libevent
     set optdepends 'python: event_rpcgen.py'
 
     DESTDIR="$pkgdir" cmake --install build; or return
+    sed -i "s|set(LIBEVENT_INCLUDE_DIRS \"$srcdir/[^\"]*\")|set(LIBEVENT_INCLUDE_DIRS \"\")|" "$pkgdir/usr/lib/cmake/libevent/LibeventConfig.cmake"; or return
 
     install -Dt "$pkgdir/usr/share/licenses/$pkgname" -m644 libevent-$pkgver-stable/LICENSE; or return
 end

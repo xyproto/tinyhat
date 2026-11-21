@@ -7,6 +7,7 @@ set url https://github.com/xyproto/tinyhat
 set license MIT
 set makedepends_build python python-markdown
 set source "fennel::git+https://git.sr.ht/~technomancy/fennel#tag=$pkgver" mkfennelbook.py
+set fallbackurl "fennel::git+https://github.com/bakpakin/Fennel.git"
 set sha256sums 98273050fb69df0d5aa6825460b479ae249ea772f067a4baf888cad2d32441bd \
     b30d8bf8cc0e2c178d8a91f0524038a96e9abfc04dd9fe717ad196c0bc40dc7f
 

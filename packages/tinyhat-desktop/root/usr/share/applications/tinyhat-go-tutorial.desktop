@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Go Tutorial
+Icon=help-browser
+Comment=Learn the board game Go, starting with capturing stones (opens in the web browser)
+Exec=xdg-open https://way-to-go.gitlab.io/capture-stones/
+Terminal=false
+Categories=Game;BoardGame;

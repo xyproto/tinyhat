@@ -11,6 +11,7 @@ set makedepends meson ninja scdoc systemd
 set depends systemd-libs
 set source "$pkgname-$pkgver.tar.gz::https://git.sr.ht/~kennylevinsen/seatd/archive/$pkgver.tar.gz" \
     sysuser.conf
+set fallbackurl "$pkgname-$pkgver.tar.gz::https://github.com/kennylevinsen/seatd/archive/refs/tags/$pkgver.tar.gz"
 set sha256sums 302564d54d8e28191fadfd734f2675ecb0c9e0615a58011b89ef15dfa4dbaa96 \
     e833292adf5da25b5258a5209c258f0e4c12e1d6fe81cf228fd0cfb575080d78
 set flags arch

@@ -26,8 +26,8 @@ index 80c2a23..1147b8b 100644
  			return fg;
  		return x >= 0.62 && x < 0.95 && y >= 0.62 && y < 0.69 ? fg : 0;
 +	case 'F': {
-+		uint32_t c = arg == 'f' ? 0xff9e3bff : fg;
-+		double a, k = arg == 'c' ? 0.6 : 1.0;
++		uint32_t c = fg;
++		double a, k = arg == 'c' ? 0.42 : arg == 'm' ? 0.68 : 1.0;
 +		dx = (x - 0.5) / k;
 +		dy = (y - 0.5) / k;
 +		d = hypot(dx, dy);

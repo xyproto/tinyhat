@@ -1,7 +1,7 @@
 pkgbase = lsd
 	pkgdesc = Modern ls with a lot of pretty colors and awesome icons
 	pkgver = 1.2.0
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/lsd-rs/lsd
 	arch = i686
 	license = Apache-2.0

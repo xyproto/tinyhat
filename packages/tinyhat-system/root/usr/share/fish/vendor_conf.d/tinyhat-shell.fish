@@ -1,6 +1,6 @@
 set -g fish_greeting
 
-set -q BROWSER; or set -gx BROWSER /usr/bin/netsurfy
+set -q BROWSER; or set -gx BROWSER /usr/bin/tinysurf
 set -q EDITOR; or set -gx EDITOR /usr/bin/o
 set -q MANPAGER; or set -gx MANPAGER /usr/bin/o
 set -q O_THEME; or set -gx O_THEME xoria

@@ -1,6 +1,6 @@
 set pkgname rav1e
 set pkgver 0.8.1
-set pkgrel 3
+set pkgrel 4
 set pkgdesc 'An AV1 encoder focused on speed and safety'
 set arch i686
 set url https://github.com/xiph/rav1e/

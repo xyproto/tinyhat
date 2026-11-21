@@ -1,6 +1,6 @@
 pkgbase = llvm
 	pkgver = 23.1.5
-	pkgrel = 1
+	pkgrel = 2
 	url = https://llvm.org/
 	arch = i686
 	arch = x32
@@ -13,6 +13,7 @@ pkgbase = llvm
 	makedepends = zstd
 	makedepends = libxml2
 	makedepends = ncurses
+	options = leakpath
 	source = https://github.com/llvm/llvm-project/releases/download/llvmorg-23.1.5/llvm-project-23.1.5.src.tar.xz
 	sha256sums = fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e
 

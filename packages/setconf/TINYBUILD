@@ -1,0 +1,17 @@
+set pkgname setconf
+set -g _commit be98cda31a4491bbf6790921df0c138ddcce20fd
+set pkgver 0.7.7.r20.gbe98cda3
+set pkgrel 1
+set pkgdesc 'Utility for easily changing settings in configuration files'
+set arch any
+set url https://setconf.roboticoverlords.org/
+set license GPL-2.0-only
+set depends python
+set source "setconf-$_commit.tar.gz::https://github.com/xyproto/setconf/archive/$_commit.tar.gz"
+set sha256sums d105dd282fec1b9e68cf8e433a620c9af59fe687c858613b5bffe994bffee808
+
+function package
+    cd setconf-$_commit; or return
+    install -Dm755 setconf.py "$pkgdir/usr/bin/setconf"; or return
+    install -Dm644 setconf.1 "$pkgdir/usr/share/man/man1/setconf.1"; or return
+end

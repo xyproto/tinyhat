@@ -1,7 +1,7 @@
 pkgbase = makep
 	pkgdesc = Builds pacman packages from TINYBUILD files, the fish-based package format of Tiny Hat
 	pkgver = 0.1.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
@@ -16,6 +16,7 @@ pkgbase = makep
 	depends = curl
 	optdepends = git: for git+ sources
 	optdepends = metatar: for packages that set owners
+	optdepends = nvchecker: for --sup
 	backup = etc/makep.conf
 
 pkgname = makep

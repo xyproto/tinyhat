@@ -2,7 +2,7 @@
 mkdir -p "$HOME/downloads"
 udevadm settle -t 30 2>/dev/null
 tinyhat-soundd &
-: "${BROWSER:=/usr/bin/netsurfy}"
+: "${BROWSER:=/usr/bin/tinysurf}"
 : "${EDITOR:=/usr/bin/o}"
 : "${MANPAGER:=/usr/bin/o}"
 export BROWSER EDITOR MANPAGER

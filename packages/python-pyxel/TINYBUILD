@@ -1,6 +1,6 @@
 set pkgname python-pyxel
 set pkgver 3.0.1
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Retro game engine for Python, built with SDL3'
 set arch i686 x32
 set url https://github.com/kitao/pyxel
@@ -25,7 +25,7 @@ function build
     cd pyxel-$pkgver/crates; or return
     set -l libclangs /usr/lib/libclang.so.*
     set -l libclang (printf '%s\n' $libclangs | string match -r '.*\.so\.[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
-    LIBCLANG_PATH=$libclang PYO3_PYTHON=python3 cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3; or return
+    LIBCLANG_PATH=$libclang PYO3_PYTHON=python3 CARGO_PROFILE_RELEASE_LTO=false cargo build --release --frozen -p pyxel-binding --no-default-features --features sdl3; or return
 end
 
 function package
