@@ -8,9 +8,12 @@ epoch=${SOURCE_DATE_EPOCH:-$(git -C "$top" log -1 --format=%ct 2> /dev/null || e
 cflags="-march=i686 -mtune=generic -Os -pipe -fno-plt -fno-asynchronous-unwind-tables"
 mkdir -p "$HOME/.ccache"
 personality=i686
+hostenv=
+[ "$(readlink -f "$root")" != "$(readlink -f "$top/build/buildroot")" ] || hostenv=$top/build/buildroot-x86_64
 case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 exec ${personality:+setarch "$personality"} bwrap \
   --bind "$root" / \
+  ${hostenv:+--ro-bind "$hostenv" /host} \
   --dev /dev --proc /proc --tmpfs /tmp \
   --bind "$HOME/.ccache" /ccache \
   --ro-bind /etc/resolv.conf /etc/resolv.conf \

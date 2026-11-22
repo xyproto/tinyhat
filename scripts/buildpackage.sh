@@ -106,6 +106,7 @@ boot=$top/build/bootstrap
 dest=$repo
 work=$top/build/chroot/$arch-$base
 [ -z "$cross" ] || work=$top/build/chroot/cross-$base
+[ -z "$cross" ] || [ "$arch" = i686 ] || work=$top/build/chroot/cross-$arch-$base
 if [ -n "$bootstrap" ]; then
   dest=$boot
   work=$top/build/chroot/boot-$base
@@ -117,6 +118,7 @@ libpath=
 personality=i686
 ignorearch=
 rustcross=
+hostloader=
 crosscc=
 case $arch in
   x32)
@@ -128,7 +130,7 @@ case $arch in
     seed=$top/build/buildroot-aarch64
     personality=
     ignorearch=--ignorearch
-    case $(uname -m) in x86_64) rustcross=1 path=/opt/tinyhat-rust/bin:$path ;; esac
+    case $(uname -m) in x86_64) rustcross=1 hostloader=1 path=/opt/tinyhat-rust/bin:$path ;; esac
     if [ -n "$rustcross" ] && command -v aarch64-linux-gnu-gcc > /dev/null; then
       crosscc=1
       path=/opt/tinyhat-cc/bin:$path
@@ -141,15 +143,32 @@ case $arch in
     ;;
 esac
 if [ -n "$cross" ]; then
-  [ "$arch" = i686 ] || { echo "buildpackage.sh: --cross is only for i686" >&2; exit 1; }
   seed=$top/build/buildroot-x86_64
-  tc=i686-tinyhat-linux-gnu
-  path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
-  # i686 programs that are built and run during the build find their libraries in the sysroot; 64-bit
-  # programs skip those libraries, since they are 32-bit
-  libpath=/usr/$tc/sysroot/usr/lib
-  personality=i686
-  ignorearch=
+  case $arch in
+    i686)
+      tc=i686-tinyhat-linux-gnu
+      path=/usr/$tc/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
+      # i686 programs that are built and run during the build find their libraries in the sysroot; 64-bit
+      # programs skip those libraries, since they are 32-bit
+      libpath=/usr/$tc/sysroot/usr/lib
+      personality=i686
+      ignorearch=
+      ;;
+    aarch64)
+      tc=aarch64-unknown-linux-gnu
+      path=/opt/tinyhat-rust/bin:/usr/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl
+      libpath=
+      personality=
+      ignorearch=--ignorearch
+      crosscc=
+      rustcross=1
+      hostloader=
+      ;;
+    *)
+      echo "buildpackage.sh: --cross is for i686 and aarch64" >&2
+      exit 1
+      ;;
+  esac
 fi
 case $(uname -m) in x86_64 | i?86) ;; *) personality= ;; esac
 rootarch=$arch
@@ -172,7 +191,7 @@ lookup() {
     i686) out=$(python3 "$top/scripts/pkg.py" $files "$repo" i686 "$@") ;;
     # Our own builds of the packages and what they need at run time, never prebuilt ones, and never an older build
     # of this package directory's own packages
-    cross) out=$(python3 "$top/scripts/build_planner.py" pkgfiles --without "$base${without:+,$without}" "$repo" i686 "$@") ;;
+    cross) out=$(python3 "$top/scripts/build_planner.py" pkgfiles --without "$base${without:+,$without}" "$repo" "$arch" "$@") ;;
     x32 | sysroot) out=$(python3 "$top/scripts/pkg.py" $files "$repo" x32 "$@") ;;
     aarch64) out=$(python3 "$top/scripts/pkg.py" $files "$repo" aarch64 "$@") ;;
     x86_64) out=$(python3 "$top/scripts/pkg.py" $files "$repo" x86_64 "$@") ;;
@@ -197,8 +216,8 @@ for d in "$@"; do
 done
 crossdeps=
 if [ -n "$cross" ]; then
-  crossdeps=$(lookup cross $want_i686)
-  want_i686=
+  crossdeps=$(lookup cross $want_i686 $want_aarch64)
+  want_i686= want_aarch64=
 fi
 i686deps=$(
   lookup i686 $want_i686
@@ -328,9 +347,10 @@ bwrap_run() {
     --setenv SOURCE_DATE_EPOCH "$epoch" \
     --setenv TINYHAT_ARCH "$arch" \
     --setenv TINYHAT_BOOTSTRAP "$bootstrap" \
-    ${cross:+--setenv am_cv_func_iconv_works yes} \
+    ${cross:+--setenv am_cv_func_iconv_works yes --setenv SYSROOT /usr/$tc/sysroot} \
     ${cross:+--setenv PKG_CONFIG_SYSROOT_DIR /usr/$tc/sysroot --setenv PKG_CONFIG_FDO_SYSROOT_RULES 1 --setenv TINYHAT_SYSROOT /usr/$tc/sysroot --setenv TINYHAT_CROSS $tc --setenv PKG_CONFIG_LIBDIR /usr/$tc/sysroot/usr/lib/pkgconfig:/usr/$tc/sysroot/usr/share/pkgconfig} \
-    ${rustcross:+--ro-bind /usr /host/usr --ro-bind /usr/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2} \
+    ${rustcross:+--ro-bind /usr /host/usr} \
+    ${hostloader:+--ro-bind /usr/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2} \
     ${rustcross:+--ro-bind $top/build/rust-cross /opt/tinyhat-rust/toolchain --ro-bind $top/scripts/rust-cross /opt/tinyhat-rust/bin} \
     ${crosscc:+--ro-bind $top/scripts/cross-cc /opt/tinyhat-cc/bin --ro-bind $top/build/cross-cc/launch /opt/tinyhat-cc/launch} \
     ${crosscc:+--ro-bind /usr/lib/go /usr/lib/go --setenv GOARCH arm64} \
@@ -364,13 +384,13 @@ if [ -n "$sysdeps" ]; then
   ln -sfn lib "$s/usr/libx32"
   ln -sfn usr/lib "$s/libx32"
 fi
-if [ "$tc" = i686-tinyhat-linux-gnu ]; then
+if [ "$tc" = i686-tinyhat-linux-gnu ] || [ "$tc" = aarch64-unknown-linux-gnu ]; then
   s=/usr/$tc/sysroot
   for f in $crossdeps; do
     # Owners do not matter in a sysroot, and the sandbox has only one group to give files
     bsdtar --no-xattrs --no-acls --no-fflags --no-same-owner -xpf "$f" -C "$s" $meta
   done
-  ln -sfn "$s/usr/lib/ld-linux.so.2" /usr/lib/ld-linux.so.2
+  [ "$tc" != i686-tinyhat-linux-gnu ] || ln -sfn "$s/usr/lib/ld-linux.so.2" /usr/lib/ld-linux.so.2
   # The cross compiler through ccache by its full name too, as the ccache package does for the native one
   if [ -x /usr/bin/ccache ] && [ -d /usr/lib/ccache/bin ]; then
     for c in gcc g++ c++; do

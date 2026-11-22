@@ -776,8 +776,8 @@ def cmd_mk():
                 x32_index.add(n, p, idx["x32"].provided_by(n))
     x32_targets, _, x32_skip = pkg.list_config("image-x32") if "image-x32" in distro.load() else (targets, lprefs, skip)
     rootfs_x32 = pkg.resolve_targets(x32_targets, {"i686": with_metadata(as_built), "x32": x32_index}, "x32", lprefs, x32_skip)
-    aarch64_keys = arch_rules("aarch64", by_base, prefs)
     x86_64_keys = arch_rules("x86_64", by_base, prefs)
+    aarch64_keys = cross_rules(by_base, aarch64_roots(), "aarch64")
     cross_keys = cross_rules(by_base, cross_roots())
     rootfs_i686, rootfs_x32 = keys_for(rootfs_i686), keys_for(rootfs_x32)
     need = needed_package_dirs(infos, rootfs_i686 + rootfs_x32)
@@ -953,9 +953,10 @@ def cmd_lock_arch(arch, check=False):
     prefs = {k: v for k, v in prefs.items() if k not in dbidx.pkgs}
 
     built = {}
-    # The x86_64 build environment builds the i686 packages too, with the i686-cross toolchain (cross_rules)
+    # The x86_64 build environment builds the i686 and aarch64 packages too, with the cross toolchains (cross_rules)
     if arch == "x86_64":
         built["i686-cross"] = []
+        built["aarch64-cross"] = []
     for p in sel:
         built.setdefault(p["base"], []).append(p["name"])
     for b in distro.section(section).get("boot", []):
@@ -1044,11 +1045,13 @@ def cmd_pkgfile(repodir, arch, name):
     print(path)
 
 
-def toolchain_provided(idx):
+def toolchain_provided(idx, arch="i686"):
     """The packages that a cross build does not get from our builds: shells (the build environment has its own) and
-    gcc's packages (the i686-cross toolchain has the compiler and its run-time libraries, libgcc, libstdc++...)."""
+    gcc's packages (the cross toolchain has the compiler and its run-time libraries, libgcc, libstdc++...). For
+    aarch64 also glibc's and the kernel headers' (the aarch64-cross sysroot has them; i686 builds use our own)."""
     shells = {idx.resolve(n) for n in ("bash", "sh")} - {None}
-    return lambda name: name in shells or idx.pkgs[name]["base"] == "gcc"
+    bases = ("gcc",) if arch == "i686" else ("gcc", "glibc", "linux-api-headers")
+    return lambda name: name in shells or idx.pkgs[name]["base"] in bases
 
 
 def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
@@ -1060,7 +1063,7 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
     infos = load()
     by_base = {i["base"]: i for i in infos}
     idx = package_index(infos, ("arch", "tinyhat"))
-    provided = (lambda name: False) if image else toolchain_provided(idx)
+    provided = (lambda name: False) if image else toolchain_provided(idx, arch)
     seen, todo, out = set(), [(n, True) for n in names], []
     while todo:
         dep, named = todo.pop()
@@ -1081,7 +1084,7 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
     print("\n".join(sorted(out)))
 
 
-def cross_bases(by_base, roots):
+def cross_bases(by_base, roots, arch="i686"):
     """The package index of all TINYBUILDs, and the package directories that ROOTS need for i686 (cross_rules)."""
     idx = package_index(list(by_base.values()), ("arch", "tinyhat"))
     need, todo = set(), list(roots)
@@ -1092,9 +1095,16 @@ def cross_bases(by_base, roots):
         need.add(name)
         info = by_base[idx.pkgs[name]["base"]]
         todo += info["makedepends_host"]
+        if arch != "i686":
+            todo += [d for d in info["makedepends"] if d not in info["makedepends_build"] and is_library(d, idx, by_base)]
         for split in info["depends"]:
             todo += info["depends"][split] + [split]
     return idx, {idx.pkgs[n]["base"] for n in need}
+
+
+def aarch64_roots():
+    """What the aarch64 cross builds are for: the packages of the package directories in [build-aarch64]."""
+    return sorted({n for names in distro.lock().get("build-aarch64", {}).values() for n in names})
 
 
 def cross_roots():
@@ -1108,6 +1118,8 @@ def cross_tools(by_base):
     """What the cross builds of [image-orbiton] run during the build, from the x86_64 build environment: their
     makedepends, without the libraries they are built against (makedepends_host)."""
     _, bases = cross_bases(by_base, cross_roots())
+    _, more = cross_bases(by_base, aarch64_roots(), "aarch64")
+    bases = bases | more
     out = []
     for b in sorted(bases):
         info = by_base[b]
@@ -1115,7 +1127,45 @@ def cross_tools(by_base):
     return out
 
 
-def cross_rules(by_base, roots):
+LIBRARY_FILE = re.compile(r"usr/(include/|lib/pkgconfig/|lib/cmake/|lib/lib[^/]*\.(so|a)($|\.))")
+DATA_PC_FILE = re.compile(r"usr/share/pkgconfig/")
+PROGRAM_FILE = re.compile(r"usr/bin/.")
+_library_cache = {}
+
+
+def is_library(name, idx, by_base):
+    """Whether package NAME is something to build against (headers, pkg-config or CMake files, libraries), from the
+    files of our i686 build of it or of the x86_64 build environment's copy; build tools without those run from the
+    x86_64 build environment instead. A pkg-config file in usr/share/pkgconfig counts only without programs: data
+    (like wayland-protocols) is built against, a program's own (like scdoc's) only finds the program. Unknown packages
+    count as libraries."""
+    if name in _library_cache:
+        return _library_cache[name]
+    files = None
+    resolved = idx.resolve(name)
+    if resolved is not None:
+        info = by_base[idx.pkgs[resolved]["base"]]
+        for parch in ("i686", "any"):
+            path = os.path.join(TOP, "build", "repo", f"{resolved}-{build_version(info, resolved)}-{parch}.pkg.tar.zst")
+            if os.path.exists(path):
+                with tarfile.open(path) as t:
+                    files = t.getnames()
+                break
+    if files is None:
+        local = os.path.join(TOP, "build", "buildroot-x86_64", "var", "lib", "pacman", "local")
+        for d in sorted(os.listdir(local)) if os.path.isdir(local) else []:
+            if d.rsplit("-", 2)[0] == name and os.path.exists(os.path.join(local, d, "files")):
+                with open(os.path.join(local, d, "files")) as f:
+                    files = f.read().split("\n")
+                break
+    if files is not None:
+        files = [f.lstrip("./") for f in files]
+    _library_cache[name] = files is None or any(LIBRARY_FILE.match(f) for f in files) or (
+        any(DATA_PC_FILE.match(f) for f in files) and not any(PROGRAM_FILE.match(f) for f in files))
+    return _library_cache[name]
+
+
+def cross_rules(by_base, roots, arch="i686"):
     """Rules for the i686 packages that ROOTS ([image-orbiton] packages) need, built in the x86_64 build environment
     with the i686-cross toolchain (scripts/buildpackage.sh --cross), from our TINYBUILDs only.
 
@@ -1126,21 +1176,37 @@ def cross_rules(by_base, roots):
     says that its build can do without a dependency (bootstrap_without): that package directory is built twice, first
     without the package directories of the cycle that are not built yet ($(B)/pkg/cross-boot/BASE), then with
     everything ($(B)/pkg/cross/BASE)."""
-    idx, bases = cross_bases(by_base, roots)
-    provided = toolchain_provided(idx)
-    deps, graph, soft = {}, {}, {}
+    idx, bases = cross_bases(by_base, roots, arch)
+    provided = toolchain_provided(idx, arch)
+    deps, graph, soft, declared = {}, {}, {}, {}
     for b in bases:
         # Not makedepends_build: those run during the build, and come from the x86_64 build environment
         info = by_base[b]
-        names = {idx.resolve(d) for d in all_deps(info) if d not in info["makedepends_build"]} - {None}
+        if arch == "i686":
+            wanted = [d for d in all_deps(info) if d not in info["makedepends_build"]]
+            make = set()
+        else:
+            # Other architectures build against the libraries among the makedepends; the rest are tools from the x86_64
+            # build environment, and what is only needed at run time can come later in a cycle
+            libs = [d for d in info["makedepends"] if d not in info["makedepends_build"]
+                    and (d in info["makedepends_host"] or is_library(d, idx, by_base))]
+            wanted = libs + [d for n in info["pkgnames"] for d in info["depends"].get(n, [])]
+            make = {idx.resolve(d) for d in libs} - {None}
+        names = {idx.resolve(d) for d in wanted} - {None}
         deps[b] = sorted(n for n in names if idx.pkgs[n]["base"] in bases and idx.pkgs[n]["base"] != b and not provided(n))
         graph[b] = {idx.pkgs[n]["base"] for n in deps[b]}
         without = {idx.resolve(w) for w in by_base[b]["bootstrap_without"]}
+        declared[b] = {d for d in graph[b] if all(n in without for n in deps[b] if idx.pkgs[n]["base"] == d)}
+        if arch != "i686":
+            without |= {n for n in deps[b] if n not in make}
         soft[b] = {d for d in graph[b] if all(n in without for n in deps[b] if idx.pkgs[n]["base"] == d)}
-    # Build order: what is ready first; in a cycle, a package directory that can do without the rest (bootstrap_without)
+    # Build order: what is ready first; in a cycle, a package directory that can do without the rest, preferably one
+    # whose TINYBUILD says so (bootstrap_without), else one that only needs the rest at run time
     order, built, left = [], set(), set(bases)
     while left:
         ready = sorted(b for b in left if graph[b] <= built)
+        if not ready:
+            ready = sorted(b for b in left if graph[b] - built <= declared[b])[:1]
         if not ready:
             ready = sorted(b for b in left if graph[b] - built <= soft[b])[:1]
         if not ready:
@@ -1157,20 +1223,21 @@ def cross_rules(by_base, roots):
     seeded = {p["name"] for p in distro.locked("buildroot-x86_64")}
     x86_names = {n: b["base"] for k, b in BUILDS.items() if b["kind"] == "x86_64" for n in by_base[b["base"]]["pkgnames"]
                  if n not in seeded}
+    main, early = ("cross", "cross-boot") if arch == "i686" else (arch, f"{arch}-boot")
     for b in order:
         info = by_base[b]
         for n in info["pkgnames"]:
-            NAME_BASE.setdefault("cross", {})[n] = b
+            NAME_BASE.setdefault(main, {})[n] = b
     # Each build: (target, package directory, i686 packages, the stamps of the package directories that build them)
     builds = []
     for b in order:
         if b in boot:
             later = {d for d in graph[b] if pos[d] > pos[b]}
             first = [n for n in deps[b] if idx.pkgs[n]["base"] not in later]
-            builds.append((("cross-boot", b), b, first, [("cross-boot" if d in boot else "cross", d)
-                                                        for d in sorted({idx.pkgs[n]["base"] for n in first})]))
-        pre = [("cross-boot" if d in boot and pos[d] < pos[b] else "cross", d) for d in sorted(graph[b])]
-        builds.append((("cross", b), b, deps[b], pre + ([("cross-boot", b)] if b in boot else [])))
+            builds.append(((early, b), b, first, [(early if d in boot else main, d)
+                                                  for d in sorted({idx.pkgs[n]["base"] for n in first})]))
+        pre = [(early if d in boot and pos[d] < pos[b] else main, d) for d in sorted(graph[b])]
+        builds.append(((main, b), b, deps[b], pre + ([(early, b)] if b in boot else [])))
     # The package directories that are surely built before each build (its prerequisites, transitively)
     prereqs = {t: p for t, _, _, p in builds}
     done = {}
@@ -1187,7 +1254,7 @@ def cross_rules(by_base, roots):
     for target, b, names, pre in builds:
         info = by_base[b]
         names_here = [re.split(r"[<>=]", d, maxsplit=1)[0] for d in info["makedepends"] if d not in info["makedepends_host"]]
-        host = ["i686-cross"] + sorted({n for n in names_here if n in x86_names} - {"i686-cross"})
+        host = [f"{arch}-cross"] + sorted({n for n in names_here if n in x86_names} - {f"{arch}-cross"})
         host_args = [f"x86_64/{t}" for t in host]
         host_pre = sorted({stamp("x86_64", x86_names[t]) for t in host if t in x86_names})
         # Tool versions for the build tools only: the i686 dependencies are builds of their own
@@ -1195,12 +1262,13 @@ def cross_rules(by_base, roots):
         # Leave out the package directories of the cycle that are not surely built yet: what the packages here need
         # at run time can lead to them (pam, built first without systemd, still names systemd-libs)
         without = sorted(cycle_of[b] - before(target) - {b})
-        args = ["--cross"] + (["--without", ",".join(without)] if without else []) + [info["dir"]]
+        args = ["--cross"] + (["--arch", arch] if arch != "i686" else []) + \
+            (["--without", ",".join(without)] if without else []) + [info["dir"]]
         kind = target[0]
-        if kind == "cross":
+        if kind == main:
             stamps.append(stamp(*target))
         rule(stamp(*target), tool_info, host_pre + [stamp(*p) for p in pre],
-             args + host_args + [f"i686/{n}" for n in names], f"{kind}-{b}", "buildroot-x86_64")
+             args + host_args + [f"{arch}/{n}" for n in names], f"{kind}-{b}", "buildroot-x86_64")
     return stamps
 
 

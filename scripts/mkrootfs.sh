@@ -12,15 +12,16 @@ section=image
 arch=i686
 strip=strip
 bcj=x86
-if grep -q -- '-x32\.pkg\.tar' "$lock"; then
+userland() { awk '$2 != "linux-tinyhat"' "$lock"; }
+if userland | grep -q -- '-x32\.pkg\.tar'; then
   arch=x32
-elif grep -q -- '-aarch64\.pkg\.tar' "$lock"; then
+elif userland | grep -q -- '-aarch64\.pkg\.tar'; then
   arch=aarch64
   repo=$top/build/repo-aarch64
   section=image-aarch64
   strip=aarch64-linux-gnu-strip
   bcj=arm64
-elif grep -q -- '-x86_64\.pkg\.tar' "$lock"; then
+elif userland | grep -q -- '-x86_64\.pkg\.tar'; then
   arch=x86_64
   repo=$top/build/repo-x86_64
   section=image-x86_64

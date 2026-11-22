@@ -4,7 +4,7 @@ b=/opt/tinyhat-rust/bin
 export LD_LIBRARY_PATH=/host/usr/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 export RUSTC=$t/bin/rustc RUSTDOC=$t/bin/rustdoc
 export CARGO_BUILD_TARGET=aarch64-unknown-linux-gnu
-export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=cc
+export CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=${CC:-cc}
 export CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=$b/hostcc
 export HOST_CC=$b/hostcc CC_x86_64_unknown_linux_gnu=$b/hostcc
 export PKG_CONFIG_ALLOW_CROSS=1
