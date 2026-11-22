@@ -1,7 +1,7 @@
 pkgbase = tinyhat-notify
 	pkgdesc = Tiny Hat notifications and tray icons: shows desktop notifications and StatusNotifierItem icons in the dwl bar
 	pkgver = 1.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/xyproto/tinyhat
 	arch = i686
 	arch = x32

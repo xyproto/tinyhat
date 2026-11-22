@@ -218,6 +218,16 @@ static void update_actions(void)
 		archives = !is_dir(l->data) && archive_suffix(g_file_info_get_name(l->data));
 	g_list_free_full(infos, g_object_unref);
 	enable("extract", archives);
+	gboolean image = n == 1 && !trash;
+	infos = image ? selected_infos(act) : NULL;
+	if (infos) {
+		auto lower = g_ascii_strdown(g_file_info_get_name(infos->data), -1);
+		image = !is_dir(infos->data) && (g_str_has_suffix(lower, ".png") || g_str_has_suffix(lower, ".jpg") ||
+			g_str_has_suffix(lower, ".jpeg"));
+		g_free(lower);
+	}
+	g_list_free_full(infos, g_object_unref);
+	enable("wallpaper", image);
 	enable("compress", n > 0 && !trash);
 	enable("rename", n == 1);
 	enable("trash", n > 0 && !trash);
@@ -1181,6 +1191,47 @@ static void act_extract(GSimpleAction *a, GVariant *p, gpointer d)
 {
 	UNUSED_ACTION_ARGS;
 	run_job(JOB_EXTRACT, selected_files(act), NULL);
+}
+
+static void act_wallpaper(GSimpleAction *a, GVariant *p, gpointer d)
+{
+	UNUSED_ACTION_ARGS;
+	auto files = selected_files(act);
+	if (!files)
+		return;
+	auto path = g_file_get_path(files->data);
+	auto lower = g_ascii_strdown(path ? path : "", -1);
+	if (path && !g_str_has_suffix(lower, ".png")) {
+		GError *err = NULL;
+		auto texture = gdk_texture_new_from_file(files->data, &err);
+		g_free(path);
+		path = NULL;
+		if (texture) {
+			auto dir = g_build_filename(g_get_user_data_dir(), "tinyhat", NULL);
+			g_mkdir_with_parents(dir, 0755);
+			path = g_build_filename(dir, "wallpaper.png", NULL);
+			g_free(dir);
+			if (!gdk_texture_save_to_png(texture, path)) {
+				g_free(path);
+				path = NULL;
+			}
+			g_object_unref(texture);
+		} else {
+			g_error_free(err);
+		}
+	}
+	if (path) {
+		const char *argv[] = { "swaybg", "-m", "fill", "-i", path, NULL };
+		if (g_spawn_async(NULL, (char **)argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, NULL, NULL))
+			set_status("Desktop background set");
+		else
+			set_status("Could not set the desktop background");
+	} else {
+		set_status("Could not read the image");
+	}
+	g_free(lower);
+	g_free(path);
+	g_list_free_full(files, g_object_unref);
 }
 
 static void do_compress(const char *name, gpointer data)
@@ -2589,6 +2640,7 @@ static GMenuModel *context_menu(void)
 	menu_add(s, "Open with...", "win.openwith", NULL, TRUE);
 	menu_add(s, "View", "win.view", "F3", TRUE);
 	menu_add(s, "Edit", "win.edit", "F4", TRUE);
+	menu_add(s, "Set as desktop background", "win.wallpaper", NULL, TRUE);
 	s = section(menu);
 	menu_add(s, "Cut", "win.cut", "<Control>x", TRUE);
 	menu_add(s, "Copy", "win.copy", "<Control>c", TRUE);
@@ -2651,6 +2703,7 @@ static const GActionEntry actions[] = {
 	{ "f6", act_f6, NULL, NULL, NULL, { 0 } },
 	{ "link", act_link, NULL, NULL, NULL, { 0 } },
 	{ "extract", act_extract, NULL, NULL, NULL, { 0 } },
+	{ "wallpaper", act_wallpaper, NULL, NULL, NULL, { 0 } },
 	{ "compress", act_compress, NULL, NULL, NULL, { 0 } },
 	{ "rename", act_rename, NULL, NULL, NULL, { 0 } },
 	{ "trash", act_trash, NULL, NULL, NULL, { 0 } },

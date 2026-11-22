@@ -1,7 +1,7 @@
 set pkgname lua
 set pkgver 5.5.1
 set -g _majorver (string replace -r '\.[^.]*$' '' -- $pkgver)
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Powerful lightweight programming language designed for extending applications'
 set arch i686 x32
 set url https://www.lua.org/
@@ -31,12 +31,18 @@ function prepare
     sed "s/%VER%/$_majorver/g;s/%REL%/$pkgver/g;s/-llua/-llua++/g" lua.pc >lua++-$pkgver/lua++.pc; or return
 end
 
+function _tools -a cc
+    echo CC=$cc
+    set -q AR; and echo "AR=$AR rcu" && echo RANLIB=$RANLIB
+    return 0
+end
+
 function build
     cd lua-$pkgver; or return
-    make MYCFLAGS="$CFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" linux; or return
+    make (_tools $CC) MYCFLAGS="$CFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" linux; or return
 
     cd ../lua++-$pkgver; or return
-    make MYCFLAGS="$CXXFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" CC=g++ LUA_A=liblua++.a LUA_SO=liblua++.so linux; or return
+    make MYCFLAGS="$CXXFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" (_tools $CXX) LUA_A=liblua++.a LUA_SO=liblua++.so linux; or return
 end
 
 function package

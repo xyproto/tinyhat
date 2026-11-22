@@ -1,6 +1,6 @@
 set pkgname lmdb
 set pkgver 0.9.35
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Symas Lightning Memory-Mapped Database'
 set arch i686 x32
 set url https://symas.com/lmdb
@@ -18,9 +18,15 @@ function prepare
     sed -e "s|@PKGVER@|$pkgver|" -i lmdb.pc; or return
 end
 
+function _tools
+    echo CC=$CC
+    set -q AR; and echo AR=$AR
+    return 0
+end
+
 function build
     cd openldap/libraries/liblmdb; or return
-    make CFLAGS="$CFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" prefix=/usr; or return
+    make (_tools) CFLAGS="$CFLAGS" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" prefix=/usr; or return
 end
 
 function check
@@ -31,7 +37,7 @@ end
 function package
     cd openldap/libraries/liblmdb; or return
     install -dm755 "$pkgdir"/usr/{bin,lib,include,man/man1,share}; or return
-    make DESTDIR="$pkgdir" prefix=/usr install; or return
+    make (_tools) DESTDIR="$pkgdir" prefix=/usr install; or return
     mv "$pkgdir"/usr/man "$pkgdir"/usr/share/man; or return
     install -Dm644 LICENSE -t "$pkgdir"/usr/share/licenses/$pkgname/; or return
     install -Dm644 "$srcdir"/lmdb.pc -t "$pkgdir"/usr/lib/pkgconfig/; or return

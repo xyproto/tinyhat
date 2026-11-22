@@ -362,6 +362,8 @@ if option lto
 end
 set -gx CC cc
 set -gx CXX c++
+set -gx CC_FOR_BUILD cc
+set -gx CXX_FOR_BUILD c++
 set -gx STRIP strip
 set -g cross 0
 if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m) = x86_64
@@ -381,7 +383,54 @@ if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m)
     set cross 1
     set -gx PKG_CONFIG_SYSROOT_DIR $SYSROOT
     set -gx PKG_CONFIG_LIBDIR $SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig
+    set -g makep_crossdir (mktemp -d /tmp/makep-cross.XXXXXX)
+    mkdir $makep_crossdir/bin
+    printf '%s\n' '#!/bin/sh' "$prefix-strip \"\$@\" 2>/dev/null || exec "(command -s strip)" \"\$@\"" \
+        >$makep_crossdir/bin/strip
+    chmod +x $makep_crossdir/bin/strip
+    set -gx PATH $makep_crossdir/bin $PATH
+    printf '%s\n' "host_alias=$CHOST" "host=$CHOST" "build_alias=$CBUILD" "build=$CBUILD" cross_compiling=yes \
+        "ac_tool_prefix=$prefix-" ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
+        >$makep_crossdir/config.site
+    set -gx CONFIG_SITE $makep_crossdir/config.site
+    set -l family $carch
+    switch $carch
+        case i686
+            set family x86
+        case x32
+            set family x86_64
+    end
+    printf '%s\n' '[binaries]' "c = '$CC'" "cpp = '$CXX'" "ar = '$AR'" "strip = '$STRIP'" "pkg-config = 'pkg-config'" \
+        '[properties]' "sys_root = '$SYSROOT'" "pkg_config_libdir = '$PKG_CONFIG_LIBDIR'" 'needs_exe_wrapper = true' \
+        '[host_machine]' "system = 'linux'" "cpu_family = '$family'" "cpu = '$carch'" "endian = 'little'" \
+        >$makep_crossdir/cross.ini
+    printf '%s\n' 'set(CMAKE_SYSTEM_NAME Linux)' "set(CMAKE_SYSTEM_PROCESSOR $carch)" "set(CMAKE_C_COMPILER $CC)" \
+        "set(CMAKE_CXX_COMPILER $CXX)" "set(CMAKE_SYSROOT $SYSROOT)" 'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)' \
+        'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)' 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)' \
+        'set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)' "set(Rust_CARGO_TARGET $CHOST)" >$makep_crossdir/toolchain.cmake
+    set -gx CMAKE_TOOLCHAIN_FILE $makep_crossdir/toolchain.cmake
+    switch $carch
+        case aarch64
+            set -gx GOARCH arm64
+        case i686
+            set -gx GOARCH 386
+    end
+    set -gx GOOS linux
+    set -gx CGO_ENABLED 1
     echo "makep: cross-building for $CHOST on $CBUILD with $prefix-gcc"
+end
+
+function meson
+    if test "$argv[1]" = setup; and test $cross -eq 1; and not string match -q -- '--cross-file*' $argv
+        env -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH meson setup --cross-file=$makep_crossdir/cross.ini $argv[2..]
+    else
+        command meson $argv
+    end
+end
+
+function arch-meson
+    meson setup --prefix /usr --libexecdir lib --sbindir bin --buildtype plain --auto-features enabled \
+        --wrap-mode nodownload -D b_pie=true -D python.bytecompile=1 $argv
 end
 
 set -g startdir $package_dir
@@ -539,38 +588,14 @@ function fetch_sources
     end
 end
 
-function meson_cross_file
-    set -l family $carch
-    switch $carch
-        case i686
-            set family x86
-        case x32
-            set family x86_64
-    end
-    printf '%s\n' '[binaries]' "c = '$CC'" "cpp = '$CXX'" "ar = '$AR'" "strip = '$STRIP'" "pkg-config = 'pkg-config'" \
-        '[properties]' "sys_root = '$SYSROOT'" "pkg_config_libdir = '$PKG_CONFIG_LIBDIR'" \
-        '[host_machine]' "system = 'linux'" "cpu_family = '$family'" "cpu = '$carch'" "endian = 'little'" >$srcdir/makep-cross.ini
-    echo --cross-file=$srcdir/makep-cross.ini
-end
-
-function cmake_cross_args
-    printf '%s\n' -DCMAKE_SYSTEM_NAME=Linux -DCMAKE_SYSTEM_PROCESSOR=$carch -DCMAKE_C_COMPILER=$CC -DCMAKE_CXX_COMPILER=$CXX \
-        -DCMAKE_SYSROOT=$SYSROOT -DCMAKE_FIND_ROOT_PATH_MODE_PROGRAM=NEVER -DCMAKE_FIND_ROOT_PATH_MODE_LIBRARY=ONLY \
-        -DCMAKE_FIND_ROOT_PATH_MODE_INCLUDE=ONLY -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ONLY
-end
-
 function style_build
     switch $style
         case meson
-            set -l extra
-            test $cross -eq 1; and set extra (meson_cross_file)
             meson setup --prefix /usr --libexecdir lib --sbindir bin --buildtype plain --auto-features enabled \
-                --wrap-mode nodownload -D b_pie=true -D python.bytecompile=1 $extra $meson_args $builddir build; or return
+                --wrap-mode nodownload -D b_pie=true -D python.bytecompile=1 $meson_args $builddir build; or return
             meson compile -C build
         case cmake
-            set -l extra
-            test $cross -eq 1; and set extra (cmake_cross_args)
-            cmake -B build -S $builddir -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON $extra $cmake_args; or return
+            cmake -B build -S $builddir -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=None -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON $cmake_args; or return
             cmake --build build
         case configure
             set -l extra

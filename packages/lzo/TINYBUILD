@@ -1,6 +1,6 @@
 set pkgname lzo
 set pkgver 2.10
-set pkgrel 5
+set pkgrel 6
 set pkgdesc 'Portable lossless data compression library'
 set arch i686 x32
 set url https://www.oberhumer.com/opensource/lzo
@@ -17,8 +17,8 @@ function build
     ./configure --prefix=/usr --enable-shared; or return
     make; or return
     # build minilzo
-    gcc $CPPFLAGS $CFLAGS -fpic -Iinclude/lzo -o minilzo/minilzo.o -c minilzo/minilzo.c; or return
-    gcc $LDFLAGS -shared -o libminilzo.so.0 -Wl,-soname,libminilzo.so.0 minilzo/minilzo.o; or return
+    $CC $CPPFLAGS $CFLAGS -fpic -Iinclude/lzo -o minilzo/minilzo.o -c minilzo/minilzo.c; or return
+    $CC $LDFLAGS -shared -o libminilzo.so.0 -Wl,-soname,libminilzo.so.0 minilzo/minilzo.o; or return
 end
 
 function check

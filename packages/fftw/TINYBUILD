@@ -2,18 +2,19 @@
 set pkgbase fftw
 set pkgname fftw
 set pkgver 3.3.11
-set pkgrel 1
+set pkgrel 3
 set pkgdesc 'A library for computing the discrete Fourier transform (DFT)'
 set arch i686 x32
 set url http://www.fftw.org/
 set nvchecker source=regex url=http://www.fftw.org/download.html 'regex=FFTW [\d.]+' 'prefix=FFTW '
 set license GPL-2.0-or-later
-set makedepends bash cmake gcc-fortran glibc libgcc libgomp libquadmath
+set makedepends bash cmake glibc libgcc libgomp libquadmath
 set flags arch
 set source http://www.fftw.org/$pkgbase-$pkgver.tar.gz
 set sha512sums ca1bf80490dc6955a0ab49b1af05d6658c2ecc0968b3bde5b4af22271e47d30cd38f6f8347e8e6124091b6a17717447942bee95f94ca29574ba71c4d167af351
 set b2sums 4bd2ae0ada612243f0681b185230969da2bca6cfccb1e16d17f84459cbdd4ae84dc8a9ddb39ce5e4dfc7d0308709d1dc56688826299ee1017fc6115d16b2bd38
 set -g _build_types single double long-double quad
+test "$CARCH" = aarch64; and set _build_types single double long-double
 set -g _soname 3.7.11
 
 function prepare
@@ -32,15 +33,19 @@ function build
         --prefix=/usr \
         --enable-shared \
         --enable-threads \
+        --disable-fortran \
         --disable-mpi \
         --enable-openmp
-    set -l _configure_single \
-        --enable-sse \
-        --enable-avx \
-        --enable-single
-    set -l _configure_double \
-        --enable-sse2 \
-        --enable-avx
+    set -l _configure_single --enable-sse --enable-avx --enable-single
+    set -l _configure_double --enable-sse2 --enable-avx
+    set -l simd -D ENABLE_QUAD_PRECISION=ON -D ENABLE_SSE=ON -D ENABLE_SSE2=ON -D ENABLE_AVX=ON -D ENABLE_AVX2=ON
+    set -l align -malign-double
+    if test $CARCH = aarch64
+        set _configure_single --enable-neon --enable-single
+        set _configure_double --enable-neon
+        set simd
+        set align
+    end
     set -l _configure_long_double \
         --enable-long-double
     set -l _configure_quad \
@@ -55,11 +60,7 @@ function build
         -D ENABLE_THREADS=ON \
         -D ENABLE_FLOAT=ON \
         -D ENABLE_LONG_DOUBLE=ON \
-        -D ENABLE_QUAD_PRECISION=ON \
-        -D ENABLE_SSE=ON \
-        -D ENABLE_SSE2=ON \
-        -D ENABLE_AVX=ON \
-        -D ENABLE_AVX2=ON
+        $simd
 
     # create missing FFTW3LibraryDepends.cmake
     # https://bugs.archlinux.org/task/67604
@@ -67,9 +68,8 @@ function build
     # fix broken IMPORTED_LOCATION: https://github.com/FFTW/fftw3/issues/130#issuecomment-1030280157
     sed -e 's|\(IMPORTED_LOCATION_NONE\).*|\1 "/usr/lib/libfftw3.so.3"|' -i build/FFTW3LibraryDepends.cmake; or return
 
-    set -lx F77 gfortran
     # use upstream default CFLAGS while keeping our -march/-mtune
-    set -a CFLAGS -O3 -fomit-frame-pointer -malign-double -fstrict-aliasing -ffast-math
+    set -a CFLAGS -O3 -fomit-frame-pointer $align -fstrict-aliasing -ffast-math
 
     for _name in $_build_types
         cd "$srcdir/$pkgbase-$pkgver-$_name"; or return
@@ -102,7 +102,12 @@ end
 
 function package_fftw
     set depends bash glibc libgcc libgomp libquadmath
-    set provides libfftw3q_threads.so libfftw3q_omp.so libfftw3q.so libfftw3l_threads.so libfftw3l_omp.so libfftw3l.so libfftw3f_threads.so libfftw3f_omp.so libfftw3f.so libfftw3_threads.so libfftw3_omp.so libfftw3.so
+    set provides libfftw3q_threads.so libfftw3q_omp.so libfftw3q.so
+    if test $CARCH = aarch64
+        set depends bash glibc libgcc libgomp
+        set provides
+    end
+    set -a provides libfftw3l_threads.so libfftw3l_omp.so libfftw3l.so libfftw3f_threads.so libfftw3f_omp.so libfftw3f.so libfftw3_threads.so libfftw3_omp.so libfftw3.so
 
     for _name in $_build_types
         make DESTDIR="$pkgdir" install -C $pkgname-$pkgver-$_name; or return

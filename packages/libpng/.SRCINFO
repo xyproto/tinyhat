@@ -1,7 +1,7 @@
 pkgbase = libpng
 	pkgdesc = A collection of routines used to create PNG format graphics files
 	pkgver = 1.6.59
-	pkgrel = 1
+	pkgrel = 2
 	url = http://www.libpng.org/pub/png/libpng.html
 	arch = i686
 	arch = x32

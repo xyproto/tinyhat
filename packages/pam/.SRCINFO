@@ -1,14 +1,15 @@
 pkgbase = pam
 	pkgdesc = PAM (Pluggable Authentication Modules) library
 	pkgver = 1.7.3
-	pkgrel = 1
+	pkgrel = 2
 	url = http://linux-pam.org
 	arch = i686
 	arch = x32
 	license = GPL-2.0-only
-	makedepends = flex
 	makedepends = git
 	makedepends = meson
+	makedepends = flex
+	makedepends_build = flex
 	bootstrap_without = systemd-libs
 	depends = audit
 	depends = glibc

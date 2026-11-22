@@ -1,6 +1,6 @@
 set pkgname testcontroller
 set pkgver 3.4.18
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'SDL3 gamepad test program'
 set arch i686 x32
 set url https://libsdl.org/
@@ -16,7 +16,7 @@ function prepare
 end
 
 function build
-    cc $CFLAGS -Itest -o testcontroller test/testcontroller.c test/gamepadutils.c test/testutils.c -lSDL3_test -lSDL3 -lm $LDFLAGS; or return
+    $CC $CFLAGS -Itest -o testcontroller test/testcontroller.c test/gamepadutils.c test/testutils.c -lSDL3_test -lSDL3 -lm $LDFLAGS; or return
 end
 
 function package

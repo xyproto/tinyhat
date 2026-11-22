@@ -1,7 +1,7 @@
 set pkgname sbsigntools
 set pkgver 0.9.5
 set -g _commit 8445b18f64e60137408a4867fbcbb9ba112c583a # refs/tags/v0.9.5
-set pkgrel 4
+set pkgrel 5
 set pkgdesc 'Tools to add signatures to EFI binaries and Drivers'
 set arch i686 x32
 set url https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git/about
@@ -10,9 +10,11 @@ set license GPL-3.0-or-later
 set depends glibc openssl
 set makedepends git gnu-efi help2man util-linux sed
 set source "git+https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git#commit=$_commit?signed" \
-    git+https://git.ozlabs.org/ccan#commit=b1f28e17227f2320d07fe052a8a48942fe17caa5
+    git+https://git.ozlabs.org/ccan#commit=b1f28e17227f2320d07fe052a8a48942fe17caa5 \
+    openssl4-no-engine.patch
 set sha256sums 18d476d5497cab8f7f8acb8710481bdd3de887f6109f2deeed9e6bd2571d3f9d \
-    5e2aee00fc8319b1ff118c9d720cd4b5c74fac0853313ee45dfd3f93b7ad0174
+    5e2aee00fc8319b1ff118c9d720cd4b5c74fac0853313ee45dfd3f93b7ad0174 \
+    88dd6add800b8fd49214371eabeee8fef9fa2e44558bfac76b44c07d067dee4a
 set flags arch
 
 function prepare
@@ -20,6 +22,7 @@ function prepare
     git submodule init; or return
     git config submodule."lib/ccan.git".url "$srcdir/ccan"; or return
     git -c protocol.file.allow=always submodule update; or return
+    patch -Np1 -i "$srcdir"/openssl4-no-engine.patch; or return
     ./autogen.sh; or return
 end
 

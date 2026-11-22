@@ -1,7 +1,7 @@
 pkgbase = libwebp
 	pkgdesc = WebP image codec library
 	pkgver = 1.6.0
-	pkgrel = 2
+	pkgrel = 3
 	url = https://developers.google.com/speed/webp/
 	arch = i686
 	arch = x32

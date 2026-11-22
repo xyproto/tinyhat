@@ -20,7 +20,7 @@ pkgbase = libsndfile
 	optdepends = alsa-lib: for sndfile-play
 	provides = libsndfile.so
 	source = https://github.com/libsndfile/libsndfile/releases/download/1.2.2/libsndfile-1.2.2.tar.xz
-	source = libsndfile-1.2.2-CVE-2022-33065.patch::https://github.com/libsndfile/libsndfile/commit/0754562e13d2e63a248a1c82f90b30bc0ffe307c.patch?full_index=1
+	source = libsndfile-1.2.2-CVE-2022-33065.patch
 	source = libsndfile-1.0.31-no-sse2.patch
 	sha512sums = a6e3ea3ac5d91befaa99f6a31a3fac44e7b7c11f1de4698167317a461d5a19a2651d47486a920b34400f18367b4f6173bf0c1c9ba80eb682cece1b5beee352a0
 	sha512sums = 1fe061cb5757efadc4e77d786522beb59f7925cd89ba8f01a62cf8d26d00493dc9cbee5ac7ed903869ec7742c59c7041afd4ca5817c9042194768b92d84c9637

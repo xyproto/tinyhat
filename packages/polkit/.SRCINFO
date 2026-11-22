@@ -1,13 +1,12 @@
 pkgbase = polkit
 	pkgdesc = Application development toolkit for controlling system-wide privileges
 	pkgver = 128
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/polkit-org/polkit
 	install = polkit.install
 	arch = i686
 	arch = x32
 	license = LGPL-2.0-or-later
-	checkdepends = python-dbusmock
 	makedepends = dbus
 	makedepends = git
 	makedepends = glib2-devel

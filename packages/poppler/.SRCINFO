@@ -1,6 +1,6 @@
 pkgbase = poppler
 	pkgver = 26.10.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://poppler.freedesktop.org/
 	arch = i686
 	arch = x32

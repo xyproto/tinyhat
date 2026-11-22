@@ -1,6 +1,6 @@
 set pkgname 7zip
 set pkgver 26.04
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'File archiver for extremely high compression'
 set arch i686 x32
 set url https://www.7-zip.org
@@ -33,8 +33,8 @@ function build
         make -C CPP/7zip/$component -f ../../cmpl_gcc.mak $_platform_flags \
             LFLAGS_STRIP= \
             CFLAGS_WARN_WALL="-Wall -Wextra" \
-            CC="cc $CPPFLAGS $CFLAGS $LDFLAGS" \
-            CXX="g++ $CPPFLAGS $CXXFLAGS $LDFLAGS"; or return
+            CC="$CC $CPPFLAGS $CFLAGS $LDFLAGS" \
+            CXX="$CXX $CPPFLAGS $CXXFLAGS $LDFLAGS"; or return
     end
 end
 

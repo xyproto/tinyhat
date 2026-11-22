@@ -3,7 +3,7 @@
 set pkgname binutils
 set pkgver 2.47
 set -g _commit 6ce87bbc521cf46eaee9a1f7ef61cee2cdfb3e32
-set pkgrel 4
+set pkgrel 6
 set pkgdesc 'A set of programs to assemble and manipulate binary and object files'
 set arch i686 x32
 set url https://www.gnu.org/software/binutils/
@@ -69,6 +69,8 @@ function build
     # No --with-debuginfod: "configure: error: debuginfod is missing or unusable".
     # No x86_64-pep target: it belongs in a cross binutils for EFI binaries (https://bugs.archlinux.org/task/42540).
     # --enable-cet=no: no Control Flow instructions (endbr32/endbr64).
+    set -l pgo --enable-pgo-build=lto
+    string match -q -- '*-gcc' $CC; and set pgo
     "$srcdir"/binutils-gdb/configure \
         --prefix=/usr \
         --sysconfdir=/etc \
@@ -84,7 +86,7 @@ function build
         --enable-jansson \
         --enable-ld=default \
         --enable-new-dtags \
-        --enable-pgo-build=lto \
+        $pgo \
         --enable-plugins \
         --enable-relro \
         --enable-shared \
@@ -97,7 +99,8 @@ function build
         --disable-sim \
         --disable-werror \
         --with-pic \
-        --with-system-zlib; or return
+        --with-system-zlib \
+        --without-debuginfod; or return
 
     # The git sources have no generated info manuals, and the build environment has no makeinfo: build none
     make -O MAKEINFO=true tooldir=/usr; or return

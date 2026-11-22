@@ -1,7 +1,7 @@
 pkgbase = nawk
 	pkgdesc = The one, true implementation of AWK
 	pkgver = 20261106
-	pkgrel = 1
+	pkgrel = 3
 	url = https://github.com/onetrueawk/awk
 	arch = i686
 	arch = x32
@@ -9,6 +9,7 @@ pkgbase = nawk
 	arch = aarch64
 	license = custom
 	makedepends = bison
+	makedepends_build = bison
 	depends = glibc
 	provides = awk
 	source = awk-20261106.tar.gz::https://github.com/onetrueawk/awk/archive/refs/tags/20261106.tar.gz

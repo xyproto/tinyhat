@@ -1,16 +1,16 @@
 set pkgname zstd
 set pkgver 1.5.7
-set pkgrel 3
+set pkgrel 5
 set pkgdesc 'Zstandard - Fast real-time compression algorithm'
 set url https://facebook.github.io/zstd/
 set nvchecker source=git git=https://github.com/facebook/zstd.git prefix=v
 set arch i686 x32
 set license BSD-3-Clause GPL-2.0-only
 set depends glibc libgcc libstdc++ zlib xz lz4
-set makedepends cmake gtest ninja
+set makedepends cmake ninja
 set provides libzstd.so
 set source "https://github.com/facebook/zstd/releases/download/v$pkgver/zstd-$pkgver.tar.zst" \
-    '6af3842118ea5325480b403213b2a9fbed3d3d74.patch::https://github.com/facebook/zstd/commit/6af3842118ea5325480b403213b2a9fbed3d3d74.patch?full_index=1'
+    '6af3842118ea5325480b403213b2a9fbed3d3d74.patch'
 set sha256sums 5b331d961d6989dc21bb03397fc7a2a4d86bc65a14adc5ffbbce050354e30fd2 \
     245982b60168ff43d37b2e47784943572df95d6e0962e2f27b7b7b617ef68e3f
 set b2sums 20df0493d9d960b8fc98f7cac7630f84dae6226bd906364ab9c9ce7dfb2be44a303fd077e4264979f3ee92efd59072d63c4bb4ae7b65c52f6ce0153513088837 \
@@ -19,9 +19,6 @@ set flags arch
 
 function prepare
     cd $pkgname-$pkgver; or return
-    # avoid error on tests without static libs, we use LD_LIBRARY_PATH
-    sed '/build static library to build tests/d' -i build/cmake/CMakeLists.txt; or return
-    sed s/libzstd_static/libzstd_shared/g -i build/cmake/tests/CMakeLists.txt; or return
     # fix manpages
     patch -Np1 -i ../6af3842118ea5325480b403213b2a9fbed3d3d74.patch; or return
 end
@@ -37,15 +34,12 @@ function build
         -DZSTD_ZLIB_SUPPORT=ON \
         -DZSTD_LZMA_SUPPORT=ON \
         -DZSTD_LZ4_SUPPORT=ON \
-        -DZSTD_BUILD_CONTRIB=ON \
+        -DZSTD_BUILD_CONTRIB=OFF \
         -DZSTD_BUILD_STATIC=OFF \
-        -DZSTD_BUILD_TESTS=ON \
+        -DZSTD_BUILD_TESTS=OFF \
         -DZSTD_PROGRAMS_LINK_SHARED=ON; or return
     cmake --build build; or return
 end
-
-# No check(): the test suite runs a fuzzer and kills slaves..
-# It would be: LD_LIBRARY_PATH="$(pwd)/build/lib" ctest -VV --test-dir build
 
 function package
     cd $pkgname-$pkgver; or return

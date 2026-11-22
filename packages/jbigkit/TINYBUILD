@@ -1,6 +1,6 @@
 set pkgname jbigkit
 set pkgver 2.2
-set pkgrel 1
+set pkgrel 3
 set pkgdesc 'Data compression library/utilities for bi-level high-resolution images'
 set arch i686 x32
 set url 'https://www.cl.cam.ac.uk/~mgk25/jbigkit/'
@@ -25,8 +25,8 @@ function build
     cd $pkgname; or return
     # The library and the tools, without the text copies of the man pages (groff)
     # (as the top Makefile runs them: make -e, with its CC and CFLAGS)
-    env CC=gcc CFLAGS="-O2 -W" make -C libjbig -e EXTRA_CFLAGS="$CFLAGS"; or return
-    env CC=gcc CFLAGS="-O2 -W" make -C pbmtools -e EXTRA_CFLAGS="$CFLAGS" jbgtopbm jbgtopbm85 pbmtojbg pbmtojbg85; or return
+    env CC=$CC CFLAGS="-O2 -W" make -C libjbig -e EXTRA_CFLAGS="$CFLAGS" VERSION=$pkgver; or return
+    env CC=$CC CFLAGS="-O2 -W" make -C pbmtools -e EXTRA_CFLAGS="$CFLAGS" VERSION=$pkgver jbgtopbm jbgtopbm85 pbmtojbg pbmtojbg85; or return
 end
 
 function check

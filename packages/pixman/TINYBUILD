@@ -1,6 +1,6 @@
 set pkgname pixman
 set pkgver 0.46.4
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'The pixel-manipulation library for X and cairo'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/pixman/pixman
@@ -14,7 +14,9 @@ set sha256sums a098c33924754ad43f981b740f6d576c70f9ed1006e12221b1845431ebce1239
 set flags arch
 
 function build
-    arch-meson $pkgname-$pkgver build -D loongson-mmi=disabled -D vmx=disabled -D arm-simd=disabled -D neon=disabled -D a64-neon=disabled -D rvv=disabled -D mips-dspr2=disabled -D gtk=disabled; or return
+    set -l simd -D mmx=disabled -D sse2=disabled -D ssse3=disabled
+    test $CARCH = aarch64; or set simd -D a64-neon=disabled
+    arch-meson $pkgname-$pkgver build -D loongson-mmi=disabled -D vmx=disabled -D arm-simd=disabled -D neon=disabled $simd -D rvv=disabled -D mips-dspr2=disabled -D gtk=disabled; or return
     ninja -C build; or return
 end
 

@@ -1,12 +1,13 @@
 set pkgname tinysurf
 set pkgver 1.1.8
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Lightweight and fast web browser, forked from NetSurf'
 set arch i686 x32
 set url https://github.com/xyproto/tinysurf
 set license GPL-2.0-only MIT
 set depends bubblewrap curl expat gtk4 libjpeg-turbo libpng libwebp openssl quickjs-ng zlib
-set makedepends bison cmake flex ninja perl
+set makedepends cmake ninja perl
+set makedepends_build bison flex
 set provides netsurf netsurfy
 set conflicts netsurf netsurfy
 set replaces netsurf netsurfy

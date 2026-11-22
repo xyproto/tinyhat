@@ -1,7 +1,7 @@
 pkgbase = testcontroller
 	pkgdesc = SDL3 gamepad test program
 	pkgver = 3.4.18
-	pkgrel = 1
+	pkgrel = 2
 	url = https://libsdl.org/
 	arch = i686
 	arch = x32

@@ -1,7 +1,7 @@
 pkgbase = gcc
 	pkgdesc = The GNU Compiler Collection
 	pkgver = 16.2.1+r23+gd564253eb6c8
-	pkgrel = 1
+	pkgrel = 2
 	url = https://gcc.gnu.org
 	arch = i686
 	license = GPL-3.0-or-later WITH GCC-exception-3.1
@@ -52,25 +52,12 @@ pkgname = gcc
 	options = !emptydirs
 	options = staticlibs
 
-pkgname = gcc-fortran
-	pkgdesc = Fortran front-end for GCC
-	depends = gcc=16.2.1+r23+gd564253eb6c8
-	depends = glibc>=2.27
-	depends = gmp
-	depends = libgfortran
-	depends = libisl.so
-	depends = libmpc
-	depends = mpfr
-	depends = zlib
-	depends = zstd
-
 pkgname = gcc-libs
 	pkgdesc = Runtime libraries shipped by GCC
 	depends = glibc>=2.27
 	depends = libasan
 	depends = libatomic
 	depends = libgcc
-	depends = libgfortran
 	depends = libgomp
 	depends = libhwasan
 	depends = liblsan
@@ -95,12 +82,6 @@ pkgname = libgcc
 	pkgdesc = Low-level runtime library shipped by GCC
 	depends = glibc>=2.27
 	provides = libgcc_s.so
-
-pkgname = libgfortran
-	pkgdesc = Runtime libraries shipped by GCC
-	depends = glibc>=2.27
-	depends = libgcc
-	provides = libgfortran.so
 
 pkgname = libgomp
 	pkgdesc = OpenMP library shipped by GCC

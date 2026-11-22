@@ -11,8 +11,5 @@ sed -i '
   1,/^$/d
 ' mirrorlist
 
-sed -i \
-  -e "s/^set pkgver .*/set pkgver $(date '+%Y%m%d')/" \
-  -e "s/^set sha256sums .*/set sha256sums $(sha256sum mirrorlist | awk '{print $1}')/" \
-  -e "s/^set b2sums .*/set b2sums $(b2sum mirrorlist | awk '{print $1}')/" \
-  TINYBUILD
+sed -i "s/^set pkgver .*/set pkgver $(date '+%Y%m%d')/" TINYBUILD
+MAKEP_CONF=../makep/root/etc/makep.conf fish ../makep/root/usr/bin/makep --updsums

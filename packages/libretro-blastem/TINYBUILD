@@ -1,7 +1,7 @@
 set pkgname libretro-blastem
 set -g _commit ab743653ed110eeb7b1fe64d00cc5f9279c2bfec
 set pkgver 0+ab743653
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Sega Genesis and Mega Drive emulator core (BlastEm) for tinyhat-retro'
 set arch i686
 set url https://github.com/libretro/blastem
@@ -13,7 +13,7 @@ set sha256sums 27ba68065f31314ad29abc6a5514ebf19cdd2a2f24648ffbe360275ccb01de25
 
 function build
     cd blastem-$_commit; or return
-    make -f Makefile.libretro CC="cc -fno-asynchronous-unwind-tables"; or return
+    make -f Makefile.libretro CC="$CC -fno-asynchronous-unwind-tables"; or return
 end
 
 function package

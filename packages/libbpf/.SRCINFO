@@ -1,7 +1,7 @@
 pkgbase = libbpf
 	pkgdesc = Library for loading eBPF programs and reading and manipulating eBPF objects from user-space
 	pkgver = 1.7.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/libbpf/libbpf
 	arch = i686
 	arch = x32
@@ -13,7 +13,10 @@ pkgbase = libbpf
 	depends = zlib
 	provides = libbpf.so
 	source = git+https://github.com/libbpf/libbpf#tag=v1.7.0
+	source = libbpf-u128.patch
 	sha512sums = f623f39bec882c8a642bf8f1485d3ca028b393b73b1bb588be26b9b7f58040223b6ca778a098c2c7468cf60386cbc279d58c7f2c83836bf0fcebb87a69aa86f9
+	sha512sums = fad245822cb477682e6bb13889b2163babe66c833eabfc352e41e28201e36cfb33a1d0a2724cb1c5c28170073143bfd62ec91e55ea2e6521e3290bd373c09065
 	b2sums = 1315f3cdd336b57a70e2b0284d1f5a6ad32d1e3aabcca6fdccd50d51aa743f365c396ac240995e36d92f37f2d8bc0afb487e59a47638d0ae1f7999cc03cf0f5b
+	b2sums = 01c3e7e94be2a6f0600afcde7194883b796473b2b52bb30e16b54119b317ec5fb142145cc32a9945aec469740fea58540bfd67d3c10c865dcb14b15f1009a721
 
 pkgname = libbpf

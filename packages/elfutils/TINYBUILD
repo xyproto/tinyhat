@@ -1,30 +1,25 @@
 set pkgbase elfutils
 set pkgname elfutils libelf
 set pkgver 0.196
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Handle ELF object files and DWARF debugging information'
 set arch i686 x32
 set url https://sourceware.org/elfutils/
 set nvchecker source=git git=https://forge.sourceware.org/elfutils/elfutils-mirror.git prefix=elfutils- use_max_tag=true
 # No debuginfod: libelf would otherwise pull in curl and its network and TLS libraries everywhere it is used,
 # such as in systemd
-set makedepends bzip2 git libgcc libstdc++ xz zlib zstd
+set makedepends bzip2 libgcc libstdc++ xz zlib zstd
 set flags arch
 set options staticlibs
-set source 'elfutils::git+https://forge.sourceware.org/elfutils/elfutils-mirror.git?signed#tag=elfutils-0.196'
-set sha256sums dc09f62d6c32ad40c97451ddaf2c9e7c81d0093e506929f2d3a9d516250d2e85
-
-function prepare
-    cd $pkgbase; or return
-    autoreconf -fiv; or return
-end
+set source https://sourceware.org/elfutils/ftp/$pkgver/$pkgbase-$pkgver.tar.bz2{,.sig}
+set sha256sums fd5cc6b77ad6773cac93cb3f415f9318ac3b3455eecf801f6b4a742c4f6c7209 07ea310d4624ebfa325d6e744f373dbf4309cb372a992eaffd31c7f4956eb1fb
 
 function build
     # fat-lto-objects is required for non-mangled .a files in libelf
     set -a CFLAGS -ffat-lto-objects
-    cd $pkgbase; or return
+    cd $pkgbase-$pkgver; or return
     ./configure --prefix=/usr --sysconfdir=/etc --program-prefix=eu- --enable-deterministic-archives \
-        --enable-maintainer-mode --disable-debuginfod --disable-libdebuginfod; or return
+        --disable-debuginfod --disable-libdebuginfod; or return
     make; or return
 end
 
@@ -43,7 +38,7 @@ function package_elfutils
     set pkgdesc "$pkgdesc (utilities)"
     set license GPL-3.0-or-later
     set depends glibc "libelf=$pkgver" libgcc libstdc++ sh
-    make DESTDIR="$pkgdir" install -C $pkgbase; or return
+    make DESTDIR="$pkgdir" install -C $pkgbase-$pkgver; or return
     cd "$pkgdir"; or return
     set -l lib etc/profile.d/* usr/include usr/lib usr/share/man/*/{gelf,elf,libelf}*
     _pick libelf $lib; or return

@@ -4,7 +4,7 @@ set pkgbase sqlite
 set pkgname sqlite lemon
 set pkgver 3.54.0
 set -g _srcver (echo $pkgver | awk -F. '{ printf "%d%02d%02d00", $1, $2, $3 }')
-set pkgrel 1
+set pkgrel 3
 set pkgdesc 'A C library that implements an SQL database engine'
 set arch i686 x32
 set license LicenseRef-Sqlite
@@ -44,7 +44,12 @@ function build
         -DSQLITE_ENABLE_MATH_FUNCTIONS
     # build sqlite
     cd sqlite-src-$_srcver; or return
-    ./configure --prefix=/usr \
+    set -l cross 0
+    string match -q -- '*-gcc' $CC; and set cross 1
+    set -l crossopts
+    test $cross = 1; and set crossopts --with-readline-header=$SYSROOT/usr/include/readline/readline.h \
+        --with-readline-ldflags=-lreadline --disable-rpath
+    ./configure --prefix=/usr $crossopts \
         --disable-static \
         --enable-session \
         --enable-fts3 \
@@ -53,12 +58,18 @@ function build
         --rtree \
         --disable-tcl \
         --soname=legacy; or return
-    sed -i 's/$(B.cc) -o \$@ $(TOP)\/tool\/lemon.c/$(B.cc) $(CFLAGS) $(LDFLAGS) -o $@ $(TOP)\/tool\/lemon.c/' main.mk; or return
+    if test $cross = 0
+        sed -i 's/$(B.cc) -o \$@ $(TOP)\/tool\/lemon.c/$(B.cc) $(CFLAGS) $(LDFLAGS) -o $@ $(TOP)\/tool\/lemon.c/' main.mk; or return
+    end
     sed -i -e 's/$(LDFLAGS.libsqlite3)/ -Wl,-O1,--as-needed \0/g' main.mk; or return
     make; or return
     # build additional tools - broken build: changeset rbu
     make dbdump dbhash dbtotxt index_usage showdb showjournal showshm \
         showstat4 showwal sqldiff sqlite3_expert sqlite3_rsync; or return
+    cp lemon lemon.target; or return
+    if test $cross = 1
+        $CC $CFLAGS $LDFLAGS -o lemon.target tool/lemon.c; or return
+    end
 end
 
 function package_sqlite
@@ -83,7 +94,7 @@ function package_lemon
     set depends glibc
     cd sqlite-src-$_srcver; or return
     # ELF file ('usr/bin/lemon') lacks FULL RELRO, check LDFLAGS. - no fix found so far
-    install -Dm755 lemon $pkgdir/usr/bin/lemon; or return
+    install -Dm755 lemon.target $pkgdir/usr/bin/lemon; or return
     install -Dm644 lempar.c $pkgdir/usr/share/lemon/lempar.c; or return
     # license
     install -D -m644 "$srcdir"/license.txt "$pkgdir"/usr/share/licenses/$pkgname/license.txt; or return

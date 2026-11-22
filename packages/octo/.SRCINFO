@@ -1,7 +1,7 @@
 pkgbase = octo
 	pkgdesc = Octo CHIP-8 assembler, player and IDE (c-octo), with SDL3
 	pkgver = 20260914.181012.g102994e6166
-	pkgrel = 3
+	pkgrel = 4
 	url = https://github.com/JohnEarnest/c-octo
 	arch = i686
 	arch = x32

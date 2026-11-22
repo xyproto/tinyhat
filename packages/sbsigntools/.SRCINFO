@@ -1,7 +1,7 @@
 pkgbase = sbsigntools
 	pkgdesc = Tools to add signatures to EFI binaries and Drivers
 	pkgver = 0.9.5
-	pkgrel = 4
+	pkgrel = 5
 	url = https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git/about
 	arch = i686
 	arch = x32
@@ -15,8 +15,10 @@ pkgbase = sbsigntools
 	depends = openssl
 	source = git+https://git.kernel.org/pub/scm/linux/kernel/git/jejb/sbsigntools.git#commit=8445b18f64e60137408a4867fbcbb9ba112c583a?signed
 	source = git+https://git.ozlabs.org/ccan#commit=b1f28e17227f2320d07fe052a8a48942fe17caa5
+	source = openssl4-no-engine.patch
 	sha256sums = 18d476d5497cab8f7f8acb8710481bdd3de887f6109f2deeed9e6bd2571d3f9d
 	sha256sums = 5e2aee00fc8319b1ff118c9d720cd4b5c74fac0853313ee45dfd3f93b7ad0174
+	sha256sums = 88dd6add800b8fd49214371eabeee8fef9fa2e44558bfac76b44c07d067dee4a
 
 pkgname = sbsigntools
 	depends = glibc

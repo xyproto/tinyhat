@@ -2,7 +2,7 @@ set pkgname tzdata
 set pkgver 2026e
 set -g _tzcode 2026e
 set -g _tzdata 2026e
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Sources for time zone and daylight saving time data'
 set arch i686 x32
 set url https://www.iana.org/time-zones
@@ -27,18 +27,19 @@ end
 
 function build
     make LFLAGS="$LDFLAGS $LTOFLAGS"; or return
+    $CC_FOR_BUILD -O2 -o zic-build zic.c; or return
 end
 
 function package
     cd "$srcdir"; or return
     # install tzcode stuff
-    make DESTDIR="$pkgdir" install; or return
+    make DESTDIR="$pkgdir" zic=./zic-build install; or return
     # install tzdata stuff
-    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo $_timezones; or return
-    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo/posix $_timezones; or return
-    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo/right -L leapseconds $_timezones; or return
+    ./zic-build -b fat -d "$pkgdir"/usr/share/zoneinfo $_timezones; or return
+    ./zic-build -b fat -d "$pkgdir"/usr/share/zoneinfo/posix $_timezones; or return
+    ./zic-build -b fat -d "$pkgdir"/usr/share/zoneinfo/right -L leapseconds $_timezones; or return
     # This creates the posixrules file. We use New York because POSIX requires the daylight savings time rules to be in accordance with US rules.
-    ./zic -b fat -d "$pkgdir"/usr/share/zoneinfo -p America/New_York; or return
+    ./zic-build -b fat -d "$pkgdir"/usr/share/zoneinfo -p America/New_York; or return
     install -m644 -t "$pkgdir"/usr/share/zoneinfo iso3166.tab leap-seconds.list zone1970.tab zone.tab SECURITY; or return # zone.tab is depricated and will go soon
     # cleanup
     rm "$pkgdir/etc/localtime"; or return

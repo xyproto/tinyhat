@@ -1,7 +1,7 @@
 pkgbase = json-c
 	pkgdesc = JSON implementation in C
 	pkgver = 0.19
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/json-c/json-c/wiki
 	arch = i686
 	arch = x32

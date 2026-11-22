@@ -1,7 +1,7 @@
 set pkgname lua54
 set pkgver 5.4.9
 set -g _majorver (string replace -r -- '\.[^.]*$' '' $pkgver)
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Powerful lightweight programming language designed for extending applications'
 set arch i686 x32
 set url https://www.lua.org/
@@ -31,11 +31,17 @@ function prepare
     sed -r -e "/^LUA_(SO|A|T)=/ s/lua/lua$_majorver/" -e "/^LUAC_T=/ s/luac/luac$_majorver/" -i lua{,++}-$pkgver/src/Makefile; or return
 end
 
+function _tools -a cc
+    echo CC=$cc
+    set -q AR; and echo "AR=$AR rcu" && echo RANLIB=$RANLIB
+    return 0
+end
+
 function build
     cd lua-$pkgver; or return
-    make MYCFLAGS="$CFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" linux-readline; or return
+    make (_tools $CC) MYCFLAGS="$CFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" linux-readline; or return
     cd ../lua++-$pkgver; or return
-    make MYCFLAGS="$CXXFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" CC=g++ LUA_A=liblua++$_majorver.a LUA_SO=liblua++$_majorver.so linux-readline; or return
+    make MYCFLAGS="$CXXFLAGS -fPIC" MYLDFLAGS="$LDFLAGS" (_tools $CXX) LUA_A=liblua++$_majorver.a LUA_SO=liblua++$_majorver.so linux-readline; or return
 end
 
 function package

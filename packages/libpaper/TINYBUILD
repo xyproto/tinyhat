@@ -1,6 +1,6 @@
 set pkgname libpaper
 set pkgver 2.2.8
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Library for handling paper characteristics'
 set arch i686 x32
 set url https://github.com/rrthomas/libpaper
@@ -39,7 +39,7 @@ function build
     make; or return
     # localepaper
     cd src; or return
-    gcc $CFLAGS $LDFLAGS -I.. -Ilibgnu -o localepaper localepaper.c libgnu/.libs/libgnupaper.a; or return
+    $CC $CFLAGS $LDFLAGS -I.. -Ilibgnu -o localepaper localepaper.c libgnu/.libs/libgnupaper.a; or return
 end
 
 function check

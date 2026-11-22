@@ -1,7 +1,7 @@
 pkgbase = libcap
 	pkgdesc = POSIX 1003.1e capabilities
 	pkgver = 2.78
-	pkgrel = 1
+	pkgrel = 2
 	url = https://sites.google.com/site/fullycapable/
 	arch = i686
 	arch = x32

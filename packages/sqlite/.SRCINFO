@@ -1,7 +1,7 @@
 pkgbase = sqlite
 	pkgdesc = A C library that implements an SQL database engine
 	pkgver = 3.54.0
-	pkgrel = 1
+	pkgrel = 3
 	url = https://www.sqlite.org/
 	arch = i686
 	arch = x32

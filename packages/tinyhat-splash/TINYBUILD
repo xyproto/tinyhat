@@ -3,7 +3,7 @@
 set pkgname tinyhat-splash
 set pkgver 1.0.2.r1.g018ff5e
 set -g _commit 018ff5e819d6510557ab4e7f492054e0a8d42fc2
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Tiny Hat boot splash, and the boot and shutdown animations in C'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat-bootsplash
@@ -34,7 +34,7 @@ function package
     set -l data "$pkgdir"/usr/share/tinyhat-bootsplash
     set -l lib "$pkgdir"/usr/lib/tinyhat-bootsplash
     install -Dm755 tinyhat-splash "$pkgdir"/usr/bin/tinyhat-splash; or return
-    strip --strip-all "$pkgdir"/usr/bin/tinyhat-splash; or return
+    $STRIP --strip-all "$pkgdir"/usr/bin/tinyhat-splash; or return
     install -Dm755 scripts/tinyhat-bootsplash-activate "$pkgdir"/usr/bin/tinyhat-bootsplash-activate; or return
     install -Dm644 -t $data/runtime runtime/anim.h runtime/draw.c runtime/main.c; or return
     install -Dm644 -t $data/templates/basic templates/basic/anim.c templates/basic/Makefile templates/basic/compile_flags.txt; or return

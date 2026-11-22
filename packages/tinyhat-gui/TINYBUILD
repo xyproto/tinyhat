@@ -1,6 +1,6 @@
 set pkgname tinyhat-gui
 set pkgver 1
-set pkgrel 9
+set pkgrel 10
 set pkgdesc 'Tiny Hat backup, restore, file picker, media player, crash log and help dialogs, and the GL level probe'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -25,9 +25,9 @@ function build
     set -l cflags (pkg-config --cflags gtk4 libtomlc17 | string split -n ' '); or return
     set -l libs (pkg-config --libs gtk4 libtomlc17 | string split -n ' '); or return
     for p in $_progs
-        cc $CFLAGS $cflags -o $p $p.c $LDFLAGS $libs; or return
+        $CC $CFLAGS $cflags -o $p $p.c $LDFLAGS $libs; or return
     end
-    cc $CFLAGS -o tinyhat-glinfo tinyhat-glinfo.c $LDFLAGS -lEGL; or return
+    $CC $CFLAGS -o tinyhat-glinfo tinyhat-glinfo.c $LDFLAGS -lEGL; or return
 end
 
 function package

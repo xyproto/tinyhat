@@ -1,6 +1,6 @@
 set pkgname gnu-efi
 set pkgver 4.0.4
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Develop EFI applications using the GNU toolchain and the EFI development environment'
 set arch i686 x32 x86_64
 set url https://github.com/ncroxon/gnu-efi
@@ -11,13 +11,13 @@ set options '!lto' '!strip'
 set flags arch
 
 function prepare
-    sed -e 's/-Werror//g' -i $pkgname-$pkgver/Make.defaults; or return
+    sed -e s/-Werror//g -i $pkgname-$pkgver/Make.defaults; or return
 end
 
 function build
     cd $pkgname-$pkgver; or return
     set -l ld (string join ' ' -- $LDFLAGS | string replace -a -- -Wl '' | string replace -a , ' ')
-    CFLAGS=-O2 LDFLAGS="$ld" make PREFIX=/usr; or return
+    CFLAGS="-O2 -ffile-prefix-map=$srcdir=/usr/src/debug/$pkgname" LDFLAGS="$ld" make PREFIX=/usr; or return
 end
 
 function package

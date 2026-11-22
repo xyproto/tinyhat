@@ -1,6 +1,6 @@
 set pkgname libpng
 set pkgver 1.6.59
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'A collection of routines used to create PNG format graphics files'
 set arch i686 x32
 set url http://www.libpng.org/pub/png/libpng.html
@@ -42,6 +42,6 @@ function package
     install -D -m0644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
 
     cd contrib/pngminus; or return
-    make PNGLIB_SHARED="-L$pkgdir/usr/lib -lpng" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" png2pnm pnm2png; or return
+    make CC="$CC" PNGLIB_SHARED="-L$pkgdir/usr/lib -lpng" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" png2pnm pnm2png; or return
     install -m0755 png2pnm pnm2png "$pkgdir/usr/bin/"; or return
 end

@@ -9,7 +9,7 @@ set license ZLIB
 set depends boost-libs xz
 set makedepends boost cmake
 set source "https://constexpr.org/innoextract/files/$pkgname-$pkgver.tar.gz" \
-    '264c2fe6.patch::https://github.com/dscharrer/innoextract/commit/264c2fe6.patch?full_index=1' \
+    '264c2fe6.patch' \
     boost-1.89.patch
 set sha256sums 6344a69fc1ed847d4ed3e272e0da5998948c6b828cb7af39c6321aba6cf88126 \
     f968a9c0521083dd4076ce5eed56127099a9c9888113fc50f476b914396045cc \

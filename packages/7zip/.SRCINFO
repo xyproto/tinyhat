@@ -1,7 +1,7 @@
 pkgbase = 7zip
 	pkgdesc = File archiver for extremely high compression
 	pkgver = 26.04
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.7-zip.org
 	arch = i686
 	arch = x32

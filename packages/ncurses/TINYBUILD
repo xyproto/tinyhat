@@ -1,6 +1,6 @@
 set pkgname ncurses
 set pkgver 6.6
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'System V Release 4.0 curses emulation library'
 set arch i686 x32
 set url https://invisible-island.net/ncurses/ncurses.html
@@ -29,6 +29,7 @@ function prepare
     # https://bugs.archlinux.org/task/68523
     patch -Np1 -d $pkgname -i ../$pkgname-6.6-pkgconfig.patch; or return
     # NOTE: can't run autoreconf because the autotools setup is custom and ancient
+    sed -i '/CPPFLAGS="$CPPFLAGS -I${cf_includedir}"/d' $pkgname/configure; or return
 end
 
 function build

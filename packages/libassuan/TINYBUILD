@@ -1,5 +1,5 @@
 set pkgname libassuan
-set pkgver 3.0.1
+set pkgver 3.0.0
 set pkgrel 1
 set pkgdesc 'IPC library used by some GnuPG related software'
 set arch i686 x32
@@ -9,8 +9,8 @@ set license FSFULLR GPL-2.0-or-later LGPL-2.1-or-later
 set depends glibc libgpg-error sh
 set provides libassuan.so
 set source "https://gnupg.org/ftp/gcrypt/$pkgname/$pkgname-$pkgver.tar.bz2"
-set sha512sums 6914a02c20053bae0fc4c29c5c40655f1cec711983d57fa85e46df34e90b10e33d31256dd50ae7c7faa8d8d750a529bf9072da0cda3bdd77ebfedbc0e26e5e16
-set b2sums 5d6a7e4e9ce1b196bc7d126786716d95896de6145b8d753e2289bd36cbc96efa216360ac127fadb7be2d577e7fa203c8c8695d4aa11afcca6ed5397dd40209cb
+set sha512sums 7c5c95c1b85bef2d4890c068a5a8ea8a1fe0d8def6ab09e5f34fc2746d8808bbb0fc168e3bd66d52ee5ed799dcf9f258f4125cda98c8384f6411bcad8d8b3139
+set b2sums c86f7d62413c6f7a228deb47abe0388790a7c0e3c89b5ee7a7a72f72bea6502d5cbe199b10f06efc885af6fefab358dbe0e61a6f798493dcfcc63df0cfacdb55
 set flags arch
 
 function build

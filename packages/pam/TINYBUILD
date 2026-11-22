@@ -1,6 +1,6 @@
 set pkgname pam
 set pkgver 1.7.3
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'PAM (Pluggable Authentication Modules) library'
 set arch i686 x32
 set license GPL-2.0-only
@@ -8,7 +8,8 @@ set url http://linux-pam.org
 set nvchecker source=git git=https://github.com/linux-pam/linux-pam.git prefix=v
 set depends audit glibc libaudit.so libcrypt.so libnsl libtirpc libxcrypt pambase systemd-libs
 # No documentation (docbook, fop, xsltproc and a text browser to build it) and no examples
-set makedepends flex git meson
+set makedepends git meson
+set makedepends_build flex
 # pam and systemd need each other
 set bootstrap_without systemd-libs
 set provides libpam.so libpamc.so libpam_misc.so

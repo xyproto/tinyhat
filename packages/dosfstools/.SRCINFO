@@ -8,7 +8,7 @@ pkgbase = dosfstools
 	license = GPL-3.0-or-later
 	depends = glibc
 	source = https://github.com/dosfstools/dosfstools/releases/download/v4.2/dosfstools-4.2.tar.gz
-	source = dosfstools-reproducible-mkfs.patch::https://github.com/dosfstools/dosfstools/commit/8da7bc93315cb0c32ad868f17808468b81fa76ec.patch?full_index=1
+	source = dosfstools-reproducible-mkfs.patch
 	sha256sums = 64926eebf90092dca21b14259a5301b7b98e7b1943e8a201c7d726084809b527
 	sha256sums = ec957db356d596d6393dba05768dafecbd0825a3b4dd30e0a93dc84c8e8b74e9
 

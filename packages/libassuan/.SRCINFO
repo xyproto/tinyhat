@@ -1,6 +1,6 @@
 pkgbase = libassuan
 	pkgdesc = IPC library used by some GnuPG related software
-	pkgver = 3.0.1
+	pkgver = 3.0.0
 	pkgrel = 1
 	url = https://www.gnupg.org/related_software/libassuan/
 	arch = i686
@@ -12,8 +12,8 @@ pkgbase = libassuan
 	depends = libgpg-error
 	depends = sh
 	provides = libassuan.so
-	source = https://gnupg.org/ftp/gcrypt/libassuan/libassuan-3.0.1.tar.bz2
-	sha512sums = 6914a02c20053bae0fc4c29c5c40655f1cec711983d57fa85e46df34e90b10e33d31256dd50ae7c7faa8d8d750a529bf9072da0cda3bdd77ebfedbc0e26e5e16
-	b2sums = 5d6a7e4e9ce1b196bc7d126786716d95896de6145b8d753e2289bd36cbc96efa216360ac127fadb7be2d577e7fa203c8c8695d4aa11afcca6ed5397dd40209cb
+	source = https://gnupg.org/ftp/gcrypt/libassuan/libassuan-3.0.0.tar.bz2
+	sha512sums = 7c5c95c1b85bef2d4890c068a5a8ea8a1fe0d8def6ab09e5f34fc2746d8808bbb0fc168e3bd66d52ee5ed799dcf9f258f4125cda98c8384f6411bcad8d8b3139
+	b2sums = c86f7d62413c6f7a228deb47abe0388790a7c0e3c89b5ee7a7a72f72bea6502d5cbe199b10f06efc885af6fefab358dbe0e61a6f798493dcfcc63df0cfacdb55
 
 pkgname = libassuan

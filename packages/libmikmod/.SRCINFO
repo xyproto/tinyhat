@@ -1,7 +1,7 @@
 pkgbase = libmikmod
 	pkgdesc = Module player library supporting many formats, including MOD, S3M, IT and XM
 	pkgver = 3.3.15
-	pkgrel = 1
+	pkgrel = 2
 	url = https://mikmod.sourceforge.net
 	arch = i686
 	arch = x32

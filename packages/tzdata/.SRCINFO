@@ -1,7 +1,7 @@
 pkgbase = tzdata
 	pkgdesc = Sources for time zone and daylight saving time data
 	pkgver = 2026e
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.iana.org/time-zones
 	arch = i686
 	arch = x32

@@ -1,7 +1,7 @@
 pkgbase = pixman
 	pkgdesc = The pixel-manipulation library for X and cairo
 	pkgver = 0.46.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://gitlab.freedesktop.org/pixman/pixman
 	arch = i686
 	arch = x32

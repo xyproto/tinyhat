@@ -1,7 +1,7 @@
 pkgbase = libmpeg2
 	pkgdesc = Library for decoding MPEG-1 and MPEG-2 video streams
 	pkgver = 0.5.1
-	pkgrel = 11
+	pkgrel = 12
 	url = https://libmpeg2.sourceforge.io/
 	arch = i686
 	arch = x32

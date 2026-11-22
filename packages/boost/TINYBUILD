@@ -3,7 +3,7 @@
 set pkgbase boost
 set pkgname boost boost-libs
 set pkgver 1.92.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Free peer-reviewed portable C++ source libraries'
 set arch i686 x32
 set url https://www.boost.org/
@@ -18,23 +18,34 @@ set -g _srcname boost_1_92_0
 
 function build
     set -l JOBS "$(printf '%s\n' $MAKEFLAGS | sed 's/.*\(-j *[0-9]\+\).*/\1/')"
-    pushd $_srcname/tools/build; or return
-    ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK"; or return
-    ./b2 install --prefix="$srcdir"/fakeinstall; or return
-    ln -s b2 "$srcdir"/fakeinstall/bin/bjam; or return
-    popd; or return
+    set -l cross
+    string match -q -- '*-gcc' $CC; and set cross architecture=arm address-model=64 abi=aapcs binary-format=elf target-os=linux
+    if not set -q cross[1]
+        pushd $_srcname/tools/build; or return
+        ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK"; or return
+        ./b2 install --prefix="$srcdir"/fakeinstall; or return
+        ln -s b2 "$srcdir"/fakeinstall/bin/bjam; or return
+        popd; or return
+    end
     cd $_srcname; or return
-    ./bootstrap.sh --with-toolset=gcc --without-icu --without-libraries=python,mpi,graph_parallel; or return
+    env CXX=$CXX_FOR_BUILD CXXFLAGS= LDFLAGS= ./bootstrap.sh --with-toolset=gcc --without-icu --without-libraries=python,mpi,graph_parallel; or return
+    if set -q cross[1]
+        sed -i "s|^    using gcc ;|    using gcc : : $CXX ;|" project-config.jam; or return
+        grep -qF "using gcc : : $CXX ;" project-config.jam; or return
+    end
     install -dm755 "$srcdir"/fakeinstall/share/boostbook; or return
     cp -a tools/boostbook/{xsl,dtd} "$srcdir"/fakeinstall/share/boostbook/; or return
-    ./b2 install variant=release debug-symbols=on threading=multi runtime-link=shared link=shared,static toolset=gcc cxxstd=23 cflags="$CPPFLAGS $CFLAGS -fPIC -O3 -ffat-lto-objects -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK" cxxflags="$CPPFLAGS $CXXFLAGS -fPIC -O3 -ffat-lto-objects -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK" linkflags="$LDFLAGS" --layout=system $JOBS --prefix="$srcdir"/fakeinstall; or return
+    ./b2 install variant=release debug-symbols=on threading=multi runtime-link=shared link=shared,static toolset=gcc $cross cxxstd=23 cflags="$CPPFLAGS $CFLAGS -fPIC -O3 -ffat-lto-objects -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK" cxxflags="$CPPFLAGS $CXXFLAGS -fPIC -O3 -ffat-lto-objects -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK" linkflags="$LDFLAGS" --layout=system $JOBS --prefix="$srcdir"/fakeinstall; or return
 end
 
 function package_boost
     set pkgdesc "$pkgdesc"' (development headers)'
     install -d "$pkgdir"/usr/lib; or return
     cp -a fakeinstall/lib/cmake "$pkgdir"/usr/lib; or return
-    cp -a fakeinstall/{bin,include,share} "$pkgdir"/usr/; or return
+    cp -a fakeinstall/{include,share} "$pkgdir"/usr/; or return
+    if test -d fakeinstall/bin
+        cp -a fakeinstall/bin "$pkgdir"/usr/; or return
+    end
     find "$pkgdir"/usr/lib/cmake -name '*.cmake' -exec sed -i "s|$srcdir/fakeinstall|/usr|g" '{}' +; or return
 end
 

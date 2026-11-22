@@ -1,6 +1,6 @@
 set pkgname bzip2
 set pkgver 1.0.8
-set pkgrel 6
+set pkgrel 7
 set pkgdesc 'A high-quality data compression program'
 set arch i686 x32
 set license BSD
@@ -22,8 +22,8 @@ end
 function build
     cd $pkgname-$pkgver; or return
 
-    make -f Makefile-libbz2_so CC="gcc $CFLAGS $CPPFLAGS $LDFLAGS"; or return
-    make bzip2 bzip2recover CC="gcc $CFLAGS $CPPFLAGS $LDFLAGS"; or return
+    make -f Makefile-libbz2_so CC="$CC $CFLAGS $CPPFLAGS $LDFLAGS"; or return
+    make bzip2 bzip2recover CC="$CC $CFLAGS $CPPFLAGS $LDFLAGS"; or return
 end
 
 function check

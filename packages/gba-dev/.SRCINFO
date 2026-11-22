@@ -1,7 +1,7 @@
 pkgbase = gba-dev
 	pkgdesc = libtonc, startup code, gba.specs and gbafix for GBA programming
 	pkgver = 1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/gbadev-org/libtonc
 	arch = i686
 	arch = x32

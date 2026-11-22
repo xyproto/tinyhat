@@ -1,7 +1,7 @@
 pkgbase = libpaper
 	pkgdesc = Library for handling paper characteristics
 	pkgver = 2.2.8
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/rrthomas/libpaper
 	arch = i686
 	arch = x32

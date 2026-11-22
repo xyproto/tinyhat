@@ -9,8 +9,8 @@ set license Zlib
 set url https://www.zlib.net/
 set nvchecker source=git git=https://github.com/madler/zlib.git prefix=v ignored=v1.3.1.2
 set source "https://github.com/madler/zlib/releases/download/v$pkgver/$pkgbase-$pkgver.tar.xz" \
-    "36ff1be48ef696cc67b0855f7c8537ce0276210d.patch::https://github.com/madler/zlib/commit/36ff1be48ef696cc67b0855f7c8537ce0276210d.patch?full_index=1" \
-    "$pkgbase-1.3.2-CVE-2026-85091.patch::https://github.com/madler/zlib/commit/df84af25dc1942490e1d1c899a07619152a46148.patch?full_index=1"
+    36ff1be48ef696cc67b0855f7c8537ce0276210d.patch \
+    $pkgbase-1.3.2-CVE-2026-85091.patch
 set sha512sums cf3d49fbabddc57cca99858feeca8f910e9de42a16014cddd406814d2d24ee33fee2af3805d7efbb1b04b05f55818092b000daf82502b675df65f2512c353f73 \
     ba1a3d38a1e376d54ecce52994c98daf0a5fffc45ed7a94144ba937b874ab2a765a767a5e476010eeb2f78cccaa1b0b1fcd9a653fd3bc3ac1062ceef5445f125 \
     a8cca9039ff9f09f92fa7fbcf5c6744615e8cd71a033784c0b996ee931af0dfa69f5b6efb67243693d418b9b3e1f7dadc178335bd407b72b0d72bdc4679da9ff

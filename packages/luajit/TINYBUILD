@@ -3,7 +3,7 @@ set pkgname luajit
 # without it LuaJIT needs SSE2 on x86. Built without -msse as well, so that it runs on a Pentium II (tested in
 # qemu-i386 -cpu pentium2); the JIT compiler is off on i686, LuaJIT runs as an interpreter
 set pkgver 2.1.1753364724+871db2c
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Just-in-time compiler and drop-in replacement for Lua 5.1'
 set arch i686
 set url https://luajit.org/
@@ -33,6 +33,8 @@ function build
     set -l ccopt
     # No SSE in the C code on i686 (LuaJIT's Makefile has -msse -mfpmath=sse for x86)
     test $CARCH = i686; and set ccopt CCOPT_x86=-march=i686
+    string match -q -- '*-gcc' $CC; and set -a ccopt CROSS=(string replace -r -- 'gcc$' '' $CC) HOST_CC=$CC_FOR_BUILD \
+        CFLAGS= LDFLAGS= TARGET_CFLAGS="$CFLAGS" TARGET_LDFLAGS="$LDFLAGS"
     make amalg PREFIX=/usr BUILDMODE=dynamic TARGET_STRIP=" @:" $ccopt; or return
 end
 

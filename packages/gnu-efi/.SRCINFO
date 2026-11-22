@@ -1,7 +1,7 @@
 pkgbase = gnu-efi
 	pkgdesc = Develop EFI applications using the GNU toolchain and the EFI development environment
 	pkgver = 4.0.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/ncroxon/gnu-efi
 	arch = i686
 	arch = x32

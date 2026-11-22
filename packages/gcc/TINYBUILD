@@ -1,9 +1,8 @@
 set pkgbase gcc
-# C, C++ and Fortran only (Fortran is needed to build fftw, openmpi, python-numpy and libtool): no D, Go, Modula-2,
-# Objective-C, Rust, COBOL or libgccjit, which nothing in Tiny Hat uses
-set pkgname gcc gcc-fortran gcc-libs libasan libatomic libgcc libgfortran libgomp libhwasan libitm liblsan libquadmath libstdc++ libtsan libubsan lto-dump
+# C and C++ only: no Fortran, D, Go, Modula-2, Objective-C, Rust, COBOL or libgccjit, which nothing in Tiny Hat uses
+set pkgname gcc gcc-libs libasan libatomic libgcc libgomp libhwasan libitm liblsan libquadmath libstdc++ libtsan libubsan lto-dump
 set pkgver 16.2.1+r23+gd564253eb6c8
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'The GNU Compiler Collection'
 set arch i686
 set url https://gcc.gnu.org
@@ -68,16 +67,16 @@ function build
             CFLAGS_FOR_TARGET="$host_cflags" CXXFLAGS_FOR_TARGET="$host_cxxflags" \
             CC=$t-gcc CXX=$t-g++ AR=$t-ar AS=$t-as LD=$t-ld NM=$t-nm RANLIB=$t-ranlib STRIP=$t-strip \
             OBJCOPY=$t-objcopy OBJDUMP=$t-objdump READELF=$t-readelf \
-            CC_FOR_TARGET=$t-gcc CXX_FOR_TARGET="$t-g++ $_stdinc" GFORTRAN_FOR_TARGET=$t-gfortran AR_FOR_TARGET=$t-ar \
+            CC_FOR_TARGET=$t-gcc CXX_FOR_TARGET="$t-g++ $_stdinc" AR_FOR_TARGET=$t-ar \
             AS_FOR_TARGET=$t-as LD_FOR_TARGET=$t-ld NM_FOR_TARGET=$t-nm RANLIB_FOR_TARGET=$t-ranlib \
             STRIP_FOR_TARGET=$t-strip OBJCOPY_FOR_TARGET=$t-objcopy OBJDUMP_FOR_TARGET=$t-objdump \
             READELF_FOR_TARGET=$t-readelf CC_FOR_BUILD=/usr/bin/gcc CXX_FOR_BUILD=/usr/bin/g++ \
             CFLAGS_FOR_BUILD="-O2 -pipe" CXXFLAGS_FOR_BUILD="-O2 -pipe" LDFLAGS_FOR_BUILD= CPPFLAGS_FOR_BUILD= \
-            ../gcc/configure --enable-languages=c,c++,fortran,lto --disable-bootstrap \
+            ../gcc/configure --enable-languages=c,c++,lto --disable-bootstrap \
             --build=x86_64-pc-linux-gnu --host=$CHOST --target=$CHOST $_confflags; or return
         make -O LDFLAGS_FOR_TARGET="$host_ldflags"; or return
     else
-        ../gcc/configure --enable-languages=c,c++,fortran,lto --enable-bootstrap --with-build-config=bootstrap-lto \
+        ../gcc/configure --enable-languages=c,c++,lto --enable-bootstrap --with-build-config=bootstrap-lto \
             --build=$CHOST $_confflags; or return
         make -O STAGE1_CFLAGS="-O2" BOOT_CFLAGS="$CFLAGS" BOOT_LDFLAGS="$LDFLAGS" LDFLAGS_FOR_TARGET="$LDFLAGS" bootstrap; or return
     end
@@ -122,19 +121,10 @@ function package_gcc
         for _so in libatomic.so libstdc++.so
             ln -srv usr/lib/$_so $_libdir/$_so; or return
         end
-        _pick gcc-fortran usr/bin/{gfortran,$CHOST-gfortran}; or return
-        _pick gcc-fortran $_libdir/finclude/; or return
-        _pick gcc-fortran $_libdir/libcaf_{shmem,single}.a; or return
-        _pick gcc-fortran $_libdir/f951; or return
-        _pick gcc-fortran $_libdir/include/ISO_Fortran_binding.h; or return
-        _pick gcc-fortran usr/lib/libgfortran.spec; or return
-        _pick gcc-fortran usr/share/info/gfortran.info; or return
-        _pick gcc-fortran usr/share/man/man1/gfortran.1; or return
         _pick libasan usr/lib/libasan.{a,so*}; or return
         _pick libatomic usr/lib/libatomic.so*; or return
         _pick libatomic $_libdir/libatomic.so; or return
         _pick libgcc usr/lib/libgcc_s.so.*; or return
-        _pick libgfortran usr/lib/libgfortran.{a,so*}; or return
         _pick libgomp usr/lib/libgomp.{a,so*}; or return
         _pick libgomp usr/share/info/libgomp.info; or return
         _pick libitm usr/lib/libitm.{a,so*}; or return
@@ -169,20 +159,9 @@ function package_gcc
     _install_runtime_library_exception; or return
 end
 
-function package_gcc-fortran
-    set pkgdesc 'Fortran front-end for GCC'
-    set depends "gcc=$pkgver" 'glibc>=2.27' gmp libgfortran libisl.so libmpc mpfr zlib zstd
-    set provides
-    set replaces
-    mv -v $pkgname/* "$pkgdir"; or return
-    ln -s gfortran "$pkgdir"/usr/bin/f95; or return
-    mv -v "$pkgdir"/usr/lib/libgfortran.spec "$pkgdir"/$_libdir/; or return
-    _install_runtime_library_exception; or return
-end
-
 function package_gcc-libs
     set pkgdesc 'Runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27' libasan libatomic libgcc libgfortran libgomp libhwasan liblsan libquadmath libstdc++ libtsan libubsan
+    set depends 'glibc>=2.27' libasan libatomic libgcc libgomp libhwasan liblsan libquadmath libstdc++ libtsan libubsan
     set provides
 end
 
@@ -206,14 +185,6 @@ function package_libgcc
     set pkgdesc 'Low-level runtime library shipped by GCC'
     set depends 'glibc>=2.27'
     set provides libgcc_s.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
-end
-
-function package_libgfortran
-    set pkgdesc 'Runtime libraries shipped by GCC'
-    set depends 'glibc>=2.27' libgcc
-    set provides libgfortran.so
     mv -v $pkgname/* "$pkgdir"; or return
     _install_runtime_library_exception; or return
 end

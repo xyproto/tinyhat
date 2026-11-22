@@ -1,6 +1,6 @@
 set pkgname tinyhat-sounds
 set pkgver 1
-set pkgrel 3
+set pkgrel 4
 set pkgdesc 'Tiny Hat system sounds: startup and shutdown jingles, typewriter and fart sounds while typing, and beep'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -19,9 +19,9 @@ set sha256sums 2b8a18ad12d2c4d732e0b307b76ad2016cdcd81fafaf5888b7008d934bfe26ae 
     a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499
 
 function build
-    cc -std=c23 $CFLAGS (pkg-config --cflags gtk4 | string split -n ' ') -o tinyhat-sounds tinyhat-sounds.c $LDFLAGS \
+    $CC -std=c23 $CFLAGS (pkg-config --cflags gtk4 | string split -n ' ') -o tinyhat-sounds tinyhat-sounds.c $LDFLAGS \
         (pkg-config --libs gtk4 | string split -n ' '); or return
-    cc -std=c23 $CFLAGS (pkg-config --cflags sdl3 fluidsynth libmpg123 | string split -n ' ') -o tinyhat-soundd tinyhat-soundd.c \
+    $CC -std=c23 $CFLAGS (pkg-config --cflags sdl3 fluidsynth libmpg123 | string split -n ' ') -o tinyhat-soundd tinyhat-soundd.c \
         $LDFLAGS (pkg-config --libs sdl3 fluidsynth libmpg123 | string split -n ' ') -lm; or return
 end
 

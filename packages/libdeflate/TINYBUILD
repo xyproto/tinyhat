@@ -1,6 +1,6 @@
 set pkgname libdeflate
 set pkgver 1.26
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Heavily optimized library for DEFLATE/zlib/gzip compression and decompression'
 set arch i686 x32
 set url https://github.com/ebiggers/libdeflate
@@ -14,7 +14,7 @@ set sha256sums 38a3ffe3a56fba0e95138a5f57a764ffd5632c49dcd6a3515536f8a1ee907a9d
 set flags arch
 
 function build
-    cmake -S libdeflate -B build -G Ninja -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -DLIBDEFLATE_BUILD_STATIC_LIB=OFF -DLIBDEFLATE_BUILD_TESTS=ON; or return
+    cmake -S libdeflate -B build -G Ninja -DCMAKE_BUILD_TYPE=None -DCMAKE_INSTALL_PREFIX=/usr -DLIBDEFLATE_BUILD_STATIC_LIB=OFF -DLIBDEFLATE_BUILD_TESTS=OFF; or return
     cmake --build build; or return
 end
 

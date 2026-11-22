@@ -1,6 +1,6 @@
 set pkgname tinyhat-status
 set pkgver 1
-set pkgrel 7
+set pkgrel 8
 set pkgdesc 'Tiny Hat status bar text for dwl'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -10,7 +10,7 @@ set source tinyhat-status.c
 set sha256sums d8a4336c82a823c69314074bfc9882580c142a5a6d7b62906424f5b9857489ad
 
 function build
-    cc -std=c23 $CFLAGS -o tinyhat-status tinyhat-status.c $LDFLAGS; or return
+    $CC -std=c23 $CFLAGS -o tinyhat-status tinyhat-status.c $LDFLAGS; or return
 end
 
 function package

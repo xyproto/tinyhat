@@ -10,7 +10,7 @@ set depends glibc xz zlib
 set provides libunwind-{coredump,ptrace,setjmp,x86_64}.so \
     libunwind.so
 set source "https://github.com/libunwind/libunwind/releases/download/v$pkgver/libunwind-$pkgver.tar.gz" \
-    'b67d508a.patch::https://github.com/libunwind/libunwind/commit/b67d508a.patch?full_index=1'
+    'b67d508a.patch'
 set b2sums 13ac888e72c080b9e2588024578740971f721497864c5f2eb930227cbc5bb040551db6280048b0b6f2dde193d5d1719f546088618ebd2e19f96524c2b767fda1 \
     3cfbdbcd477db42d3dcdb2a91f9c7144514bd5f2acbba3fc7744e35980e8109e9d8c2fbc68f0b3dd0404a5a261ac48e2924bc9ee061785d4ed6c9f038a699080
 set flags arch

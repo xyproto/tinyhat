@@ -1,6 +1,6 @@
 set pkgname tinyhat-fan
 set pkgver 1
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Tiny Hat fan and CPU power modes: full, medium and chill'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -16,7 +16,7 @@ set sha256sums f972e1da4d5b2752e110109bf5e2f3d8ae170f3554dbae8d4e868a8c49669ed5 
     4c614710b04b89cab74785ce7a3d0040a2431b44fada79dd5748c8c3cd2cbac3
 
 function build
-    cc -std=c23 $CFLAGS -o tinyhat-fand tinyhat-fand.c $LDFLAGS; or return
+    $CC -std=c23 $CFLAGS -o tinyhat-fand tinyhat-fand.c $LDFLAGS; or return
 end
 
 function package

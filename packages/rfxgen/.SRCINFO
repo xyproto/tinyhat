@@ -1,7 +1,7 @@
 pkgbase = rfxgen
 	pkgdesc = Sound effect and chip sound generator
 	pkgver = 5.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/raysan5/rfxgen
 	arch = i686
 	arch = x32

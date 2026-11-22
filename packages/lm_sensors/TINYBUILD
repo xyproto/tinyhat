@@ -1,6 +1,6 @@
 set pkgname lm_sensors
 set pkgver 3.6.2
-set pkgrel 1
+set pkgrel 2
 set epoch 1
 set pkgdesc 'Collection of user space tools for general SMBus access and hardware monitoring'
 set arch i686 x32
@@ -31,14 +31,20 @@ function prepare
     sed -i 's/EnvironmentFile=/EnvironmentFile=-/' prog/init/lm_sensors.service; or return
 end
 
+function _tools
+    echo CC=$CC
+    set -q AR; and echo AR=$AR
+    return 0
+end
+
 function build
     cd "$srcdir"/lm-sensors*; or return
-    make PREFIX=/usr; or return
+    make (_tools) PREFIX=/usr; or return
 end
 
 function package
     cd "$srcdir"/lm-sensors*; or return
-    make BUILD_STATIC_LIB=0 PREFIX=/usr SBINDIR=/usr/bin MANDIR=/usr/share/man DESTDIR="$pkgdir" install; or return
+    make (_tools) BUILD_STATIC_LIB=0 PREFIX=/usr SBINDIR=/usr/bin MANDIR=/usr/share/man DESTDIR="$pkgdir" install; or return
     install -D -m755 "$srcdir/healthd" "$pkgdir/usr/bin/healthd"; or return
     install -D -m644 "$srcdir/healthd.conf" "$pkgdir/etc/healthd.conf"; or return
     install -D -m644 "$srcdir/sensord.conf" "$pkgdir/etc/conf.d/sensord"; or return

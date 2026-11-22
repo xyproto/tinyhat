@@ -1,7 +1,7 @@
 set pkgbase libwebp
 set pkgname libwebp libwebp-utils
 set pkgver 1.6.0
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'WebP image codec library'
 set url https://developers.google.com/speed/webp/
 set nvchecker source=git git=https://chromium.googlesource.com/webm/libwebp 'include_regex=v\d+(\.\d+)*' 'from_pattern=-([a-z])' 'to_pattern=\1' prefix=v
@@ -29,7 +29,7 @@ function build
     set -l cmake_options \
         -D BUILD_SHARED_LIBS=ON \
         -D CMAKE_BUILD_TYPE=None \
-        -D CMAKE_INSTALL_LIBDIR=/usr/lib \
+        -D CMAKE_INSTALL_LIBDIR=lib \
         -D CMAKE_INSTALL_PREFIX=/usr \
         -D CMAKE_SKIP_INSTALL_RPATH=ON \
         -D CMAKE_DISABLE_FIND_PACKAGE_TIFF=ON \

@@ -1,6 +1,6 @@
 set pkgname libnghttp2
 set pkgver 1.70.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Framing layer of HTTP/2 is implemented as a reusable C library'
 set arch i686 x32
 set url https://nghttp2.org/
@@ -13,18 +13,21 @@ set conflicts 'nghttp2<1.20.0-2'
 set source "git+https://github.com/nghttp2/nghttp2.git?signed#tag=v$pkgver" \
     git+https://github.com/ngtcp2/munit.git#commit=114805e1bab0222574b5eb3a92461ad5216647ed \
     git+https://github.com/mruby/mruby.git#commit=831da26b9021de0369d17b71b5667e2941a1a32d \
-    git+https://github.com/tatsuhiro-t/neverbleed.git#commit=68f65c7b05f68e6fd93631668d4f469875946656
+    git+https://github.com/tatsuhiro-t/neverbleed.git#commit=68f65c7b05f68e6fd93631668d4f469875946656 \
+    git+https://github.com/ngtcp2/urlparse.git#commit=59b068a7618a256c6823b0b9801b61d1d04677a3
 set sha512sums 48f3bf6748abf46e9b1a2cfcfc4053ef8a7d532898da854d508c520c7adcca3a8690f81d2683d14398cf937a3f7c9276000c569ccc1183bbf20d449e64f5c315 \
     258d0461c3fbd80b4f4675c2a4af7cd621a6a0d152ee30eea4a9f1123f7e7590b65ba6ca2e00252db6fc818446132464ca8f582362f133e48987769f7aa717f5 \
     a1f098806f948304cb5491902960ef72201962c572b7fa1cb0eb93b8ee834032d47b133eae570a6da6746b79dbf4fd773a9cc92750611cfc7082c6f847c8a27e \
-    ab3e57d6c9712a2e95842b2a247c98a4eaeed57bc6535a1c08af14c3da0d838cbf5e84101532c08d86c35c569dc9f04beee137dc93969d3162d76cded7ff4dda
+    ab3e57d6c9712a2e95842b2a247c98a4eaeed57bc6535a1c08af14c3da0d838cbf5e84101532c08d86c35c569dc9f04beee137dc93969d3162d76cded7ff4dda \
+    f324e6b0df5a1855e045fcffbb9741ff05eb7385f1c361fbbc69b99242ea11407390138485fc828add9cdc1c49137471ccf6173d81fd60c006242df2b7d1a42e
 set flags arch
 
 function prepare
     cd nghttp2; or return
     git config --file=.gitmodules submodule.tests/munit.url ../munit/; or return
     git config --file=.gitmodules submodule.third-party/mruby.url ../mruby/; or return
-    git config --file=.gitmodules submodule.tests/neverbleed.url ../neverbleed/; or return
+    git config --file=.gitmodules submodule.third-party/neverbleed.url ../neverbleed/; or return
+    git config --file=.gitmodules submodule.third-party/urlparse.url ../urlparse/; or return
     git submodule init; or return
     git -c protocol.file.allow=always submodule update; or return
     autoreconf -i; or return

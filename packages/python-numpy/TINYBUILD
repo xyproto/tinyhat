@@ -1,6 +1,6 @@
 set pkgname python-numpy
 set pkgver 2.5.4
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Scientific tools for Python'
 set arch i686 x32
 set license custom
@@ -8,7 +8,7 @@ set url https://www.numpy.org/
 set nvchecker source=git git=https://github.com/numpy/numpy.git prefix=v 'exclude_regex=.*(dev|pre|a|alpha|b|beta|rc).*'
 set depends cblas lapack python
 set optdepends 'blas-openblas: faster linear algebra'
-set makedepends git python-build python-installer meson-python cmake gcc-fortran cython
+set makedepends git python-build python-installer meson-python cmake cython
 set checkdepends python-pytest python-hypothesis
 set source "git+https://github.com/numpy/numpy#tag=v$pkgver" \
     numpy-meson::git+https://github.com/numpy/meson.git#commit=11ed55a4f364a81d7eeef740b27d73cfb4d36a05 \

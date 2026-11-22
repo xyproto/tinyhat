@@ -1,6 +1,6 @@
 set pkgname libmpeg2
 set pkgver 0.5.1
-set pkgrel 11
+set pkgrel 12
 set pkgdesc 'Library for decoding MPEG-1 and MPEG-2 video streams'
 set arch i686 x32
 set url https://libmpeg2.sourceforge.io/
@@ -21,7 +21,9 @@ function build
     ./configure \
         --prefix=/usr \
         --sysconfdir=/etc \
-        --localstatedir=/var; or return
+        --localstatedir=/var \
+        --without-x \
+        --disable-sdl; or return
     make; or return
 end
 

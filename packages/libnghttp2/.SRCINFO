@@ -1,7 +1,7 @@
 pkgbase = libnghttp2
 	pkgdesc = Framing layer of HTTP/2 is implemented as a reusable C library
 	pkgver = 1.70.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://nghttp2.org/
 	arch = i686
 	arch = x32
@@ -14,9 +14,11 @@ pkgbase = libnghttp2
 	source = git+https://github.com/ngtcp2/munit.git#commit=114805e1bab0222574b5eb3a92461ad5216647ed
 	source = git+https://github.com/mruby/mruby.git#commit=831da26b9021de0369d17b71b5667e2941a1a32d
 	source = git+https://github.com/tatsuhiro-t/neverbleed.git#commit=68f65c7b05f68e6fd93631668d4f469875946656
+	source = git+https://github.com/ngtcp2/urlparse.git#commit=59b068a7618a256c6823b0b9801b61d1d04677a3
 	sha512sums = 48f3bf6748abf46e9b1a2cfcfc4053ef8a7d532898da854d508c520c7adcca3a8690f81d2683d14398cf937a3f7c9276000c569ccc1183bbf20d449e64f5c315
 	sha512sums = 258d0461c3fbd80b4f4675c2a4af7cd621a6a0d152ee30eea4a9f1123f7e7590b65ba6ca2e00252db6fc818446132464ca8f582362f133e48987769f7aa717f5
 	sha512sums = a1f098806f948304cb5491902960ef72201962c572b7fa1cb0eb93b8ee834032d47b133eae570a6da6746b79dbf4fd773a9cc92750611cfc7082c6f847c8a27e
 	sha512sums = ab3e57d6c9712a2e95842b2a247c98a4eaeed57bc6535a1c08af14c3da0d838cbf5e84101532c08d86c35c569dc9f04beee137dc93969d3162d76cded7ff4dda
+	sha512sums = f324e6b0df5a1855e045fcffbb9741ff05eb7385f1c361fbbc69b99242ea11407390138485fc828add9cdc1c49137471ccf6173d81fd60c006242df2b7d1a42e
 
 pkgname = libnghttp2

@@ -1,6 +1,6 @@
 set pkgname libmikmod
 set pkgver 3.3.15
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Module player library supporting many formats, including MOD, S3M, IT and XM'
 set arch i686 x32
 set url https://mikmod.sourceforge.net
@@ -19,7 +19,7 @@ function prepare
 end
 
 function build
-    set -l cmake_options -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D ENABLE_DL=1 -D ENABLE_PULSE=0
+    set -l cmake_options -D CMAKE_BUILD_TYPE=None -D CMAKE_INSTALL_PREFIX=/usr -D ENABLE_DL=1 -D ENABLE_PULSE=0 -D ENABLE_DOC=OFF
     cmake -S mikmod/libmikmod -B build -G Ninja $cmake_options; or return
     cmake --build build; or return
 end

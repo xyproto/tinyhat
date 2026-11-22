@@ -1,7 +1,7 @@
 pkgbase = lmdb
 	pkgdesc = Symas Lightning Memory-Mapped Database
 	pkgver = 0.9.35
-	pkgrel = 1
+	pkgrel = 2
 	url = https://symas.com/lmdb
 	arch = i686
 	arch = x32

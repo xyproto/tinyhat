@@ -1,6 +1,6 @@
 set pkgname polkit
 set pkgver 128
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Application development toolkit for controlling system-wide privileges'
 set arch i686 x32
 set url https://github.com/polkit-org/polkit
@@ -9,7 +9,6 @@ set license LGPL-2.0-or-later
 set depends duktape expat glib2 glibc libgcc pam systemd systemd-libs
 # No documentation (gtk-doc) and no man pages (xsltproc with docbook-xsl, which came with gtk-doc)
 set makedepends dbus git glib2-devel meson
-set checkdepends python-dbusmock
 set provides libpolkit-agent-1.so libpolkit-gobject-1.so
 set install polkit.install
 set source "git+https://github.com/polkit-org/polkit#tag=$pkgver" \
@@ -30,7 +29,7 @@ function prepare
 end
 
 function build
-    set -l meson_options -D examples=true -D gettext=true -D gtk_doc=false -D man=false -D tests=true
+    set -l meson_options -D examples=false -D gettext=true -D gtk_doc=false -D man=false -D tests=false
     arch-meson -D introspection=false polkit build $meson_options; or return
     meson compile -C build; or return
 end

@@ -1,6 +1,6 @@
 set pkgname tinyhat-notify
 set pkgver 1.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Tiny Hat notifications and tray icons: shows desktop notifications and StatusNotifierItem icons in the dwl bar'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -14,7 +14,7 @@ set sha256sums 7c09b558789a13f2517c1ec21c1db7bc5da7b2c3aa5b048f392e77109fc18df8 
     ffedc85a83549e3df8ae64e257426ace384e18eb17166a252fe55282eaaae269
 
 function build
-    cc (string split -n " " -- "$CFLAGS $LDFLAGS") -o tinyhat-notify tinyhat-notify.c (pkg-config --cflags --libs libsystemd libpng | string split -n " "); or return
+    $CC (string split -n " " -- "$CFLAGS $LDFLAGS") -o tinyhat-notify tinyhat-notify.c (pkg-config --cflags --libs libsystemd libpng | string split -n " "); or return
 end
 
 function package

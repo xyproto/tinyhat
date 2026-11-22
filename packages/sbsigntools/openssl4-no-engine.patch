@@ -1,0 +1,36 @@
+--- a/src/fileio.c
++++ b/src/fileio.c
+@@ -39,7 +39,10 @@
+ #include <openssl/bio.h>
+ #include <openssl/pem.h>
+ #include <openssl/err.h>
++#include <openssl/opensslv.h>
++#if OPENSSL_VERSION_MAJOR < 4
+ #include <openssl/engine.h>
++#endif
+ 
+ #include <ccan/talloc/talloc.h>
+ #include <ccan/read_write_all/read_write_all.h>
+@@ -48,6 +51,7 @@
+ 
+ #define FLAG_NOERROR	(1<<0)
+ 
++#if OPENSSL_VERSION_MAJOR < 4
+ static int ui_read(UI *ui, UI_STRING *uis)
+ {
+ 	char password[128];
+@@ -96,6 +100,14 @@
+ 	ENGINE_free(e);
+ 	return pkey;
+ }
++#else
++EVP_PKEY *fileio_read_engine_key(const char *engine, const char *filename)
++{
++	(void)filename;
++	fprintf(stderr, "Failed to load engine %s: OpenSSL %d has no engines\n", engine, OPENSSL_VERSION_MAJOR);
++	return NULL;
++}
++#endif
+ 
+ EVP_PKEY *fileio_read_pkey(const char *filename)
+ {

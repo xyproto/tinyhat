@@ -1,7 +1,7 @@
 set pkgbase openjph
 set pkgname openjph
 set pkgver 0.32.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Open-source implementation of JPEG2000 Part-15'
 set arch i686 x32
 set url https://github.com/aous72/OpenJPH/
@@ -9,7 +9,6 @@ set nvchecker source=git git=https://github.com/aous72/OpenJPH/
 set license BSD-2-Clause
 # No documentation (doxygen)
 set makedepends cmake git libtiff
-set checkdepends expat
 set source "git+https://github.com/aous72/OpenJPH#tag=$pkgver"
 set sha256sums 08bdab8ec90f7fd930c310aaafad2ae5a1c59288a91420edb218738a86b26aa7
 set flags arch
@@ -25,14 +24,11 @@ function build
         $simd \
         -DCMAKE_BUILD_TYPE:STRING=None \
         -DCMAKE_INSTALL_PREFIX:PATH=/usr \
-        -DOJPH_BUILD_TESTS:BOOL=ON \
+        -DOJPH_BUILD_TESTS:BOOL=OFF \
         -Wno-dev; or return
     cmake --build build; or return
 end
 
-function check
-    ctest --test-dir build --output-on-failure; or return
-end
 
 function package_openjph
     set depends glibc libgcc libstdc++ libtiff

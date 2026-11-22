@@ -1,0 +1,27 @@
+From 21633377174354199c3ea3e4b23f64cfaeacc50a Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Thu, 26 Dec 2024 11:56:38 +0100
+Subject: [PATCH] Avoid segfault of bug788 (#907)
+
+If the heif image can't be created for whatever reason, `dst` is `NULL`
+what causes a segfault when we try to access its dimensions.  We catch
+that with a test assertion, and bail out if that fails.
+---
+ tests/heif/bug788.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/tests/heif/bug788.c b/tests/heif/bug788.c
+index 5475251b6b3fd652cbc328d01358cde98c67a1b8..2e2a9ea6fc49cceff435e94a8f4d3ed62336706a 100644
+--- a/tests/heif/bug788.c
++++ b/tests/heif/bug788.c
+@@ -24,6 +24,10 @@ int main () {
+     data = gdImageHeifPtrEx(in, &size, 200, GD_HEIF_CODEC_HEVC, GD_HEIF_CHROMA_444);
+ 
+     dst = gdImageCreateFromHeifPtr(size, data);
++    if (!gdTestAssert(dst != NULL)) {
++        gdImageDestroy(in);
++        return gdNumFailures();
++    }
+     diff = gdImageCreateTrueColor(gdImageSX(dst), gdImageSY(dst));
+     if (gdTestAssertMsg(dst != NULL, "cannot compare with NULL buffer")) {
+         gdTestImageDiff(in, dst, diff, &result);

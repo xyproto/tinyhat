@@ -1,7 +1,7 @@
 pkgbase = python-numpy
 	pkgdesc = Scientific tools for Python
 	pkgver = 2.5.4
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.numpy.org/
 	arch = i686
 	arch = x32
@@ -13,7 +13,6 @@ pkgbase = python-numpy
 	makedepends = python-installer
 	makedepends = meson-python
 	makedepends = cmake
-	makedepends = gcc-fortran
 	makedepends = cython
 	depends = cblas
 	depends = lapack

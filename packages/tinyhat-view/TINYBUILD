@@ -1,6 +1,6 @@
 set pkgname tinyhat-view
 set pkgver 1
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Tiny Hat image viewer'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -10,7 +10,7 @@ set source tinyhat-view.c
 set sha256sums cad5689c7c81153786e654dfb69d91a745674c786045636bae3af6bfdc8e03a2
 
 function build
-    cc -std=c23 $CFLAGS -o tinyhat-view tinyhat-view.c $LDFLAGS -lSDL3 -lSDL3_image -lm; or return
+    $CC -std=c23 $CFLAGS -o tinyhat-view tinyhat-view.c $LDFLAGS -lSDL3 -lSDL3_image -lm; or return
 end
 
 function package

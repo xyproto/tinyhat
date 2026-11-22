@@ -1,7 +1,7 @@
 set -g _target arm-none-eabi
 set pkgname $_target-binutils
 set pkgver 2.47
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'A set of programs to assemble and manipulate binary and object files for the ARM EABI (bare-metal) target'
 set arch i686 x32
 set url https://www.gnu.org/software/binutils/
@@ -32,7 +32,8 @@ function build
         --enable-ld=default \
         --enable-gold \
         --enable-plugins \
-        --enable-deterministic-archives; or return
+        --enable-deterministic-archives \
+        --without-debuginfod; or return
 
     make; or return
 end

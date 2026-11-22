@@ -1,20 +1,21 @@
 pkgbase = elfutils
 	pkgdesc = Handle ELF object files and DWARF debugging information
 	pkgver = 0.196
-	pkgrel = 2
+	pkgrel = 3
 	url = https://sourceware.org/elfutils/
 	arch = i686
 	arch = x32
 	makedepends = bzip2
-	makedepends = git
 	makedepends = libgcc
 	makedepends = libstdc++
 	makedepends = xz
 	makedepends = zlib
 	makedepends = zstd
 	options = staticlibs
-	source = elfutils::git+https://forge.sourceware.org/elfutils/elfutils-mirror.git?signed#tag=elfutils-0.196
-	sha256sums = dc09f62d6c32ad40c97451ddaf2c9e7c81d0093e506929f2d3a9d516250d2e85
+	source = https://sourceware.org/elfutils/ftp/0.196/elfutils-0.196.tar.bz2
+	source = https://sourceware.org/elfutils/ftp/0.196/elfutils-0.196.tar.bz2.sig
+	sha256sums = fd5cc6b77ad6773cac93cb3f415f9318ac3b3455eecf801f6b4a742c4f6c7209
+	sha256sums = 07ea310d4624ebfa325d6e744f373dbf4309cb372a992eaffd31c7f4956eb1fb
 
 pkgname = elfutils
 	pkgdesc = Handle ELF object files and DWARF debugging information (utilities)

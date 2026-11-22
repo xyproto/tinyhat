@@ -1,7 +1,7 @@
 set pkgname octo
 set -g _commit 102994e6166236045a067efa930a88532510e03e
 set pkgver 20260914.181012.g102994e6166
-set pkgrel 3
+set pkgrel 4
 set pkgdesc 'Octo CHIP-8 assembler, player and IDE (c-octo), with SDL3'
 set arch i686 x32 x86_64 aarch64
 set url https://github.com/JohnEarnest/c-octo
@@ -28,7 +28,7 @@ function build
     set -l sdl (pkg-config --cflags --libs sdl3); or return
     set sdl (string split -n ' ' -- $sdl)
     for f in cli run de
-        cc -std=c99 $CFLAGS -DVERSION='"1.2"' -o octo-$f src/octo_$f.c $LDFLAGS $sdl -lm; or return
+        $CC -std=c99 $CFLAGS -DVERSION='"1.2"' -o octo-$f src/octo_$f.c $LDFLAGS $sdl -lm; or return
     end
 end
 
