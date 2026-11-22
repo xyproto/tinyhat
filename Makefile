@@ -216,10 +216,10 @@ $(1): $(B)/pkgs.ninja $(B)/pools.ninja FORCE | $(2)
 endef
 $(foreach k,i686 x32 boot,$(eval $(call ninja_target,$(B)/pkg/$(k)/%,$(B)/.buildroot)))
 $(foreach k,x86_64 cross cross-boot,$(eval $(call ninja_target,$(B)/pkg/$(k)/%,$(B)/.buildroot-x86_64)))
-$(eval $(call ninja_target,$(B)/pkg/aarch64/%,$(B)/.buildroot-aarch64))
+$(foreach k,aarch64 aarch64-boot,$(eval $(call ninja_target,$(B)/pkg/$(k)/%,$(B)/.buildroot-x86_64)))
 $(foreach g,i686 x32 rootfs-i686 rootfs-x32 packages,$(eval $(call ninja_target,$(B)/pkg/group/$(g),$(B)/.buildroot)))
 $(foreach g,x86_64 cross,$(eval $(call ninja_target,$(B)/pkg/group/$(g),$(B)/.buildroot-x86_64)))
-$(eval $(call ninja_target,$(B)/pkg/group/aarch64,$(B)/.buildroot-aarch64))
+$(eval $(call ninja_target,$(B)/pkg/group/aarch64,$(B)/.buildroot-x86_64))
 
 FORCE:
 
