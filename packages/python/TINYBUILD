@@ -21,7 +21,9 @@ end
 
 function build
     cd Python-$pkgver; or return
-    py_cv_module__tkinter=n/a ./configure --prefix=/usr \
+    set -l cross
+    string match -q -- '*-gcc' $CC; and set cross --with-build-python=python3.14 ac_cv_file__dev_ptmx=yes ac_cv_file__dev_ptc=no
+    py_cv_module__tkinter=n/a ./configure --prefix=/usr $cross \
         --enable-shared \
         --with-computed-gotos \
         --enable-ipv6 \

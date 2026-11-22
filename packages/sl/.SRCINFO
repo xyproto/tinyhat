@@ -1,7 +1,7 @@
 pkgbase = sl
 	pkgdesc = Steam Locomotive runs across your terminal when you type "sl" as you meant to type "ls"
 	pkgver = 5.05
-	pkgrel = 6
+	pkgrel = 7
 	url = https://github.com/eyJhb/sl
 	arch = i686
 	arch = x32

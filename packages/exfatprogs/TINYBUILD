@@ -1,12 +1,12 @@
 set pkgname exfatprogs
 set pkgver 1.4.3
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'exFAT filesystem userspace utilities for the Linux Kernel exfat driver'
 set arch i686 x32
 set url https://github.com/exfatprogs/exfatprogs
 set nvchecker source=git git=https://github.com/exfatprogs/exfatprogs.git
 set license GPL-2.0-or-later
-set depends glibc
+set depends glibc util-linux-libs
 set provides exfat-utils
 set conflicts exfat-utils
 set source "https://github.com/exfatprogs/exfatprogs/archive/$pkgver/$pkgname-$pkgver.tar.gz"

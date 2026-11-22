@@ -37,8 +37,10 @@ end
 function build
     cd $pkgname; or return
     set -a CXXFLAGS $CPPFLAGS
+    set -l indent
+    string match -q -- '*-gcc' $CC; and set indent -D FISH_INDENT_FOR_BUILDING_DOCS=/usr/bin/fish_indent
     cmake -B build -D CMAKE_INSTALL_PREFIX=/usr -D CMAKE_INSTALL_SYSCONFDIR=/etc -D CMAKE_BUILD_TYPE=Release \
-        -D WITH_DOCS=ON -D FISH_USE_SYSTEM_PCRE2=ON -D WITH_MESSAGE_LOCALIZATION=ON -W no-dev; or return
+        -D WITH_DOCS=ON -D FISH_USE_SYSTEM_PCRE2=ON -D WITH_MESSAGE_LOCALIZATION=ON -W no-dev $indent; or return
     make -C build VERBOSE=1; or return
 end
 

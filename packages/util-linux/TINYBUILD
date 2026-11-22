@@ -159,7 +159,7 @@ end
 
 function package_util-linux-libs
     set pkgdesc 'util-linux runtime libraries'
-    set depends glibc sqlite
+    set depends glibc sqlite systemd-libs libsystemd.so
     set provides libutil-linux libblkid.so libfdisk.so libmount.so libsmartcols.so libuuid.so
     set conflicts libutil-linux
     set replaces libutil-linux

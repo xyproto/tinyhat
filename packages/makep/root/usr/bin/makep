@@ -391,6 +391,11 @@ if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m)
     set -gx PATH $makep_crossdir/bin $PATH
     printf '%s\n' "host_alias=$CHOST" "host=$CHOST" "build_alias=$CBUILD" "build=$CBUILD" cross_compiling=yes \
         "ac_tool_prefix=$prefix-" ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
+        ac_cv_func_fnmatch_works=yes ac_cv_func_fnmatch_gnu=yes ac_cv_func_mmap_fixed_mapped=yes \
+        ac_cv_func_strnlen_working=yes ac_cv_func_working_mktime=yes ac_cv_func_chown_works=yes \
+        ac_cv_func_getgroups_works=yes ac_cv_func_lstat_dereferences_slashed_symlink=yes \
+        ac_cv_func_stat_empty_string_bug=no ac_cv_func_lstat_empty_string_bug=no ac_cv_func_fork_works=yes \
+        ac_cv_func_vfork_works=yes ac_cv_func_strcoll_works=yes ac_cv_func_strtod=yes \
         >$makep_crossdir/config.site
     set -gx CONFIG_SITE $makep_crossdir/config.site
     set -l family $carch
@@ -401,7 +406,8 @@ if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m)
             set family x86_64
     end
     printf '%s\n' '[binaries]' "c = '$CC'" "cpp = '$CXX'" "ar = '$AR'" "strip = '$STRIP'" "pkg-config = 'pkg-config'" \
-        '[properties]' "sys_root = '$SYSROOT'" "pkg_config_libdir = '$PKG_CONFIG_LIBDIR'" 'needs_exe_wrapper = true' \
+        "cmake = 'cmake'" '[properties]' "sys_root = '$SYSROOT'" "pkg_config_libdir = '$PKG_CONFIG_LIBDIR'" \
+        'needs_exe_wrapper = true' "cmake_toolchain_file = '$makep_crossdir/toolchain.cmake'" \
         '[host_machine]' "system = 'linux'" "cpu_family = '$family'" "cpu = '$carch'" "endian = 'little'" \
         >$makep_crossdir/cross.ini
     printf '%s\n' 'set(CMAKE_SYSTEM_NAME Linux)' "set(CMAKE_SYSTEM_PROCESSOR $carch)" "set(CMAKE_C_COMPILER $CC)" \
@@ -420,9 +426,46 @@ if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m)
     echo "makep: cross-building for $CHOST on $CBUILD with $prefix-gcc"
 end
 
+# GObject introspection runs target programs to inspect the libraries, so a cross build goes without it
+function makep_no_introspection
+    for a in $argv
+        string match -q -- '-*' $a; and continue
+        for f in $a/meson.options $a/meson_options.txt
+            test -f $f; or continue
+            set -l line (string match -r -- "option\\(\\s*'introspection'.*" <$f)
+            set -q line[1]; or continue
+            string match -q -- "*'boolean'*" $line[1]; and echo -Dintrospection=false; or echo -Dintrospection=disabled
+            return
+        end
+    end
+end
+
 function meson
+    set -l commands setup configure dist install introspect init test wrap subprojects rewrite compile devenv env2mfile format fmt help
+    if test $cross -eq 1; and not contains -- "$argv[1]" $commands
+        set argv setup $argv
+    end
     if test "$argv[1]" = setup; and test $cross -eq 1; and not string match -q -- '--cross-file*' $argv
-        env -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH meson setup --cross-file=$makep_crossdir/cross.ini $argv[2..]
+        set -l args $argv[2..]
+        set -l gi (makep_no_introspection $args)
+        if set -q gi[1]
+            set -l kept
+            set -l skip 0
+            for n in (seq (count $args))
+                if test $skip = 1
+                    set skip 0
+                    continue
+                end
+                set -l next $args[(math $n + 1)]
+                if test "$args[$n]" = -D; and string match -q -- 'introspection=*' "$next"
+                    set skip 1
+                    continue
+                end
+                string match -q -- '-Dintrospection=*' $args[$n]; or set -a kept $args[$n]
+            end
+            set args $kept $gi
+        end
+        env -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH meson setup --cross-file=$makep_crossdir/cross.ini $args
     else
         command meson $argv
     end

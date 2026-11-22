@@ -3,7 +3,7 @@ set -g _commit e090f001ccffdc0fb69f479a8c9703e30d07f6b1
 set -g _tcc cc076f049282b7f8ca46b15c437db97d9224e763
 set -g _wladx 6fa1f673f010e4fa4571c40929019cd7e67d1bbd
 set pkgver 0+e090f001
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'SNES game library with 816-tcc, wla-dx and graphics tools'
 set arch i686 x32
 set url https://github.com/alekmaul/pvsneslib
@@ -30,7 +30,28 @@ function build
     set -a CFLAGS -O3
     set -a CXXFLAGS -O3
     set -lx PVSNESLIB_HOME $PWD
-    make compiler tools pvsneslib; or return
+    if not string match -q -- '*-gcc' $CC
+        make compiler tools pvsneslib; or return
+        return
+    end
+    rm -rf ../native; or return
+    cp -a . ../native; or return
+    env -C ../native -u MAKEFLAGS -u CMAKE_TOOLCHAIN_FILE -u CONFIG_SITE -u AR -u RANLIB -u STRIP -u LD -u NM \
+        -u OBJCOPY -u OBJDUMP -u READELF -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH \
+        CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD CFLAGS=-O2 CXXFLAGS=-O2 LDFLAGS= PVSNESLIB_HOME=$srcdir/native \
+        make compiler tools pvsneslib; or return
+    make -C compiler tcc-configure; or return
+    make -C compiler/tcc CC=$CC; or return
+    make -C compiler tcc-install; or return
+    cmake -S compiler/wla-dx -B compiler/wla-dx -G 'Unix Makefiles' \
+        -D IMPORT_GENERATORS=$srcdir/native/compiler/wla-dx/ImportGenerators.cmake; or return
+    make -C compiler/wla-dx wla-65816 wla-spc700 wlalink; or return
+    make -C compiler wla-install; or return
+    sed -i -E "s|^([A-Z]+\s*:?=\s*)g\+\+\s*\$|\1$CXX|; s|^([A-Z]+\s*:?=\s*)gcc\s*\$|\1$CC|; s|^(AR\s*:?=\s*)ar\s*\$|\1$AR|" \
+        tools/*/Makefile tools/*/makeinclude; or return
+    make tools; or return
+    rm -rf pvsneslib/lib; or return
+    cp -a ../native/pvsneslib/lib pvsneslib/; or return
 end
 
 function package

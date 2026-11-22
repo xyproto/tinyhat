@@ -1,7 +1,7 @@
 set pkgname cc65
 set -g _commit 8d86ca7e7ed15300cc4bfaba61a40a3d00f3114d
 set pkgver 2.19+8d86ca7
-set pkgrel 2
+set pkgrel 3
 set pkgdesc '6502 and 65816 C compiler and assembler'
 set arch i686 x32
 set url https://cc65.github.io/
@@ -12,13 +12,28 @@ set sha256sums 8dfa14d7832a7171ab00c70b84cbede7a775ed22e325413e280e9256238e94e0
 
 function build
     cd cc65-$_commit; or return
+    if string match -q -- '*-gcc' $CC
+        rm -rf ../native; or return
+        cp -a . ../native; or return
+        env CFLAGS=-O2 LDFLAGS= make -C ../native PREFIX=/usr CC=$CC_FOR_BUILD AR=ar bin; or return
+        make -C ../native PREFIX=/usr CC65_HOME=.. lib; or return
+        make PREFIX=/usr CROSS_COMPILE=(string replace -r -- 'gcc$' '' $CC) bin; or return
+        return
+    end
     make PREFIX=/usr bin; or return
     make PREFIX=/usr CC65_HOME=.. lib; or return
 end
 
 function package
     cd cc65-$_commit; or return
-    make install PREFIX=/usr DESTDIR="$pkgdir"; or return
+    if test -d ../native
+        make -C src install PREFIX=/usr DESTDIR="$pkgdir"; or return
+        for d in libsrc doc util samples
+            make -C ../native/$d install PREFIX=/usr DESTDIR="$pkgdir"; or return
+        end
+    else
+        make install PREFIX=/usr DESTDIR="$pkgdir"; or return
+    end
     rm -rf "$pkgdir/usr/share/doc" "$pkgdir/usr/share/cc65/samples"; or return
     set -l keep c64 c128 vic20 plus4 cx16 nes pce atari apple2 apple2enh none sim6502 sim65c02
     for f in $pkgdir/usr/share/cc65/lib/*.lib $pkgdir/usr/share/cc65/target/*

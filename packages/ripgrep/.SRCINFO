@@ -1,7 +1,7 @@
 pkgbase = ripgrep
 	pkgdesc = A search tool that combines the usability of ag with the raw speed of grep
 	pkgver = 15.2.0
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/BurntSushi/ripgrep
 	arch = i686
 	license = MIT OR Unlicense

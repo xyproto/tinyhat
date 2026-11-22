@@ -1,7 +1,7 @@
 pkgbase = qemacs
 	pkgdesc = Quick Emacs, a small Emacs-like text editor by Fabrice Bellard
 	pkgver = 0+2107926a
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/qemacs/qemacs
 	arch = i686
 	arch = x32

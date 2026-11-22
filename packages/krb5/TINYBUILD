@@ -47,7 +47,9 @@ function build
     cd $pkgname-$pkgver/src; or return
     set -a CFLAGS -fPIC -fno-strict-aliasing -fstack-protector-all -std=gnu17
     set -lx WARN_CFLAGS ''
-    ./configure --prefix=/usr \
+    set -l cross
+    string match -q -- '*-gcc' $CC; and set cross krb5_cv_attr_constructor_destructor=yes,yes ac_cv_func_regcomp=yes ac_cv_printf_positional=yes
+    ./configure --prefix=/usr $cross \
         --sbindir=/usr/bin \
         --sysconfdir=/etc \
         --localstatedir=/var/lib \

@@ -14,7 +14,9 @@ set sha256sums 9aa0cc780dec156b8282844833b342ab7cb08c25d2cd9a1869cdd0df31deff48
 set flags arch
 
 function prepare
-    true
+    cd "$pkgname-$pkgver"; or return
+    sed -i -e '/^#include <signal.h>$/d' -e 's/^#include "gzip.h"$/#include <signal.h>\n&/' gzip.c; or return
+    grep -B1 '^#include "gzip.h"$' gzip.c | grep -q '^#include <signal.h>$'; or return
 end
 
 function build

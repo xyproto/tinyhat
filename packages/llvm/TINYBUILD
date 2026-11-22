@@ -11,14 +11,21 @@ set -a options leakpath
 set sha256sums fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e
 
 function build
-    cmake -S llvm-project-$pkgver.src/llvm -B build -G Ninja \
+    set -l targets X86 AMDGPU
+    set -l cross
+    if string match -q -- '*-gcc' $CC
+        set targets AArch64 AMDGPU
+        set cross -DLLVM_HOST_TRIPLE=$CHOST \
+            "-DCROSS_TOOLCHAIN_FLAGS_NATIVE=-DCMAKE_TOOLCHAIN_FILE=;-DCMAKE_C_COMPILER=$CC_FOR_BUILD;-DCMAKE_CXX_COMPILER=$CXX_FOR_BUILD;-DCMAKE_C_FLAGS=-O2;-DCMAKE_CXX_FLAGS=-O2;-DLLVM_ENABLE_LIBXML2=OFF;-DLLVM_ENABLE_ZLIB=OFF;-DLLVM_ENABLE_ZSTD=OFF;-DLLVM_ENABLE_LIBEDIT=OFF;-DLLVM_ENABLE_FFI=OFF"
+    end
+    cmake -S llvm-project-$pkgver.src/llvm -B build -G Ninja $cross \
         -DCMAKE_BUILD_TYPE=Release \
         -DCMAKE_C_FLAGS_RELEASE="-Os -DNDEBUG" \
         -DCMAKE_CXX_FLAGS_RELEASE="-Os -DNDEBUG" \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_SKIP_INSTALL_RPATH=ON \
         -DCMAKE_BUILD_RPATH='$ORIGIN/../lib' \
-        -DLLVM_TARGETS_TO_BUILD="X86;AMDGPU" \
+        -DLLVM_TARGETS_TO_BUILD=(string join ';' $targets) \
         -DLLVM_ENABLE_PROJECTS="clang;clang-tools-extra;lld" \
         -DLLVM_BUILD_LLVM_DYLIB=ON \
         -DLLVM_LINK_LLVM_DYLIB=ON \
@@ -33,7 +40,7 @@ function build
 end
 
 function package_llvm-libs
-    set pkgdesc 'LLVM runtime libraries, built for X86 and AMDGPU'
+    set pkgdesc 'LLVM runtime libraries, built for X86 and AMDGPU (AArch64 and AMDGPU on aarch64)'
     set depends gcc-libs zlib zstd libffi libxml2 ncurses
     set provides libLLVM.so
     set -l major (string split -f1 . -- $pkgver)
@@ -61,7 +68,7 @@ function package_llvm
 end
 
 function package_clang
-    set pkgdesc 'C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU'
+    set pkgdesc 'C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU (AArch64 and AMDGPU on aarch64)'
     set depends "llvm-libs=$pkgver" gcc
     set -l major (string split -f1 . -- $pkgver)
     mkdir -p "$pkgdir/usr/bin" "$pkgdir/usr/lib"; or return

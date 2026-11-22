@@ -55,6 +55,8 @@ set -g _systemd_src_dir systemd
 
 function prepare
     cd "$_systemd_src_dir"; or return
+    sed -i "s|'-I' + libaudit.get_variable('includedir'),|'-I' + meson.get_external_property('sys_root', '') + libaudit.get_variable('includedir'),|" src/journal/meson.build; or return
+    grep -q "get_external_property('sys_root', '') + libaudit" src/journal/meson.build; or return
     if not git status >/dev/null 2>&1
         return 0
     end

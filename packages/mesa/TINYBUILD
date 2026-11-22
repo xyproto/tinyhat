@@ -101,6 +101,10 @@ set -g _x 'libx11|libxcb|libxext|libxrandr|libxshmfence|libxxf86vm|xcb-util-keys
 
 function prepare
     cd mesa-$_pkgver; or return
+    if string match -q -- '*-gcc' $CC
+        sed -i "s/method : host_machine.system() == 'windows' ? 'auto' : 'config-tool',/method : 'cmake',/" meson.build; or return
+        grep -q "^  method : 'cmake',\$" meson.build; or return
+    end
     set -l src
     for src in $source
         set src "$(string replace -r -- '(.*?)::.*$' '$1' "$src")"

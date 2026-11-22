@@ -1,6 +1,6 @@
 set pkgname tcc
 set pkgver 0.9.27.r1337.gb39cbc70
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Tiny C Compiler (tinycc)'
 set arch i686
 set url https://bellard.org/tcc/
@@ -16,6 +16,15 @@ set -g _commit b39cbc70c4ccc0540c2ef65010b8241caf005ad4
 
 function build
     cd tinycc; or return
+    if string match -q -- '*-gcc' $CC
+        env AR=ar ./configure --prefix=/usr --docdir=/usr/share/doc/tcc --disable-static \
+            --cross-prefix=(string replace -r -- 'gcc$' '' $CC) --cc=gcc --cpu=$CARCH; or return
+        sed -i 's/^#if !defined __riscv && !defined __APPLE__$/& \&\& defined __TINYC__/' lib/lib-arm64.c; or return
+        grep -q '__APPLE__ && defined __TINYC__$' lib/lib-arm64.c; or return
+        make CC=$CC_FOR_BUILD c2str.exe; or return
+        make $CARCH-libtcc1-usegcc=yes arm64-libtcc1-usegcc=yes; or return
+        return
+    end
     ./configure --prefix=/usr --docdir=/usr/share/doc/tcc --disable-static; or return
     make; or return
 end
@@ -23,5 +32,5 @@ end
 function package
     cd tinycc; or return
     make DESTDIR="$pkgdir" install; or return
-    find "$pkgdir"/usr/lib/tcc \( -name '*.o' -o -name '*.a' \) -exec objcopy -R .stab -R .stabstr -R .rel.stab -R .rela.stab '{}' \;; or return
+    find "$pkgdir"/usr/lib/tcc \( -name '*.o' -o -name '*.a' \) -exec (set -q OBJCOPY; and echo $OBJCOPY; or echo objcopy) -R .stab -R .stabstr -R .rel.stab -R .rela.stab '{}' \;; or return
 end

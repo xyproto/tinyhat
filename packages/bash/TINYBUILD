@@ -89,6 +89,7 @@ function build
         '-DSYS_BASH_LOGOUT=\'"/etc/bash.bash_logout"\'' \
         -DNON_INTERACTIVE_LOGIN_SHELLS \
         -std=gnu17
+    set -lx CFLAGS_FOR_BUILD -O2 -std=gnu17
     ./configure \
         --prefix=/usr \
         --with-curses \

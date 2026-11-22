@@ -24,11 +24,11 @@ end
 
 function build
     cd $pkgname-$pkgver; or return
-    make SYSTEM=linux-egl STRIP=; or return
+    make SYSTEM=linux-egl STRIP= CC="$CC" LD="$CC"; or return
 end
 
 function package
     cd $pkgname-$pkgver; or return
-    make SYSTEM=linux-egl install.all DESTDIR="$pkgdir"; or return
+    make SYSTEM=linux-egl CC="$CC" LD="$CC" install.all DESTDIR="$pkgdir"; or return
     install -D -m644 LICENSE.txt "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
 end

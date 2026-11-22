@@ -29,6 +29,7 @@ function build
         --sysconfdir=/etc \
         --localstatedir=/var \
         --disable-rpath \
+        --disable-gost \
         --with-drill \
         --with-examples \
         --with-trust-anchor=/etc/trusted-key.key; or return

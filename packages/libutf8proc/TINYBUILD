@@ -1,7 +1,7 @@
 set pkgname libutf8proc
 set pkgver 2.12.0
 set -g _sover 3.3.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'C library for processing UTF-8 encoded Unicode strings'
 set arch i686 x32
 set url https://github.com/JuliaStrings/utf8proc
@@ -38,6 +38,6 @@ function package
     install -Dm644 "$srcdir/$pkgname.pc" "$pkgdir/usr/lib/pkgconfig/$pkgname.pc"; or return
     install -Dm644 ../build/$pkgname.so.$_sover \
         "$pkgdir/usr/lib/$pkgname.so.$_sover"; or return
-    ln -s /usr/lib/$pkgname.so.$_sover "$pkgdir/usr/lib/$pkgname.so"; or return
-    ldconfig -n "$pkgdir/usr/lib"; or return
+    ln -s $pkgname.so.$_sover "$pkgdir/usr/lib/$pkgname.so"; or return
+    ln -s $pkgname.so.$_sover "$pkgdir/usr/lib/$pkgname.so."(string split . -- $_sover)[1]; or return
 end

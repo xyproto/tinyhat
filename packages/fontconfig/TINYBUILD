@@ -17,7 +17,9 @@ set sha256sums 4f7b554a38cdf78c033f666c8871f3749e14a094f65a07f630c91ed0b43d35e3 
     ab0a6ca09f8ef70c564c8241fb5a23957886a0b53fb58412b5e07eaf07dba743
 
 function build
-    python3 meson-$_meson/meson.py setup build fontconfig-$pkgver --prefix=/usr --sysconfdir=/etc --localstatedir=/var --buildtype=minsize \
+    set -l cross
+    set -q makep_crossdir; and set cross env -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH
+    $cross python3 meson-$_meson/meson.py setup build fontconfig-$pkgver (set -q makep_crossdir; and echo --cross-file=$makep_crossdir/cross.ini) --prefix=/usr --sysconfdir=/etc --localstatedir=/var --buildtype=minsize \
         -Ddoc=disabled -Dtests=disabled -Dnls=disabled -Dcache-build=disabled; or return
     ninja -C build; or return
 end

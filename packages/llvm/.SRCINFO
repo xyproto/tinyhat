@@ -18,7 +18,7 @@ pkgbase = llvm
 	sha256sums = fb50b1eac93ddeb3aa8dab4cfe324dff74f4a9c2bdee6160c9e36188f8d06a6e
 
 pkgname = llvm-libs
-	pkgdesc = LLVM runtime libraries, built for X86 and AMDGPU
+	pkgdesc = LLVM runtime libraries, built for X86 and AMDGPU (AArch64 and AMDGPU on aarch64)
 	depends = gcc-libs
 	depends = zlib
 	depends = zstd
@@ -32,7 +32,7 @@ pkgname = llvm
 	depends = llvm-libs=23.1.5
 
 pkgname = clang
-	pkgdesc = C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU
+	pkgdesc = C and C++ compiler with clangd and clang-format, built for X86 and AMDGPU (AArch64 and AMDGPU on aarch64)
 	depends = llvm-libs=23.1.5
 	depends = gcc
 

@@ -39,16 +39,24 @@ function build
     _make -C contrib/diff-highlight; or return
 end
 
+function _cross
+    string match -q -- '*-gcc' $CC; or return 0
+    echo CC=$CC
+    echo AR=$AR
+    echo uname_S=Linux
+    echo uname_M=$CARCH
+end
+
 switch $CARCH
     case x32 i686
         function _make
             set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL=YesPlease NO_TCLTK=YesPlease NO_RUST=1 USE_LIBPCRE2=1 ZLIB_NG=1
-            make $make_options $argv; or return
+            make $make_options (_cross) $argv; or return
         end
     case '*'
         function _make
             set -l make_options prefix='/usr' gitexecdir='/usr/lib/git-core' CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS" INSTALL_SYMLINKS=1 MAN_BOLD_LITERAL=1 NO_PERL=YesPlease NO_TCLTK=YesPlease USE_LIBPCRE2=1 ZLIB_NG=1
-            make $make_options $argv; or return
+            make $make_options (_cross) $argv; or return
         end
 end
 

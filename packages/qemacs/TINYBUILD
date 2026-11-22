@@ -1,7 +1,7 @@
 set pkgname qemacs
 set -g _commit 2107926a07ff8553e7633bcee306779d62c496a5
 set pkgver 0+2107926a
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Quick Emacs, a small Emacs-like text editor by Fabrice Bellard'
 set arch i686 x32
 set url https://github.com/qemacs/qemacs
@@ -12,13 +12,15 @@ set sha256sums c02763ff734f3d8454ac1568e2269b0db33dd71744c37b6661dcecc29c28f6b5
 
 function build
     cd qemacs-$_commit; or return
-    ./configure --prefix=/usr --cc=gcc --disable-x11 --disable-xv --disable-xshm --disable-xrender --disable-html --disable-png --disable-ffmpeg --disable-plugins; or return
-    make HOST_CC=gcc; or return
+    set -l cross --cc=$CC
+    string match -q -- '*-gcc' $CC; and set cross --cross-prefix=(string replace -r -- 'gcc$' '' $CC) --cc=gcc
+    ./configure --prefix=/usr $cross --host-cc=$CC_FOR_BUILD --disable-x11 --disable-xv --disable-xshm --disable-xrender --disable-html --disable-png --disable-ffmpeg --disable-plugins; or return
+    make HOST_CC=$CC_FOR_BUILD; or return
 end
 
 function package
     cd qemacs-$_commit; or return
-    make DESTDIR="$pkgdir" HOST_CC=gcc install; or return
+    make DESTDIR="$pkgdir" HOST_CC=$CC_FOR_BUILD install; or return
     rm -rf "$pkgdir/usr/share/doc"; or return
     if test -d "$pkgdir/usr/man/man1"
         mkdir -p "$pkgdir/usr/share/man"; or return

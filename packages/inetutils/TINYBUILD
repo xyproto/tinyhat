@@ -1,6 +1,6 @@
 set pkgname inetutils
 set pkgver 2.8
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'A collection of common network programs'
 set arch i686 x32
 set url https://www.gnu.org/software/inetutils/
@@ -8,18 +8,17 @@ set nvchecker source=regex url=https://ftp.gnu.org/gnu/inetutils/ 'regex=inetuti
 set license GPL-3.0-or-later
 set depends glibc pam libcap readline ncurses libxcrypt \
     libpam.so libcrypt.so libreadline.so libncursesw.so
-set makedepends git help2man python
+set makedepends python
 set backup etc/pam.d/rlogin etc/pam.d/rsh
 set options '!emptydirs'
 set install inetutils.install
-set source "git+https://git.savannah.gnu.org/git/inetutils.git#tag=v$pkgver?signed" \
-    git+https://git.savannah.gnu.org/git/gnulib.git#commit=6466c4b5321eb2625a25e582516c0fa4a5261d05 \
+set source https://ftp.gnu.org/gnu/inetutils/$pkgname-$pkgver.tar.gz{,.sig} \
     inetutils.sysusers \
     ftpd.service rlogin.pam rlogin@.service rlogin.socket \
     rsh.pam rsh@.service rsh.socket talk.service talk.socket \
     telnet@.service telnet.socket
-set sha512sums 348f7ed9528ac8d68de72d3b7efb93c5a31f924b80cdc1f0818ad4fdd7694e3e9d0bb759be02839a5eaa0f14b913f5aaab3032ed22a9f2cbab58ed085d12c780 \
-    501505529254f4f33c9b5aad1f51f2c445ac5c17d572e9403b33b89bd2aaf415965dc049efc12c2e674d00814c0e9644704be36edfa68f57a8076676f287ddbb \
+set sha512sums 00b33c9d712cf670f16dbefc963fed880088ff67f506df54fd02fdfc0f8c05d379faba5d602c8772c4dc4fd72e1fa8733777d5840784aa86e092eeb5d0f905f7 \
+    a86f9513cca247f3ee10b20630b5a791f975ad4fe41a014e887d44c85847a9d203d58507740fcc50897486f93ce4323cfcc18ed4e20aa5fee41ea12ec5ecc44e \
     00a6ff36efe63612990181f7cb37ea7d43ee7f2b6bda6b1fc23ccb2f3b19da54aabad041c2412936561dcd997f9613bd8144a96f5e04f30135a36f9ac98d8056 \
     df5b37c9fc072e012f0e67d849db7e535a62ddb17a37e865acb157f2bc16ffd72d84f24fef1e788dacbbe7e5675e87e141fbd36e53339cc7810dde1b9c54a3b8 \
     432a45af5cd4f9f2dee4b631b45745b734e47cf631553e79db31905fa0839988914bcfed1dfcdd00d2ea6e4029b0674d46623c33ce0bd0678c2628fbaa0d1b25 \
@@ -34,19 +33,8 @@ set sha512sums 348f7ed9528ac8d68de72d3b7efb93c5a31f924b80cdc1f0818ad4fdd7694e3e9
     218f2b5686ca0321a9f7a5a991c69b289aa297b7a295e654020636d38fbb5a37d09e720c1e2f950ba14616b0e7dafc2cb6a5e325e3b117dfe0ab3c733b98e5eb
 set flags arch
 
-function prepare
-    cd $pkgname; or return
-
-    # The inetutils does not have a submodule, that is added on the fly.
-    # Giving the path like this should work anyway...
-    set -lx GNULIB_REFDIR "$srcdir/gnulib"
-
-    sh bootstrap; or return
-    autoreconf -fiv; or return
-end
-
 function build
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     ./configure \
         --prefix=/usr \
         --libexec=/usr/bin \
@@ -89,12 +77,12 @@ function build
 end
 
 function check
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     make check; or return
 end
 
 function package
-    cd $pkgname; or return
+    cd $pkgname-$pkgver; or return
     make DESTDIR="$pkgdir" install; or return
 
     chmod -s "$pkgdir"/usr/bin/{rcp,rlogin,rsh}; or return

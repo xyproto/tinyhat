@@ -52,7 +52,9 @@ function build
     "$srcdir"/glibc/configure $flags; or return
     make -O; or return
     # Pregenerated locales: localedef does not work under fakeroot in package()
-    make -C "$srcdir"/glibc/localedata objdir="$srcdir"/glibc-build DESTDIR="$srcdir"/locales install-locale-files; or return
+    set -l localedef
+    string match -q -- '*-gcc' $CC; and set localedef "LOCALEDEF=I18NPATH=. LC_ALL=C localedef"
+    make -C "$srcdir"/glibc/localedata objdir="$srcdir"/glibc-build DESTDIR="$srcdir"/locales $localedef install-locale-files; or return
 end
 
 function package_glibc

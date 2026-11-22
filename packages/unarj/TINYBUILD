@@ -1,6 +1,6 @@
 set pkgname unarj
 set pkgver 2.65
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Utility to extract, test and view the contents of archives created with the ARJ archiver'
 set url http://www.arjsoftware.com/
 set arch i686 x32
@@ -21,7 +21,7 @@ end
 function build
     cd $pkgname-$pkgver; or return
     set -a CFLAGS -Wno-error=format-security
-    make; or return
+    make CC="$CC"; or return
 end
 
 function package

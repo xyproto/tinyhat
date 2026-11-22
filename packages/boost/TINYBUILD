@@ -17,7 +17,7 @@ set flags arch
 set -g _srcname boost_1_92_0
 
 function build
-    set -l JOBS "$(printf '%s\n' $MAKEFLAGS | sed 's/.*\(-j *[0-9]\+\).*/\1/')"
+    set -l JOBS (string match -r -- '^-j *[0-9]+$' $MAKEFLAGS)
     set -l cross
     string match -q -- '*-gcc' $CC; and set cross architecture=arm address-model=64 abi=aapcs binary-format=elf target-os=linux
     if not set -q cross[1]

@@ -1,7 +1,7 @@
 pkgbase = pvsneslib
 	pkgdesc = SNES game library with 816-tcc, wla-dx and graphics tools
 	pkgver = 0+e090f001
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/alekmaul/pvsneslib
 	arch = i686
 	arch = x32

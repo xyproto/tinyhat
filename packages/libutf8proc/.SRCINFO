@@ -1,7 +1,7 @@
 pkgbase = libutf8proc
 	pkgdesc = C library for processing UTF-8 encoded Unicode strings
 	pkgver = 2.12.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/JuliaStrings/utf8proc
 	arch = i686
 	arch = x32

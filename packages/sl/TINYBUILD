@@ -1,6 +1,6 @@
 set pkgname sl
 set pkgver 5.05
-set pkgrel 6
+set pkgrel 7
 set pkgdesc 'Steam Locomotive runs across your terminal when you type "sl" as you meant to type "ls"'
 set arch i686 x32
 # The original project: https://github.com/mtoyoda/sl
@@ -27,7 +27,7 @@ end
 
 function build
     cd "sl-$pkgver"; or return
-    make; or return
+    make CC="$CC"; or return
     gzip -9 -f sl.1; or return
 end
 

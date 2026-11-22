@@ -15,16 +15,22 @@ set source "git+https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git#tag=v
 set b2sums 634c114f928f37e11054c424d0745f8aaa236a342a62e3fae59519619f5d7a1e9f60bb026e5e8949b0b3f636772f62bb9c1743fd73eb97b2a2e3c09d872a2075
 set flags arch
 
+function _cross
+    string match -q -- '*-gcc' $CC; or return 0
+    echo CROSS_COMPILE=(string replace -r -- 'gcc$' '' $CC)
+    echo HOST=$CARCH-linux
+end
+
 function build
     cd $pkgname; or return
-    make OPT="$CFLAGS" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man SBINDIR=/usr/bin lib/libpci.a; or return
+    make (_cross) OPT="$CFLAGS" ZLIB=no SHARED=no PREFIX=/usr SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man SBINDIR=/usr/bin lib/libpci.a; or return
     cp lib/libpci.a "$srcdir/"; or return
     make clean; or return
-    make OPT="$CFLAGS" ZLIB=no SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all; or return
+    make (_cross) OPT="$CFLAGS" ZLIB=no SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man all; or return
 end
 
 function package
     cd $pkgname; or return
-    make SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="$pkgdir" install install-lib; or return
+    make (_cross) SHARED=yes PREFIX=/usr SBINDIR=/usr/bin SHAREDIR=/usr/share/hwdata MANDIR=/usr/share/man DESTDIR="$pkgdir" install install-lib; or return
     rm -rf "$pkgdir"/usr/share/hwdata; or return
 end
