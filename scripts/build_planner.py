@@ -521,15 +521,17 @@ def tool_versions(info, kind, deps, lockname):
     return sorted(out)
 
 
-def rule(key, info, deps, args, name, lockname="buildroot"):
+def rule(key, info, deps, args, name, lockname="buildroot", order=()):
     """A package build: scripts/buildpackage.sh ARGS for the package directory of INFO, after the builds DEPS
     ("KIND/BASE"). Its cache key (buildpackage.sh) is what decides whether it builds; ninja runs it when one of its
-    files, a build it depends on (when its packages changed) or its command (the tool versions too) changed."""
+    files, a build it depends on (when its packages changed) or its command (the tool versions too) changed. ORDER are
+    builds that only have to be there first (shared arch=any packages)."""
     kind = lockname.partition("-")[2] or "i686"
     deps = sorted(set(deps) - {key})
     conf = distro.tables().get(info["base"], {})
     BUILDS[key] = {"kind": key.split("/")[0], "base": info["base"], "name": name, "mode": "built", "dir": info["dir"],
-                   "deps": deps, "args": args, "env": tool_versions(info, kind, deps, lockname),
+                   "deps": deps, "order": sorted(set(order) - set(deps) - {key}), "args": args,
+                   "env": tool_versions(info, kind, deps, lockname),
                    "theme": bool(conf.get("theme")), "heavy": bool(conf.get("heavy"))}
 
 
@@ -612,7 +614,8 @@ def write_plan(groups, extra):
             continue
         files = " ".join(ninja_path(f) for f in package_files(b["dir"]) + (["distro.toml"] if b["theme"] else []))
         args = (["--env", "'" + " ".join(b["env"]) + "'"] if b["env"] else []) + b["args"]
-        out += [f"build build/pkg/{key}: pkg {files}" + (f" | {deps}" if deps else ""),
+        order = " ".join(f"build/pkg/{d}" for d in b.get("order", []))
+        out += [f"build build/pkg/{key}: pkg {files}" + (f" | {deps}" if deps else "") + (f" || {order}" if order else ""),
                 f"  name = {b['name']}",
                 "  args = " + " ".join(args).replace("$", "$$"),
                 f"  pool = {'heavy' if b['heavy'] else 'build'}", ""]
@@ -1059,7 +1062,9 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
     that they give, never a prebuilt package: for the sysroot of scripts/buildpackage.sh --cross, where shells and
     gcc's run-time libraries come along only when named (toolchain_provided), or with IMAGE for a root file system
     (scripts/mkimg-orbiton.sh), which has no toolchain and gets all of them. Packages of the package directories in
-    WITHOUT are left out, for the first build of a package in a dependency cycle."""
+    WITHOUT are left out, for the first build of a package in a dependency cycle. For a sysroot, a dependency of a
+    dependency that is not built yet is left out too: the plan builds every other one first, so it is one that a
+    dependency cycle needs only at run time (like mesa for libglvnd)."""
     infos = load()
     by_base = {i["base"]: i for i in infos}
     idx = package_index(infos, ("arch", "tinyhat"))
@@ -1078,6 +1083,8 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
         parch = "any" if "any" in info["arch"][name] else arch
         path = os.path.join(repodir, f"{name}-{ver}-{parch}.pkg.tar.zst")
         if not os.path.exists(path):
+            if not image and not named:
+                continue
             sys.exit(f"build_planner.py: {os.path.basename(path)} is not built yet (packages/{info['base']})")
         out.append(path)
         todo += [(d, False) for d in info["depends"].get(name, [])]
@@ -1128,17 +1135,17 @@ def cross_tools(by_base):
 
 
 LIBRARY_FILE = re.compile(r"usr/(include/|lib/pkgconfig/|lib/cmake/|lib/lib[^/]*\.(so|a)($|\.))")
-DATA_PC_FILE = re.compile(r"usr/share/pkgconfig/")
-PROGRAM_FILE = re.compile(r"usr/bin/.")
+DATA_PC_FILE = re.compile(r"usr/share/pkgconfig/([^/]+)\.pc$")
+PROGRAM_FILE = re.compile(r"usr/bin/([^/]+)$")
 _library_cache = {}
 
 
 def is_library(name, idx, by_base):
     """Whether package NAME is something to build against (headers, pkg-config or CMake files, libraries), from the
     files of our i686 build of it or of the x86_64 build environment's copy; build tools without those run from the
-    x86_64 build environment instead. A pkg-config file in usr/share/pkgconfig counts only without programs: data
-    (like wayland-protocols) is built against, a program's own (like scdoc's) only finds the program. Unknown packages
-    count as libraries."""
+    x86_64 build environment instead. A pkg-config file in usr/share/pkgconfig is built against (directories and data,
+    like systemd's or wayland-protocols'), unless it is named after one of the package's programs (scdoc.pc for
+    usr/bin/scdoc only finds the program). Unknown packages count as libraries."""
     if name in _library_cache:
         return _library_cache[name]
     files = None
@@ -1160,8 +1167,12 @@ def is_library(name, idx, by_base):
                 break
     if files is not None:
         files = [f.lstrip("./") for f in files]
-    _library_cache[name] = files is None or any(LIBRARY_FILE.match(f) for f in files) or (
-        any(DATA_PC_FILE.match(f) for f in files) and not any(PROGRAM_FILE.match(f) for f in files))
+    if files is None:
+        _library_cache[name] = True
+        return True
+    programs = {m.group(1) for m in map(PROGRAM_FILE.match, files) if m}
+    data_pc = {m.group(1) for m in map(DATA_PC_FILE.match, files) if m}
+    _library_cache[name] = any(LIBRARY_FILE.match(f) for f in files) or bool(data_pc - programs)
     return _library_cache[name]
 
 
@@ -1224,6 +1235,23 @@ def cross_rules(by_base, roots, arch="i686"):
     x86_names = {n: b["base"] for k, b in BUILDS.items() if b["kind"] == "x86_64" for n in by_base[b["base"]]["pkgnames"]
                  if n not in seeded}
     main, early = ("cross", "cross-boot") if arch == "i686" else (arch, f"{arch}-boot")
+    # Package directories with only arch=any packages that a native plan builds: their packages are the same files
+    native = {}
+    for nb in BUILDS.values():
+        if nb["kind"] in ("i686", "x86_64") and native.get(nb["base"]) != "x86_64":
+            native[nb["base"]] = nb["kind"]
+    shared = {b: native[b] for b in bases if b in native
+              and all("any" in by_base[b]["arch"][n] for n in by_base[b]["pkgnames"])}
+    # Waiting for such a build only matters while its files are not built yet
+    have = {b for b in shared if all(os.path.exists(os.path.join(TOP, "build", "repo",
+            f"{n}-{build_version(by_base[b], n)}-any.pkg.tar.zst")) for n in by_base[b]["pkgnames"])}
+    if arch == "i686":
+        shared = {}
+
+    def kind_of(d, b):
+        if d in shared:
+            return (shared[d], d)
+        return (early if d in boot and pos[d] < pos[b] else main, d)
     for b in order:
         info = by_base[b]
         for n in info["pkgnames"]:
@@ -1231,12 +1259,15 @@ def cross_rules(by_base, roots, arch="i686"):
     # Each build: (target, package directory, i686 packages, the stamps of the package directories that build them)
     builds = []
     for b in order:
+        if b in shared:
+            continue
         if b in boot:
             later = {d for d in graph[b] if pos[d] > pos[b]}
             first = [n for n in deps[b] if idx.pkgs[n]["base"] not in later]
-            builds.append(((early, b), b, first, [(early if d in boot else main, d)
-                                                  for d in sorted({idx.pkgs[n]["base"] for n in first})]))
-        pre = [(early if d in boot and pos[d] < pos[b] else main, d) for d in sorted(graph[b])]
+            builds.append(((early, b), b, first, [(shared[d], d) if d in shared else (early if d in boot else main, d)
+                                                  for d in sorted({idx.pkgs[n]["base"] for n in first})
+                                                  if d not in have]))
+        pre = [kind_of(d, b) for d in sorted(graph[b])]
         builds.append(((main, b), b, deps[b], pre + ([(early, b)] if b in boot else [])))
     # The package directories that are surely built before each build (its prerequisites, transitively)
     prereqs = {t: p for t, _, _, p in builds}
@@ -1245,7 +1276,7 @@ def cross_rules(by_base, roots, arch="i686"):
     def before(t):
         if t not in done:
             done[t] = set()
-            for p in prereqs[t]:
+            for p in prereqs.get(t, []):
                 done[t] |= {p[1]} | before(p)
         return done[t]
 
@@ -1267,7 +1298,8 @@ def cross_rules(by_base, roots, arch="i686"):
         kind = target[0]
         if kind == main:
             stamps.append(stamp(*target))
-        rule(stamp(*target), tool_info, host_pre + [stamp(*p) for p in pre],
+        hard = [p for p in pre if shared.get(p[1]) != p[0] or p[1] not in have]
+        rule(stamp(*target), tool_info, host_pre + [stamp(*p) for p in hard],
              args + host_args + [f"{arch}/{n}" for n in names], f"{kind}-{b}", "buildroot-x86_64")
     return stamps
 

@@ -390,6 +390,9 @@ if [ "$tc" = i686-tinyhat-linux-gnu ] || [ "$tc" = aarch64-unknown-linux-gnu ]; 
     # Owners do not matter in a sysroot, and the sandbox has only one group to give files
     bsdtar --no-xattrs --no-acls --no-fflags --no-same-owner -xpf "$f" -C "$s" $meta
   done
+  find "$s" -type l -lname "/*" | while IFS= read -r l; do
+    ln -sfn "$(realpath -m --relative-to="$(dirname "$l")" "$s$(readlink "$l")")" "$l"
+  done
   [ "$tc" != i686-tinyhat-linux-gnu ] || ln -sfn "$s/usr/lib/ld-linux.so.2" /usr/lib/ld-linux.so.2
   # The cross compiler through ccache by its full name too, as the ccache package does for the native one
   if [ -x /usr/bin/ccache ] && [ -d /usr/lib/ccache/bin ]; then
