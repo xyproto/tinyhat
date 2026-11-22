@@ -15,7 +15,10 @@
       crashed with SIGILL on CPUs with SSE2 but without SSE4.1. The fish TINYBUILD updates it for now.
 - [ ] Make `import turtle` work in Python, with a custom turtle module that uses SDL3 instead of Tcl/Tk.
 - [ ] Enable 3D acceleration by default for the OVA, and check that kitty, GLFW and similar programs still work.
-- [ ] Find out why installing and starting nethack does not work, and fix it.
+- [ ] `pacman -S nethack` installs archlinux32's 5.0.0-1, which has Arch's packaging bug (binary wants
+      /var/games/nethack/sysconf, the launcher has HACKDIR=/usr/lib/nethack; Arch fixed both in 5.0.0-2), and it is
+      built for Lua 5.4.8 while Tiny Hat has 5.4.9, so it stops with "sandbox doesn't know this Lua version". Ask
+      archlinux32 to rebuild 5.0.0-2, and decide whether Tiny Hat should ship its own nethack built for its Lua.
 
 ### Maybe
 
