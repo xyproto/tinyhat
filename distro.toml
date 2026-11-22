@@ -904,6 +904,9 @@ prebuilt = true
 source = "sources"
 arch = "i686"
 
+[libassuan]
+version = "3.0.0-1"
+
 [libclc]
 build_from_source = true
 
