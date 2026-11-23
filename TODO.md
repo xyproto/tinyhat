@@ -1,13 +1,20 @@
 ## Plans
 
+### dwl
+
 ### Yes
 
+- [ ] `win-f` can switch to "floating mode" instead of toggling fullscreen.
+- [ ] `win-t` can switch to "tiling modde".
+- [ ] If the computer has no audio, hide the volume icon and also the volume-related keys in the help background.
+- [ ] If the computer has no fans (or runs in a VM), hide the fan icon and also the fan-related keys in the help background.
 - [ ] When adjusting the volume with the scroll wheel, just show the changes in the mouseover and not in the status bar.
       Also, display the new volume percentage while the actual volume is being set in the background, because the actual
       volume change can be slow. Also when muting the sound, no notication/status message needs to appear, only mouseover.
 - [ ] In the dwl status bar, behind the workspace numbers, have a gray pill-shaped area that looks like it is a bit sunk in.
+- [ ] Provide `x86_64_v2` as an additional platform.
 - [ ] Report all the issues found in Arch Linux packages as part of creating Tiny Hat to the Arch Linux GitLab page.
-- [ ] Make it possible to install a "tinyhat-desktop" package on Arch Linux and get a similar experience on Arch.
+- [ ] Make it possible to install a `tinyhat-desktop` package on Arch Linux and get a similar experience on Arch.
 - [ ] Split out all custom Tiny Hat programs into one or more separate repos.
 - [ ] Consider using gosh instead of bash.
 - [ ] When right-clicking the desktop background, then the background image should cycle.
