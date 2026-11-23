@@ -2,6 +2,8 @@
 
 ### Yes
 
+- [ ] When right-clicking the desktop background, then the background image should cycle.
+      But, when a doodle is active, the doodle should be cleared and the doodles reset instead.
 - [ ] Move vendored files into build/ and download them as needed when building instead of including them
       into this git repository. They take up too much space, unfortunately. Or! Split up this repo into
       several git repositories.
