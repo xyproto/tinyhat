@@ -1,7 +1,7 @@
 pkgbase = tinyhat-desktop
 	pkgdesc = Tiny Hat desktop: menu entries, icons, launchers and the dwl configuration
 	pkgver = 1
-	pkgrel = 9
+	pkgrel = 10
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause

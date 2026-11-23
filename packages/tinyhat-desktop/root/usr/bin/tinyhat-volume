@@ -4,6 +4,8 @@
 # to keep the audio that is playing (DOSBox-X, for instance) from stuttering on a slow PC.
 renice -n 19 -p $$ >/dev/null 2>&1
 ionice -c 3 -p $$ >/dev/null 2>&1
+quiet=
+[ "$2" = --quiet ] && quiet=1
 run=${XDG_RUNTIME_DIR:-/tmp}
 state=${XDG_STATE_HOME:-$HOME/.local/state}/tinyhat
 exec 9>"$run/tinyhat-volume.lock"
@@ -26,8 +28,9 @@ if [ -n "$item" ]; then
 	# The status bar shows the volume from this file, without running wpctl again
 	mkdir -p "$state"
 	printf '%s\n' "$item" >"$state/volume.tmp" && mv -f "$state/volume.tmp" "$state/volume"
-	tinyhat-status --volume
+	[ -n "$quiet" ] || tinyhat-status --volume
 fi
+[ -z "$quiet" ] || exit 0
 case $item in
 M*) vol=muted ;;
 V*) vol=${item#V } ;;

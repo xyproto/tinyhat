@@ -9,6 +9,49 @@ export BROWSER EDITOR MANPAGER
 export GTK_A11Y=none WLR_XWAYLAND=/usr/bin/Xwayland DOSBOX_CONF=/etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf EGL_LOG_LEVEL=fatal XDG_SESSION_TYPE=wayland XDG_CURRENT_DESKTOP=dwl SDL_VIDEODRIVER=wayland SDL_FRAMEBUFFER_ACCELERATION=opengles2 SDL_RENDER_DRIVER=software SDL_VIDEO_WAYLAND_MODE_SCALING=aspect O_THEME=xoria SDL_GAMECONTROLLERCONFIG_FILE="$HOME/.config/tinyhat/gamecontrollerdb.txt"
 eval "$(MESA_SHADER_CACHE_DISABLE=true tinyhat-glinfo 2>/dev/null)"
 virt=$(systemd-detect-virt 2>/dev/null)
+run=${XDG_RUNTIME_DIR:-/tmp}
+mkdir -p "$run/tinyhat"
+localconf=$run/tinyhat/dwl-local.toml
+: >"$localconf"
+audio=no
+for c in /sys/class/sound/card*; do
+	[ -e "$c" ] && audio=yes
+done
+fan=no
+if [ -z "$virt" ]; then
+	for p in /sys/class/hwmon/hwmon*/pwm[0-9]; do
+		[ -w "$p" ] && fan=yes
+	done
+fi
+[ "$audio" = yes ] || cat >>"$localconf" <<'EOF'
+[[key]]
+shown = "Ctrl+Alt+Up / Down"
+
+[[key]]
+hotkey = "Ctrl+Alt+Up"
+
+[[key]]
+hotkey = "Ctrl+Alt+Down"
+
+[[key]]
+hotkey = "XF86AudioRaiseVolume"
+
+[[key]]
+hotkey = "XF86AudioLowerVolume"
+
+[[key]]
+hotkey = "XF86AudioMute"
+EOF
+[ "$fan" = yes ] || cat >>"$localconf" <<'EOF'
+[[key]]
+shown = "Ctrl+Alt+Left / Right"
+
+[[key]]
+hotkey = "Ctrl+Alt+Right"
+
+[[key]]
+hotkey = "Ctrl+Alt+Left"
+EOF
 # With 3D acceleration on, VirtualBox has an SVGA3D GPU, but the buffers rendered with it fail to reach dwl
 # (drmCloseBufferHandle: Invalid argument), so GTK 4, SDL and other OpenGL programs quit. Render in software instead, like with 3D off
 case $virt:$TINYHAT_GL_RENDERER in

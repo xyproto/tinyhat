@@ -181,6 +181,18 @@ arg = 1
 description = "Jump between windows"
 
 [[key]]
+hotkey = "Win+T"
+action = "layout"
+arg = "tile"
+description = "Tiling mode"
+
+[[key]]
+hotkey = "Win+F"
+action = "layout"
+arg = "float"
+description = "Floating mode"
+
+[[key]]
 hotkey = "Ctrl+Alt+Up"
 run = "tinyhat-volume up"
 shown = "Ctrl+Alt+Up / Down"
@@ -478,16 +490,6 @@ hotkey = "Win+Shift+C"
 action = "close"
 
 [[key]]
-hotkey = "Win+T"
-action = "layout"
-arg = "tile"
-
-[[key]]
-hotkey = "Win+E"
-action = "layout"
-arg = "float"
-
-[[key]]
 hotkey = "Win+Ctrl+Space"
 action = "layout"
 
@@ -498,10 +500,6 @@ action = "minimize"
 [[key]]
 hotkey = "Win+Shift+Space"
 action = "float"
-
-[[key]]
-hotkey = "Win+F"
-action = "fullscreen"
 
 [[key]]
 hotkey = "Win+0"

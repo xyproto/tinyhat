@@ -192,8 +192,12 @@ static void volume(char *out, size_t size, bool cached)
 	char text[256], path[512];
 	double v;
 	char *argv[] = { "wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@", nullptr };
+	glob_t cards;
 	volumefile(path, sizeof path);
 	*out = '\0';
+	if (glob("/sys/class/sound/card*", 0, nullptr, &cards))
+		return;
+	globfree(&cards);
 	if (!cached && running("pipewire") && running("wireplumber") && run(text, sizeof text, argv) &&
 		sscanf(text, "Volume: %lf", &v) == 1) {
 		snprintf(out, size, "%c %d%%", strstr(text, "[MUTED]") ? 'M' : 'V', (int)(v * 100 + 0.5));
@@ -272,6 +276,21 @@ static bool hot(void)
 	return yes;
 }
 
+static bool hasfans(void)
+{
+	glob_t g;
+	bool yes = false;
+	if (glob("/sys/class/hwmon/hwmon*/pwm[0-9]", 0, nullptr, &g))
+		return false;
+	for (size_t i = 0; i < g.gl_pathc && !yes; i++) {
+		char path[520];
+		snprintf(path, sizeof path, "%.511s_enable", g.gl_pathv[i]);
+		yes = !access(g.gl_pathv[i], W_OK) && !access(path, W_OK);
+	}
+	globfree(&g);
+	return yes;
+}
+
 static void add(char *line, size_t size, const char *item)
 {
 	size_t len = strlen(line);
@@ -309,7 +328,7 @@ static void status(char *line, size_t size, const char *rundir, bool cachedvolum
 		}
 		globfree(&g);
 	}
-	if (running("tinyhat-fand")) {
+	if (running("tinyhat-fand") && hasfans()) {
 		auto f = fopen("/var/lib/tinyhat-fan/mode", "r");
 		*text = '\0';
 		if (f) {

@@ -1,6 +1,6 @@
 set pkgname dwl
 set pkgver 0.9
-set pkgrel 21
+set pkgrel 22
 set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
 set arch i686 x32
 set url https://codeberg.org/dwl/dwl
@@ -10,7 +10,7 @@ set makedepends_build elfkickers
 # Built without XWayland (config.mk leaves XWAYLAND and XLIBS empty), so libxcb and xcb-util-wm are dropped
 set depends wlroots0.20 fcft libpng libinput libxkbcommon pixman wayland
 set makedepends wayland-protocols tllist tomlc17
-set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems fan taskbuttons doodle tray rulesize
+set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems fan taskbuttons doodle tray rulesize tinyhat
 set source "dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz" \
     $_patches.patch \
     config.h
@@ -59,9 +59,10 @@ set sha256sums 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d 
     5fb162612fe6f1c8ad997458cef0583f8d21ba944af9c5901e936f17311fd306 \
     18712af91444da3e0483d42a02b5497a023b374d4cd80e65cb82a4386312d534 \
     49620b48f9df83907f999de9f43a72ea2227937ab8b374cc123089a5e1c817ac \
-    3cc5a996782f894d97c582473d9c78bb08bc393fc7dce0e78946dcdbbf9e42d5 \
+    b25bfe4f518d50e185cdf9091a11e7a9ae6f98b11e555d56264721bd4ec4eb54 \
     90ae3ed424a36f19213430a7fffadd400c1860188d1faf8ee9c0bc411ff7e127 \
     caae3ce24ac2c8a01aed9e9fb3b4242cc2c051ef2f6f179979db07561426fafa \
+    bec3d31f2ba87b977447bb6b39f25530a6dcfd4ffb5e2b0b54943ea33a783760 \
     b9f60722d750777458c7135e580c7e85e7349572c4017418ea94fa3702372ef7
 
 function prepare
