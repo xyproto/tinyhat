@@ -2,6 +2,7 @@
 
 ### Yes
 
+- [ ] In the dwl status bar, behind the workspace numbers, have a gray pill-shaped area that looks like it is a bit sunk in.
 - [ ] Report all the issues found in Arch Linux packages as part of creating Tiny Hat to the Arch Linux GitLab page.
 - [ ] Make it possible to install a "tinyhat-desktop" package on Arch Linux and get a similar experience on Arch.
 - [ ] Split out all custom Tiny Hat programs into one or more separate repos.
