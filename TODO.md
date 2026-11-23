@@ -2,6 +2,9 @@
 
 ### Yes
 
+- [ ] Report all the issues found in Arch Linux packages as part of creating Tiny Hat to the Arch Linux GitLab page.
+- [ ] Make it possible to install a "tinyhat-desktop" package on Arch Linux and get a similar experience on Arch.
+- [ ] Split out all custom Tiny Hat programs into one or more separate repos.
 - [ ] Consider using gosh instead of bash.
 - [ ] When right-clicking the desktop background, then the background image should cycle.
       But, when a doodle is active, the doodle should be cleared and the doodles reset instead.
