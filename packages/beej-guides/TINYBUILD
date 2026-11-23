@@ -1,6 +1,6 @@
 set pkgname beej-guides
 set pkgver 20261016
-set pkgrel 1
+set pkgrel 2
 set pkgdesc "Beej's Guide to C Programming and Beej's Guide to the C Library, as HTML"
 set arch any
 set url https://beej.us/guide/
@@ -13,6 +13,7 @@ set sha256sums f70e1bde325170d358b126b7966676e689dcad52ada03b129f8b2133c24128db 
 function package
     install -d $pkgdir/usr/share/tinyhat/c-guide; or return
     cp -r bgc bgclr $pkgdir/usr/share/tinyhat/c-guide/; or return
+    install -m644 $startdir/index.html $pkgdir/usr/share/tinyhat/c-guide/index.html; or return
     find $pkgdir/usr/share/tinyhat/c-guide -type d -exec chmod 755 '{}' +; or return
     find $pkgdir/usr/share/tinyhat/c-guide -type f -exec chmod 644 '{}' +; or return
 end

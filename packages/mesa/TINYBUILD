@@ -120,6 +120,20 @@ function prepare
     cp -a ../venus-protocol subprojects/venus-protocol-1.1.3; or return
 end
 
+function _native_clc
+    mkdir -p "$srcdir/native-pc"; or return
+    sed "s|^prefix=.*|prefix=$SYSROOT/usr|; s|^datarootdir=.*|datarootdir=$SYSROOT/usr/share|; s|^datadir=.*|datadir=$SYSROOT/usr/share|" \
+        "$SYSROOT/usr/share/pkgconfig/libclc.pc" >"$srcdir/native-pc/libclc.pc"; or return
+    env -u CMAKE_TOOLCHAIN_FILE -u CONFIG_SITE -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_FDO_SYSROOT_RULES \
+        -u AR -u RANLIB -u STRIP -u LD -u NM -u OBJCOPY -u OBJDUMP -u READELF \
+        PKG_CONFIG_PATH="$srcdir/native-pc" CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD CFLAGS=-O2 CXXFLAGS=-O2 LDFLAGS= \
+        /usr/bin/meson setup "$srcdir/native" "$srcdir/mesa-$_pkgver" --buildtype=release -D gallium-drivers= -D vulkan-drivers= \
+        -D platforms= -D glx=disabled -D egl=disabled -D gbm=disabled -D gles1=disabled -D gles2=disabled -D opengl=false \
+        -D llvm=enabled -D shared-llvm=enabled -D mesa-clc=enabled -D install-mesa-clc=true -D precomp-compiler=enabled -D install-precomp-compiler=true -D valgrind=disabled \
+        -D libunwind=disabled -D zstd=disabled -D xmlconfig=disabled -D gallium-va=disabled -D video-codecs=; or return
+    env -u CMAKE_TOOLCHAIN_FILE ninja -C "$srcdir/native" src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2; or return
+end
+
 switch $CARCH
     case x32 x86_64
         function build
@@ -132,6 +146,11 @@ switch $CARCH
         function build
             set -l meson_options --optimization 2 -D amdgpu-virtio=true -D android-libbacktrace=disabled -D b_ndebug=true -D freedreno-kmds=msm,virtio -D gallium-drivers=v3d,vc4,freedreno,etnaviv,lima,panfrost,asahi,tegra,nouveau,virgl,llvmpipe,softpipe,rocket,ethosu -D gallium-extra-hud=true -D gallium-va=disabled -D gallium-mediafoundation=disabled -D gallium-rusticl=false -D gles1=disabled -D platforms=wayland -D glx=disabled -D xlib-lease=disabled -D html-docs=disabled -D intel-rt=disabled -D intel-virtio-experimental=true -D libunwind=disabled -D microsoft-clc=disabled -D valgrind=disabled -D video-codecs=all -D vulkan-drivers=amd,intel,intel_hasvk,swrast,freedreno,panfrost,virtio,broadcom,imagination,asahi,gfxstream -D vulkan-layers=device-select,intel-nullhw,overlay,screenshot,vram-report-limit -D vulkan-loader-rpath= -D vulkan-manifest-per-architecture=false
             set -gx MESON_PACKAGE_CACHE_DIR "$srcdir"
+            if string match -q -- '*-gcc' $CC
+                _native_clc; or return
+                set -a meson_options -D mesa-clc=system -D precomp-compiler=system
+                set -fx PATH $srcdir/native/src/compiler/clc $srcdir/native/src/compiler/spirv $PATH
+            end
             arch-meson mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return
         end

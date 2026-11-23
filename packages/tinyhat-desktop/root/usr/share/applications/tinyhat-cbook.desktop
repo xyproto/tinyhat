@@ -1,8 +1,8 @@
 [Desktop Entry]
 Type=Application
-Name=C programming book
+Name=C programming books
 Icon=accessories-dictionary
-Comment=Beej's Guide to C Programming
-Exec=tinysurf file:///usr/share/tinyhat/c-guide/bgc/index.html
+Comment=Beej's Guide to C Programming and Beej's Guide to the C Library
+Exec=tinysurf file:///usr/share/tinyhat/c-guide/index.html
 Terminal=false
 Categories=Development;

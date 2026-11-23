@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Ski Jump International
+Icon=applications-games
+Comment=Ski jumping by Ville Könönen (DOS game, in DOSBox-X)
+Exec=tinyhat-dosgame SKIJUMP SJ3.EXE
+Terminal=false
+Categories=Game;SportsGame;

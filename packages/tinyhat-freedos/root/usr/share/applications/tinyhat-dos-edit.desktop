@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=DOS Text Editor
+Icon=accessories-text-editor
+Comment=FreeDOS EDIT, the DOS text editor (in DOSBox-X)
+Exec=tinyhat-dosbox -c EDIT -c exit
+Terminal=false
+Categories=Utility;TextEditor;

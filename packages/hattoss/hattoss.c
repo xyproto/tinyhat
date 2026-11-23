@@ -37,6 +37,7 @@ static int score[2];
 static double wind;
 static int cpu;
 static int sunhappy;
+static int soundon = 1;
 static int sockx, socky;
 
 #define SUNX 160
@@ -190,7 +191,7 @@ static void adlibinit(void)
 
 static void tone(int fnum, int block, int feedback, int decay)
 {
-	if (!adlib)
+	if (!adlib || !soundon)
 		return;
 	adlibw(0xb0, 0);
 	adlibw(0x20, 0x01);
@@ -209,6 +210,8 @@ static void tone(int fnum, int block, int feedback, int decay)
 static void sfx(int kind)
 {
 	int i;
+	if (!soundon)
+		return;
 	if (adlib) {
 		switch (kind) {
 		case 0:
@@ -424,6 +427,8 @@ static int solid(int c)
 static void beep(int freq)
 {
 	unsigned div = (unsigned)(1193182L / freq);
+	if (!soundon)
+		return;
 	outp(0x43, 0xb6);
 	outp(0x42, div & 0xff);
 	outp(0x42, div >> 8);
@@ -447,8 +452,8 @@ static void drawsun(void)
 	for (k = 0; k < 8; k++)
 		for (i = 11; i <= 14; i++)
 			pset(SUNX + rays[k][0] * (rays[k][0] && rays[k][1] ? i * 3 / 4 : i), SUNY + rays[k][1] * (rays[k][0] && rays[k][1] ? i * 3 / 4 : i), SUN);
-	pset(SUNX - 3, SUNY - 2, SUNFACE);
-	pset(SUNX + 3, SUNY - 2, SUNFACE);
+	rect(SUNX - 4, SUNY - 3, 2, 2, SUNFACE);
+	rect(SUNX + 3, SUNY - 3, 2, 2, SUNFACE);
 	if (sunhappy) {
 		for (i = -4; i <= 4; i++)
 			pset(SUNX + i, SUNY + 4 - (i * i) / 8, SUNFACE);
@@ -493,6 +498,20 @@ static void showscore(void)
 	text(15, 24, s, TEXT);
 }
 
+static void togglesound(void)
+{
+	soundon = !soundon;
+	quiet();
+	nobeep();
+}
+
+static int sunhit(int x, int y)
+{
+	int cx = SUNX < x - 3 ? x - 3 : SUNX > x + 2 ? x + 2 : SUNX;
+	int cy = SUNY < y - 3 ? y - 3 : SUNY > y + 2 ? y + 2 : SUNY;
+	return (cx - SUNX) * (cx - SUNX) + (cy - SUNY) * (cy - SUNY) <= 81;
+}
+
 static int readnum(int col, int row, const char *label, int max)
 {
 	char buf[4];
@@ -505,6 +524,10 @@ static int readnum(int col, int row, const char *label, int max)
 			return -1;
 		if (k == 0) {
 			getch();
+			continue;
+		}
+		if (k == 's' || k == 'S') {
+			togglesound();
 			continue;
 		}
 		if (k == 13 && n > 0)
@@ -599,7 +622,7 @@ static int throwhat(int p, double angle, double speed)
 			result = 2;
 			break;
 		}
-		if (!sunhappy && (ix - SUNX) * (ix - SUNX) + (iy - SUNY) * (iy - SUNY) < 144) {
+		if (!sunhappy && sunhit(ix, iy)) {
 			sunhappy = 1;
 			drawsun();
 			sfx(3);
@@ -706,23 +729,42 @@ static int round_(int first)
 	}
 }
 
+static void soundline(void)
+{
+	cleartext(13, 16, 14);
+	text(13, 16, soundon ? "Sound: on" : "Sound: off", TEXT);
+}
+
 static int title(void)
 {
 	int k;
 	rect(0, 0, W, H, SKY);
 	city();
-	rect(32, 24, 256, 128, SKY);
-	text(12, 4, "H A T   T O S S", HATRED);
-	drawbig(hat, 4, 145, 48, 5);
-	text(8, 10, "Two gorillas, one city,", TEXT);
-	text(8, 11, "and a lot of tiny hats.", TEXT);
-	text(6, 13, "1    Play against the computer", TEXT);
-	text(6, 14, "2    Two players", TEXT);
-	text(6, 16, "Esc  Quit", TEXT);
+	sunhappy = 1;
+	drawsun();
+	rect(36, 46, 248, 132, HATBAND);
+	rect(38, 48, 244, 128, HATRED);
+	rect(40, 50, 240, 124, SKY);
+	text(12, 8, "H A T   T O S S", HATRED);
+	drawsprite(ape, 14, 104, 86);
+	drawbig(hat, 4, 145, 82, 5);
+	drawsprite(apeup, 14, 203, 86);
+	text(9, 13, "1", HATRED);
+	text(13, 13, "Play the computer", TEXT);
+	text(9, 14, "2", HATRED);
+	text(13, 14, "Two players", TEXT);
+	text(9, 16, "S", HATRED);
+	soundline();
+	text(9, 18, "Esc", HATRED);
+	text(13, 18, "Quit", TEXT);
 	for (;;) {
 		k = getch();
 		if (k == '1' || k == '2')
 			return k - '0';
+		if (k == 's' || k == 'S') {
+			togglesound();
+			soundline();
+		}
 		if (k == 27)
 			return 0;
 	}

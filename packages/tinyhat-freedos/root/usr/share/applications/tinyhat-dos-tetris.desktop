@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Tetris
+Icon=applications-games
+Comment=Vitetris, falling blocks (DOS game, in DOSBox-X)
+Exec=tinyhat-dosgame VITETRIS TETRIS.EXE
+Terminal=false
+Categories=Game;BlocksGame;

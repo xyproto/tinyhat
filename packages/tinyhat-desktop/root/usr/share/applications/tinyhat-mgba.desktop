@@ -2,7 +2,7 @@
 Type=Application
 Name=Game Boy Advance emulator (mGBA)
 Icon=applications-games
-Comment=Play Game Boy Advance and Game Boy games from ~/ROMs/gba or a USB stick
+Comment=Play Game Boy Advance and Game Boy games from ~/roms/gba or a USB stick
 Exec=tinyhat-emulate gba
 Terminal=false
 Categories=Game;Emulator;

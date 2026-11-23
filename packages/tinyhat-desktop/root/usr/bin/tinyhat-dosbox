@@ -13,8 +13,8 @@ if [ -f "${1-}" ] && windows_exe "$1"; then
 	tinyhat-notice "This is a Windows program. Install Wine from the menu to run it." 6
 	exit 1
 fi
-mkdir -p "$HOME/DOS"
-dos=$(readlink -f "$HOME/DOS")
+mkdir -p "$HOME/roms/DOS"
+dos=$(readlink -f "$HOME/roms/DOS")
 prog=
 if [ -f "${1-}" ]; then
 	p=$(readlink -f "$1")
@@ -49,16 +49,16 @@ if [ -f "$tp/TURBO.EXE" ]; then
 	[ -f "$tp/TPC.CFG" ] || printf '/UT:\\\r\n/IT:\\\r\n/OT:\\\r\n' >"$tp/TPC.CFG"
 	ae "mount t \"$tp\"" "set PATH=Z:\;Y:\;T:\\"
 fi
-drivec="the DOS folder in your home directory"
+drivec="the roms/DOS folder in your home directory"
 drived=
 drivee=
 if [ -n "$harddisk" ] && [ -n "$(find "$harddisk" -maxdepth 1 \( -iname command.com -o -iname autoexec.bat \) -print -quit)" ]; then
-	ae "mount c \"$harddisk\"" "mount e \"$HOME/DOS\""
+	ae "mount c \"$harddisk\"" "mount e \"$HOME/roms/DOS\""
 	home=e
 	drivee=$drivec
 	drivec="the DOS hard disk of this PC"
 else
-	ae "mount c \"$HOME/DOS\""
+	ae "mount c \"$HOME/roms/DOS\""
 	home=c
 	if [ -n "$harddisk" ]; then
 		ae "mount e \"$harddisk\""

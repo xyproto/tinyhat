@@ -29,9 +29,11 @@ if [ "$plat" = linux ]; then
 fi
 
 case $plat in
-dos) dir=$HOME/DOS/$(printf '%s' "$title" | tr -cd 'A-Za-z0-9' | cut -c1-8 | tr 'a-z' 'A-Z') ;;
+dos) dir=$HOME/roms/DOS/$(printf '%s' "$title" | tr -cd 'A-Za-z0-9' | cut -c1-8 | tr 'a-z' 'A-Z') ;;
 scummvm) dir=${XDG_DATA_HOME:-$HOME/.local/share}/tinyhat/scummvm/$run ;;
-*) dir=$HOME/ROMs/$plat ;;
+nes) dir=$HOME/roms/NES ;;
+snes) dir=$HOME/roms/SNES ;;
+*) dir=$HOME/roms/$plat ;;
 esac
 mkdir -p "$dir" || exit 1
 target=$dir/$run

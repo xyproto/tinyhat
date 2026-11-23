@@ -1,7 +1,7 @@
 pkgbase = beej-guides
 	pkgdesc = Beej's Guide to C Programming and Beej's Guide to the C Library, as HTML
 	pkgver = 20261016
-	pkgrel = 1
+	pkgrel = 2
 	url = https://beej.us/guide/
 	arch = any
 	license = CC-BY-NC-ND-3.0

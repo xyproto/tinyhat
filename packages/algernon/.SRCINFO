@@ -1,7 +1,7 @@
 pkgbase = algernon
 	pkgdesc = Web server with Lua, Markdown, QUIC, Redis and PostgreSQL support
-	pkgver = 1.17.13.r5.g12ea2d9
-	pkgrel = 2
+	pkgver = 1.18.0
+	pkgrel = 1
 	url = https://algernon.roboticoverlords.org/
 	arch = i686
 	license = BSD-3-Clause
@@ -18,7 +18,7 @@ pkgbase = algernon
 	options = docs
 	options = sstrip
 	options = network
-	source = git+https://github.com/xyproto/algernon#commit=12ea2d92720eb73ec2e70db2d403017a5f4b1f68
-	b2sums = a3c18f4c17f9e0667d2c0f1b995da2bc74f48b2f64ebf017705efb5f18159c113b153c59cd8463c750c9d1e13bf5fa4c5a20f4e147395976ae1a4992d148f385
+	source = git+https://github.com/xyproto/algernon#commit=7f467ab8ae6fce70615aa8ee83f27f8e46759573
+	b2sums = e4ecccf23759d97cddc1e5a126c24b02118eec6dead989386439fa346c0057489952f851a644a4876bbb6c1d36db271bec012344a2eacde90f67e252186cc3e5
 
 pkgname = algernon

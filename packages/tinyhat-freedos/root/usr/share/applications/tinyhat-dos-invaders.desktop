@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Invaders
+Icon=applications-games
+Comment=Space Invaders clone (DOS game, in DOSBox-X)
+Exec=tinyhat-dosgame PSRINVAD INVADERS.COM
+Terminal=false
+Categories=Game;ArcadeGame;

@@ -2,7 +2,7 @@
 Type=Application
 Name=NES emulator (Nestopia)
 Icon=applications-games
-Comment=Play NES games from ~/ROMs/nes or a USB stick. Z, X, Enter, Right Shift and arrows, F5 saves, F9 loads
+Comment=Play NES games from ~/roms/NES or a USB stick. Z, X, Enter, Right Shift and arrows, F5 saves, F9 loads
 Exec=tinyhat-emulate nes
 Terminal=false
 Categories=Game;Emulator;

@@ -1,6 +1,6 @@
 set pkgname tinyhat-skel
 set pkgver 1
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Tiny Hat starter projects for new users'
 set arch any
 set url https://github.com/xyproto/tinyhat
@@ -9,6 +9,7 @@ set backup etc/skel/.config/fish/conf.d/tinyhat.fish etc/skel/.config/mc/ini etc
 
 function package
     cp -a $startdir/root/. $pkgdir/; or return
+    mkdir -p $pkgdir/etc/skel/.cache/fish/generated_completions; or return
     find $pkgdir -type d -exec chmod 755 '{}' +; or return
     find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
     find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return

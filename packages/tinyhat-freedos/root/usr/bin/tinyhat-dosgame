@@ -1,0 +1,10 @@
+#!/bin/sh
+dir=$1
+shift
+dest=$HOME/roms/DOS/$dir
+if [ ! -d "$dest" ]; then
+	mkdir -p "$HOME/roms/DOS"
+	cp -r "/usr/share/tinyhat/dos/GAMES/$dir" "$dest"
+	chmod -R u+w "$dest"
+fi
+exec tinyhat-dosbox -c "cd \\$dir" -c "$*" -c exit

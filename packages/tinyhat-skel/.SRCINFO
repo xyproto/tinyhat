@@ -1,7 +1,7 @@
 pkgbase = tinyhat-skel
 	pkgdesc = Tiny Hat starter projects for new users
 	pkgver = 1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause

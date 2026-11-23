@@ -1,31 +1,35 @@
 set pkgname tinyhat-freedos
 set pkgver 1.4
-set pkgrel 4
+set pkgrel 5
 set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu'
 set arch any
 set url https://www.freedos.org/
-set license GPL-2.0-or-later GPL-2.0-only BSD-2-Clause BSD-3-Clause MIT LicenseRef-CWSDPMI LicenseRef-PSRINVAD
+set license GPL-2.0-or-later GPL-2.0-only BSD-2-Clause BSD-3-Clause MIT GPL-3.0-only LicenseRef-CWSDPMI LicenseRef-PSRINVAD LicenseRef-C-Dogs LicenseRef-Sopwith
 set makedepends mtools hattoss
 set _games https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/games
+set _dosgames https://dosgames.com/files
 set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/distributions/$pkgver/FD14-FloppyEdition.zip \
-    blkdrop-$pkgver.zip::$_games/blkdrop.zip \
     vitetris-$pkgver.zip::$_games/vitetris.zip \
     sudoku86-$pkgver.zip::$_games/sudoku86.zip \
     psrinvad-$pkgver.zip::$_games/psrinvad.zip \
     ctmouse-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/ctmouse.zip \
     edit-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/edit.zip \
     debug-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/debug.zip \
-    nasm-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/devel/nasm.zip
-set noextract FD14-FloppyEdition.zip blkdrop-$pkgver.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip debug-$pkgver.zip nasm-$pkgver.zip
+    nasm-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/devel/nasm.zip \
+    https://wingkong.net/sopwith2b/files/sw.zip $_dosgames/dpacman.zip $_dosgames/cdogs106.zip $_dosgames/sj313.zip
+set noextract FD14-FloppyEdition.zip vitetris-$pkgver.zip sudoku86-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip debug-$pkgver.zip nasm-$pkgver.zip sw.zip dpacman.zip cdogs106.zip sj313.zip
 set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a \
-    af4670b67866db841292a8c52ba61334ea7745262e921f13ff814152d8387fcc \
     53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843 \
     12c13caecd098748f5a8ace6667bbcacc333da209a70f26e49504fd11cb21eb3 \
     ae391d32165e83625da8fbed772d1571269399e62116da30a55ee0207a922818 \
     fd47069fb3d9559604dcaef34ca4f3705a7f2f2cff3e4b205e361b79f10a8200 \
     6fc7bb68283f22387d0d5f310bf0cfc40af37324ad6bea7a574b57287bbb9841 \
     edece56e84709d23c745733bcd1fbd076b8a6ee2aea2e2bd814f9dd1ca9ca479 \
-    f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe
+    f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe \
+    c14a3c268171f45f51dfa219f9abaa5387f56dad8da9a23b10f4f48b7cb89f2a \
+    a1d48a73ec21c267d032e5f5cf67b761d3147f7a4492fba371304d4f4126e2a7 \
+    de6c5e025b5c03b475e55c2ec6ab88b493517a4d4e8c649e2e7dd1919b7b50cc \
+    9ebad4b03fa663ff21ee1a507e6d65406b8fc01c826ce93a0257684002f2fa53
 
 function _dosfile -a path
     string join \r\n -- $argv[2..] '' >$path
@@ -42,7 +46,7 @@ function build
         if string match -q 'if exist %DOSDIR%\\BIN\\FDBANNER.COM*' -- $line
             continue
         else if string match -q 'if exist SETUP.BAT CALL SETUP.BAT BOOT*' -- $line
-            printf '%s\n' "CTMOUSE.EXE >NUL$cr" "call MENU.BAT$cr" "goto Done$cr"
+            printf '%s\n' "CTMOUSE.EXE >NUL$cr" "alias exit=call MENU.BAT$cr" "call MENU.BAT$cr" "goto Done$cr"
         else
             printf '%s\n' $line
         end
@@ -52,9 +56,15 @@ function build
         'SHELL=\FREEDOS\BIN\COMMAND.COM \FREEDOS\BIN /E:2048 /P=\FDAUTO.BAT'
     mcopy -o -i $img floppy/FDCONFIG.SYS ::/FDCONFIG.SYS; or return
     mcopy -o -i $img floppy/FDAUTO.BAT ::/FDAUTO.BAT; or return
-    bsdtar -xf blkdrop-$pkgver.zip -C games GAMES/BLKDROP/BLKDROP.EXE GAMES/BLKDROP/README.TXT BATLINKS/BLKDROP.BAT SOURCE/BLKDROP/SOURCES.ZIP; or return
-    bsdtar -xf games/SOURCE/BLKDROP/SOURCES.ZIP -C games/GAMES/BLKDROP LICENSE; or return
-    rm -r games/SOURCE
+    mkdir -p games/BATLINKS games/GAMES/SOPWITH games/GAMES/DPACMAN games/GAMES/CDOGS games/GAMES/SKIJUMP; or return
+    bsdtar -xf sw.zip -C games/GAMES/SOPWITH; or return
+    bsdtar -xf dpacman.zip -C games/GAMES/DPACMAN --exclude dpacman.bat --exclude dpacman.ico; or return
+    bsdtar -xf cdogs106.zip -C games/GAMES/CDOGS; or return
+    bsdtar -xf sj313.zip -C games/GAMES/SKIJUMP; or return
+    _dosfile games/BATLINKS/SOPWITH.BAT '@echo off' 'cd %DOSDRV%\GAMES\SOPWITH' 'SW.EXE %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/DPACMAN.BAT '@echo off' 'cd %DOSDRV%\GAMES\DPACMAN' 'LOADFIX PACMAN.EXE %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/CDOGS.BAT '@echo off' 'cd %DOSDRV%\GAMES\CDOGS' 'CDOGS.EXE %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/SKIJUMP.BAT '@echo off' 'cd %DOSDRV%\GAMES\SKIJUMP' 'SJ3.EXE %1 %2 %3' 'cd \\'
     bsdtar -xf vitetris-$pkgver.zip -C games GAMES/VITETRIS/TETRIS.EXE GAMES/VITETRIS/CWSDPMI.EXE GAMES/VITETRIS/CWSDPMI.DOC GAMES/VITETRIS/LICENCE.TXT GAMES/VITETRIS/README.TXT GAMES/VITETRIS/VITETRIS.CFG; or return
     bsdtar -xf sudoku86-$pkgver.zip -C games GAMES/SUDOKU86/SUDOKU86.EXE GAMES/SUDOKU86/SUDOKU86.DAT GAMES/SUDOKU86/SUDOKU86.LEV GAMES/SUDOKU86/README.TXT; or return
     _dosfile games/BATLINKS/TETRIS.BAT '@echo off' 'cd %DOSDRV%\GAMES\VITETRIS' 'CWSDPMI.EXE -p -s- >NUL' 'vcls /fGray /bBlack' 'TETRIS.EXE %1 %2 %3' 'CWSDPMI.EXE -u >NUL' 'cd \\'
@@ -68,23 +78,30 @@ function build
     bsdtar -xf nasm-$pkgver.zip -C games DEVEL/NASM/nasm.exe DEVEL/NASM/ndisasm.exe DEVEL/NASM/cwsdpmi.exe DEVEL/NASM/LICENSE; or return
     _dosfile games/BATLINKS/MENU.BAT '@echo off' ':Menu' 'vcursor hide' 'vcls /fDarkGray /bBlack /c0xfa' \
         'vframe /x22 /y1 /w36 /h3 /fBlack /bCyan Single Shadow' "vecho /n /fBlack /bCyan \"           FreeDOS $pkgver\"" \
-        'vgotoxy /x21 /y22' 'vecho /fDarkGray /bBlack "Use the arrow keys and Enter to choose"' \
-        'vframe /x18 /y5 /w44 /h14 /fLightCyan /bBlue Double Shadow' \
-        'vecho /fWhite "  Choose a game"' 'vline hidden' \
-        'vecho /fLightGreen "  Hat Toss"' 'vecho /fLightGreen "  Invaders"' 'vecho /fLightCyan "  Block Drop"' \
-        'vecho /fLightCyan "  Tetris"' 'vecho /fLightCyan "  Sudoku"' 'vecho /fYellow "  Text editor"' \
-        'vecho /fYellow "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  DOS Prompt"' 'vecho /fYellow "  Restart the computer"' \
+        'vgotoxy /x21 /y24' 'vecho /fDarkGray /bBlack "Use the arrow keys and Enter to choose"' \
+        'vframe /x18 /y4 /w44 /h19 /fLightCyan /bBlue Double Shadow' \
+        'vecho /fWhite "  Games"' 'vline hidden' \
+        'vecho /fLightGreen "  Hat Toss"' 'vecho /fLightGreen "  Invaders"' 'vecho /fLightCyan "  Tetris"' \
+        'vecho /fLightCyan "  Sudoku"' 'vecho /fLightCyan "  Sopwith"' 'vecho /fLightCyan "  Double Pacman"' \
+        'vecho /fLightCyan "  C-Dogs"' 'vecho /fLightCyan "  Ski Jump International"' \
+        'vline hidden' 'vecho /fWhite "  System"' 'vline hidden' \
+        'vecho /fYellow "  Text editor"' 'vecho /fYellow "  DOS Prompt"' 'vecho /fYellow "  Restart the computer"' \
+        'vecho /fYellow "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  Shutdown the computer"' \
         'vchoice /fBlack /bCyan /d1' \
-        'if errorlevel 100 goto Prompt' 'if errorlevel 9 goto Restart' 'if errorlevel 8 goto Prompt' \
-        'if errorlevel 7 goto Setup' 'if errorlevel 6 goto Edit' \
-        'if errorlevel 5 set GAME=SUDOKU' 'if errorlevel 5 goto Run' 'if errorlevel 4 set GAME=TETRIS' 'if errorlevel 4 goto Run' \
-        'if errorlevel 3 set GAME=BLKDROP' 'if errorlevel 3 goto Run' 'if errorlevel 2 set GAME=INVADERS' 'if errorlevel 2 goto Run' \
+        'if errorlevel 100 goto Prompt' 'if errorlevel 14 goto Shutdown' 'if errorlevel 13 goto Setup' \
+        'if errorlevel 12 goto Restart' 'if errorlevel 11 goto Prompt' 'if errorlevel 10 goto Edit' \
+        'if errorlevel 9 goto Menu' \
+        'if errorlevel 8 set GAME=SKIJUMP' 'if errorlevel 8 goto Run' 'if errorlevel 7 set GAME=CDOGS' 'if errorlevel 7 goto Run' \
+        'if errorlevel 6 set GAME=DPACMAN' 'if errorlevel 6 goto Run' 'if errorlevel 5 set GAME=SOPWITH' 'if errorlevel 5 goto Run' \
+        'if errorlevel 4 set GAME=SUDOKU' 'if errorlevel 4 goto Run' 'if errorlevel 3 set GAME=TETRIS' 'if errorlevel 3 goto Run' \
+        'if errorlevel 2 set GAME=INVADERS' 'if errorlevel 2 goto Run' \
         'set GAME=HATTOSS' \
         ':Run' 'vcls /fGray /bBlack' 'vcursor small' 'call %GAME%.BAT' 'set GAME=' 'goto Menu' \
         ':Edit' 'vcls /fGray /bBlack' 'vcursor small' 'EDIT' 'goto Menu' \
         ':Setup' 'vcls /fGray /bBlack' 'vcursor small' 'cd \\' 'if exist %DOSDRV%\SETUP.BAT call %DOSDRV%\SETUP.BAT' 'goto Menu' \
         ':Restart' 'fdapm warmboot' \
-        ':Prompt' 'vcls /fGray /bBlack' 'vcursor small' 'echo Type MENU to return to the menu.' \
+        ':Shutdown' 'fdapm poweroff' \
+        ':Prompt' 'vcls /fGray /bBlack' 'vcursor small' 'echo Type MENU or EXIT to return to the menu.' \
         'echo Programming tools: EDIT (text editor), NASM (assembler) and DEBUG.'
     _dosfile games/BATLINKS/INVADERS.BAT '@echo off' 'cd %DOSDRV%\GAMES\PSRINVAD' 'INVADERS.COM %1 %2 %3' 'cd \\'
     bsdtar -xf ctmouse-$pkgver.zip -C games BIN/CTMOUSE.EXE; or return
@@ -95,7 +112,7 @@ function build
     dd if=$img of=boot.bin bs=512 count=1 status=none; or return
     set -l disk floppy/freedos.img
     rm -f $disk
-    mformat -C -i $disk -t 80 -h 2 -s 63 -v FREEDOS -N 54484154 -B boot.bin ::; or return
+    mformat -C -i $disk -t 200 -h 2 -s 63 -v FREEDOS -N 54484154 -B boot.bin ::; or return
     mcopy -i $disk files/KERNEL.SYS ::; or return
     for f in files/*
         test (path basename -- $f) = KERNEL.SYS; and continue
@@ -112,7 +129,16 @@ end
 
 function package
     install -Dm644 floppy/freedos.img $pkgdir/usr/share/tinyhat/freedos.img; or return
-    install -Dm644 games/GAMES/BLKDROP/LICENSE $pkgdir/usr/share/licenses/$pkgname/BLKDROP; or return
+    install -Dm644 games/GAMES/DPACMAN/gpl-2.0.txt $pkgdir/usr/share/licenses/$pkgname/DPACMAN; or return
+    install -Dm644 games/GAMES/CDOGS/README.TXT $pkgdir/usr/share/licenses/$pkgname/CDOGS; or return
+    install -Dm644 games/GAMES/SKIJUMP/CREDITS.TXT $pkgdir/usr/share/licenses/$pkgname/SKIJUMP; or return
+    set -l dos $pkgdir/usr/share/tinyhat/dos
+    install -d $dos/GAMES; or return
+    for g in PSRINVAD VITETRIS SUDOKU86 SOPWITH DPACMAN CDOGS SKIJUMP
+        cp -r games/GAMES/$g $dos/GAMES/; or return
+    end
+    install -Dm644 -t $dos games/BIN/EDIT.EXE games/BIN/EDIT.HLP; or return
+    cp -a $startdir/root/. $pkgdir/; or return
     install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $pkgdir/usr/share/licenses/$pkgname/VITETRIS; or return
     install -Dm644 games/GAMES/SUDOKU86/README.TXT $pkgdir/usr/share/licenses/$pkgname/SUDOKU86; or return
     install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI; or return

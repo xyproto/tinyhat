@@ -2,7 +2,7 @@
 Type=Application
 Name=ZSNES 2
 Icon=applications-games
-Comment=Play Super Nintendo games from ~/ROMs/snes or a USB stick
+Comment=Play Super Nintendo games from ~/roms/SNES or a USB stick
 Exec=tinyhat-emulate snes
 Terminal=false
 Categories=Game;Emulator;

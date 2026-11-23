@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Sopwith
+Icon=applications-games
+Comment=Fly a Sopwith Camel biplane: The Author's Edition by David L. Clark (DOS game, in DOSBox-X)
+Exec=tinyhat-dosgame SOPWITH SW.EXE
+Terminal=false
+Categories=Game;ArcadeGame;

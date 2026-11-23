@@ -1,4 +1,5 @@
 [Unit]
+ConditionKernelCommandLine=!tinyhat.fish
 Description=Play the Tiny Hat shutdown sound
 DefaultDependencies=no
 After=getty@tty1.service user@1000.service

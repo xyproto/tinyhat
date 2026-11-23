@@ -1,7 +1,7 @@
 title = "Tiny Hat"
 help_footer = """
-USB sticks and CDs show up in /media and as D: in DOSBox-X. DOS games can be placed in ~/DOS,
-which is C: in DOSBox-X. A hard disk in this PC with DOS on it becomes C: and ~/DOS becomes E:."""
+USB sticks and CDs show up in /media and as D: in DOSBox-X. DOS games can be placed in ~/roms/DOS,
+which is C: in DOSBox-X. A hard disk in this PC with DOS on it becomes C: and ~/roms/DOS becomes E:."""
 
 [windows]
 layout = "float"

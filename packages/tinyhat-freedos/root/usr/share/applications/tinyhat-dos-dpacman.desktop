@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Double Pacman
+Icon=applications-games
+Comment=Pac-Man for one or two players at the same time (DOS game, in DOSBox-X)
+Exec=tinyhat-dosgame DPACMAN LOADFIX PACMAN.EXE
+Terminal=false
+Categories=Game;ArcadeGame;

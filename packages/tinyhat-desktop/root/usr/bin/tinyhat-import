@@ -35,13 +35,13 @@ for f in "$@"; do
 	d64 | d71 | d81 | g64 | prg | t64 | tap | crt | p00) sys=c64 ;;
 	md | gen | bin | 68k | sgd) sys=genesis ;;
 	cue)
-		dest=$HOME/DOS/$name
+		dest=$HOME/roms/DOS/$name
 		mkdir -p "$dest"
 		cp -f "$f" "$dest/"
 		awk '{ sub(/\r$/, "") } sub(/^[ \t]*[Ff][Ii][Ll][Ee][ \t]+/, "") { if (sub(/^"/, "")) sub(/".*/, ""); else sub(/[ \t].*/, ""); print }' "$f" | while IFS= read -r track; do
 			[ -f "${f%/*}/$track" ] && cp -f "${f%/*}/$track" "$dest/"
 		done
-		notice "Imported $name to ~/DOS/$name"
+		notice "Imported $name to ~/roms/DOS/$name"
 		continue
 		;;
 	exe)
@@ -63,7 +63,7 @@ for f in "$@"; do
 		choice=$(printf 'ScummVM game\nDOS game\n' | fuzzel --dmenu --prompt "Import $base as ❯ ") || continue
 		case $choice in
 		"ScummVM game") dest=$HOME/Games/$name ;;
-		*) dest=$HOME/DOS/$name ;;
+		*) dest=$HOME/roms/DOS/$name ;;
 		esac
 		mkdir -p "$dest"
 		ok=1
@@ -86,7 +86,8 @@ for f in "$@"; do
 		continue
 		;;
 	esac
-	mkdir -p "$HOME/ROMs/$sys"
-	cp -f "$f" "$HOME/ROMs/$sys/"
-	notice "Imported $base to ~/ROMs/$sys"
+	case $sys in nes) sys=NES ;; snes) sys=SNES ;; esac
+	mkdir -p "$HOME/roms/$sys"
+	cp -f "$f" "$HOME/roms/$sys/"
+	notice "Imported $base to ~/roms/$sys"
 done
