@@ -2,6 +2,9 @@
 
 ### Yes
 
+- [ ] Move vendored files into build/ and download them as needed when building instead of including them
+      into this git repository. They take up too much space, unfortunately. Or! Split up this repo into
+      several git repositories.
 - [ ] Reduce archlinux32 to a one-time bootstrap, then remove it and the `build_planner.py` heuristics it needs.
 - [ ] Let Arch and archlinux32 packages install on top of Tiny Hat without replacing its packages.
       makep now writes versioned library provides (like `libcrypt.so=2-32`), but they only take effect when the
