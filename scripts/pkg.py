@@ -189,7 +189,20 @@ class Index(NamedTuple):
         return out
 
 
-def load_db(dbdir=DBDIR, repos=None):
+def ensure_db(dbdir=DBDIR, repos=None):
+    """Download the package databases of dbdir that are missing, or all of them when REFRESH is set."""
+    repos = repos or REPOS
+    os.makedirs(dbdir, exist_ok=True)
+    if os.environ.get("REFRESH") or not all(os.path.exists(os.path.join(dbdir, f"{r}.db")) for r in repos):
+        for repo in repos:
+            download_any([f"{m}/{repo}/{repo}.db" for m in MIRRORS], os.path.join(dbdir, f"{repo}.db"))
+
+
+def load_db(dbdir=None, repos=None):
+    """The index of the package databases of dbdir, downloaded when it is the i686 one (the default)."""
+    if dbdir is None:
+        dbdir = DBDIR
+        ensure_db(dbdir, repos)
     idx = Index.new()
     for repo in repos or REPOS:
         path = os.path.join(dbdir, f"{repo}.db")
@@ -474,12 +487,7 @@ def arch_db(arch):
 
 
 def cmd_lock(name, *extra):
-    os.makedirs(DBDIR, exist_ok=True)
-    if os.environ.get("REFRESH") or not all(
-        os.path.exists(os.path.join(DBDIR, f"{r}.db")) for r in REPOS
-    ):
-        for repo in REPOS:
-            download(f"{MIRROR}/{repo}/{repo}.db", os.path.join(DBDIR, f"{repo}.db"))
+    ensure_db()
     sel = resolve(name, extra)
     pins = distro.pins()
     for p in sel:
