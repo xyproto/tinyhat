@@ -2,6 +2,9 @@
 
 ### Yes
 
+- [ ] When adjusting the volume with the scroll wheel, just show the changes in the mouseover and not in the status bar.
+      Also, display the new volume percentage while the actual volume is being set in the background, because the actual
+      volume change can be slow. Also when muting the sound, no notication/status message needs to appear, only mouseover.
 - [ ] In the dwl status bar, behind the workspace numbers, have a gray pill-shaped area that looks like it is a bit sunk in.
 - [ ] Report all the issues found in Arch Linux packages as part of creating Tiny Hat to the Arch Linux GitLab page.
 - [ ] Make it possible to install a "tinyhat-desktop" package on Arch Linux and get a similar experience on Arch.
