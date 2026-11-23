@@ -20,6 +20,7 @@ os.umask(0o022)
 
 MIRROR = os.environ.get("MIRROR", "https://mirror.archlinux32.org/i686")
 ARCHIVE = os.environ.get("ARCHIVE", "https://archive.archlinux32.org/packages")
+RELEASE = os.environ.get("VENDOR_RELEASE", "https://github.com/xyproto/tinyhat/releases/download/vendor")
 MIRRORS = os.environ.get("MIRRORS", "https://archlinux32.andreasbaumann.cc/i686 "
                          f"https://mirror.math.princeton.edu/pub/archlinux32/i686 {MIRROR}").split()
 REPOS = ["core", "extra"]
@@ -649,6 +650,8 @@ def fetch_pkg(p, pkgdir, arch=None):
         # Arch Linux mirrors only keep the newest version, the archive keeps them all
         if "archive" in ARCH_SOURCES[arch]:
             urls.append(f"{ARCH_SOURCES[arch]['archive']}/{p['name'][0]}/{p['name']}/{fn}")
+        else:
+            urls.append(f"{RELEASE}/{p['sha256']}")
     else:
         urls = [f"{ARCHIVE}/{p['name'][0]}/{p['name']}/{fn}"]
         if on_mirrors(p["filename"]):
@@ -699,11 +702,25 @@ def cmd_prunable(pkgdir):
             print(name)
 
 
+def build_locks():
+    """The (filename, sha256) pairs pinned by the lock files in build/."""
+    builddir = os.path.join(TOP, "build")
+    out = set()
+    for name in sorted(os.listdir(builddir)) if os.path.isdir(builddir) else []:
+        if name.endswith(".lock"):
+            for line in open(os.path.join(builddir, name)):
+                f = line.split()
+                if len(f) == 5 and re.fullmatch(r"[0-9a-f]{64}", f[4]):
+                    out.add((f[3], f[4]))
+    return out
+
+
 def prune(arch):
-    """Remove the vendored packages of arch that distro.lock no longer pins."""
+    """Remove the vendored packages of arch that neither distro.lock nor build/*.lock pins."""
     vendordir = ARCH_SOURCES[arch]["vendordir"]
     keep = {p["file"] for sect in distro.lock().values() if isinstance(sect, dict)
             for p in sect.values() if isinstance(p, dict) and "file" in p}
+    keep |= {f for f, _ in build_locks()}
     removed = 0
     for dirpath, dirnames, filenames in os.walk(vendordir):
         dirnames.sort()
@@ -716,6 +733,17 @@ def prune(arch):
             os.rmdir(dirpath)
     print(f"pkg.py: prune {arch}: {removed} unpinned packages removed from {os.path.relpath(vendordir, TOP)}",
           file=sys.stderr)
+
+
+def cmd_release_files():
+    """Print the local copy of each package that distro.lock or build/*.lock pins, to upload as release assets."""
+    shas = {p["sha256"] for sect in distro.lock().values() if isinstance(sect, dict)
+            for p in sect.values() if isinstance(p, dict) and "sha256" in p}
+    shas |= {sha for _, sha in build_locks()}
+    for sha in sorted(shas):
+        path = os.path.join(TOP, ".git", "lfs", "objects", sha[:2], sha[2:4], sha)
+        if os.path.exists(path):
+            print(path)
 
 
 def cmd_fetch(lockfile, pkgdir, arch=None):
@@ -895,7 +923,7 @@ def extract_lib32(path, root, libs_only, excludes):
 def main():
     if len(sys.argv) < 2:
         die("usage: pkg.py lock SECTION [LIST...] | local SECTION LOCK REPODIR [ARCH] | repofiles REPODIR ARCH NAME... | keyfiles REPODIR ARCH NAME... | repofile REPODIR ARCH NAME | "
-            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | addpkg LOCK REPODIR ARCH NAME | keep LOCK DIR ROOT SECTION | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR")
+            "fetch LOCK DIR [ARCH] | prebuilt REPODIR LOCK NAME... | archrepo ARCH REPODIR LOCK [uefi|rpi4] | addpkg LOCK REPODIR ARCH NAME | keep LOCK DIR ROOT SECTION | extract LOCK DIR ROOT [SECTION] | source DIR [NAME...] | prunable PKGDIR | release-files")
     cmd, args = sys.argv[1], sys.argv[2:]
     if cmd == "lock":
         cmd_lock(*args)
@@ -919,6 +947,8 @@ def main():
         cmd_source(*args)
     elif cmd == "prunable":
         cmd_prunable(*args)
+    elif cmd == "release-files":
+        cmd_release_files()
     elif cmd == "keep":
         cmd_keep(*args)
     elif cmd == "extract":

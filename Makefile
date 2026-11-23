@@ -3,7 +3,7 @@ VERSION := 1.0.8
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like build/tinyhat32.img are phony there too
-.PHONY: help all img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages cross orbiton x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container FORCE $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages cross orbiton x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check vendor-release autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container FORCE $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -276,6 +276,9 @@ lock-check:
 	@$(MAKE) -s lock || { cp $(B)/distro.lock.before distro.lock; exit 1; }
 	@if cmp -s distro.lock $(B)/distro.lock.before; then echo "distro.lock is up to date"; \
 	else cp $(B)/distro.lock.before distro.lock; echo "distro.lock is stale, run make lock" >&2; exit 1; fi
+
+vendor-release:
+	scripts/vendorrelease.sh
 
 $(B)/theme.toml $(B)/image.toml: $(B)/%.toml: $(B)/.%.toml.stamp ;
 

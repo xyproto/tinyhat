@@ -42,7 +42,7 @@ Its boot menu also has MemTest86+ and a FreeDOS 1.4 live floppy with a couple of
 
 For `make` to be able to create `build/tinyhat32.img`, these Arch Linux packages are needed:
 
-    base-devel bc bubblewrap cpio git git-lfs libelf lua python-markdown python-numpy qemu-user-static qemu-user-static-binfmt squashfs-tools vorbis-tools xfsprogs
+    base-devel bc bubblewrap cpio git libelf lua python-markdown python-numpy qemu-user-static qemu-user-static-binfmt squashfs-tools vorbis-tools xfsprogs
 
 For `make vdi`, this package is also needed:
 
