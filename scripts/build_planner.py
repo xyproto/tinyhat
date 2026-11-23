@@ -995,6 +995,7 @@ def cmd_lock_arch(arch, check=False):
                      f"and distro.toml, run \"make lock-{arch}\"")
         return
     distro.write_lock(**sections)
+    pkg.prune(arch)
     print(f"build_planner.py: {section}: {len(built)} package directories to build: " + " ".join(built), file=sys.stderr)
     print(f"build_planner.py: buildroot-{arch}: {len(buildroot)} prebuilt packages locked", file=sys.stderr)
 

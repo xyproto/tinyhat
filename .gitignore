@@ -29,6 +29,9 @@
 /build/
 /vendor/archlinux/
 /vendor/archlinux32/
+/vendor/archlinuxarm/
+/vendor/db/
+/vendor/pkg-aarch64/
 /vendor/pkg-x86_64/
 /vendor/pkg/
 /vendor/soundfont/
@@ -36,5 +39,6 @@
 \#*#
 __pycache__/
 include.txt
+/packages/tinyhat-play/*.tar.gz
 tinyhat-aarch64.tar.gz
 venv/

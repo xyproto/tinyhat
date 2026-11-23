@@ -691,6 +691,25 @@ def cmd_prunable(pkgdir):
             print(name)
 
 
+def prune(arch):
+    """Remove the vendored packages of arch that distro.lock no longer pins."""
+    vendordir = ARCH_SOURCES[arch]["vendordir"]
+    keep = {p["file"] for sect in distro.lock().values() if isinstance(sect, dict)
+            for p in sect.values() if isinstance(p, dict) and "file" in p}
+    removed = 0
+    for dirpath, dirnames, filenames in os.walk(vendordir):
+        dirnames.sort()
+        for name in sorted(filenames):
+            if name in keep or not re.fullmatch(r".+\.pkg\.tar\.[a-z0-9]+", name):
+                continue
+            os.unlink(os.path.join(dirpath, name))
+            removed += 1
+        if dirpath != vendordir and not os.listdir(dirpath):
+            os.rmdir(dirpath)
+    print(f"pkg.py: prune {arch}: {removed} unpinned packages removed from {os.path.relpath(vendordir, TOP)}",
+          file=sys.stderr)
+
+
 def cmd_fetch(lockfile, pkgdir, arch=None):
     os.makedirs(pkgdir, exist_ok=True)
     for p in read_lock(lockfile):
