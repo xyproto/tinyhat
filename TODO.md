@@ -1,9 +1,6 @@
 ## Plans
 
-### dwl
-
-### Yes
-
+- [ ] No need to create `~/DOS` now that we have `~/roms/DOS`.
 - [ ] `win-f` can switch to "floating mode" instead of toggling fullscreen.
 - [ ] `win-t` can switch to "tiling modde".
 - [ ] If the computer has no audio, hide the volume icon and also the volume-related keys in the help background.
