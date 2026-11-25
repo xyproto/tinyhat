@@ -3,7 +3,7 @@ VERSION := 1.0.8
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like build/tinyhat32.img are phony there too
-.PHONY: help all img iso ova qemu i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages cross orbiton x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check vendor-release autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container FORCE $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all img iso ova qemu up sumcheck i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages cross orbiton x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check vendor-release autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container FORCE $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -308,6 +308,13 @@ latest:
 srcinfo:
 	python3 scripts/srcinfo.py $(if $(ALL),packages/*/)
 
+# After editing TINYBUILDs: pkgrel and _commit for new versions, checksums, .SRCINFO and the locks (no building)
+up:
+	MAKE="$(MAKE)" scripts/up.sh
+
+sumcheck:
+	fish scripts/sumcheck.fish
+
 patchcheck: $(B)/.buildroot
 	scripts/patchcheck.sh
 
@@ -364,11 +371,10 @@ $(B)/.fetched-buildroot-aarch64: $(B)/buildroot-aarch64.lock
 	python3 scripts/pkg.py fetch $< vendor/pkg-aarch64 aarch64
 	@touch $@
 
-$(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64 scripts/postinstall.sh
+$(B)/.buildroot-aarch64: $(B)/.fetched-buildroot-aarch64
 	chmod -R u+rwX $(B)/buildroot-aarch64 2>/dev/null || true
 	rm -rf $(B)/buildroot-aarch64
 	python3 scripts/pkg.py extract $(B)/buildroot-aarch64.lock vendor/pkg-aarch64 $(B)/buildroot-aarch64
-	scripts/postinstall.sh $(B)/buildroot-aarch64 $(B)/buildroot-aarch64.lock vendor/pkg-aarch64
 	@touch $@
 
 
