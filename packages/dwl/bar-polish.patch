@@ -1,6 +1,29 @@
+--- a/drwl.h
++++ b/drwl.h
+@@ -208,7 +208,8 @@
+ 		clr = convert_color(drwl->scheme[invert ? ColBg : ColFg]);
+ 		fg_pix = pixman_image_create_solid_fill(&clr);
+ 
+-		drwl_rect(drwl, x, y, w, h, 1, !invert);
++		if (invert || drwl->scheme[ColBg] & 0xFF)
++			drwl_rect(drwl, x, y, w, h, 1, !invert);
+ 
+ 		x += lpad;
+ 		w -= lpad;
 --- a/dwl.c
 +++ b/dwl.c
-@@ -1360,17 +1360,20 @@
+@@ -262,8 +262,9 @@
+ 	int nmaster;
+ 	char ltsymbol[16];
+ 	Client *tasks[32];
+-	int taskx[33], ntasks, taskhover;
++	int taskx[33], ntasks, taskhover, titlex0, titlex1;
+ 	int volx0, volx1;
++	int clockx0, clockx1;
+ 	int fanx0, fanx1;
+ 	int launchx[9], nlaunch;
+ 	int trayx[17], ntray;
+@@ -1358,17 +1359,20 @@
  static void
  confload(int applywall)
  {
@@ -25,7 +48,7 @@
  		const char *home = getenv("HOME");
  		size_t hl = home ? strlen(home) : 0;
  		conffree(&c);
-@@ -1386,7 +1389,7 @@
+@@ -1384,7 +1388,7 @@
  	}
  	old = conf;
  	conf = c;
@@ -34,7 +57,7 @@
  	confsettings(&old);
  	conffree(&old);
  	for (int i = 0; i < conf.n; i++)
-@@ -1666,6 +1669,31 @@
+@@ -1662,6 +1666,104 @@
  	}
  }
  
@@ -56,40 +79,151 @@
 +	}
 +}
 +
++static struct wl_event_source *voltimer;
++static int volwant = -1, volwantmuted, volarmed;
++static long long volchanged, volapplied;
++
++static long long
++nowms(void)
++{
++	struct timespec ts;
++	clock_gettime(CLOCK_MONOTONIC, &ts);
++	return (long long)ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
++}
++
++static void
++volumeshow(int pct, int muted)
++{
++	char *item = stext, *next, *end, rest[sizeof stext];
++	for (;;) {
++		if ((*item == 'V' || *item == 'M') && item[1] == ' ') {
++			for (end = item + 2; *end >= '0' && *end <= '9'; end++);
++			snprintf(rest, sizeof rest, "%s", end);
++			snprintf(item, sizeof stext - (size_t)(item - stext), "%c %d%s", muted ? 'M' : 'V', pct, rest);
++			return;
++		}
++		if (!(next = strchr(item, '\t')))
++			return;
++		item = next + 1;
++	}
++}
++
++static void
++volumekeep(void)
++{
++	int muted, pct;
++	if (volwant < 0)
++		return;
++	pct = volumeinfo(&muted);
++	if ((pct == volwant && muted == volwantmuted && !volarmed) || nowms() - volchanged > 4000)
++		volwant = -1;
++	else
++		volumeshow(volwant, volwantmuted);
++}
++
++static int
++volumeapply(void *data)
++{
++	const char *runtime = getenv("XDG_RUNTIME_DIR");
++	char path[PATH_MAX];
++	FILE *f;
++	volarmed = 0;
++	volapplied = nowms();
++	if (volwant < 0)
++		return 0;
++	snprintf(path, sizeof path, "%s/tinyhat-volume.want", runtime && *runtime ? runtime : "/tmp");
++	if ((f = fopen(path, "w"))) {
++		fprintf(f, "%d %d\n", volwant, volwantmuted);
++		fclose(f);
++		spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "apply", "--quiet", NULL }});
++	}
++	return 0;
++}
++
 +static void
 +volumehint(int pct, int muted)
 +{
 +	snprintf(voltip, sizeof voltip, "Volume %d%%%s", pct, muted ? " (muted)" : "");
++	volwant = pct;
++	volwantmuted = muted;
++	volchanged = nowms();
++	volumeshow(pct, muted);
++	drawbars();
 +	tipupdate();
++	if (!voltimer)
++		voltimer = wl_event_loop_add_timer(event_loop, volumeapply, NULL);
++	if (voltimer && !volarmed) {
++		long long wait = 200 - (volchanged - volapplied);
++		volarmed = 1;
++		wl_event_source_timer_update(voltimer, (int)MAX(1, MIN(200, wait)));
++	}
 +}
 +
  void
  axisnotify(struct wl_listener *listener, void *data)
  {
-@@ -1693,8 +1721,10 @@
+@@ -1689,9 +1791,9 @@
  		if (cx >= selmon->volx0 && cx < selmon->volx1) {
  			acc += event->delta;
  			if (fabs(acc) >= 10) {
 -				Arg arg = {.v = (const char *[]){ "tinyhat-volume", acc < 0 ? "up" : "down", NULL }};
 +				int muted, pct = volumeinfo(&muted), step = acc < 0 ? 5 : -5;
-+				Arg arg = {.v = (const char *[]){ "tinyhat-volume", step > 0 ? "up" : "down", "--quiet", NULL }};
  				acc = 0;
+-				spawn(&arg);
 +				volumehint(MAX(0, MIN(100, pct + step)), muted);
- 				spawn(&arg);
  			}
  			return;
-@@ -1859,7 +1889,9 @@
+ 		}
+@@ -1855,18 +1957,33 @@
  						return;
  					}
  				if (event->button == BTN_LEFT && selmon->volx1 > selmon->volx0 && cx >= selmon->volx0 && cx < selmon->volx1) {
 -					spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "mute", NULL }});
 +					int muted, pct = volumeinfo(&muted);
 +					volumehint(pct, !muted);
-+					spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "mute", "--quiet", NULL }});
++					return;
++				}
++				if (event->button == BTN_RIGHT && selmon->volx1 > selmon->volx0 && cx >= selmon->volx0 && cx < selmon->volx1) {
++					volumehint(5, 0);
  					return;
  				}
  				if (event->button == BTN_LEFT && selmon->fanx1 > selmon->fanx0 && cx >= selmon->fanx0 && cx < selmon->fanx1) {
-@@ -3646,6 +3678,10 @@
+ 					spawn(&(Arg){.v = (const char *[]){ "tinyhat-fan", "next", NULL }});
+ 					return;
+ 				}
++				if (event->button == BTN_LEFT && selmon->clockx1 > selmon->clockx0 && cx >= selmon->clockx0 && cx < selmon->clockx1) {
++					spawn(&(Arg){.v = (const char *[]){ "tinyhat-status", "--clock", NULL }});
++					return;
++				}
++				if (event->button == BTN_RIGHT && selmon->clockx1 > selmon->clockx0 && cx >= selmon->clockx0 && cx < selmon->clockx1) {
++					spawn(&(Arg){.v = (const char *[]){ "tinyhat-timezone", NULL }});
++					return;
++				}
+ 			} else {
+ 				click = ClkTitle;
+ 				for (i = 0; i < (unsigned int)selmon->ntasks; i++)
+ 					if (cx >= selmon->taskx[i] && cx < selmon->taskx[i + 1])
+ 						arg.v = selmon->tasks[i];
++				if (!arg.v && cx >= selmon->titlex0 && cx < selmon->titlex1)
++					arg.v = focustop(selmon);
+ 			}
+ 		}
+ 
+@@ -3173,9 +3290,13 @@
+ 			else if (*text)
+ 				x += space;
+ 		}
++		if (draw && !kind && !next)
++			m->clockx0 = x;
+ 		if (*text)
+ 			x = draw ? drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, text), m->b.height, 0, text, 0)
+ 				: x + (int)drwl_font_getwidth(m->drw, text);
++		if (draw && !kind && !next)
++			m->clockx1 = x;
+ 		if (next)
+ 			next[-1] = '\t';
+ 	}
+@@ -3624,6 +3745,10 @@
  				ix1 = m->tipx[i][1];
  			}
  	}
@@ -100,7 +234,7 @@
  	if (text && tipnode && !strcmp(text, tipshown))
  		return;
  	if (tipnode) {
-@@ -3910,6 +3946,34 @@
+@@ -3888,6 +4013,34 @@
  	return stextw(m, stext) + 2;
  }
  
@@ -135,7 +269,16 @@
  void
  drawbar(Monitor *m)
  {
-@@ -3949,6 +4013,16 @@
+@@ -3907,7 +4060,7 @@
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
+ 		drwl_setscheme(m->drw, colors[SchemeStatus]);
+ 		tw = statusw(m);
+-		m->volx0 = m->volx1 = m->fanx0 = m->fanx1 = m->nlaunch = m->ntray = 0;
++		m->volx0 = m->volx1 = m->fanx0 = m->fanx1 = m->clockx0 = m->clockx1 = m->nlaunch = m->ntray = 0;
+ 		drwl_rect(m->drw, m->b.width - tw, 0, tw, m->b.height, 1, 1);
+ 		drawstext(m, m->b.width - tw, stext);
+ 	}
+@@ -3927,6 +4080,16 @@
  	drwl_setscheme(m->drw, colors[SchemeNorm]);
  	drwl_rect(m->drw, x, 0, m->lrpad / 2, m->b.height, 1, 1);
  	x += m->lrpad / 2;
@@ -152,7 +295,7 @@
  	for (i = 0; i < LENGTH(tags); i++) {
  		w = TEXTW(m, tags[i]);
  		if (m->tagset[m->seltags] & 1 << i && !(urg & 1 << i)) {
-@@ -3956,7 +4030,8 @@
+@@ -3934,7 +4097,8 @@
  			x += w;
  			continue;
  		}
@@ -162,13 +305,78 @@
  		drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, tags[i], urg & 1 << i);
  		if (occ & 1 << i)
  			drwl_rect(m->drw, x + boxs, boxs, boxw, boxw,
-@@ -4093,15 +4168,13 @@
+@@ -3999,50 +4163,50 @@
+ {
+ 	Client *t, *sel = focustop(m);
+ 	int n = 0, bw, total = 0, bws[32], gap = 3, pad = m->b.height / 8 + 1, bh = m->b.height - 2 * pad - 1;
+-	int line = MAX(2, m->b.height / 12);
+ 
+ 	drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++	m->titlex0 = m->titlex1 = 0;
++	if (sel && sel->isminimized)
++		sel = NULL;
+ 	wl_list_for_each_reverse(t, &clients, link)
+-		if (t->mon == m && (t->tags & m->tagset[m->seltags]) && n < (int)LENGTH(m->tasks))
++		if (t != sel && t->mon == m && (t->tags & m->tagset[m->seltags]) && n < (int)LENGTH(m->tasks))
+ 			m->tasks[n++] = t;
+ 	m->ntasks = n;
+-	if (!n)
+-		return;
++	if (sel)
++		w -= m->b.height * 3;
+ 	for (int i = 0; i < n; i++)
+ 		total += bws[i] = MIN(m->b.height * 9, MAX(m->b.height * 2, TEXTW(m, client_get_title(m->tasks[i])) + gap));
+-	if (total > w - gap)
++	if (n && total > w - gap)
+ 		for (int i = 0; i < n; i++)
+ 			bws[i] = MIN((w - gap) / n, m->b.height * 9);
++	if (sel)
++		w += m->b.height * 3;
+ 	m->taskx[0] = x + gap;
+ 	for (int i = 0; i < n; i++) {
+-		int bx, active;
++		int bx;
+ 		t = m->tasks[i];
+-		active = t == sel && !t->isminimized;
+ 		bw = bws[i];
+ 		bx = m->taskx[i];
+ 		m->taskx[i + 1] = bx + bw;
+-		drwl_setscheme(m->drw, colors[active ? SchemeTaskSel
+-			: m->taskhover == i + 1 ? SchemeTaskHover
++		drwl_setscheme(m->drw, colors[m->taskhover == i + 1 ? SchemeTaskHover
+ 			: t->isminimized ? SchemeTaskMin : SchemeTask]);
+ 		drwl_text(m->drw, bx, pad, bw - gap, bh, m->lrpad / 2, client_get_title(t), 0);
+-		if (active) {
+-			drwl_setscheme(m->drw, colors[SchemeSel]);
+-			drwl_rect(m->drw, bx, pad + bh - line, bw - gap, line, 1, 1);
+-		}
+ 		drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 		drwl_rect(m->drw, bx, pad, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx + bw - gap - 1, pad, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx, pad + bh - 1, 1, 1, 1, 1);
+ 		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
+ 	}
+-	if (sel && !sel->isminimized && x + w - m->taskx[n] > m->b.height * 3) {
++	if (sel && x + w - m->taskx[n] > m->b.height * 3) {
+ 		const char *title = client_get_title(sel);
+ 		int aw = x + w - m->taskx[n] - 2 * gap, tw = drwl_font_getwidth(m->drw, title);
+ 		int r = bh / 3, margin = MAX(r, m->lrpad);
+ 		int pw = MIN(tw + 2 * margin, MIN(aw, m->b.height * 20));
+ 		int px = m->taskx[n] + gap + (aw - pw) / 2;
+ 		drawpill(m, px, pad, pw, m->b.height - 1 - pad, r);
++		m->titlex0 = px;
++		m->titlex1 = px + pw;
+ 		drwl_setscheme(m->drw, colors[SchemeSel]);
+ 		drwl_text(m->drw, px + margin, pad, pw - 2 * margin, bh, tw < pw - 2 * margin ? (pw - 2 * margin - tw) / 2 : 0, title, 0);
+ 	}
+@@ -4071,15 +4235,13 @@
  void
  drawroundtag(Monitor *m, int x, int w, const char *text)
  {
 -	uint32_t norm = colors[SchemeNorm][ColBg], sel = colors[SchemeSel][ColBg];
 -	int h = m->b.height - 1, pad = MAX(2, m->b.height / 8), d = h - 2 * pad;
-+	uint32_t sel = colors[SchemeSel][ColBg];
++	uint32_t sel = tagselcolor;
 +	int h = m->b.height - 1, pad = MAX(2, m->b.height / 8), pd = h - 2 * pad, d = pd - 4;
  	int tw = drwl_font_getwidth(m->drw, text), fh = m->drw->font->height;
  	int sw = MIN(w, MAX(d, tw + d / 2)), sx = x + (w - sw) / 2;
@@ -180,7 +388,7 @@
  	for (int j = 0; j < d; j++)
  		for (int i = 0; i < sw; i++) {
  			int cov = 0;
-@@ -4113,11 +4186,12 @@
+@@ -4091,11 +4253,12 @@
  				}
  			if (!cov)
  				continue;
@@ -191,20 +399,29 @@
 +				&(pixman_rectangle16_t){ sx + i, pad + 2 + j, 1, 1 });
  		}
 -	drwl_setscheme(m->drw, colors[SchemeSel]);
-+	selscheme[ColFg] = colors[SchemeSel][ColFg]; selscheme[ColBg] = 0; selscheme[ColBorder] = colors[SchemeSel][ColBorder];
++	selscheme[ColFg] = tagselfg; selscheme[ColBg] = 0; selscheme[ColBorder] = colors[SchemeSel][ColBorder];
 +	drwl_setscheme(m->drw, selscheme);
  	drwl_text(m->drw, x + (w - tw) / 2, (m->b.height - fh) / 2, tw, fh, 0, text, 0);
  }
  
---- a/drwl.h
-+++ b/drwl.h
-@@ -208,7 +208,8 @@
- 		clr = convert_color(drwl->scheme[invert ? ColBg : ColFg]);
- 		fg_pix = pixman_image_create_solid_fill(&clr);
+@@ -4369,6 +4532,8 @@
+ 	selmon = t->mon;
+ 	arrange(t->mon);
+ 	focusclient(t, 1);
++	if (!t->isfullscreen && t->isfloating)
++		wlr_scene_node_raise_to_top(&t->scene->node);
+ 	drawbars();
+ }
  
--		drwl_rect(drwl, x, y, w, h, 1, !invert);
-+		if (invert || drwl->scheme[ColBg] & 0xFF)
-+			drwl_rect(drwl, x, y, w, h, 1, !invert);
- 
- 		x += lpad;
- 		w -= lpad;
+@@ -5949,8 +6114,10 @@
+ 		else if (!strcmp(line, "togglelayout")) {
+ 			if (selmon)
+ 				togglelayout(NULL);
+-		} else
++		} else {
+ 			snprintf(stext, sizeof(stext), "%.255s", line);
++			volumekeep();
++		}
+ 	}
+ 	if (wallchanged)
+ 		wallupdate();

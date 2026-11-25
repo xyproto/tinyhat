@@ -1,0 +1,318 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -180,8 +180,9 @@
+ 	unsigned int bw;
+ 	uint32_t tags;
+ 	int isfloating, isurgent, isfullscreen, isminimized, desktophidden, wasfullscreen;
++	int rulesize;
+ 	struct wlr_box presnap;
+-	int issnapped;
++	int issnapped, ismaximized, maxfloating, isrulefloat, nofocus;
+ } Client;
+ 
+ typedef struct {
+@@ -354,6 +355,7 @@
+ static void closemon(Monitor *m);
+ static void commitlayersurfacenotify(struct wl_listener *listener, void *data);
+ static void commitnotify(struct wl_listener *listener, void *data);
++static void fsoffset(Client *c);
+ static void commitpopup(struct wl_listener *listener, void *data);
+ static void createdecoration(struct wl_listener *listener, void *data);
+ static void createidleinhibitor(struct wl_listener *listener, void *data);
+@@ -397,6 +399,9 @@
+ static void showdesktop(const Arg *arg);
+ static void taskclick(const Arg *arg);
+ static void taskclose(const Arg *arg);
++static void taskmaximize(const Arg *arg);
++static void setmaximized(Client *c, int maximized);
++static void client_set_maximized(Client *c, int maximized);
+ static void taskhover(void);
+ static void tipupdate(void);
+ static void doodledraw(void);
+@@ -597,6 +602,7 @@
+ #ifdef XWAYLAND
+ static void activatex11(struct wl_listener *listener, void *data);
+ static void associatex11(struct wl_listener *listener, void *data);
++static void commitx11(struct wl_listener *listener, void *data);
+ static void configurex11(struct wl_listener *listener, void *data);
+ static void createnotifyx11(struct wl_listener *listener, void *data);
+ static void dissociatex11(struct wl_listener *listener, void *data);
+@@ -633,6 +639,8 @@
+ 	char *appid, *title;
+ 	uint32_t tags;
+ 	int isfloating;
++	int size;
++	int nofocus;
+ } ConfRule;
+ 
+ typedef struct {
+@@ -1037,7 +1045,7 @@
+ 	confint(&c->dwt, r.toptab, "touchpad.disable_while_typing");
+ 	list = toml_get(r.toptab, "rule");
+ 	for (int i = 0; list.type == TOML_ARRAY && i < list.u.arr.size; i++) {
+-		toml_datum_t t = list.u.arr.elem[i], fl, dk;
++		toml_datum_t t = list.u.arr.elem[i], fl, dk, sz, fo;
+ 		ConfRule *nr;
+ 		if (t.type != TOML_TABLE)
+ 			continue;
+@@ -1047,8 +1055,12 @@
+ 		nr->title = tomlstr(t, "title");
+ 		fl = toml_get(t, "float");
+ 		dk = toml_get(t, "desktop");
++		sz = toml_get(t, "size");
++		fo = toml_get(t, "focus");
++		nr->nofocus = fo.type == TOML_BOOLEAN && !fo.u.boolean;
+ 		nr->isfloating = fl.type == TOML_BOOLEAN ? fl.u.boolean : 0;
+ 		nr->tags = dk.type == TOML_INT64 && dk.u.int64 > 0 ? 1u << (dk.u.int64 - 1) : 0;
++		nr->size = sz.type == TOML_INT64 && sz.u.int64 > 0 && sz.u.int64 <= 100 ? (int)sz.u.int64 : 0;
+ 	}
+ 	list = toml_get(r.toptab, "launcher");
+ 	if (list.type == TOML_ARRAY) {
+@@ -1513,9 +1525,10 @@
+ 	/* rule matching */
+ 	const char *appid, *title;
+ 	uint32_t newtags = 0;
+-	int i;
++	int i, nofocus = 0;
+ 	const Rule *r;
+ 	Monitor *mon = selmon, *m;
++	Client *f;
+ 
+ 	appid = client_get_appid(c);
+ 	title = client_get_title(c);
+@@ -1525,6 +1538,9 @@
+ 				&& (!conf.rules[i].appid || strstr(appid, conf.rules[i].appid))) {
+ 			c->isfloating = conf.rules[i].isfloating;
+ 			newtags |= conf.rules[i].tags;
++			if (conf.rules[i].size)
++				c->rulesize = conf.rules[i].size;
++			nofocus |= conf.rules[i].nofocus;
+ 		}
+ 	}
+ 	for (r = rules; !(confloaded && conf.nrules) && r < END(rules); r++) {
+@@ -1541,7 +1557,16 @@
+ 	}
+ 
+ 	c->isfloating |= client_is_float_type(c);
++	c->isrulefloat = c->isfloating;
++	c->nofocus = nofocus;
++	if (nofocus && c->flink.next) {
++		wl_list_remove(&c->flink);
++		f = focustop(mon);
++		wl_list_insert(f ? &f->flink : &fstack, &c->flink);
++	}
+ 	setmon(c, mon, newtags);
++	if (nofocus && c->flink.next && c->scene)
++		wlr_scene_node_raise_to_top(&c->scene->node);
+ }
+ 
+ void
+@@ -2280,10 +2305,26 @@
+ }
+ 
+ void
++fsoffset(Client *c)
++{
++	struct wlr_surface *s = client_surface(c);
++	int x = c->bw, y = c->bw;
++
++	if (c->isfullscreen && s && s->current.width > 0 && s->current.height > 0) {
++		x = MAX(0, (c->geom.width - s->current.width) / 2);
++		y = MAX(0, (c->geom.height - s->current.height) / 2);
++	}
++	wlr_scene_node_set_position(&c->scene_surface->node, x, y);
++}
++
++void
+ commitnotify(struct wl_listener *listener, void *data)
+ {
+ 	Client *c = wl_container_of(listener, c, commit);
+ 
++	if (c->isfullscreen && client_surface(c)->mapped)
++		fsoffset(c);
++
+ 	if (c->surface.xdg->initial_commit) {
+ 		/*
+ 		 * Get the monitor this client will be rendered on
+@@ -4549,6 +4590,58 @@
+ }
+ 
+ void
++taskmaximize(const Arg *arg)
++{
++	Client *c, *t = NULL;
++	wl_list_for_each(c, &clients, link)
++		if (c == arg->v)
++			t = c;
++	if (!t || t->isfullscreen)
++		return;
++	if (t->isminimized) {
++		restoreclient(t);
++		arrange(t->mon);
++	}
++	selmon = t->mon;
++	setmaximized(t, !t->ismaximized);
++	focusclient(t, 1);
++	drawbars();
++}
++
++void
++setmaximized(Client *c, int maximized)
++{
++	if (!c->mon || c->isfullscreen || client_is_unmanaged(c) || !maximized == !c->ismaximized)
++		return;
++	if (maximized) {
++		if (!c->issnapped)
++			c->presnap = c->geom;
++		c->maxfloating = c->isfloating;
++		c->issnapped = c->ismaximized = 1;
++		setfloating(c, 1);
++		resize(c, c->mon->w, 0);
++		wlr_scene_node_raise_to_top(&c->scene->node);
++	} else {
++		c->issnapped = c->ismaximized = 0;
++		resize(c, c->presnap, 0);
++		setfloating(c, c->maxfloating);
++	}
++	client_set_maximized(c, maximized);
++}
++
++void
++client_set_maximized(Client *c, int maximized)
++{
++#ifdef XWAYLAND
++	if (client_is_x11(c)) {
++		wlr_xwayland_surface_set_maximized(c->surface.xwayland, maximized, maximized);
++		return;
++	}
++#endif
++	wlr_xdg_toplevel_set_maximized(c->surface.xdg->toplevel, maximized);
++}
++
++void
+ taskhover(void)
+ {
+ 	Monitor *m;
+@@ -5043,7 +5136,10 @@
+ 	if (c->mon && !c->isfullscreen && (c->isfloating || !c->mon->lt[c->mon->sellt]->arrange)) {
+ 		Client *o;
+ 		int moved = 1, step = 32;
+-		if (!client_is_float_type(c)) {
++		if (c->rulesize && !client_is_float_type(c)) {
++			c->geom.width = c->mon->w.width * c->rulesize / 100;
++			c->geom.height = c->mon->w.height * c->rulesize / 100;
++		} else if (!client_is_float_type(c)) {
+ 			c->geom.width = MIN(c->geom.width, c->mon->w.width * 3 / 4);
+ 			c->geom.height = MIN(c->geom.height, c->mon->w.height * 3 / 4);
+ 		}
+@@ -5086,6 +5182,11 @@
+ 	 * protocol version
+ 	 * wlr_xdg_surface_schedule_configure() is used to send an empty reply. */
+ 	Client *c = wl_container_of(listener, c, maximize);
++	if (c->mon && client_surface(c)->mapped && !c->surface.xdg->toplevel->requested.maximized != !c->ismaximized) {
++		setmaximized(c, c->surface.xdg->toplevel->requested.maximized);
++		drawbars();
++		return;
++	}
+ 	if (c->surface.xdg->initialized
+ 			&& wl_resource_get_version(c->surface.xdg->toplevel->resource)
+ 					< XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
+@@ -5258,12 +5359,20 @@
+ 				.width = grabc->presnap.width, .height = grabc->presnap.height}, 1);
+ 		}
+ 		grabc->issnapped = 0;
++		if (grabc->ismaximized) {
++			grabc->ismaximized = 0;
++			client_set_maximized(grabc, 0);
++		}
+ 		grabcx = (int)round(cursor->x) - grabc->geom.x;
+ 		grabcy = (int)round(cursor->y) - grabc->geom.y;
+ 		wlr_cursor_set_xcursor(cursor, cursor_mgr, "all-scroll");
+ 		break;
+ 	case CurResize:
+ 		grabc->issnapped = 0;
++		if (grabc->ismaximized) {
++			grabc->ismaximized = 0;
++			client_set_maximized(grabc, 0);
++		}
+ 		grabgeom = grabc->geom;
+ 		grableft = cursor->x < grabgeom.x + grabgeom.width / 2.0;
+ 		grabtop = cursor->y < grabgeom.y + grabgeom.height / 2.0;
+@@ -5490,14 +5599,7 @@
+ 	wlr_scene_node_for_each_buffer(&c->scene_surface->node, setfilter,
+ 			c->isfullscreen ? &(enum wlr_scale_filter_mode){WLR_SCALE_FILTER_NEAREST}
+ 			: &(enum wlr_scale_filter_mode){WLR_SCALE_FILTER_BILINEAR});
+-	if (c->isfullscreen) {
+-		struct wlr_surface *s = client_surface(c);
+-		if (s->current.width > 0 && s->current.height > 0
+-				&& (s->current.width < c->geom.width || s->current.height < c->geom.height))
+-			wlr_scene_node_set_position(&c->scene_surface->node,
+-					MAX(0, (c->geom.width - s->current.width) / 2),
+-					MAX(0, (c->geom.height - s->current.height) / 2));
+-	}
++	fsoffset(c);
+ 	wlr_scene_rect_set_size(c->border[0], c->geom.width, c->bw);
+ 	wlr_scene_rect_set_size(c->border[1], c->geom.width, c->bw);
+ 	wlr_scene_rect_set_size(c->border[2], c->bw, c->geom.height - 2 * c->bw);
+@@ -5648,13 +5750,25 @@
+ 	wasfloat = !selmon->lt[selmon->sellt]->arrange;
+ 	if (wasfloat)
+ 		wl_list_for_each(c, &clients, link)
+-			if (c->mon == selmon && !c->isfloating && !c->isfullscreen)
+-				c->floatgeom = c->geom;
++			if (c->mon == selmon && !c->isfullscreen && (!c->isfloating || !c->isrulefloat))
++				c->floatgeom = c->issnapped ? c->presnap : c->geom;
+ 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+ 		selmon->sellt ^= 1;
+ 	if (arg && arg->v)
+ 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
+ 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof(selmon->ltsymbol));
++	if (wasfloat && selmon->lt[selmon->sellt]->arrange)
++		wl_list_for_each(c, &clients, link) {
++			if (c->mon != selmon || c->isfullscreen || !c->isfloating || c->isrulefloat || client_get_parent(c))
++				continue;
++			if (c->ismaximized) {
++				c->ismaximized = 0;
++				client_set_maximized(c, 0);
++			}
++			c->issnapped = 0;
++			c->isfloating = 0;
++			wlr_scene_node_reparent(&c->scene->node, layers[LyrTile]);
++		}
+ 	arrange(selmon);
+ 	if (!wasfloat && !selmon->lt[selmon->sellt]->arrange)
+ 		wl_list_for_each(c, &clients, link)
+@@ -6480,7 +6594,7 @@
+ 	struct wlr_xdg_activation_v1_request_activate_event *event = data;
+ 	Client *c = NULL;
+ 	toplevel_from_wlr_surface(event->surface, &c, NULL);
+-	if (!c || c == focustop(selmon))
++	if (!c || c == focustop(selmon) || c->nofocus)
+ 		return;
+ 
+ 	c->isurgent = 1;
+@@ -6627,6 +6741,7 @@
+ 
+ 	LISTEN(&client_surface(c)->events.map, &c->map, mapnotify);
+ 	LISTEN(&client_surface(c)->events.unmap, &c->unmap, unmapnotify);
++	LISTEN(&client_surface(c)->events.commit, &c->commit, commitx11);
+ }
+ 
+ void
+@@ -6683,6 +6798,16 @@
+ 	Client *c = wl_container_of(listener, c, dissociate);
+ 	wl_list_remove(&c->map.link);
+ 	wl_list_remove(&c->unmap.link);
++	wl_list_remove(&c->commit.link);
++}
++
++void
++commitx11(struct wl_listener *listener, void *data)
++{
++	Client *c = wl_container_of(listener, c, commit);
++
++	if (c->isfullscreen && client_surface(c)->mapped)
++		fsoffset(c);
+ }
+ 
+ void

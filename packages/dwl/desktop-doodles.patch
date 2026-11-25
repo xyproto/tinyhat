@@ -1,6 +1,6 @@
 --- a/dwl.c
 +++ b/dwl.c
-@@ -274,6 +274,27 @@
+@@ -275,6 +275,27 @@
  	int lrpad;
  };
  
@@ -46,7 +46,7 @@
  static void setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data);
  static void unblocksignals(void);
  static void incnmaster(const Arg *arg);
-@@ -1141,10 +1166,22 @@
+@@ -1146,10 +1171,22 @@
  }
  
  static void
@@ -69,7 +69,7 @@
  	if (!conf.nbgs)
  		return;
  	bgindex++;
-@@ -1837,6 +1874,25 @@
+@@ -1845,6 +1882,25 @@
  
  		keyboard = wlr_seat_get_keyboard(seat);
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
@@ -95,7 +95,7 @@
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
  				b->func((click == ClkTagBar && b->arg.i == 0) || click == ClkTitle ? &arg : &b->arg);
-@@ -1845,6 +1901,11 @@
+@@ -1853,6 +1909,11 @@
  		}
  		break;
  	case WL_POINTER_BUTTON_STATE_RELEASED:
@@ -107,7 +107,7 @@
  		/* If you released any buttons, we exit interactive move/resize mode. */
  		if (!locked && cursor_mode != CurNormal && cursor_mode != CurPressed) {
  			struct wlr_box snapb;
-@@ -3121,6 +3182,342 @@
+@@ -3201,6 +3262,342 @@
  	wlr_scene_node_set_position(&sb->node, m->m.x + (int)(x / s), m->m.y + (int)(y / s));
  }
  
@@ -450,7 +450,7 @@
  static struct wlr_scene_buffer *tipnode;
  static char tipshown[128];
  
-@@ -4483,6 +4880,9 @@
+@@ -4561,6 +4958,9 @@
  	struct wlr_surface *surface = NULL;
  	struct wlr_pointer_constraint_v1 *constraint;
  

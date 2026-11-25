@@ -19,6 +19,8 @@ static const char *fonts[]                 = {"JetBrains Mono NL:size=10"};
 static const char *cursor_theme            = "Vanilla-DMZ";
 static const float rootcolor[]             = COLOR(0x1a1b26ff);
 static const uint32_t tagcolor             = 0x383b45ff;
+static const uint32_t tagselcolor          = 0x4c505dff;
+static const uint32_t tagselfg             = 0xffffffff;
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 static uint32_t colors[][3]                = {

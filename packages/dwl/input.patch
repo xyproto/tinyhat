@@ -1,0 +1,242 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -1,6 +1,7 @@
+ /*
+  * See LICENSE file for copyright and license details.
+  */
++#include <errno.h>
+ #include <fcntl.h>
+ #include <getopt.h>
+ #include <libinput.h>
+@@ -83,8 +84,8 @@
+ #include "drwl.h"
+ 
+ /* macros */
+-#define CLEANMASK(mask)         (mask & ~WLR_MODIFIER_CAPS)
+-#define VISIBLEON(C, M)         ((M) && (C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]))
++#define CLEANMASK(mask)         (mask & (WLR_MODIFIER_SHIFT|WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT|WLR_MODIFIER_LOGO))
++#define VISIBLEON(C, M)         ((M) && (C)->mon == (M) && ((C)->tags & (M)->tagset[(M)->seltags]) && !(C)->isminimized)
+ #define TAGMASK                 ((1u << LENGTH(tags)) - 1)
+ #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
+ #define LISTEN_STATIC(E, H)     do { struct wl_listener *_l = ecalloc(1, sizeof(*_l)); _l->notify = (H); wl_signal_add((E), _l); } while (0)
+@@ -166,7 +167,7 @@
+ #endif
+ 	unsigned int bw;
+ 	uint32_t tags;
+-	int isfloating, isurgent, isfullscreen;
++	int isfloating, isurgent, isfullscreen, isminimized;
+ } Client;
+ 
+ typedef struct {
+@@ -339,11 +340,14 @@
+ static void drawbars(void);
+ static void focusclient(Client *c, int lift);
+ static void focusmon(const Arg *arg);
++static void altab(const Arg *arg);
+ static void focusstack(const Arg *arg);
+ static Client *focustop(Monitor *m);
+ static void fullscreennotify(struct wl_listener *listener, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
++static int reloadkeymap(int signo, void *data);
++static void unblocksignals(void);
+ static void incnmaster(const Arg *arg);
+ static void inputdevice(struct wl_listener *listener, void *data);
+ static const Key *keybinding(uint32_t mods, xkb_keysym_t sym);
+@@ -1841,6 +1845,72 @@
+ }
+ 
+ void
++altab(const Arg *arg)
++{
++	Client *c, *sel = focustop(selmon), *next = NULL, *only = NULL;
++	int n = 0;
++
++	if (!selmon)
++		return;
++	wl_list_for_each(c, &clients, link) {
++		if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++			only = c;
++			n++;
++		}
++	}
++	if (!n)
++		return;
++	if (n == 1) {
++		if (!only->isminimized) {
++			only->isminimized = 1;
++			arrange(selmon);
++			focusclient(NULL, 0);
++			return;
++		}
++		next = only;
++	} else if (sel && sel->isfullscreen && !client_has_children(sel)) {
++		setfullscreen(sel, 0);
++		next = sel;
++	} else if (!sel) {
++		wl_list_for_each(c, &clients, link) {
++			if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++				next = c;
++				break;
++			}
++		}
++	} else if (arg->i > 0) {
++		wl_list_for_each(c, &sel->link, link) {
++			if (&c->link == &clients)
++				continue;
++			if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++				next = c;
++				break;
++			}
++		}
++	} else {
++		wl_list_for_each_reverse(c, &sel->link, link) {
++			if (&c->link == &clients)
++				continue;
++			if (c->mon == selmon && (c->tags & selmon->tagset[selmon->seltags])) {
++				next = c;
++				break;
++			}
++		}
++	}
++	if (!next)
++		return;
++	if (next->isminimized) {
++		next->isminimized = 0;
++		arrange(selmon);
++	}
++	focusclient(next, 1);
++	if (!next->isfullscreen && next->scene->node.parent != layers[LyrFS]) {
++		wlr_scene_node_reparent(&next->scene->node, layers[LyrFloat]);
++		wlr_scene_node_raise_to_top(&next->scene->node);
++	}
++}
++
++void
+ focusstack(const Arg *arg)
+ {
+ 	/* Focus the next or previous client (in tiling order) on selmon */
+@@ -1912,6 +1982,46 @@
+ 	wlr_renderer_destroy(old_drw);
+ }
+ 
++int
++reloadkeymap(int signo, void *data)
++{
++	char path[4096], line[256] = "", *variant;
++	const char *home = getenv("HOME");
++	struct xkb_rule_names names = xkb_rules;
++	struct xkb_context *context;
++	struct xkb_keymap *keymap;
++	FILE *f;
++
++	snprintf(path, sizeof(path), "%s/.config/tinyhat/keyboard", home ? home : "");
++	if ((f = fopen(path, "r"))) {
++		if (!fgets(line, sizeof(line), f))
++			line[0] = '\0';
++		fclose(f);
++	}
++	line[strcspn(line, "\r\n")] = '\0';
++	if ((variant = strchr(line, ' '))) {
++		*variant++ = '\0';
++		names.variant = variant;
++	}
++	if (line[0])
++		names.layout = line;
++	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
++	if ((keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))) {
++		wlr_keyboard_set_keymap(&kb_group->wlr_group->keyboard, keymap);
++		xkb_keymap_unref(keymap);
++	}
++	xkb_context_unref(context);
++	return 0;
++}
++
++void
++unblocksignals(void)
++{
++	sigset_t set;
++	sigemptyset(&set);
++	sigprocmask(SIG_SETMASK, &set, NULL);
++}
++
+ void
+ handlesig(int signo)
+ {
+@@ -1976,6 +2086,32 @@
+ 	return NULL;
+ }
+ 
++static void
++keysound(xkb_keysym_t sym)
++{
++	static int fd = -1;
++	static time_t tried;
++	char c = sym == XKB_KEY_Return || sym == XKB_KEY_KP_Enter ? 'r'
++		: sym == XKB_KEY_BackSpace ? 'b' : sym == XKB_KEY_space ? 's' : 'k';
++	if (sym >= XKB_KEY_Shift_L && sym <= XKB_KEY_Hyper_R)
++		return;
++	if (fd < 0) {
++		char path[256];
++		const char *dir = getenv("XDG_RUNTIME_DIR");
++		time_t now = time(NULL);
++		if (now == tried)
++			return;
++		tried = now;
++		snprintf(path, sizeof(path), "%s/tinyhat-keys", dir ? dir : "/tmp");
++		if ((fd = open(path, O_WRONLY | O_NONBLOCK | O_CLOEXEC)) < 0)
++			return;
++	}
++	if (write(fd, &c, 1) < 0 && errno != EAGAIN) {
++		close(fd);
++		fd = -1;
++	}
++}
++
+ void
+ keypress(struct wl_listener *listener, void *data)
+ {
+@@ -2010,6 +2146,8 @@
+ 				break;
+ 			}
+ 		}
++		if (!handled)
++			keysound(group->keysyms[0]);
+ 	}
+ 
+ 	if (handled && group->wlr_group->keyboard.repeat_info.delay > 0)
+@@ -2617,6 +2755,7 @@
+ 		if (child_pid == 0) {
+ 			close(STDIN_FILENO);
+ 			setsid();
++			unblocksignals();
+ 			execl("/bin/sh", "/bin/sh", "-c", startup_cmd, NULL);
+ 			die("startup: execl:");
+ 		}
+@@ -2959,7 +3098,8 @@
+ 	 * Xcursor themes to source cursor images from and makes sure that cursor
+ 	 * images are available at all scale factors on the screen (necessary for
+ 	 * HiDPI support). Scaled cursors will be loaded with each output. */
+-	cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
++	cursor_mgr = wlr_xcursor_manager_create(cursor_theme, 24);
++	setenv("XCURSOR_THEME", cursor_theme, 1);
+ 	setenv("XCURSOR_SIZE", "24", 1);
+ 
+ 	/*
+@@ -3004,6 +3144,8 @@
+ 
+ 	kb_group = createkeyboardgroup();
+ 	wl_list_init(&kb_group->destroy.link);
++	reloadkeymap(SIGUSR1, NULL);
++	wl_event_loop_add_signal(event_loop, SIGUSR1, reloadkeymap, NULL);
+ 
+ 	output_mgr = wlr_output_manager_v1_create(dpy);
+ 	wl_signal_add(&output_mgr->events.apply, &output_mgr_apply);
+@@ -3046,6 +3188,7 @@
+ 		open("/dev/null", O_RDWR);
+ 		dup2(STDERR_FILENO, STDOUT_FILENO);
+ 		setsid();
++		unblocksignals();
+ 		execvp(((char **)arg->v)[0], (char **)arg->v);
+ 		die("dwl: execvp %s failed:", ((char **)arg->v)[0]);
+ 	}

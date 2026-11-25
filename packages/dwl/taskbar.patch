@@ -1,7 +1,26 @@
-diff -Nur a/dwl.c b/dwl.c
 --- a/dwl.c
 +++ b/dwl.c
-@@ -167,7 +167,7 @@
+@@ -90,9 +90,10 @@
+ #define LISTEN(E, L, H)         wl_signal_add((E), ((L)->notify = (H), (L)))
+ #define LISTEN_STATIC(E, H)     do { struct wl_listener *_l = ecalloc(1, sizeof(*_l)); _l->notify = (H); wl_signal_add((E), _l); } while (0)
+ #define TEXTW(mon, text)        (drwl_font_getwidth(mon->drw, text) + mon->lrpad)
++#define MENUW(mon)              ((mon)->b.height * 3 / 2)
+ 
+ /* enums */
+-enum { SchemeNorm, SchemeSel, SchemeUrg }; /* color schemes */
++enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeTask, SchemeTaskSel, SchemeTaskHover, SchemeTaskMin, SchemeStatus }; /* color schemes */
+ enum { CurNormal, CurPressed, CurMove, CurResize }; /* cursor */
+ enum { XDGShell, LayerShell, X11 }; /* client types */
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
+@@ -135,6 +136,7 @@
+ 	struct wl_list flink;
+ 	struct wlr_box geom; /* layout-relative, includes border */
+ 	struct wlr_box prev; /* layout-relative, includes border */
++	struct wlr_box floatgeom;
+ 	struct wlr_box bounds; /* only width and height are used */
+ 	union {
+ 		struct wlr_xdg_surface *xdg;
+@@ -167,7 +169,7 @@
  #endif
  	unsigned int bw;
  	uint32_t tags;
@@ -10,16 +29,22 @@ diff -Nur a/dwl.c b/dwl.c
  	struct wlr_box presnap;
  	int issnapped;
  } Client;
-@@ -249,6 +249,8 @@
+@@ -249,6 +251,8 @@
  	int gamma_lut_changed;
  	int nmaster;
  	char ltsymbol[16];
 +	Client *tasks[32];
-+	int taskx[33], ntasks;
++	int taskx[33], ntasks, taskhover;
  	int asleep;
  	Drwl *drw;
  	Buffer *pool[2];
-@@ -344,6 +346,10 @@
+@@ -339,10 +343,19 @@
+ static void destroykeyboardgroup(struct wl_listener *listener, void *data);
+ static Monitor *dirtomon(enum wlr_direction dir);
+ static void drawbar(Monitor *m);
++static void drawlayout(Monitor *m, int x, int w);
+ static void drawbars(void);
++static int statusw(Monitor *m);
  static void focusclient(Client *c, int lift);
  static void focusmon(const Arg *arg);
  static void altab(const Arg *arg);
@@ -27,12 +52,48 @@ diff -Nur a/dwl.c b/dwl.c
 +static void minimize(const Arg *arg);
 +static void showdesktop(const Arg *arg);
 +static void taskclick(const Arg *arg);
++static void taskclose(const Arg *arg);
++static void taskhover(void);
++static void togglelayout(const Arg *arg);
  static void focusstack(const Arg *arg);
  static Client *focustop(Monitor *m);
  static void fullscreennotify(struct wl_listener *listener, void *data);
-@@ -880,8 +886,12 @@
+@@ -360,7 +373,6 @@
+ static void locksession(struct wl_listener *listener, void *data);
+ static void mapnotify(struct wl_listener *listener, void *data);
+ static void maximizenotify(struct wl_listener *listener, void *data);
+-static void monocle(Monitor *m);
+ static void motionabsolute(struct wl_listener *listener, void *data);
+ static void motionnotify(uint32_t time, struct wlr_input_device *device, double sx,
+ 		double sy, double sx_unaccel, double sy_unaccel);
+@@ -482,6 +494,7 @@
+ 
+ static char stext[256];
+ static char notice[128];
++static int live;
+ static struct wl_event_source *status_event_source;
+ 
+ static const struct wlr_buffer_impl buffer_impl = {
+@@ -878,21 +891,25 @@
+ 			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
+ 			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
+ 			cx = (cursor->x - selmon->m.x) * selmon->wlr_output->scale;
+-			x = TEXTW(selmon, menulabel) + selmon->lrpad / 2;
++			x = MENUW(selmon) + selmon->lrpad / 2;
+ 			do
+ 				x += TEXTW(selmon, tags[i]);
+ 			while (cx >= x && ++i < LENGTH(tags));
+-			if (cx < TEXTW(selmon, menulabel) + selmon->lrpad / 2) {
++			if (cx < MENUW(selmon) + selmon->lrpad / 2) {
+ 				click = ClkMenu;
+ 			} else if (i < LENGTH(tags)) {
+ 				click = ClkTagBar;
+ 				arg.ui = 1 << i;
+-			} else if (cx < x + TEXTW(selmon, selmon->ltsymbol))
++			} else if (cx < x + selmon->b.height * 3 / 2)
  				click = ClkLtSymbol;
- 			else if (cx > selmon->b.width - (TEXTW(selmon, stext) - selmon->lrpad + 2)) {
+-			else if (cx > selmon->b.width - (TEXTW(selmon, stext) - selmon->lrpad + 2)) {
++			else if (cx > selmon->b.width - statusw(selmon)) {
  				click = ClkStatus;
 -			} else
 +			} else {
@@ -44,7 +105,7 @@ diff -Nur a/dwl.c b/dwl.c
  		}
  
  		/* Change focus if the button was _pressed_ over a client
-@@ -898,7 +908,7 @@
+@@ -909,7 +926,7 @@
  		mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
  		for (b = buttons; b < END(buttons); b++) {
  			if (CLEANMASK(mods) == CLEANMASK(b->mod) && event->button == b->button && click == b->click && b->func) {
@@ -53,7 +114,131 @@ diff -Nur a/dwl.c b/dwl.c
  				return;
  			}
  		}
-@@ -1781,15 +1791,11 @@
+@@ -1731,6 +1748,73 @@
+ 	return selmon;
+ }
+ 
++static void
++inkrect(Monitor *m, uint32_t color, int x0, int y0, int x1, int y1)
++{
++	uint32_t scheme[3] = { color, color, color };
++	if (x1 <= x0 || y1 <= y0)
++		return;
++	drwl_setscheme(m->drw, scheme);
++	drwl_rect(m->drw, x0, y0, x1 - x0, y1 - y0, 1, 0);
++}
++
++static void
++drawlogo(Monitor *m)
++{
++	static const int hat[][5] = {
++		{ 0, 8, 6, 24, 17 }, { 1, 8, 17, 24, 19 }, { 0, 8, 19, 24, 25 }, { 0, 2, 22, 30, 25 },
++	};
++	int h = m->b.height, s = h * 5 / 8, ox = (MENUW(m) - 28 * s / 19) / 2, oy = (h - s) / 2;
++	for (int r = 0; r < 4; r++)
++		inkrect(m, hat[r][0] ? 0x494949ff : 0x922424ff, ox + (hat[r][1] - 2) * s / 19, oy + (hat[r][2] - 6) * s / 19,
++			ox + (hat[r][3] - 2) * s / 19, oy + (hat[r][4] - 6) * s / 19);
++}
++
++static void
++drawflame(Monitor *m, int x, int w)
++{
++	static const char *flame[] = {
++		"...r...", "..rr...", "..rrr..", ".rror..", ".roorr.",
++		"rroyorr", "royyyor", "royyyor", ".royor.", "..rrr..",
++	};
++	int s = m->b.height * 5 / 8, fw = s * 7 / 10, ox = x + (w - fw) / 2, oy = (m->b.height - s) / 2;
++	for (int r = 0; r < 10; r++)
++		for (int c = 0; c < 7; c++)
++			if (flame[r][c] != '.')
++				inkrect(m, flame[r][c] == 'r' ? 0xe0452aff : flame[r][c] == 'o' ? 0xff9e3bff : 0xffe066ff,
++					ox + c * fw / 7, oy + r * s / 10, ox + (c + 1) * fw / 7, oy + (r + 1) * s / 10);
++}
++
++static char *
++flamesep(void)
++{
++	char *sep = NULL;
++	if (!live)
++		return NULL;
++	for (char *p = strstr(stext, " | "); p; p = strstr(p + 1, " | "))
++		sep = p;
++	return sep;
++}
++
++static int
++flamew(Monitor *m)
++{
++	return MAX((int)drwl_font_getwidth(m->drw, " | "), m->b.height * 5 / 8 * 7 / 10 + m->lrpad);
++}
++
++static int
++statusw(Monitor *m)
++{
++	char *sep = flamesep();
++	int w;
++	if (!sep)
++		return TEXTW(m, stext) - m->lrpad + 2;
++	*sep = '\0';
++	w = drwl_font_getwidth(m->drw, stext) + flamew(m) + drwl_font_getwidth(m->drw, sep + 3) + 2;
++	*sep = ' ';
++	return w;
++}
++
+ void
+ drawbar(Monitor *m)
+ {
+@@ -1748,9 +1832,21 @@
+ 
+ 	/* draw status first so it can be overdrawn by tags later */
+ 	if (m == selmon) { /* status is only drawn on selected monitor */
+-		drwl_setscheme(m->drw, colors[SchemeNorm]);
+-		tw = TEXTW(m, stext) - m->lrpad + 2; /* 2px right padding */
+-		drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
++		char *sep = flamesep();
++		drwl_setscheme(m->drw, colors[SchemeStatus]);
++		tw = statusw(m);
++		if (sep) {
++			int sx = m->b.width - tw, fw = flamew(m);
++			*sep = '\0';
++			sx = drwl_text(m->drw, sx, 0, drwl_font_getwidth(m->drw, stext), m->b.height, 0, stext, 0);
++			*sep = ' ';
++			drwl_rect(m->drw, sx, 0, fw, m->b.height, 1, 1);
++			drawflame(m, sx, fw);
++			drwl_setscheme(m->drw, colors[SchemeStatus]);
++			drwl_text(m->drw, sx + fw, 0, m->b.width - sx - fw, m->b.height, 0, sep + 3, 0);
++		} else {
++			drwl_text(m->drw, m->b.width - tw, 0, tw, m->b.height, 0, stext, 0);
++		}
+ 	}
+ 
+ 	wl_list_for_each(c, &clients, link) {
+@@ -1761,8 +1857,10 @@
+ 			urg |= c->tags;
+ 	}
+ 	c = focustop(m);
+-	drwl_setscheme(m->drw, colors[SchemeSel]);
+-	x = drwl_text(m->drw, 0, 0, TEXTW(m, menulabel), m->b.height, m->lrpad / 2, menulabel, 0);
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, 0, 0, MENUW(m), m->b.height, 1, 1);
++	drawlogo(m);
++	x = MENUW(m);
+ 	drwl_setscheme(m->drw, colors[SchemeNorm]);
+ 	drwl_rect(m->drw, x, 0, m->lrpad / 2, m->b.height, 1, 1);
+ 	x += m->lrpad / 2;
+@@ -1776,24 +1874,20 @@
+ 				urg & 1 << i);
+ 		x += w;
+ 	}
+-	w = TEXTW(m, m->ltsymbol);
+-	drwl_setscheme(m->drw, colors[SchemeNorm]);
+-	x = drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, m->ltsymbol, 0);
++	w = m->b.height * 3 / 2;
++	drawlayout(m, x, w);
++	x += w;
+ 
+ 	if ((w = m->b.width - tw - x) > m->b.height) {
+ 		if (notice[0]) {
  			int nw = TEXTW(m, notice);
  			drwl_setscheme(m->drw, colors[SchemeNorm]);
  			drwl_text(m->drw, x, 0, w, m->b.height, nw < w ? (w - nw) / 2 + m->lrpad / 2 : m->lrpad / 2, notice, 0);
@@ -72,15 +257,40 @@ diff -Nur a/dwl.c b/dwl.c
  	}
  
  	drwl_setscheme(m->drw, colors[SchemeSel]);
-@@ -1804,6 +1810,34 @@
+@@ -1808,6 +1902,74 @@
  }
  
  void
++drawlayout(Monitor *m, int x, int w)
++{
++	int s = m->b.height * 9 / 16, ix = x + (w - s) / 2, iy = (m->b.height - s) / 2;
++	int t = MAX(2, s / 5), ws = s * 2 / 3, hw = (s - 1) / 2, n = 2;
++	int win[4][4] = {{ix, iy, ws, ws}, {ix + s - ws, iy + s - ws, ws, ws}};
++
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
++	if (m->lt[m->sellt]->arrange) {
++		n = 4;
++		t = MAX(1, hw / 3);
++		for (int i = 0; i < 4; i++) {
++			win[i][0] = ix + (i % 2) * (s - hw);
++			win[i][1] = iy + (i / 2) * (s - hw);
++			win[i][2] = win[i][3] = hw;
++		}
++	}
++	for (int i = 0; i < n; i++) {
++		drwl_rect(m->drw, win[i][0], win[i][1], win[i][2], win[i][3], 1, 1);
++		drwl_rect(m->drw, win[i][0], win[i][1], win[i][2], win[i][3], 0, 0);
++		drwl_rect(m->drw, win[i][0], win[i][1], win[i][2], t, 1, 0);
++	}
++}
++
++void
 +drawtasks(Monitor *m, int x, int w)
 +{
 +	Client *t, *sel = focustop(m);
-+	int n = 0, bw, pad = m->b.height / 8 + 1;
-+	char label[256];
++	int n = 0, bw, gap = 3, pad = m->b.height / 8 + 1, bh = m->b.height - 2 * pad - 1;
++	int line = MAX(2, m->b.height / 12);
 +
 +	drwl_setscheme(m->drw, colors[SchemeNorm]);
 +	drwl_rect(m->drw, x, 0, w, m->b.height, 1, 1);
@@ -90,24 +300,39 @@ diff -Nur a/dwl.c b/dwl.c
 +	m->ntasks = n;
 +	if (!n)
 +		return;
-+	bw = MIN(w / n, m->b.height * 10);
++	bw = MIN((w - gap) / n, m->b.height * 9);
 +	for (int i = 0; i < n; i++) {
++		int bx, active;
 +		t = m->tasks[i];
-+		m->taskx[i] = x + i * bw;
-+		snprintf(label, sizeof(label), t->isminimized ? "[%s]" : "%s", client_get_title(t));
-+		drwl_setscheme(m->drw, colors[t == sel && !t->isminimized ? SchemeSel : SchemeNorm]);
-+		drwl_text(m->drw, m->taskx[i] + pad, pad, bw - 2 * pad, m->b.height - 2 * pad, m->lrpad / 2, label, 0);
-+		if (t != sel || t->isminimized)
-+			drwl_rect(m->drw, m->taskx[i] + pad, pad, bw - 2 * pad, m->b.height - 2 * pad, 0, 0);
++		active = t == sel && !t->isminimized;
++		bx = m->taskx[i] = x + gap + i * bw;
++		drwl_setscheme(m->drw, colors[active ? SchemeTaskSel
++			: m->taskhover == i + 1 ? SchemeTaskHover
++			: t->isminimized ? SchemeTaskMin : SchemeTask]);
++		drwl_text(m->drw, bx, pad, bw - gap, bh, m->lrpad / 2, client_get_title(t), 0);
++		if (active) {
++			drwl_setscheme(m->drw, colors[SchemeSel]);
++			drwl_rect(m->drw, bx, pad + bh - line, bw - gap, line, 1, 1);
++		}
++		drwl_setscheme(m->drw, colors[SchemeNorm]);
++		drwl_rect(m->drw, bx, pad, 1, 1, 1, 1);
++		drwl_rect(m->drw, bx + bw - gap - 1, pad, 1, 1, 1, 1);
++		drwl_rect(m->drw, bx, pad + bh - 1, 1, 1, 1, 1);
++		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
 +	}
-+	m->taskx[n] = x + n * bw;
++	m->taskx[n] = x + gap + n * bw;
++	if (sel && !sel->isminimized && x + w - m->taskx[n] > m->b.height * 3) {
++		const char *title = client_get_title(sel);
++		int tw = TEXTW(m, title), aw = x + w - m->taskx[n];
++		drwl_text(m->drw, m->taskx[n], 0, aw, m->b.height, tw < aw ? (aw - tw) / 2 + m->lrpad / 2 : m->lrpad / 2, title, 0);
++	}
 +}
 +
 +void
  drawbars(void)
  {
  	Monitor *m = NULL;
-@@ -1906,6 +1940,29 @@
+@@ -1910,6 +2072,29 @@
  	focusclient(focustop(selmon), 1);
  }
  
@@ -137,7 +362,7 @@ diff -Nur a/dwl.c b/dwl.c
  void
  altab(const Arg *arg)
  {
-@@ -1962,7 +2019,7 @@
+@@ -1966,7 +2151,7 @@
  	if (!next)
  		return;
  	if (next->isminimized) {
@@ -146,7 +371,7 @@ diff -Nur a/dwl.c b/dwl.c
  		arrange(selmon);
  	}
  	focusclient(next, 1);
-@@ -1973,6 +2030,66 @@
+@@ -1977,6 +2162,110 @@
  }
  
  void
@@ -210,6 +435,132 @@ diff -Nur a/dwl.c b/dwl.c
 +}
 +
 +void
++taskclose(const Arg *arg)
++{
++	Client *c;
++	wl_list_for_each(c, &clients, link)
++		if (c == arg->v) {
++			killclient(arg);
++			return;
++		}
++}
++
++void
++taskhover(void)
++{
++	Monitor *m;
++	int hover, cx;
++
++	wl_list_for_each(m, &mons, link) {
++		hover = 0;
++		if (m->scene_buffer->node.enabled && cursor->x >= m->m.x && cursor->x < m->m.x + m->m.width
++				&& cursor->y >= m->m.y + (topbar ? 0 : m->m.height - m->b.real_height)
++				&& cursor->y < m->m.y + (topbar ? m->b.real_height : m->m.height)) {
++			cx = (int)((cursor->x - m->m.x) * m->wlr_output->scale);
++			for (int i = 0; i < m->ntasks; i++)
++				if (cx >= m->taskx[i] && cx < m->taskx[i + 1])
++					hover = i + 1;
++		}
++		if (hover != m->taskhover) {
++			m->taskhover = hover;
++			drawbar(m);
++		}
++	}
++}
++
++void
++togglelayout(const Arg *arg)
++{
++	const Layout *l = selmon->lt[selmon->sellt];
++	size_t i;
++	for (i = 0; i < LENGTH(layouts) && !layouts[i].arrange == !l->arrange; i++);
++	if (i < LENGTH(layouts))
++		setlayout(&(Arg){.v = &layouts[i]});
++}
++
++void
  focusstack(const Arg *arg)
  {
  	/* Focus the next or previous client (in tiling order) on selmon */
+@@ -2315,7 +2604,7 @@
+ void
+ killclient(const Arg *arg)
+ {
+-	Client *sel = focustop(selmon);
++	Client *sel = arg->v ? (Client *)arg->v : focustop(selmon);
+ 	PendingKill *p;
+ 	pid_t pid = 0;
+ 
+@@ -2484,25 +2773,6 @@
+ }
+ 
+ void
+-monocle(Monitor *m)
+-{
+-	Client *c;
+-	int n = 0;
+-
+-	wl_list_for_each(c, &clients, link) {
+-		if (!VISIBLEON(c, m) || c->isfloating || c->isfullscreen)
+-			continue;
+-		c->bw = 0;
+-		resize(c, m->w, 0);
+-		n++;
+-	}
+-	if (n)
+-		snprintf(m->ltsymbol, LENGTH(m->ltsymbol), "[%d]", n);
+-	if ((c = focustop(m)))
+-		wlr_scene_node_raise_to_top(&c->scene->node);
+-}
+-
+-void
+ motionabsolute(struct wl_listener *listener, void *data)
+ {
+ 	/* This event is forwarded by the cursor when a pointer emits an _absolute_
+@@ -2581,6 +2851,8 @@
+ 	/* Update drag icon's position */
+ 	wlr_scene_node_set_position(&drag_icon->node, (int)round(cursor->x), (int)round(cursor->y));
+ 
++	taskhover();
++
+ 	/* If we are currently grabbing the mouse, handle and return */
+ 	if (cursor_mode == CurMove) {
+ 		/* Move the grabbed client to the new position. */
+@@ -3040,14 +3312,26 @@
+ void
+ setlayout(const Arg *arg)
+ {
++	Client *c;
++	int wasfloat;
++
+ 	if (!selmon)
+ 		return;
++	wasfloat = !selmon->lt[selmon->sellt]->arrange;
++	if (wasfloat)
++		wl_list_for_each(c, &clients, link)
++			if (c->mon == selmon && !c->isfloating && !c->isfullscreen)
++				c->floatgeom = c->geom;
+ 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+ 		selmon->sellt ^= 1;
+ 	if (arg && arg->v)
+ 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
+ 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof(selmon->ltsymbol));
+ 	arrange(selmon);
++	if (!wasfloat && !selmon->lt[selmon->sellt]->arrange)
++		wl_list_for_each(c, &clients, link)
++			if (c->mon == selmon && !c->isfloating && !c->isfullscreen && c->floatgeom.width)
++				resize(c, c->floatgeom, 0);
+ 	drawbar(selmon);
+ }
+ 
+@@ -3471,7 +3755,9 @@
+ 	for (char *line = status, *next; line && *line; line = next) {
+ 		if ((next = strchr(line, '\n')))
+ 			*next++ = '\0';
+-		if (!strncmp(line, "notice", 6))
++		if (!strncmp(line, "live ", 5))
++			live = atoi(line + 5);
++		else if (!strncmp(line, "notice", 6))
+ 			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
+ 		else if (!strcmp(line, "togglelayout")) {
+ 			if (selmon)

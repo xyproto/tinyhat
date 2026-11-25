@@ -1,7 +1,6 @@
-diff -Nur a/dwl.c b/dwl.c
 --- a/dwl.c
 +++ b/dwl.c
-@@ -1733,10 +1733,10 @@
+@@ -1783,10 +1783,10 @@
  	if ((w = m->b.width - tw - x) > m->b.height) {
  		if (notice[0]) {
  			int nw = TEXTW(m, notice);
@@ -14,7 +13,19 @@ diff -Nur a/dwl.c b/dwl.c
  			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
  			if (c && c->isfloating)
  				drwl_rect(m->drw, x + boxs, boxs, boxw, boxw, 0, 0);
-@@ -3142,7 +3142,7 @@
+@@ -3473,7 +3473,10 @@
+ 			*next++ = '\0';
+ 		if (!strncmp(line, "notice", 6))
+ 			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
+-		else
++		else if (!strcmp(line, "togglelayout")) {
++			if (selmon)
++				togglelayout(NULL);
++		} else
+ 			snprintf(stext, sizeof(stext), "%s", line);
+ 	}
+ 	drawbars();
+@@ -3505,7 +3508,7 @@
  void
  tile(Monitor *m)
  {
@@ -23,7 +34,7 @@ diff -Nur a/dwl.c b/dwl.c
  	int i, n = 0;
  	Client *c;
  
-@@ -3152,23 +3152,27 @@
+@@ -3515,23 +3518,27 @@
  	if (n == 0)
  		return;
  
@@ -60,7 +71,7 @@ diff -Nur a/dwl.c b/dwl.c
  		}
  		i++;
  	}
-@@ -3438,7 +3442,7 @@
+@@ -3802,7 +3809,7 @@
  
  	m->b.scale = m->wlr_output->scale;
  	m->lrpad = m->drw->font->height;

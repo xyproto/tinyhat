@@ -1,16 +1,3 @@
-diff -Nur a/Makefile b/Makefile
---- a/Makefile
-+++ b/Makefile
-@@ -12,7 +12,7 @@
- 	-Wfloat-conversion
- 
- # CFLAGS / LDFLAGS
--PKGS      = wayland-server xkbcommon libinput $(XLIBS)
-+PKGS      = wayland-server xkbcommon libinput pixman-1 fcft $(XLIBS)
- DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
- LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
- 
-diff -Nur a/config.def.h b/config.def.h
 --- a/config.def.h
 +++ b/config.def.h
 @@ -8,15 +8,21 @@
@@ -70,7 +57,6 @@ diff -Nur a/config.def.h b/config.def.h
  };
  
  static const Axis axes[] = {
-diff -Nur a/drwl.h b/drwl.h
 --- a/drwl.h
 +++ b/drwl.h
 @@ -0,0 +1,310 @@
@@ -384,7 +370,6 @@ diff -Nur a/drwl.h b/drwl.h
 +{
 +	fcft_fini();
 +}
-diff -Nur a/dwl.c b/dwl.c
 --- a/dwl.c
 +++ b/dwl.c
 @@ -1,11 +1,13 @@
@@ -1251,3 +1236,14 @@ diff -Nur a/dwl.c b/dwl.c
  }
  
  void
+--- a/Makefile
++++ b/Makefile
+@@ -12,7 +12,7 @@
+ 	-Wfloat-conversion
+ 
+ # CFLAGS / LDFLAGS
+-PKGS      = wayland-server xkbcommon libinput $(XLIBS)
++PKGS      = wayland-server xkbcommon libinput pixman-1 fcft $(XLIBS)
+ DWLCFLAGS = `$(PKG_CONFIG) --cflags $(PKGS)` $(WLR_INCS) $(DWLCPPFLAGS) $(DWLDEVCFLAGS) $(CFLAGS)
+ LDLIBS    = `$(PKG_CONFIG) --libs $(PKGS)` $(WLR_LIBS) -lm $(LIBS)
+ 

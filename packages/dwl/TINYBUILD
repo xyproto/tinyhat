@@ -1,6 +1,6 @@
 set pkgname dwl
 set pkgver 0.9
-set pkgrel 23
+set pkgrel 27
 set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
 set arch i686 x32
 set url https://codeberg.org/dwl/dwl
@@ -10,64 +10,28 @@ set makedepends_build elfkickers
 # Built without XWayland (config.mk leaves XWAYLAND and XLIBS empty), so libxcb and xcb-util-wm are dropped
 set depends wlroots0.20 fcft libpng libinput libxkbcommon pixman wayland
 set makedepends wayland-protocols tllist tomlc17
-set -g _patches status-bar fullscreen-borders bar-notice tile-gaps keymap-reload scale-filter force-kill float-resize malloc-trim center-floating menu-button bar-underline cursor-theme alt-tab window-snap resize-corner taskbar layout-toggle bar-title status-color task-close layout-command menu-icon root-color key-sounds desktop-click volume-control wallpaper volume-click status-icons menu-click-close xwayland-cleanup fullscreen-x11 fullscreen-offset x11-kill title-pill status-icons-only round-tags mode-fallback toml-config status-tooltips fan-button task-buttons desktop-doodles system-tray rule-size bar-polish clock-click maximize tile-reflow rule-nofocus
+set -g _patches status-bar input bar-menu windows layouts taskbar volume wallpaper status-icons system toml-config tray-tooltips desktop-doodles bar-polish window-rules
 set source "dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz" \
     $_patches.patch \
     config.h
 # After changing a local patch or config.h, run: makep -C packages/dwl --updsums
 set sha256sums 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d \
-    b302f62ccc46c6ef2dd9499a1634a6c87148d11db0a6ede71b589fd3339f1ce2 \
-    005e46245522b8478d88f61ff7e48a60c69e006c1bb7e56ceb1ada07dad55589 \
-    a4bc5e459ea0a83eb1a455c3824a473b576ebbbeef83a9969f3b420e4a78d7ae \
-    d524ce52a74c79b006cab6480e2a8b68ad49aca436e28104140e3942236d8738 \
-    78be429193379bd65f874fa6db4b8138d5338afc5e94867b45ed3a2c29fd8fe2 \
-    4f55d0083c38a2605802ed4b2ccaf1a153ba8b81af1f0d0a1b2bdbe3c5d09ae2 \
-    70edd68bd39629155de8b2a163c14a28f2d7735b0b461068644bfce00094d5d1 \
-    40e379666c7905925b6ebf6bb8b13fcd8894eecda56c9fc6f0e5d52dfd6f06a3 \
-    faf8202044a3a36d22fbb7db9e08ffd0888b49cac2476234df3d1f53afe3d44c \
-    95e6fca573ab0be0b125fbfb7feffdd0e36d52bd7bc15e7ced845600446a413a \
-    49dd6f330d6b2f822ac28972df61bae774f1164e58ed57002450b298410f99e9 \
-    4c6ad43867df24267c0ea37672ec9c0ccb564fc942a86b2578d5bb306f9bf558 \
-    f063ca8f44d0da9f8afacbfd3c766bc9b7296c02f52e26e897072c81d5bcd662 \
-    51c477134c38a55425b98248b1b2c99797b5783feb5fc3778752cb59ed05ee42 \
-    8f329df09940870d321086ce98e1f510ae46f344e32491e905db917869275ae5 \
-    2d1be063b0008f3c9be61570cad55d8375e998e9d1d16f5f3a10d55c0caab5de \
-    69279c8a61ac8d0e486664cc727bc74b6d99c85229e0e55d8e3cdbed6b0ae945 \
-    8afda8c6c10e41eec9e258c9656b1a6d8dfaeb7b46ed7b49ed80929a4d0b5b90 \
-    2f77f9019914b384c655b03a1b466865242c9be4e9a6f2c2161698b676293fdf \
-    d3e6e9d99041dfeae32d21320dbef6a866c6b297f43abae2e06dae2b6dabd6e9 \
-    834a2435b10e2db11b3df1de6646cc857d14a0189ab5911ef0752735a6a4d61f \
-    e30042e4794c6f2ffe40b8e7f3710844659f18c7e8268751661d5baa90bdd16d \
-    49854ac02900b34f196a2a7f6eb074d09d5c28bfc37814a1e9d0411d1ded5c5b \
-    a19f1168e354113c197f9156de38cc464179c1b7c3ff72584c9748741ac76d58 \
-    82b459ee464268cc1dac2c249421bcc60ab4f877d48729ab4a9aaced0fbb262c \
-    f78d17ec8c45325effeeda0cbb7d4de38e70988349ed4c658da345ba5b909c2d \
-    862b4b9e4009bb093e3c5921d88ca7dee994370aaa21c5d1f9b2a24de77860ca \
-    ddac11bd61f76478226f147f8d8437db595170cf0476ee102fcf0f99857811f5 \
-    c9548cbfec1d07947a7c22f1de63d3ebaeadebac6ee29bbdf09c31eabd834183 \
-    5fa3ede60e40eed7102a64602e2ccddb2602904148f24d7540d079c6f8121a03 \
-    3a26f157bdf81e9bd87ad3c0b2136d8d917b86db8014f30910afa559db32c026 \
-    8d512072b1ddc0e3bc17d524b0da2ed531d11c60c6a0df82962f20d9d89aa44c \
-    cf6c12c853d2403ba83795f8aa88bb57201092298b7418c7214c6a9be6874f20 \
-    5d1e60308036bfd33f015f64b8b6fecf3f6dad42f70a3c4421e19dea45f25af3 \
-    caaa6a1adb2c6aca491de023ab50b7f19b60b9c8c8d0e396047c776a8076cd3d \
-    7de8bb98de941148e844a40c3c975f85bb947ed8fdda3b4f32840bb55793a831 \
-    8b208e40a675107723b1c84739664bc1f7394521cd2d280bd87f3b4b00f9c3e4 \
-    cdcc723ef3543129b0e9850240399be234740847b970d4674871ef566a82e7e7 \
-    821d85240be35458fc50566110fb79f3fe3969744c44f2a7a0586365a861eff1 \
-    ab5925150712d17ab03758ab5cf304b2aea1f2b24230aeb4016fdadb4b084427 \
-    5fb162612fe6f1c8ad997458cef0583f8d21ba944af9c5901e936f17311fd306 \
-    18712af91444da3e0483d42a02b5497a023b374d4cd80e65cb82a4386312d534 \
-    49620b48f9df83907f999de9f43a72ea2227937ab8b374cc123089a5e1c817ac \
-    6f94ea3bb170ed382d42875fc8c130ec938d4890941e3b9a991b872502e4ce1a \
-    90ae3ed424a36f19213430a7fffadd400c1860188d1faf8ee9c0bc411ff7e127 \
-    caae3ce24ac2c8a01aed9e9fb3b4242cc2c051ef2f6f179979db07561426fafa \
-    ab17eb85b8c92c7917d2e9605379898e250719078d1fb73a0051ab622df076a1 \
-    b0f9f77c0aaa7f33056a54375a82dc9fb3e1f02bef2ba942a1dfa8798c81932f \
-    7960c5d82c1da4f53a6c45712dbfc8561caaaf58f76c4c4ffa151f605f04e164 \
-    156557419792e264207078cb6562fc8f521922a273bafd030b0896f56234deb1 \
-    4db65d9591adf2fd6135aac0ac27a9e5e99dcdff6769a9e21a05b3feccaddc64 \
-    26b10becd2a7bce106ca3bcd73d7c20606cc395657752dbe4351b4a4bed97b66
+    07e4500271c9df2ca8a9a50238afe01a983eefe99ff3e1cf5862693f55165570 \
+    ccef7edd628dbdb9011732a75a240909cf9642e1d065fff9e34bd8547b5cdc63 \
+    0aa0219d9a1578ff961fb1b2cfc18b1990561c31a8ebd22d37e977e0a24ee73a \
+    72bdcbd9da460626e193ea1c024b98d6147e68061d743590b35f41f81f21ba62 \
+    286df0d51e73764bfb2c0c6b9d0e12d205b5e45f4cf139330ad6afb3648b6e86 \
+    f09ce7e1a164a9c214a1dce09ddf09ddc99800866adaff324f06b88c7490f58c \
+    35fcb8c9ee79c0e7f273c4e05874de107b9b2fae206020fb1471f2fce3f7a274 \
+    ae53861184106f65b4bccea0a3b929dcd334ec69c9dc3d38bfef093478d0bec7 \
+    98b69825896dff17772ee7ed4edff5f9988d774789c41797d560668dca68bc8b \
+    8601eb8a860491f035832cfa8719b628bcd78b7058211661f450cdf14bddd2df \
+    1f03289823d0768e2b26fa99c4dd511de3b1133ed9ff3f64cf28aa7c2c7a7a4b \
+    d8bb8ff60f6a566ddf88af71330cc3700d920d6e9550ff0fe0db9a97e6b1fd77 \
+    eac069c4d5097f6d64edf6101a47547e2a611473c2e3c24723f5f6e7cbae8e04 \
+    d5b2afb287ff2eeadbe0e09ff280b9ae529b25c38d5eb9826ea3f21243681cf8 \
+    7f446a0c613487bfeafe90303442661928e55c8245ee24d7c661fbe9cf76ea9e \
+    afa29ff0cd2a20890406bc0dc44210ff77ca0d7528351103e37f97fa7d3ae27d
 
 function prepare
     cd dwl; or return

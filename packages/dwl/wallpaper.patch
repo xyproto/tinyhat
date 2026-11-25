@@ -1,7 +1,6 @@
-diff -Nur a/dwl.c b/dwl.c
 --- a/dwl.c
 +++ b/dwl.c
-@@ -83,6 +83,7 @@
+@@ -82,6 +82,7 @@
  #include "xdg-shell-protocol.h"
  #include "util.h"
  #include "drwl.h"
@@ -9,7 +8,7 @@ diff -Nur a/dwl.c b/dwl.c
  
  /* macros */
  #define CLEANMASK(mask)         (mask & (WLR_MODIFIER_SHIFT|WLR_MODIFIER_CTRL|WLR_MODIFIER_ALT|WLR_MODIFIER_LOGO))
-@@ -358,6 +359,7 @@
+@@ -356,6 +357,7 @@
  static void taskclick(const Arg *arg);
  static void taskclose(const Arg *arg);
  static void taskhover(void);
@@ -17,7 +16,7 @@ diff -Nur a/dwl.c b/dwl.c
  static void togglelayout(const Arg *arg);
  static void focusstack(const Arg *arg);
  static Client *focustop(Monitor *m);
-@@ -478,6 +480,9 @@
+@@ -475,6 +477,9 @@
  static struct wlr_xcursor_manager *cursor_mgr;
  
  static struct wlr_scene_rect *root_bg;
@@ -27,7 +26,7 @@ diff -Nur a/dwl.c b/dwl.c
  static struct wlr_session_lock_manager_v1 *session_lock_mgr;
  static struct wlr_scene_rect *locked_bg;
  static struct wlr_session_lock_v1 *cur_lock;
-@@ -1871,6 +1876,293 @@
+@@ -1882,6 +1887,293 @@
  	return x;
  }
  
@@ -321,7 +320,7 @@ diff -Nur a/dwl.c b/dwl.c
  static char *
  flamesep(void)
  {
-@@ -3553,6 +3845,8 @@
+@@ -3591,6 +3883,8 @@
  	/* Initialize the scene graph used to lay out windows */
  	scene = wlr_scene_create();
  	root_bg = wlr_scene_rect_create(&scene->tree, 0, 0, rootcolor);
@@ -330,7 +329,7 @@ diff -Nur a/dwl.c b/dwl.c
  	for (i = 0; i < NUM_LAYERS; i++)
  		layers[i] = wlr_scene_tree_create(&scene->tree);
  	drag_icon = wlr_scene_tree_create(&scene->tree);
-@@ -3807,8 +4101,9 @@
+@@ -3845,8 +4139,9 @@
  int
  statusin(int fd, unsigned int mask, void *data)
  {
@@ -341,10 +340,15 @@ diff -Nur a/dwl.c b/dwl.c
  
  	if (mask & WL_EVENT_ERROR)
  		die("status in event error");
-@@ -3829,14 +4124,30 @@
- 			unsigned long rgb = strtoul(line + 10, NULL, 16);
- 			float color[4] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f, 1.0f };
- 			wlr_scene_rect_set_color(root_bg, color);
+@@ -3863,14 +4158,34 @@
+ 			*next++ = '\0';
+ 		if (!strncmp(line, "live ", 5))
+ 			live = atoi(line + 5);
+-		else if (!strncmp(line, "notice", 6))
++		else if (!strncmp(line, "rootcolor ", 10)) {
++			unsigned long rgb = strtoul(line + 10, NULL, 16);
++			float color[4] = { ((rgb >> 16) & 0xff) / 255.0f, ((rgb >> 8) & 0xff) / 255.0f, (rgb & 0xff) / 255.0f, 1.0f };
++			wlr_scene_rect_set_color(root_bg, color);
 +			wallrgb = rgb & 0xffffff;
 +			wallchanged = 1;
 +		} else if (!strncmp(line, "wallpaper ", 10)) {
@@ -359,7 +363,7 @@ diff -Nur a/dwl.c b/dwl.c
 +		} else if (!strncmp(line, "helptext ", 9)) {
 +			snprintf(helppath, sizeof(helppath), "%s", strcmp(line + 9, "none") ? line + 9 : "");
 +			wallchanged = 1;
- 		} else if (!strncmp(line, "notice", 6))
++		} else if (!strncmp(line, "notice", 6))
  			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
  		else if (!strcmp(line, "togglelayout")) {
  			if (selmon)
@@ -373,7 +377,7 @@ diff -Nur a/dwl.c b/dwl.c
  	drawbars();
  
  	return 0;
-@@ -4064,6 +4375,7 @@
+@@ -4098,6 +4413,7 @@
  
  	wlr_scene_node_set_position(&root_bg->node, sgeom.x, sgeom.y);
  	wlr_scene_rect_set_size(root_bg, sgeom.width, sgeom.height);
@@ -381,7 +385,6 @@ diff -Nur a/dwl.c b/dwl.c
  
  	/* Make sure the clients are hidden when dwl is locked */
  	wlr_scene_node_set_position(&locked_bg->node, sgeom.x, sgeom.y);
-diff -Nur a/Makefile b/Makefile
 --- a/Makefile
 +++ b/Makefile
 @@ -12,7 +12,7 @@

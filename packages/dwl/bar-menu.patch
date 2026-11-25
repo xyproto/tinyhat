@@ -1,0 +1,147 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -98,7 +98,7 @@
+ enum { LyrBg, LyrBottom, LyrTile, LyrFloat, LyrTop, LyrFS, LyrUnmanaged, LyrOverlay,
+ 	LyrIMPopup, LyrBlock, NUM_LAYERS }; /* scene layers */
+ enum { AxisUp, AxisRight, AxisDown, AxisLeft };
+-enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot }; /* clicks */
++enum { ClkTagBar, ClkLtSymbol, ClkStatus, ClkTitle, ClkClient, ClkRoot, ClkMenu, ClkNone }; /* clicks */
+ 
+ typedef union {
+ 	int i;
+@@ -409,6 +409,7 @@
+ static void virtualkeyboard(struct wl_listener *listener, void *data);
+ static void virtualpointer(struct wl_listener *listener, void *data);
+ static Monitor *xytomon(double x, double y);
++static int ondesktop(double x, double y);
+ static void xytonode(double x, double y, struct wlr_surface **psurface,
+ 		Client **pc, LayerSurface **pl, double *nx, double *ny);
+ static void zoom(const Arg *arg);
+@@ -472,6 +473,7 @@
+ static int consumed[KEY_MAX + 1];
+ 
+ static char stext[256];
++static char notice[128];
+ static struct wl_event_source *status_event_source;
+ 
+ static const struct wlr_buffer_impl buffer_impl = {
+@@ -832,6 +834,8 @@
+ 	xytonode(cursor->x, cursor->y, NULL, &c, NULL, NULL, NULL);
+ 	if (c)
+ 		click = ClkClient;
++	else if (!ondesktop(cursor->x, cursor->y))
++		click = ClkNone; /* a border, a letterbox, a layer surface or the bar */
+ 
+ 	switch (event->state) {
+ 	case WL_POINTER_BUTTON_STATE_PRESSED:
+@@ -840,14 +844,27 @@
+ 		if (locked)
+ 			break;
+ 
++		if (exclusive_focus && ((LayerSurface *)exclusive_focus)->type == LayerShell) {
++			xytonode(cursor->x, cursor->y, NULL, NULL, &l, NULL, NULL);
++			if (l != exclusive_focus) {
++				exclusive_focus = NULL;
++				wlr_seat_keyboard_notify_clear_focus(seat);
++				focusclient(focustop(selmon), 1);
++				return;
++			}
++		}
++
+ 		if (!c && !exclusive_focus &&
+ 			(node = wlr_scene_node_at(&layers[LyrBottom]->node, cursor->x, cursor->y, NULL, NULL)) &&
+ 			(buffer = wlr_scene_buffer_from_node(node)) && buffer == selmon->scene_buffer) {
+ 			cx = (cursor->x - selmon->m.x) * selmon->wlr_output->scale;
++			x = TEXTW(selmon, menulabel) + selmon->lrpad / 2;
+ 			do
+ 				x += TEXTW(selmon, tags[i]);
+ 			while (cx >= x && ++i < LENGTH(tags));
+-			if (i < LENGTH(tags)) {
++			if (cx < TEXTW(selmon, menulabel) + selmon->lrpad / 2) {
++				click = ClkMenu;
++			} else if (i < LENGTH(tags)) {
+ 				click = ClkTagBar;
+ 				arg.ui = 1 << i;
+ 			} else if (cx < x + TEXTW(selmon, selmon->ltsymbol))
+@@ -1705,8 +1722,12 @@
+ 		if (c->isurgent)
+ 			urg |= c->tags;
+ 	}
+-	x = 0;
+ 	c = focustop(m);
++	drwl_setscheme(m->drw, colors[SchemeSel]);
++	x = drwl_text(m->drw, 0, 0, TEXTW(m, menulabel), m->b.height, m->lrpad / 2, menulabel, 0);
++	drwl_setscheme(m->drw, colors[SchemeNorm]);
++	drwl_rect(m->drw, x, 0, m->lrpad / 2, m->b.height, 1, 1);
++	x += m->lrpad / 2;
+ 	for (i = 0; i < LENGTH(tags); i++) {
+ 		w = TEXTW(m, tags[i]);
+ 		drwl_setscheme(m->drw, colors[m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+@@ -1722,7 +1743,11 @@
+ 	x = drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, m->ltsymbol, 0);
+ 
+ 	if ((w = m->b.width - tw - x) > m->b.height) {
+-		if (c) {
++		if (notice[0]) {
++			int nw = TEXTW(m, notice);
++			drwl_setscheme(m->drw, colors[SchemeSel]);
++			drwl_text(m->drw, x, 0, w, m->b.height, nw < w ? (w - nw) / 2 + m->lrpad / 2 : m->lrpad / 2, notice, 0);
++		} else if (c) {
+ 			drwl_setscheme(m->drw, colors[m == selmon ? SchemeSel : SchemeNorm]);
+ 			drwl_text(m->drw, x, 0, w, m->b.height, m->lrpad / 2, client_get_title(c), 0);
+ 			if (c && c->isfloating)
+@@ -1733,6 +1758,9 @@
+ 		}
+ 	}
+ 
++	drwl_setscheme(m->drw, colors[SchemeSel]);
++	drwl_rect(m->drw, 0, m->b.height - 1, m->b.width, 1, 1, 1);
++
+ 	wlr_scene_buffer_set_dest_size(m->scene_buffer,
+ 		m->b.real_width, m->b.real_height);
+ 	wlr_scene_node_set_position(&m->scene_buffer->node, m->m.x,
+@@ -2312,6 +2340,7 @@
+ 	} else {
+ 		applyrules(c);
+ 	}
++	notice[0] = '\0';
+ 	drawbars();
+ 
+ unset_fullscreen:
+@@ -3221,9 +3250,14 @@
+ 		die("read:");
+ 
+ 	status[n] = '\0';
+-	status[strcspn(status, "\n")] = '\0';
+-
+-	strncpy(stext, status, sizeof(stext));
++	for (char *line = status, *next; line && *line; line = next) {
++		if ((next = strchr(line, '\n')))
++			*next++ = '\0';
++		if (!strncmp(line, "notice", 6))
++			snprintf(notice, sizeof(notice), "%s", line[6] ? line + 7 : "");
++		else
++			snprintf(stext, sizeof(stext), "%s", line);
++	}
+ 	drawbars();
+ 
+ 	return 0;
+@@ -3633,6 +3667,18 @@
+ 	return o ? o->data : NULL;
+ }
+ 
++/* Whether there is nothing but the background under (x, y) */
++int
++ondesktop(double x, double y)
++{
++	int layer;
++
++	for (layer = NUM_LAYERS - 1; layer > LyrBg; layer--)
++		if (wlr_scene_node_at(&layers[layer]->node, x, y, NULL, NULL))
++			return 0;
++	return 1;
++}
++
+ void
+ xytonode(double x, double y, struct wlr_surface **psurface,
+ 		Client **pc, LayerSurface **pl, double *nx, double *ny)

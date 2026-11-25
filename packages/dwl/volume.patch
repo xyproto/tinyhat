@@ -1,7 +1,6 @@
-diff -Nur a/dwl.c b/dwl.c
 --- a/dwl.c
 +++ b/dwl.c
-@@ -254,6 +254,7 @@
+@@ -253,6 +253,7 @@
  	char ltsymbol[16];
  	Client *tasks[32];
  	int taskx[33], ntasks, taskhover;
@@ -9,7 +8,7 @@ diff -Nur a/dwl.c b/dwl.c
  	int asleep;
  	Drwl *drw;
  	Buffer *pool[2];
-@@ -748,6 +749,8 @@
+@@ -745,6 +746,8 @@
  	/* This event is forwarded by the cursor when a pointer emits an axis event,
  	 * for example when you move the scroll wheel. */
  	struct wlr_pointer_axis_event *event = data;
@@ -18,7 +17,7 @@ diff -Nur a/dwl.c b/dwl.c
  	const Axis *a;
  	unsigned int adir;
  	struct wlr_keyboard *keyboard;
-@@ -759,6 +762,21 @@
+@@ -756,6 +759,21 @@
  		adir = event->delta > 0 ? AxisDown : AxisUp;
  	else
  		adir = event->delta > 0 ? AxisRight : AxisLeft;
@@ -40,7 +39,18 @@ diff -Nur a/dwl.c b/dwl.c
  	keyboard = wlr_seat_get_keyboard(seat);
  	mods = keyboard ? wlr_keyboard_get_modifiers(keyboard) : 0;
  	for (a = axes; a < END(axes); a++) {
-@@ -1785,6 +1803,74 @@
+@@ -904,6 +922,10 @@
+ 				click = ClkLtSymbol;
+ 			else if (cx > selmon->b.width - statusw(selmon)) {
+ 				click = ClkStatus;
++				if (event->button == BTN_LEFT && selmon->volx1 > selmon->volx0 && cx >= selmon->volx0 && cx < selmon->volx1) {
++					spawn(&(Arg){.v = (const char *[]){ "tinyhat-volume", "mute", NULL }});
++					return;
++				}
+ 			} else {
+ 				click = ClkTitle;
+ 				for (i = 0; i < (unsigned int)selmon->ntasks; i++)
+@@ -1785,6 +1807,81 @@
  					ox + c * fw / 7, oy + r * s / 10, ox + (c + 1) * fw / 7, oy + (r + 1) * s / 10);
  }
  
@@ -51,7 +61,7 @@ diff -Nur a/dwl.c b/dwl.c
 +}
 +
 +static void
-+drawspeaker(Monitor *m, int x)
++drawspeaker(Monitor *m, int x, int muted)
 +{
 +	static const char *speaker[] = {
 +		"....#......", "...##....#.", "..###.#...#", "#####..#..#", "#####..#..#",
@@ -62,12 +72,17 @@ diff -Nur a/dwl.c b/dwl.c
 +		for (int c = 0; c < 11; c++)
 +			if (speaker[r][c] == '#')
 +				inkrect(m, colors[SchemeStatus][0], x + c * s / 10, oy + r * s / 10, x + (c + 1) * s / 10, oy + (r + 1) * s / 10);
++	if (muted) {
++		int w = s * 11 / 10, t = MAX(2, s / 6);
++		for (int i = 0; i < w; i++)
++			inkrect(m, 0xf7768eff, x + i, oy + i * (s - t) / w, x + i + 1, oy + i * (s - t) / w + t);
++	}
 +}
 +
 +static int
 +isvolume(const char *s, const char *p)
 +{
-+	return p[0] == 'V' && p[1] == ' ' && (p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3)));
++	return (p[0] == 'V' || p[0] == 'M') && p[1] == ' ' && (p == s || (p - s >= 3 && !strncmp(p - 3, " | ", 3)));
 +}
 +
 +static int
@@ -77,9 +92,10 @@ diff -Nur a/dwl.c b/dwl.c
 +	char *seg = s;
 +	for (char *p = s; *p; p++)
 +		if (isvolume(s, p)) {
++			char kind = *p;
 +			*p = '\0';
 +			w += drwl_font_getwidth(m->drw, seg) + speakerw(m);
-+			*p = 'V';
++			*p = kind;
 +			seg = p + 1;
 +		}
 +	return w + drwl_font_getwidth(m->drw, seg);
@@ -92,12 +108,13 @@ diff -Nur a/dwl.c b/dwl.c
 +	for (char *p = s; *p; p++)
 +		if (isvolume(s, p)) {
 +			char *end = strstr(p, " | ");
++			char kind = *p;
 +			*p = '\0';
 +			if (*seg)
 +				x = drwl_text(m->drw, x, 0, drwl_font_getwidth(m->drw, seg), m->b.height, 0, seg, 0);
-+			*p = 'V';
++			*p = kind;
 +			m->volx0 = x;
-+			drawspeaker(m, x);
++			drawspeaker(m, x, kind == 'M');
 +			drwl_setscheme(m->drw, colors[SchemeStatus]);
 +			x += speakerw(m);
 +			if (end)
@@ -115,7 +132,17 @@ diff -Nur a/dwl.c b/dwl.c
  static char *
  flamesep(void)
  {
-@@ -1808,9 +1894,9 @@
+@@ -1792,7 +1889,8 @@
+ 	if (!live)
+ 		return NULL;
+ 	for (char *p = strstr(stext, " | "); p; p = strstr(p + 1, " | "))
+-		sep = p;
++		if (!isvolume(stext, p + 3))
++			sep = p;
+ 	return sep;
+ }
+ 
+@@ -1808,9 +1906,9 @@
  	char *sep = flamesep();
  	int w;
  	if (!sep)
@@ -127,7 +154,7 @@ diff -Nur a/dwl.c b/dwl.c
  	*sep = ' ';
  	return w;
  }
-@@ -1835,17 +1921,19 @@
+@@ -1835,17 +1933,19 @@
  		char *sep = flamesep();
  		drwl_setscheme(m->drw, colors[SchemeStatus]);
  		tw = statusw(m);
@@ -150,7 +177,7 @@ diff -Nur a/dwl.c b/dwl.c
  		}
  	}
  
-@@ -1930,7 +2018,7 @@
+@@ -1930,7 +2030,7 @@
  drawtasks(Monitor *m, int x, int w)
  {
  	Client *t, *sel = focustop(m);
@@ -159,7 +186,7 @@ diff -Nur a/dwl.c b/dwl.c
  	int line = MAX(2, m->b.height / 12);
  
  	drwl_setscheme(m->drw, colors[SchemeNorm]);
-@@ -1941,12 +2029,19 @@
+@@ -1941,12 +2041,19 @@
  	m->ntasks = n;
  	if (!n)
  		return;
@@ -181,7 +208,7 @@ diff -Nur a/dwl.c b/dwl.c
  		drwl_setscheme(m->drw, colors[active ? SchemeTaskSel
  			: m->taskhover == i + 1 ? SchemeTaskHover
  			: t->isminimized ? SchemeTaskMin : SchemeTask]);
-@@ -1961,7 +2056,6 @@
+@@ -1961,7 +2068,6 @@
  		drwl_rect(m->drw, bx, pad + bh - 1, 1, 1, 1, 1);
  		drwl_rect(m->drw, bx + bw - gap - 1, pad + bh - 1, 1, 1, 1, 1);
  	}
