@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=Sudoku
-Icon=applications-games
-Comment=Sudoku86 number puzzles (DOS game, in DOSBox-X)
-Exec=tinyhat-dosgame SUDOKU86 SUDOKU86.EXE
-Terminal=false
-Keywords=DOS;
-Categories=Game;LogicGame;

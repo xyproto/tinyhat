@@ -1,9 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=C-Dogs
-Icon=applications-games
-Comment=Top-down action shooter for one or two players by Ronny Wester (DOS game, in DOSBox-X)
-Exec=tinyhat-dosgame CDOGS CDOGS.EXE
-Terminal=false
-Keywords=DOS;
-Categories=Game;ActionGame;
