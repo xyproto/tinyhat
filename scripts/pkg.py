@@ -248,6 +248,7 @@ def split_filename(fn):
 
 
 _PLANNED = None
+_PLANNED_ARCHES = {}
 
 
 def planned_versions():
@@ -267,7 +268,7 @@ def planned_versions():
             path = os.path.join(TOP, "packages", d, ".SRCINFO")
             if not os.path.exists(path):
                 continue
-            base, names = {}, []
+            base, names, arches = {}, [], set()
             with open(path) as f:
                 for line in f:
                     k, _, v = line.strip().partition(" = ")
@@ -275,10 +276,14 @@ def planned_versions():
                         names.append(v)
                     elif not names and k in ("pkgver", "pkgrel", "epoch"):
                         base[k] = v
+                    elif not names and k == "arch":
+                        arches.add(v)
             if "pkgver" in base and "pkgrel" in base:
                 ver = (base["epoch"] + ":" if base.get("epoch") else "") + f"{base['pkgver']}-{base['pkgrel']}"
                 for n in names:
                     _PLANNED[n] = seeded.get(n) if d in prebuilt else ver
+                    if arches and d not in prebuilt:
+                        _PLANNED_ARCHES[n] = arches
     return _PLANNED
 
 
@@ -295,6 +300,8 @@ def repo_files(repodir):
             continue
         want = planned.get(parts[0])
         if want is not None and parts[1] != want:
+            continue
+        if parts[2] == "any" and "any" not in _PLANNED_ARCHES.get(parts[0], {"any"}):
             continue
         key = (parts[0], parts[2])
         path = os.path.join(repodir, fn)

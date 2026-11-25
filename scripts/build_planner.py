@@ -812,6 +812,7 @@ def arch_rules(arch, by_base, prefs):
     seeded = set(distro.lock().get(f"buildroot-{arch}", {}))
     provided = set(distro.section("buildroot").get("provided", []))
     env = seeded | {n for n in names if n in provided or set(names[n]["provides"].get(n, [])) & provided}
+    env -= set(distro.section("buildroot").get("prefer_built", []))
     plans = {b: ([d for d in deps if d not in env], make) for b, (deps, make) in plans.items()}
     stamps = []
     for info in built:
@@ -1111,8 +1112,9 @@ def cross_bases(by_base, roots, arch="i686"):
 
 
 def aarch64_roots():
-    """What the aarch64 cross builds are for: the packages of the package directories in [build-aarch64]."""
-    return sorted({n for names in distro.lock().get("build-aarch64", {}).values() for n in names})
+    """What the aarch64 cross builds are for: the packages of the package directories in [build-aarch64], and the
+    package directories there without image packages (like linux-tinyhat and grub, which the Makefile uses)."""
+    return sorted({n for base, names in distro.lock().get("build-aarch64", {}).items() for n in (names or [base])})
 
 
 def cross_roots():

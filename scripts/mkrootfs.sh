@@ -108,11 +108,13 @@ EOF
       case $upgradable in *" $p "*) continue ;; esac
       inlock "$p" && ignorepkgs="$ignorepkgs $p"
     done
-    sed -i "s|^#IgnorePkg *=.*|IgnorePkg =$ignorepkgs glfw-x11 glfw-wayland|" "$root/etc/pacman.conf"
-    grep -q '^IgnorePkg = .* pt2-clone' "$root/etc/pacman.conf"
+    printf '%s\n' $ignorepkgs glfw-x11 glfw-wayland | xargs -n 16 | sed 's/^/IgnorePkg = /' >"$root/etc/pacman.conf.ignore"
+    sed -i -e "/^#IgnorePkg *=/{r $root/etc/pacman.conf.ignore" -e 'd}' "$root/etc/pacman.conf"
+    rm -f "$root/etc/pacman.conf.ignore"
+    grep '^IgnorePkg = ' "$root/etc/pacman.conf" | grep -qw pt2-clone
     sed -i 's|^CheckSpace$|&\nILoveCandy|' "$root/etc/pacman.conf"
     grep -qx ILoveCandy "$root/etc/pacman.conf"
-    grep -q '^IgnorePkg = .* sdl3' "$root/etc/pacman.conf"
+    grep '^IgnorePkg = ' "$root/etc/pacman.conf" | grep -qw sdl3
     sed -i "s|^Architecture = auto$|Architecture = $arch|" "$root/etc/pacman.conf"
     grep -q "^Architecture = $arch$" "$root/etc/pacman.conf"
     ;;

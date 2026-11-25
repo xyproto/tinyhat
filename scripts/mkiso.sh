@@ -35,8 +35,8 @@ if [ "$name" = tinyhat-aarch64 ]; then
     /img/isotools/grub/usr/bin/grub-mkimage -d /img/isotools/grubarm/usr/lib/grub/arm64-efi -O arm64-efi \
     -o /img/iso/efi/boot/bootaa64.efi -c /img/isotools/eficfg -p /boot/grub $arm_modules
   truncate -s "${esp_mib}M" "$isod/efi.img"
-  "$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
-    /bin/sh -c 'mkfs.fat --invariant -F 16 /img/iso/efi.img >/dev/null && mcopy -s -i /img/iso/efi.img /img/iso/efi ::/'
+  "$top/scripts/x86_64-tool.sh" mkfs.fat --invariant -F 16 "$isod/efi.img" >/dev/null
+  "$top/scripts/x86_64-tool.sh" mcopy -s -i "$isod/efi.img" "$isod/efi" ::/
   find "$isod" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
   "$top/scripts/x86_64-tool.sh" xorriso -as mkisofs -rational-rock \
     --modification-date="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)" \
@@ -62,8 +62,8 @@ if [ "$name" = tinyhat64x32 ] || [ "$name" = tinyhat64 ]; then
     -o /img/iso/efi/boot/bootx64.efi -c /img/isotools/eficfg -p /boot/grub $efi_modules
 fi
 truncate -s "${esp_mib}M" "$isod/efi.img"
-"$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
-  /bin/sh -c 'mkfs.fat --invariant -F 16 /img/iso/efi.img >/dev/null && mcopy -s -i /img/iso/efi.img /img/iso/efi ::/'
+"$top/scripts/x86_64-tool.sh" mkfs.fat --invariant -F 16 "$isod/efi.img" >/dev/null
+"$top/scripts/x86_64-tool.sh" mcopy -s -i "$isod/efi.img" "$isod/efi" ::/
 find "$isod" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 "$top/scripts/x86_64-tool.sh" xorriso -as mkisofs -rational-rock \
   --modification-date="$(date -u -d "@$SOURCE_DATE_EPOCH" +%Y%m%d%H%M%S00)" \

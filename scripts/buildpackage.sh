@@ -320,9 +320,9 @@ sandbox() {
     else
       rc=$?
     fi
-    if [ $tries -lt 100 ] && grep -q "^bwrap: Can't make overlay mount" "$work/bwrap.err"; then
+    if [ $tries -lt 170 ] && grep -q "^bwrap: Can't make overlay mount" "$work/bwrap.err"; then
       tries=$((tries + 1))
-      sleep 0.1
+      if [ $tries -le 50 ]; then sleep 0.1; else sleep 1; fi
       continue
     fi
     cat "$work/bwrap.err" >&2

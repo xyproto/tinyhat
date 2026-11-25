@@ -77,7 +77,7 @@ for d in LIBDIRS:
 missing = {}
 for dirpath, dirnames, files in os.walk(root):
     if os.path.relpath(dirpath, root) == "usr/lib":
-        dirnames[:] = [d for d in dirnames if d != "firmware"]
+        dirnames[:] = [d for d in dirnames if d not in ("firmware", "alpine")]
     for fn in files:
         path = os.path.join(dirpath, fn)
         if os.path.islink(path) or not os.path.isfile(path):
