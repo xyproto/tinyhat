@@ -58,7 +58,7 @@ release=${release%-r*}
 	printf 'set source'
 	cat "$work/source"
 	printf ' \\\n    "apk-static-x86_64.apk::%s/main/x86_64/%s"' "$mirror" "$static"
-	printf ' \\\n    tinyhat-alpine \\\n    adduser \\\n    addgroup \\\n    tinyhat-alpine.hook \\\n    tinyhat-alpine-setup.service\n'
+	printf ' \\\n    tinyhat-alpine \\\n    adduser \\\n    addgroup \\\n    tinyhat-alpine.hook \\\n    tinyhat-host-fonts.conf\n'
 } >"$work/block"
 
 awk -v src="$work/block" -v rel="$release" '

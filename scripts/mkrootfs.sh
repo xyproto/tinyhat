@@ -114,6 +114,8 @@ EOF
     grep '^IgnorePkg = ' "$root/etc/pacman.conf" | grep -qw pt2-clone
     sed -i 's|^CheckSpace$|&\nILoveCandy|' "$root/etc/pacman.conf"
     grep -qx ILoveCandy "$root/etc/pacman.conf"
+    sed -i 's|^#Color$|Color|' "$root/etc/pacman.conf"
+    grep -qx Color "$root/etc/pacman.conf"
     grep '^IgnorePkg = ' "$root/etc/pacman.conf" | grep -qw sdl3
     sed -i "s|^Architecture = auto$|Architecture = $arch|" "$root/etc/pacman.conf"
     grep -q "^Architecture = $arch$" "$root/etc/pacman.conf"
