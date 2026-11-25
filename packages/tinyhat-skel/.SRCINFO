@@ -1,12 +1,13 @@
 pkgbase = tinyhat-skel
 	pkgdesc = Tiny Hat starter projects for new users
 	pkgver = 1
-	pkgrel = 4
+	pkgrel = 5
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
 	backup = etc/skel/.config/fish/conf.d/tinyhat.fish
 	backup = etc/skel/.config/mc/ini
+	backup = etc/skel/.config/schism/config
 	backup = etc/skel/.config/scummvm/scummvm.ini
 	backup = etc/skel/.config/vice/sdl-vicerc
 	backup = etc/skel/.netsurf/Choices

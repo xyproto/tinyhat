@@ -1,0 +1,8 @@
+[Unit]
+Description=Tiny Hat: update the clock with NTP once
+After=network.target
+
+[Service]
+Type=oneshot
+TimeoutStartSec=30
+ExecStart=/usr/lib/tinyhat/timesync-now

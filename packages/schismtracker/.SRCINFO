@@ -1,0 +1,22 @@
+pkgbase = schismtracker
+	pkgdesc = Free reimplementation of Impulse Tracker, with Tiny Hat chiptune samples
+	pkgver = 20261102
+	pkgrel = 1
+	url = https://schismtracker.org/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	license = BSD-3-Clause
+	makedepends = libutf8proc
+	makedepends = sdl3
+	depends = glibc
+	depends = libutf8proc
+	depends = sdl3
+	source = schismtracker-20261102.tar.gz::https://github.com/schismtracker/schismtracker/archive/refs/tags/20261102.tar.gz
+	source = genhelp.sh
+	source = itsamples.c
+	sha256sums = 9e36ce599b79da4d0ae28d4f846b7dd368e714edc41c73894f595bfa07de2225
+	sha256sums = c79e120c772501b374010f59689e87f0e753c2082210673b66bdb72df8d52345
+	sha256sums = 3fbe2ed654da62d4be4d771031504f84779ce045c7cb045a8836663c6396f2f8
+
+pkgname = schismtracker

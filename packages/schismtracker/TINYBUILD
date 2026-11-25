@@ -1,0 +1,42 @@
+set pkgname schismtracker
+set pkgver 20261102
+set pkgrel 1
+set pkgdesc 'Free reimplementation of Impulse Tracker, with Tiny Hat chiptune samples'
+set arch i686 x32
+set url https://schismtracker.org/
+set nvchecker source=github github=schismtracker/schismtracker use_latest_release=true
+set license GPL-2.0-or-later BSD-3-Clause
+set depends glibc libutf8proc sdl3
+set makedepends libutf8proc sdl3
+set source "$pkgname-$pkgver.tar.gz::https://github.com/schismtracker/schismtracker/archive/refs/tags/$pkgver.tar.gz" \
+    genhelp.sh \
+    itsamples.c
+set sha256sums 9e36ce599b79da4d0ae28d4f846b7dd368e714edc41c73894f595bfa07de2225 \
+    c79e120c772501b374010f59689e87f0e753c2082210673b66bdb72df8d52345 \
+    3fbe2ed654da62d4be4d771031504f84779ce045c7cb045a8836663c6396f2f8
+
+function prepare
+    cd $pkgname-$pkgver; or return
+    autoreconf -fi; or return
+    set -l helptexts (sed -n '/^helptexts = /,/^fonts/p' Makefile.am | string match -r 'helptext/[a-z-]+'); or return
+    mkdir -p auto; or return
+    sh ../genhelp.sh . $helptexts >auto/helptext.c; or return
+end
+
+function build
+    cd $pkgname-$pkgver; or return
+    ./configure --prefix=/usr --with-sdl3 --without-sdl2 --without-sdl12 --without-jack --without-gstreamer \
+        --without-avformat --without-flac --without-mediafoundation --without-x; or return
+    make; or return
+    set -l cc cc
+    set -q CC_FOR_BUILD; and set cc $CC_FOR_BUILD
+    $cc -O2 -o ../itsamples ../itsamples.c -lm; or return
+end
+
+function package
+    cd $pkgname-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -d "$pkgdir/usr/share/schismtracker/samples/chiptune"; or return
+    ../itsamples "$pkgdir/usr/share/schismtracker/samples/chiptune"; or return
+    install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
+end

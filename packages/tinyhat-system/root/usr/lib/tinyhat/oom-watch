@@ -1,0 +1,21 @@
+#!/bin/sh
+count() {
+	sed -n 's/^oom_kill //p' /proc/vmstat
+}
+stamp() {
+	stat -c %Y /run/earlyoom/killed 2>/dev/null || echo 0
+}
+n=$(count)
+s=$(stamp)
+while sleep 2; do
+	t=$(stamp)
+	if [ "$t" != "$s" ]; then
+		s=$t
+		/usr/lib/tinyhat/oom-notice "$(head -n 1 /run/earlyoom/killed 2>/dev/null)"
+	fi
+	m=$(count)
+	if [ "$m" != "$n" ]; then
+		n=$m
+		/usr/lib/tinyhat/oom-notice "$(dmesg | sed -n 's/.*Killed process [0-9]* (\(.*\)) total-vm.*/\1/p' | tail -n 1)"
+	fi
+done

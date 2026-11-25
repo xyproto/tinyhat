@@ -1,0 +1,9 @@
+[Unit]
+Description=Tell the user when a program ran out of memory
+
+[Service]
+ExecStart=/usr/lib/tinyhat/oom-watch
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

@@ -3,7 +3,11 @@ set -g fish_greeting
 set -q BROWSER; or set -gx BROWSER /usr/bin/tinysurf
 set -q EDITOR; or set -gx EDITOR /usr/bin/o
 set -q MANPAGER; or set -gx MANPAGER /usr/bin/o
-set -q O_THEME; or set -gx O_THEME xoria
+if test "$TERM" = linux
+    set -e O_THEME
+else if set -q WAYLAND_DISPLAY
+    set -q O_THEME; or set -gx O_THEME xoria
+end
 
 # OpenWatcom
 set -gx WATCOM /usr/lib/watcom

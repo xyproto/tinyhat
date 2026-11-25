@@ -1,7 +1,7 @@
 pkgbase = tinyhat-desktop
 	pkgdesc = Tiny Hat desktop: menu entries, icons, launchers and the dwl configuration
 	pkgver = 1
-	pkgrel = 11
+	pkgrel = 15
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
@@ -10,6 +10,7 @@ pkgbase = tinyhat-desktop
 	depends = pixelitos-icon-theme
 	depends = tinyhat-gtk-theme
 	depends = tinyhat-notify
+	backup = etc/gtk-3.0/settings.ini
 	backup = etc/gtk-4.0/settings.ini
 	backup = etc/swaylock/config
 	backup = etc/tinyhat/dosbox-x.conf

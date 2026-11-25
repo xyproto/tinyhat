@@ -8,4 +8,4 @@ Target = *
 [Action]
 Description = Letting Alpine packages use the Tiny Hat commands and libraries...
 When = PostTransaction
-Exec = /usr/bin/tinyhat-alpine --setup
+Exec = /usr/bin/tinyhat-alpine --refresh

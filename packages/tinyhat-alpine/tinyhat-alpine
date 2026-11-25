@@ -9,6 +9,7 @@ usage() {
 	echo "usage: tinyhat-alpine COMMAND [ARG]...   run an Alpine program" >&2
 	echo "       tinyhat-alpine --apk [ARG]...     run apk in the Alpine root (as root)" >&2
 	echo "       tinyhat-alpine --setup            let Alpine use the Tiny Hat commands and libraries (as root)" >&2
+	echo "       tinyhat-alpine --refresh          redo --setup if Alpine has been used and Tiny Hat changed (as root)" >&2
 	echo "       tinyhat-alpine --export           update the launchers for installed Alpine packages (as root)" >&2
 	exit 1
 }
@@ -22,7 +23,8 @@ run() {
 		--bind /tmp /tmp --bind /run /run --bind-try /home /home --bind-try /media /media
 		--ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts
 		--ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/machine-id /etc/machine-id
-		--setenv PATH /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/tinyhat-host/bin --die-with-parent)
+		--setenv PATH /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/tinyhat-host/bin
+		--setenv XDG_CONFIG_DIRS /etc/xdg/tinyhat:/etc/xdg --die-with-parent)
 	if [ "$(id -u)" != 0 ]; then
 		a+=(--ro-bind /etc/passwd /etc/passwd --ro-bind /etc/group /etc/group --chdir "${PWD:-/}")
 	fi
@@ -33,13 +35,72 @@ world() {
 	grep -v -e '^!' -e '^$' "$root/etc/apk/world" | sed 's/[<>=~].*//'
 }
 
+hostpkgs() {
+	echo "bash coreutils sed grep findutils shadow tar gzip xz which $(pacman -Qoq /usr/bin/awk 2>/dev/null)"
+}
+
+current() {
+	pacman -Q $(hostpkgs) 2>/dev/null | md5sum | cut -d' ' -f1
+}
+
+prepare() {
+	[ "$(cat "$stamp" 2>/dev/null)" = "$(current)" ] && return 0
+	[ -e "$stamp" ] || echo "Tiny Hat: preparing Alpine, once..." >&2
+	if [ "$(id -u)" = 0 ]; then
+		setup
+	else
+		doas -n /usr/bin/tinyhat-alpine --setup
+	fi
+}
+
+candybar() {
+	local done=$1 total=$2 label=$3 cols w pct eaten i bar=
+	cols=$(stty size 2>/dev/null </dev/tty | cut -d' ' -f2)
+	w=$((${cols:-80} - ${#label} - 9))
+	[ "$w" -gt 50 ] && w=50
+	[ "$w" -lt 10 ] && w=10
+	pct=$((total > 0 ? done * 100 / total : 100))
+	eaten=$((w * pct / 100))
+	for ((i = 0; i < w; i++)); do
+		if ((i < eaten)); then
+			bar+=-
+		elif ((i == eaten)); then
+			if ((i % 2)); then bar+=$'\e[1;33mc\e[0m'; else bar+=$'\e[1;33mC\e[0m'; fi
+		elif (((w - i) % 3 == 0)); then
+			bar+=$'\e[0;37mo\e[0m'
+		else
+			bar+=' '
+		fi
+	done
+	printf '\r\e[K%s [%s] %3d%%' "$label" "$bar" "$pct"
+}
+
+candy() {
+	local line done=0 total=0 label= drawn=
+	while IFS= read -r line; do
+		if [[ $line =~ ^([0-9]+)/([0-9]+)\ ?(.*)$ ]]; then
+			done=${BASH_REMATCH[1]}
+			total=${BASH_REMATCH[2]}
+			label="alpine ${BASH_REMATCH[3]:-progress}"
+			candybar "$done" "$total" "$label"
+			drawn=1
+		else
+			[ -n "$drawn" ] && printf '\r\e[K'
+			printf '%s\n' "$line"
+			[ -n "$drawn" ] && candybar "$done" "$total" "$label"
+		fi
+	done
+	[ -n "$drawn" ] && printf '\n'
+	return 0
+}
+
 base=" alpine-baselayout alpine-keys alpine-release apk-tools ca-certificates-bundle tinyhat-provides "
 
 setup() {
 	local now provides v d t p pkgs rc
 	run /usr/lib/tinyhat-host/bin/ldconfig -C /etc/ld.so.cache -f /etc/ld.so.conf || return 1
-	pkgs="bash coreutils sed grep findutils shadow tar gzip xz which $(pacman -Qoq /usr/bin/awk 2>/dev/null)"
-	now=$(pacman -Q $pkgs 2>/dev/null | md5sum | cut -d' ' -f1)
+	pkgs=$(hostpkgs)
+	now=$(current)
 	[ "$(cat "$stamp" 2>/dev/null)" = "$now" ] && return 0
 	d=$(mktemp -d /tmp/tinyhat-provides.XXXXXX) || return 1
 	provides="/bin/sh cmd:sh"
@@ -69,7 +130,7 @@ setup() {
 		--info 'description:Commands that Tiny Hat provides' --info license:BSD-3-Clause \
 		--info "provides:$provides" --files "$d/files" --output "$d/tinyhat-provides.apk" || rc=1
 	if [ $rc = 0 ]; then
-		run apk --force-overwrite add --quiet --no-network --allow-untrusted --force-non-repository "$d"/tinyhat-provides.apk || rc=1
+		run apk --force-overwrite add --quiet --no-network --repositories-file /dev/null --allow-untrusted --force-non-repository "$d"/tinyhat-provides.apk || rc=1
 	fi
 	[ $rc = 0 ] && echo "$now" >"$stamp"
 	rm -rf -- "$d"
@@ -116,8 +177,13 @@ case $1 in
 	shift
 	needroot --apk
 	setup
-	run apk --force-overwrite "$@"
-	rc=$?
+	if [ -t 1 ]; then
+		run apk --force-overwrite --no-progress --progress-fd 3 "$@" 3>&1 2>&1 | candy
+		rc=${PIPESTATUS[0]}
+	else
+		run apk --force-overwrite "$@"
+		rc=$?
+	fi
 	export_all
 	exit $rc
 	;;
@@ -125,9 +191,17 @@ case $1 in
 	needroot --setup
 	setup
 	;;
+--refresh)
+	needroot --refresh
+	[ -e "$stamp" ] || exit 0
+	setup
+	;;
 --export)
 	needroot --export
 	export_all
 	;;
-*) run "$@" ;;
+*)
+	prepare
+	run "$@"
+	;;
 esac

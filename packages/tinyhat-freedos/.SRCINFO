@@ -1,7 +1,7 @@
 pkgbase = tinyhat-freedos
-	pkgdesc = FreeDOS 1.4 live boot disk with free DOS games, Impulse Tracker, EDIT, NASM and DEBUG, for the GRUB menu
+	pkgdesc = FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu
 	pkgver = 1.4
-	pkgrel = 9
+	pkgrel = 10
 	url = https://www.freedos.org/
 	arch = any
 	license = GPL-2.0-or-later
@@ -23,9 +23,6 @@ pkgbase = tinyhat-freedos
 	source = nasm-1.4.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/devel/nasm.zip
 	source = https://dosgames.com/files/dpacman.zip
 	source = https://dosgames.com/files/sj313.zip
-	source = https://www.lim.com.au/ImpulseTracker/downloads/it214v5.zip
-	source = impulsetracker-LICENSE::https://raw.githubusercontent.com/jthlim/impulse-tracker/58c44e48dfdf479b186db17df0f2fa494b8c9aa9/LICENSE
-	source = itsamples.c
 	noextract = FD14-FloppyEdition.zip
 	noextract = vitetris-1.4.zip
 	noextract = psrinvad-1.4.zip
@@ -35,7 +32,6 @@ pkgbase = tinyhat-freedos
 	noextract = nasm-1.4.zip
 	noextract = dpacman.zip
 	noextract = sj313.zip
-	noextract = it214v5.zip
 	sha256sums = 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a
 	sha256sums = 53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843
 	sha256sums = ae391d32165e83625da8fbed772d1571269399e62116da30a55ee0207a922818
@@ -45,9 +41,6 @@ pkgbase = tinyhat-freedos
 	sha256sums = f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe
 	sha256sums = a1d48a73ec21c267d032e5f5cf67b761d3147f7a4492fba371304d4f4126e2a7
 	sha256sums = 9ebad4b03fa663ff21ee1a507e6d65406b8fc01c826ce93a0257684002f2fa53
-	sha256sums = 3775d3573b58905ad2b89530f4c27aa0cc8af9aaabd263fc64629d3061035169
-	sha256sums = 07f9084c2e53f7aa9695ce6228f59f49a240a79101c1f46cdf8cf8a9fa9b5c17
-	sha256sums = 3fbe2ed654da62d4be4d771031504f84779ce045c7cb045a8836663c6396f2f8
 
 pkgname = tinyhat-freedos
 

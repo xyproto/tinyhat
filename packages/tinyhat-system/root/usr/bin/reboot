@@ -1,4 +1,7 @@
 #!/bin/sh
+for b in "${XDG_RUNTIME_DIR:-/nonexistent}/tinyhat-bar" /run/user/*/tinyhat-bar; do
+	[ -p "$b" ] && [ -w "$b" ] && timeout 1 sh -c 'printf "notice %s\\n" "$2" >"$1"' sh "$b" 'Rebooting...'
+done
 /usr/lib/tinyhat/shutdown-sound
 sync
 [ "$(id -u)" = 0 ] || exec doas systemctl reboot "$@"

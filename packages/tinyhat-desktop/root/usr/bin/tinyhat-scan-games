@@ -25,7 +25,6 @@ else
     flock 9
 fi
 ini=$HOME/.config/scummvm/scummvm.ini
-before=$(grep -c '^\[' "$ini" 2>/dev/null)
 found=0
 shown=0
 for d in /media/*/; do
@@ -56,12 +55,9 @@ for g in bass soltys; do
     fi
 done
 if [ -n "$notify" ]; then
-    added=$(($(grep -c '^\[' "$ini" 2>/dev/null) - ${before:-0}))
-    if [ "$added" -gt 0 ]; then
-        tinyhat-notice "Found $added new games, Ctrl+Alt+S starts ScummVM" 8
-    else
-        tinyhat-notice "No new ScummVM games were found" 6
-    fi
+    s=s
+    [ "${found:-0}" = 1 ] && s=
+    tinyhat-notice "Scan complete, found ${found:-0} game$s." 6
 fi
 [ -f "$ini" ] || exit 0
 awk -F= '/^\[/ { t = substr($0, 2, length($0) - 2); next }

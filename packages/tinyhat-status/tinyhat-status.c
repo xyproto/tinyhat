@@ -416,6 +416,48 @@ static int refresh(int sig)
 	return strstr(cmdline, "tinyhat-status") && !kill(pid, sig) ? 0 : 1;
 }
 
+static bool online(void)
+{
+	char line[256], iface[64], dest[64];
+	bool found = false;
+	auto f = fopen("/proc/net/route", "r");
+	if (f) {
+		while (!found && fgets(line, sizeof line, f))
+			found = sscanf(line, "%63s %63s", iface, dest) == 2 && !strcmp(dest, "00000000");
+		fclose(f);
+	}
+	f = found ? nullptr : fopen("/proc/net/ipv6_route", "r");
+	if (f) {
+		while (!found && fgets(line, sizeof line, f))
+			found = !strncmp(line, "00000000000000000000000000000000 00 ", 36) && !strstr(line, " lo\n");
+		fclose(f);
+	}
+	return found;
+}
+
+static void ntpsync(const char *rundir)
+{
+	char stamp[512];
+	struct stat st;
+	auto now = time(nullptr);
+	snprintf(stamp, sizeof stamp, "%s/tinyhat-ntp.stamp", rundir);
+	if (!stat(stamp, &st) && st.st_mtime <= now && now - st.st_mtime < 10)
+		return;
+	if (!online())
+		return;
+	auto f = fopen(stamp, "w");
+	if (f)
+		fclose(f);
+	char *args[] = { "doas", "-n", "systemctl", "start", "--no-block", "tinyhat-timesync-now.service", nullptr };
+	posix_spawn_file_actions_t fa;
+	posix_spawn_file_actions_init(&fa);
+	posix_spawn_file_actions_addopen(&fa, STDOUT_FILENO, "/dev/null", O_WRONLY, 0);
+	posix_spawn_file_actions_addopen(&fa, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+	pid_t pid;
+	posix_spawnp(&pid, args[0], &fa, nullptr, args, environ);
+	posix_spawn_file_actions_destroy(&fa);
+}
+
 int main(int argc, char *argv[])
 {
 	auto rundir = getenv("XDG_RUNTIME_DIR");
@@ -428,6 +470,7 @@ int main(int argc, char *argv[])
 		return refresh(SIGUSR2);
 	if (argc > 1 && !strcmp(argv[1], "--clock")) {
 		nextclockmode();
+		ntpsync(rundir);
 		return refresh(SIGUSR2);
 	}
 

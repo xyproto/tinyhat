@@ -1,0 +1,3 @@
+#!/bin/sh
+dir=${RUNTIME_DIRECTORY:-/run/earlyoom}
+printf '%s\n' "${EARLYOOM_NAME:-A program}" >"$dir/killed.tmp" && mv -f "$dir/killed.tmp" "$dir/killed"

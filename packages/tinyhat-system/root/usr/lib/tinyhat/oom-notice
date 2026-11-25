@@ -1,0 +1,24 @@
+#!/bin/sh
+name=$1
+[ -n "$name" ] || exit 0
+dirs="/usr/share/applications /usr/local/share/applications"
+appname() {
+	for d in $dirs; do
+		for f in "$d/$name.desktop" "$d"/*"-$name.desktop" "$d"/*".$name.desktop"; do
+			[ -f "$f" ] && sed -n 's/^Name=//p' "$f" | head -n 1 && return
+		done
+	done
+	for d in $dirs; do
+		for f in "$d"/*.desktop; do
+			[ -f "$f" ] || continue
+			grep -q '^NoDisplay=true' "$f" && continue
+			exe=$(sed -n 's/^Exec=//p' "$f" | head -n 1 | awk '{print $1}')
+			[ "${exe##*/}" = "$name" ] && sed -n 's/^Name=//p' "$f" | head -n 1 && return
+		done
+	done
+}
+app=$(appname)
+for b in /run/user/*/tinyhat-bar; do
+	[ -p "$b" ] || continue
+	runuser -u "$(stat -c %U "$b")" -- env XDG_RUNTIME_DIR="${b%/*}" tinyhat-notice "${app:-$name} ran out of memory" 8
+done

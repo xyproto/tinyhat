@@ -243,12 +243,12 @@ run = "tinyhat-wifi"
 description = "Wi-Fi settings"
 
 [[key]]
-hotkey = "Ctrl+Alt+Y"
+hotkey = "Ctrl+Alt+S"
 run = "tinyhat-sounds"
 description = "System sound settings"
 
 [[key]]
-hotkey = "Ctrl+Alt+N"
+hotkey = "Ctrl+Alt+M"
 run = "tinyhat-run -l tinyhat-play"
 description = "Download and run a homebrew game"
 
@@ -263,14 +263,13 @@ run = "tinyhat-run -l tinyhat-dosbox"
 description = "DOSBox-X"
 
 [[key]]
-hotkey = "Ctrl+Alt+S"
+hotkey = "Ctrl+Alt+C"
 run = "tinyhat-run -l tinyhat-scummvm"
-description = "ScummVM"
+description = "ScummVM (press Ctrl+Alt+5 to scan for games)"
 
 [[key]]
-hotkey = "Ctrl+Alt+A"
+hotkey = "Ctrl+Alt+5"
 run = "tinyhat-scan-games -f"
-description = "Scan drives for ScummVM games"
 
 [[key]]
 hotkey = "Ctrl+Alt+Z"
@@ -298,7 +297,7 @@ run = "tinyhat-book"
 description = "Write a book in Orbiton"
 
 [[key]]
-hotkey = "Ctrl+Alt+H"
+hotkey = "Ctrl+Alt+N"
 run = "tinyhat-share"
 description = "Toggle sharing ~/pub over HTTP"
 
@@ -311,7 +310,7 @@ description = 'Lock the screen (the default password is "tinyhat")'
 separator = true
 
 [[key]]
-hotkey = "Ctrl+Alt+C"
+hotkey = "Ctrl+Alt+H"
 run = "tinyhat-code"
 description = "Example game in C (2x Ctrl+Space to run)"
 
@@ -321,7 +320,7 @@ run = "tinyhat-fennel"
 description = "Example game in Fennel and LÖVE (2x Ctrl+Space to run)"
 
 [[key]]
-hotkey = "Ctrl+Alt+M"
+hotkey = "Ctrl+Alt+P"
 run = "tinyhat-adventure"
 description = "Example point-and-click game in Lua (2x Ctrl+Space to run)"
 
@@ -346,12 +345,17 @@ run = "tinyhat-c64dev"
 description = "Example C64 program in C (2x Ctrl+Space to run)"
 
 [[key]]
-hotkey = "Ctrl+Alt+X"
+hotkey = "Ctrl+Alt+A"
 run = "tinyhat-intro"
-description = "Example 256 byte demoscene intro (2x Ctrl+Space to run)"
+description = 'Example 256 byte "demoscene intro" (2x Ctrl+Space to run)'
 
 [[key]]
-hotkey = "Ctrl+Alt+P"
+hotkey = "Ctrl+Alt+X"
+run = "tinyhat-zxdev"
+description = "Example ZX Spectrum program in C (2x Ctrl+Space to run)"
+
+[[key]]
+hotkey = "Ctrl+Alt+Y"
 run = "tinyhat-pyxel"
 description = "Example game in Python and Pyxel (2x Ctrl+Space to run)"
 
@@ -367,8 +371,8 @@ shown = "Click the clock"
 description = "Show date and time, only time or only date"
 
 [[key]]
-shown = "Right click a window button"
-description = "Maximize or restore the window"
+shown = "Right click a window title"
+description = "Maximize or restore (middle click to close)"
 
 [[key]]
 shown = "Alt+Left drag"

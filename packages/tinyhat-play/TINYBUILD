@@ -1,6 +1,6 @@
 set pkgname tinyhat-play
-set pkgver 1.3.6
-set pkgrel 3
+set pkgver 1.3.8
+set pkgrel 1
 set pkgdesc 'Search for, download and launch homebrew games for classic gaming platforms'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat-play
@@ -11,17 +11,8 @@ set makedepends fontconfig
 set provides tinyhat-retro
 set conflicts tinyhat-retro
 set replaces tinyhat-retro
-set source "tinyhat-play-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v$pkgver.tar.gz" \
-    roms.patch \
-    zx.patch
-set sha256sums 5b29b6d819ce0eb16d69f03e18e26c00e50f266e03065406b871adb6a65a6a0d \
-    2319ce74df1614e4cce4a01898f9c4ed633ec0564b0b31355c1ff4ae5fd043ae \
-    a78b7eed4add88250c17995963033d8604dcc9b14fb78c89cdbabc0e9ca0339b
-
-function prepare
-    patch -d tinyhat-play-$pkgver -Np1 -i ../roms.patch; or return
-    patch -d tinyhat-play-$pkgver -Np1 -i ../zx.patch; or return
-end
+set source "tinyhat-play-$pkgver.tar.gz::https://github.com/xyproto/tinyhat-play/archive/refs/tags/v$pkgver.tar.gz"
+set sha256sums 0afcb424af41d23230de65ac2656706106abf974431330229197446a46939256
 
 function build
     make -C tinyhat-play-$pkgver; or return

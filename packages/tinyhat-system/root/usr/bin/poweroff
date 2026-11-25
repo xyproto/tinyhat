@@ -1,7 +1,22 @@
 #!/bin/sh
+action=poweroff
+if [ "${0##*/}" = shutdown ]; then
+	for a in "$@"; do
+		case $a in
+		-r | --reboot) action=reboot ;;
+		-c) echo "shutdown: nothing is scheduled" >&2; exit 0 ;;
+		esac
+	done
+	set --
+fi
+msg='Shutting down...'
+[ "$action" = reboot ] && msg='Rebooting...'
+for b in "${XDG_RUNTIME_DIR:-/nonexistent}/tinyhat-bar" /run/user/*/tinyhat-bar; do
+	[ -p "$b" ] && [ -w "$b" ] && timeout 1 sh -c 'printf "notice %s\\n" "$2" >"$1"' sh "$b" "$msg"
+done
 /usr/lib/tinyhat/shutdown-sound
 sync
 if [ "$(id -u)" != 0 ]; then
-	exec doas systemctl poweroff --no-wall "$@"
+	exec doas systemctl $action --no-wall "$@"
 fi
-exec systemctl poweroff --no-wall "$@"
+exec systemctl $action --no-wall "$@"

@@ -1,0 +1,66 @@
+diff --git a/app.go b/app.go
+index fb75183..286a50a 100644
+--- a/app.go
++++ b/app.go
+@@ -17,6 +17,7 @@ type App struct {
+ 	kb       *Keybindings
+ 	help     *helpPanel
+ 	size     int
++	thinking bool
+ }
+ 
+ func NewApp(boardSize int, filename string, winSize int, tiny bool) (*App, error) {
+@@ -96,6 +97,9 @@ func NewApp(boardSize int, filename string, winSize int, tiny bool) (*App, error
+ 	}
+ 	br.overlay = func(r *Renderer) {
+ 		drawStatus(r, winSize, winSize, app.help.scale)
++		if app.thinking {
++			drawThinking(r, winSize, winSize, app.help.scale)
++		}
+ 		app.help.draw(r)
+ 	}
+ 
+@@ -137,6 +141,10 @@ func (a *App) Run() {
+ 		if statusExpired() {
+ 			needsRedraw = true
+ 		}
++		if thinking := a.board.EngineThinking(); thinking != a.thinking {
++			a.thinking = thinking
++			needsRedraw = true
++		}
+ 
+ 		// Drain all pending events
+ 		for {
+diff --git a/status.go b/status.go
+index 8228906..05eb88a 100644
+--- a/status.go
++++ b/status.go
+@@ -2,6 +2,7 @@ package main
+ 
+ import (
+ 	"fmt"
++	"math"
+ 	"strings"
+ 	"sync"
+ 	"time"
+@@ -64,6 +65,20 @@ func drawStatus(r *Renderer, boardW, windowH int, scale float32) {
+ 	r.DebugText(pad, float32(windowH)-h+pad, scale, text)
+ }
+ 
++// drawThinking draws three black dots in the lower right corner while GnuGo is thinking
++func drawThinking(r *Renderer, boardW, windowH int, scale float32) {
++	radius := 2 * scale
++	r.SetDrawColor(0, 0, 0, 255)
++	for i := range 3 {
++		cx := float32(boardW) - 6*scale - float32(2-i)*3*radius
++		cy := float32(windowH) - 6*scale
++		for dy := -radius; dy <= radius; dy++ {
++			dx := float32(math.Sqrt(float64(radius*radius - dy*dy)))
++			r.DrawLine(cx-dx, cy+dy, cx+dx, cy+dy)
++		}
++	}
++}
++
+ // engineMoveText describes a pass or a resignation by GnuGo
+ func engineMoveText(color StoneColor, move string) string {
+ 	name := "white"

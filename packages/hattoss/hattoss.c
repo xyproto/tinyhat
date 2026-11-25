@@ -45,6 +45,44 @@ static int sockx, socky;
 
 static void beep(int freq);
 static void nobeep(void);
+static void togglesound(void);
+
+static int pendingkey;
+
+static void pollkeys(void)
+{
+	int k;
+	while (kbhit()) {
+		k = getch();
+		if (k == 0)
+			getch();
+		else if (k == 's' || k == 'S')
+			togglesound();
+		else
+			pendingkey = k;
+	}
+}
+
+static int getkey(void)
+{
+	int k;
+	pollkeys();
+	if (pendingkey) {
+		k = pendingkey;
+		pendingkey = 0;
+		return k;
+	}
+	return getch();
+}
+
+static void rest(int ms)
+{
+	while (ms > 0) {
+		pollkeys();
+		delay(ms < 10 ? ms : 10);
+		ms -= 10;
+	}
+}
 
 static const char *ape[] = {
 	"....aaaaa....",
@@ -233,24 +271,24 @@ static void sfx(int kind)
 	case 0:
 		for (i = 400; i < 1000; i += 60) {
 			beep(i);
-			delay(4);
+			rest(4);
 		}
 		nobeep();
 		break;
 	case 2:
 		beep(523);
-		delay(120);
+		rest(120);
 		beep(659);
-		delay(120);
+		rest(120);
 		beep(784);
-		delay(220);
+		rest(220);
 		nobeep();
 		break;
 	case 3:
 		beep(1319);
-		delay(50);
+		rest(50);
 		beep(1760);
-		delay(90);
+		rest(90);
 		nobeep();
 		break;
 	}
@@ -452,17 +490,20 @@ static void drawsun(void)
 	for (k = 0; k < 8; k++)
 		for (i = 11; i <= 14; i++)
 			pset(SUNX + rays[k][0] * (rays[k][0] && rays[k][1] ? i * 3 / 4 : i), SUNY + rays[k][1] * (rays[k][0] && rays[k][1] ? i * 3 / 4 : i), SUN);
-	rect(SUNX - 4, SUNY - 3, 2, 2, SUNFACE);
-	rect(SUNX + 3, SUNY - 3, 2, 2, SUNFACE);
 	if (sunhappy) {
+		for (k = -1; k <= 1; k++) {
+			pset(SUNX - 4 + k, SUNY - 3 + k * k, SUNFACE);
+			pset(SUNX + 4 + k, SUNY - 3 + k * k, SUNFACE);
+		}
 		for (i = -4; i <= 4; i++)
-			pset(SUNX + i, SUNY + 4 - (i * i) / 8, SUNFACE);
-		pset(SUNX - 5, SUNY + 1, SUNFACE);
-		pset(SUNX + 5, SUNY + 1, SUNFACE);
-		drawsprite(hat, 4, SUNX - 3, SUNY - 13);
+			for (j = 1 - (i * i) / 12; j <= 5 - (i * i) / 5; j++)
+				pset(SUNX + i, SUNY + j, SUNFACE);
+		drawsprite(hat, 4, SUNX - 3, SUNY - 12);
 	} else {
+		rect(SUNX - 4, SUNY - 3, 2, 2, SUNFACE);
+		rect(SUNX + 3, SUNY - 3, 2, 2, SUNFACE);
 		for (i = -3; i <= 3; i++)
-			pset(SUNX + i, SUNY + 3, SUNFACE);
+			pset(SUNX + i, SUNY + 3 - (i * i) / 9, SUNFACE);
 	}
 }
 
@@ -519,7 +560,7 @@ static int readnum(int col, int row, const char *label, int max)
 	cleartext(col, row, 16);
 	text(col, row, label, TEXT);
 	for (;;) {
-		k = getch();
+		k = getkey();
 		if (k == 27)
 			return -1;
 		if (k == 0) {
@@ -583,10 +624,10 @@ static void explode(int x, int y, int r)
 			for (i = -k; i <= k; i++)
 				if (i * i + j * j <= k * k)
 					pset(x + i, y + j, 64 + (i * i + j * j) * 7 / (k * k + 1));
-		delay(15);
+		rest(15);
 	}
 	nobeep();
-	delay(80);
+	rest(80);
 	for (j = -r; j <= r; j++)
 		for (i = -r; i <= r; i++)
 			if (i * i + j * j <= r * r)
@@ -640,7 +681,7 @@ static int throwhat(int p, double angle, double speed)
 		oy = iy - 3;
 		if (iy >= -6)
 			drawspin(ox, oy, p ? 3 - (int)(t * 10) % 4 : (int)(t * 10) % 4);
-		delay(6);
+		rest(6);
 	}
 	quiet();
 	if (result == 2) {
@@ -703,7 +744,7 @@ static int round_(int first)
 			text(col, 2, "Speed: ", TEXT);
 			itoa(speed, s, 10);
 			text(col + 7, 2, s, TEXT);
-			delay(700);
+			rest(700);
 		} else {
 			cleartext(col, 2, 16);
 			angle = readnum(col, 1, "Angle: ", 90);
@@ -719,9 +760,9 @@ static int round_(int first)
 			score[p]++;
 			showscore();
 			sfx(2);
-			delay(400);
+			rest(400);
 			quiet();
-			delay(800);
+			rest(800);
 			return p;
 		}
 		miss[p]++;
@@ -758,7 +799,7 @@ static int title(void)
 	text(9, 18, "Esc", HATRED);
 	text(13, 18, "Quit", TEXT);
 	for (;;) {
-		k = getch();
+		k = getkey();
 		if (k == '1' || k == '2')
 			return k - '0';
 		if (k == 's' || k == 'S') {
@@ -790,7 +831,7 @@ int main(int argc, char **argv)
 			if (score[winner] >= 3) {
 				rect(72, 80, 176, 24, SKY);
 				text(11, 11, winner ? (cpu ? "The computer wins!" : "Player 2 wins!") : (cpu ? "You win!" : "Player 1 wins!"), TEXT);
-				getch();
+				getkey();
 				break;
 			}
 		}

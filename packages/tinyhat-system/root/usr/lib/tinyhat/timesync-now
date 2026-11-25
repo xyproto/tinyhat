@@ -1,0 +1,14 @@
+#!/bin/sh
+awk '$2 == "00000000" { found = 1 } END { exit !found }' /proc/net/route 2>/dev/null ||
+	grep '^0\{32\} 00 ' /proc/net/ipv6_route 2>/dev/null | grep -qv ' lo$' || exit 0
+was=$(systemctl is-active systemd-timesyncd.service)
+systemctl start systemd-timesyncd.service || exit 1
+[ "$was" = active ] && exit 0
+i=0
+while [ "$i" -lt 12 ]; do
+	sleep 1
+	i=$((i + 1))
+	[ "$(timedatectl show -p NTPSynchronized --value)" = yes ] && [ "$i" -ge 3 ] && break
+done
+hwclock --systohc 2>/dev/null
+systemctl stop systemd-timesyncd.service

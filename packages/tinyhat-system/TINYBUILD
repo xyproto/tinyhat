@@ -1,6 +1,6 @@
 set pkgname tinyhat-system tinyhat-sudo
 set pkgver 1
-set pkgrel 12
+set pkgrel 16
 set pkgdesc 'Tiny Hat system services, boot and maintenance scripts, and their configuration'
 set arch any
 set url https://github.com/xyproto/tinyhat
@@ -14,7 +14,7 @@ function package_tinyhat-system
     find $pkgdir -type d -exec chmod 755 '{}' +; or return
     find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
     find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
-    for l in ufw:tinyhat-firewall cowthink:cowsay natta:poweroff nightynight:poweroff sov:sleepmode suspend:sleepmode
+    for l in ufw:tinyhat-firewall cowthink:cowsay natta:poweroff nightynight:poweroff shutdown:poweroff sov:sleepmode suspend:sleepmode
         set -l pair (string split : -- $l)
         ln -s $pair[2] $pkgdir/usr/bin/$pair[1]; or return
     end

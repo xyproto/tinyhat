@@ -1,6 +1,6 @@
 set pkgname tinyhat-alpine
 set pkgver 3.25.0_alpha20260805
-set pkgrel 2
+set pkgrel 4
 set pkgdesc 'Alpine Linux in /usr/lib/alpine, for installing and running Alpine packages next to Tiny Hat'
 set arch i686 x32 x86_64 aarch64
 set url https://alpinelinux.org/
@@ -46,7 +46,6 @@ set source \
     adduser \
     addgroup \
     tinyhat-alpine.hook \
-    tinyhat-alpine-setup.service \
     tinyhat-host-fonts.conf
 set sha256sums 779c85b81dd422714525584edaf6be9e6efb504f1eb37d6ed317299297579bc2 \
     9947279cd973c821bcffd1ecbce1927af9744aa9e67e247216b72e3c3adff3c8 \
@@ -82,11 +81,10 @@ set sha256sums 779c85b81dd422714525584edaf6be9e6efb504f1eb37d6ed317299297579bc2 
     180b2e52dbd452919c3271ed9dddf06826cee9a387650c81c00c7ac393031c5b \
     64c790260fc28ba0296d78550908f19cf11eabbd3e2f6ec9c7109a166912d216 \
     4ff4777bbf81fae583c3d1834241b4b959eb3d5afc2913e25a9758c0ecf75520 \
-    8fe10a9cd0018caf8d89b08e26cee57e808b253e503277f56080d8a6c2edb0b3 \
+    91e2b909d934cbdbd832ef32d942e3bb9d668af0ec439b1e24a79a0b9aa76858 \
     efc3bb95539559cc5a2cfb10c67580fbf45804794a2dae2bb607de5ed6402096 \
     96611a990f4e69607ec404c30696adf27f02b66428778a590c9554bac5d7d841 \
-    52c91b83b0715e96986a902ff4bcb6b1c847911d317de48fc5b003b7a0e1fb96 \
-    063fc417491597c3f57a7c656f3a4e164373997cfcbba442a1cb216fa4efebea \
+    856910a0a08b1a3373af9c031196c582273679bd1fbe01686f8e4ca594824d2a \
     7ab3c7230e0f2c2abc140beb4e88d8e3d40e1c8722a23222b7dd450405bedddd
 
 function package
@@ -126,6 +124,10 @@ function package
     echo $alparch >$root/etc/apk/arch; or return
     echo /usr/lib/tinyhat-host/lib >$root/etc/ld.so.conf; or return
     install -Dm644 $srcdir/tinyhat-host-fonts.conf $root/etc/fonts/conf.d/09-tinyhat-host-fonts.conf; or return
+    for v in gtk-3.0 gtk-4.0
+        install -d $root/etc/xdg/tinyhat/$v; or return
+        printf '[Settings]\ngtk-application-prefer-dark-theme=1\n' >$root/etc/xdg/tinyhat/$v/settings.ini; or return
+    end
     mkdir -p $root/usr/lib/tinyhat-host $root/home $root/media $root/run $root/tmp; or return
     for f in resolv.conf hosts localtime machine-id
         test -e $root/etc/$f; or touch $root/etc/$f; or return
@@ -135,7 +137,4 @@ function package
     install -Dm755 $srcdir/adduser $pkgdir/usr/share/tinyhat/alpine/adduser; or return
     install -Dm755 $srcdir/addgroup $pkgdir/usr/share/tinyhat/alpine/addgroup; or return
     install -Dm644 $srcdir/tinyhat-alpine.hook $pkgdir/usr/share/libalpm/hooks/zz-tinyhat-alpine.hook; or return
-    install -Dm644 $srcdir/tinyhat-alpine-setup.service $pkgdir/usr/lib/systemd/system/tinyhat-alpine-setup.service; or return
-    install -d $pkgdir/usr/lib/systemd/system/multi-user.target.wants; or return
-    ln -s ../tinyhat-alpine-setup.service $pkgdir/usr/lib/systemd/system/multi-user.target.wants/tinyhat-alpine-setup.service; or return
 end

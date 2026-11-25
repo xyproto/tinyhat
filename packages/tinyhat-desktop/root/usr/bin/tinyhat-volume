@@ -8,8 +8,16 @@ quiet=
 [ "$2" = --quiet ] && quiet=1
 run=${XDG_RUNTIME_DIR:-/tmp}
 state=${XDG_STATE_HOME:-$HOME/.local/state}/tinyhat
-exec 9>"$run/tinyhat-volume.lock"
-flock 9
+want=$run/tinyhat-volume.want
+applied=$run/tinyhat-volume.applied
+# Right after login, PipeWire may still be starting
+retry() {
+	i=0
+	until "$@" 2>/dev/null || [ "$i" -ge 50 ]; do
+		sleep 0.1
+		i=$((i + 1))
+	done
+}
 set_volume() {
 	case $1 in
 	up) wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ 5%+ ;;
@@ -17,19 +25,45 @@ set_volume() {
 	mute) wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle ;;
 	esac
 }
-# Right after login, PipeWire may still be starting
-i=0
-until set_volume "$1" 2>/dev/null || [ "$i" -ge 50 ]; do
-	sleep 0.1
-	i=$((i + 1))
-done
-item=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '/^Volume:/ { printf "%s %d%%", ($3 == "[MUTED]") ? "M" : "V", int($2 * 100 + 0.5) }')
-if [ -n "$item" ]; then
-	# The status bar shows the volume from this file, without running wpctl again
-	mkdir -p "$state"
-	printf '%s\n' "$item" >"$state/volume.tmp" && mv -f "$state/volume.tmp" "$state/volume"
-	[ -n "$quiet" ] || tinyhat-status --volume
+pending() {
+	[ -s "$want" ] && [ "$(cat "$want")" != "$(cat "$applied" 2>/dev/null)" ]
+}
+apply_want() {
+	w=$(cat "$want" 2>/dev/null)
+	set -- $w
+	if [ -n "$2" ]; then
+		retry wpctl set-volume @DEFAULT_AUDIO_SINK@ "$1%"
+		retry wpctl set-mute @DEFAULT_AUDIO_SINK@ "$2"
+	fi
+	printf '%s\n' "$w" >"$applied"
+}
+report() {
+	item=$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null | awk '/^Volume:/ { printf "%s %d%%", ($3 == "[MUTED]") ? "M" : "V", int($2 * 100 + 0.5) }')
+	if [ -n "$item" ]; then
+		# The status bar shows the volume from this file, without running wpctl again
+		mkdir -p "$state"
+		printf '%s\n' "$item" >"$state/volume.tmp" && mv -f "$state/volume.tmp" "$state/volume"
+		tinyhat-status --volume
+	fi
+}
+if [ "$1" = apply ]; then
+	while pending; do
+		exec 8>"$run/tinyhat-volume-apply.lock"
+		flock -n 8 || exit 0
+		exec 9>"$run/tinyhat-volume.lock"
+		flock 9
+		while pending; do
+			apply_want
+		done
+		report
+		exec 9>&- 8>&-
+	done
+	exit 0
 fi
+exec 9>"$run/tinyhat-volume.lock"
+flock 9
+retry set_volume "$1"
+report
 [ -z "$quiet" ] || exit 0
 case $item in
 M*) vol=muted ;;
