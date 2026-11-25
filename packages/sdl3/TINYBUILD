@@ -1,6 +1,6 @@
 set pkgname sdl3
-set pkgver 3.4.18
-set pkgrel 2
+set pkgver 3.4.20
+set pkgrel 1
 set pkgdesc 'Simple DirectMedia Layer 3 with the Tiny Hat Wayland framebuffer patch'
 set arch i686 x32
 set url https://libsdl.org/
@@ -14,7 +14,7 @@ set makedepends perl cmake ninja wayland wayland-protocols libxkbcommon libdrm m
 set source "https://github.com/libsdl-org/SDL/releases/download/release-$pkgver/SDL3-$pkgver.tar.gz" \
     wayland-framebuffer.patch \
     dos-modes.patch
-set sha256sums 9c75cf16330322c217dedd2e0609f1124f1b54b8633e763467b4684d0f4334a3 \
+set sha256sums f3bb06f55bed9557227a700af2ea62e49497ebdf58037732a731a5fb3ef8581f \
     d6f2235848907955c57745cd59848b40ffb40563966de497f586604606712876 \
     a61ac3d2888a06e707ca7b95d04957e06606a360923aade06fcdfefc94ed8136
 

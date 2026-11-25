@@ -1,6 +1,6 @@
 set pkgname dosbox-x
 set pkgver 2026.10.23
-set pkgrel 6
+set pkgrel 8
 set pkgdesc 'DOS emulator, Tiny Hat fork using SDL3'
 set arch i686
 set url https://github.com/xyproto/dosbox-x
@@ -12,15 +12,16 @@ set depends sdl3 libglvnd fluidsynth libslirp libpng zlib alsa-lib ncurses libpc
 set makedepends autoconf automake
 # surface-vsync.patch: vsyncmode=host also syncs the surface output with the display (until the next fork release)
 set source "dosbox-x-$pkgver.tar.gz::https://github.com/xyproto/dosbox-x/archive/refs/tags/$pkgver.tar.gz" \
-    wm-fullscreen-ctrl-d.patch no-ctrl-f9-quit.patch surface-vsync.patch
+    wm-fullscreen-ctrl-d.patch no-ctrl-f9-quit.patch surface-vsync.patch opengl-glvnd.patch
 set sha256sums 2a1e8d4a8a84d0dd8969b6488c80a4ce8a564307d22a90667661374349b41760 \
     62f529b240a5af89c36cbdccf8a19455f7edd0f308ab37caad84bd9324849aa2 \
     e11340ce0bba7e778ed453f95e8b3211079ccc758c5a66d51978b12bb6ece49c \
-    eff0d64a5544faf2051f2d3d627067b40b6d873807d585a599d56db50fbc338e
+    eff0d64a5544faf2051f2d3d627067b40b6d873807d585a599d56db50fbc338e \
+    88f75805eb9aea38353c226d2d2c8e17ed175ce7294f0b8bd0ba2a9fae5309d9
 
 function prepare
     cd dosbox-x-$pkgver; or return
-    for p in wm-fullscreen-ctrl-d no-ctrl-f9-quit surface-vsync
+    for p in wm-fullscreen-ctrl-d no-ctrl-f9-quit surface-vsync opengl-glvnd
         patch -Np1 -i ../$p.patch; or return
     end
     ./autogen.sh; or return
@@ -38,5 +39,6 @@ function package
     cd dosbox-x-$pkgver; or return
     make install DESTDIR="$pkgdir"; or return
     rm -f "$pkgdir/usr/share/dosbox-x/SarasaGothicFixed.ttf"
+    rm -f "$pkgdir/usr/share/applications/com.dosbox_x.DOSBox-X.desktop"
     install -Dm644 COPYING "$pkgdir/usr/share/licenses/$pkgname/COPYING"; or return
 end

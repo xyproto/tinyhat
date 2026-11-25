@@ -2,7 +2,7 @@ set pkgname tinyhat-gtk-theme
 set pkgver 1.0
 set pkgrel 2
 set pkgdesc 'Tiny Hat GTK 4 theme: the GTK dark theme in the Tiny Hat colours'
-set arch i686 x32
+set arch any
 set url https://github.com/xyproto/tinyhat
 set license LGPL-2.1-or-later
 set depends gtk4

@@ -1,7 +1,7 @@
 pkgbase = libffi
 	pkgdesc = Portable foreign function interface library
 	pkgver = 3.8.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://sourceware.org/libffi/
 	arch = i686
 	arch = x32

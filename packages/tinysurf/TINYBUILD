@@ -19,13 +19,20 @@ set b2sums 8a8d4f4c402ff03b7369ea88e859ac0a475e68f9e0f4054560d5eea3a82dca1fd9dd8
     07c546b4c9f73647435b9c8f114022ec5841c3b489c377a4e710ac937678164c4eb63ef092c62e0a2bb1b83daa6e02baa2663243ceaee916b2d39ecfc7052587
 
 function build
-    cmake -B build -S $pkgname-$pkgver -G Ninja \
+    set -l cross
+    set -l clean
+    if string match -q -- '*-gcc' $CC
+        set cross -DCMAKE_TOOLCHAIN_FILE=$CMAKE_TOOLCHAIN_FILE -DNETSURFY_HOST_C_COMPILER=(command -s $CC_FOR_BUILD) \
+            "-DCMAKE_C_FLAGS=$CFLAGS" "-DCMAKE_EXE_LINKER_FLAGS=$LDFLAGS" "-DCMAKE_SHARED_LINKER_FLAGS=$LDFLAGS"
+        set clean -u CMAKE_TOOLCHAIN_FILE -u CC -u CFLAGS -u CPPFLAGS -u LDFLAGS
+    end
+    env $clean cmake -B build -S $pkgname-$pkgver -G Ninja $cross \
         -DCMAKE_INSTALL_PREFIX=/usr \
         -DCMAKE_BUILD_TYPE=None \
         -DBUILD_TESTING=OFF \
         -DNETSURFY_BUILD_HEADLESS=ON \
         -DNETSURFY_FETCH_QUICKJS=OFF; or return
-    cmake --build build; or return
+    env $clean cmake --build build; or return
 end
 
 function package

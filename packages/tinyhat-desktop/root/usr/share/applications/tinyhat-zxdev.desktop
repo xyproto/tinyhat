@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Example ZX Spectrum program in C
+Icon=input-gaming
+Comment=Write a ZX Spectrum program in C with z88dk (press Ctrl+Space twice in rapid succession to build and run it in Fuse)
+Exec=tinyhat-zxdev
+Terminal=false
+Categories=Development;

@@ -1,7 +1,7 @@
 pkgbase = libglvnd
 	pkgdesc = The GL Vendor-Neutral Dispatch library
 	pkgver = 1.7.0
-	pkgrel = 3
+	pkgrel = 4
 	url = https://gitlab.freedesktop.org/glvnd/libglvnd
 	arch = i686
 	arch = x32
@@ -13,7 +13,6 @@ pkgbase = libglvnd
 	provides = libegl
 	provides = libgles
 	provides = libEGL.so
-	provides = libGL.so
 	provides = libGLESv2.so
 	provides = libGLdispatch.so
 	provides = libOpenGL.so

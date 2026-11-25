@@ -1,0 +1,13 @@
+diff --git a/cmake/Install.cmake b/cmake/Install.cmake
+index 37c2ebe7c..d9d5625d9 100644
+--- a/cmake/Install.cmake
++++ b/cmake/Install.cmake
+@@ -71,7 +71,7 @@ function(FISH_TRY_CREATE_DIRS)
+         else()
+             set(abs_dir "\$ENV{DESTDIR}${dir}")
+         endif()
+-        install(SCRIPT CODE "
++        install(CODE "
+             EXECUTE_PROCESS(COMMAND mkdir -p ${abs_dir} OUTPUT_QUIET ERROR_QUIET)
+             execute_process(COMMAND chmod 755 ${abs_dir} OUTPUT_QUIET ERROR_QUIET)
+         ")

@@ -20,18 +20,30 @@ function _zsnes_flags
     true
 end
 
+function _zsnes_target
+    test $CARCH = aarch64; and printf "%s\n" CPU=arm64 BITS=64
+    true
+end
+
+function prepare
+    cd zsnes-$pkgver; or return
+    sed -i 's/^LDFLAGS += -lGL$/LDFLAGS += -lOpenGL/' Makefile; or return
+    sed -i 's|^export PKG_CONFIG_LIBDIR := $(CROSS_SYSROOT)/lib/pkgconfig:|export PKG_CONFIG_LIBDIR := $(CROSS_SYSROOT)/usr/lib/pkgconfig:$(CROSS_SYSROOT)/usr/share/pkgconfig:$(CROSS_SYSROOT)/lib/pkgconfig:|' Makefile; or return
+    grep -q 'PKG_CONFIG_LIBDIR := $(CROSS_SYSROOT)/usr/lib/pkgconfig:' Makefile; or return
+end
+
 function build
     cd zsnes-$pkgver; or return
     set -lx CFLAGS $CFLAGS (_zsnes_flags)
     set -lx CXXFLAGS $CXXFLAGS (_zsnes_flags)
-    make all OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr; or return
+    make all OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr (_zsnes_target); or return
 end
 
 function package
     cd zsnes-$pkgver; or return
     set -lx CFLAGS $CFLAGS (_zsnes_flags)
     set -lx CXXFLAGS $CXXFLAGS (_zsnes_flags)
-    make install DESTDIR="$pkgdir" OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr; or return
+    make install DESTDIR="$pkgdir" OPT_FLAGS="$CFLAGS" WITH_AO= PREFIX=/usr (_zsnes_target); or return
     if test $CARCH = i686
         readelf -h "$pkgdir/usr/bin/zsnes" | grep -q "Type:.*EXEC"; or return
     end

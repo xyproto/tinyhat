@@ -1,6 +1,7 @@
 enable tinyhat-console.service
 enable tinyhat-shutdown-splash.service
 enable tinyhat-shutdown-sound.service
+enable tinyhat-fish-splash.service
 enable nftables.service
 enable tinyhat-pci-latency.service
 enable tinyhat-firewall.service

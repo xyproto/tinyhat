@@ -1,0 +1,141 @@
+set pkgname tinyhat-alpine
+set pkgver 3.25.0_alpha20260805
+set pkgrel 2
+set pkgdesc 'Alpine Linux in /usr/lib/alpine, for installing and running Alpine packages next to Tiny Hat'
+set arch i686 x32 x86_64 aarch64
+set url https://alpinelinux.org/
+set license MIT
+set depends bubblewrap bash pacman
+set options !strip
+set source \
+    "alpine-x86-alpine-baselayout-3.7.2-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/alpine-baselayout-3.7.2-r1.apk" \
+    "alpine-x86-alpine-baselayout-data-3.7.2-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/alpine-baselayout-data-3.7.2-r1.apk" \
+    "alpine-x86-alpine-keys-2.6-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/alpine-keys-2.6-r0.apk" \
+    "alpine-x86-alpine-release-3.25.0_alpha20260805-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/alpine-release-3.25.0_alpha20260805-r0.apk" \
+    "alpine-x86-apk-tools-3.0.11-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/apk-tools-3.0.11-r0.apk" \
+    "alpine-x86-ca-certificates-bundle-20261020-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/ca-certificates-bundle-20261020-r0.apk" \
+    "alpine-x86-libapk-3.0.11-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/libapk-3.0.11-r0.apk" \
+    "alpine-x86-libcrypto3-3.5.9-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/libcrypto3-3.5.9-r1.apk" \
+    "alpine-x86-libssl3-3.5.9-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/libssl3-3.5.9-r1.apk" \
+    "alpine-x86-musl-1.2.6-r6.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/musl-1.2.6-r6.apk" \
+    "alpine-x86-zlib-1.4-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86/zlib-1.4-r0.apk" \
+    "alpine-x86_64-alpine-baselayout-3.7.2-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/alpine-baselayout-3.7.2-r1.apk" \
+    "alpine-x86_64-alpine-baselayout-data-3.7.2-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/alpine-baselayout-data-3.7.2-r1.apk" \
+    "alpine-x86_64-alpine-keys-2.6-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/alpine-keys-2.6-r0.apk" \
+    "alpine-x86_64-alpine-release-3.25.0_alpha20260805-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/alpine-release-3.25.0_alpha20260805-r0.apk" \
+    "alpine-x86_64-apk-tools-3.0.11-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-3.0.11-r0.apk" \
+    "alpine-x86_64-ca-certificates-bundle-20261020-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/ca-certificates-bundle-20261020-r0.apk" \
+    "alpine-x86_64-libapk-3.0.11-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/libapk-3.0.11-r0.apk" \
+    "alpine-x86_64-libcrypto3-3.5.9-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/libcrypto3-3.5.9-r1.apk" \
+    "alpine-x86_64-libssl3-3.5.9-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/libssl3-3.5.9-r1.apk" \
+    "alpine-x86_64-musl-1.2.6-r6.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/musl-1.2.6-r6.apk" \
+    "alpine-x86_64-zlib-1.4-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/zlib-1.4-r0.apk" \
+    "alpine-aarch64-alpine-baselayout-3.7.2-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/alpine-baselayout-3.7.2-r1.apk" \
+    "alpine-aarch64-alpine-baselayout-data-3.7.2-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/alpine-baselayout-data-3.7.2-r1.apk" \
+    "alpine-aarch64-alpine-keys-2.6-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/alpine-keys-2.6-r0.apk" \
+    "alpine-aarch64-alpine-release-3.25.0_alpha20260805-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/alpine-release-3.25.0_alpha20260805-r0.apk" \
+    "alpine-aarch64-apk-tools-3.0.11-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/apk-tools-3.0.11-r0.apk" \
+    "alpine-aarch64-ca-certificates-bundle-20261020-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/ca-certificates-bundle-20261020-r0.apk" \
+    "alpine-aarch64-libapk-3.0.11-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/libapk-3.0.11-r0.apk" \
+    "alpine-aarch64-libcrypto3-3.5.9-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/libcrypto3-3.5.9-r1.apk" \
+    "alpine-aarch64-libssl3-3.5.9-r1.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/libssl3-3.5.9-r1.apk" \
+    "alpine-aarch64-musl-1.2.6-r6.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/musl-1.2.6-r6.apk" \
+    "alpine-aarch64-zlib-1.4-r0.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/aarch64/zlib-1.4-r0.apk" \
+    "apk-static-x86_64.apk::https://dl-cdn.alpinelinux.org/alpine/edge/main/x86_64/apk-tools-static-3.0.11-r0.apk" \
+    tinyhat-alpine \
+    adduser \
+    addgroup \
+    tinyhat-alpine.hook \
+    tinyhat-alpine-setup.service \
+    tinyhat-host-fonts.conf
+set sha256sums 779c85b81dd422714525584edaf6be9e6efb504f1eb37d6ed317299297579bc2 \
+    9947279cd973c821bcffd1ecbce1927af9744aa9e67e247216b72e3c3adff3c8 \
+    9c44b7934f3a80daff1932499c40927a90e68e432b619faf4373c64b4667f2b7 \
+    76540fb48dad45e48f6fbb44171d8bd17b2af9d017ba161990d46333e1c6704c \
+    34720e236ba05f26c0292783935674e5a32ccc58f0bae3ed142559f34493e9af \
+    837b259c2bbd6346fa2355ba14d5a3fac3acd0b8b26faa8e303155197b7bbcb9 \
+    0ae844622625288ece5e55d4154e57e88d04894d5828cc709e40dd8bb8de9b6f \
+    0ddda934b9361e03dbcf31b667835c8a40487c680277628d99c90dfd64a6abcf \
+    61e382b723918bb161b220551cdc550cc7f2991c61fb1c932953c866ebec2edc \
+    245b7bdeb23bb4eb357d3f0b1cb114bbcfacc33ddea50056599ebe55bcdf1ffa \
+    42bd00bbe3036852f455f73ba7a1918a46d9825951cf6659788fc95dcedabc82 \
+    1e818d18aead861bad24ccb25fc88985ed80f8b671e5ae410fc734069ea28c78 \
+    b88627a93e3faf7f7ba2e610a480461970a9334fc447fdc301c340d5a0a7ea74 \
+    44135f4a719071b7c439f1503ebfbb2216899430f110d5b1579a7e0d6534d3de \
+    d448e6046e163fd4df89303b157dc018a9ea65058ce49f4c73af723e1c7207de \
+    2db7eac877787d8fa5f17537dadb728596848abcf78512183195f45d058b2a8f \
+    71e9b0df65600594dd5d68b623990ac5fee3612d586baefbe77bdd71e9f91248 \
+    22ff23252b80865055f9723b91286a696e8a1ae1bd8c3262ea0b0e5ec0c80975 \
+    9ed3115c674dfca1f01c8d3235dc47f04c703aae180423982dc995e330f71010 \
+    e4064ad4fd4f26bc841b04173c12a1252f2dcc6f2e345bb6777c85750bbd2027 \
+    002f8b956419d67e91fd4e594f7b8d62fef13042cec45d977305df1a9ce0704f \
+    c81f2e580754a6bebb9b3a17034082d35cfa275723d5a27c47e8bfdfab18aca7 \
+    d48c8933b12bf115ed353ab9b133c864494da3afbc219aecec856c88192c8b53 \
+    babf0e1b35198509605ed0f20174ef8a228d3817dde1da23d101b48b9d3a8db1 \
+    25801a2b19bb4bdc72dad38497716d60208b189529b95dcd025cb0486557389c \
+    70eb120f8a35737f49be266c14318a8fae38f77e2eb48f61eecba075d88ddbbf \
+    58dca5ca61e6411ec7425818f33152207bf4d2eadcf65dd5c7dd2bcc628e14ae \
+    7a13e1d99c44bce766e03c3a5c44029138ba91e8c51fd8a862d49f826e6f3e8c \
+    6593fa5d8bed27a7f2923f87a0c7f4a90f9b20855e028245c9d6d3a744a38898 \
+    3bcef04cd969bc16029c139d13d9a145580f904fd710a55128d4a755f2cfa443 \
+    76ccacd5cfef948b1a5d19b67cf79968554d0cf48ff064d7ec4b6a07b5437d8c \
+    180b2e52dbd452919c3271ed9dddf06826cee9a387650c81c00c7ac393031c5b \
+    64c790260fc28ba0296d78550908f19cf11eabbd3e2f6ec9c7109a166912d216 \
+    4ff4777bbf81fae583c3d1834241b4b959eb3d5afc2913e25a9758c0ecf75520 \
+    8fe10a9cd0018caf8d89b08e26cee57e808b253e503277f56080d8a6c2edb0b3 \
+    efc3bb95539559cc5a2cfb10c67580fbf45804794a2dae2bb607de5ed6402096 \
+    96611a990f4e69607ec404c30696adf27f02b66428778a590c9554bac5d7d841 \
+    52c91b83b0715e96986a902ff4bcb6b1c847911d317de48fc5b003b7a0e1fb96 \
+    063fc417491597c3f57a7c656f3a4e164373997cfcbba442a1cb216fa4efebea \
+    7ab3c7230e0f2c2abc140beb4e88d8e3d40e1c8722a23222b7dd450405bedddd
+
+function package
+    set -l alparch x86
+    set -l ldso ld-linux.so.2
+    set -l ldsodir lib
+    switch $CARCH
+        case x86_64
+            set alparch x86_64
+            set ldso ld-linux-x86-64.so.2
+            set ldsodir lib64
+        case aarch64
+            set alparch aarch64
+            set ldso ld-linux-aarch64.so.1
+    end
+    mkdir -p $srcdir/apk-static; or return
+    bsdtar -xf $srcdir/apk-static-x86_64.apk -C $srcdir/apk-static sbin/apk.static; or return
+    set -l apk $srcdir/apk-static/sbin/apk.static
+
+    set -l pv $srcdir/provides
+    mkdir -p $pv/bin $pv/usr/sbin $pv/$ldsodir; or return
+    ln -s /usr/lib/tinyhat-host/bin/bash $pv/bin/sh; or return
+    ln -s /usr/lib/tinyhat-host/lib/$ldso $pv/$ldsodir/$ldso; or return
+    install -m755 $srcdir/adduser $srcdir/addgroup $pv/usr/sbin/; or return
+    $apk mkpkg --info name:tinyhat-provides --info version:0-r0 --info arch:noarch --info provider-priority:1 \
+        --info 'description:Commands that Tiny Hat provides' --info license:BSD-3-Clause \
+        --info 'provides:/bin/sh cmd:sh' --files $pv --output $srcdir/tinyhat-provides-0-r0.apk; or return
+
+    set -l root $pkgdir/usr/lib/alpine
+    mkdir -p $root; or return
+    $apk --usermode --root $root --initdb --arch $alparch --no-scripts --no-network --allow-untrusted --no-cache \
+        --force-non-repository add $srcdir/alpine-$alparch-*.apk $srcdir/tinyhat-provides-0-r0.apk; or return
+    printf '' >$root/var/log/apk.log; or return
+    printf '%s\n' alpine-baselayout alpine-keys alpine-release apk-tools ca-certificates-bundle tinyhat-provides \
+        '!busybox-binsh' >$root/etc/apk/world; or return
+    printf '%s\n' https://dl-cdn.alpinelinux.org/alpine/edge/{main,community,testing} >$root/etc/apk/repositories; or return
+    echo $alparch >$root/etc/apk/arch; or return
+    echo /usr/lib/tinyhat-host/lib >$root/etc/ld.so.conf; or return
+    install -Dm644 $srcdir/tinyhat-host-fonts.conf $root/etc/fonts/conf.d/09-tinyhat-host-fonts.conf; or return
+    mkdir -p $root/usr/lib/tinyhat-host $root/home $root/media $root/run $root/tmp; or return
+    for f in resolv.conf hosts localtime machine-id
+        test -e $root/etc/$f; or touch $root/etc/$f; or return
+    end
+
+    install -Dm755 $srcdir/tinyhat-alpine $pkgdir/usr/bin/tinyhat-alpine; or return
+    install -Dm755 $srcdir/adduser $pkgdir/usr/share/tinyhat/alpine/adduser; or return
+    install -Dm755 $srcdir/addgroup $pkgdir/usr/share/tinyhat/alpine/addgroup; or return
+    install -Dm644 $srcdir/tinyhat-alpine.hook $pkgdir/usr/share/libalpm/hooks/zz-tinyhat-alpine.hook; or return
+    install -Dm644 $srcdir/tinyhat-alpine-setup.service $pkgdir/usr/lib/systemd/system/tinyhat-alpine-setup.service; or return
+    install -d $pkgdir/usr/lib/systemd/system/multi-user.target.wants; or return
+    ln -s ../tinyhat-alpine-setup.service $pkgdir/usr/lib/systemd/system/multi-user.target.wants/tinyhat-alpine-setup.service; or return
+end

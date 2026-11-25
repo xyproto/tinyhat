@@ -1,0 +1,15 @@
+#!/bin/bash
+args=()
+while getopts "g:S" o; do
+	case $o in
+	g) args+=(-g "$OPTARG") ;;
+	S) args+=(-r) ;;
+	*) exit 1 ;;
+	esac
+done
+shift $((OPTIND - 1))
+[ $# -ge 1 ] || exit 1
+if [ $# -ge 2 ]; then
+	exec usermod -a -G "$2" "$1"
+fi
+exec groupadd "${args[@]}" "$1"

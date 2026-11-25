@@ -1,6 +1,6 @@
 set pkgname dwl
 set pkgver 0.9
-set pkgrel 22
+set pkgrel 23
 set pkgdesc 'dwm for Wayland, with the Tiny Hat patches'
 set arch i686 x32
 set url https://codeberg.org/dwl/dwl
@@ -10,7 +10,7 @@ set makedepends_build elfkickers
 # Built without XWayland (config.mk leaves XWAYLAND and XLIBS empty), so libxcb and xcb-util-wm are dropped
 set depends wlroots0.20 fcft libpng libinput libxkbcommon pixman wayland
 set makedepends wayland-protocols tllist tomlc17
-set -g _patches bar borders notice gaps keys filter killclient floatsize trim center menubutton barline cursor altab snap resizecorner tasks panel title statuscolor taskclose layoutcmd menuicon rootcolor keysound rootclick volume wallpaper volumeclick statusicons menuclose xwaylandcleanup fullscreenx11 fullscreenoffset x11kill titlecolor iconsonly roundtag nomode toml statusitems fan taskbuttons doodle tray rulesize tinyhat
+set -g _patches status-bar fullscreen-borders bar-notice tile-gaps keymap-reload scale-filter force-kill float-resize malloc-trim center-floating menu-button bar-underline cursor-theme alt-tab window-snap resize-corner taskbar layout-toggle bar-title status-color task-close layout-command menu-icon root-color key-sounds desktop-click volume-control wallpaper volume-click status-icons menu-click-close xwayland-cleanup fullscreen-x11 fullscreen-offset x11-kill title-pill status-icons-only round-tags mode-fallback toml-config status-tooltips fan-button task-buttons desktop-doodles system-tray rule-size bar-polish clock-click maximize tile-reflow rule-nofocus
 set source "dwl-$pkgver.tar.gz::https://codeberg.org/dwl/dwl/archive/v$pkgver.tar.gz" \
     $_patches.patch \
     config.h
@@ -59,11 +59,15 @@ set sha256sums 635c1c352c32f2e69d7acf95053ed6178e8614b51485f221bae78255b0bf3e3d 
     5fb162612fe6f1c8ad997458cef0583f8d21ba944af9c5901e936f17311fd306 \
     18712af91444da3e0483d42a02b5497a023b374d4cd80e65cb82a4386312d534 \
     49620b48f9df83907f999de9f43a72ea2227937ab8b374cc123089a5e1c817ac \
-    b25bfe4f518d50e185cdf9091a11e7a9ae6f98b11e555d56264721bd4ec4eb54 \
+    6f94ea3bb170ed382d42875fc8c130ec938d4890941e3b9a991b872502e4ce1a \
     90ae3ed424a36f19213430a7fffadd400c1860188d1faf8ee9c0bc411ff7e127 \
     caae3ce24ac2c8a01aed9e9fb3b4242cc2c051ef2f6f179979db07561426fafa \
-    bec3d31f2ba87b977447bb6b39f25530a6dcfd4ffb5e2b0b54943ea33a783760 \
-    b9f60722d750777458c7135e580c7e85e7349572c4017418ea94fa3702372ef7
+    ab17eb85b8c92c7917d2e9605379898e250719078d1fb73a0051ab622df076a1 \
+    b0f9f77c0aaa7f33056a54375a82dc9fb3e1f02bef2ba942a1dfa8798c81932f \
+    7960c5d82c1da4f53a6c45712dbfc8561caaaf58f76c4c4ffa151f605f04e164 \
+    156557419792e264207078cb6562fc8f521922a273bafd030b0896f56234deb1 \
+    4db65d9591adf2fd6135aac0ac27a9e5e99dcdff6769a9e21a05b3feccaddc64 \
+    26b10becd2a7bce106ca3bcd73d7c20606cc395657752dbe4351b4a4bed97b66
 
 function prepare
     cd dwl; or return
@@ -75,7 +79,7 @@ end
 
 function build
     cd dwl; or return
-    make PREFIX=/usr CFLAGS="$CFLAGS -O3 -DWLR_USE_UNSTABLE -std=c11"; or return
+    make PREFIX=/usr CC="$CC" CFLAGS="$CFLAGS -O3 -DWLR_USE_UNSTABLE -std=c11"; or return
 end
 
 function package

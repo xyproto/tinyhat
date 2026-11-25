@@ -27,7 +27,10 @@ pkgbase = fish
 	options = network
 	options = leakpath
 	source = fish::git+https://github.com/fish-shell/fish-shell#tag=4.9.3
+	source = cmake-install-code.patch
 	sha512sums = 017388b8776fb86563cf475fa280d07b3e3016c00b48f1141dbd6596e041e98ad614ecdb85e2cda92699179caebee64d95193f3a9d9653769de05cdf8d38d9cc
+	sha512sums = 32438242eb08215664ebc693e12bf50440d5cc3042a4966a43b1f69a35af841040ca50f1eaf999c2c49ee4c212763a14c36a1e6241e7568d6a495f523cba5d42
 	b2sums = 223586c51e69adbf5ba00df84b3d2f23cc730d989f22afab0e29064bf2d94e9bbbf746f3c46146fb1c696d7c4a3b6008d5c89d15bda0cede6a618472a159b6e8
+	b2sums = 537b0bbacb3d3e396236db7d16c661d800b2f81877771195ea398d07fbf873ad502239df493f6e255e33e62dc965d6f1ddee7641779e098ef97befe5500cf28a
 
 pkgname = fish

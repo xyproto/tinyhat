@@ -1,0 +1,209 @@
+diff -ruN a/v2/run.go b/v2/run.go
+--- a/v2/run.go
++++ b/v2/run.go
+@@ -183,6 +183,10 @@
+ 			if cmd = slay.SNESEmulatorCommand(rom); cmd == nil {
+ 				return "", false, errors.New("please install ZSNES or Snes9x to run " + filepath.Base(rom))
+ 			}
++		} else if tap := builtROM(sourceDir, ".tap"); tap != "" {
++			if cmd = slay.ZXEmulatorCommand(tap); cmd == nil {
++				return "", false, errors.New("please install Fuse to run " + filepath.Base(tap))
++			}
+ 		} else if prg := builtROM(sourceDir, ".prg"); prg != "" {
+ 			if cmd = slay.CBMEmulatorCommand(prg); cmd == nil {
+ 				return "", false, errors.New("please install VICE (x64sc, x128 or xvic) to run " + filepath.Base(prg))
+@@ -498,7 +502,7 @@
+ // Returns nil if no suitable emulator is installed.
+ func romCommand(rom string) *exec.Cmd {
+ 	switch strings.ToLower(filepath.Ext(rom)) {
+-	case ".prg", ".nes", ".sfc", ".smc", ".gba":
++	case ".prg", ".nes", ".sfc", ".smc", ".gba", ".tap", ".tzx", ".z80", ".sna", ".szx":
+ 		return slay.EmulatorCommand(rom)
+ 	}
+ 	return exec.Command(rom)
+diff -ruN a/v2/vendor/github.com/xyproto/slay/api.go b/v2/vendor/github.com/xyproto/slay/api.go
+--- a/v2/vendor/github.com/xyproto/slay/api.go
++++ b/v2/vendor/github.com/xyproto/slay/api.go
+@@ -63,10 +63,13 @@
+ 		result.Output, result.CommandsRun, buildErr = buildChip8(proj.MainSource, result.OutputExecutable)
+ 		return result, buildErr
+ 	}
+-	if proj.CC65Target != "" || proj.HasSNES {
++	if proj.Z88DKTarget != "" || proj.CC65Target != "" || proj.HasSNES {
+ 		srcs := append([]string{proj.MainSource}, proj.DepSources...)
+ 		var buildErr error
+-		if proj.CC65Target != "" {
++		if proj.Z88DKTarget != "" {
++			result.OutputExecutable = exe + z88dkExtension(proj.Z88DKTarget)
++			result.Output, result.CommandsRun, buildErr = buildZ88DK(proj.Z88DKTarget, srcs, result.OutputExecutable, opts)
++		} else if proj.CC65Target != "" {
+ 			result.OutputExecutable = exe + cc65Extension(proj.CC65Target)
+ 			result.Output, result.CommandsRun, buildErr = buildCC65(proj.CC65Target, srcs, result.OutputExecutable, opts)
+ 		} else {
+diff -ruN a/v2/vendor/github.com/xyproto/slay/build.go b/v2/vendor/github.com/xyproto/slay/build.go
+--- a/v2/vendor/github.com/xyproto/slay/build.go
++++ b/v2/vendor/github.com/xyproto/slay/build.go
+@@ -475,12 +475,14 @@
+ 		os.Stdout.Write(out)
+ 		return err
+ 	}
+-	if proj.CC65Target != "" || proj.HasSNES {
++	if proj.Z88DKTarget != "" || proj.CC65Target != "" || proj.HasSNES {
+ 		srcs := append([]string{proj.MainSource}, proj.DepSources...)
+ 		var out []byte
+ 		var cmds []string
+ 		var err error
+-		if proj.CC65Target != "" {
++		if proj.Z88DKTarget != "" {
++			out, cmds, err = buildZ88DK(proj.Z88DKTarget, srcs, exe+z88dkExtension(proj.Z88DKTarget), opts)
++		} else if proj.CC65Target != "" {
+ 			out, cmds, err = buildCC65(proj.CC65Target, srcs, exe+cc65Extension(proj.CC65Target), opts)
+ 		} else {
+ 			out, cmds, err = buildSNES(srcs, exe+".sfc")
+diff -ruN a/v2/vendor/github.com/xyproto/slay/cc65.go b/v2/vendor/github.com/xyproto/slay/cc65.go
+--- a/v2/vendor/github.com/xyproto/slay/cc65.go
++++ b/v2/vendor/github.com/xyproto/slay/cc65.go
+@@ -231,6 +231,13 @@
+ 	switch strings.ToLower(filepath.Ext(rom)) {
+ 	case ".prg":
+ 		return CBMEmulatorCommand(rom, args...)
++	case ".tap":
++		if isC64Tape(rom) {
++			return C64EmulatorCommand(rom, args...)
++		}
++		return ZXEmulatorCommand(rom, args...)
++	case ".tzx", ".z80", ".sna", ".szx":
++		return ZXEmulatorCommand(rom, args...)
+ 	case ".nes":
+ 		return NESEmulatorCommand(rom, args...)
+ 	case ".sfc", ".smc":
+diff -ruN a/v2/vendor/github.com/xyproto/slay/detect.go b/v2/vendor/github.com/xyproto/slay/detect.go
+--- a/v2/vendor/github.com/xyproto/slay/detect.go
++++ b/v2/vendor/github.com/xyproto/slay/detect.go
+@@ -168,6 +168,7 @@
+ 	HasWatcom         bool   // detected from #include <i86.h>
+ 	HasGBA            bool   // detected from #include <tonc.h> or <gba.h>
+ 	CC65Target        string // c64, c128, vic20 or nes for cc65, or snes for 65816 assembly built with ca65
++	Z88DKTarget       string // zx for z88dk
+ 	HasSNES           bool
+ 	HasChip8          bool // an Octo (.8o) source file and no C or C++ sources
+ 	HasGLFWVulkan     bool // detected from #define GLFW_INCLUDE_VULKAN
+@@ -235,6 +236,10 @@
+ 				p.HasGBA = true
+ 				break
+ 			}
++			if target := makefileZ88DKTarget(s); target != "" {
++				p.Z88DKTarget = target
++				break
++			}
+ 			if target := makefileCC65Target(s); target != "" {
+ 				if p.CC65Target == "" {
+ 					p.CC65Target = target
+@@ -322,6 +327,9 @@
+ 		if isSNESInclude(line) {
+ 			p.HasSNES = true
+ 		}
++		if target := z88dkIncludeTarget(line); target != "" {
++			p.Z88DKTarget = target
++		}
+ 		// Detect win64 from includes
+ 		for _, wh := range []string{`#include <windows.h>`, `#include "windows.h"`, `#include<windows.h>`} {
+ 			if strings.Contains(line, wh) {
+diff -ruN a/v2/vendor/github.com/xyproto/slay/z88dk.go b/v2/vendor/github.com/xyproto/slay/z88dk.go
+--- a/v2/vendor/github.com/xyproto/slay/z88dk.go
++++ b/v2/vendor/github.com/xyproto/slay/z88dk.go
+@@ -0,0 +1,94 @@
++package slay
++
++import (
++	"fmt"
++	"os"
++	"os/exec"
++	"strings"
++
++	"github.com/xyproto/files"
++)
++
++// z88dkHeaders maps the C headers that select a z88dk target to that target
++var z88dkHeaders = []struct{ header, target string }{
++	{"arch/zx.h", "zx"},
++	{"spectrum.h", "zx"},
++	{"arch/zx/spectrum.h", "zx"},
++}
++
++// z88dkIncludeTarget returns the z88dk target that the given #include line selects, or an empty string
++func z88dkIncludeTarget(line string) string {
++	for _, h := range z88dkHeaders {
++		if strings.Contains(line, "#include <"+h.header+">") || strings.Contains(line, `#include "`+h.header+`"`) {
++			return h.target
++		}
++	}
++	return ""
++}
++
++// makefileZ88DKTarget returns the z88dk target that the given Makefile contents build for, or an empty string
++func makefileZ88DKTarget(s string) string {
++	if strings.Contains(s, "zcc +zx ") || strings.Contains(s, "zcc +zx\n") {
++		return "zx"
++	}
++	return ""
++}
++
++// z88dkExtension returns the file extension of the program that is built for the given z88dk target
++func z88dkExtension(string) string {
++	return ".tap"
++}
++
++// buildZ88DK builds the given C sources for the given target with zcc from z88dk
++func buildZ88DK(target string, srcs []string, out string, opts BuildOptions) ([]byte, []string, error) {
++	zcc, err := exec.LookPath("zcc")
++	if err != nil {
++		return nil, nil, fmt.Errorf("zcc was not found, please install z88dk")
++	}
++	base := strings.TrimSuffix(out, z88dkExtension(target))
++	args := []string{"+" + target, "-create-app"}
++	if opts.Debug {
++		args = append(args, "-debug")
++	}
++	args = append(args, "-o", base)
++	args = append(args, srcs...)
++	cmd := exec.Command(zcc, args...)
++	output, err := cmd.CombinedOutput()
++	if err != nil {
++		return output, []string{cmdToString(cmd)}, fmt.Errorf("compilation failed: %w", err)
++	}
++	if base != out && fileExists(out) {
++		os.Remove(base)
++	}
++	return output, []string{cmdToString(cmd)}, nil
++}
++
++// isC64Tape returns true if the given .tap file is a Commodore 64 tape image instead of a ZX Spectrum tape
++func isC64Tape(tap string) bool {
++	f, err := os.Open(tap)
++	if err != nil {
++		return false
++	}
++	defer f.Close()
++	magic := make([]byte, 12)
++	n, _ := f.Read(magic)
++	return n == len(magic) && string(magic) == "C64-TAPE-RAW"
++}
++
++// ZXEmulatorCommand returns a command that runs the given ZX Spectrum tape, snapshot or disk image in an
++// installed emulator, or nil if none is found
++func ZXEmulatorCommand(program string, args ...string) *exec.Cmd {
++	emulators := [][]string{
++		{"fuse"},
++		{"fuse-sdl"},
++		{"fuse-gtk"},
++		{"tinyhat-emulate", "zx"},
++	}
++	for _, emulator := range emulators {
++		if p := files.WhichCached(emulator[0]); p != "" {
++			cmdArgs := append(append(emulator[1:], args...), program)
++			return exec.Command(p, cmdArgs...)
++		}
++	}
++	return nil
++}

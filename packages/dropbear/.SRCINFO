@@ -1,7 +1,7 @@
 pkgbase = dropbear
 	pkgdesc = Lightweight SSH server
 	pkgver = 2026.94
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/mkj/dropbear
 	arch = i686
 	arch = x32
@@ -22,6 +22,7 @@ pkgname = dropbear
 	depends = zlib
 
 pkgname = dropbear-scp
-	pkgdesc = Lightweight application for copying files over SSH
+	pkgdesc = The scp and ssh commands from dropbear
+	groups = tinyhat-replaceable
 	provides = scp
 	conflicts = openssh

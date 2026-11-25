@@ -36,7 +36,7 @@ function build
         -DLLVM_INCLUDE_BENCHMARKS=OFF \
         -DLLVM_INCLUDE_DOCS=OFF \
         -DLLVM_PARALLEL_LINK_JOBS=2; or return
-    ninja $NINJAFLAGS -C build; or return
+    env -u CMAKE_TOOLCHAIN_FILE ninja $NINJAFLAGS -C build; or return
 end
 
 function package_llvm-libs

@@ -1,6 +1,6 @@
-set pkgname tinyhat-system
+set pkgname tinyhat-system tinyhat-sudo
 set pkgver 1
-set pkgrel 8
+set pkgrel 12
 set pkgdesc 'Tiny Hat system services, boot and maintenance scripts, and their configuration'
 set arch any
 set url https://github.com/xyproto/tinyhat
@@ -9,13 +9,23 @@ set license BSD-3-Clause
 set depends awk
 set backup etc/iwd/main.conf etc/profile.d/pvsneslib.sh etc/profile.d/tinyhat-env.sh etc/security/limits.d/90-tinyhat-audio.conf etc/tinyhat-bootsplash/activate.d/50-tinyhat
 
-function package
+function package_tinyhat-system
     cp -a $startdir/root/. $pkgdir/; or return
     find $pkgdir -type d -exec chmod 755 '{}' +; or return
     find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
     find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
-    for l in sudo:doas ssh:dbclient ufw:tinyhat-firewall cowthink:cowsay natta:poweroff nightynight:poweroff sov:sleepmode suspend:sleepmode
+    for l in ufw:tinyhat-firewall cowthink:cowsay natta:poweroff nightynight:poweroff sov:sleepmode suspend:sleepmode
         set -l pair (string split : -- $l)
         ln -s $pair[2] $pkgdir/usr/bin/$pair[1]; or return
     end
+end
+
+function package_tinyhat-sudo
+    set pkgdesc 'The sudo command, running doas'
+    set depends opendoas
+    set groups tinyhat-replaceable
+    set provides sudo
+    set conflicts sudo
+    install -d $pkgdir/usr/bin; or return
+    ln -s doas $pkgdir/usr/bin/sudo; or return
 end

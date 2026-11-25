@@ -33,8 +33,14 @@ function prepare
     mkdir "$srcdir"/build-{gcc,gcc-nano}; or return
 end
 
+function _cross
+    string match -q -- '*-gcc' $CC
+end
+
 function _canadian
-    test $CARCH = aarch64; and command -q hostcc; and test -x /opt/tinyhat-cc/launch
+    test $CARCH = aarch64; or return
+    _cross; and return
+    command -q hostcc; and test -x /opt/tinyhat-cc/launch
 end
 
 function _stage1
@@ -69,6 +75,16 @@ end
 # The tools that run on the build machine, x86_64, and are never packaged
 function _xtools_env
     set -gx PATH "$srcdir"/xtools/bin $PATH
+    mkdir -p "$srcdir"/xtools/bin; or return
+    if _cross
+        for t in cc:cc cxx:c++ ar:ar nm:nm ranlib:ranlib
+            set -l n (string split : $t)
+            printf '%s\n' '#!/bin/sh' "exec $(command -s $n[2]) \"\$@\"" >"$srcdir"/xtools/bin/host$n[1]; or return
+        end
+        chmod +x "$srcdir"/xtools/bin/host*; or return
+        set -gx CONFIG_SHELL (command -s bash)
+        return
+    end
     # hostcc and the programs it links use the libraries of the build machine
     printf '%s\n' '#!/bin/sh' 'export LD_LIBRARY_PATH=/host/usr/lib' 'exec /host/usr/bin/g++ -B/host/usr/bin --sysroot=/host "$@"' >"$srcdir"/xtools/bin/hostcxx; or return
     for t in ar nm ranlib
@@ -89,6 +105,13 @@ end
 function _build_xtools
     mkdir -p "$srcdir"/xtools/bin "$srcdir"/build-xbinutils "$srcdir"/build-xgcc; or return
     _xtools_env; or return
+    set -lx CONFIG_SITE /dev/null
+    set -lx PKG_CONFIG_LIBDIR /usr/lib/pkgconfig:/usr/share/pkgconfig
+    set -lx PKG_CONFIG_SYSROOT_DIR
+    set -lx CFLAGS -O2
+    set -lx CXXFLAGS -O2
+    set -lx CPPFLAGS
+    set -lx LDFLAGS
     cd "$srcdir"/build-xbinutils; or return
     _xtools_configure "$srcdir"/binutils-$_binutils/configure --disable-gdb --disable-gdbserver --disable-sim \
         --disable-gprofng --enable-multilib --enable-interwork --enable-deterministic-archives; or return
@@ -107,7 +130,8 @@ function _build_gcc
     set -l canadian
     set -l makeargs
     if _canadian
-        set canadian --build=x86_64-pc-linux-gnu --host=aarch64-unknown-linux-gnu
+        set canadian --build=x86_64-pc-linux-gnu --host=aarch64-unknown-linux-gnu --includedir=/usr/$_target/include
+        set -fx CONFIG_SITE /dev/null
         set -fx CC_FOR_BUILD hostcc
         set -fx CXX_FOR_BUILD hostcxx
         set -fx AR_FOR_BUILD hostar
@@ -126,6 +150,10 @@ function _build_gcc
         end
     end
     ../$_basedir/configure $canadian --target=$_target --prefix=/usr --with-sysroot=/usr/$_target --with-native-system-header-dir=/include --libexecdir=/usr/lib --enable-languages=c,c++ --enable-plugins --disable-decimal-float --disable-libffi --disable-libgomp --disable-libmudflap --disable-libquadmath --disable-libssp --disable-libstdcxx-pch --disable-nls --disable-shared --disable-threads --disable-tls --with-gnu-as --with-gnu-ld --with-system-zlib --with-newlib --with-headers=/usr/$_target/include --with-python-dir=share/gcc-arm-none-eabi --with-gmp --with-mpfr --with-mpc --with-isl --with-libelf --enable-gnu-indirect-function --with-host-libstdcxx='-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm' --with-pkgversion='Arch Repository' --with-bugurl='https://gitlab.archlinux.org/archlinux/packaging/packages/arm-none-eabi-gcc/-/issues' --with-multilib-list=rmprofile; or return
+    if _canadian
+        sed -i 's/^\tCFLAGS="$(CFLAGS_FOR_BUILD)" \\\\$/\tCFLAGS="$(CFLAGS_FOR_BUILD)" CXXFLAGS="$(CXXFLAGS_FOR_BUILD)" \\\\/' Makefile; or return
+        grep -q 'CXXFLAGS="$(CXXFLAGS_FOR_BUILD)" \\\\$' Makefile; or return
+    end
     make $makeargs INHIBIT_LIBC_CFLAGS='-DUSE_TM_CLONE_REGISTRY=0'; or return
 end
 
@@ -139,7 +167,7 @@ end
 function package
     set -l makeargs
     if _canadian
-        set -gx PATH "$srcdir"/xtools/bin $PATH
+        _xtools_env; or return
         set makeargs SHELL=$CONFIG_SHELL
     end
     cd "$srcdir"/build-gcc; or return

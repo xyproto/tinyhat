@@ -2,7 +2,7 @@ set pkgname filesystem
 set pkgver 2025.10.12
 set pkgrel 1
 set pkgdesc 'Base Arch Linux files'
-set arch any
+set arch i686 x32 x86_64 aarch64
 set license 0BSD
 set url https://archlinux.org
 set depends iana-etc

@@ -21,7 +21,11 @@ if [ "$(systemctl show -P ActiveState tinyhat-pacman-init.service)" != active ];
 fi
 mkdir -p /run/tinyhat && : >/run/tinyhat/pacman-first-use
 case $1 in -U* | --upgrade) exit 0 ;; esac
-keyrings=$(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null)
+ignored=" $(pacman-conf IgnorePkg 2>/dev/null | tr '\n' ' ') "
+keyrings=
+for k in $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null); do
+	case $ignored in *" $k "*) ;; *) keyrings="$keyrings $k" ;; esac
+done
 [ -n "$keyrings" ] || exit 0
 echo "Tiny Hat: refreshing the package databases and keyrings." >&2
 /usr/lib/pacman/pacman -Sy --needed --noconfirm $keyrings >&2 || echo "Tiny Hat: could not refresh the keyrings, continuing." >&2

@@ -1,6 +1,6 @@
 set pkgname sbc
 set pkgver 2.2
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Bluetooth Subband Codec (SBC) library'
 set url https://git.kernel.org/pub/scm/bluetooth/sbc.git
 set nvchecker source=git git=https://git.kernel.org/pub/scm/bluetooth/sbc.git

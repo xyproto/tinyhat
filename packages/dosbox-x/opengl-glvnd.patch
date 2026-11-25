@@ -1,0 +1,19 @@
+--- a/configure.ac	2026-11-25 01:20:42.799900864 +0100
++++ b/configure.ac	2026-11-25 01:20:42.817584955 +0100
+@@ -620,9 +620,15 @@
+        AC_DEFINE(C_OPENGL,1)
+        ;;
+     *)
+-       pkg-config --exists gl; RES=$?
++       pkg-config --exists opengl; RES=$?
+        if test x$RES = x0; then
+          AC_MSG_RESULT(yes)
++         CFLAGS="$CFLAGS "`pkg-config opengl --cflags`
++         CPPFLAGS="$CPPFLAGS "`pkg-config opengl --cflags`
++         LIBS="$LIBS "`pkg-config opengl --libs`
++         AC_DEFINE(C_OPENGL,1)
++       elif pkg-config --exists gl; then
++         AC_MSG_RESULT(yes)
+          CFLAGS="$CFLAGS "`pkg-config gl --cflags`
+          CPPFLAGS="$CPPFLAGS "`pkg-config gl --cflags`
+          LIBS="$LIBS "`pkg-config gl --libs`

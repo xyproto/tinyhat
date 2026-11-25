@@ -1,6 +1,6 @@
 set pkgname gdbm
 set pkgver 1.26
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'GNU database library'
 set arch i686 x32
 set url https://www.gnu.org/software/gdbm/gdbm.html

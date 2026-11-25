@@ -35,7 +35,12 @@ case $(printf '%s' "$1" | tr '[:upper:]' '[:lower:]') in
 	exec tinyhat-emulate sms "$1" ;;
 *.gen | *.smd)
 	exec tinyhat-emulate genesis "$1" ;;
-*.d64 | *.d71 | *.d81 | *.g64 | *.prg | *.t64 | *.tap | *.crt | *.p00)
+*.tap)
+	[ "$(head -c 12 "$1")" = C64-TAPE-RAW ] && exec tinyhat-emulate c64 "$1"
+	exec tinyhat-emulate zx "$1" ;;
+*.tzx | *.z80 | *.sna | *.szx | *.scl | *.trd)
+	exec tinyhat-emulate zx "$1" ;;
+*.d64 | *.d71 | *.d81 | *.g64 | *.prg | *.t64 | *.crt | *.p00)
 	exec tinyhat-emulate c64 "$1" ;;
 *.exe | *.com | *.bat)
 	exec tinyhat-dosbox "$1" ;;

@@ -1,0 +1,17 @@
+set pkgname python-turtle
+set pkgver 1.0.0
+set pkgrel 2
+set pkgdesc 'Turtle graphics for Python, drawn with SDL3 instead of Tk'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license PSF-2.0
+set depends python sdl3 sdl3_ttf sdl3_image ttf-dejavu ttf-jetbrains-mono
+set makedepends python
+set source turtle.py
+set sha256sums 5aa6a7d31393a1cdd5c0f0a150dd43dc4cfe7303941b8bbcd7c86799329b2362
+
+function package
+    install -Dm644 turtle.py "$pkgdir/usr/lib/python3.14/turtle.py"; or return
+    python -m compileall -q -s "$pkgdir" -p / "$pkgdir/usr/lib/python3.14/turtle.py"; or return
+    python -O -m compileall -q -s "$pkgdir" -p / "$pkgdir/usr/lib/python3.14/turtle.py"; or return
+end

@@ -1,7 +1,7 @@
 pkgbase = gdbm
 	pkgdesc = GNU database library
 	pkgver = 1.26
-	pkgrel = 2
+	pkgrel = 3
 	url = https://www.gnu.org/software/gdbm/gdbm.html
 	arch = i686
 	arch = x32

@@ -1,7 +1,7 @@
 pkgbase = alsa-lib
 	pkgdesc = An alternative implementation of Linux sound support
 	pkgver = 1.2.16.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.alsa-project.org
 	install = alsa-lib.install
 	arch = i686

@@ -1,0 +1,16 @@
+pkgbase = z88dk
+	pkgdesc = Z80 C compiler, assembler and libraries for the ZX Spectrum
+	pkgver = 2.5
+	pkgrel = 1
+	url = https://z88dk.org/
+	arch = i686
+	arch = x32
+	license = ClArtistic
+	depends = glibc
+	depends = gcc-libs
+	depends = gmp
+	options = leakpath
+	source = z88dk-src-2.5.tgz::https://github.com/z88dk/z88dk/releases/download/v2.5/z88dk-src-2.5.tgz
+	sha256sums = 2f82eb4f71d27528f3b1902046bac2f77e7326b4a2d836febe284d32a4ec31f9
+
+pkgname = z88dk

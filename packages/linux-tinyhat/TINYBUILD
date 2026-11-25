@@ -41,6 +41,9 @@ function _hostenv
     set -e CFLAGS CXXFLAGS CPPFLAGS LDFLAGS PKG_CONFIG_LIBDIR PKG_CONFIG_SYSROOT_DIR PKG_CONFIG_FDO_SYSROOT_RULES
     if set -q TINYHAT_CROSS
         set -gx PATH (string match -v -- /usr/$TINYHAT_CROSS/bin $PATH)
+        if test $CARCH = aarch64
+            set -gx CROSS_COMPILE $TINYHAT_CROSS-
+        end
     end
 end
 
@@ -84,7 +87,11 @@ function package
     make ARCH=$karch M=$srcdir/xpadneo-$_xpadneo/hid-xpadneo/src INSTALL_MOD_PATH=$pkgdir/usr INSTALL_MOD_STRIP=1 DEPMOD=/doesnt/exist modules_install; or return
     rm -f $modules/build
     depmod -b $pkgdir/usr $kver; or return
-    install -Dm644 (make -s ARCH=$karch image_name) $modules/vmlinuz; or return
+    if test $CARCH = aarch64
+        install -Dm644 arch/arm64/boot/Image $modules/vmlinuz; or return
+    else
+        install -Dm644 (make -s ARCH=$karch image_name) $modules/vmlinuz; or return
+    end
     if test $CARCH = aarch64
         install -Dm644 arch/arm64/boot/dts/broadcom/bcm2711-rpi-4-b.dtb arch/arm64/boot/dts/broadcom/bcm2711-rpi-400.dtb arch/arm64/boot/dts/broadcom/bcm2711-rpi-cm4-io.dtb -t $modules/dtbs/; or return
     end

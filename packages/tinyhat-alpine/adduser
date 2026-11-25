@@ -1,0 +1,32 @@
+#!/bin/bash
+args=()
+system=
+home=1
+group=
+while getopts "h:g:s:G:SDHu:k:" o; do
+	case $o in
+	h) args+=(-d "$OPTARG") ;;
+	g) args+=(-c "$OPTARG") ;;
+	s) args+=(-s "$OPTARG") ;;
+	G) group=$OPTARG ;;
+	S) system=1 ;;
+	H) home= ;;
+	u) args+=(-u "$OPTARG") ;;
+	k) args+=(-k "$OPTARG") ;;
+	D) ;;
+	*) exit 1 ;;
+	esac
+done
+shift $((OPTIND - 1))
+[ $# -ge 1 ] || exit 1
+if [ $# -ge 2 ]; then
+	exec usermod -a -G "$2" "$1"
+fi
+[ -n "$system" ] && args+=(-r)
+[ -n "$home" ] && args+=(-m) || args+=(-M)
+if [ -n "$group" ]; then
+	args+=(-g "$group")
+else
+	args+=(-U)
+fi
+exec useradd "${args[@]}" "$1"

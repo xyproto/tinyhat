@@ -6,12 +6,12 @@ set -g _commit 025b430805beb87ebb40d1cf409c444aef2c361a
 set -g _lcf 4b91a5835f2141ae898862c5e6dfee50c7ff87cd
 # The tag beta-2026.10
 set pkgver 2026.10
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Pixel art and sprite editor made with SDL3'
 set arch i686 x32 x86_64 aarch64
 set url https://github.com/counter185/voidsprite
 set license GPL-2.0-only MIT OFL-1.1
-set depends sdl3 sdl3_image sdl3_ttf zlib libgcc libstdc++ glibc
+set depends sdl3 sdl3_image sdl3_ttf zlib libgcc libstdc++ glibc libglvnd
 set makedepends cmake
 set source "voidsprite-$_commit.tar.gz::https://github.com/counter185/voidsprite/archive/$_commit.tar.gz" \
     "liblcf-$_lcf.tar.gz::https://github.com/EasyRPG/liblcf/archive/$_lcf.tar.gz" \

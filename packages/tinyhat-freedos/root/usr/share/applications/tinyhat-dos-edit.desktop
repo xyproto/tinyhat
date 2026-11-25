@@ -5,4 +5,5 @@ Icon=accessories-text-editor
 Comment=FreeDOS EDIT, the DOS text editor (in DOSBox-X)
 Exec=tinyhat-dosbox -c EDIT -c exit
 Terminal=false
+Keywords=DOS;
 Categories=Utility;TextEditor;

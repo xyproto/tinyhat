@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = *
+
+[Action]
+Description = Removing downloaded packages from memory...
+When = PostTransaction
+Exec = /usr/lib/tinyhat/pacman-clean-cache

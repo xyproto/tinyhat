@@ -1,0 +1,16 @@
+set pkgname hat
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Installs packages from Tiny Hat, Arch Linux, Alpine Linux and TINYBUILDs, also as pacman and apk'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends bash opendoas
+set source hat
+set sha256sums c2593ca252d9d3b7690e57c9b037be19bc2140d9461899f1137166e967002661
+
+function package
+    install -Dm755 $srcdir/hat $pkgdir/usr/bin/hat; or return
+    ln -s hat $pkgdir/usr/bin/pacman; or return
+    ln -s hat $pkgdir/usr/bin/apk; or return
+end

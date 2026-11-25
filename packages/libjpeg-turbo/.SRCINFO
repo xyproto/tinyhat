@@ -1,7 +1,7 @@
 pkgbase = libjpeg-turbo
 	pkgdesc = JPEG image codec with accelerated baseline compression and decompression
 	pkgver = 3.2.0
-	pkgrel = 3
+	pkgrel = 4
 	url = https://libjpeg-turbo.org/
 	arch = i686
 	arch = x32
@@ -11,6 +11,7 @@ pkgbase = libjpeg-turbo
 	makedepends = ninja
 	makedepends = nasm
 	depends = glibc
+	provides = libjpeg
 	provides = libjpeg.so
 	provides = libturbojpeg.so
 	source = https://github.com/libjpeg-turbo/libjpeg-turbo//releases/download/3.2.0/libjpeg-turbo-3.2.0.tar.gz

@@ -1,7 +1,7 @@
 set pkgbase dropbear
 set pkgname dropbear dropbear-scp
 set pkgver 2026.94
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Lightweight SSH server'
 set arch i686 x32
 set url https://github.com/mkj/dropbear
@@ -42,11 +42,13 @@ function package_dropbear
 end
 
 function package_dropbear-scp
-    set pkgdesc 'Lightweight application for copying files over SSH'
+    set pkgdesc 'The scp and ssh commands from dropbear'
+    set groups tinyhat-replaceable
     set provides scp
     set conflicts openssh
 
     make -C $pkgbase install PROGRAMS=scp DESTDIR="$pkgdir"; or return
+    ln -s dbclient "$pkgdir/usr/bin/ssh"; or return
     install -Dm644 $pkgbase/LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
     rmdir "$pkgdir/usr/share/man/"{man1,}; or return
 end

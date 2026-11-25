@@ -1,0 +1,13 @@
+pkgbase = libretro-fuse
+	pkgdesc = ZX Spectrum emulator core (Fuse) for tinyhat-retro
+	pkgver = 0+e997e2bc
+	pkgrel = 1
+	url = https://github.com/libretro/fuse-libretro
+	arch = i686
+	arch = x32
+	license = GPL-3.0-or-later
+	depends = glibc
+	source = fuse-libretro-e997e2bc32c888348f862f69f2c53babfedf7791.tar.gz::https://github.com/libretro/fuse-libretro/archive/e997e2bc32c888348f862f69f2c53babfedf7791.tar.gz
+	sha256sums = 3b8af49fda13ed29ac6b9b03038a2761e397cc06a004dc499be64d5d3917d4a0
+
+pkgname = libretro-fuse

@@ -1,7 +1,7 @@
 pkgbase = dosbox-x
 	pkgdesc = DOS emulator, Tiny Hat fork using SDL3
 	pkgver = 2026.10.23
-	pkgrel = 6
+	pkgrel = 8
 	url = https://github.com/xyproto/dosbox-x
 	arch = i686
 	license = GPL-2.0-or-later
@@ -25,9 +25,11 @@ pkgbase = dosbox-x
 	source = wm-fullscreen-ctrl-d.patch
 	source = no-ctrl-f9-quit.patch
 	source = surface-vsync.patch
+	source = opengl-glvnd.patch
 	sha256sums = 2a1e8d4a8a84d0dd8969b6488c80a4ce8a564307d22a90667661374349b41760
 	sha256sums = 62f529b240a5af89c36cbdccf8a19455f7edd0f308ab37caad84bd9324849aa2
 	sha256sums = e11340ce0bba7e778ed453f95e8b3211079ccc758c5a66d51978b12bb6ece49c
 	sha256sums = eff0d64a5544faf2051f2d3d627067b40b6d873807d585a599d56db50fbc338e
+	sha256sums = 88f75805eb9aea38353c226d2d2c8e17ed175ce7294f0b8bd0ba2a9fae5309d9
 
 pkgname = dosbox-x

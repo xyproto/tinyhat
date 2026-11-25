@@ -1,6 +1,6 @@
 set pkgname duktape
 set pkgver 2.7.0
-set pkgrel 7
+set pkgrel 8
 set pkgdesc 'Embeddable Javascript engine'
 set url https://duktape.org/
 set arch i686 x32

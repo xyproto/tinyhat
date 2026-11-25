@@ -1,0 +1,47 @@
+diff --git a/splash/tinyhat-splash.c b/splash/tinyhat-splash.c
+index a924ca6..056f599 100644
+--- a/splash/tinyhat-splash.c
++++ b/splash/tinyhat-splash.c
+@@ -33,7 +33,7 @@
+ #define FBDEV "/dev/fb0"
+ #define TTY "/dev/tty1"
+ #define FRAME_MS 80
+-#define IDLE_TIMEOUT_MS 120000
++#define BOOT_TIMEOUT_MS 120000
+ #define HAT_FIRST_MS 3000
+ #define HAT_FRAME_MS 500
+ #define SHUTDOWN_FRAMES 25
+@@ -698,7 +698,7 @@ int main(int argc, char *argv[])
+ {
+ 	char buf[512];
+ 	size_t have = 0;
+-	long last_cmd, last_check = 0, last_full = 0;
++	long start, last_check = 0, last_full = 0;
+ 	int ff, tty;
+ 	shutdown_mode = argc > 1 && !strcmp(argv[1], "--shutdown");
+ 	shutdown_t0 = now_ms();
+@@ -733,7 +733,7 @@ int main(int argc, char *argv[])
+ 			draw_all();
+ 	}
+ 	flush();
+-	last_cmd = now_ms();
++	start = now_ms();
+ 	while (!stop) {
+ 		struct pollfd p = { ff, POLLIN, 0 };
+ 		long t;
+@@ -751,14 +751,13 @@ int main(int argc, char *argv[])
+ 				}
+ 				if (have == sizeof(buf) - 1)
+ 					have = 0;
+-				last_cmd = now_ms();
+ 			}
+ 		}
+ 		if (stop)
+ 			break;
+ 		t = now_ms();
+ 		tick = shutdown_anim ? (t - shutdown_t0) / FRAME_MS : t / FRAME_MS;
+-		if (!shutdown_mode && t - last_cmd > IDLE_TIMEOUT_MS)
++		if (!shutdown_mode && t - start > BOOT_TIMEOUT_MS)
+ 			break;
+ 		if (t - last_check >= 500) {
+ 			last_check = t;

@@ -3,7 +3,7 @@
 set pkgname tinyhat-splash
 set pkgver 1.0.2.r1.g018ff5e
 set -g _commit 018ff5e819d6510557ab4e7f492054e0a8d42fc2
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Tiny Hat boot splash, and the boot and shutdown animations in C'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat-bootsplash
@@ -13,10 +13,17 @@ set makedepends_build kbd python
 set optdepends 'tcc: building animations' 'make: building animations' 'orbiton: editing animations' \
     'tinyhat-boot-animations: choosing and previewing animations'
 set provides tinyhat-bootsplash
-set source "tinyhat-bootsplash-$_commit.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/$_commit.tar.gz"
-set sha256sums cbe45ea33a776fe05058eaa5a8302b4c4c1953ac268c919147509d6659aaa83b
+set source "tinyhat-bootsplash-$_commit.tar.gz::https://github.com/xyproto/tinyhat-bootsplash/archive/$_commit.tar.gz" \
+    boot-timeout.patch
+set sha256sums cbe45ea33a776fe05058eaa5a8302b4c4c1953ac268c919147509d6659aaa83b \
+    40adfed154d6425527bd168a60928c6041543bc0d84f3ea0cfb13231fcf4cae0
 
 set -g _animations tinyhat orbits
+
+function prepare
+    cd tinyhat-bootsplash-$_commit; or return
+    patch -Np1 -i ../boot-timeout.patch
+end
 
 function build
     cd tinyhat-bootsplash-$_commit; or return

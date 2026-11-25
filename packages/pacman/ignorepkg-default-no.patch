@@ -1,0 +1,16 @@
+diff --git a/src/pacman/callback.c b/src/pacman/callback.c
+index 77874760..8f17e322 100644
+--- a/src/pacman/callback.c
++++ b/src/pacman/callback.c
+@@ -443,8 +443,9 @@ void cb_question(void *ctx, alpm_question_t *question)
+ 			{
+ 				alpm_question_install_ignorepkg_t *q = &question->install_ignorepkg;
+ 				if(!config->op_s_downloadonly) {
+-					q->install = yesno(_("%s is in IgnorePkg/IgnoreGroup. Install anyway?"),
+-							alpm_pkg_get_name(q->pkg));
++					q->install = noyes(_("%s is a Tiny Hat package. Replace it with the older %s-%s from %s anyway?"),
++							alpm_pkg_get_name(q->pkg), alpm_pkg_get_name(q->pkg), alpm_pkg_get_version(q->pkg),
++							alpm_db_get_name(alpm_pkg_get_db(q->pkg)));
+ 				} else {
+ 					q->install = 1;
+ 				}

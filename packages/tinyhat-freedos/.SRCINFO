@@ -1,7 +1,7 @@
 pkgbase = tinyhat-freedos
 	pkgdesc = FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu
 	pkgver = 1.4
-	pkgrel = 5
+	pkgrel = 7
 	url = https://www.freedos.org/
 	arch = any
 	license = GPL-2.0-or-later
@@ -54,3 +54,6 @@ pkgbase = tinyhat-freedos
 	sha256sums = 9ebad4b03fa663ff21ee1a507e6d65406b8fc01c826ce93a0257684002f2fa53
 
 pkgname = tinyhat-freedos
+
+pkgname = tinyhat-dosgames
+	pkgdesc = Free DOS games and EDIT from the FreeDOS boot disk, with launchers that run them in DOSBox-X

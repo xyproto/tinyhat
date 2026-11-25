@@ -1,6 +1,6 @@
 set pkgbase poppler
 set pkgname poppler poppler-glib
-set pkgver 26.10.0
+set pkgver 26.11.0
 set pkgrel 2
 set arch i686 x32
 set url https://poppler.freedesktop.org/
@@ -8,12 +8,12 @@ set nvchecker source=gitlab gitlab=poppler/poppler host=gitlab.freedesktop.org u
 set license GPL-2.0-only GPL-3.0-or-later LGPL-2.0-or-later LGPL-2.1-or-later MIT HPND-sell-variant
 # No documentation (gtk-doc)
 # No poppler-data at build time: without its .pc file POPPLER_DATADIR defaults to the same /usr/share/poppler
-set makedepends libjpeg-turbo libgcc libstdc++ cairo fontconfig openjpeg2 pkgconfig lcms2 git curl 'cmake>=3.28' python boost glib2-devel
+set makedepends libjpeg-turbo libgcc libstdc++ cairo fontconfig harfbuzz openjpeg2 pkgconfig lcms2 git curl 'cmake>=3.28' python boost glib2-devel
 set checkdepends noto-fonts-cjk
 set options '!emptydirs'
 set source "git+https://gitlab.freedesktop.org/poppler/poppler.git#tag=poppler-$pkgver?signed" \
     'test::git+https://gitlab.freedesktop.org/poppler/test.git#commit=48b6219b84fc0a708040cb279d51095cc4e1c603'
-set sha256sums 2277d28b51721ac7e08a7f82e39fffc2c638700670ecfc8104d27383d7704f0a \
+set sha256sums 36abd9009d9eb1c10e86d682d0d216ee3cad10fdfeb23d87ff248af78c64084d \
     b4a9235420ac49bd8e7d7b38dad7747b04127051cf6b318bf6de836d9ac97a6a
 set flags arch
 set -g _p nss
@@ -25,7 +25,7 @@ end
 
 function package_poppler
     set pkgdesc "PDF rendering library based on xpdf 3.0"
-    set depends libjpeg-turbo libgcc 'libstdc++' 'libcairo.so' fontconfig openjpeg2 lcms2 curl libpng freetype2 zlib libtiff glibc
+    set depends libjpeg-turbo libgcc 'libstdc++' 'libcairo.so' fontconfig openjpeg2 lcms2 curl libpng freetype2 zlib libtiff harfbuzz glibc
     set optdepends 'poppler-data: highly recommended encoding data to display PDF documents with certain encodings and characters'
     set provides 'libpoppler.so' 'libpoppler-cpp.so'
     set conflicts "poppler-qt3<$pkgver" "poppler-qt4<$pkgver"

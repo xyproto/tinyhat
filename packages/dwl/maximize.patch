@@ -1,0 +1,113 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -182,7 +182,7 @@
+ 	int isfloating, isurgent, isfullscreen, isminimized, desktophidden, wasfullscreen;
+ 	int rulesize;
+ 	struct wlr_box presnap;
+-	int issnapped;
++	int issnapped, ismaximized, maxfloating;
+ } Client;
+ 
+ typedef struct {
+@@ -399,6 +399,9 @@
+ static void showdesktop(const Arg *arg);
+ static void taskclick(const Arg *arg);
+ static void taskclose(const Arg *arg);
++static void taskmaximize(const Arg *arg);
++static void setmaximized(Client *c, int maximized);
++static void client_set_maximized(Client *c, int maximized);
+ static void taskhover(void);
+ static void tipupdate(void);
+ static void doodledraw(void);
+@@ -4504,6 +4507,58 @@
+ }
+ 
+ void
++taskmaximize(const Arg *arg)
++{
++	Client *c, *t = NULL;
++	wl_list_for_each(c, &clients, link)
++		if (c == arg->v)
++			t = c;
++	if (!t || t->isfullscreen)
++		return;
++	if (t->isminimized) {
++		restoreclient(t);
++		arrange(t->mon);
++	}
++	selmon = t->mon;
++	setmaximized(t, !t->ismaximized);
++	focusclient(t, 1);
++	drawbars();
++}
++
++void
++setmaximized(Client *c, int maximized)
++{
++	if (!c->mon || c->isfullscreen || client_is_unmanaged(c) || !maximized == !c->ismaximized)
++		return;
++	if (maximized) {
++		if (!c->issnapped)
++			c->presnap = c->geom;
++		c->maxfloating = c->isfloating;
++		c->issnapped = c->ismaximized = 1;
++		setfloating(c, 1);
++		resize(c, c->mon->w, 0);
++		wlr_scene_node_raise_to_top(&c->scene->node);
++	} else {
++		c->issnapped = c->ismaximized = 0;
++		resize(c, c->presnap, 0);
++		setfloating(c, c->maxfloating);
++	}
++	client_set_maximized(c, maximized);
++}
++
++void
++client_set_maximized(Client *c, int maximized)
++{
++#ifdef XWAYLAND
++	if (client_is_x11(c)) {
++		wlr_xwayland_surface_set_maximized(c->surface.xwayland, maximized, maximized);
++		return;
++	}
++#endif
++	wlr_xdg_toplevel_set_maximized(c->surface.xdg->toplevel, maximized);
++}
++
++void
+ taskhover(void)
+ {
+ 	Monitor *m;
+@@ -5044,6 +5099,11 @@
+ 	 * protocol version
+ 	 * wlr_xdg_surface_schedule_configure() is used to send an empty reply. */
+ 	Client *c = wl_container_of(listener, c, maximize);
++	if (c->mon && client_surface(c)->mapped && !c->surface.xdg->toplevel->requested.maximized != !c->ismaximized) {
++		setmaximized(c, c->surface.xdg->toplevel->requested.maximized);
++		drawbars();
++		return;
++	}
+ 	if (c->surface.xdg->initialized
+ 			&& wl_resource_get_version(c->surface.xdg->toplevel->resource)
+ 					< XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
+@@ -5216,12 +5276,20 @@
+ 				.width = grabc->presnap.width, .height = grabc->presnap.height}, 1);
+ 		}
+ 		grabc->issnapped = 0;
++		if (grabc->ismaximized) {
++			grabc->ismaximized = 0;
++			client_set_maximized(grabc, 0);
++		}
+ 		grabcx = (int)round(cursor->x) - grabc->geom.x;
+ 		grabcy = (int)round(cursor->y) - grabc->geom.y;
+ 		wlr_cursor_set_xcursor(cursor, cursor_mgr, "all-scroll");
+ 		break;
+ 	case CurResize:
+ 		grabc->issnapped = 0;
++		if (grabc->ismaximized) {
++			grabc->ismaximized = 0;
++			client_set_maximized(grabc, 0);
++		}
+ 		grabgeom = grabc->geom;
+ 		grableft = cursor->x < grabgeom.x + grabgeom.width / 2.0;
+ 		grabtop = cursor->y < grabgeom.y + grabgeom.height / 2.0;

@@ -1,6 +1,6 @@
 set pkgname libfdk-aac
 set pkgver 3.0.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Fraunhofer FDK AAC codec library'
 set arch i686 x32
 set url https://sourceforge.net/projects/opencore-amr/

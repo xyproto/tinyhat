@@ -1,0 +1,99 @@
+#!/bin/bash
+shipped=/usr/share/tinyhat/tinybuilds
+fetched=/var/lib/tinyhat/tinybuilds
+noconfirm=
+needed=
+upgrade=
+names=()
+for a in "$@"; do
+	case $a in
+	--noconfirm) noconfirm=--noconfirm ;;
+	--needed) needed=1 ;;
+	--upgrade) upgrade=1 ;;
+	-*) ;;
+	*) names+=("$a") ;;
+	esac
+done
+user=${DOAS_USER:-${SUDO_USER:-nobody}}
+dir() {
+	if [ -d "$fetched/$1" ]; then echo "$fetched/$1"; else echo "$shipped/$1"; fi
+}
+field() { sed -n "s/^[[:space:]]*$1 = //p" "$(dir "$2")/.SRCINFO"; }
+built=" "
+
+build() {
+	local name=$1 deps=() tbdeps=() d before after new work rc
+	case $built in *" $name "*) return 0 ;; esac
+	built="$built$name "
+	if [ -n "$needed" ] && [ "$(/usr/lib/pacman/pacman -Q "$name" 2>/dev/null)" = "$name $(field pkgver "$name")-$(field pkgrel "$name")" ]; then
+		echo "warning: $name is up to date -- skipping"
+		return 0
+	fi
+	for d in $(field depends "$name") $(field makedepends "$name"); do
+		if [ -d "$(dir "${d%%[<>=]*}")" ]; then
+			/usr/lib/pacman/pacman -Q "${d%%[<>=]*}" >/dev/null 2>&1 || tbdeps+=("${d%%[<>=]*}")
+		else
+			deps+=("$d")
+		fi
+	done
+	for d in "${tbdeps[@]}"; do
+		build "$d" || return 1
+	done
+	before=$(/usr/lib/pacman/pacman -Qq)
+	if [ ${#deps[@]} -gt 0 ]; then
+		/usr/bin/pacman -S --needed --asdeps $noconfirm "${deps[@]}" || return 1
+	fi
+	work=$(mktemp -d /var/tmp/tinybuild.XXXXXX) || return 1
+	cp -r "$(dir "$name")" "$work/pkg" && mkdir -p "$work/src" "$work/out" "$work/build" && chown -R "$user" "$work" || { rm -rf -- "$work"; return 1; }
+	echo ":: building $name from its TINYBUILD"
+	if [ -f "$work/pkg/TINYBUILD" ]; then
+		set -- makep -C "$work/pkg" -s "$work/src" -o "$work/out"
+	else
+		set -- sh -c 'cd "$1" && SRCDEST="$2" PKGDEST="$3" BUILDDIR="$4" makepkg --nodeps --noconfirm' sh "$work/pkg" "$work/src" "$work/out" "$work/build"
+	fi
+	if [ "$user" = nobody ]; then
+		runuser -u "$user" -- env HOME="$work" "$@"
+	else
+		runuser -u "$user" -- "$@"
+	fi
+	rc=$?
+	if [ $rc -eq 0 ]; then
+		/usr/bin/pacman -U $noconfirm "$work"/out/*.pkg.tar.zst
+		rc=$?
+	fi
+	rm -rf -- "$work"
+	after=$(/usr/lib/pacman/pacman -Qdtq 2>/dev/null)
+	new=$(printf '%s\n' "$after" | grep -vxF "$before")
+	[ -n "$new" ] && /usr/lib/pacman/pacman -Rns --noconfirm $new >/dev/null
+	return $rc
+}
+
+if [ -n "$upgrade" ]; then
+	tmp=$(mktemp -d /var/tmp/tinybuilds.XXXXXX) || exit 1
+	echo ":: fetching the latest TINYBUILD files"
+	if git clone -q --depth 1 --filter=blob:none --sparse https://github.com/xyproto/tinyhat "$tmp/repo" &&
+		git -C "$tmp/repo" sparse-checkout set packages/tinyhat-tinybuilds; then
+		rm -rf -- "$fetched"
+		mkdir -p "$fetched"
+		for f in "$tmp"/repo/packages/tinyhat-tinybuilds/*/TINYBUILD "$tmp"/repo/packages/tinyhat-tinybuilds/*/PKGBUILD; do
+			[ -f "$f" ] && cp -r "${f%/*}" "$fetched/"
+		done
+	else
+		echo "warning: could not fetch the latest TINYBUILD files, using the ones that are here" >&2
+	fi
+	rm -rf -- "$tmp"
+	for d in "$shipped"/* "$fetched"/*; do
+		[ -f "$d/.SRCINFO" ] || continue
+		n=${d##*/}
+		case " ${names[*]} " in *" $n "*) continue ;; esac
+		have=$(/usr/lib/pacman/pacman -Q "$n" 2>/dev/null | cut -d' ' -f2) || continue
+		want=$(field pkgver "$n")-$(field pkgrel "$n")
+		[ "$have" = "$want" ] || names+=("$n")
+	done
+	[ ${#names[@]} -gt 0 ] || { echo " there is nothing to do"; exit 0; }
+fi
+rc=0
+for n in "${names[@]}"; do
+	build "$n" || rc=1
+done
+exit $rc

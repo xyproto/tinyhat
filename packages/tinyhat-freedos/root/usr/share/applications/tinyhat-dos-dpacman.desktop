@@ -5,4 +5,5 @@ Icon=applications-games
 Comment=Pac-Man for one or two players at the same time (DOS game, in DOSBox-X)
 Exec=tinyhat-dosgame DPACMAN LOADFIX PACMAN.EXE
 Terminal=false
+Keywords=DOS;
 Categories=Game;ArcadeGame;

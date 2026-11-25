@@ -153,7 +153,6 @@ libpkgs = [
     "libgirepository",
     "libgit2",
     "libglvnd",
-    "libglvnd-glx",
     "libgomp",
     "libgpg-error",
     "libgphoto2",
@@ -205,6 +204,7 @@ libpkgs = [
     "libraqm",
     "libraw1394",
     "libretro-blastem",
+    "libretro-fuse",
     "libsamplerate",
     "libsasl",
     "libseccomp",
@@ -338,6 +338,7 @@ libpkgs = [
     "python-cairo",
     "python-gobject",
     "python-pyxel",
+    "python-turtle",
     "qemacs",
     "quickjs-ng",
     "rav1e",
@@ -372,6 +373,7 @@ libpkgs = [
     "tic-80",
     "tinyhat-boot-animations",
     "tinyhat-desktop",
+    "tinyhat-dosgames",
     "tinyhat-fan",
     "tinyhat-fennel-book",
     "tinyhat-files",
@@ -391,6 +393,10 @@ libpkgs = [
     "tinyhat-status",
     "tinyhat-steam",
     "tinyhat-system",
+    "tinyhat-alpine",
+    "tinyhat-tinybuilds",
+    "hat",
+    "tinyhat-sudo",
     "tinyhat-ultrasnd",
     "tinyhat-view",
     "tinyhat-wallpapers",
@@ -427,6 +433,7 @@ libpkgs = [
     "xxhash",
     "xz",
     "yyjson",
+    "z88dk",
     "zathura",
     "zix",
     "zlib",
@@ -596,7 +603,6 @@ libffi = ["libffi"]
 libfreeaptx = ["libfreeaptx"]
 libgcrypt = ["libgcrypt"]
 libglvnd = ["libglvnd"]
-libglvnd-glx = ["libglvnd-glx"]
 libgpg-error = ["libgpg-error"]
 libgudev = ["libgudev"]
 libidn2 = ["libidn2"]
@@ -626,7 +632,6 @@ libpcap = ["libpcap"]
 libpciaccess = ["libpciaccess"]
 libpng = ["libpng"]
 libpsl = ["libpsl"]
-libresprite = ["libresprite"]
 libretro-blastem = ["libretro-blastem"]
 libretro-nestopia = ["libretro-nestopia"]
 libsamplerate = ["libsamplerate"]
@@ -724,6 +729,7 @@ pure-fish = ["pure-fish"]
 pvsneslib = ["pvsneslib"]
 python = ["python"]
 python-pyxel = ["python-pyxel"]
+python-turtle = ["python-turtle"]
 qemacs = ["qemacs"]
 quickjs-ng = ["quickjs-ng"]
 raspberrypi-bootloader = ["raspberrypi-bootloader"]
@@ -763,6 +769,7 @@ tinyhat-desktop = ["tinyhat-desktop"]
 tinyhat-fan = ["tinyhat-fan"]
 tinyhat-fennel-book = ["tinyhat-fennel-book"]
 tinyhat-files = ["tinyhat-files"]
+tinyhat-freedos = ["tinyhat-dosgames"]
 tinyhat-gtk-theme = ["tinyhat-gtk-theme"]
 tinyhat-gui = ["tinyhat-gui"]
 tinyhat-guru = ["tinyhat-guru"]
@@ -776,7 +783,10 @@ tinyhat-skel = ["tinyhat-skel"]
 tinyhat-sounds = ["tinyhat-sounds"]
 tinyhat-splash = ["tinyhat-splash"]
 tinyhat-status = ["tinyhat-status"]
-tinyhat-system = ["tinyhat-system"]
+tinyhat-system = ["tinyhat-system", "tinyhat-sudo"]
+tinyhat-alpine = ["tinyhat-alpine"]
+tinyhat-tinybuilds = ["tinyhat-tinybuilds"]
+hat = ["hat"]
 tinyhat-ultrasnd = ["tinyhat-ultrasnd"]
 tinyhat-view = ["tinyhat-view"]
 tinyhat-wallpapers = ["tinyhat-wallpapers"]
@@ -978,7 +988,6 @@ libffi = ["libffi"]
 libfreeaptx = ["libfreeaptx"]
 libgcrypt = ["libgcrypt"]
 libglvnd = ["libglvnd"]
-libglvnd-glx = ["libglvnd-glx"]
 libgpg-error = ["libgpg-error"]
 libgudev = ["libgudev"]
 libidn2 = ["libidn2"]
@@ -1106,6 +1115,7 @@ pure-fish = ["pure-fish"]
 pvsneslib = ["pvsneslib"]
 python = ["python"]
 python-pyxel = ["python-pyxel"]
+python-turtle = ["python-turtle"]
 qemacs = ["qemacs"]
 quickjs-ng = ["quickjs-ng"]
 raylib = ["raylib"]
@@ -1145,6 +1155,7 @@ tinyhat-desktop = ["tinyhat-desktop"]
 tinyhat-fan = ["tinyhat-fan"]
 tinyhat-fennel-book = ["tinyhat-fennel-book"]
 tinyhat-files = ["tinyhat-files"]
+tinyhat-freedos = ["tinyhat-dosgames"]
 tinyhat-gtk-theme = ["tinyhat-gtk-theme"]
 tinyhat-gui = ["tinyhat-gui"]
 tinyhat-guru = ["tinyhat-guru"]
@@ -1157,7 +1168,10 @@ tinyhat-skel = ["tinyhat-skel"]
 tinyhat-sounds = ["tinyhat-sounds"]
 tinyhat-splash = ["tinyhat-splash"]
 tinyhat-status = ["tinyhat-status"]
-tinyhat-system = ["tinyhat-system"]
+tinyhat-system = ["tinyhat-system", "tinyhat-sudo"]
+tinyhat-alpine = ["tinyhat-alpine"]
+tinyhat-tinybuilds = ["tinyhat-tinybuilds"]
+hat = ["hat"]
 tinyhat-ultrasnd = ["tinyhat-ultrasnd"]
 tinyhat-view = ["tinyhat-view"]
 tinyhat-wallpapers = ["tinyhat-wallpapers"]

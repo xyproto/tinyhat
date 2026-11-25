@@ -1,0 +1,116 @@
+diff --git a/src/pacman/pacman.c b/src/pacman/pacman.c
+index 53f4358c..14c84463 100644
+--- a/src/pacman/pacman.c
++++ b/src/pacman/pacman.c
+@@ -1187,11 +1187,14 @@ static void cl_to_log(int argc, char *argv[])
+  * @param argv
+  * @return A return code indicating success, failure, etc.
+  */
++char **pm_argv;
++
+ int main(int argc, char *argv[])
+ {
+ 	int ret = 0;
+ 	uid_t myuid = getuid();
+ 
++	pm_argv = argv;
+ 	console_cursor_hide();
+ 	install_segv_handler();
+ 
+diff --git a/src/pacman/pacman.h b/src/pacman/pacman.h
+index b8d9e77b..2d31407a 100644
+--- a/src/pacman/pacman.h
++++ b/src/pacman/pacman.h
+@@ -40,4 +40,6 @@ int sync_prepare_execute(void);
+ /* upgrade.c */
+ int pacman_upgrade(alpm_list_t *targets);
+ 
++extern char **pm_argv;
++
+ #endif /* PM_PACMAN_H */
+diff --git a/src/pacman/sync.c b/src/pacman/sync.c
+index 5220b660..a4c8eb53 100644
+--- a/src/pacman/sync.c
++++ b/src/pacman/sync.c
+@@ -27,6 +27,7 @@
+ #include <dirent.h>
+ #include <sys/stat.h>
+ #include <fnmatch.h>
++#include <sys/wait.h>
+ 
+ #include <alpm.h>
+ #include <alpm_list.h>
+@@ -761,9 +762,46 @@ static void print_broken_dep(alpm_depmissing_t *miss)
+ 	free(depstring);
+ }
+ 
++#define COMPAT_HELPER "/usr/lib/tinyhat/pacman-compat"
++
++static int compat_retry(alpm_list_t *deps)
++{
++	const char *depth = getenv("TINYHAT_PACMAN_COMPAT");
++	int n = depth ? atoi(depth) : 0, status;
++	size_t k = 0;
++	char **args, buf[16];
++	pid_t pid;
++
++	if(!deps || config->print || getuid() != 0 || n >= 4 || access(COMPAT_HELPER, X_OK) != 0) {
++		return 1;
++	}
++	args = calloc(alpm_list_count(deps) + 2, sizeof(char *));
++	if(!args) {
++		return 1;
++	}
++	args[k++] = (char *)COMPAT_HELPER;
++	for(alpm_list_t *i = deps; i; i = alpm_list_next(i)) {
++		args[k++] = i->data;
++	}
++	fflush(NULL);
++	pid = fork();
++	if(pid == 0) {
++		execv(COMPAT_HELPER, args);
++		_exit(127);
++	}
++	free(args);
++	if(pid < 0 || waitpid(pid, &status, 0) < 0 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
++		return 1;
++	}
++	snprintf(buf, sizeof(buf), "%d", n + 1);
++	setenv("TINYHAT_PACMAN_COMPAT", buf, 1);
++	execv("/proc/self/exe", pm_argv);
++	return 1;
++}
++
+ int sync_prepare_execute(void)
+ {
+-	alpm_list_t *i, *packages, *data = NULL;
++	alpm_list_t *i, *packages, *data = NULL, *compat = NULL;
+ 	int retval = 0;
+ 
+ 	/* Step 2: "compute" the transaction based on targets and flags */
+@@ -781,8 +819,12 @@ int sync_prepare_execute(void)
+ 				break;
+ 			case ALPM_ERR_UNSATISFIED_DEPS:
+ 				for(i = data; i; i = alpm_list_next(i)) {
+-					print_broken_dep(i->data);
+-					alpm_depmissing_free(i->data);
++					alpm_depmissing_t *miss = i->data;
++					print_broken_dep(miss);
++					if(!miss->causingpkg) {
++						compat = alpm_list_add(compat, alpm_dep_compute_string(miss->depend));
++					}
++					alpm_depmissing_free(miss);
+ 				}
+ 				break;
+ 			case ALPM_ERR_CONFLICTING_DEPS:
+@@ -895,6 +937,10 @@ cleanup:
+ 	if(trans_release() == -1) {
+ 		retval = 1;
+ 	}
++	if(retval && compat) {
++		retval = compat_retry(compat);
++	}
++	FREELIST(compat);
+ 
+ 	return retval;
+ }

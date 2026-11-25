@@ -1,13 +1,13 @@
 pkgbase = tinyhat-status
 	pkgdesc = Tiny Hat status bar text for dwl
 	pkgver = 1
-	pkgrel = 9
+	pkgrel = 10
 	url = https://github.com/xyproto/tinyhat
 	arch = i686
 	arch = x32
 	license = BSD-3-Clause
 	depends = glibc
 	source = tinyhat-status.c
-	sha256sums = d8a4336c82a823c69314074bfc9882580c142a5a6d7b62906424f5b9857489ad
+	sha256sums = c3e60f694f05ec8e18e36ab36f84249ed1185c6cd6281f093ab4a9239367e7db
 
 pkgname = tinyhat-status

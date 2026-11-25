@@ -1,7 +1,7 @@
 pkgbase = nettle
 	pkgdesc = A low-level cryptographic library
 	pkgver = 4.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.lysator.liu.se/~nisse/nettle
 	arch = i686
 	arch = x32

@@ -1,7 +1,7 @@
 pkgbase = tinyhat-system
 	pkgdesc = Tiny Hat system services, boot and maintenance scripts, and their configuration
 	pkgver = 1
-	pkgrel = 8
+	pkgrel = 12
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
@@ -13,3 +13,10 @@ pkgbase = tinyhat-system
 	backup = etc/tinyhat-bootsplash/activate.d/50-tinyhat
 
 pkgname = tinyhat-system
+
+pkgname = tinyhat-sudo
+	pkgdesc = The sudo command, running doas
+	groups = tinyhat-replaceable
+	depends = opendoas
+	provides = sudo
+	conflicts = sudo

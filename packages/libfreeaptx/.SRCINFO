@@ -1,7 +1,7 @@
 pkgbase = libfreeaptx
 	pkgdesc = Open Source aptX codec library
 	pkgver = 0.2.2
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/regularhunter/libfreeaptx
 	arch = i686
 	arch = x32

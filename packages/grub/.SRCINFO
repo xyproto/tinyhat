@@ -6,6 +6,7 @@ pkgbase = grub
 	url = https://gnu-grub.freedesktop.org/
 	install = grub.install
 	arch = i686
+	arch = aarch64
 	license = GPL-3.0-or-later
 	makedepends = autogen
 	makedepends = help2man

@@ -53,14 +53,24 @@ function build
         -DBUILD_WITH_ALL=OFF -DBUILD_WITH_LUA=ON -DBUILD_WITH_FENNEL=ON -DPREFER_SYSTEM_SDL2=ON \
         -DBUILD_SDLGPU=OFF -DBUILD_SURF=OFF -DBUILD_PLAYER=OFF -DBUILD_STUB=OFF; or return
     ninja -C build; or return
+    if string match -q -- '*-gcc' $CC
+        env -u CMAKE_TOOLCHAIN_FILE -u CFLAGS -u CXXFLAGS -u CPPFLAGS -u LDFLAGS -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR \
+            -u PKG_CONFIG_PATH -u PKG_CONFIG_FDO_SYSROOT_RULES CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD \
+            cmake -S tic80 -B build-native -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_STATIC=ON \
+            -DBUILD_WITH_ALL=OFF -DBUILD_WITH_LUA=ON -DBUILD_WITH_FENNEL=ON -DPREFER_SYSTEM_SDL2=ON \
+            -DBUILD_SDLGPU=OFF -DBUILD_SURF=OFF -DBUILD_PLAYER=OFF -DBUILD_STUB=OFF; or return
+        env -u CMAKE_TOOLCHAIN_FILE ninja -C build-native; or return
+    end
 end
 
 function package
     install -Dm755 build/bin/tic80 "$pkgdir/usr/lib/tic80/tic80"; or return
     rm -rf demos home; or return
     mkdir -p demos home; or return
+    set -l tic80 build/bin/tic80
+    test -x build-native/bin/tic80; and set tic80 build-native/bin/tic80
     env HOME=$srcdir/home XDG_DATA_HOME=$srcdir/home SDL_VIDEODRIVER=dummy SDL_AUDIODRIVER=dummy \
-        build/bin/tic80 --cli --fs $srcdir/demos --cmd 'demo & exit'; or return
+        $tic80 --cli --fs $srcdir/demos --cmd 'demo & exit'; or return
     test -f demos/fire.tic; or return
     rm -rf demos/.local; or return
     mkdir -p "$pkgdir/usr/share/tic80"; or return

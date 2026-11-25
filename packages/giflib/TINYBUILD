@@ -1,6 +1,6 @@
 set pkgname giflib
 set pkgver 6.1.3
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Library for reading and writing gif images'
 set arch i686 x32
 set url https://giflib.sourceforge.net/

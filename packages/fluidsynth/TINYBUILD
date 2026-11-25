@@ -1,6 +1,6 @@
 set pkgname fluidsynth
 set pkgver 2.6.2
-set pkgrel 1
+set pkgrel 2
 set -g _gcem 012ae73c6d0a2cb09ffe86475f5c6fba3926e200
 set pkgdesc 'SoundFont synthesizer with PipeWire output'
 set arch i686 x32
@@ -9,7 +9,7 @@ set nvchecker source=github github=FluidSynth/fluidsynth prefix=v use_latest_rel
 set license LGPL-2.1-or-later Apache-2.0
 set depends alsa-lib glib2 libsndfile pipewire
 set makedepends cmake ninja
-set provides libfluidsynth.so
+set provides libfluidsynth.so soundfont-synthesizer
 set source "fluidsynth-$pkgver.tar.gz::https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v$pkgver.tar.gz" \
     "gcem-$_gcem.zip::https://github.com/kthohr/gcem/archive/$_gcem.zip"
 set sha256sums ca376b42a3c1b186a4c8c248931789a455ac94a89b777394969d678010c2f91f \

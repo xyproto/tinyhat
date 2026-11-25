@@ -1,0 +1,18 @@
+pkgbase = python-turtle
+	pkgdesc = Turtle graphics for Python, drawn with SDL3 instead of Tk
+	pkgver = 1.0.0
+	pkgrel = 2
+	url = https://github.com/xyproto/tinyhat
+	arch = any
+	license = PSF-2.0
+	makedepends = python
+	depends = python
+	depends = sdl3
+	depends = sdl3_ttf
+	depends = sdl3_image
+	depends = ttf-dejavu
+	depends = ttf-jetbrains-mono
+	source = turtle.py
+	sha256sums = 5aa6a7d31393a1cdd5c0f0a150dd43dc4cfe7303941b8bbcd7c86799329b2362
+
+pkgname = python-turtle

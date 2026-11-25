@@ -1,15 +1,15 @@
 set pkgname pacman
 set pkgver 7.1.0.r9.g54d9411
-set pkgrel 5
+set pkgrel 7
 set -g _git_tag 7.1.0
 set -g _git_patch_level_commit 54d94116164b0b2202c6061c4a59c6f3e70820d8
 set pkgdesc 'A library-based package manager with dependency support'
-set arch i686 x32
+set arch i686 x32 x86_64 aarch64
 set url https://www.archlinux.org/pacman/
 set nvchecker source=gitlab gitlab=pacman/pacman host=gitlab.archlinux.org use_max_tag=true prefix=v
 set license GPL-2.0-or-later
 set depends bash coreutils curl libcurl.so awk gettext glibc gnupg gpgme libgpgme.so grep libarchive libarchive.so \
-    openssl libcrypto.so pacman-mirrorlist systemd libmakepkg-dropins
+    openssl libcrypto.so pacman-mirrorlist systemd libmakepkg-dropins hat
 # No documentation and no man pages (asciidoc, doxygen): -Ddoc=disabled -Ddoxygen=disabled
 set makedepends git meson
 set checkdepends fakechroot python
@@ -28,18 +28,24 @@ set source "git+https://gitlab.archlinux.org/pacman/pacman.git?signed#tag=v$_git
     alpm.sysusers \
     fortran.conf \
     rust.conf \
-    replace-i686-by-pentium4-when-architecture-is-auto.patch
+    replace-i686-by-pentium4-when-architecture-is-auto.patch \
+    compat-retry.patch \
+    ignorepkg-default-no.patch \
+    replaceable-default-yes.patch
 set sha256sums 74cfd4b6d2b10c742f5a4a7cdaeffb01405ab897b11b80681a9063245113a308 \
     b3bce9d662e189e8e49013b818f255d08494a57e13fc264625f852f087d3def2 \
     de428b496a825772ef49ec5555a386a4b23ffa10b9dfd9907f0671d5c1dc2178 \
     9a734e5d75be603d58aa92e8d29a15466b3ac2af6b7d6f6728dd5c3e5ed8758d \
     021893dd44ec23251cfc0f2b81c12d832927ea60095d4d2956d9760e8bbfaa58 \
-    b6a21497e35a65ff302e8fff46fac03cbdd386f568bbae9febb7d970f561d04f \
+    2490ba1cb85f13a601a90d9b88ff0f76b4bf43f57adf571b68162edd3fdd81ca \
     cada9469c3b3832e8cfa1d2fb0e4ce4d2b5a28a480eb52135ab7aad2b75ee5ec \
     9c14afbc7dabee5a563202c833a043bd3b80c4522f8943c33d550641d7d1bbf1 \
     933b0b878fa611bf24b92f655040a3bcb4a1b67841d929013802abbb09b2ccf4 \
     6fe03e6ea3f69d99d59a48847a8ae97c2160fca847c7aedf7b89d05e4aa9386d \
-    6a7906bd28a57cbcff58d856ffefbbb9096a163aaff79913b4fac69d75d0028a
+    6a7906bd28a57cbcff58d856ffefbbb9096a163aaff79913b4fac69d75d0028a \
+    34df642d528b1d93edfc1e4acce9cac12d90f0725e72ea4c8023610d43d3a93a \
+    a42c651afbc85aadca89216a6ac38d5dad2c76c4a4b7ee777dac70bca7c9365b \
+    44833b5ba7ce39abfb68af5973f0095b48af00de5aaa73f50f543012dcaabe56
 set flags arch
 
 function prepare
@@ -55,6 +61,9 @@ function prepare
     # handle patches
     for entry in (string match -r -- '.*.patch.*' $source)
         set -l patch (string replace -r -- '::.*' '' $entry | string replace -r -- '.*/' '')
+        if test $patch = replace-i686-by-pentium4-when-architecture-is-auto.patch; and test $CARCH != i686
+            continue
+        end
         if string match -q 'revertme-*' -- $patch
             echo "Reverting patch $patch..."
             patch -RNp1 <"../$patch"; or return
@@ -90,6 +99,17 @@ function package
     install -dm755 "$pkgdir/etc"; or return
     install -m644 "$srcdir/pacman.conf" "$pkgdir/etc"; or return
     install -m644 "$srcdir/makepkg.conf" "$pkgdir/etc"; or return
+    switch $CARCH
+        case x86_64
+            sed -i '/^\[community\]$/,/^Include/d' "$pkgdir/etc/pacman.conf"; or return
+        case aarch64
+            sed -i 's/^\[community\]$/[alarm]/' "$pkgdir/etc/pacman.conf"; or return
+            sed -i '/^\[alarm\]$/,/^Include/{/^Include/a\
+\
+[aur]\
+Include = /etc/pacman.d/mirrorlist
+}' "$pkgdir/etc/pacman.conf"; or return
+    end
     if test $CARCH != i686
         # patch architecture where needed
         sed -i "s@i686@$CARCH@g; /^CHOST/ s/pentium4-/i686-/" "$pkgdir/etc/makepkg.conf"; or return
@@ -102,12 +122,9 @@ function package
     for unit in dirmngr gpg-agent gpg-agent-{browser,extra,ssh} keyboxd
         ln -s "../$unit@.socket" "$wantsdir/$unit@etc-pacman.d-gnupg.socket"; or return
     end
+    install -dm755 "$pkgdir/var/lib/tinyhat/compat"; or return
+    bsdtar --options gzip:!timestamp -czf "$pkgdir/var/lib/tinyhat/compat/compat.db.tar.gz" -T /dev/null; or return
+    ln -s compat.db.tar.gz "$pkgdir/var/lib/tinyhat/compat/compat.db"; or return
     install -dm755 "$pkgdir/usr/lib/pacman"; or return
     mv "$pkgdir/usr/bin/pacman" "$pkgdir/usr/lib/pacman/pacman"; or return
-    printf '%s\n' '#!/bin/sh' \
-        'if [ -x /usr/lib/tinyhat/pacman-first-use ] && [ "$(id -u)" = 0 ]; then' \
-        '	/usr/lib/tinyhat/pacman-first-use "$@"' \
-        'fi' \
-        'exec /usr/lib/pacman/pacman "$@"' >"$pkgdir/usr/bin/pacman"; or return
-    chmod 755 "$pkgdir/usr/bin/pacman"; or return
 end

@@ -1,0 +1,133 @@
+#!/bin/bash
+root=/usr/lib/alpine
+bindir=/usr/local/bin
+appdir=/usr/local/share/applications
+marker='exec /usr/bin/tinyhat-alpine'
+stamp=$root/var/lib/tinyhat-provides
+
+usage() {
+	echo "usage: tinyhat-alpine COMMAND [ARG]...   run an Alpine program" >&2
+	echo "       tinyhat-alpine --apk [ARG]...     run apk in the Alpine root (as root)" >&2
+	echo "       tinyhat-alpine --setup            let Alpine use the Tiny Hat commands and libraries (as root)" >&2
+	echo "       tinyhat-alpine --export           update the launchers for installed Alpine packages (as root)" >&2
+	exit 1
+}
+
+needroot() {
+	[ "$(id -u)" = 0 ] || { echo "tinyhat-alpine: $1 needs root" >&2; exit 1; }
+}
+
+run() {
+	local a=(--bind "$root" / --ro-bind /usr /usr/lib/tinyhat-host --dev-bind /dev /dev --proc /proc --ro-bind /sys /sys
+		--bind /tmp /tmp --bind /run /run --bind-try /home /home --bind-try /media /media
+		--ro-bind-try /etc/resolv.conf /etc/resolv.conf --ro-bind-try /etc/hosts /etc/hosts
+		--ro-bind-try /etc/localtime /etc/localtime --ro-bind-try /etc/machine-id /etc/machine-id
+		--setenv PATH /usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/lib/tinyhat-host/bin --die-with-parent)
+	if [ "$(id -u)" != 0 ]; then
+		a+=(--ro-bind /etc/passwd /etc/passwd --ro-bind /etc/group /etc/group --chdir "${PWD:-/}")
+	fi
+	bwrap "${a[@]}" "$@"
+}
+
+world() {
+	grep -v -e '^!' -e '^$' "$root/etc/apk/world" | sed 's/[<>=~].*//'
+}
+
+base=" alpine-baselayout alpine-keys alpine-release apk-tools ca-certificates-bundle tinyhat-provides "
+
+setup() {
+	local now provides v d t p pkgs rc
+	run /usr/lib/tinyhat-host/bin/ldconfig -C /etc/ld.so.cache -f /etc/ld.so.conf || return 1
+	pkgs="bash coreutils sed grep findutils shadow tar gzip xz which $(pacman -Qoq /usr/bin/awk 2>/dev/null)"
+	now=$(pacman -Q $pkgs 2>/dev/null | md5sum | cut -d' ' -f1)
+	[ "$(cat "$stamp" 2>/dev/null)" = "$now" ] && return 0
+	d=$(mktemp -d /tmp/tinyhat-provides.XXXXXX) || return 1
+	provides="/bin/sh cmd:sh"
+	for p in bash coreutils sed grep findutils shadow tar gzip xz; do
+		v=$(pacman -Q "$p" 2>/dev/null | cut -d' ' -f2) || continue
+		v=${v#*:}
+		v=$(printf '%s' "${v%-*}" | grep -o '^[0-9][0-9.]*' | sed 's/\.$//')
+		[ -n "$v" ] && provides="$provides $p=$v-r0"
+	done
+	mkdir -p "$d/files/bin" "$d/files/usr/bin" "$d/files/usr/sbin"
+	ln -s /usr/lib/tinyhat-host/bin/bash "$d/files/bin/sh"
+	ln -s /usr/lib/tinyhat-host/bin/bash "$d/files/bin/bash"
+	for t in $(pacman -Qlq $pkgs 2>/dev/null | grep '^/usr/bin/.'); do
+		t=${t##*/}
+		[ "$t" = sh ] || ln -sf "/usr/lib/tinyhat-host/bin/$t" "$d/files/usr/bin/$t"
+	done
+	for t in /usr/lib/ld-linux.so.2 /usr/lib/ld-linux-x86-64.so.2 /usr/lib/ld-linux-aarch64.so.1; do
+		[ -e "$t" ] || continue
+		case $t in *x86-64*) mkdir -p "$d/files/lib64"; ln -s "/usr/lib/tinyhat-host/lib/${t##*/}" "$d/files/lib64/${t##*/}" ;;
+		*) mkdir -p "$d/files/lib"; ln -s "/usr/lib/tinyhat-host/lib/${t##*/}" "$d/files/lib/${t##*/}" ;;
+		esac
+	done
+	install -m755 /usr/share/tinyhat/alpine/adduser /usr/share/tinyhat/alpine/addgroup "$d/files/usr/sbin/"
+	v=1.$(date -u +%Y%m%d%H%M%S)-r0
+	rc=0
+	run apk mkpkg --info name:tinyhat-provides --info "version:$v" --info arch:noarch --info provider-priority:1 \
+		--info 'description:Commands that Tiny Hat provides' --info license:BSD-3-Clause \
+		--info "provides:$provides" --files "$d/files" --output "$d/tinyhat-provides.apk" || rc=1
+	if [ $rc = 0 ]; then
+		run apk --force-overwrite add --quiet --no-network --allow-untrusted --force-non-repository "$d"/tinyhat-provides.apk || rc=1
+	fi
+	[ $rc = 0 ] && echo "$now" >"$stamp"
+	rm -rf -- "$d"
+	return $rc
+}
+
+export_all() {
+	local p f name d
+	mkdir -p "$bindir" "$appdir"
+	for f in "$bindir"/*; do
+		[ -f "$f" ] && grep -qF "$marker" "$f" && rm -f -- "$f"
+	done
+	rm -f -- "$appdir"/alpine-*.desktop
+	for p in $(world); do
+		case $base in *" $p "*) continue ;; esac
+		awk -v p="$p" '/^P:/ { on = substr($0, 3) == p } on && /^F:/ { d = substr($0, 3) } on && /^R:/ { print d "/" substr($0, 3) }' "$root/lib/apk/db/installed"
+	done | while read -r f; do
+		case $f in
+		usr/bin/*)
+			name=${f#usr/bin/}
+			[ -e "/usr/bin/$name" ] || [ -e "$bindir/$name" ] && continue
+			printf '#!/bin/sh\n%s %s "$@"\n' "$marker" "/usr/bin/$name" >"$bindir/$name"
+			chmod 755 "$bindir/$name"
+			;;
+		usr/share/applications/*.desktop)
+			name=${f##*/}
+			sed -e 's|^Exec=|Exec=tinyhat-alpine |' -e '/^TryExec=/d' -e '/^DBusActivatable=/d' "$root/$f" >"$appdir/alpine-$name"
+			;;
+		esac
+	done
+	for d in icons/hicolor pixmaps; do
+		if [ -d "$root/usr/share/$d" ] && [ ! -e "/usr/local/share/$d" ]; then
+			mkdir -p "/usr/local/share/${d%/*}"
+			ln -s "$root/usr/share/$d" "/usr/local/share/$d"
+		fi
+	done
+	command -v update-desktop-database >/dev/null && update-desktop-database -q "$appdir" 2>/dev/null
+	return 0
+}
+
+case $1 in
+"" | -h | --help) usage ;;
+--apk)
+	shift
+	needroot --apk
+	setup
+	run apk --force-overwrite "$@"
+	rc=$?
+	export_all
+	exit $rc
+	;;
+--setup)
+	needroot --setup
+	setup
+	;;
+--export)
+	needroot --export
+	export_all
+	;;
+*) run "$@" ;;
+esac

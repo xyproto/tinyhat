@@ -1,0 +1,22 @@
+set pkgname libretro-fuse
+set -g _commit e997e2bc32c888348f862f69f2c53babfedf7791
+set pkgver 0+e997e2bc
+set pkgrel 1
+set pkgdesc 'ZX Spectrum emulator core (Fuse) for tinyhat-retro'
+set arch i686 x32
+set url https://github.com/libretro/fuse-libretro
+set license GPL-3.0-or-later
+set depends glibc
+set source "fuse-libretro-$_commit.tar.gz::https://github.com/libretro/fuse-libretro/archive/$_commit.tar.gz"
+set sha256sums 3b8af49fda13ed29ac6b9b03038a2761e397cc06a004dc499be64d5d3917d4a0
+
+function build
+    cd fuse-libretro-$_commit; or return
+    make -f Makefile.libretro CC="$CC -fno-asynchronous-unwind-tables"; or return
+end
+
+function package
+    cd fuse-libretro-$_commit; or return
+    install -Dm755 fuse_libretro.so "$pkgdir/usr/lib/libretro/fuse_libretro.so"; or return
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

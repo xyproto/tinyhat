@@ -1,0 +1,26 @@
+diff --git a/tinyhat-emulate b/tinyhat-emulate
+index f159063..cdc9fba 100755
+--- a/tinyhat-emulate
++++ b/tinyhat-emulate
+@@ -31,7 +31,11 @@ c64) name="C64" pattern='\.(d64|d71|d81|g64|prg|t64|tap|crt|p00)$' ;;
+ 	exit 1
+ 	;;
+ esac
+-dir=$HOME/ROMs/$platform
++case $platform in
++nes | snes) sub=$(printf '%s' "$platform" | tr a-z A-Z) ;;
++*) sub=$platform ;;
++esac
++dir=$HOME/roms/$sub
+ mkdir -p "$dir"
+ game=${2-}
+ if [ -z "$game" ]; then
+@@ -46,7 +50,7 @@ if [ -z "$game" ]; then
+ 		elif [ -z "$list" ] && [ "$platform" = snes ]; then
+ 			exec zsnes
+ 		elif [ -z "$list" ]; then
+-			notice "Put $name games in ~/ROMs/$platform or on a USB stick"
++			notice "Put $name games in ~/roms/$sub or on a USB stick"
+ 			exit 0
+ 		else
+ 			game=$(printf '%s\n' "$list" | choose "$name game") || exit 0

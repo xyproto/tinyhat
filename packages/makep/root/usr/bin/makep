@@ -367,6 +367,9 @@ set -gx CXX_FOR_BUILD c++
 set -gx STRIP strip
 set -g cross 0
 if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m) = x86_64
+    set -gx CFLAGS_FOR_BUILD -O2
+    set -gx CXXFLAGS_FOR_BUILD -O2
+    set -gx LDFLAGS_FOR_BUILD
     set -l prefix
     for p in $CHOST (string replace -r -- '-(unknown|pc)-' - $CHOST)
         command -q $p-gcc; and set prefix $p; and break
@@ -432,9 +435,9 @@ function makep_no_introspection
         string match -q -- '-*' $a; and continue
         for f in $a/meson.options $a/meson_options.txt
             test -f $f; or continue
-            set -l line (string match -r -- "option\\(\\s*'introspection'.*" <$f)
+            set -l line (string join ' ' <$f | string match -r -- "option\\(\\s*'introspection'.*?(?=option\\(|\$)")
             set -q line[1]; or continue
-            string match -q -- "*'boolean'*" $line[1]; and echo -Dintrospection=false; or echo -Dintrospection=disabled
+            string match -qr -- "type\\s*:\\s*'boolean'" $line[1]; and echo -Dintrospection=false; or echo -Dintrospection=disabled
             return
         end
     end
@@ -465,7 +468,7 @@ function meson
             end
             set args $kept $gi
         end
-        env -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH meson setup --cross-file=$makep_crossdir/cross.ini $args
+        env -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_PATH -u CMAKE_TOOLCHAIN_FILE meson setup --cross-file=$makep_crossdir/cross.ini $args
     else
         command meson $argv
     end
@@ -808,7 +811,7 @@ function lib_provides -a p
     if set -q out[1]
         printf '%s\n' $out | sort -u
     else
-        echo "makep: $current: no versioned shared object for $p in provides" >&2
+        set -g -a unversioned_provides $p
         echo $p
     end
 end
@@ -892,7 +895,9 @@ function make_package
     if set -q install[1]
         cp -- $startdir/$install .INSTALL; or die "missing install file $install"
     end
+    set -e unversioned_provides
     pkginfo >.PKGINFO
+    set -q unversioned_provides[1]; and die "$current: no versioned shared object for $unversioned_provides in provides"
     buildinfo >.BUILDINFO
     find . -exec touch -h -d @$SOURCE_DATE_EPOCH -- '{}' +
     set -l metafiles .BUILDINFO .PKGINFO

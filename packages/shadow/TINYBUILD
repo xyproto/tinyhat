@@ -2,7 +2,7 @@ set pkgname shadow
 set pkgver 4.20.0.arch1
 set -g _upstream_tag (string replace -r '\.[^.]*$' '' -- $pkgver)
 set -g _dist_tag $_upstream_tag-arch(string replace -r '^.*?\.arch' '' -- $pkgver)
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Password and account management tool suite with support for shadow files and PAM'
 set arch i686 x32
 set url https://github.com/shadow-maint/shadow
@@ -58,7 +58,8 @@ function prepare
         if string match -q '*.patch.zst' -- $name
             # makep does not decompress single files
             echo "Applying patch $name..."
-            zstd -dc "../$name" | patch -Np1; or return
+            zstd -dc <"../$name" | patch -Np1; or return
+            grep -q '^ENV_PATH[[:space:]]*PATH=/usr/local/sbin:' etc/login.defs; or return
         else if string match -q '*.patch' -- $name
             echo "Applying patch $name..."
             patch -Np1 <"../$name"; or return

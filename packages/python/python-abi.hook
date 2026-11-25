@@ -1,0 +1,13 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = python-*
+Target = python2-*
+
+[Action]
+Description = Checking that Python packages match the installed Python...
+When = PreTransaction
+Exec = /usr/share/libalpm/scripts/python-abi
+AbortOnFail
+NeedsTargets

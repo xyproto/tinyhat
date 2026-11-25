@@ -1,6 +1,6 @@
 set pkgname npth
 set pkgver 1.8
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'The new GNU portable threads library'
 set arch i686 x32
 set url https://www.gnupg.org/software/npth/index.html

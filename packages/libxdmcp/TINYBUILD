@@ -1,6 +1,6 @@
 set pkgname libxdmcp
 set pkgver 1.1.5
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'X11 Display Manager Control Protocol library'
 set arch i686 x32
 set url https://gitlab.freedesktop.org/xorg/lib/libxdmcp

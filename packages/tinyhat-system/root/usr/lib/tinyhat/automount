@@ -24,6 +24,8 @@ if [ "$action" = remove ]; then
 	exit 0
 fi
 [ -b "$dev" ] || exit 0
+exec 9>/run/lock/tinyhat-automount
+flock 9
 host=0
 if findmnt -rn -S "$dev" >/dev/null; then
 	findmnt -rno TARGET -S "$dev" | grep -q '^/media/' && exit 0

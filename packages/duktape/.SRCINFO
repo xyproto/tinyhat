@@ -1,7 +1,7 @@
 pkgbase = duktape
 	pkgdesc = Embeddable Javascript engine
 	pkgver = 2.7.0
-	pkgrel = 7
+	pkgrel = 8
 	url = https://duktape.org/
 	arch = i686
 	arch = x32

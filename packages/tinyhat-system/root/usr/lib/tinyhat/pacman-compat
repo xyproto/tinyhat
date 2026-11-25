@@ -1,0 +1,103 @@
+#!/bin/bash
+pacman=${PACMAN:-/usr/lib/pacman/pacman}
+conf=${PACMAN_CONF:-/etc/pacman.conf}
+root=${PACMAN_ROOT:-/}
+repo=${COMPAT_REPO:-/var/lib/tinyhat/compat}
+dbpath=$("$pacman" --config "$conf" -v -Qq pacman 2>/dev/null | sed -n 's/^DB Path *: *//p')
+dbpath=${dbpath:-/var/lib/pacman/}
+
+work=$(mktemp -d /tmp/pacman-compat.XXXXXX) || exit 1
+trap 'rm -rf -- "$work"' EXIT
+sed '/^IgnorePkg/d; /^IgnoreGroup/d' "$conf" >"$work/pacman.conf"
+mkdir -p "$work/cache" "$repo"
+chmod 755 "$work" "$work/cache"
+
+missing() {
+	bits=$(getconf LONG_BIT)
+	for p in "$@"; do
+		"$pacman" --config "$conf" -Qlq "$p" 2>/dev/null
+	done | while read -r f; do
+		[ -f "$f" ] && [ ! -L "$f" ] || continue
+		[ "$(head -c 4 "$f" 2>/dev/null | tr -d '\000')" = "$(printf '\177ELF')" ] || continue
+		readelf -d "$f" 2>/dev/null | sed -n "s|.*(NEEDED).*\[\(.*\)\]|\1 ${f%/*}|p"
+	done | sort -u | while read -r so dir; do
+		[ -e "/usr/lib/$so" ] || [ -e "$dir/$so" ] || ldconfig -p 2>/dev/null | grep -qF " $so " && continue
+		case $so in *.so.*) echo "${so%%.so.*}.so=${so#*.so.}-$bits" ;; esac
+	done | sort -u
+}
+
+scan=
+if [ "$1" = --scan ]; then
+	scan=1
+	shift
+	set -- $(missing "$@")
+	[ $# -gt 0 ] || exit 0
+fi
+
+added=0
+made=
+done_pkgs=" "
+for dep in "$@"; do
+	case $dep in *.so=*) ;; *) continue ;; esac
+	url=$("$pacman" --config "$work/pacman.conf" --root "$root" -Sddp --noconfirm "$dep" 2>/dev/null | tail -n 1)
+	case $url in http*://* | file://*) ;; *) continue ;; esac
+	file=${url##*/}
+	case $done_pkgs in *" $file "*) continue ;; esac
+	done_pkgs="$done_pkgs$file "
+	echo ":: $dep is missing; making a compat package from $file" >&2
+	"$pacman" --config "$work/pacman.conf" --root "$root" --cachedir "$work/cache" -Sddw --noconfirm "$dep" >&2 || continue
+	pkg=$work/cache/$file
+	[ -f "$pkg" ] || continue
+	dir=$work/src
+	rm -rf -- "$dir" "$work/out"
+	mkdir -p "$dir" "$work/out/usr/lib"
+	bsdtar -xf "$pkg" -C "$dir" || continue
+	found=
+	for f in "$dir"/usr/lib/lib*.so.*; do
+		[ -e "$f" ] || [ -L "$f" ] || continue
+		b=${f##*/}
+		[ -e "$root/usr/lib/$b" ] || [ -L "$root/usr/lib/$b" ] && continue
+		cp -a -- "$f" "$work/out/usr/lib/" && found=1
+	done
+	[ -n "$found" ] || { echo ":: $file has no libraries that are missing here" >&2; continue; }
+	field() { sed -n "s/^$1 = //p" "$dir/.PKGINFO"; }
+	name=$(field pkgname | head -n 1)-compat
+	ver=$(field pkgver | head -n 1)
+	arch=$(field arch | head -n 1)
+	{
+		echo "pkgname = $name"
+		echo "pkgbase = $name"
+		echo "pkgver = $ver"
+		echo "pkgdesc = Libraries from $(field pkgname | head -n 1) $ver for packages that need them"
+		echo "url = $(field url | head -n 1)"
+		echo "builddate = $(date +%s)"
+		echo "packager = Tiny Hat pacman-compat"
+		echo "size = $(du -sb "$work/out" | cut -f1)"
+		echo "arch = $arch"
+		field license | sed 's/^/license = /'
+		field provides | while read -r p; do
+			case $p in *.so=*) ;; *) continue ;; esac
+			so=${p%%=*}
+			v=${p#*=}
+			v=${v%-*}
+			[ -e "$work/out/usr/lib/$so.$v" ] || [ -L "$work/out/usr/lib/$so.$v" ] && echo "provides = $p"
+		done
+		field depend | grep -F '.so=' | sed 's/^/depend = /'
+	} >"$work/out/.PKGINFO"
+	grep -q '^provides = ' "$work/out/.PKGINFO" || { echo ":: $file does not provide the missing libraries" >&2; continue; }
+	chmod -R u+rwX,go+rX,go-w "$work/out"
+	out=$repo/$name-$ver-$arch.pkg.tar.zst
+	rm -f -- "$repo/$name"-[0-9]*.pkg.tar.zst
+	(cd "$work/out" && bsdtar --uid 0 --gid 0 --uname root --gname root --zstd -cf "$out" .PKGINFO usr) || continue
+	repo-add -q -R "$repo/compat.db.tar.gz" "$out" >&2 || continue
+	added=1
+	made="$made compat/$name"
+done
+[ "$added" = 1 ] || exit 1
+mkdir -p "$dbpath/sync"
+cp -f -- "$repo/compat.db.tar.gz" "$dbpath/sync/compat.db"
+if [ -n "$scan" ]; then
+	echo ":: installing the missing libraries:$made" >&2
+	exec "$pacman" --config "$conf" -S --noconfirm --asdeps $made
+fi
+echo ":: compat packages are ready, trying again" >&2

@@ -1,9 +1,9 @@
 set pkgbase cairo
 set pkgname cairo-wayland
 set pkgver 1.18.6
-set pkgrel 1
+set pkgrel 2
 set pkgdesc '2D graphics library with support for multiple output devices'
-set arch i686 x32
+set arch i686 x32 x86_64 aarch64
 set url https://cairographics.org/
 set nvchecker source=git git=https://gitlab.freedesktop.org/cairo/cairo.git 'include_regex=\d+\.\d*[02468]\.\d*[02468]'
 set license 'LGPL-2.1-only OR MPL-1.1'
@@ -34,7 +34,8 @@ function package_cairo
 end
 
 function package_cairo-wayland
-    set provides "cairo=$pkgver" libcairo-gobject.so libcairo-script-interpreter.so libcairo.so
+    set groups tinyhat-replaceable
+    set provides libcairo-gobject.so libcairo-script-interpreter.so libcairo.so
     set -a options !emptydirs
     meson install -C build --destdir "$pkgdir"; or return
 end

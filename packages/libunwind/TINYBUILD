@@ -1,14 +1,18 @@
 set pkgname libunwind
 set pkgver 1.8.3
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Determine and manipulate the call-chain of a program'
 set url https://www.nongnu.org/libunwind/
 set nvchecker source=git git=https://github.com/libunwind/libunwind.git prefix=v 'include_regex=v[\d\.]+'
 set arch i686
 set license MIT
 set depends glibc xz zlib
-set provides libunwind-{coredump,ptrace,setjmp,x86_64}.so \
-    libunwind.so
+switch $CARCH
+    case i686
+        set provides libunwind-{coredump,ptrace,setjmp,x86}.so libunwind.so
+    case '*'
+        set provides libunwind-{coredump,ptrace,setjmp,$CARCH}.so libunwind.so
+end
 set source "https://github.com/libunwind/libunwind/releases/download/v$pkgver/libunwind-$pkgver.tar.gz" \
     'b67d508a.patch'
 set b2sums 13ac888e72c080b9e2588024578740971f721497864c5f2eb930227cbc5bb040551db6280048b0b6f2dde193d5d1719f546088618ebd2e19f96524c2b767fda1 \

@@ -2,7 +2,7 @@ pkgbase = pipewire
 	pkgdesc = Low-latency audio/video router and processor
 	pkgver = 1.6.11
 	epoch = 1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://pipewire.org
 	arch = i686
 	arch = x32
@@ -81,6 +81,8 @@ pkgname = pipewire-alsa
 	depends = pipewire-audio=1:1.6.11
 	depends = pipewire=1:1.6.11
 	depends = pipewire-session-manager
+	provides = pulseaudio-alsa
+	conflicts = pulseaudio-alsa
 
 pkgname = pipewire-audio
 	pkgdesc = Low-latency audio/video router and processor - Audio support

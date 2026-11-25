@@ -1,0 +1,12 @@
+[Unit]
+Description=Stop the boot splash for the Fish boot entry
+ConditionKernelCommandLine=tinyhat.fish
+After=systemd-user-sessions.service
+Before=getty@tty1.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c '[ ! -p /run/tinyhat-splash ] || timeout 2 sh -c "echo quit >/run/tinyhat-splash"; exit 0'
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,4 @@
+#!/bin/sh
+mountpoint -q /persist && exit 0
+find /var/cache/pacman/pkg -maxdepth 1 -type f -name '*.pkg.tar*' -delete 2>/dev/null
+exit 0

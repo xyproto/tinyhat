@@ -1,6 +1,6 @@
 set pkgname scummvm
 set pkgver 2026.4.0
-set pkgrel 4
+set pkgrel 5
 set pkgdesc 'Engine for classic adventure games'
 set arch i686 x32
 set url https://www.scummvm.org/
@@ -48,5 +48,6 @@ end
 function package
     cd scummvm-$pkgver; or return
     make install DESTDIR="$pkgdir"; or return
+    rm -f "$pkgdir/usr/share/applications/org.scummvm.scummvm.desktop"
     install -Dm644 COPYING COPYRIGHT AUTHORS LICENSES/* -t "$pkgdir/usr/share/licenses/$pkgname/"; or return
 end

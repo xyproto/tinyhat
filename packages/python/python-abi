@@ -1,0 +1,14 @@
+#!/bin/bash
+have=$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])' 2>/dev/null) || exit 0
+repo=$(/usr/lib/pacman/pacman -Si python 2>/dev/null | sed -n 's/^Version *: *\([0-9]*\.[0-9]*\).*/\1/p' | head -n 1)
+[ -z "$repo" ] || [ "$repo" = "$have" ] && exit 0
+ignored=" $(pacman-conf IgnorePkg 2>/dev/null | tr '\n' ' ') "
+bad=
+while read -r t; do
+	case $ignored in *" $t "*) continue ;; esac
+	bad="$bad $t"
+done
+[ -n "$bad" ] || exit 0
+echo "error:$bad: built for Python $repo, but Tiny Hat has Python $have." >&2
+echo "error: create a virtual environment with 'python -m venv ~/venv' and use ~/venv/bin/pip instead." >&2
+exit 1

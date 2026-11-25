@@ -1,6 +1,6 @@
-set pkgname tinyhat-freedos
+set pkgname tinyhat-freedos tinyhat-dosgames
 set pkgver 1.4
-set pkgrel 5
+set pkgrel 7
 set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu'
 set arch any
 set url https://www.freedos.org/
@@ -80,22 +80,38 @@ function build
         'vframe /x22 /y1 /w36 /h3 /fBlack /bCyan Single Shadow' "vecho /n /fBlack /bCyan \"           FreeDOS $pkgver\"" \
         'vgotoxy /x21 /y24' 'vecho /fDarkGray /bBlack "Use the arrow keys and Enter to choose"' \
         'vframe /x18 /y4 /w44 /h19 /fLightCyan /bBlue Double Shadow' \
-        'vecho /fWhite "  Games"' 'vline hidden' \
-        'vecho /fLightGreen "  Hat Toss"' 'vecho /fLightGreen "  Invaders"' 'vecho /fLightCyan "  Tetris"' \
-        'vecho /fLightCyan "  Sudoku"' 'vecho /fLightCyan "  Sopwith"' 'vecho /fLightCyan "  Double Pacman"' \
-        'vecho /fLightCyan "  C-Dogs"' 'vecho /fLightCyan "  Ski Jump International"' \
-        'vline hidden' 'vecho /fWhite "  System"' 'vline hidden' \
+        'vecho /fWhite "  Games"' 'vecho /fLightGreen "  Hat Toss"' 'vecho /fLightGreen "  Invaders"' \
+        'vecho /fLightCyan "  Tetris"' 'vecho /fLightCyan "  Sudoku"' 'vecho /fLightCyan "  Sopwith"' 'vecho /fLightCyan "  Double Pacman"' \
+        'vecho /fLightCyan "  C-Dogs"' 'vecho /fLightCyan "  Ski Jump International"' 'vecho' 'vecho /fWhite "  System"' \
         'vecho /fYellow "  Text editor"' 'vecho /fYellow "  DOS Prompt"' 'vecho /fYellow "  Restart the computer"' \
         'vecho /fYellow "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  Shutdown the computer"' \
-        'vchoice /fBlack /bCyan /d1' \
-        'if errorlevel 100 goto Prompt' 'if errorlevel 14 goto Shutdown' 'if errorlevel 13 goto Setup' \
-        'if errorlevel 12 goto Restart' 'if errorlevel 11 goto Prompt' 'if errorlevel 10 goto Edit' \
-        'if errorlevel 9 goto Menu' \
-        'if errorlevel 8 set GAME=SKIJUMP' 'if errorlevel 8 goto Run' 'if errorlevel 7 set GAME=CDOGS' 'if errorlevel 7 goto Run' \
-        'if errorlevel 6 set GAME=DPACMAN' 'if errorlevel 6 goto Run' 'if errorlevel 5 set GAME=SOPWITH' 'if errorlevel 5 goto Run' \
-        'if errorlevel 4 set GAME=SUDOKU' 'if errorlevel 4 goto Run' 'if errorlevel 3 set GAME=TETRIS' 'if errorlevel 3 goto Run' \
-        'if errorlevel 2 set GAME=INVADERS' 'if errorlevel 2 goto Run' \
-        'set GAME=HATTOSS' \
+        'if "%SEL%"=="" set SEL=2' ':Choose' 'vchoice /fBlack /bCyan /p %SEL%' 'if errorlevel 100 goto Moved' \
+        'if errorlevel 15 goto Shutdown' 'if errorlevel 14 goto Setup' 'if errorlevel 13 goto Restart' \
+        'if errorlevel 12 goto Prompt' 'if errorlevel 11 goto Edit' 'if errorlevel 10 goto Choose' \
+        'if errorlevel 9 set GAME=SKIJUMP' 'if errorlevel 9 goto Run' \
+        'if errorlevel 8 set GAME=CDOGS' 'if errorlevel 8 goto Run' \
+        'if errorlevel 7 set GAME=DPACMAN' 'if errorlevel 7 goto Run' \
+        'if errorlevel 6 set GAME=SOPWITH' 'if errorlevel 6 goto Run' \
+        'if errorlevel 5 set GAME=SUDOKU' 'if errorlevel 5 goto Run' \
+        'if errorlevel 4 set GAME=TETRIS' 'if errorlevel 4 goto Run' \
+        'if errorlevel 3 set GAME=INVADERS' 'if errorlevel 3 goto Run' \
+        'if errorlevel 2 set GAME=HATTOSS' 'if errorlevel 2 goto Run' \
+        'goto Choose' ':Moved' \
+        'if errorlevel 102 if not errorlevel 103 set SEL=2' \
+        'if errorlevel 103 if not errorlevel 104 set SEL=3' \
+        'if errorlevel 104 if not errorlevel 105 set SEL=4' \
+        'if errorlevel 105 if not errorlevel 106 set SEL=5' \
+        'if errorlevel 106 if not errorlevel 107 set SEL=6' \
+        'if errorlevel 107 if not errorlevel 108 set SEL=7' \
+        'if errorlevel 108 if not errorlevel 109 set SEL=8' \
+        'if errorlevel 109 if not errorlevel 110 set SEL=9' \
+        'if errorlevel 111 if not errorlevel 112 set SEL=11' \
+        'if errorlevel 112 if not errorlevel 113 set SEL=12' \
+        'if errorlevel 113 if not errorlevel 114 set SEL=13' \
+        'if errorlevel 114 if not errorlevel 115 set SEL=14' \
+        'if errorlevel 115 if not errorlevel 116 set SEL=15' \
+        'if errorlevel 110 if not errorlevel 111 goto System' 'goto Choose' ':System' 'if "%SEL%"=="9" goto SysDown' \
+        'set SEL=9' 'goto Choose' ':SysDown' 'set SEL=11' 'goto Choose' \
         ':Run' 'vcls /fGray /bBlack' 'vcursor small' 'call %GAME%.BAT' 'set GAME=' 'goto Menu' \
         ':Edit' 'vcls /fGray /bBlack' 'vcursor small' 'EDIT' 'goto Menu' \
         ':Setup' 'vcls /fGray /bBlack' 'vcursor small' 'cd \\' 'if exist %DOSDRV%\SETUP.BAT call %DOSDRV%\SETUP.BAT' 'goto Menu' \
@@ -127,11 +143,15 @@ function build
     mdir -i $disk ::/GAMES >/dev/null
 end
 
-function package
+function package_tinyhat-freedos
     install -Dm644 floppy/freedos.img $pkgdir/usr/share/tinyhat/freedos.img; or return
-    install -Dm644 games/GAMES/DPACMAN/gpl-2.0.txt $pkgdir/usr/share/licenses/$pkgname/DPACMAN; or return
-    install -Dm644 games/GAMES/CDOGS/README.TXT $pkgdir/usr/share/licenses/$pkgname/CDOGS; or return
-    install -Dm644 games/GAMES/SKIJUMP/CREDITS.TXT $pkgdir/usr/share/licenses/$pkgname/SKIJUMP; or return
+    _doslicenses
+    install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI; or return
+    install -Dm644 games/DEVEL/NASM/LICENSE $pkgdir/usr/share/licenses/$pkgname/NASM
+end
+
+function package_tinyhat-dosgames
+    set pkgdesc 'Free DOS games and EDIT from the FreeDOS boot disk, with launchers that run them in DOSBox-X'
     set -l dos $pkgdir/usr/share/tinyhat/dos
     install -d $dos/GAMES; or return
     for g in PSRINVAD VITETRIS SUDOKU86 SOPWITH DPACMAN CDOGS SKIJUMP
@@ -139,10 +159,20 @@ function package
     end
     install -Dm644 -t $dos games/BIN/EDIT.EXE games/BIN/EDIT.HLP; or return
     cp -a $startdir/root/. $pkgdir/; or return
-    install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $pkgdir/usr/share/licenses/$pkgname/VITETRIS; or return
-    install -Dm644 games/GAMES/SUDOKU86/README.TXT $pkgdir/usr/share/licenses/$pkgname/SUDOKU86; or return
-    install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI; or return
-    install -Dm644 games/APPINFO/PSRINVAD.LSM $pkgdir/usr/share/licenses/$pkgname/PSRINVAD; or return
-    install -Dm644 games/DOC/EDIT/COPYING $pkgdir/usr/share/licenses/$pkgname/EDIT; or return
-    install -Dm644 games/DEVEL/NASM/LICENSE $pkgdir/usr/share/licenses/$pkgname/NASM
+    find $pkgdir -type d -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
+    _doslicenses
+    install -Dm644 games/GAMES/VITETRIS/CWSDPMI.DOC $pkgdir/usr/share/licenses/$pkgname/CWSDPMI
+end
+
+function _doslicenses
+    set -l l $pkgdir/usr/share/licenses/$pkgname
+    install -Dm644 games/GAMES/DPACMAN/gpl-2.0.txt $l/DPACMAN; or return
+    install -Dm644 games/GAMES/CDOGS/README.TXT $l/CDOGS; or return
+    install -Dm644 games/GAMES/SKIJUMP/CREDITS.TXT $l/SKIJUMP; or return
+    install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $l/VITETRIS; or return
+    install -Dm644 games/GAMES/SUDOKU86/README.TXT $l/SUDOKU86; or return
+    install -Dm644 games/APPINFO/PSRINVAD.LSM $l/PSRINVAD; or return
+    install -Dm644 games/DOC/EDIT/COPYING $l/EDIT
 end

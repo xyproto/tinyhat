@@ -3,7 +3,7 @@ set pkgver 2.16
 set pkgrel 1
 set epoch 2
 set pkgdesc 'GNU GRand Unified Bootloader (2)'
-set arch i686
+set arch i686 aarch64
 set url https://gnu-grub.freedesktop.org/
 set nvchecker source=git git=https://gitlab.freedesktop.org/gnu-grub/grub.git prefix=grub- 'include_regex=grub-\d+\.\d+'
 set license GPL-3.0-or-later
@@ -111,9 +111,10 @@ function package
         echo "Run make install for $i build..."; or return
         make DESTDIR="$pkgdir/" bashcompletiondir="/usr/share/bash-completion/completions" install; or return
         echo "Remove gdb debugging related files for $i..."; or return
-        set -l debug "$pkgdir/usr/lib/grub/$i"/{*.module,*.image}
+        set -l libdir "$pkgdir/usr/lib/grub/"(string replace -r '^aarch64-' arm64- $i)
+        set -l debug $libdir/{*.module,*.image}
         rm -f $debug; or return
-        rm -f "$pkgdir/usr/lib/grub/$i"/{kernel.exec,gdb_grub,gmodule.pl}; or return
+        rm -f $libdir/{kernel.exec,gdb_grub,gmodule.pl}; or return
     end
     echo "Install /etc/default/grub (used by grub-mkconfig)..."; or return
     install -D -m0644 "$srcdir/grub.default" "$pkgdir/etc/default/grub"; or return

@@ -1,17 +1,16 @@
 set pkgbase spandsp
 set pkgname spandsp
-set pkgver 0.0.6
-set pkgrel 7
+set pkgver 3.1.1
+set pkgrel 1
 set pkgdesc 'Low-level signal processing library that modulates and demodulates signals commonly used in telephony'
 set arch i686 x32
-set url https://www.soft-switch.org/
-set nvchecker source=regex url=https://www.soft-switch.org/downloads/spandsp/ 'regex=spandsp-([^"]*).tar.gz'
+set url https://github.com/freeswitch/spandsp
+set nvchecker source=github github=freeswitch/spandsp use_max_tag=true prefix=v
 set license LGPL-2.1-only
 set depends glibc libtiff
 # No documentation package (docbook-xsl, doxygen)
-#set source "https://www.soft-switch.org/downloads/$pkgbase/$pkgbase-$pkgver.tar.gz"
-set source "https://web.archive.org/web/20260102090731/https://www.soft-switch.org/downloads/$pkgbase/$pkgbase-$pkgver.tar.gz"
-set b2sums 6ee95501473d5758c9ff96580bb51222f49a230dc6a5f52f5a852781cbb70079bb07f9d7224f5c7ea91c0dd617fa543a37518f68875c76a44b3be1415aece696
+set source "$pkgbase-$pkgver.tar.gz::https://github.com/freeswitch/spandsp/archive/refs/tags/v$pkgver.tar.gz"
+set b2sums 5e9a6747555c93d7f6421b0799ae5d39ec33253e7fae2f3764286f86e2b174f3a6d4907e772f87bd612668c27627ca166b5c282bdb222a2a61b9adc0880e5042
 set flags arch
 
 function prepare

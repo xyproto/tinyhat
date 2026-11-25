@@ -1,0 +1,47 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -182,7 +182,7 @@
+ 	int isfloating, isurgent, isfullscreen, isminimized, desktophidden, wasfullscreen;
+ 	int rulesize;
+ 	struct wlr_box presnap;
+-	int issnapped, ismaximized, maxfloating;
++	int issnapped, ismaximized, maxfloating, isrulefloat;
+ } Client;
+ 
+ typedef struct {
+@@ -1552,6 +1552,7 @@
+ 	}
+ 
+ 	c->isfloating |= client_is_float_type(c);
++	c->isrulefloat = c->isfloating;
+ 	setmon(c, mon, newtags);
+ }
+ 
+@@ -5667,13 +5668,25 @@
+ 	wasfloat = !selmon->lt[selmon->sellt]->arrange;
+ 	if (wasfloat)
+ 		wl_list_for_each(c, &clients, link)
+-			if (c->mon == selmon && !c->isfloating && !c->isfullscreen)
+-				c->floatgeom = c->geom;
++			if (c->mon == selmon && !c->isfullscreen && (!c->isfloating || !c->isrulefloat))
++				c->floatgeom = c->issnapped ? c->presnap : c->geom;
+ 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+ 		selmon->sellt ^= 1;
+ 	if (arg && arg->v)
+ 		selmon->lt[selmon->sellt] = (Layout *)arg->v;
+ 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof(selmon->ltsymbol));
++	if (wasfloat && selmon->lt[selmon->sellt]->arrange)
++		wl_list_for_each(c, &clients, link) {
++			if (c->mon != selmon || c->isfullscreen || !c->isfloating || c->isrulefloat || client_get_parent(c))
++				continue;
++			if (c->ismaximized) {
++				c->ismaximized = 0;
++				client_set_maximized(c, 0);
++			}
++			c->issnapped = 0;
++			c->isfloating = 0;
++			wlr_scene_node_reparent(&c->scene->node, layers[LyrTile]);
++		}
+ 	arrange(selmon);
+ 	if (!wasfloat && !selmon->lt[selmon->sellt]->arrange)
+ 		wl_list_for_each(c, &clients, link)

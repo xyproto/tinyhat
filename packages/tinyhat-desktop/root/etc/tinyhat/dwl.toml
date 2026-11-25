@@ -77,6 +77,11 @@ title = "Tiny Hat"
 float = true
 
 [[rule]]
+app_id = "turtle-repl"
+float = true
+focus = false
+
+[[rule]]
 title = "Fasttracker II"
 float = true
 
@@ -356,6 +361,14 @@ separator = true
 [[key]]
 shown = "Right click desktop"
 description = "Toggle background"
+
+[[key]]
+shown = "Click the clock"
+description = "Show date and time, only time or only date"
+
+[[key]]
+shown = "Right click a window button"
+description = "Maximize or restore the window"
 
 [[key]]
 shown = "Alt+Left drag"

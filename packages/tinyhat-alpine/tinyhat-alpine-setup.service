@@ -1,0 +1,11 @@
+[Unit]
+Description=Let Alpine packages use the Tiny Hat commands and libraries
+After=local-fs.target
+ConditionPathExists=/usr/lib/alpine/etc/apk/world
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/tinyhat-alpine --setup
+
+[Install]
+WantedBy=multi-user.target

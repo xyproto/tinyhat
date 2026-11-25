@@ -37,14 +37,20 @@ end
 function build
     set -a CFLAGS -O3 -flto
     set -a LDFLAGS -flto
-    make -C lua-$_lua/src liblua.a MYCFLAGS="$CFLAGS -DLUA_USE_LINUX"; or return
+    set -l cross
+    if string match -q -- '*-gcc' $CC
+        set cross CC=$CC "AR=$CC-ar rcu" RANLIB=$CC-ranlib
+    end
+    make -C lua-$_lua/src liblua.a MYCFLAGS="$CFLAGS -DLUA_USE_LINUX" $cross; or return
     cd grafX2-$_commit/src; or return
-    _grafx2_make; or return
+    _grafx2_make $cross[1]; or return
 end
 
 function package
     cd grafX2-$_commit/src; or return
-    _grafx2_make PREFIX=/usr DESTDIR="$pkgdir" install; or return
+    set -l cross
+    string match -q -- '*-gcc' $CC; and set cross CC=$CC
+    _grafx2_make PREFIX=/usr DESTDIR="$pkgdir" install $cross; or return
     ln -sf grafx2-sdl3 "$pkgdir/usr/bin/grafx2"; or return
     set -l l "$pkgdir/usr/share/licenses/$pkgname"
     install -Dm644 ../LICENSE ../doc/gpl-2.0.txt -t "$l/"; or return

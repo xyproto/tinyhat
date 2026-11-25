@@ -1,7 +1,7 @@
 pkgbase = libxdmcp
 	pkgdesc = X11 Display Manager Control Protocol library
 	pkgver = 1.1.5
-	pkgrel = 2
+	pkgrel = 3
 	url = https://gitlab.freedesktop.org/xorg/lib/libxdmcp
 	arch = i686
 	arch = x32

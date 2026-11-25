@@ -1,7 +1,7 @@
 set pkgname orbiton
 set -g _commit 129147e1aa4bbceed78cead4c04df84c95886252
 set pkgver 2.75.0.r5.g129147e1
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Editor and IDE'
 set arch i686 x86_64 aarch64
 set url https://github.com/xyproto/orbiton/
@@ -9,8 +9,14 @@ set license BSD-3-Clause
 set depends glibc
 set makedepends go-tinyhat
 set options '!buildflags'
-set source "orbiton-$_commit.tar.gz::https://github.com/xyproto/orbiton/archive/$_commit.tar.gz"
-set sha256sums 7e06ab0225e232bbf5862be86dd45b14dd362419f207dd57447f6f5e66ea539b
+set source "orbiton-$_commit.tar.gz::https://github.com/xyproto/orbiton/archive/$_commit.tar.gz" \
+    zx.patch
+set sha256sums 7e06ab0225e232bbf5862be86dd45b14dd362419f207dd57447f6f5e66ea539b \
+    1f555fac62fcfa382f6db1c9c2222dc509735848bc097ad30358537cbefd63c8
+
+function prepare
+    patch -d orbiton-$_commit -Np1 -i ../zx.patch; or return
+end
 
 function build
     cd orbiton-$_commit/v2; or return

@@ -1,6 +1,6 @@
 set pkgname python
 set pkgver 3.14.10
-set pkgrel 2
+set pkgrel 3
 set -g _pybasever (string replace -r '\.[^.]*$' '' -- $pkgver)
 set pkgdesc 'The Python programming language'
 set arch i686 x32
@@ -9,9 +9,11 @@ set nvchecker source=git git=https://github.com/python/cpython.git prefix=v 'exc
 set license PSF-2.0
 set depends bzip2 expat gdbm libffi libnsl libxcrypt openssl zlib tzdata mpdecimal zstd sqlite
 set provides "python3=$pkgver"
-set source "https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz" python-openssl4.patch
+set source "https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz" python-openssl4.patch python-abi.hook python-abi
 set sha512sums 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a \
-    a21bd0012f52c4308cbe4ba025054174512d5f8179e995501c29906f0bfad0eb7b53a15467dfd058fe335fcb4400cd694b3b346134eddc58b7470c389a429d2e
+    a21bd0012f52c4308cbe4ba025054174512d5f8179e995501c29906f0bfad0eb7b53a15467dfd058fe335fcb4400cd694b3b346134eddc58b7470c389a429d2e \
+    b2ce2885d82d09fe3264e1a95bb7cf0be4ac953d547cc900bc90efd9feaba68afd814b3fbdcbf44664081c6cc7587491bbff9c88ca95cc9dfe9a7797c241f889 \
+    1d000c550a6ebc382b002c971b9905084b02608ba6bf97168754075be42b847127ce3e557c25273577390957a71facc4398ed4f7a8cea3c131fe78950ab7b06b
 
 function prepare
     cd Python-$pkgver; or return
@@ -52,18 +54,11 @@ function package
     rm -f "$pkgdir"/usr/bin/{idle,idle3,"idle$_pybasever"}; or return
     printf '%s\n' \
         '[externally-managed]' \
-        "Error=To install Python packages system-wide, try 'pacman -S" \
-        " python-xyz', where xyz is the package you are trying to" \
-        ' install.' \
-        '' \
-        ' If you wish to install a non-Arch-packaged Python package,' \
-        " create a virtual environment using 'python -m venv path/to/venv'." \
-        ' Then use path/to/venv/bin/python and path/to/venv/bin/pip.' \
-        '' \
-        ' If you wish to install a non-Arch packaged Python application,' \
-        " it may be easiest to use 'pipx install xyz', which will manage a" \
-        ' virtual environment for you. Make sure you have python-pipx' \
-        ' installed via pacman.' \
+        "Error=To install Python packages, create a virtual environment" \
+        " with 'python -m venv ~/venv'. Then use ~/venv/bin/python and" \
+        ' ~/venv/bin/pip.' \
         '' >"$pkgdir/usr/lib/python$_pybasever/EXTERNALLY-MANAGED"; or return
+    install -Dm644 ../python-abi.hook "$pkgdir/usr/share/libalpm/hooks/python-abi.hook"; or return
+    install -Dm755 ../python-abi "$pkgdir/usr/share/libalpm/scripts/python-abi"; or return
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
 end

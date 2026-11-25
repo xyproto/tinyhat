@@ -1,0 +1,21 @@
+set pkgname tinyhat-tinybuilds
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'TINYBUILD and PKGBUILD files that pacman builds and installs when they are asked for'
+set arch any
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends makep pacman git
+
+function package
+    for t in $startdir/*/TINYBUILD $startdir/*/PKGBUILD
+        set -l d (dirname $t)
+        set -l name (basename $d)
+        install -d "$pkgdir/usr/share/tinyhat/tinybuilds/$name"; or return
+        cp -a $d/. "$pkgdir/usr/share/tinyhat/tinybuilds/$name/"; or return
+    end
+    install -Dm755 $startdir/pacman-tinybuild "$pkgdir/usr/lib/tinyhat/pacman-tinybuild"; or return
+    find $pkgdir -type d -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f -perm -u+x -exec chmod 755 '{}' +; or return
+    find $pkgdir -type f ! -perm -u+x -exec chmod 644 '{}' +; or return
+end

@@ -19,7 +19,7 @@ set -g _srcname boost_1_92_0
 function build
     set -l JOBS (string match -r -- '^-j *[0-9]+$' $MAKEFLAGS)
     set -l cross
-    string match -q -- '*-gcc' $CC; and set cross architecture=arm address-model=64 abi=aapcs binary-format=elf target-os=linux
+    string match -q -- '*-gcc' $CC; and set cross architecture=arm address-model=64 abi=aapcs binary-format=elf target-os=linux boost.stacktrace.addr2line=on
     if not set -q cross[1]
         pushd $_srcname/tools/build; or return
         ./bootstrap.sh --cxxflags="$CXXFLAGS $LDFLAGS -DBOOST_STACKTRACE_LIBCXX_RUNTIME_MAY_CAUSE_MEMORY_LEAK"; or return

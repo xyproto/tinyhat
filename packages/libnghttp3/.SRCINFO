@@ -1,7 +1,7 @@
 pkgbase = libnghttp3
 	pkgdesc = HTTP/3 library written in C
 	pkgver = 1.18.0
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/ngtcp2/nghttp3
 	arch = i686
 	arch = x32

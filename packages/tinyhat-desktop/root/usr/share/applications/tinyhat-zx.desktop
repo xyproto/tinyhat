@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=ZX Spectrum emulator (Fuse)
+Icon=applications-games
+Comment=Play ZX Spectrum games from ~/roms/zx or a USB stick, or start BASIC. The PC keyboard is the Spectrum keyboard, F5 saves, F9 loads
+Exec=tinyhat-emulate zx
+Terminal=false
+Categories=Game;Emulator;

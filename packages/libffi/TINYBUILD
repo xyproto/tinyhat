@@ -1,6 +1,6 @@
 set pkgname libffi
 set pkgver 3.8.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Portable foreign function interface library'
 set arch i686 x32
 set url https://sourceware.org/libffi/

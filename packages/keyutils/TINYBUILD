@@ -1,6 +1,6 @@
 set pkgname keyutils
 set pkgver 1.6.3
-set pkgrel 4
+set pkgrel 5
 set pkgdesc 'Linux Key Management Utilities'
 set arch i686 x32
 set url https://www.kernel.org/

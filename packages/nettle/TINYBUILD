@@ -1,6 +1,6 @@
 set pkgname nettle
 set pkgver 4.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'A low-level cryptographic library'
 set arch i686 x32
 set url 'https://www.lysator.liu.se/~nisse/nettle'

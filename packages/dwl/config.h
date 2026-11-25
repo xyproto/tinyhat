@@ -18,6 +18,7 @@ static int topbar                    = 1; /* 0 means bottom bar */
 static const char *fonts[]                 = {"JetBrains Mono NL:size=10"};
 static const char *cursor_theme            = "Vanilla-DMZ";
 static const float rootcolor[]             = COLOR(0x1a1b26ff);
+static const uint32_t tagcolor             = 0x383b45ff;
 /* This conforms to the xdg-protocol. Set the alpha to zero to restore the old behavior */
 static const float fullscreen_bg[]         = {0.0f, 0.0f, 0.0f, 1.0f}; /* You can also use glsl colors */
 static uint32_t colors[][3]                = {
@@ -267,6 +268,7 @@ static const Button buttons[] = {
     { ClkLtSymbol, 0,      BTN_LEFT,   togglelayout,   {0} },
     { ClkTitle,    0,      BTN_LEFT,   taskclick,      {0} },
     { ClkTitle,    0,      BTN_MIDDLE, taskclose,      {0} },
+    { ClkTitle,    0,      BTN_RIGHT,  taskmaximize,   {0} },
     { ClkStatus,   0,      BTN_LEFT,   spawn,          {.v = menucmd} },
     { ClkRoot,     0,      BTN_RIGHT,  rootright,      {0} },
     { ClkMenu,     0,      BTN_LEFT,   spawn,          {.v = menucmd} },

@@ -127,11 +127,12 @@ function _native_clc
     env -u CMAKE_TOOLCHAIN_FILE -u CONFIG_SITE -u PKG_CONFIG_LIBDIR -u PKG_CONFIG_SYSROOT_DIR -u PKG_CONFIG_FDO_SYSROOT_RULES \
         -u AR -u RANLIB -u STRIP -u LD -u NM -u OBJCOPY -u OBJDUMP -u READELF \
         PKG_CONFIG_PATH="$srcdir/native-pc" CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD CFLAGS=-O2 CXXFLAGS=-O2 LDFLAGS= \
-        /usr/bin/meson setup "$srcdir/native" "$srcdir/mesa-$_pkgver" --buildtype=release -D gallium-drivers= -D vulkan-drivers= \
+        /usr/bin/meson setup "$srcdir/native" "$srcdir/mesa-$_pkgver" --buildtype=release -D gallium-drivers=panfrost,asahi -D vulkan-drivers=imagination \
         -D platforms= -D glx=disabled -D egl=disabled -D gbm=disabled -D gles1=disabled -D gles2=disabled -D opengl=false \
         -D llvm=enabled -D shared-llvm=enabled -D mesa-clc=enabled -D install-mesa-clc=true -D precomp-compiler=enabled -D install-precomp-compiler=true -D valgrind=disabled \
         -D libunwind=disabled -D zstd=disabled -D xmlconfig=disabled -D gallium-va=disabled -D video-codecs=; or return
-    env -u CMAKE_TOOLCHAIN_FILE ninja -C "$srcdir/native" src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2; or return
+    env -u CMAKE_TOOLCHAIN_FILE ninja -C "$srcdir/native" src/compiler/clc/mesa_clc src/compiler/spirv/vtn_bindgen2 src/imagination/pco/uscgen/pco_clc \
+        src/imagination/pdsc/pdsc_precomp src/panfrost/clc/panfrost_compile src/asahi/clc/asahi_clc; or return
 end
 
 switch $CARCH
@@ -149,7 +150,8 @@ switch $CARCH
             if string match -q -- '*-gcc' $CC
                 _native_clc; or return
                 set -a meson_options -D mesa-clc=system -D precomp-compiler=system
-                set -fx PATH $srcdir/native/src/compiler/clc $srcdir/native/src/compiler/spirv $PATH
+                set -fx PATH $srcdir/native/src/compiler/clc $srcdir/native/src/compiler/spirv $srcdir/native/src/imagination/pco/uscgen \
+                    $srcdir/native/src/imagination/pdsc $srcdir/native/src/panfrost/clc $srcdir/native/src/asahi/clc $PATH
             end
             arch-meson mesa-$_pkgver build $meson_options; or return
             meson compile -C build; or return

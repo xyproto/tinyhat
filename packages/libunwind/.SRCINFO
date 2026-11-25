@@ -1,7 +1,7 @@
 pkgbase = libunwind
 	pkgdesc = Determine and manipulate the call-chain of a program
 	pkgver = 1.8.3
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.nongnu.org/libunwind/
 	arch = i686
 	license = MIT
@@ -11,7 +11,7 @@ pkgbase = libunwind
 	provides = libunwind-coredump.so
 	provides = libunwind-ptrace.so
 	provides = libunwind-setjmp.so
-	provides = libunwind-x86_64.so
+	provides = libunwind-x86.so
 	provides = libunwind.so
 	source = https://github.com/libunwind/libunwind/releases/download/v1.8.3/libunwind-1.8.3.tar.gz
 	source = b67d508a.patch

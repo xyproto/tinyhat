@@ -1,7 +1,7 @@
 set pkgbase libepoxy
 set pkgname libepoxy
 set pkgver 1.5.10
-set pkgrel 3
+set pkgrel 5
 set pkgdesc 'Library handling OpenGL function pointer management'
 set arch i686 x32
 set url https://github.com/anholt/libepoxy

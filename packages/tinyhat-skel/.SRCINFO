@@ -1,7 +1,7 @@
 pkgbase = tinyhat-skel
 	pkgdesc = Tiny Hat starter projects for new users
 	pkgver = 1
-	pkgrel = 2
+	pkgrel = 4
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
@@ -45,5 +45,6 @@ pkgbase = tinyhat-skel
 	backup = etc/skel/cprojects/raylib3d/main.c
 	backup = etc/skel/cprojects/snes-c-hello/Makefile
 	backup = etc/skel/cprojects/snes-c-hello/hello.c
+	backup = etc/skel/cprojects/zx-hello/hello.c
 
 pkgname = tinyhat-skel

@@ -1,6 +1,6 @@
 set pkgname libfreeaptx
 set pkgver 0.2.2
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Open Source aptX codec library'
 set url https://github.com/regularhunter/libfreeaptx
 set nvchecker source=git git=https://github.com/iamthehorker/libfreeaptx.git

@@ -1,0 +1,18 @@
+diff --git a/src/pacman/callback.c b/src/pacman/callback.c
+index 8f17e322..b028c49c 100644
+--- a/src/pacman/callback.c
++++ b/src/pacman/callback.c
+@@ -463,6 +463,13 @@ void cb_question(void *ctx, alpm_question_t *question)
+ 		case ALPM_QUESTION_CONFLICT_PKG:
+ 			{
+ 				alpm_question_conflict_t *q = &question->conflict;
++				if(alpm_list_find_str(alpm_pkg_get_groups(q->conflict->package2), "tinyhat-replaceable")) {
++					q->remove = yesno(_("%s replaces %s from Tiny Hat. Remove %s?"),
++							alpm_pkg_get_name(q->conflict->package1),
++							alpm_pkg_get_name(q->conflict->package2),
++							alpm_pkg_get_name(q->conflict->package2));
++					break;
++				}
+ 				/* print conflict only if it contains new information */
+ 				if(strcmp(alpm_pkg_get_name(q->conflict->package1), q->conflict->reason->name) == 0
+ 						|| strcmp(alpm_pkg_get_name(q->conflict->package2), q->conflict->reason->name) == 0) {

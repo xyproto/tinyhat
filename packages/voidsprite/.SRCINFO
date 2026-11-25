@@ -1,7 +1,7 @@
 pkgbase = voidsprite
 	pkgdesc = Pixel art and sprite editor made with SDL3
 	pkgver = 2026.10
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/counter185/voidsprite
 	arch = i686
 	arch = x32
@@ -18,6 +18,7 @@ pkgbase = voidsprite
 	depends = libgcc
 	depends = libstdc++
 	depends = glibc
+	depends = libglvnd
 	source = voidsprite-025b430805beb87ebb40d1cf409c444aef2c361a.tar.gz::https://github.com/counter185/voidsprite/archive/025b430805beb87ebb40d1cf409c444aef2c361a.tar.gz
 	source = liblcf-4b91a5835f2141ae898862c5e6dfee50c7ff87cd.tar.gz::https://github.com/EasyRPG/liblcf/archive/4b91a5835f2141ae898862c5e6dfee50c7ff87cd.tar.gz
 	source = voidsprite-tinyhat.patch

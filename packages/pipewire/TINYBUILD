@@ -1,7 +1,7 @@
 set pkgbase pipewire
 set pkgname pipewire alsa-card-profiles libpipewire pipewire-alsa pipewire-audio pipewire-jack pipewire-netjack2 pipewire-pulse pipewire-system-services pipewire-v4l2 pipewire-session-manager pulse-native-provider
 set pkgver 1.6.11
-set pkgrel 1
+set pkgrel 2
 set epoch 1
 set pkgdesc 'Low-latency audio/video router and processor'
 set arch i686 x32 x86_64 aarch64
@@ -131,6 +131,8 @@ end
 function package_pipewire-alsa
     set pkgdesc "$pkgdesc - ALSA configuration"
     set depends "pipewire-audio=$epoch:$pkgver" "pipewire=$epoch:$pkgver" pipewire-session-manager
+    set provides pulseaudio-alsa
+    set conflicts pulseaudio-alsa
     mkdir -p "$pkgdir/etc/alsa/conf.d"; or return
     ln -st "$pkgdir/etc/alsa/conf.d" /usr/share/alsa/alsa.conf.d/99-pipewire-default.conf; or return
     install -Dm644 /dev/null "$pkgdir/usr/share/pipewire/media-session.d/with-alsa"; or return

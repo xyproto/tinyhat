@@ -28,12 +28,17 @@ set -g _sysroot /usr/$_t/sysroot
 # Everything is installed into $srcdir/stage first, so that each step can use the previous ones,
 # and the finished toolchain is copied to $pkgdir at the end
 function _stage_env
-    set -gx STAGE "$srcdir"/stage
+    set -gx STAGE /tmp/i686-cross-stage
     set -gx PATH "$STAGE"/usr/bin $PATH
 end
 
 function build
     _stage_env
+    set -l map -ffile-prefix-map=$srcdir=/usr/src/debug/$pkgname
+    set -gx CFLAGS -O2 -pipe $map
+    set -gx CXXFLAGS -O2 -pipe $map
+    set -gx CFLAGS_FOR_TARGET -O2 -pipe $map
+    set -gx CXXFLAGS_FOR_TARGET -O2 -pipe $map
     set -l jobs -j(nproc)
     set -l common --target=$_t --prefix=/usr --libexecdir=/usr/lib --with-sysroot=$_sysroot \
         --with-build-sysroot="$STAGE$_sysroot" --disable-nls --disable-werror
@@ -66,7 +71,7 @@ function build
     echo 'rtlddir=/usr/lib' >>configparms
     echo 'sbindir=/usr/bin' >>configparms
     echo 'rootsbindir=/usr/bin' >>configparms
-    env CC="$_t-gcc" CXX="$_t-g++" AR=$_t-ar RANLIB=$_t-ranlib CFLAGS='-march=i686 -mtune=generic -O2 -pipe' \
+    env CC="$_t-gcc" CXX="$_t-g++" AR=$_t-ar RANLIB=$_t-ranlib CFLAGS="-march=i686 -mtune=generic -O2 -pipe $map" \
         ../glibc-$_glibc/configure --host=$_t --build=x86_64-pc-linux-gnu --prefix=/usr --libdir=/usr/lib \
         --libexecdir=/usr/lib --with-headers="$STAGE$_sysroot/usr/include" --enable-kernel=4.4 \
         --enable-bind-now --enable-stack-protector=strong --disable-nscd --disable-profile --disable-werror; or return
@@ -74,10 +79,10 @@ function build
     make DESTDIR="$STAGE$_sysroot" install; or return
     cd "$srcdir"; or return
 
-    # gcc, final: C, C++ and Fortran with shared libgcc and libstdc++ (Fortran for building the i686 gcc's libgfortran)
+    # gcc, final: C and C++ with shared libgcc and libstdc++
     mkdir -p build-gcc; and cd build-gcc; or return
     ../gcc-$pkgver/configure $common --with-arch=i686 --with-tune=generic --with-system-zlib \
-        --enable-languages=c,c++,fortran --disable-bootstrap --disable-multilib --enable-shared --enable-threads=posix \
+        --enable-languages=c,c++ --disable-bootstrap --disable-multilib --enable-shared --enable-threads=posix \
         --enable-__cxa_atexit --enable-clocale=gnu --enable-default-pie --enable-default-ssp \
         --enable-linker-build-id --enable-gnu-unique-object --enable-plugin --with-linker-hash-style=gnu \
         --disable-libsanitizer --disable-libvtv --disable-libssp --disable-libstdcxx-pch --disable-fixincludes; or return
@@ -100,7 +105,7 @@ function package
     rm -rf "$pkgdir"/usr/share/{info,man,locale,doc} "$pkgdir"/usr/lib/bfd-plugins
     # Plain names (gcc, cc, ld, ...) for builds that put /usr/$_t/bin first in PATH
     install -d "$pkgdir"/usr/$_t/bin; or return
-    for tool in gcc g++ gfortran cpp gcc-ar gcc-nm gcc-ranlib
+    for tool in gcc g++ cpp gcc-ar gcc-nm gcc-ranlib
         ln -sf ../../bin/$_t-$tool "$pkgdir"/usr/$_t/bin/$tool; or return
     end
     ln -sf ../../bin/$_t-gcc "$pkgdir"/usr/$_t/bin/cc; or return

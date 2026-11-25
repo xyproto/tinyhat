@@ -1,6 +1,6 @@
 set pkgname pango
 set pkgver 1.58.2
-set pkgrel 1
+set pkgrel 2
 set epoch 1
 set pkgdesc 'A library for layout and rendering of text'
 set arch i686 x32
@@ -27,7 +27,7 @@ function build
 end
 
 function package_pango
-    set provides libpango{,cairo,ft2,xft}-1.0.so
+    set provides libpango{,cairo,ft2}-1.0.so
     meson install -C build --destdir "$pkgdir"; or return
 end
 

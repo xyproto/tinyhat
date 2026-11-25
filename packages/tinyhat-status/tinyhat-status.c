@@ -20,6 +20,48 @@ extern char **environ;
 
 static char pidfile[512];
 
+static const char *clockformats[] = { "%Y-%m-%d %H:%M", "%H:%M", "%Y-%m-%d" };
+
+static void clockpath(char *path, size_t size)
+{
+	auto state = getenv("XDG_STATE_HOME");
+	if (state && *state)
+		snprintf(path, size, "%s/tinyhat/clock", state);
+	else
+		snprintf(path, size, "%s/.local/state/tinyhat/clock", getenv("HOME") ? getenv("HOME") : "/tmp");
+}
+
+static int clockmode(void)
+{
+	char path[600];
+	int mode = 0;
+	clockpath(path, sizeof path);
+	auto f = fopen(path, "r");
+	if (f) {
+		if (fscanf(f, "%d", &mode) != 1)
+			mode = 0;
+		fclose(f);
+	}
+	return mode >= 0 && mode < (int)(sizeof clockformats / sizeof *clockformats) ? mode : 0;
+}
+
+static void nextclockmode(void)
+{
+	char path[600];
+	int mode = (clockmode() + 1) % (int)(sizeof clockformats / sizeof *clockformats);
+	clockpath(path, sizeof path);
+	for (char *s = path + 1; (s = strchr(s, '/')); s++) {
+		*s = '\0';
+		mkdir(path, 0755);
+		*s = '/';
+	}
+	auto f = fopen(path, "w");
+	if (f) {
+		fprintf(f, "%d\n", mode);
+		fclose(f);
+	}
+}
+
 static bool running(const char *name)
 {
 	auto proc = opendir("/proc");
@@ -348,7 +390,7 @@ static void status(char *line, size_t size, const char *rundir, bool cachedvolum
 		add(line, size, text);
 	auto now = time(nullptr);
 	struct tm tm;
-	strftime(text, sizeof text, "%Y-%m-%d %H:%M", localtime_r(&now, &tm));
+	strftime(text, sizeof text, clockformats[clockmode()], localtime_r(&now, &tm));
 	add(line, size, text);
 }
 
@@ -384,6 +426,10 @@ int main(int argc, char *argv[])
 		return refresh(SIGUSR1);
 	if (argc > 1 && !strcmp(argv[1], "--volume"))
 		return refresh(SIGUSR2);
+	if (argc > 1 && !strcmp(argv[1], "--clock")) {
+		nextclockmode();
+		return refresh(SIGUSR2);
+	}
 
 	sigset_t set;
 	sigemptyset(&set);

@@ -18,8 +18,10 @@ set sha256sums 09649e2a956680d0087c033764a3383d168cac618f2c74517efc81c4506a9569 
 
 function build
     mkdir -p pc; or return
+    set -l pcdir /usr/lib/pkgconfig
+    set -q SYSROOT[1]; and set pcdir $SYSROOT/usr/lib/pkgconfig
     for f in pango pangocairo pangoft2 pangoxft
-        test -f /usr/lib/pkgconfig/$f.pc; and sed 's/>= *[0-9][0-9.]*//g' /usr/lib/pkgconfig/$f.pc >pc/$f.pc
+        test -f $pcdir/$f.pc; and sed 's/>= *[0-9][0-9.]*//g' $pcdir/$f.pc >pc/$f.pc
     end
     set -lx PKG_CONFIG_PATH "$srcdir/pc"
     set -l cflags (pkg-config --cflags gtk4 libtomlc17 | string split -n ' '); or return

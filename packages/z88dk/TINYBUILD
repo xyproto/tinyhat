@@ -1,0 +1,77 @@
+set pkgname z88dk
+set pkgver 2.5
+set pkgrel 1
+set pkgdesc 'Z80 C compiler, assembler and libraries for the ZX Spectrum'
+set arch i686 x32
+set url https://z88dk.org/
+set nvchecker source=github github=z88dk/z88dk prefix=v use_max_tag=true
+set license ClArtistic
+set depends glibc gcc-libs gmp
+set options leakpath
+set source "z88dk-src-$pkgver.tgz::https://github.com/z88dk/z88dk/releases/download/v$pkgver/z88dk-src-$pkgver.tgz"
+set sha256sums 2f82eb4f71d27528f3b1902046bac2f77e7326b4a2d836febe284d32a4ec31f9
+
+set -g _bins bin/z88dk-appmake bin/z88dk-copt bin/z88dk-ucpp bin/z88dk-sccz80 bin/z88dk-z80asm \
+    bin/z88dk-zcc-multi bin/zcc bin/z88dk-zpragma bin/z88dk-zx7 bin/z88dk-zx0 bin/z88dk-z80nm \
+    bin/z88dk-zobjcopy bin/z88dk-ticks bin/z88dk-lib bin/z88dk-basck
+set -g _nativebins bin/z88dk-copt bin/z88dk-ucpp bin/z88dk-sccz80 bin/z88dk-z80asm bin/zcc bin/z88dk-zpragma \
+    bin/z88dk-zx7 bin/z88dk-zx0 bin/z88dk-lib
+
+function prepare
+    cd z88dk; or return
+    sed -i 's|^#define PREFIX .*|#define PREFIX "/usr/share/z88dk"|; s|^#define BINDIR .*|#define BINDIR "/usr/bin"|' src/config.h; or return
+    sed -i '/perl tools\/build_ldflags.pl/d' src/z80asm/Makefile; or return
+    sed -i 's|perl make_lib_list.pl $(SRC)|printf "%s\\\\n" $(sort $(filter-out test%,$(SRC)))|' src/z80asm/dev/z80asm_lib/Makefile; or return
+    grep -q 'printf "%s' src/z80asm/dev/z80asm_lib/Makefile; or return
+    sed -i 's/^expressions.tab.c expressions.tab.h: expressions.y$/expressions.tab.c expressions.tab.h \&: expressions.y/' src/ticks/Makefile; or return
+    grep -q '^expressions.tab.c expressions.tab.h &: expressions.y$' src/ticks/Makefile; or return
+    rm -f lib/z88dk-z80asm.lib lib/clibs/*.lib lib/clibs/*/*.lib; or return
+end
+
+function _libs
+    set -lx PATH "$argv[1]/bin" $PATH
+    set -lx ZCCCFG "$argv[1]/lib/config/"
+    make -C $argv[1]/libsrc TARGETS=zx; or return
+    make -C $argv[1]/libsrc TARGETS=zx install; or return
+end
+
+function build
+    cd z88dk; or return
+    if string match -q -- '*-gcc' $CC
+        rm -rf ../native; or return
+        cp -a . ../native; or return
+        env CFLAGS=-O2 CXXFLAGS=-O2 LDFLAGS= make -C ../native CC=$CC_FOR_BUILD CXX=$CXX_FOR_BUILD $_nativebins; or return
+        _libs (realpath ../native); or return
+        env Z80ASM_EXE=(realpath ../native/src/z80asm/z88dk-z80asm) make $_bins; or return
+        return
+    end
+    make $_bins; or return
+    _libs (pwd); or return
+end
+
+function package
+    cd z88dk; or return
+    set -l share "$pkgdir/usr/share/z88dk"
+    install -d "$pkgdir/usr/bin" "$share/lib"; or return
+    set -l lib lib
+    test -d ../native; and set lib ../native/lib
+    cp -r include "$share/"; or return
+    cp -r $lib/. "$share/lib/"; or return
+    for d in appmake copt ucpp sccz80 zcc-multi zcc zpragma zx7 zx0 z80nm zobjcopy ticks z88dk-lib
+        make -C src/$d PREFIX="$pkgdir/usr" install; or return
+    end
+    make -C src/z80asm PREFIX="$pkgdir/usr" PREFIX_SHARE="$share" install; or return
+    make -C support/basck PREFIX="$pkgdir/usr" install; or return
+    rm -f "$pkgdir/usr/bin/z88dk-asmpp" "$pkgdir/usr/bin/z88dk-asmstyle"; or return
+    rm -rf $share/lib/clibs/sccz80 $share/lib/clibs/sdcc_ix $share/lib/clibs/sdcc_iy; or return
+    for f in $share/lib/config/*.cfg
+        contains -- (basename $f) zx.cfg; or rm -f $f; or return
+    end
+    for f in $share/lib/clibs/*.lib
+        string match -qr -- '(^|_)(8080|8085|ez80_z80|gbz80|kc160|r2ka|r4k|r6k|z180|z80n|vm1|zx81)(_|\.lib$)|ts2068|zx81hr' (basename $f); and rm -f $f; or true
+    end
+    for d in $share/lib/target/*
+        test (basename $d) = zx; or rm -rf $d; or return
+    end
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"; or return
+end

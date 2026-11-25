@@ -1,7 +1,7 @@
 pkgbase = python
 	pkgdesc = The Python programming language
 	pkgver = 3.14.10
-	pkgrel = 2
+	pkgrel = 3
 	url = https://www.python.org/
 	arch = i686
 	arch = x32
@@ -21,7 +21,11 @@ pkgbase = python
 	provides = python3=3.14.10
 	source = https://www.python.org/ftp/python/3.14.10/Python-3.14.10.tar.xz
 	source = python-openssl4.patch
+	source = python-abi.hook
+	source = python-abi
 	sha512sums = 730ea64f7e8815a5e1a4280b1205d77719875de630e6807b3140987b44e7b91215918cf75ed77250cf6feb5de98ff4175555cbba96eaf32564d2f421e723994a
 	sha512sums = a21bd0012f52c4308cbe4ba025054174512d5f8179e995501c29906f0bfad0eb7b53a15467dfd058fe335fcb4400cd694b3b346134eddc58b7470c389a429d2e
+	sha512sums = b2ce2885d82d09fe3264e1a95bb7cf0be4ac953d547cc900bc90efd9feaba68afd814b3fbdcbf44664081c6cc7587491bbff9c88ca95cc9dfe9a7797c241f889
+	sha512sums = 1d000c550a6ebc382b002c971b9905084b02608ba6bf97168754075be42b847127ce3e557c25273577390957a71facc4398ed4f7a8cea3c131fe78950ab7b06b
 
 pkgname = python

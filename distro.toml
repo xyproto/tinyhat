@@ -92,10 +92,10 @@ packages = [
     "ripgrep", "setconf",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "libglvnd-glx", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "python-turtle", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "raylib", "fluidsynth", "fontconfig", "libxml2",
-    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-desktop", "tinyhat-gtk-theme", "tinyhat-notify", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
-    "zsnes", "dosbox-x", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo", "hattoss",
+    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-sudo", "tinyhat-tinybuilds", "tinyhat-alpine", "hat", "tinyhat-desktop", "tinyhat-gtk-theme", "tinyhat-notify", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
+    "zsnes", "dosbox-x", "tinyhat-dosgames", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "libretro-blastem", "libretro-fuse", "z88dk", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo", "hattoss",
     "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
@@ -413,8 +413,6 @@ exclude = [
     "var/named",
     "usr/share/applications/libresprite.desktop",
     "usr/share/applications/love.desktop",
-    "usr/share/applications/com.dosbox_x.DOSBox-X.desktop",
-    "usr/share/applications/org.scummvm.scummvm.desktop",
     "usr/bin/alsoft-config",
     "usr/bin/makemhr",
     "usr/bin/autopoint",
@@ -495,6 +493,7 @@ buildroot = ["go", "distcc"]
 exclude = ["boot"]
 remove = [
     "archlinux32-keyring", "archlinux-keyring", "tinyhat-wine", "tinyhat-watcom", "virtualbox-guest-utils-nox",
+    "libresprite",
     # PC hardware
     "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-amdgpu", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware",
 ]
@@ -559,6 +558,7 @@ packages = [
 # Built from our PKGBUILDs and TINYBUILDs, over the prebuilt packages: Python 3.14, and the same fish 4 that the TINYBUILDs
 # are run with on x86_64 and aarch64 (the prebuilt one is fish 3, where ? is still a wildcard)
 local = ["python", "cython", "python-markupsafe", "python-lxml", "fish"]
+prefer_built = ["gtk4"]
 exclude = ["usr/lib/python3.1[0-3]", "usr/bin/python3.1[0-3]*", "usr/lib/libpython3.1[0-3]*"]
 i686_skip = [
     "python", "cython", "python-markupsafe", "python-lxml", "python-yaml", "python-numpy", "python-gobject", "dbus-python",
@@ -680,6 +680,7 @@ skip = [
 ]
 
 [providers]
+cairo = "cairo-wayland"
 "libcairo.so" = "cairo-wayland"
 "libcairo-gobject.so" = "cairo-wayland"
 "libjack.so" = "pipewire-jack"
@@ -929,6 +930,9 @@ prebuilt = true
 build_from_source = true
 
 [libretro-blastem]
+source = "sources"
+
+[libretro-fuse]
 source = "sources"
 
 [libretro-nestopia]
@@ -1265,6 +1269,9 @@ build_from_source = true
 
 [zathura-pdf-poppler]
 build_from_source = true
+
+[z88dk]
+source = "sources"
 
 [zsnes]
 source = "sources"

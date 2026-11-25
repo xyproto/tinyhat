@@ -1,6 +1,6 @@
 set pkgname libnghttp3
 set pkgver 1.18.0
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'HTTP/3 library written in C'
 set url https://github.com/ngtcp2/nghttp3
 set nvchecker source=git git=https://github.com/ngtcp2/nghttp3.git prefix=v
