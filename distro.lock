@@ -347,6 +347,7 @@ libpkgs = [
     "rfxgen",
     "sane",
     "sbc",
+    "schismtracker",
     "sdl3",
     "sdl3_image",
     "sdl3_ttf",
