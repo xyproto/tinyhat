@@ -4,7 +4,8 @@ min_mib=64
 dirs="home:/home iwd:/var/lib/iwd timesync:/var/lib/systemd/timesync bluetooth:/var/lib/bluetooth pacman-gnupg:/etc/pacman.d/gnupg dropbear:/etc/dropbear state:/var/lib/tinyhat bootsplash:/var/lib/tinyhat-bootsplash"
 
 mode=stick
-for arg in $(cat /proc/cmdline); do
+read -r cmdline </proc/cmdline
+for arg in $cmdline; do
     case $arg in
     tinyhat.nopersist) mode=none ;;
     tinyhat.persist=?*) mode=${arg#*=} ;;
@@ -49,9 +50,17 @@ partdev() {
 }
 
 removable() {
-    [ "$(cat "/sys/block/$1/removable" 2>/dev/null)" = 1 ] && return 0
-    case $(readlink -f "/sys/block/$1/device") in */usb*) return 0 ;; esac
-    [ "$(cat "/sys/block/$1/device/type" 2>/dev/null)" = SD ]
+    local v=
+    { read -r v <"/sys/block/$1/removable"; } 2>/dev/null
+    [ "$v" = 1 ] && return 0
+    if cd -P "/sys/block/$1/device" 2>/dev/null; then
+        v=$PWD
+        cd /
+        case $v in */usb*) return 0 ;; esac
+    fi
+    v=
+    { read -r v <"/sys/block/$1/device/type"; } 2>/dev/null
+    [ "$v" = SD ]
 }
 
 in_use() {
@@ -66,11 +75,26 @@ in_use() {
 }
 
 find_data() {
+    local p dev k v t l info
     for p in /sys/block/"$disk"/"$disk"*/partition; do
         p=${p%/partition}
-        p=/dev/${p##*/}
-        [ "$p" = "$boot" ] && continue
-        [ "$(blkid -p -s TYPE -o value "$p")" = xfs ] && [ "$(blkid -p -s LABEL -o value "$p")" = "$label" ] && echo "$p" && return 0
+        [ "/dev/${p##*/}" = "$boot" ] && continue
+        dev= t= l=
+        { read -r dev <"$p/dev"; } 2>/dev/null
+        if [ "$1" != probe ] && [ -n "$dev" ] && [ -f "/run/udev/data/b$dev" ]; then
+            info=$(</run/udev/data/b"$dev")
+        else
+            info=$(blkid -p -s TYPE -s LABEL -o export "/dev/${p##*/}")
+        fi
+        while IFS== read -r k v; do
+            case $k in
+            TYPE | E:ID_FS_TYPE) t=$v ;;
+            LABEL | E:ID_FS_LABEL) l=$v ;;
+            esac
+        done <<EOF
+$info
+EOF
+        [ "$t" = xfs ] && [ "$l" = "$label" ] && echo "/dev/${p##*/}" && return 0
     done
     return 1
 }
@@ -124,10 +148,14 @@ create() {
 }
 
 grow() {
-    local part="$1"
+    local part="$1" size start psize
     # Extend the persistent data partition with any free space at the end of the
     # disk, and grow the XFS file system on it (for example after resizing a
     # .vdi in VirtualBox, or after moving to a bigger USB stick)
+    read -r size <"/sys/block/$disk/size" || return 1
+    read -r start <"/sys/class/block/${part#/dev/}/start" || return 1
+    read -r psize <"/sys/class/block/${part#/dev/}/size" || return 1
+    [ $(((size - start - psize) / 2048)) -ge $min_mib ] || return 1
     [ "$(sfdisk --disk-id "/dev/$disk" 2>/dev/null)" = 0x7417a700 ] || return 1
     count=$(ls -d /sys/block/"$disk"/"$disk"*/partition 2>/dev/null | wc -l)
     num=$(cat "/sys/class/block/${part#/dev/}/partition" 2>/dev/null)
@@ -136,6 +164,9 @@ grow() {
     [ -n "$free" ] && [ $((free / 2048)) -ge $min_mib ] || return 1
     msg "enlarging persistent storage (one time only)"
     step 20 "Enlarging persistent storage (one time only)"
+    mount -o noatime "$part" /persist || return 1
+    : >/persist/.tinyhat-grow
+    umount /persist || return 1
     echo ", +" | sfdisk -N "$num" --force --no-reread -q "/dev/$disk" 2>/dev/null || return 1
     partx -u "/dev/$disk" 2>/dev/null
     udevadm settle -t 10
@@ -263,10 +294,12 @@ savefile() {
     fi
 }
 
-boot=$(cat /run/tinyhat/bootdev 2>/dev/null)
+boot=
+{ read -r boot </run/tinyhat/bootdev; } 2>/dev/null
 [ -b "$boot" ] && [ -f "/sys/class/block/${boot#/dev/}/partition" ] || exit 0
-disk=$(readlink -f "/sys/class/block/${boot#/dev/}/..")
-disk=${disk##*/}
+cd -P "/sys/class/block/${boot#/dev/}/.." || exit 0
+disk=${PWD##*/}
+cd /
 [ -b "/dev/$disk" ] && [ -d "/sys/block/$disk" ] || exit 0
 fixed=0
 removable "$disk" || fixed=1
@@ -289,29 +322,37 @@ if [ "$mode" = machine ] && [ "$fixed" = 0 ]; then
 else
     if ! part=$(find_data); then
         created=0
-        create && part=$(find_data) && created=1
+        create && part=$(find_data probe) && created=1
         say "progress -1"
         say "msg"
         [ "$created" = 1 ] || exit 0
     fi
     grow "$part"
     mount -o noatime,lazytime "$part" /persist || exit 0
-    # Grow the file system into the enlarged partition (cheap and idempotent, also
-    # finishes a resize that was interrupted at the partition table step last boot)
-    xfs_growfs /persist 2>/dev/null
+    # Grow the file system into the enlarged partition (the marker also finishes a
+    # resize that was interrupted after the partition table step)
+    if [ -f /persist/.tinyhat-grow ]; then
+        xfs_growfs /persist >/dev/null 2>&1
+        rm -f /persist/.tinyhat-grow
+    fi
     if [ -f /persist/.tinyhat-seed ]; then
         copy_dirs /persist
         rm -f /persist/.tinyhat-seed
     fi
 fi
+mk=
 for d in $dirs; do
-    mkdir -p "/persist/${d%%:*}" "${d#*:}"
+    mk="$mk /persist/${d%%:*} ${d#*:}"
+done
+mkdir -p $mk
+for d in $dirs; do
     mount --bind "/persist/${d%%:*}" "${d#*:}"
 done
 if [ -d /persist/journal ]; then journalctl --flush 2>/dev/null; fi
-if [ -f /persist/timezone ] && tz=$(cat /persist/timezone) && [ -f "/usr/share/zoneinfo/$tz" ]; then
+tz=
+{ read -r tz </persist/timezone; } 2>/dev/null
+if [ -n "$tz" ] && [ -f "/usr/share/zoneinfo/$tz" ]; then
     ln -sf "../usr/share/zoneinfo/$tz" /etc/localtime
-    grep -qx LOCAL /etc/adjtime && hwclock --hctosys
 fi
 if [ -f /persist/vconsole.conf ]; then
     cp /persist/vconsole.conf /etc/vconsole.conf

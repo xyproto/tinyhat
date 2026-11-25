@@ -75,6 +75,14 @@ static int getkey(void)
 	return getch();
 }
 
+static void vsync(void)
+{
+	while (inp(0x3da) & 8)
+		;
+	while (!(inp(0x3da) & 8))
+		;
+}
+
 static void rest(int ms)
 {
 	while (ms > 0) {
@@ -119,10 +127,10 @@ static const char *apeup[] = {
 };
 
 static const char *hat[] = {
-	".rrrr.",
-	".rrrr.",
-	".bbbb.",
-	"rrrrrr",
+	".rrrrr.",
+	".rrrrr.",
+	".bbbbb.",
+	"rrrrrrr",
 };
 
 static void mode(int m)
@@ -496,7 +504,7 @@ static void drawsun(void)
 			pset(SUNX + 4 + k, SUNY - 3 + k * k, SUNFACE);
 		}
 		for (i = -4; i <= 4; i++)
-			for (j = 1 - (i * i) / 12; j <= 5 - (i * i) / 5; j++)
+			for (j = 3 - (i * i) / 8; j <= 3 - (i * i) / 8 + (i * i <= 4); j++)
 				pset(SUNX + i, SUNY + j, SUNFACE);
 		drawsprite(hat, 4, SUNX - 3, SUNY - 12);
 	} else {
@@ -640,40 +648,48 @@ static int throwhat(int p, double angle, double speed)
 	double a = angle * 3.14159265 / 180, vx = cos(a) * speed, vy = -sin(a) * speed;
 	double x0 = gx[p] + (p ? 0 : 12), y0 = gy[p] - 4, t;
 	unsigned char under[6][6];
-	int ox = -100, oy = -100, i, j, result = 0;
+	int ox = -100, oy = -100, i, j, ix = 0, iy = 0, step, idle = 0, done = 0, result = 0;
 	if (p)
 		vx = -vx;
 	thing = rand() % 4;
 	drawape(p, 1);
 	sfx(0);
-	for (t = 0; t < 40; t += 0.05) {
-		int ix = (int)(x0 + vx * t + wind * t * t / 2), iy = (int)(y0 + vy * t + GRAV * t * t / 2);
-		if (t > 0.3 && gy[p] >= 0)
-			drawape(p, 0);
+	for (t = 0; t < 40 && !done;) {
+		pollkeys();
+		vsync();
 		if (ox > -100)
 			for (j = 0; j < 6; j++)
 				for (i = 0; i < 6; i++)
 					if (oy + j >= 0)
 						pset(ox + i, oy + j, under[j][i]);
-		if (ix < -6 || ix >= W || iy >= H) {
-			ox = -100;
+		ox = -100;
+		for (step = 0; step < 2 && t < 40 && !done; step++, t += 0.05) {
+			ix = (int)(x0 + vx * t + wind * t * t / 2);
+			iy = (int)(y0 + vy * t + GRAV * t * t / 2);
+			if (t > 0.3 && !idle && gy[p] >= 0) {
+				drawape(p, 0);
+				idle = 1;
+			}
+			if (ix < -6 || ix >= W || iy >= H) {
+				done = 1;
+			} else if (hits(!p, ix, iy)) {
+				result = 2;
+				done = 1;
+			} else {
+				if (!sunhappy && sunhit(ix, iy)) {
+					sunhappy = 1;
+					drawsun();
+					sfx(3);
+				}
+				if (iy >= 0 && !hits(p, ix, iy) && solid(pget(ix, iy))) {
+					explode(ix, iy, 6);
+					result = 1;
+					done = 1;
+				}
+			}
+		}
+		if (done)
 			break;
-		}
-		if (hits(!p, ix, iy)) {
-			result = 2;
-			break;
-		}
-		if (!sunhappy && sunhit(ix, iy)) {
-			sunhappy = 1;
-			drawsun();
-			sfx(3);
-		}
-		if (iy >= 0 && !hits(p, ix, iy) && solid(pget(ix, iy))) {
-			explode(ix, iy, 6);
-			result = 1;
-			ox = -100;
-			break;
-		}
 		for (j = 0; j < 6; j++)
 			for (i = 0; i < 6; i++)
 				under[j][i] = (unsigned char)pget(ix - 3 + i, iy - 3 + j);
@@ -681,7 +697,6 @@ static int throwhat(int p, double angle, double speed)
 		oy = iy - 3;
 		if (iy >= -6)
 			drawspin(ox, oy, p ? 3 - (int)(t * 10) % 4 : (int)(t * 10) % 4);
-		rest(6);
 	}
 	quiet();
 	if (result == 2) {
@@ -788,7 +803,7 @@ static int title(void)
 	rect(40, 50, 240, 124, SKY);
 	text(12, 8, "H A T   T O S S", HATRED);
 	drawsprite(ape, 14, 104, 86);
-	drawbig(hat, 4, 145, 82, 5);
+	drawbig(hat, 4, 143, 82, 5);
 	drawsprite(apeup, 14, 203, 86);
 	text(9, 13, "1", HATRED);
 	text(13, 13, "Play the computer", TEXT);

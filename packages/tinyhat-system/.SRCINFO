@@ -1,7 +1,7 @@
 pkgbase = tinyhat-system
 	pkgdesc = Tiny Hat system services, boot and maintenance scripts, and their configuration
 	pkgver = 1
-	pkgrel = 16
+	pkgrel = 17
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause

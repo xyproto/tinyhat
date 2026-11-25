@@ -1,66 +1,128 @@
+diff --git a/README.md b/README.md
+index ad9c743..7918696 100644
+--- a/README.md
++++ b/README.md
+@@ -100,4 +100,4 @@ Three themes are included:
+ ## General
+ 
+ * License: GPL-2.0
+-* Version: 1.0.1
++* Version: 1.0.2
 diff --git a/app.go b/app.go
-index fb75183..286a50a 100644
+index fb75183..77379dd 100644
 --- a/app.go
 +++ b/app.go
-@@ -17,6 +17,7 @@ type App struct {
+@@ -5,6 +5,7 @@ import (
+ 	"os"
+ 	"path/filepath"
+ 	"strings"
++	"time"
+ )
+ 
+ // App ties everything together: window, renderer, board, GTP engine.
+@@ -17,6 +18,8 @@ type App struct {
  	kb       *Keybindings
  	help     *helpPanel
  	size     int
 +	thinking bool
++	spun     time.Time
  }
  
  func NewApp(boardSize int, filename string, winSize int, tiny bool) (*App, error) {
-@@ -96,6 +97,9 @@ func NewApp(boardSize int, filename string, winSize int, tiny bool) (*App, error
- 	}
- 	br.overlay = func(r *Renderer) {
- 		drawStatus(r, winSize, winSize, app.help.scale)
-+		if app.thinking {
-+			drawThinking(r, winSize, winSize, app.help.scale)
-+		}
- 		app.help.draw(r)
- 	}
- 
-@@ -137,6 +141,10 @@ func (a *App) Run() {
+@@ -137,6 +140,15 @@ func (a *App) Run() {
  		if statusExpired() {
  			needsRedraw = true
  		}
 +		if thinking := a.board.EngineThinking(); thinking != a.thinking {
 +			a.thinking = thinking
++			a.br.thinking = thinking
++			needsRedraw = true
++		}
++		if a.thinking && time.Since(a.spun) >= 40*time.Millisecond {
++			a.spun = time.Now()
 +			needsRedraw = true
 +		}
  
  		// Drain all pending events
  		for {
-diff --git a/status.go b/status.go
-index 8228906..05eb88a 100644
---- a/status.go
-+++ b/status.go
-@@ -2,6 +2,7 @@ package main
+diff --git a/main.go b/main.go
+index 68b7eb6..9992118 100644
+--- a/main.go
++++ b/main.go
+@@ -11,7 +11,7 @@ import (
+ const (
+ 	defaultBoardSize = 9
+ 	defaultWinSize   = 512
+-	version          = "1.0.1"
++	version          = "1.0.2"
+ )
  
- import (
+ func init() {
+diff --git a/renderer.go b/renderer.go
+index e9fcb48..5d46715 100644
+--- a/renderer.go
++++ b/renderer.go
+@@ -4,6 +4,7 @@ import (
  	"fmt"
-+	"math"
- 	"strings"
- 	"sync"
- 	"time"
-@@ -64,6 +65,20 @@ func drawStatus(r *Renderer, boardW, windowH int, scale float32) {
- 	r.DebugText(pad, float32(windowH)-h+pad, scale, text)
+ 	"math"
+ 	"path/filepath"
++	"time"
+ )
+ 
+ // BoardRenderer handles drawing the board, stones, and cursor.
+@@ -16,6 +17,7 @@ type BoardRenderer struct {
+ 	windowW   int
+ 	windowH   int
+ 	tiny      bool
++	thinking  bool
+ 	overlay   func(r *Renderer)
  }
  
-+// drawThinking draws three black dots in the lower right corner while GnuGo is thinking
-+func drawThinking(r *Renderer, boardW, windowH int, scale float32) {
-+	radius := 2 * scale
-+	r.SetDrawColor(0, 0, 0, 255)
-+	for i := range 3 {
-+		cx := float32(boardW) - 6*scale - float32(2-i)*3*radius
-+		cy := float32(windowH) - 6*scale
-+		for dy := -radius; dy <= radius; dy++ {
-+			dx := float32(math.Sqrt(float64(radius*radius - dy*dy)))
-+			r.DrawLine(cx-dx, cy+dy, cx+dx, cy+dy)
+@@ -138,7 +140,12 @@ func (br *BoardRenderer) Draw(board *Board) {
+ 		ly := margin + float32(board.lastMove[1])*ch
+ 		markerSize := cw * 0.2
+ 		r.SetDrawColor(255, 0, 0, 200)
+-		r.FillRect(lx-markerSize/2, ly-markerSize/2, markerSize, markerSize)
++		if br.thinking {
++			angle := float64(time.Now().UnixMilli()%1000) / 1000 * math.Pi
++			br.fillRotatedSquare(lx, ly, markerSize, angle)
++		} else {
++			r.FillRect(lx-markerSize/2, ly-markerSize/2, markerSize, markerSize)
++		}
+ 	}
+ 
+ 	if br.overlay != nil {
+@@ -147,6 +154,33 @@ func (br *BoardRenderer) Draw(board *Board) {
+ 	r.Present()
+ }
+ 
++func (br *BoardRenderer) fillRotatedSquare(cx, cy, size float32, angle float64) {
++	half := float64(size) / 2
++	var xs, ys [4]float64
++	for i := range 4 {
++		a := angle + float64(i)*math.Pi/2 + math.Pi/4
++		xs[i] = float64(cx) + half*math.Sqrt2*math.Cos(a)
++		ys[i] = float64(cy) + half*math.Sqrt2*math.Sin(a)
++	}
++	top, bottom := ys[0], ys[0]
++	for _, y := range ys {
++		top, bottom = min(top, y), max(bottom, y)
++	}
++	for y := math.Ceil(top); y <= bottom; y++ {
++		left, right := math.Inf(1), math.Inf(-1)
++		for i := range 4 {
++			x0, y0, x1, y1 := xs[i], ys[i], xs[(i+1)%4], ys[(i+1)%4]
++			if (y0 <= y && y1 > y) || (y1 <= y && y0 > y) {
++				x := x0 + (y-y0)*(x1-x0)/(y1-y0)
++				left, right = min(left, x), max(right, x)
++			}
++		}
++		if left <= right {
++			br.renderer.DrawLine(float32(left), float32(y), float32(right), float32(y))
 +		}
 +	}
 +}
 +
- // engineMoveText describes a pass or a resignation by GnuGo
- func engineMoveText(color StoneColor, move string) string {
- 	name := "white"
+ func (br *BoardRenderer) drawFilledCircle(cx, cy, radius float32) {
+ 	r := br.renderer
+ 	for dy := -radius; dy <= radius; dy++ {

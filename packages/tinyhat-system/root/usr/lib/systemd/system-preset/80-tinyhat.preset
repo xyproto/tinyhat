@@ -13,6 +13,7 @@ enable tinyhat-oom-notice.service
 enable tinyhat-bluetooth.service
 enable tinyhat-zram.service
 enable tinyhat-persist.service
+enable tinyhat-hwclock.service
 enable tinyhat-timesync-once.service
 enable tinyhat-nettime.service
 enable tinyhat-pacman-restore.service

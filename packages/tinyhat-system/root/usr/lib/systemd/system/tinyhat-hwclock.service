@@ -1,0 +1,12 @@
+[Unit]
+Description=Read the local time hardware clock in the saved time zone
+After=tinyhat-persist.service
+Before=systemd-timesyncd.service tinyhat-nettime.service tinyhat-timesync-now.service
+ConditionPathExists=/persist/timezone
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'grep -qx LOCAL /etc/adjtime || exit 0; exec hwclock --hctosys'
+
+[Install]
+WantedBy=multi-user.target

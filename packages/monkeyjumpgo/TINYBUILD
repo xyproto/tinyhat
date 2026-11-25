@@ -1,6 +1,6 @@
 set pkgname monkeyjumpgo
 set pkgver 1.0.1
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Minimalistic GUI for playing Go against GNU Go (the Go port of Monkeyjump)'
 set arch i686
 set url https://github.com/xyproto/monkeyjumpgo
@@ -12,7 +12,7 @@ set options '!buildflags'
 set source "$pkgname-$pkgver.tar.gz::https://github.com/xyproto/monkeyjumpgo/archive/refs/tags/v$pkgver.tar.gz" \
     thinking.patch
 set sha256sums a32634c7257e0d2a591494d407d2ee0cd3d1cfe2216d825e9656b3d407ab976c \
-    f5bfacfd3a6097957d56ad73cf4402e6f63197a11fb77585c901461394fe5440
+    42828116bdaa3fe45c43e677b55c145f7dc695854cab1b68d050b8f0d99b07ab
 # network: go build downloads its Go modules (builds have no network access otherwise)
 set -a options network
 
