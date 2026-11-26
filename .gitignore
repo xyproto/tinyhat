@@ -27,6 +27,7 @@
 .venv/
 .vscode/
 /build/
+/packages/tinyhat-play/*.tar.gz
 /vendor/archlinux/
 /vendor/archlinux32/
 /vendor/archlinuxarm/
@@ -39,6 +40,6 @@
 \#*#
 __pycache__/
 include.txt
-/packages/tinyhat-play/*.tar.gz
+programs/tinyhat-build-viewer/tinyhat-build-viewer
 tinyhat-aarch64.tar.gz
 venv/
