@@ -1,6 +1,5 @@
 ## Plans
 
-- [ ] No need to create `~/DOS` now that we have `~/roms/DOS`.
 - [ ] Provide `x86_64_v2` as an additional platform.
 - [ ] Report all the issues found in Arch Linux packages as part of creating Tiny Hat to the Arch Linux GitLab page.
 - [ ] Make it possible to install a `tinyhat-desktop` package on Arch Linux and get a similar experience on Arch.
