@@ -1,5 +1,6 @@
 ## Plans
 
+- [ ] Update the Linux kernel to 7.4 when it's out. 7.3.6 is out too.
 - [ ] When closing LibreSprite with alt-shift-w and it asks if the user wants to save,
       don't close the window after N seconds. LibreSprite is an exception.
 - [ ] Improve the TinySurf browser so that the Go Tutorial works well in it.
