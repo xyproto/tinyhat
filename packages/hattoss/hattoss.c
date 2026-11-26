@@ -702,7 +702,7 @@ static int throwhat(int p, double angle, double speed)
 		pollkeys();
 		frame();
 		cur = now();
-		acc += (double)(cur - prev) * 7.0 / PIT_HZ;
+		acc += (double)(cur - prev) * 3.0 / PIT_HZ;
 		prev = cur;
 		if (acc > 0.3)
 			acc = 0.3;
