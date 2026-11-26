@@ -40,31 +40,21 @@ Its boot menu also has MemTest86+ and a FreeDOS 1.4 live floppy with a couple of
 
 ### Dependencies
 
-For `make` to be able to create `build/tinyhat32.img`, these Arch Linux packages are needed:
+Building needs an Arch Linux host with `base` and `base-devel`. The other build tools come from the build environment
+that the build sets up from prebuilt Arch Linux packages. `make` checks for the packages below and names any that are
+missing.
 
-    base-devel bc bubblewrap cpio git libelf lua python-markdown python-numpy qemu-user-static qemu-user-static-binfmt squashfs-tools vorbis-tools xfsprogs
+For `make 32`, `make x32`, `make 64` and the other images:
 
-For `make vdi`, this package is also needed:
+    bubblewrap cpio fish git ninja python
 
-    virtualbox
+`make dist` also needs a GnuPG secret key, for signing `SHA256SUMS`.
 
-For `make iso`, this package is also needed:
+For `make run`, `make qemutest` and `make boottest`, these packages are also needed:
 
-    libisoburn
+    edk2-aarch64 imagemagick qemu-system-aarch64 qemu-system-x86
 
-For `make run` and `make qemutest`, these packages are also needed:
-
-    imagemagick qemu-system-x86
-
-For `make x32` and `make 64` (`build/tinyhat64x32.img` and `build/tinyhat64.img`), this package is also needed (for creating the Secure Boot signing key):
-
-    openssl
-
-For `make dist`, these packages are also needed (`virtualbox` is optional, for also creating `.vdi` files):
-
-    gnupg gtk4 libisoburn openssl
-
-For `make autoupdate`, these packages are also needed:
+For `make autoupdate`, these packages are needed along with `fish`, `git` and `python`:
 
     nvchecker pacman-contrib python-jq python-lxml
 
@@ -72,7 +62,7 @@ For `make autoupdate`, these packages are also needed:
 
 #### From Linux, UNIX or FreeBSD
 
-* Download the `tinyhat32.img` file (or clone this repo, install all required dependencies and run `make`).
+* Download the `tinyhat32.img` file (or clone this repo, install the dependencies and run `make 32`).
 * Run `sudo fdisk -l` to list all drives, try to identify the USB drive you want to flash the image to.
 * Remember the drive name, for example `/dev/sdq`. Be 100% sure to use the USB drive and not an internal harddrive!
 * Run this command, but replace `sdq` with your drive. Please wait and think for 3 seconds and double check the `of` value before pressing return:
