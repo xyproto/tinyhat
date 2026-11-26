@@ -1,6 +1,6 @@
 set pkgname tcc
 set pkgver 0.9.27.r1337.gb39cbc70
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Tiny C Compiler (tinycc)'
 set arch i686
 set url https://bellard.org/tcc/
@@ -19,6 +19,8 @@ function build
     if string match -q -- '*-gcc' $CC
         env AR=ar ./configure --prefix=/usr --docdir=/usr/share/doc/tcc --disable-static \
             --cross-prefix=(string replace -r -- 'gcc$' '' $CC) --cc=gcc --cpu=$CARCH; or return
+        sed -i /CONFIG_TRIPLET/d config.h; or return
+        not grep -q CONFIG_TRIPLET config.h; or return
         sed -i 's/^#if !defined __riscv && !defined __APPLE__$/& \&\& defined __TINYC__/' lib/lib-arm64.c; or return
         grep -q '__APPLE__ && defined __TINYC__$' lib/lib-arm64.c; or return
         make CC=$CC_FOR_BUILD c2str.exe; or return

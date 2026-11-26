@@ -1,0 +1,36 @@
+set pkgname sasteroids
+set pkgver 3.0.1
+set pkgrel 1
+set pkgdesc 'Sasteroids game from 1994, ported to SDL3'
+set arch i686 x32
+set url https://sdlsas.sourceforge.net/
+set license LicenseRef-Sasteroids GPL-2.0-or-later
+set depends glibc libgcc libstdc++ sdl3 sdl3_image sdl3_ttf
+set nvchecker source=sourceforge sourceforge=sdlsas
+set source "sasteroids-$pkgver.tar.gz::https://sourceforge.net/projects/sdlsas/files/SDL%20Sasteroids%20Source%20Releases/$pkgver/SDLSasteroids-$pkgver.tar.gz" \
+    sdl3.patch \
+    sasteroids.desktop
+set sha256sums f447a85d75913ee9d1be0bba68813e0627a4c163ab5d12c7fd5a8ea5f455502c \
+    6d0169e829954cd73d15c5a55713d4cc01c166eca17842e0575e0bf0346fb120 \
+    add716d280cb3e45fc00436d376e8a75fc9d11cb556f44d61d3964829d12ee16
+
+function prepare
+    cd SDLSasteroids-$pkgver; or return
+    patch -Np1 -i ../sdl3.patch; or return
+end
+
+function build
+    cd SDLSasteroids-$pkgver; or return
+    $CXX -std=gnu++17 $CXXFLAGS -Wno-write-strings -DHAVE_SOUND '-DGAMEDIR="/usr/share/sasteroids/"' (pkg-config --cflags sdl3 sdl3-image sdl3-ttf | string split -n ' ') -o sasteroids src/*.cpp $LDFLAGS (pkg-config --libs sdl3 sdl3-image sdl3-ttf | string split -n ' ') -lm; or return
+end
+
+function package
+    cd SDLSasteroids-$pkgver; or return
+    install -Dm755 sasteroids "$pkgdir/usr/bin/sasteroids"; or return
+    install -Dm644 -t "$pkgdir/usr/share/sasteroids/fonts" fonts/nicefont.ttf; or return
+    install -Dm644 -t "$pkgdir/usr/share/sasteroids/sounds" sounds/*.wav; or return
+    install -Dm644 -t "$pkgdir/usr/share/sasteroids/graphics" graphics/*.png graphics/sprite/*.png graphics/backdrops/*.jpg; or return
+    install -Dm644 sasteroids.6 "$pkgdir/usr/share/man/man6/sasteroids.6"; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYRIGHT README README.xast fonts/license.txt; or return
+    install -Dm644 ../sasteroids.desktop "$pkgdir/usr/share/applications/sasteroids.desktop"; or return
+end

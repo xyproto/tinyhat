@@ -10,7 +10,6 @@ pm() {
 }
 cncurl=https://github.com/FunkyFr3sh/cnc-ddraw/releases/download/v7.1.0.0/cnc-ddraw.zip
 cncsum=0b13ab89a64c9918189b1dadd449ef6ed3cb3b7b19cabd96d8adbd95505bb908
-bneturl='https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE&gameProgram=BATTLENET_APP'
 
 doas systemctl start tinyhat-pacman-init.service
 pm -Sy --noconfirm || fail "Could not update the package database."
@@ -53,56 +52,7 @@ else
 	printf '\nCould not download cnc-ddraw. Older DirectDraw games may show wrong colours or a white window.\n'
 fi
 
-if [ "$(uname -m)" = x86_64 ]; then
-	cfg="$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Battle.net"
-	mkdir -p "$cfg"
-	[ -f "$cfg/Battle.net.config" ] || cat >"$cfg/Battle.net.config" <<'EOF'
-{
-  "Client": {
-    "GameLaunchWindowBehavior": "2",
-    "HardwareAcceleration": "false",
-    "Sound": {
-      "Enabled": "false"
-    },
-    "Streaming": {
-      "StreamingEnabled": "false"
-    }
-  }
-}
-EOF
-	launcher="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
-	if [ ! -f "$launcher" ]; then
-		printf '\nInstall Battle.net too? [y/N] '
-		read -r answer
-		case $answer in
-		[yY]*)
-			printf '\nDownloading Battle.net...\n'
-			if curl -fsSL --max-time 300 -o "$tmp/Battle.net-Setup.exe" "$bneturl"; then
-				printf 'Running the Battle.net installer. When the login window appears, log in or close it.\n'
-				wine "$tmp/Battle.net-Setup.exe" >/dev/null 2>&1
-				wineserver -w
-			else
-				printf '\nCould not download Battle.net.\n'
-			fi
-			;;
-		esac
-	fi
-	if [ -f "$launcher" ]; then
-		mkdir -p "$HOME/.local/share/applications"
-		cat >"$HOME/.local/share/applications/tinyhat-battlenet.desktop" <<EOF
-[Desktop Entry]
-Type=Application
-Name=Battle.net
-Comment=Blizzard's game launcher, running in Wine
-Icon=applications-games
-Exec=env WINEDEBUG=-all wine "${launcher%/*}/Battle.net.exe" --in-process-gpu
-Terminal=false
-Categories=Game;
-EOF
-	fi
-else
-	printf '\nBattle.net needs 64-bit Windows, so it needs the 64-bit Tiny Hat image.\n'
-fi
+[ "$(uname -m)" = x86_64 ] && printf '\nFor Battle.net, run "pkg install battlenet".\n'
 wineserver -w
 
 printf '\nWine is ready. Start Windows programs with "wine program.exe", or run .exe files directly.\n'

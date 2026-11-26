@@ -1,0 +1,23 @@
+pkgbase = sasteroids
+	pkgdesc = Sasteroids game from 1994, ported to SDL3
+	pkgver = 3.0.1
+	pkgrel = 1
+	url = https://sdlsas.sourceforge.net/
+	arch = i686
+	arch = x32
+	license = LicenseRef-Sasteroids
+	license = GPL-2.0-or-later
+	depends = glibc
+	depends = libgcc
+	depends = libstdc++
+	depends = sdl3
+	depends = sdl3_image
+	depends = sdl3_ttf
+	source = sasteroids-3.0.1.tar.gz::https://sourceforge.net/projects/sdlsas/files/SDL%20Sasteroids%20Source%20Releases/3.0.1/SDLSasteroids-3.0.1.tar.gz
+	source = sdl3.patch
+	source = sasteroids.desktop
+	sha256sums = f447a85d75913ee9d1be0bba68813e0627a4c163ab5d12c7fd5a8ea5f455502c
+	sha256sums = 6d0169e829954cd73d15c5a55713d4cc01c166eca17842e0575e0bf0346fb120
+	sha256sums = add716d280cb3e45fc00436d376e8a75fc9d11cb556f44d61d3964829d12ee16
+
+pkgname = sasteroids

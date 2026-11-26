@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Koules
+Icon=applications-games
+Comment=Push the evil koules out of your sector, an action game from 1995, ported to SDL3
+Exec=koules
+Terminal=false
+Categories=Game;ArcadeGame;

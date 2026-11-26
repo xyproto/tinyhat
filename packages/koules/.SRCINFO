@@ -1,0 +1,18 @@
+pkgbase = koules
+	pkgdesc = Koules action game from 1995, ported to SDL3
+	pkgver = 1.4
+	pkgrel = 1
+	url = https://www.ucw.cz/~hubicka/koules/English/
+	arch = i686
+	arch = x32
+	license = GPL-2.0-or-later
+	depends = glibc
+	depends = sdl3
+	source = https://www.ucw.cz/~hubicka/koules/packages/koules1.4-src.tar.gz
+	source = sdl3.patch
+	source = koules.desktop
+	sha256sums = c36f93feafeebd59983bf44100240e67a84a8bacabd7ee528c93046defe4a21b
+	sha256sums = 1230bd52829abbf3a8b45965307e7348b18f7035d15d3c0999406d0c2c2ebed6
+	sha256sums = 942957a0b15a04096172153c92a2133116752a271d43e37e8594bd002fba417f
+
+pkgname = koules

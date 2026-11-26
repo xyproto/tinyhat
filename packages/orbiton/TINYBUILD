@@ -1,7 +1,7 @@
 set pkgname orbiton
 set -g _commit b40dd907b3dc099bf9407f6c901d0ed3b88e0073
 set pkgver 2.75.0.r14.gb40dd907
-set pkgrel 1
+set pkgrel 3
 set pkgdesc 'Editor and IDE'
 set arch i686 x86_64 aarch64
 set url https://github.com/xyproto/orbiton/
@@ -9,8 +9,15 @@ set license BSD-3-Clause
 set depends glibc
 set makedepends go-tinyhat
 set options '!buildflags'
-set source "orbiton-$_commit.tar.gz::https://github.com/xyproto/orbiton/archive/$_commit.tar.gz"
-set sha256sums acf583d86ed89cd40d19a971a53a0f2a6f992387dca26d9a0e2d5f50ba4f8383
+set source "orbiton-$_commit.tar.gz::https://github.com/xyproto/orbiton/archive/$_commit.tar.gz" \
+    book-pdf.patch
+set sha256sums acf583d86ed89cd40d19a971a53a0f2a6f992387dca26d9a0e2d5f50ba4f8383 \
+    cc2958340f6a0c0f50b8907d2ce31870c08d623bd484e5578c85efbf12d75662
+
+function prepare
+    cd orbiton-$_commit; or return
+    patch -Np1 -i ../book-pdf.patch; or return
+end
 
 function build
     cd orbiton-$_commit/v2; or return

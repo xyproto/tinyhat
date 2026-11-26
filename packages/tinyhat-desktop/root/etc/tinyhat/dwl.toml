@@ -186,16 +186,9 @@ arg = 1
 description = "Jump between windows"
 
 [[key]]
-hotkey = "Win+T"
-action = "layout"
-arg = "tile"
-description = "Tiling mode"
-
-[[key]]
 hotkey = "Win+F"
-action = "layout"
-arg = "float"
-description = "Floating mode"
+action = "togglelayout"
+description = "Toggle Floating and Tiling mode"
 
 [[key]]
 hotkey = "Ctrl+Alt+Up"
@@ -212,7 +205,8 @@ description = "Fan/CPU mode"
 [[key]]
 hotkey = "Alt+F2"
 run = "tinyhat-run"
-description = "Run a command (Win+R also works)"
+shown = "Alt+F2 or Win+R"
+description = "Run a command"
 
 [[key]]
 separator = true
@@ -253,7 +247,7 @@ run = "tinyhat-run -l tinyhat-play"
 description = "Download and run a homebrew game"
 
 [[key]]
-hotkey = "Ctrl+Alt+8"
+hotkey = "Ctrl+Alt+0"
 run = "tinyhat-run -l tic80"
 description = "TIC-80 fantasy console"
 
@@ -282,7 +276,7 @@ run = "tinyhat-run -l tinyhat-emulate c64"
 description = "C64 (VICE)"
 
 [[key]]
-hotkey = "Ctrl+Alt+0"
+hotkey = "Ctrl+Alt+8"
 run = "tinyhat-run -l octo-de"
 description = "CHIP-8 (Octo)"
 
@@ -365,10 +359,6 @@ separator = true
 [[key]]
 shown = "Right click desktop"
 description = "Toggle background"
-
-[[key]]
-shown = "Click the clock"
-description = "Show date and time, only time or only date"
 
 [[key]]
 shown = "Right click a window title"

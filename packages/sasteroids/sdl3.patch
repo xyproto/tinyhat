@@ -1,0 +1,1799 @@
+diff -ruN a/src/menu.cpp b/src/menu.cpp
+--- a/src/menu.cpp	2005-04-14 06:26:17.000000000 +0200
++++ b/src/menu.cpp	2026-11-26 10:50:59.226355710 +0100
+@@ -18,11 +18,11 @@
+     tmp = Ui::get_text(text[j], 255, 255, 255);
+     menu_strings[j].LoadSurface(tmp);
+     menu_height += menu_strings[j].height();
+-    SDL_FreeSurface(tmp);
++    SDL_DestroySurface(tmp);
+ 
+     tmp = Ui::get_text(text[j], 0, 255, 255);
+     highlight_strings[j].LoadSurface(tmp);
+-    SDL_FreeSurface(tmp);
++    SDL_DestroySurface(tmp);
+ 
+     actions[j] = 0;
+   }
+@@ -70,7 +70,8 @@
+ 
+ void GraphicsMenu::RunMenu() 
+ {
+-  int done = 0, playsound = 0, tX, tY;
++  int done = 0, playsound = 0;
++  float tX, tY;
+   int j, execute = 0;
+   SDL_Event event;
+   float start_height, start_width;
+@@ -100,15 +101,15 @@
+   }
+ 
+   SDL_GetMouseState(&tX, &tY);
+-  mouseX = float(tX);
+-  mouseY = float(tY);
++  SDL_RenderCoordinatesFromWindow(Ui::renderer, tX, tY, &mouseX, &mouseY);
+ 
+   while(!done) {
+     execute = 0;
+     while(SDL_PollEvent(&event)) {
++      SDL_ConvertEventToRenderCoordinates(Ui::renderer, &event);
+       switch(event.type) 
+ 	{
+-	case SDL_MOUSEMOTION:
++	case SDL_EVENT_MOUSE_MOTION:
+ 	  mouseX = event.motion.x;
+ 	  mouseY = event.motion.y;
+ 
+@@ -131,7 +132,7 @@
+ 	  }
+ 	  break;
+ 
+-	case SDL_MOUSEBUTTONUP:
++	case SDL_EVENT_MOUSE_BUTTON_UP:
+ 
+ 	  // Check button down, mouse must be in active area ...
+ 	  if(event.button.button == SDL_BUTTON_LEFT) {
+@@ -152,14 +153,15 @@
+ 	  }
+ 	  break;
+ 	  
+-	case SDL_QUIT:
++	case SDL_EVENT_QUIT:
+ 	  exit(0);
+ 	  break;
+ 
+-	case SDL_KEYDOWN:
+-	  if(event.key.keysym.sym == SDLK_UP) { playsound = 1; selected--; }
+-	  if(event.key.keysym.sym == SDLK_DOWN) { playsound = 1; selected++; }
+-	  if(event.key.keysym.sym == SDLK_RETURN) { execute = 1; }
++	case SDL_EVENT_KEY_DOWN:
++	  if(event.key.repeat) break;
++	  if(event.key.key == SDLK_UP) { playsound = 1; selected--; }
++	  if(event.key.key == SDLK_DOWN) { playsound = 1; selected++; }
++	  if(event.key.key == SDLK_RETURN) { execute = 1; }
+ 
+ 	  if(selected < minSelect) selected = maxSelect;
+ 	  if(selected > maxSelect) selected = minSelect;
+@@ -178,8 +180,7 @@
+ 	(actions[selected])(&done);
+       execute = 0;
+       SDL_GetMouseState(&tX, &tY);
+-      mouseX = float(tX);
+-      mouseY = float(tY);
++      SDL_RenderCoordinatesFromWindow(Ui::renderer, tX, tY, &mouseX, &mouseY);
+     }
+     
+ 
+diff -ruN a/src/mixer.cpp b/src/mixer.cpp
+--- a/src/mixer.cpp	1970-01-01 01:00:00.000000000 +0100
++++ b/src/mixer.cpp	2026-11-26 10:49:46.493324332 +0100
+@@ -0,0 +1,177 @@
++// The small part of the SDL_mixer API that SDL Sasteroids uses, on top of SDL3 audio streams:
++// each channel is an audio stream bound to one playback device, and SDL converts the sound formats.
++
++#include "mixer.h"
++
++struct Channel
++{
++  SDL_AudioStream *stream;
++  Mix_Chunk *loop;        // played again whenever the stream runs low, for loops < 0
++  Uint64 expire;          // stop the channel at this SDL_GetTicks() time, 0 for never
++  int volume;
++};
++
++static SDL_AudioDeviceID device;
++static Channel channels[64];
++static int numChannels, reserved;
++
++static void SDLCALL refill(void *userdata, SDL_AudioStream *stream, int additional, int total)
++{
++  Channel *c = (Channel *)userdata;
++  (void)total;
++  if (c->expire && SDL_GetTicks() >= c->expire) {
++    c->expire = 0;
++    c->loop = NULL;
++    SDL_ClearAudioStream(stream);
++    return;
++  }
++  if (c->loop && SDL_GetAudioStreamQueued(stream) < additional) {
++    SDL_PutAudioStreamData(stream, c->loop->data, (int)c->loop->len);
++  }
++}
++
++int Mix_OpenAudio(int frequency, SDL_AudioFormat format, int nchannels, int chunksize)
++{
++  SDL_AudioSpec spec;
++  (void)chunksize;
++  spec.freq = frequency;
++  spec.format = format;
++  spec.channels = nchannels;
++  device = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec);
++  return device ? 0 : -1;
++}
++
++void Mix_CloseAudio()
++{
++  for (int i = 0; i < numChannels; i++) {
++    SDL_DestroyAudioStream(channels[i].stream);
++    channels[i].stream = NULL;
++  }
++  numChannels = 0;
++  if (device) {
++    SDL_CloseAudioDevice(device);
++    device = 0;
++  }
++}
++
++int Mix_AllocateChannels(int numchans)
++{
++  if (!device) {
++    return 0;
++  }
++  SDL_AudioSpec spec;
++  SDL_GetAudioDeviceFormat(device, &spec, NULL);
++  if (numchans > (int)SDL_arraysize(channels)) {
++    numchans = (int)SDL_arraysize(channels);
++  }
++  for (; numChannels < numchans; numChannels++) {
++    Channel *c = &channels[numChannels];
++    c->stream = SDL_CreateAudioStream(&spec, &spec);
++    c->loop = NULL;
++    c->expire = 0;
++    c->volume = 128;
++    if (c->stream) {
++      SDL_SetAudioStreamGetCallback(c->stream, refill, c);
++      SDL_BindAudioStream(device, c->stream);
++    }
++  }
++  return numChannels;
++}
++
++int Mix_ReserveChannels(int num)
++{
++  reserved = num;
++  return num;
++}
++
++Mix_Chunk *Mix_LoadWAV(const char *file)
++{
++  Mix_Chunk *chunk = (Mix_Chunk *)SDL_calloc(1, sizeof(Mix_Chunk));
++  if (!chunk) {
++    return NULL;
++  }
++  if (!SDL_LoadWAV(file, &chunk->spec, &chunk->data, &chunk->len)) {
++    SDL_free(chunk);
++    return NULL;
++  }
++  return chunk;
++}
++
++void Mix_FreeChunk(Mix_Chunk *chunk)
++{
++  if (chunk) {
++    SDL_free(chunk->data);
++    SDL_free(chunk);
++  }
++}
++
++int Mix_PlayChannel(int channel, Mix_Chunk *chunk, int loops)
++{
++  if (!chunk || numChannels == 0) {
++    return -1;
++  }
++  if (channel < 0) {
++    // the first free channel that is not reserved, or the one that has the least left to play
++    int best = -1, least = 0;
++    for (int i = reserved; i < numChannels; i++) {
++      int queued = SDL_GetAudioStreamQueued(channels[i].stream);
++      if (best < 0 || queued < least) {
++        best = i;
++        least = queued;
++      }
++      if (queued == 0) {
++        break;
++      }
++    }
++    channel = best;
++  }
++  if (channel < 0 || channel >= numChannels || !channels[channel].stream) {
++    return -1;
++  }
++  Channel *c = &channels[channel];
++  SDL_LockAudioStream(c->stream);
++  SDL_ClearAudioStream(c->stream);
++  SDL_SetAudioStreamFormat(c->stream, &chunk->spec, NULL);
++  c->expire = 0;
++  c->loop = loops < 0 ? chunk : NULL;
++  for (int i = 0; i <= (loops > 0 ? loops : 0); i++) {
++    SDL_PutAudioStreamData(c->stream, chunk->data, (int)chunk->len);
++  }
++  SDL_UnlockAudioStream(c->stream);
++  return channel;
++}
++
++int Mix_ExpireChannel(int channel, int ticks)
++{
++  int first = channel < 0 ? 0 : channel, last = channel < 0 ? numChannels - 1 : channel;
++  for (int i = first; i <= last && i < numChannels; i++) {
++    Channel *c = &channels[i];
++    SDL_LockAudioStream(c->stream);
++    if (ticks <= 0) {
++      c->loop = NULL;
++      c->expire = 0;
++      SDL_ClearAudioStream(c->stream);
++    } else if (c->loop || SDL_GetAudioStreamQueued(c->stream) > 0) {
++      c->expire = SDL_GetTicks() + (Uint64)ticks;
++    }
++    SDL_UnlockAudioStream(c->stream);
++  }
++  return last - first + 1;
++}
++
++int Mix_Volume(int channel, int volume)
++{
++  int first = channel < 0 ? 0 : channel, last = channel < 0 ? numChannels - 1 : channel;
++  int old = numChannels > 0 && first < numChannels ? channels[first].volume : 128;
++  if (volume < 0) {
++    return old;
++  }
++  if (volume > 128) {
++    volume = 128;
++  }
++  for (int i = first; i <= last && i < numChannels; i++) {
++    channels[i].volume = volume;
++    SDL_SetAudioStreamGain(channels[i].stream, volume / 128.0f);
++  }
++  return old;
++}
+diff -ruN a/src/mixer.h b/src/mixer.h
+--- a/src/mixer.h	1970-01-01 01:00:00.000000000 +0100
++++ b/src/mixer.h	2026-11-26 10:49:30.633262870 +0100
+@@ -0,0 +1,27 @@
++// The small part of the SDL_mixer API that SDL Sasteroids uses, on top of SDL3 audio streams
++
++#ifndef __SDLSAS_MIXER__
++#define __SDLSAS_MIXER__
++
++#include <SDL3/SDL.h>
++
++#define MIX_DEFAULT_FORMAT SDL_AUDIO_S16
++
++struct Mix_Chunk
++{
++  SDL_AudioSpec spec;
++  Uint8 *data;
++  Uint32 len;
++};
++
++int Mix_OpenAudio(int frequency, SDL_AudioFormat format, int channels, int chunksize);
++void Mix_CloseAudio();
++int Mix_AllocateChannels(int numchans);
++int Mix_ReserveChannels(int num);
++Mix_Chunk *Mix_LoadWAV(const char *file);
++void Mix_FreeChunk(Mix_Chunk *chunk);
++int Mix_PlayChannel(int channel, Mix_Chunk *chunk, int loops);
++int Mix_ExpireChannel(int channel, int ticks);
++int Mix_Volume(int channel, int volume);
++
++#endif
+diff -ruN a/src/sasteroids.cpp b/src/sasteroids.cpp
+--- a/src/sasteroids.cpp	2005-04-14 06:23:14.000000000 +0200
++++ b/src/sasteroids.cpp	2026-11-26 10:51:23.169201651 +0100
+@@ -38,7 +38,6 @@
+ 
+ #ifdef HAVE_JOYSTICK
+ SDL_Joystick *js;
+-void SDL_JoystickUpdate();
+ #endif
+ 
+ 
+@@ -232,13 +231,15 @@
+ char globalMessage[256];
+ int gMsgTimeLeft = 0;
+ 
+-Uint32 TimerTick(Uint32 interval, void* param)
++Uint32 SDLCALL TimerTick(void* param, SDL_TimerID timerID, Uint32 interval)
+ {
+   SDL_Event myEvent;
++
++  SDL_zero(myEvent);
+   
+   if(sastWantTicks && FinishedLastCall) {
+     FinishedLastCall = 0;
+-    myEvent.type = SDL_USEREVENT;
++    myEvent.type = SDL_EVENT_USER;
+     SDL_PushEvent(&myEvent);
+   } else if(!FinishedLastCall) {
+ #ifdef PRINT_DIAG
+@@ -272,7 +273,7 @@
+   SDL_Event event;
+   SDL_TimerID timer;
+   
+-  Uint8 *keystatebuffer;
++  const bool *keystatebuffer;
+   
+   char GameOver = 0, cReq, flashShip = 0;
+   
+@@ -299,7 +300,7 @@
+     exit(-1);
+   }
+   
+-  keystatebuffer = SDL_GetKeyState(NULL);
++  keystatebuffer = SDL_GetKeyboardState(NULL);
+  
+   
+   pause = 0;
+@@ -320,51 +321,47 @@
+   while (!GameOver) {
+     while (SDL_PollEvent(&event)) {
+       switch (event.type) {
+-      case SDL_VIDEORESIZE:
+-	ScreenLimits.SetXY((event.resize.w), 
+-			   (event.resize.h));
+-	Ui::resync(event.resize.w, event.resize.h);
+-	break;
+-	
+-      case SDL_KEYDOWN:
++      case SDL_EVENT_KEY_DOWN:
++	if (event.key.repeat)
++	  break;
+ 	if(finalDead && !(finalDead > 2)) {
+ 	  sastWantTicks = 0;
+ 	  GameOver = 1;
+ 	}
+ 
+-	if (event.key.keysym.sym == SDLK_LALT && !pause && !dead) {
++	if (event.key.key == SDLK_LALT && !pause && !dead) {
+ 	  PlaySound(SND_WARP);
+ 	  PlayerShip.Hyper();
+ 	}
+ 	
+-	if (event.key.keysym.sym == SDLK_RALT && !pause && !dead) {
++	if (event.key.key == SDLK_RALT && !pause && !dead) {
+ 	  PlaySound(SND_WARP);
+ 	  PlayerShip.Hyper();
+ 	}
+ 
+ 	// I hate cheaters... Do something fun with the old cheat code. :D
+-	if (event.key.keysym.sym == SDLK_o && 
+-	    (keystatebuffer[SDLK_LSHIFT] || keystatebuffer[SDLK_RSHIFT])  &&
++	if (event.key.key == SDLK_O && 
++	    (keystatebuffer[SDL_SCANCODE_LSHIFT] || keystatebuffer[SDL_SCANCODE_RSHIFT])  &&
+ 	    !pause) {
+ 	  deathTimer = 3; 
+ 	  MakeGlobalMessage("CHEATER!!! C H E A T E R!!! CHEATER!!!");
+ 	}
+ 
+ 	// Leave this cheat code in, nice for debugging.
+-	if (event.key.keysym.sym == SDLK_n && !pause) { Glevel++; alpha_anim = 1.0f; }
++	if (event.key.key == SDLK_N && !pause) { Glevel++; alpha_anim = 1.0f; }
+ 	
+ 	// I prefer space
+-	if (event.key.keysym.sym == SDLK_SPACE && !pause)
++	if (event.key.key == SDLK_SPACE && !pause)
+ 	  PlayerShip.Fire();
+ 
+ 	// but CTRL is the default
+-	if (event.key.keysym.sym == SDLK_LCTRL && !pause)
++	if (event.key.key == SDLK_LCTRL && !pause)
+ 	  PlayerShip.Fire();
+ 	
+-	if (event.key.keysym.sym == SDLK_f)
++	if (event.key.key == SDLK_F)
+ 	  Ui::FullScreen();
+ 	
+-	if (event.key.keysym.sym == SDLK_y) {
++	if (event.key.key == SDLK_Y) {
+ 	  if (cReq) {
+ 	    sastWantTicks = 0;
+ 	    pause = 1;
+@@ -372,7 +369,7 @@
+ 	  }
+ 	}
+ 	
+-	if (event.key.keysym.sym == SDLK_p && !dead) {
++	if (event.key.key == SDLK_P && !dead) {
+ 	  strcpy(pstr, "Press any key to continue.");
+ 	  if (!pause) {
+ 	    sastWantTicks = 0;
+@@ -388,7 +385,7 @@
+ 	  sastWantTicks = 1;
+ 	}
+ 	
+-	if (event.key.keysym.sym == SDLK_q && !dead && !pause) {
++	if (event.key.key == SDLK_Q && !dead && !pause) {
+ 	  if (!pause) {
+ 	    sastWantTicks = 0;
+ 	    pause = 2;
+@@ -398,14 +395,14 @@
+ 	  }
+ 	}
+ 
+-	if(event.key.keysym.sym == SDLK_s && !finalDead) {
++	if(event.key.key == SDLK_S && !finalDead) {
+ 	  if(dead) {
+ 	    PlayerShip.Reset();
+ 	    dead = 0;
+ 	  }
+ 	}
+ 
+-	if(event.key.keysym.sym == SDLK_PLUS || event.key.keysym.sym == SDLK_EQUALS) {
++	if(event.key.key == SDLK_PLUS || event.key.key == SDLK_EQUALS) {
+ 	  if(MainVolume < 128) MainVolume+=8;
+ 	  if(MainVolume > 128) MainVolume=128;
+ 	  DispVolume = 64;
+@@ -415,7 +412,7 @@
+ #endif
+ 	}
+ 
+-	if(event.key.keysym.sym == SDLK_MINUS) {
++	if(event.key.key == SDLK_MINUS) {
+ 	  if(MainVolume > 0) MainVolume-=8;
+ 	  if(MainVolume < 0) MainVolume=0;
+ 	  DispVolume = 64;
+@@ -427,7 +424,7 @@
+ 
+ #ifdef SAS_EXTRAS	
+ 	if(!dead && !pause) {
+-	  if(event.key.keysym.sym == SDLK_UP) {
++	  if(event.key.key == SDLK_UP) {
+ 	    if(eeggU != 1 || eeggS != 2) {
+ 	      eeggU = 0; eeggD = 0; eeggL = 0; eeggR = 0; eeggS = 1;
+ 	    }
+@@ -435,15 +432,15 @@
+ 	    eeggS = eeggS << 1;
+ 	  }
+ 
+-	  if(event.key.keysym.sym == SDLK_DOWN) {
++	  if(event.key.key == SDLK_DOWN) {
+ 	    eeggD |= eeggS; eeggS = eeggS << 1;
+ 	  }
+ 	  
+-	  if(event.key.keysym.sym == SDLK_LEFT) {
++	  if(event.key.key == SDLK_LEFT) {
+ 	    eeggL |= eeggS; eeggS = eeggS << 1;
+ 	  }
+ 
+-	  if(event.key.keysym.sym == SDLK_RIGHT) {
++	  if(event.key.key == SDLK_RIGHT) {
+ 	    eeggR |= eeggS; eeggS = eeggS << 1;
+ 	  }
+ 
+@@ -455,16 +452,12 @@
+ 	
+ 
+ 	break;
+-      case SDL_ACTIVEEVENT:
+-	;
+-	break;
+-
+-      case SDL_QUIT:
++      case SDL_EVENT_QUIT:
+ 	exit(0);
+ 	break;
+       
+ 
+-      case SDL_USEREVENT:	      
++      case SDL_EVENT_USER:	      
+ 	if(gMsgTimeLeft > 0) gMsgTimeLeft-=5;
+ 	if(gMsgTimeLeft < 0) gMsgTimeLeft = 0;
+ 
+@@ -473,13 +466,13 @@
+ 	if(deathTimer < -128) deathTimer = -1;
+ 	if(finalDead && finalDead > 2) finalDead--;
+ 
+-	if (keystatebuffer[SDLK_RIGHT])
++	if (keystatebuffer[SDL_SCANCODE_RIGHT])
+ 	  PlayerShip.rotateRight();
+ 	
+-	if (keystatebuffer[SDLK_LEFT])
++	if (keystatebuffer[SDL_SCANCODE_LEFT])
+ 	  PlayerShip.rotateLeft();
+ 	
+-	if (keystatebuffer[SDLK_UP] && !dead) {
++	if (keystatebuffer[SDL_SCANCODE_UP] && !dead) {
+ 	  PlayerShip.Thrust(0.15f);
+ #ifdef HAVE_SOUND
+ 	  if(!chOn) {
+@@ -494,12 +487,12 @@
+ #endif
+ 	}
+ 
+-	if (keystatebuffer[SDLK_DOWN])
++	if (keystatebuffer[SDL_SCANCODE_DOWN])
+ 	  PlayerShip.shieldOn();
+ 	else
+ 	  PlayerShip.shieldOff();
+ 	
+-	if (keystatebuffer[SDLK_b])
++	if (keystatebuffer[SDL_SCANCODE_B])
+ 	  PlayerShip.Brake();
+ 
+ 	
+@@ -570,12 +563,10 @@
+       if(BackdropOn && Ui::WIDTH() <= 640 &&
+ 	 Ui::HEIGHT() <= 400) {
+ 	Backdrops[Glevel%NUM_BACKS].putA(0, Ui::HEIGHT());
+-#ifdef WANT_OPENGL
+ 	if(alpha_anim > 0.0f) {
+ 	  Backdrops[(Glevel-1)%NUM_BACKS].putA(0, Ui::HEIGHT(), 0.0f, alpha_anim);
+ 	  alpha_anim -= 0.05f;
+ 	}
+-#endif
+       } else {
+ 	Ui::clearscreen();
+       }
+@@ -665,7 +656,7 @@
+ {
+   // Init SDL Video: 
+   {
+-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
++    if (!SDL_Init(SDL_INIT_VIDEO)) {
+       cerr << "Couldn't initialize video!" << endl;
+       exit(-1);
+     }
+@@ -674,23 +665,13 @@
+ 
+   // Init SDL Audio: 
+   { 
+-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
++    if (!SDL_Init(SDL_INIT_AUDIO)) {
+       cerr << "Couldn't initialize audio!" << endl;
+-      exit(-1);
+     }
+     
+     atexit (SDL_Quit);
+   }
+   
+-  // Init SDL Timer: 
+-  { 
+-    if (SDL_Init(SDL_INIT_TIMER) < 0) {
+-      cerr << "Could'nt initialize timer!" << endl;
+-      exit(-1);
+-    }
+-    
+-    atexit (SDL_Quit);
+-  }
+ 
+   // Init joystick:
+   {
+@@ -700,7 +681,7 @@
+ #ifdef HAVE_JOYSTICK
+     use_joystick = 1; 
+     
+-    if (SDL_Init(SDL_INIT_JOYSTICK) < 0) {
++    if (!SDL_Init(SDL_INIT_JOYSTICK)) {
+       cerr << "Couldn't initialize joystick." << endl;
+       
+       use_joystick = 0;
+@@ -709,9 +690,9 @@
+       {
+ 	/* Look for joysticks: */
+ 	
+-	num_joysticks = SDL_NumJoysticks();
++	SDL_JoystickID *ids = SDL_GetJoysticks(&num_joysticks);
+ 	
+-	if (num_joysticks <= 0) {
++	if (!ids || num_joysticks <= 0) {
+ 	  cerr << "No joysticks available." << endl;
+ 	  
+ 	  use_joystick = 0;
+@@ -720,7 +701,7 @@
+ 	  {
+ 	    /* Open joystick: */
+ 	    
+-	    js = SDL_JoystickOpen(0);
++	    js = SDL_OpenJoystick(ids[0]);
+ 	    
+ 	    if (js == NULL) {
+ 	      cerr << "Couldn't open joystick 1." << endl;
+@@ -728,6 +709,7 @@
+ 	      use_joystick = 0;
+ 	    }
+ 	  }
++	SDL_free(ids);
+       }
+ #endif
+   }
+@@ -845,7 +827,10 @@
+   
+   srand((unsigned int) time(NULL));
+ 
+-  chdir(GAMEDIR);
++  if(chdir(GAMEDIR) != 0) {
++    cerr << "Couldn't find the game data in " GAMEDIR << endl;
++    return 1;
++  }
+   
+   InitializeSDL();
+   HandleCommandLine(argc, argv);
+@@ -854,7 +839,7 @@
+ 
+ #ifdef HAVE_SOUND
+   if(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024)==-1) {
+-    throw "Couldn't initialize sound";
++    cerr << "Couldn't initialize sound" << endl;
+   }
+ 
+   Mix_AllocateChannels(16);
+@@ -890,7 +875,7 @@
+ #endif 
+ 
+ #ifdef HAVE_JOYSTICK
+-  SDL_JoystickClose(0);
++  if(js) SDL_CloseJoystick(js);
+ #endif
+ 
+   // shutdown & restore text mode
+diff -ruN a/src/sasteroids.h b/src/sasteroids.h
+--- a/src/sasteroids.h	2003-08-09 01:40:46.000000000 +0200
++++ b/src/sasteroids.h	2026-11-26 10:50:59.219929334 +0100
+@@ -7,8 +7,8 @@
+ #define __SAST__
+ 
+ #include <stdio.h>
+-#include <SDL/SDL.h>
+-#include <SDL/SDL_ttf.h>
++#include <SDL3/SDL.h>
++#include <SDL3_ttf/SDL_ttf.h>
+ 
+ 
+ #include <math.h>
+@@ -18,12 +18,12 @@
+ #include <unistd.h>
+ #include <stdlib.h>
+ #include <string.h>
+-#include <SDL/SDL_image.h>
++#include <SDL3_image/SDL_image.h>
+ 
+ #include "gameconf.h"
+ 
+ #ifdef HAVE_SOUND
+-#include <SDL/SDL_mixer.h>
++#include "mixer.h"
+ #endif
+ 
+ 
+@@ -71,7 +71,6 @@
+ 
+ 
+ #ifdef HAVE_JOYSTICK
+-#include <SDL/SDL_joystick.h> 
+ #define JOY_A 0
+ #define JOY_B 1
+ #define JOY_C 2
+diff -ruN a/src/sbitmap.cpp b/src/sbitmap.cpp
+--- a/src/sbitmap.cpp	2003-08-16 17:57:14.000000000 +0200
++++ b/src/sbitmap.cpp	2026-11-26 10:50:04.529392650 +0100
+@@ -9,190 +9,6 @@
+ #include "sasteroids.h"
+ 
+ 
+-#ifndef WANT_OPENGL
+-#include <SDL_rotozoom.h>
+-#endif
+-
+-
+-
+-/*************************************************************/
+-/* Convert SDL_Surfaces to GL Textures  **********************/
+-/*************************************************************/
+-#ifdef WANT_OPENGL
+-
+-static void sb_getpixelB1(SDL_Surface* v, SDL_Surface* d, int x, int y, Uint32* color)
+-{  
+-  Uint32 tmp;
+-  Uint8 *ubuff8;
+-  Uint8 r, g, b;
+-  
+-  ubuff8 = (Uint8 *) v->pixels;
+-  ubuff8 += (y * v->pitch) + x;
+-  tmp = (Uint32) (*ubuff8);
+-  SDL_GetRGB(tmp, v->format, (Uint8*) &r, (Uint8*) &g, (Uint8*) &b);
+-  *color = SDL_MapRGB(d->format, r, g, b);
+-}
+-
+-
+-static void sb_getpixelB2(SDL_Surface* v, SDL_Surface* d, int x, int y, Uint32* color)
+-{
+-  Uint32 tmp;
+-  Uint8 *ubuff8;
+-  Uint16 *ubuff16;
+-  Uint8 r, g, b;
+-
+-  ubuff8 = (Uint8 *) v->pixels;
+-  ubuff8 += (y * v->pitch) + (x * v->format->BytesPerPixel);
+-  ubuff16 = (Uint16 *) ubuff8;
+-  tmp = (Uint32) *ubuff16;
+- 
+-  SDL_GetRGB(tmp, v->format, (Uint8*) &r, (Uint8*) &g, (Uint8*) &b);
+-  *color = SDL_MapRGB(d->format, r, g, b);
+-}
+-
+-
+-static void sb_getpixelB3(SDL_Surface* v, SDL_Surface* d, int x, int y, Uint32* color)
+-{
+-  Uint8 *ubuff8;
+-  Uint32 tmp;
+-  Uint8 r, g, b;
+-  
+-  ubuff8 = (Uint8 *) v->pixels;        // This is probably broken.
+-  ubuff8 += (y * v->pitch) + (x * 3);  // TODO: Fix this.
+-  
+-  tmp = ((Uint32)ubuff8[2]) << 16;
+-  tmp |= ((Uint32)ubuff8[1]) << 8;
+-  tmp |= ((Uint32)ubuff8[0]);
+-  
+-  SDL_GetRGB(tmp, v->format, (Uint8*)&r, (Uint8*)&g, (Uint8*)&b);  
+-  *color = SDL_MapRGB(d->format, r, g, b);
+-}
+-
+-
+-static void sb_getpixelB4(SDL_Surface* v, SDL_Surface* d, int x, int y, Uint32* color)
+-{
+-  Uint32* ubuff32;
+-  ubuff32 = (Uint32 *) v->pixels;
+-  ubuff32 += ((y*v->pitch) >> 2) + x;
+-  *color = *ubuff32;
+-}
+-
+-
+-static void sb_setpixelB4(SDL_Surface* visual, int x, int y, Uint32 color)
+-{
+-  Uint32 *ubuff32;
+-
+-  ubuff32 = (Uint32 *) visual->pixels;
+-  ubuff32 += ((y * visual->pitch) >> 2) + x;
+-  *ubuff32 = color;
+-}
+-
+-
+-/* Quick utility function for texture creation */
+-static int power_of_two(int input)
+-{
+-	int value = 1;
+-
+-	while ( value < input ) {
+-		value <<= 1;
+-	}
+-	return value;
+-}
+-
+-
+-static GLuint SDL_GL_LoadTexture(SDL_Surface *surface, GLfloat *texcoord)
+-{
+-  Uint32 x, y;
+-  Uint32 w, h;
+-  Uint32 color;
+-  GLuint texture;
+-  SDL_Surface *image;
+-   
+-  if(!surface || !surface->format) {
+-    throw "Attempt to load non existant or invalid surface";
+-  }
+-
+-  w = power_of_two(surface->w);
+-  h = power_of_two(surface->h);
+-
+-  texcoord[0] = 0.0f;			  // Min X 
+-  texcoord[1] = 0.0f;			  // Min Y 
+-  texcoord[2] = (GLfloat)surface->w / w;  // Max X 
+-  texcoord[3] = (GLfloat)surface->h / h;  // Max Y 
+-  
+-  image = SDL_CreateRGBSurface(
+-			       SDL_SWSURFACE,
+-			       w, h,
+-			       32,
+-#if SDL_BYTEORDER == SDL_LIL_ENDIAN // OpenGL RGBA masks 
+-			       0x000000FF, 
+-			       0x0000FF00, 
+-			       0x00FF0000, 
+-			       0xFF000000
+-#else
+-			       0xFF000000,
+-			       0x00FF0000, 
+-			       0x0000FF00, 
+-			       0x000000FF
+-#endif
+-			       );
+-  if ( image == NULL ) {
+-    return 0;
+-  }
+-
+-  memset(image->pixels, 0, w*h*4);
+-    
+-  for(x = 0; x < (Uint32)surface->w; x++) {
+-    for(y = 0; y < (Uint32)surface->h; y++) {
+-      switch(surface->format->BytesPerPixel) 
+-	{
+-	case 1:
+-	  sb_getpixelB1(surface, image, x, y, &color); 
+-	  break;
+-	  
+-	case 2:
+-	  sb_getpixelB2(surface, image, x, y, &color);
+-	  break;
+-	  
+-	case 3:
+-	  sb_getpixelB3(surface, image, x, y, &color);
+-	  break;
+-	  
+-	case 4:
+-	  sb_getpixelB4(surface, image, x, y, &color);
+-	  break;
+-	  
+-	default:
+-	  cerr << "Attempt to load unsupported file format: ";
+-	  printf("%d\n", surface->format->BytesPerPixel);
+-	  exit(-1); 
+-	}
+-      sb_setpixelB4(image, x, y, color);
+-    }
+-  }
+-  
+-
+-  // Create an OpenGL texture for the image 
+-  glGenTextures(1, &texture);
+-  glBindTexture(GL_TEXTURE_2D, texture);
+-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+-  glTexImage2D(GL_TEXTURE_2D,
+-	       0,
+-	       GL_RGBA,
+-	       w, h,
+-	       0,
+-	       GL_RGBA,
+-	       GL_UNSIGNED_BYTE,
+-	       image->pixels);
+-  SDL_FreeSurface(image); // No longer needed 
+-  
+-  return texture;
+-}
+-
+-#endif
+-
+-
+ /**********************************************************/
+ /* SBitmap Class ******************************************/
+ /**********************************************************/
+@@ -200,21 +16,16 @@
+ SBitmap::SBitmap()
+ {
+   myTexture = 0;
++  myTextureOwned = 0;
++  myWidth = myHeight = 0.0f;
+ }
+ 
+ 
+ SBitmap::SBitmap(const SBitmap& copy)
+ {
+-  int i;
+-
+   myTexture = copy.myTexture;
+   myWidth = copy.myWidth;
+   myHeight = copy.myHeight;
+-  myHWidth = copy.myHWidth;
+-  myHHeight = copy.myHHeight;
+-  for(i = 0; i < 4; i++)
+-    myTexcoord[i] = copy.myTexcoord[i];
+-  
+   myTextureOwned = 0;
+ }
+ 
+@@ -222,176 +33,75 @@
+ SBitmap::SBitmap(SDL_Surface* surface)
+ {
+   myTexture = 0;
++  myTextureOwned = 0;
+   LoadSurface(surface);
+ }
+ 
+ 
+-SBitmap::SBitmap(char* filename) 
++SBitmap::SBitmap(const char* filename)
+ {
+   myTexture = 0;
++  myTextureOwned = 0;
+   LoadImage(filename);
+ }
+ 
+ 
+ SBitmap::~SBitmap() {
+-#ifdef WANT_OPENGL
+-  if(myTextureOwned) {
+-    glDeleteTextures(1, &myTexture);
+-  }
+-#else
+-  if(myTextureOwned) {
+-    SDL_FreeSurface(myTexture);
++  // Textures in static objects outlive the renderer, which SDL_Quit has destroyed already
++  if(myTextureOwned && myTexture && SDL_WasInit(SDL_INIT_VIDEO)) {
++    SDL_DestroyTexture(myTexture);
+   }
+-#endif
+ }
+ 
+ 
+ void SBitmap::LoadSurface(SDL_Surface* surface)
+ {
+-  if(!surface) { 
++  if(!surface) {
+     throw "[Fatal] Attempt to load NULL Bitmap";
+   }
+-  
+-  myWidth = float(surface->w);
+-  myHeight = float(surface->h);
+-  myHWidth = myWidth / 2.0f;
+-  myHHeight = myHeight / 2.0f;
+ 
+-#ifdef WANT_OPENGL
+-  myTexture = SDL_GL_LoadTexture(surface, myTexcoord);
++  if(myTextureOwned && myTexture) {
++    SDL_DestroyTexture(myTexture);
++  }
++  myTexture = SDL_CreateTextureFromSurface(Ui::renderer, surface);
+   if(!myTexture) {
+     throw "[Fatal] Could not load texture";
+   }
+-
+-#else
+-  myTexture = SDL_ConvertSurface(surface, surface->format, SDL_HWSURFACE|SDL_SRCALPHA);
+   myTextureOwned = 1;
+-#endif
+-
+-
++  myWidth = float(surface->w);
++  myHeight = float(surface->h);
+ }
+ 
+ 
+-void SBitmap::LoadImage(char* file) 
++void SBitmap::LoadImage(const char* file)
+ {
+-  SDL_Surface* mySurface;
+-
+-  mySurface = IMG_Load(file);
+-  if(!mySurface) {
++  SDL_Surface* surface = IMG_Load(file);
++  if(!surface) {
+     throw "[Fatal] Could not load bitmap";
+   }
+-
+-  myWidth = float(mySurface->w);
+-  myHeight = float(mySurface->h);
+-  myHWidth = myWidth / 2.0f;
+-  myHHeight = myHeight / 2.0f;
+-
+-#ifdef WANT_OPENGL
+-  myTexture = SDL_GL_LoadTexture(mySurface, myTexcoord);
+-  if(!myTexture) {
+-    throw "[Fatal] Could not load texture";
+-  }
+-  SDL_FreeSurface(mySurface);
+-#else
+-  myTexture = mySurface;
+-  myTextureOwned = 1;
+-#endif
+-
++  LoadSurface(surface);
++  SDL_DestroySurface(surface);
+ }
+ 
+ 
+-void SBitmap::putA(float x, float y, float layer, float alpha) 
++// Draw with the upper left corner at x, y
++void SBitmap::putA(float x, float y, float layer, float alpha)
+ {
+   if(!myTexture) return;
+ 
+-#ifdef WANT_OPENGL
+-  glBindTexture(GL_TEXTURE_2D, myTexture);
+-  glColor4f(1.0f, 1.0f, 1.0f, alpha);
+-
+-
+-  glBegin(GL_QUADS);
+-
+-  glTexCoord2f( myTexcoord[0], myTexcoord[3] );
+-  glVertex3f(x, y-myHeight, layer);
+-  
+-  glTexCoord2f( myTexcoord[2], myTexcoord[3] );
+-  glVertex3f(x+myWidth, y-myHeight, layer);
+-
+-  glTexCoord2f( myTexcoord[2], myTexcoord[1] );
+-  glVertex3f(x+myWidth, y, layer);
+-  
+-  glTexCoord2f( myTexcoord[0], myTexcoord[1] );
+-  glVertex3f(x, y, layer);
+-  
+-  glEnd();
+-
+-  glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+-#else
+-  if(!myTexture) return;
+-
+-  SDL_Rect dstRect;
+-
+-  dstRect.x = (int) x;
+-  dstRect.y = Ui::HEIGHT() - (int) y;
+-  
+-  SDL_BlitSurface(myTexture, NULL, Ui::myscreen, &dstRect);
+-#endif
++  SDL_FRect dst = { x, float(Ui::HEIGHT()) - y, myWidth, myHeight };
++  SDL_SetTextureAlphaModFloat(myTexture, alpha);
++  SDL_RenderTexture(Ui::renderer, myTexture, NULL, &dst);
++  SDL_SetTextureAlphaModFloat(myTexture, 1.0f);
+ }
+ 
+ 
+-void SBitmap::put(float x, float y, float sf, float rotate, float layer) 
++// Draw centered at x, y, scaled by sf and rotated counterclockwise by rotate degrees
++void SBitmap::put(float x, float y, float sf, float rotate, float layer)
+ {
+   if(!myTexture) return;
+ 
+-#ifdef WANT_OPENGL
+-  glBindTexture(GL_TEXTURE_2D, myTexture);
+-  glPushMatrix();
+-
+-  glTranslatef(x, y, layer);
+-  glRotatef(rotate, 0.0f, 0.0f, 1.0f);
+-
+-  glBegin(GL_QUADS);
+-  
+-  glTexCoord2f( myTexcoord[0], myTexcoord[3] );
+-  glVertex3f(-myHWidth * sf, -myHHeight *sf, 0.0f);
+-  
+-  glTexCoord2f( myTexcoord[2], myTexcoord[3] );
+-  glVertex3f(myHWidth * sf, -myHHeight * sf, 0.0f);
+-  
+-  glTexCoord2f( myTexcoord[2], myTexcoord[1] );
+-  glVertex3f(myHWidth * sf, myHHeight * sf, 0.0f);
+-  
+-  glTexCoord2f( myTexcoord[0], myTexcoord[1] );
+-  glVertex3f(-myHWidth * sf, myHHeight * sf, 0.0f);
+-
+-  glEnd();
+-  glPopMatrix();
+-#else
+-  SDL_Surface* tmp;
+-  SDL_Rect dstRect;
+-  int cenX, cenY;
+-
+-  cenX = myTexture->w >> 1;
+-  cenY = myTexture->h >> 1;
+-
+-  if(rotate != 0 || sf != 1.0f) {
+-    
+-    tmp = rotozoomSurface(myTexture, rotate, sf, 0);
+-    
+-    dstRect.x = (myTexture->w - tmp->w) >> 1;
+-    dstRect.y = (myTexture->h - tmp->h) >> 1;
+-
+-    dstRect.x -= cenX; dstRect.x += int(x);
+-    dstRect.y -= cenY; dstRect.y += Ui::HEIGHT() - int(y); // dstRect.y = Ui::HEIGHT() - dstRect.y;
+-
+-    SDL_BlitSurface(tmp, NULL, Ui::myscreen, &dstRect);
+-    SDL_FreeSurface(tmp);
+-  } else {
+-    dstRect.x = -cenX; dstRect.y = -cenY;
+-    dstRect.x += int(x); dstRect.y += Ui::HEIGHT() - int(y);
+-    SDL_BlitSurface(myTexture, NULL, Ui::myscreen, &dstRect);
+-  }
+-
+-#endif
++  float w = myWidth * sf, h = myHeight * sf;
++  SDL_FRect dst = { x - w / 2.0f, float(Ui::HEIGHT()) - y - h / 2.0f, w, h };
++  SDL_RenderTextureRotated(Ui::renderer, myTexture, NULL, &dst, -rotate, NULL, SDL_FLIP_NONE);
+ }
+-  
+diff -ruN a/src/sbitmap.h b/src/sbitmap.h
+--- a/src/sbitmap.h	2003-08-16 17:57:14.000000000 +0200
++++ b/src/sbitmap.h	2026-11-26 10:50:12.278696621 +0100
+@@ -1,22 +1,14 @@
+ // Copyright 1994 Brad Pitzel
+ //
+-// Feel free to use/distribute/modify as long as credit/copyrights for myself 
++// Feel free to use/distribute/modify as long as credit/copyrights for myself
+ // are included.
+ //
+ 
+ // File   : SBitmap.h[1.0]
+ // Changed: Friday 11-OCT-2002
+ 
+-// There are a few simple manipulation functions available too: 
+-// mainly rotation.
+-//
+-// Note the rotation routines aren't that quick. It is best to create all
+-// the rotated images you'll need before entering the actual game play,
+-// because calling rotate() during the game will probably slow things
+-// down too much.
+-//
+-// Finally: Don't assume degrees=0..359 for rotation. Look in FastMath.h
+-// to see how Angle and TRIGSIZE are defined.
++// A bitmap that is drawn with the SDL3 renderer, rotated and scaled when needed.
++// Positions use the OpenGL convention of the original game: y grows upwards.
+ 
+ #ifndef __SDLSAS_SBITMAP__
+ #define __SDLSAS_SBITMAP__
+@@ -27,20 +19,20 @@
+ {
+  public:
+   SBitmap();
+-  SBitmap(char *file);  
++  SBitmap(const char *file);
+   SBitmap(SDL_Surface* surface);
+   SBitmap(const SBitmap& pb);
+ 
+   ~SBitmap();
+-  
+-  void LoadImage(char* path);
++
++  void LoadImage(const char* path);
+   void LoadSurface(SDL_Surface* surface);
+ 
+-  void put(float x, float y, float rotate = 1.0f, float rotate = 1.0f, float layer = 0.0f);
++  void put(float x, float y, float sf = 1.0f, float rotate = 0.0f, float layer = 0.0f);
+   void putA(float x, float y, float layer = 0.0f, float alpha = 1.0f);
+-  
++
+   inline float width() const
+-    { 
++    {
+       return myWidth;
+     };
+ 
+@@ -48,18 +40,11 @@
+     {
+       return myHeight;
+     };
+-  
++
+  protected:
+-#ifdef WANT_OPENGL
+-  GLuint myTexture, myTextureOwned;
+-  GLfloat myWidth, myHeight, myHWidth, myHHeight;
+-  GLfloat myTexcoord[4];  
+-#else
+-  SDL_Surface* myTexture;
++  SDL_Texture* myTexture;
+   unsigned int myTextureOwned;
+-  float myWidth, myHeight, myHWidth, myHHeight;
+-  float myTexcoord[4];
+-#endif
++  float myWidth, myHeight;
+ };
+ 
+ #endif
+diff -ruN a/src/ui.cpp b/src/ui.cpp
+--- a/src/ui.cpp	2003-08-17 22:15:31.000000000 +0200
++++ b/src/ui.cpp	2026-11-26 10:50:31.554491998 +0100
+@@ -1,6 +1,6 @@
+ // Copyright 1994 Brad Pitzel
+ // Modifications Copyright 2002 Andrew M.
+-// 
++//
+ // Feel free to use/distribute/modify as long as credit/copyrights for
+ // myself are included.
+ //
+@@ -13,24 +13,28 @@
+ ///////////////////////////////////////////////////////
+ // Static Class (Global) variables.
+ 
+-SDL_Surface *Ui::myscreen = 0;
++SDL_Window *Ui::window = 0;
++SDL_Renderer *Ui::renderer = 0;
+ TTF_Font *Ui::myfont = 0;
+ 
+-void (*Ui::pixelDriver)(SDL_Surface* visual, int x, int y, 
+-			char r, char g, char b);
+-
+ 
+ ///////////////////////////////////////////////////////
+-// Initialize SDL Library and Fonts
++// Open the window and the fonts
+ 
+ void Ui::init()
+ {
+-  resync(SCREEN_X, SCREEN_Y);
+-  
+-  SDL_WM_SetCaption("SDL Sasteroids", "SDL Sasteroids");
+-  SDL_ShowCursor(0);
+-  
+-  if (TTF_Init() < 0) {
++  SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE;
++  if(wantFullScreen) flags |= SDL_WINDOW_FULLSCREEN;
++
++  if(!SDL_CreateWindowAndRenderer("SDL Sasteroids", SCREEN_X * 2, SCREEN_Y * 2, flags, &window, &renderer)) {
++    throw "Couldn't open a window";
++  }
++  SDL_SetRenderLogicalPresentation(renderer, SCREEN_X, SCREEN_Y, SDL_LOGICAL_PRESENTATION_LETTERBOX);
++  SDL_SetRenderVSync(renderer, 1);
++  SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
++  SDL_HideCursor();
++
++  if (!TTF_Init()) {
+     throw "Couldn't initialize True type font library";
+   }
+   atexit(TTF_Quit);
+@@ -50,6 +54,7 @@
+ void Ui::restore()
+ {
+   TTF_CloseFont(myfont);
++  myfont = 0;
+ }
+ 
+ 
+@@ -59,14 +64,14 @@
+ void Ui::CenterText(char* msg)
+ {
+   int y, x, height, width;
+-  
+-  TTF_SizeText(myfont, msg, &width, &height);
+-  
++
++  TTF_GetStringSize(myfont, msg, 0, &width, &height);
++
+   x = WIDTH() - width;
+   y = HEIGHT() - height;
+   x /= 2;
+   y /= 2;
+-  
++
+   ShowText(x, y, msg);
+ }
+ 
+@@ -74,13 +79,13 @@
+ void Ui::CenterXText(int y, char* msg)
+ {
+   int x, height, width;
+-  
+-  TTF_SizeText(myfont, msg, &width, &height);
+-  
++
++  TTF_GetStringSize(myfont, msg, 0, &width, &height);
++
+   x = WIDTH() - width;
+   x /= 2;
+-  
+-  ShowText(x, y, msg); 
++
++  ShowText(x, y, msg);
+ }
+ 
+ 
+@@ -90,288 +95,31 @@
+ }
+ 
+ 
+-void Ui::ShowTextColor(int x, int y, char *msg, char r, char g, char b)
++void Ui::ShowTextColor(int x, int y, char *msg, Uint8 r, Uint8 g, Uint8 b)
+ {
+-  /* Note: for compatibility with old code, new code should create bitmaps,
+-     and cache the results.... */
+-
+-  SDL_Surface *surface = 0;
+-  SDL_Rect dest;
+-  SDL_Color mycolor = {
+-    r, g, b};
+-
+-  dest.x = x;
+-  dest.y = y;
+-
+-#ifndef QUICK_FONTS
+-  surface = TTF_RenderText_Blended(myfont, msg, mycolor);
+-#else
+-  surface = TTF_RenderText_Solid(myfont, msg, mycolor);
+-#endif
+-
++  SDL_Surface *surface = get_text(msg, r, g, b);
+   if(!surface) return;
+ 
+   SBitmap text(surface);
++  SDL_DestroySurface(surface);
+   text.putA(float(x), Ui::HEIGHT() - float(y));
+-  
+ }
+ 
+ 
+-SDL_Surface* Ui::get_text(char* msg, char r, char g, char b)
++SDL_Surface* Ui::get_text(const char* msg, Uint8 r, Uint8 g, Uint8 b)
+ {
+-  SDL_Surface* surface = 0;
+-  SDL_Color mycolor = { r, g, b};
+-
+-  surface = TTF_RenderText_Blended(myfont, msg, mycolor);
+-  return surface;
+-}
+-
+-
+-void Ui::resync(int newX, int newY)
+-{
+-  Uint32 flags;
+-
+-#ifdef WANT_OPENGL
+-  SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
+-  SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
+-  SDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
+-  SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+-  SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+-
+-  flags = SDL_OPENGL | SDL_ANYFORMAT | WANT_FULLSCREEN;
+-  if(wantFullScreen) flags |= SDL_FULLSCREEN;
+-  myscreen = SDL_SetVideoMode(newX, newY, 16, flags);
+-
+-  if(!myscreen) {
+-    throw "Resize Failed, Bailing out.";
+-  }
+-
+-  predraw();
+-
+-#else
+-  
+-  flags = SDL_HWSURFACE | SDL_ANYFORMAT | WANT_FULLSCREEN;
+-  if(wantFullScreen) flags |= SDL_FULLSCREEN;
+-  myscreen = SDL_SetVideoMode(newX, newY, 16, flags);
+-
+-  if(!myscreen) {
+-    throw "Resize Failed, Bailing out.";
+-  }
+-
+-#endif
+-
+-
++  SDL_Color mycolor = { r, g, b, 255 };
+ 
++  if(!msg || !*msg) msg = " ";
++  return TTF_RenderText_Blended(myfont, msg, 0, mycolor);
+ }
+ 
+ 
+-// update physical screen from virtualScn
++// Show what has been drawn
+ void Ui::updateScreen()
+ {
+-#ifdef WANT_OPENGL
+-  SDL_GL_SwapBuffers();
+-#else
+-  SDL_Flip(myscreen);
+-#endif
+-}
+-
+-
+-///////////////////////////////////////////////////
+-// Pixel Functions and drivers.
+-
+-void g_getpixelB1(SDL_Surface* visual, int x, int y, char *r, char *g, char *b)
+-{
+-  Uint32 color;
+-  Uint8 *ubuff8;
+-  
+-  ubuff8 = (Uint8 *) visual->pixels;
+-  ubuff8 += (y * visual->pitch) + x;
+-  color = (Uint32) (*ubuff8);
+-  SDL_GetRGB(color, visual->format, (Uint8*) r, (Uint8*) g, (Uint8*) b);
+-}
+-
+-
+-void g_setpixelB1(SDL_Surface* visual, int x, int y, char r, char g, char b)
+-{
+-  Uint32 color;
+-  Uint8 *ubuff8;
+-  
+-  color = SDL_MapRGB(visual->format, r, g, b);
+-  ubuff8 = (Uint8 *) visual->pixels;
+-  ubuff8 += (y * visual->pitch) + x;
+-  *ubuff8 = (Uint8) color;
+-}
+-
+-
+-void g_getpixelB2(SDL_Surface* visual, int x, int y, char *r, char *g, char *b)
+-{
+-  Uint32 color;
+-  Uint8 *ubuff8;
+-  Uint16 *ubuff16;
+-
+-  ubuff8 = (Uint8 *) visual->pixels;
+-  ubuff8 += (y * visual->pitch) + (x * visual->format->BytesPerPixel);
+-  ubuff16 = (Uint16 *) ubuff8;
+-  color = (Uint32) *ubuff16;
+-  SDL_GetRGB(color, visual->format, (Uint8*) r, (Uint8*) g, (Uint8*) b);
+-}
+-
+-
+-void g_setpixelB2(SDL_Surface* visual, int x, int y, char r, char g, char b)
+-{
+-  Uint32 color;
+-  Uint8 *ubuff8;
+-  Uint16 *ubuff16;
+-
+-  color = SDL_MapRGB(visual->format, r, g, b);
+-  ubuff8 = (Uint8 *) visual->pixels;
+-  ubuff8 += (y * visual->pitch) + (x * visual->format->BytesPerPixel);
+-  ubuff16 = (Uint16 *) ubuff8;
+-
+-  *ubuff16 = (Uint16) color;
+-}
+-
+-
+-void g_getpixelB3(SDL_Surface* visual, int x, int y, char *r, char *g, char *b)
+-{
+-  Uint8 *ubuff8;
+-  Uint32 color;
+-  
+-  ubuff8 = (Uint8 *) visual->pixels;        // This is probably broken.
+-  ubuff8 += (y * visual->pitch) + (x * 3);  // TODO: Fix this.
+-  
+-  color = ((Uint32)ubuff8[2]) << 16;
+-  color |= ((Uint32)ubuff8[1]) << 8;
+-  color |= ((Uint32)ubuff8[0]);
+-  
+-  SDL_GetRGB(color, visual->format, (Uint8*)r, (Uint8*)g, (Uint8*)b);  
+-}
+-
+-
+-void g_setpixelB3(SDL_Surface* visual, int x, int y, char r, char g, char b)
+-{
+-  Uint32 color;
+-  Uint8 *ubuff8;
+-
+-  color = SDL_MapRGB(visual->format, r, g, b);
+-  ubuff8 = (Uint8 *) visual->pixels;
+-  ubuff8 += (y * visual->pitch) + (x * 3);
+-  r = (color >> visual->format->Rshift) & 0xFF;
+-  g = (color >> visual->format->Gshift) & 0xFF;
+-  b = (color >> visual->format->Bshift) & 0xFF;
+-  ubuff8[0] = r;
+-  ubuff8[1] = g;
+-  ubuff8[2] = b;
+-}
+-
+-
+-void g_getpixelB4(SDL_Surface* visual, int x, int y, char *r, char *g, char *b)
+-{
+-  Uint32 color;
+-  Uint32* ubuff32;
+-
+-  ubuff32 = (Uint32 *) visual->pixels;
+-  ubuff32 += ((y*visual->pitch) >> 2) + x;
+-  color = *ubuff32;
+-  
+-  SDL_GetRGB(color, visual->format, (Uint8*)r, (Uint8*)g, (Uint8*)b);
+-}
+-
+-
+-void g_setpixelB4(SDL_Surface* visual, int x, int y, char r, char g, char b)
+-{
+-  Uint32 color;
+-  Uint32 *ubuff32;
+-
+-  color = SDL_MapRGB(visual->format, r, g, b);
+-  ubuff32 = (Uint32 *) visual->pixels;
+-  ubuff32 += ((y * visual->pitch) >> 2) + x;
+-  *ubuff32 = color;
+-}
+-
+-
+-void getpixel(SDL_Surface *visual, int x, int y, char *r, char *g, char *b)
+-{
+-  if(!visual) return;
+-  if(x < 0 || y < 0) return;
+-  if(x > visual->w || y > visual->h) return; 
+-   
+-  switch (visual->format->BytesPerPixel) {
+-  case 1:
+-    g_getpixelB1(visual, x, y, r, g, b);
+-    break;
+-  case 2:
+-    g_getpixelB2(visual, x, y, r, g, b);
+-    break;
+-  case 3:
+-    g_getpixelB3(visual, x, y, r, g, b);
+-    break;
+-  case 4:
+-    g_getpixelB4(visual, x, y, r, g, b);
+-    break;
+-  default:
+-    cerr << "[Warning] getpixel called with unknown bitdepth" << endl;
+-  }
+-}
+-
+-
+-void setpixel(SDL_Surface *visual, int x, int y, char r, char g, char b)
+-{
+-  if(!visual) return;
+-  if(x < 0 || y < 0) return;
+-  if(x > visual->w || y > visual->h) return; 
+-   
+-  switch (visual->format->BytesPerPixel) {
+-  case 1:
+-    g_setpixelB1(visual, x, y, r, g, b);
+-    break;
+-  case 2:
+-    g_setpixelB2(visual, x, y, r, g, b);
+-    break;
+-  case 3:
+-    g_setpixelB3(visual, x, y, r, g, b);
+-    break;
+-  case 4:
+-    g_setpixelB4(visual, x, y, r, g, b);
+-    break;
+-  default:
+-    cerr << "[Warning] setpixel called with unknown bitdepth" << endl;
+-  }
+-}
+-
+-
+-
+-void Ui::predraw() {
+-#ifdef WANT_OPENGL
+-  glEnable(GL_TEXTURE_2D);
+-  glEnable(GL_BLEND);
+-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+-
+-  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_ACCUM_BUFFER_BIT);
+-  
+-  glLoadIdentity();
+-  glViewport(0, 0, 640, 400);
+-  glOrtho(0, 640, 0, 400, -1, 1);
+-#endif
++  SDL_RenderPresent(renderer);
+ }
+-  
+-
+-
+-void GraphicsStartDraw(SDL_Surface* visual)
+-{
+-  if(SDL_MUSTLOCK(visual))
+-     SDL_LockSurface(visual);
+-}
+-
+-void GraphicsStopDraw(SDL_Surface* visual)
+-{
+-  if(SDL_MUSTLOCK(visual))
+-    SDL_UnlockSurface(visual);
+-}
+-
+-
+-
+ 
+ 
+ //////////////////////////////////////
+@@ -380,7 +128,7 @@
+ SBitmap *IntegerDisplay::numbers;
+ 
+ 
+-void IntegerDisplay::initialize() 
++void IntegerDisplay::initialize()
+ {
+   int i;
+   char sstring[2] = { 0, 0 };
+@@ -392,18 +140,18 @@
+     sstring[0] = i + '0';
+     tmp = Ui::get_text(sstring, 255, 255, 255);
+     numbers[i].LoadSurface(tmp);
+-    SDL_FreeSurface(tmp);
++    SDL_DestroySurface(tmp);
+   }
+ }
+ 
+ 
+-void IntegerDisplay::finish() 
++void IntegerDisplay::finish()
+ {
+   delete [] numbers;
+ }
+ 
+ 
+-void IntegerDisplay::display_integer(int num, float x, float y) 
++void IntegerDisplay::display_integer(int num, float x, float y)
+ {
+   int tenPower = 1;
+   int tnum;
+@@ -416,12 +164,12 @@
+   cx = x;
+   do {
+     tnum = num % tenPower;
+-    
++
+     if(tenPower != 1) tenPower = tenPower / 10;
+     tnum = tnum / tenPower;
+     if(tnum < 0) tnum = 0;
+     if(tnum > 9) tnum = 9;
+-    
++
+     numbers[tnum].putA(cx, y);
+     cx += numbers[tnum].width();
+ 
+diff -ruN a/src/ui.h b/src/ui.h
+--- a/src/ui.h	2004-05-06 00:19:55.000000000 +0200
++++ b/src/ui.h	2026-11-26 10:50:19.285447335 +0100
+@@ -1,15 +1,13 @@
+ // Copyright 1994 Brad Pitzel
+ //
+-// Feel free to use/distribute/modify as long as credit/copyrights for myself 
++// Feel free to use/distribute/modify as long as credit/copyrights for myself
+ // are included.
+ 
+ // File   : Ui.h[1.0]
+ // Changed: FRI OCT-10-2002
+ 
+-// a layer on top of the svgalib library.
+-// Routines to setup the initialize the screen/svgalib/etc, restore back
+-// to text when all done, throw up a few messages/prompts, get simple
+-// string input from the user, etc..
++// Routines to set up the window, draw text and pixels, and show the result.
++// The game draws in a 640x400 area that SDL scales to the window.
+ 
+ 
+ #ifndef __Ui__
+@@ -17,122 +15,68 @@
+ 
+ #include "sasteroids.h"
+ 
+-#ifdef WANT_OPENGL
+-#   include <GL/gl.h>
+-#   include <GL/glu.h>
+-#else
+-/* TODO: No openGL */
+-#endif
+-
+-// call before using setpixel or getpixel. =)
+-void GraphicsStartDraw(SDL_Surface* visual);
+-void GraphicsStopDraw(SDL_Surface* visual);
+-
+-// Unsafe putpixel functions, may be used, but don't check x/y coord's.
+-void g_setpixelB1(SDL_Surface* visual, int x, int y, char r, char g, char b);
+-void g_setpixelB2(SDL_Surface* visual, int x, int y, char r, char g, char b);
+-void g_setpixelB3(SDL_Surface* visual, int x, int y, char r, char g, char b);
+-void g_setpixelB4(SDL_Surface* visual, int x, int y, char r, char g, char b);
+-void setpixel(SDL_Surface *screen, int x, int y, char r, char g, char b);
+-
+-// Unsafe getpixel functions, may be used, but don't check x/y coord's.
+-void g_getpixelB1(SDL_Surface* v, int x, int y, char *r, char *g, char *b);
+-void g_getpixelB2(SDL_Surface* v, int x, int y, char *r, char *g, char *b);
+-void g_getpixelB3(SDL_Surface* v, int x, int y, char *r, char *g, char *b);
+-void g_getpixelB4(SDL_Surface* v, int x, int y, char *r, char *g, char *b);
+-void getpixel(SDL_Surface *screen, int x, int y, char *r, char *g, char *b);
+-
+ // Other integers
+ extern int wantFullScreen;
+ class SBitmap;
+ 
+ 
+-class Ui 
++class Ui
+ {
+- public: 
++ public:
+   static void updateScreen();
+   static void init();
+   static void restore();
+-  static void resync(int x, int y);
+-  
+-  static void message( int y, char *msg ); // message centered at line y
+-  static void message( char *msg ) { message(0,msg); }
++
+   static void CenterText(char* msg);
+   static void CenterXText(int y, char* msg);
+   static void ShowText(int x, int y, char* msg );
+-  static void ShowTextColor(int x, int y, char* msg, char r, char g, char b);
+-  static char yesNo( const char *msg );
++  static void ShowTextColor(int x, int y, char* msg, Uint8 r, Uint8 g, Uint8 b);
+ 
+-  static SDL_Surface* get_text(char* msg, char r,char g, char b);
+-  
+-  static int fontHeight()  
+-    { 
+-      return TTF_FontHeight(myfont); 
+-    }
++  static SDL_Surface* get_text(const char* msg, Uint8 r, Uint8 g, Uint8 b);
+ 
++  static int fontHeight()
++    {
++      return TTF_GetFontHeight(myfont);
++    }
+ 
+   static void inline startpixels()
+     {
+-#ifdef WANT_OPENGL
+-      glDisable(GL_TEXTURE_2D);
+-#endif
++      SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+     }
+ 
+   static void inline stoppixels()
+     {
+-#ifdef WANT_OPENGL
+-      glEnable(GL_TEXTURE_2D);
+-#endif
+     }
+ 
+-
+-  static void inline setpixel(int x, int y, char r, char g, char b, char a = 255)
++  static void inline setpixel(int x, int y, Uint8 r, Uint8 g, Uint8 b, Uint8 a = 255)
+     {
+-      if(x < 0 || x >= myscreen->w) return;
+-      if(y < 0 || y >= myscreen->h) return;
+-
+-#ifdef WANT_OPENGL
+-      char byteBuffer[4] = { r, g, b, a };
+-
+-      glRasterPos2i(x, y);
+-      glDrawPixels(1, 1, GL_RGBA, GL_UNSIGNED_BYTE, &byteBuffer); 
+-      
+-#else
+-      //      (pixelDriver)(myscreen, x, y, r, g, b);
+-#endif
++      if(x < 0 || x >= SCREEN_X) return;
++      if(y < 0 || y >= SCREEN_Y) return;
++      SDL_SetRenderDrawColor(renderer, r, g, b, a);
++      SDL_RenderPoint(renderer, float(x), float(SCREEN_Y - y));
+     }
+ 
+-  static int fontWidth() { return 19; } // Fudged, shouldn't be used...
+-   
+-  static int WIDTH() { if(myscreen) return myscreen->w; return 0; }
+-  static int HEIGHT() { if(myscreen) return myscreen->h; return 0; }
+-  
++  static int WIDTH() { return SCREEN_X; }
++  static int HEIGHT() { return SCREEN_Y; }
++
+   static void clearscreen() {
+-#ifdef WANT_OPENGL
+-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+-#endif
++    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
++    SDL_RenderClear(renderer);
+   };
+-  
++
+   static void FullScreen() {
+-    SDL_WM_ToggleFullScreen(myscreen);
++    SDL_SetWindowFullscreen(window, !(SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN));
+   };
+-  
+ 
+-  static void predraw();
++  static void predraw() {
++    clearscreen();
++  }
+ 
+-  
+-  friend class SBitmap;
+-  friend class Bitmap;
+-  
+-  static SDL_Surface* myscreen;
++  static SDL_Window* window;
++  static SDL_Renderer* renderer;
+ 
+  private:
+   static TTF_Font *myfont;
+-  static void drawCursor(int x, int y);
+-  static void hideCursor(int x, int y);
+-
+-  static void (*pixelDriver)(SDL_Surface* visual, 
+-			     int x, int y, char r, char g, char b);
+ };
+ 
+ 

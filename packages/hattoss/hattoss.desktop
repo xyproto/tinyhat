@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Hat Toss
+Name=Hat Toss (DOS)
 Icon=applications-games
 Comment=Two gorillas on the rooftops throw tiny hats at each other (DOS game, in DOSBox-X)
 Exec=hattoss

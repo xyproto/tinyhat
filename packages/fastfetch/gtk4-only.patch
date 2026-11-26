@@ -1,0 +1,14 @@
+--- a/src/common/impl/parsing.c	2026-10-14 09:28:42.000000000 +0200
++++ b/src/common/impl/parsing.c	2026-11-26 11:15:09.270532028 +0100
+@@ -67,6 +67,11 @@
+ }
+ 
+ void ffParseGTK(FFstrbuf* buffer, const FFstrbuf* gtk2, const FFstrbuf* gtk3, const FFstrbuf* gtk4) {
++    if (gtk4->length > 0) {
++        ffStrbufAppend(buffer, gtk4);
++        ffStrbufAppendS(buffer, " [GTK4]");
++        return;
++    }
+     if (gtk2->length > 0 && gtk3->length > 0 && gtk4->length > 0) {
+         if ((ffStrbufIgnCaseEqual(gtk2, gtk3)) && (ffStrbufIgnCaseEqual(gtk2, gtk4))) {
+             ffStrbufAppend(buffer, gtk4);

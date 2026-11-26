@@ -2,11 +2,6 @@ name = "Tiny Hat"
 hat_color = "#922424"
 hat_highlight_color = "#f7768e"
 
-# Packages are taken prebuilt from archlinux32 when possible, unless a package below
-# has build = true or archlinux32 lacks it or ships it broken. prebuilt = true marks
-# the slow ones (more than about 15 minutes to build) that should stay prebuilt.
-prebuilt_all = true
-
 # Built as x32 for tinyhat64x32.img; everything else in that image is the i686 version.
 # Empty until the x32 toolchain (x32-gcc-stage1, glibc, x32-gcc) builds; the core set was:
 # glibc x32-runtime zlib zstd xz bzip2 libffi expat
@@ -31,7 +26,7 @@ image = [
     "libxfixes", "libxdamage", "libxcomposite", "libxtst", "libxss", "libxv", "libxpresent", "libxxf86vm",
     "libxkbcommon-x11", "libxt", "libxmu", "libxaw", "libxpm", "libxft", "libsm", "libice",
     "xcb-util", "xcb-util-cursor", "xcb-util-errors", "xcb-util-image", "xcb-util-keysyms", "xcb-util-renderutil",
-    "qt5-base", "qt6-base", "sdl2", "sdl2_image", "gtk2", "gtk3",
+    "qt5-base", "qt6-base", "sdl2_image",
     # Older than the LLVM that Arch Linux uses. Prebuilt ones are built from packages/llvm instead (scripts/build_planner.py)
     "llvm<23", "llvm-libs<23", "clang<23", "llvm[0-9]*<23", "clang[0-9]*<23",
     "tk", "tk[0-9]*",
@@ -68,23 +63,34 @@ files = [
 # tinyhat32.img while it is built only from our own TINYBUILDs (scripts/mkimg-orbiton.sh): what it takes to boot GRUB,
 # Linux and Orbiton. These and everything they need are built for i686 in the x86_64 build environment, with the
 # i686-cross toolchain ("make cross")
-packages = ["filesystem", "glibc", "bash", "coreutils", "util-linux", "systemd", "kmod", "kbd", "orbiton", "tinyhat-system", "grep", "nawk", "sed", "xfsprogs", "findutils", "linux-tinyhat"]
+packages = [
+    "filesystem", "glibc", "bash", "coreutils", "util-linux", "systemd", "kmod", "kbd", "orbiton", "tinyhat-system",
+    "grep", "nawk", "sed", "xfsprogs", "findutils", "linux-tinyhat",
+]
 # Built for the boot medium, not installed in the root file system: GRUB and its menu entries (memtest86+, FreeDOS via
 # syslinux's memdisk), CPU microcode, and what the initramfs runs
-boot = ["grub", "syslinux", "memtest86+", "tinyhat-freedos", "amd-ucode", "intel-ucode", "tinyhat-mountroot", "tinyhat-splash", "tinyhat-guru"]
+boot = [
+    "grub", "syslinux", "memtest86+", "tinyhat-freedos", "amd-ucode", "intel-ucode", "tinyhat-mountroot",
+    "tinyhat-splash", "tinyhat-guru",
+]
 
 [image]
 packages = [
-    "filesystem", "tinyhat-keyring", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep", "nawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
+    "filesystem", "tinyhat-keyring", "glibc", "bash", "coreutils", "util-linux", "kmod", "procps-ng", "sed", "grep",
+    "nawk", "findutils", "less", "which", "file", "tar", "gzip", "zstd",
     "systemd", "shadow",
     "xfsprogs", "dosfstools", "exfatprogs", "mtools",
     "alsa-utils", "pipewire", "pipewire-alsa", "pipewire-jack", "wireplumber", "tinyhat-pipewire-wait",
     "bluez", "bluez-utils", "bluetui",
     "iwd", "wireless-regdb", "impala",
-    "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot", "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "xcursor-vanilla-dmz",
-    "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng", "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
-    "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros", "linux-firmware-broadcom",
-    "linux-firmware-amdgpu", "linux-firmware-mediatek", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware", "alsa-ucm-conf",
+    "wayland", "libxkbcommon", "compose-tables", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "foot",
+    "foot-terminfo", "ttf-dejavu", "terminus-font", "mesa", "libglvnd", "xcursor-vanilla-dmz",
+    "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libmikmod", "libjpeg-turbo", "libpng",
+    "libvorbis", "flac", "freetype2", "libsndfile", "libslirp",
+    "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-realtek", "linux-firmware-atheros",
+    "linux-firmware-broadcom",
+    "linux-firmware-amdgpu", "linux-firmware-mediatek", "linux-firmware-cirrus", "linux-firmware-nvidia",
+    "sof-firmware", "alsa-ucm-conf",
     "fish", "pure-fish", "htop", "tcc", "pkgconf", "dropbear", "git", "tig", "aget", "cairo-wayland",
     "opendoas",
     "libmnl",
@@ -92,18 +98,41 @@ packages = [
     "ripgrep", "setconf",
     "earlyoom",
     "pacman", "archlinux32-keyring", "archlinux-keyring", "pacman-mirrorlist",
-    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc", "tinyhat-files", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs", "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash", "tinyhat-boot-animations", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep", "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2", "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "python-turtle", "nomarch", "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic", "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
+    "ft2-clone", "pt2-clone", "libretro-nestopia", "nasm", "mandoc", "man-pages", "sl", "tinyionice", "mc",
+    "tinyhat-files", "tinyhat-mixer", "tinyhat-status", "tinyhat-fan", "virtualbox-guest-utils-nox", "soundfont-generaluser-gs",
+    "beneath-a-steel-sky", "soltys", "beej-guides", "tinyhat-fennel-book", "tinyhat-sounds", "tinyhat-splash",
+    "tinyhat-boot-animations", "fastfetch", "algernon", "brightnessctl", "grim", "gcc", "patch", "fakeroot", "makep",
+    "wayland-protocols", "tllist", "ttf-jetbrains-mono", "iputils", "inetutils", "usbutils", "picocom", "iproute2",
+    "mtr", "ldns", "curl", "libdisplay-info0.3", "tinyhat-guru", "python", "python-pyxel", "python-turtle", "nomarch",
+    "tinyhat-ultrasnd", "strace", "joe", "tty-solitaire", "jomon", "libresprite", "voidsprite", "fennel", "bwbasic",
+    "love", "tinyhat-view", "zathura", "zathura-pdf-poppler", "bonzomatic", "ccache", "arm-none-eabi-binutils",
+    "arm-none-eabi-gcc", "arm-none-eabi-newlib", "tinysurf", "nftables",
     "sdl3", "sdl3_image", "sdl3_ttf", "raylib", "fluidsynth", "fontconfig", "libxml2",
-    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system", "tinyhat-sudo", "tinyhat-tinybuilds", "tinyhat-alpine", "hat", "tinyhat-desktop", "tinyhat-gtk-theme", "tinyhat-notify", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
-    "zsnes", "dosbox-x", "tinyhat-dosgames", "scummvm", "mgba", "vice", "tic-80", "octo", "furnace", "schismtracker", "libretro-blastem", "libretro-fuse", "z88dk", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo", "monkeyjumpgo", "hattoss",
-    "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib", "png2xpm", "tinyxxd", "qemacs", "nvi2",
+    "libdisplay-info", "wlroots0.20", "dwl", "fuzzel", "swaylock", "wallutils", "tinyhat-gui", "tinyhat-system",
+    "tinyhat-sudo", "tinyhat-tinybuilds", "tinyhat-alpine", "pkg", "tinyhat-desktop", "tinyhat-gtk-theme",
+    "tinyhat-notify", "tinyhat-skel", "tinyhat-wine", "tinyhat-watcom", "tinyhat-play",
+    "zsnes", "dosbox-x", "tinyhat-dosgames", "sasteroids", "koules", "scummvm", "mgba", "vice", "tic-80", "octo",
+    "furnace",
+    "schismtracker",
+    "libretro-blastem", "libretro-fuse", "z88dk", "tinyhat-midibench", "abcmidi", "testcontroller", "gnugo",
+    "monkeyjumpgo", "hattoss",
+    "aquarium", "orbiton", "grafx2", "gdb", "cc65", "gba-dev", "rfxgen", "make", "llvm-libs", "clang", "pvsneslib",
+    "png2xpm", "tinyxxd", "qemacs", "nvi2",
 ]
 skip = [
-    "VIRTUALBOX-GUEST-MODULES", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl", "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc", "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups", "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "librsvg", "pulseaudio", "qt5-base", "qt6-base",
+    "VIRTUALBOX-GUEST-MODULES", "openssh", "libgfortran", "iso-codes", "adwaita-fonts", "iptables", "perl",
+    "perl-error", "perl-mailtools", "perl-timedate", "libasan", "liblsan", "libtsan", "libubsan", "libobjc",
+    "xcb-proto", "xorgproto", "hicolor-icon-theme", "compiler-rt", "icu", "geoip-database", "libcups",
+    "libretro-core-info", "sdl", "sdl12-compat", "gtk2", "gtkmm", "librsvg", "pulseaudio", "qt5-base", "qt6-base",
     "llvm", "llvm-lit",
 ]
 keep = { glibc = ["usr/lib/*.o", "usr/lib/libc_nonshared.a", "usr/lib/libanl.a", "usr/lib/libdl.a", "usr/lib/libpthread.a", "usr/lib/librt.a", "usr/lib/libutil.a"], tcc = ["usr/lib/tcc/**"], gcc = ["usr/lib/gcc/*/*/crt*.o", "usr/lib/gcc/*/*/libgcc*.a", "usr/lib/gcc/*/*/libgcc_s*.so"], arm-none-eabi-gcc = ["usr/lib/gcc/arm-none-eabi/*/cc1", "usr/lib/gcc/arm-none-eabi/*/collect2", "usr/lib/gcc/arm-none-eabi/*/liblto_plugin.so", "usr/lib/gcc/arm-none-eabi/*/include/**", "usr/lib/gcc/arm-none-eabi/*/include-fixed/**", "usr/lib/gcc/arm-none-eabi/*/libgcc.a", "usr/lib/gcc/arm-none-eabi/*/crt[bein]*.o", "usr/lib/gcc/arm-none-eabi/*/thumb/nofp/libgcc.a", "usr/lib/gcc/arm-none-eabi/*/thumb/nofp/crt[bein]*.o"], terminus-font = ["usr/share/kbd/consolefonts/ter-v24n.psf.gz", "usr/share/kbd/consolefonts/ter-v24b.psf.gz"], algernon = ["usr/share/doc/algernon/README.md"] }
-strip_unneeded = ["usr/lib/libLLVM*.so*", "usr/lib/libLTO*.so*", "usr/lib/libRemarks*.so*", "usr/lib/libclang-cpp*.so*", "usr/lib/libSDL3.so.*.*", "usr/lib/libwlroots-*.so", "usr/lib/libdisplay-info.so.*.*", "usr/lib/libfluidsynth.so.*.*", "usr/lib/libSDL3_image.so.*.*", "usr/lib/libSDL3_ttf.so.*.*", "usr/lib/libraylib.so.*.*", "usr/lib/libfontconfig.so.*.*"]
+strip_unneeded = [
+    "usr/lib/libLLVM*.so*", "usr/lib/libLTO*.so*", "usr/lib/libRemarks*.so*", "usr/lib/libclang-cpp*.so*",
+    "usr/lib/libSDL3.so.*.*", "usr/lib/libwlroots-*.so", "usr/lib/libdisplay-info.so.*.*",
+    "usr/lib/libfluidsynth.so.*.*", "usr/lib/libSDL3_image.so.*.*", "usr/lib/libSDL3_ttf.so.*.*",
+    "usr/lib/libraylib.so.*.*", "usr/lib/libfontconfig.so.*.*",
+]
 exclude_all = ["usr/lib/modules/*/vmlinuz", "usr/lib/modules/*/dtbs"]
 exclude = [
     # Headers, pkg-config, CMake and aclocal files stay, so programs can be built on Tiny Hat
@@ -492,10 +521,11 @@ buildroot = ["go", "distcc"]
 # The firmware, kernel and device trees go on the FAT boot partition instead
 exclude = ["boot"]
 remove = [
-    "archlinux32-keyring", "archlinux-keyring", "tinyhat-wine", "tinyhat-watcom", "virtualbox-guest-utils-nox",
+    "archlinux32-keyring", "archlinux-keyring", "tinyhat-wine", "virtualbox-guest-utils-nox",
     "libresprite",
     # PC hardware
-    "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-amdgpu", "linux-firmware-cirrus", "linux-firmware-nvidia", "sof-firmware",
+    "linux-firmware-radeon", "linux-firmware-intel", "linux-firmware-amdgpu", "linux-firmware-cirrus",
+    "linux-firmware-nvidia", "sof-firmware",
 ]
 
 [image-x86_64]
@@ -508,7 +538,10 @@ boot = ["linux-tinyhat"]
 # Added to the build environment, which otherwise has what the built PKGBUILDs and TINYBUILDs need. python-sphinx:
 # sphinx-build for the i686 build environment ([buildroot] host_python_tools), and the other build programs that it
 # takes from here ([buildroot] host_tools)
-buildroot = ["go", "python-sphinx", "doxygen", "xorg-bdftopcf", "xorg-xcursorgen", "gtk-update-icon-cache", "sequoia-sq", "yasm"]
+buildroot = [
+    "go", "python-sphinx", "doxygen", "xorg-bdftopcf", "xorg-xcursorgen", "gtk-update-icon-cache", "sequoia-sq",
+    "yasm",
+]
 
 [buildroot]
 # The i686 build environment (build/buildroot), from our own builds only: what "make cross" builds from these, with
@@ -524,7 +557,8 @@ i686 = [
 ]
 # Programs of the x86_64 build environment that the i686 one runs (linked in /usr/bin), and the directories they use
 host_tools = [
-    "sh", "bash", "perl", "autoconf", "autoheader", "autom4te", "autoreconf", "autoscan", "autoupdate", "ifnames", "automake",
+    "sh", "bash", "perl", "autoconf", "autoheader", "autom4te", "autoreconf", "autoscan", "autoupdate", "ifnames",
+    "automake",
     "aclocal", "help2man", "intltoolize", "intltool-extract", "intltool-merge", "intltool-prepare", "intltool-update",
     "fish", "fish_indent", "git", "curl", "pacman",
     "gperf", "re2c", "jq", "doxygen", "sassc", "xa", "bdftopcf", "xcursorgen", "gtk-update-icon-cache", "yasm",
@@ -545,15 +579,20 @@ host_dirs = [
 ]
 # The x86_64 and aarch64 build environments: prebuilt from Arch Linux (ARM)
 packages = [
-    "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2", "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
+    "filesystem", "bash", "coreutils", "sed", "grep", "gawk", "findutils", "tar", "gzip", "xz", "zstd", "bzip2",
+    "diffutils", "patch", "which", "util-linux", "file", "dosfstools", "mtools",
     "squashfs-tools", "xfsprogs", "libisoburn", "qemu-img", "elfkickers",
-    "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson", "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
-    "wayland", "wayland-protocols", "libglvnd", "mesa", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd", "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
+    "gcc", "binutils", "make", "uthash", "gperf", "pkgconf", "autoconf", "automake", "libtool", "cmake", "meson",
+    "ninja", "nasm", "ccache", "python", "linux-api-headers", "bison", "m4",
+    "wayland", "wayland-protocols", "libglvnd", "mesa", "libxkbcommon", "libinput", "pixman", "libdrm", "seatd",
+    "hwdata", "fcft", "tllist", "cairo", "pam", "scdoc",
     "alsa-lib", "pipewire", "libpng", "zlib", "freetype2", "libslirp", "ncurses", "libsndfile",
-    "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo", "libmikmod",
+    "a52dec", "faad2", "libmad", "libmpeg2", "giflib", "fribidi", "libtheora", "libvorbis", "flac", "libjpeg-turbo",
+    "libmikmod",
     "grub",
     "arm-none-eabi-binutils", "arm-none-eabi-gcc", "arm-none-eabi-newlib",
-    "expat", "gdbm", "libffi", "libnsl", "libxcrypt", "openssl", "tzdata", "mpdecimal", "sqlite", "libxml2", "libxslt", "libyaml",
+    "expat", "gdbm", "libffi", "libnsl", "libxcrypt", "openssl", "tzdata", "mpdecimal", "sqlite", "libxml2",
+    "libxslt", "libyaml",
 ]
 # Built from our PKGBUILDs and TINYBUILDs, over the prebuilt packages: Python 3.14, and the same fish 4 that the TINYBUILDs
 # are run with on x86_64 and aarch64 (the prebuilt one is fish 3, where ? is still a wildcard)
@@ -561,8 +600,10 @@ local = ["python", "cython", "python-markupsafe", "python-lxml", "fish"]
 prefer_built = ["gtk4"]
 exclude = ["usr/lib/python3.1[0-3]", "usr/bin/python3.1[0-3]*", "usr/lib/libpython3.1[0-3]*"]
 i686_skip = [
-    "python", "cython", "python-markupsafe", "python-lxml", "python-yaml", "python-numpy", "python-gobject", "dbus-python",
-    "python-zope-interface", "python-twisted", "python-cairo", "mercurial", "gdb", "gdb-common", "boost", "boost-libs", "python-evdev",
+    "python", "cython", "python-markupsafe", "python-lxml", "python-yaml", "python-numpy", "python-gobject",
+    "dbus-python",
+    "python-zope-interface", "python-twisted", "python-cairo", "mercurial", "gdb", "gdb-common", "boost",
+    "boost-libs", "python-evdev",
 ]
 skip = [
     "pandoc",
@@ -739,16 +780,13 @@ source = "sources"
 
 [arm-none-eabi-gcc]
 heavy = true
-prebuilt = true
 
 [arm-none-eabi-newlib]
-prebuilt = true
 
 [bind]
 build_from_source = true
 
 [binutils]
-prebuilt = true
 
 [bluetui]
 
@@ -821,7 +859,6 @@ source = "sources"
 
 [gcc]
 heavy = true
-prebuilt = true
 
 [gdb]
 heavy = true
@@ -834,7 +871,6 @@ build_from_source = true
 build_from_source = true
 
 [git]
-prebuilt = true
 
 [glew]
 build_from_source = true
@@ -843,7 +879,6 @@ build_from_source = true
 build_from_source = true
 
 [glibc]
-prebuilt = true
 
 [glslang]
 build_from_source = true
@@ -852,10 +887,8 @@ build_from_source = true
 build_from_source = true
 
 [gnupg]
-prebuilt = true
 
 [gnutls]
-prebuilt = true
 
 [go-tinyhat]
 source = "sources"
@@ -881,7 +914,6 @@ build_from_source = true
 build_from_source = true
 
 [highway]
-prebuilt = true
 
 [impala]
 
@@ -899,7 +931,6 @@ caps = { "usr/bin/jomon" = "cap_net_raw" }
 build_from_source = true
 
 [krb5]
-prebuilt = true
 
 [lazygit]
 source = "sources"
@@ -924,7 +955,6 @@ build_from_source = true
 source = "sources"
 
 [libjxl]
-prebuilt = true
 
 [libresprite]
 build_from_source = true
@@ -950,13 +980,10 @@ build_from_source = true
 source = "sources"
 
 [linux-firmware]
-prebuilt = true
 
 [llvm]
 heavy = true
 source = "sources"
-prebuilt = true
-prebuilt_reason = "the archlinux32 mesa needs libLLVM-15.so, so its LLVM 15 is used instead of building LLVM 23"
 
 [love]
 build_from_source = true
@@ -970,7 +997,6 @@ source = "sources"
 
 [mesa]
 heavy = true
-prebuilt = true
 
 [meson]
 build_from_source = true
@@ -1004,7 +1030,6 @@ build_from_source = true
 source = "sources"
 
 [nss]
-prebuilt = true
 
 [nvi2]
 source = "sources"
@@ -1013,10 +1038,8 @@ source = "sources"
 source = "sources"
 
 [onetbb]
-prebuilt = true
 
 [openssl]
-prebuilt = true
 
 [orbiton]
 source = "sources"
@@ -1058,6 +1081,12 @@ source = "sources"
 
 [ripgrep]
 
+[koules]
+source = "sources"
+
+[sasteroids]
+source = "sources"
+
 [schismtracker]
 source = "sources"
 
@@ -1083,16 +1112,13 @@ build_from_source = true
 
 [spirv-tools]
 build_from_source = true
-prebuilt = true
 
 [swaylock]
 source = "sources"
 
 [syslinux]
-prebuilt = true
 
 [sysprof]
-prebuilt = true
 
 [systemd]
 heavy = true
@@ -1113,6 +1139,9 @@ source = "sources"
 source = "sources"
 
 [tinyhat-files]
+source = "sources"
+
+[tinyhat-mixer]
 source = "sources"
 
 [tinyhat-gui]

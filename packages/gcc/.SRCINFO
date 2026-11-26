@@ -1,7 +1,7 @@
 pkgbase = gcc
 	pkgdesc = The GNU Compiler Collection
 	pkgver = 16.2.1+r23+gd564253eb6c8
-	pkgrel = 2
+	pkgrel = 3
 	url = https://gcc.gnu.org
 	arch = i686
 	license = GPL-3.0-or-later WITH GCC-exception-3.1

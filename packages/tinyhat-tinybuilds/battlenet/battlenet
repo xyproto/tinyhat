@@ -1,0 +1,54 @@
+#!/bin/sh
+export WINEDEBUG=-all WINEPREFIX="${WINEPREFIX:-$HOME/.local/share/battlenet}"
+dir="$WINEPREFIX/drive_c/Program Files (x86)/Battle.net"
+if [ -f "$dir/Battle.net.exe" ] && [ "$1" != --setup ]; then
+	exec wine "$dir/Battle.net.exe" --in-process-gpu "$@"
+fi
+[ "$1" = --run ] || exec foot -T "Install Battle.net" "$0" --run
+fail() {
+	printf '\n%s\nPress Enter to close.\n' "$1"
+	read -r _
+	exit 1
+}
+url='https://www.battle.net/download/getInstallerForGame?os=win&version=LIVE&gameProgram=BATTLENET_APP'
+
+printf 'Setting up Wine for Battle.net in %s...\n' "$WINEPREFIX"
+WINEDLLOVERRIDES="winemenubuilder.exe=d;mscoree=d;mshtml=d" wineboot -i >/dev/null 2>&1 || fail "Could not set up $WINEPREFIX."
+reg() {
+	wine reg add "$@" /f >/dev/null 2>&1
+}
+reg 'HKCU\Software\Wine\Drivers' /v Graphics /d wayland,x11
+reg 'HKCU\Software\Wine\FileOpenAssociations' /v Enable /d N
+reg 'HKCU\Software\Wine\DllOverrides' /v winemenubuilder.exe /d ''
+reg 'HKCU\Software\Wine\DllOverrides' /v locationapi /d ''
+
+printf '\nInstalling fonts and the Visual C++ runtime with winetricks...\n'
+winetricks -q corefonts tahoma vcrun2022 || printf '\nwinetricks could not install everything. Try again later with "WINEPREFIX=%s winetricks corefonts tahoma vcrun2022".\n' "$WINEPREFIX"
+
+cfg="$WINEPREFIX/drive_c/users/$USER/AppData/Roaming/Battle.net"
+mkdir -p "$cfg"
+[ -f "$cfg/Battle.net.config" ] || cat >"$cfg/Battle.net.config" <<'CONFIG'
+{
+  "Client": {
+    "GameLaunchWindowBehavior": "2",
+    "HardwareAcceleration": "false",
+    "Sound": {
+      "Enabled": "false"
+    },
+    "Streaming": {
+      "StreamingEnabled": "false"
+    }
+  }
+}
+CONFIG
+
+tmp=$(mktemp -d) || exit 1
+trap 'rm -rf "$tmp"' EXIT
+printf '\nDownloading Battle.net...\n'
+curl -fL --max-time 600 -o "$tmp/Battle.net-Setup.exe" "$url" || fail "Could not download Battle.net."
+printf '\nRunning the Battle.net installer. When the login window appears, log in or close it.\n'
+wine "$tmp/Battle.net-Setup.exe" >/dev/null 2>&1
+wineserver -w
+[ -f "$dir/Battle.net.exe" ] || fail "The Battle.net installer did not finish."
+printf '\nBattle.net is installed. Start it from the application menu, or with "battlenet".\nPress Enter to close.\n'
+read -r _

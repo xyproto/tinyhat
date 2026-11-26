@@ -10,4 +10,4 @@ It was a dark and stormy night, and the tiny hat was nowhere to be found.
 
 Write the next chapter here. Start a new chapter with a line that begins with "## ".
 
-<!-- Press Ctrl+Space twice in rapid succession to save the book as book_md.html, which can be read in TinySurf. -->
+<!-- Press Ctrl+Space twice in rapid succession to make a PDF of the book (book.pdf) and read it in Zathura. -->

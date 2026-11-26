@@ -7,13 +7,6 @@ alpine() {
 	[ -x "$al" ] && [ -d /usr/lib/alpine/etc/apk ]
 }
 
-alpine_first() {
-	case $(pacman-conf Architecture 2>/dev/null | head -n 1) in
-	x86_64 | aarch64) return 1 ;;
-	esac
-	return 0
-}
-
 alpine_index() {
 	ls /usr/lib/alpine/var/cache/apk/APKINDEX.* >/dev/null 2>&1 || "$al" --apk update >/dev/null
 }
@@ -55,27 +48,28 @@ asroot() {
 
 usage() {
 	cat <<'EOF'
-hat install PACKAGE...   install packages, or package files
-hat remove PACKAGE...    remove packages and the dependencies nothing else needs
-hat update               download the latest package lists
-hat upgrade              upgrade the installed packages
-hat sourceupgrade        rebuild the installed TINYBUILD packages that have a newer version
-hat search WORD...       search all packages: TINYBUILDs, Tiny Hat, Arch Linux and Alpine Linux
-hat info PACKAGE         show information about a package
-hat list PACKAGE         list the files in an installed package
-hat listinstalled        list the installed packages
+pkg install PACKAGE...   install packages, or package files
+pkg remove PACKAGE...    remove packages and the dependencies nothing else needs
+pkg update               download the latest package lists
+pkg upgrade              upgrade the installed packages
+pkg sourceupgrade        rebuild the installed TINYBUILD packages that have a newer version
+pkg search WORD...       search all packages: TINYBUILDs, Tiny Hat, Arch Linux and Alpine Linux
+pkg info PACKAGE         show information about a package
+pkg list PACKAGE         list the files in an installed package
+pkg listinstalled        list the installed packages
 
-Packages come from Tiny Hat first, then from the Arch Linux repositories (archlinux32 on i686) or
-from Alpine Linux (in /usr/lib/alpine). Packages with a TINYBUILD or PKGBUILD in
-/usr/share/tinyhat/tinybuilds are built from source and then installed.
-Alpine programs run directly, or with tinyhat-alpine.
+Packages come from Tiny Hat first, then from the Arch Linux repositories (archlinux32 on i686),
+and from Alpine Linux (in /usr/lib/alpine) only when there is no installable Arch Linux package.
+Packages with a TINYBUILD or PKGBUILD in /usr/share/tinyhat/tinybuilds are built from source and
+then installed. Alpine programs run directly, or with tinyhat-alpine.
 
-pacman and apk are hat too: "pacman -S", "pacman -Syu", "apk add", "apk del" and the other usual
-pacman options and apk commands work on the same packages. See pacman -h and apk --help.
+apk is pkg too: "apk add", "apk del" and the other apk commands work on the same packages.
+pacman installs only Tiny Hat, Arch Linux and TINYBUILD packages, never Alpine packages.
+See pacman -h and apk --help.
 EOF
 }
 
-hat_install() {
+pkg_install() {
 	files=
 	names=
 	for a in "$@"; do
@@ -89,12 +83,12 @@ hat_install() {
 		asroot /usr/bin/pacman -U --noconfirm --needed $files || exit 1
 	fi
 	[ -n "$names" ] || exit 0
-	asroot /usr/bin/pacman -S --noconfirm --needed $names
+	asroot /usr/bin/pkg sync-with-alpine -S --noconfirm --needed $names
 	exit
 }
 
-hat_remove() {
-	[ "$(id -u)" = 0 ] || exec doas /usr/bin/hat remove "$@"
+pkg_remove() {
+	[ "$(id -u)" = 0 ] || exec doas /usr/bin/pkg remove "$@"
 	apk=
 	rest=
 	for a in "$@"; do
@@ -199,7 +193,7 @@ search_arch() {
 search_alpine() {
 	alpine || return 0
 	if ! ls /usr/lib/alpine/var/cache/apk/APKINDEX.* >/dev/null 2>&1; then
-		echo "hat: the Alpine package list is missing, run hat update" >&2
+		echo "pkg: the Alpine package list is missing, run pkg update" >&2
 		return 0
 	fi
 	{
@@ -223,30 +217,23 @@ search_alpine() {
 	' | matching "$@"
 }
 
-hat_search() {
-	[ $# -gt 0 ] || { echo "usage: hat search WORD..." >&2; exit 1; }
+pkg_search() {
+	[ $# -gt 0 ] || { echo "usage: pkg search WORD..." >&2; exit 1; }
 	{
 		search_tinybuilds "$@"
 		search_tinyhat "$@"
-		if alpine_first; then
-			search_alpine "$@"
-			search_arch "$@"
-		else
-			search_arch "$@"
-			search_alpine "$@"
-		fi
+		search_arch "$@"
+		search_alpine "$@"
 	} | show "$@"
 	exit 0
 }
 
-hat_info() {
+pkg_info() {
 	[ $# -gt 0 ] || exec $pm -Qi
 	for a in "$@"; do
 		if $pm -Q "$a" >/dev/null 2>&1; then
 			$pm -Qi "$a"
 		elif alpine_installed "$a"; then
-			"$al" apk info -a "$a"
-		elif alpine_first && alpine_has "$a"; then
 			"$al" apk info -a "$a"
 		elif $pm -Si "$a" >/dev/null 2>&1; then
 			$pm -Si "$a"
@@ -259,7 +246,7 @@ hat_info() {
 	exit 0
 }
 
-hat_list() {
+pkg_list() {
 	[ $# -gt 0 ] || exec $pm -Ql
 	for a in "$@"; do
 		if alpine_installed "$a"; then
@@ -271,7 +258,7 @@ hat_list() {
 	exit
 }
 
-hat_listinstalled() {
+pkg_listinstalled() {
 	$pm -Q "$@"
 	if alpine && [ $# = 0 ]; then
 		for a in $(alpine_world); do
@@ -281,26 +268,27 @@ hat_listinstalled() {
 	exit 0
 }
 
-hat() {
+pkg_main() {
 	cmd=$1
 	[ $# = 0 ] || shift
 	case $cmd in
-	install) hat_install "$@" ;;
-	remove) hat_remove "$@" ;;
-	update) asroot /usr/bin/pacman -Sy "$@"; exit ;;
+	install) pkg_install "$@" ;;
+	remove) pkg_remove "$@" ;;
+	update) asroot /usr/bin/pkg sync-with-alpine -Sy "$@"; exit ;;
+	sync-with-alpine) withalpine=1 ;;
 	upgrade)
 		asroot /usr/bin/pacman -Syu --noconfirm "$@" || exit 1
 		alpine && { asroot "$al" --apk upgrade --update-cache || exit 1; }
 		exit 0
 		;;
 	sourceupgrade) asroot "$tb" --upgrade "$@"; exit ;;
-	search) hat_search "$@" ;;
-	info) hat_info "$@" ;;
-	list) hat_list "$@" ;;
-	listinstalled) hat_listinstalled "$@" ;;
+	search) pkg_search "$@" ;;
+	info) pkg_info "$@" ;;
+	list) pkg_list "$@" ;;
+	listinstalled) pkg_listinstalled "$@" ;;
 	"" | help | -h | --help) usage; exit 0 ;;
 	-*) exec /usr/bin/pacman "$cmd" "$@" ;;
-	*) echo "hat: unknown command: $cmd (see hat help)" >&2; exit 1 ;;
+	*) echo "pkg: unknown command: $cmd (see pkg help)" >&2; exit 1 ;;
 	esac
 }
 
@@ -318,16 +306,16 @@ apk_cli() {
 	done
 	case $cmd in
 	add)
-		[ -z "$refresh" ] || asroot /usr/bin/pacman -Sy || exit 1
-		hat_install $names
+		[ -z "$refresh" ] || asroot /usr/bin/pkg sync-with-alpine -Sy || exit 1
+		pkg_install $names
 		;;
-	del) hat_remove $names ;;
-	update) hat update ;;
-	upgrade) hat upgrade ;;
-	search) hat_search $names ;;
+	del) pkg_remove $names ;;
+	update) pkg update ;;
+	upgrade) pkg upgrade ;;
+	search) pkg_search $names ;;
 	info)
 		case " $* " in
-		*" -L "* | *" --contents "*) hat_list $names ;;
+		*" -L "* | *" --contents "*) pkg_list $names ;;
 		*" -e "* | *" --installed "*)
 			for a in $names; do
 				$pm -Q "$a" >/dev/null 2>&1 || alpine_installed "$a" || exit 1
@@ -335,21 +323,21 @@ apk_cli() {
 			exit 0
 			;;
 		esac
-		[ -n "$names" ] || hat_listinstalled
-		hat_info $names
+		[ -n "$names" ] || pkg_listinstalled
+		pkg_info $names
 		;;
 	"" | help | -h | --help)
 		cat <<'EOF'
-apk add PACKAGE...    install packages (hat install)
-apk del PACKAGE...    remove packages (hat remove)
-apk update            download the latest package lists (hat update)
-apk upgrade           upgrade the installed packages (hat upgrade)
-apk search WORD       search for packages (hat search)
+apk add PACKAGE...    install packages (pkg install)
+apk del PACKAGE...    remove packages (pkg remove)
+apk update            download the latest package lists (pkg update)
+apk upgrade           upgrade the installed packages (pkg upgrade)
+apk search WORD       search for packages (pkg search)
 apk info [PACKAGE]    show information about a package, or list the installed packages
 apk info -L PACKAGE   list the files in an installed package
 
 These work on all packages: Tiny Hat, Arch Linux and Alpine Linux. Other apk commands go to the
-apk of the Alpine Linux in /usr/lib/alpine. See hat help.
+apk of the Alpine Linux in /usr/lib/alpine. See pkg help.
 EOF
 		exit 0
 		;;
@@ -363,15 +351,19 @@ EOF
 	esac
 }
 
+withalpine=
 case ${0##*/} in
 apk) apk_cli "$@" ;;
 pacman) ;;
-*) hat "$@" ;;
+*)
+	pkg_main "$@"
+	shift
+	;;
 esac
 
 case $1 in
 install | remove | update | upgrade | sourceupgrade | search | info | list | listinstalled)
-	echo "pacman: \"pacman $1\" is now \"hat $1\"" >&2
+	echo "pacman: \"pacman $1\" is \"pkg $1\"" >&2
 	exit 1
 	;;
 esac
@@ -396,7 +388,18 @@ case $1 in
 	keep=
 	rest=
 	optarg=
-	case $op in *y*) alpine && "$al" --apk update >/dev/null ;; esac
+	refresh=
+	case $op in
+	-*yy*) refresh=-Syy ;;
+	-[!-]*y*) refresh=-Sy ;;
+	*) ls "$(pacman-conf DBPath 2>/dev/null || echo /var/lib/pacman/)sync"/*.db >/dev/null 2>&1 || refresh=-Sy ;;
+	esac
+	if [ -n "$refresh" ]; then
+		$pm $refresh || exit 1
+		[ -n "$withalpine" ] && alpine && "$al" --apk update >/dev/null
+		op=$(echo "$op" | tr -d y)
+		[ "$op" = - ] && op=-S
+	fi
 	for a in "$@"; do
 		if [ -n "$optarg" ]; then
 			keep="$keep $a"
@@ -415,13 +418,15 @@ case $1 in
 		*)
 			if [ -x "$tb" ] && tinybuild "$a"; then
 				tinybuilds="$tinybuilds $a"
-			elif ours "$a" || ! alpine; then
+			elif [ -z "$withalpine" ] || ours "$a" || ! alpine; then
 				rest="$rest $a"
-			elif alpine_first; then
-				alpine_index
-				if alpine_has "$a"; then apks="$apks $a"; else rest="$rest $a"; fi
 			elif $pm -Si "$a" >/dev/null 2>&1; then
-				rest="$rest $a"
+				if $pm -Sp "$a" >/dev/null 2>&1; then
+					rest="$rest $a"
+				else
+					alpine_index
+					if alpine_has "$a"; then apks="$apks $a"; else rest="$rest $a"; fi
+				fi
 			else
 				alpine_index
 				if alpine_has "$a"; then apks="$apks $a"; else rest="$rest $a"; fi
@@ -430,6 +435,7 @@ case $1 in
 		esac
 	done
 	set -- $op $keep $rest
+	[ -z "$rest$tinybuilds$apks" ] && [ "$op" = -S ] && [ -n "$refresh" ] && exit 0
 	if [ -z "$rest" ] && [ "$op" = -S ] && { [ -n "$tinybuilds" ] || [ -n "$apks" ]; }; then
 		rc=0
 		[ -z "$tinybuilds" ] || "$tb" $noconfirm $needed $tinybuilds || rc=1

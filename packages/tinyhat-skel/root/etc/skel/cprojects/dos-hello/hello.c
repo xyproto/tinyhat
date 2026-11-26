@@ -1,4 +1,4 @@
-/* Hello DOS: draws in 320x200 VGA mode 13h, like many DOS games and demos did.
+/* Hello DOS: draws in 320x200 VGA mode 13h.
    Press Ctrl+Space in this editor to build, or press it twice in rapid succession to build and run it in DOSBox-X. */
 #include <conio.h>
 #include <i86.h>

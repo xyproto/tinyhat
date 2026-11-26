@@ -1,7 +1,7 @@
 pkgbase = tcc
 	pkgdesc = Tiny C Compiler (tinycc)
 	pkgver = 0.9.27.r1337.gb39cbc70
-	pkgrel = 2
+	pkgrel = 3
 	url = https://bellard.org/tcc/
 	arch = i686
 	license = LGPL-2.0-or-later

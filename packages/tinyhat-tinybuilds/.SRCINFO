@@ -1,7 +1,7 @@
 pkgbase = tinyhat-tinybuilds
 	pkgdesc = TINYBUILD and PKGBUILD files that pacman builds and installs when they are asked for
 	pkgver = 1
-	pkgrel = 1
+	pkgrel = 5
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause

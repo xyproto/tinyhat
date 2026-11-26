@@ -32,7 +32,7 @@ build() {
 	for d in $(field depends "$name") $(field makedepends "$name"); do
 		if [ -d "$(dir "${d%%[<>=]*}")" ]; then
 			/usr/lib/pacman/pacman -Q "${d%%[<>=]*}" >/dev/null 2>&1 || tbdeps+=("${d%%[<>=]*}")
-		else
+		elif [ -n "$(/usr/lib/pacman/pacman -T "$d")" ]; then
 			deps+=("$d")
 		fi
 	done

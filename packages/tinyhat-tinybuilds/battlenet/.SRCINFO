@@ -1,0 +1,21 @@
+pkgbase = battlenet
+	pkgdesc = Blizzard's Battle.net launcher, downloaded and installed in Wine at first start
+	pkgver = 1
+	pkgrel = 1
+	url = https://www.battle.net
+	arch = x86_64
+	license = BSD-3-Clause
+	depends = wine
+	depends = wine-mono
+	depends = wine-gecko
+	depends = winetricks
+	depends = cabextract
+	depends = unzip
+	depends = curl
+	depends = foot
+	source = battlenet
+	source = battlenet.desktop
+	sha256sums = 4bec4a3d55abd1c36388f3b1a01e27baff83eb55f6adb4381d0d6c9ed30629dc
+	sha256sums = ea74b4685edacaea2ccc41e3bdcec06ad10c4782fc39f008a5ca6e125758127f
+
+pkgname = battlenet

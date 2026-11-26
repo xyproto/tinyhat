@@ -1,0 +1,72 @@
+diff --git a/dwl.c b/dwl.c
+index 5ab3db0..6a6fcde 100644
+--- a/dwl.c
++++ b/dwl.c
+@@ -415,6 +415,7 @@ static void fullscreennotify(struct wl_listener *listener, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
+ static int reloadkeymap(int signo, void *data);
++static void destroymemberkb(struct wl_listener *listener, void *data);
+ static void nextbackground(const Arg *arg);
+ static void rootright(const Arg *arg);
+ static void setfilter(struct wlr_scene_buffer *buffer, int sx, int sy, void *data);
+@@ -657,6 +658,12 @@ typedef struct {
+ 	struct wl_listener destroy;
+ } PointerDev;
+ 
++typedef struct {
++	struct wlr_keyboard *keyboard;
++	struct wl_listener destroy;
++	struct wl_list link;
++} MemberKb;
++
+ typedef struct {
+ 	ConfKey *keys;
+ 	int n;
+@@ -679,6 +686,7 @@ static struct {
+ 	int sloppy, border, gap, showbar, topbar, rate, delay;
+ } confdef;
+ static struct wl_list pointerdevs;
++static struct wl_list memberkbs = { &memberkbs, &memberkbs };
+ static pixman_image_t *wallload(const char *path);
+ static int confloaded;
+ static char *helptextbuf;
+@@ -2433,6 +2441,12 @@ createidleinhibitor(struct wl_listener *listener, void *data)
+ void
+ createkeyboard(struct wlr_keyboard *keyboard)
+ {
++	MemberKb *m = ecalloc(1, sizeof(*m));
++
++	m->keyboard = keyboard;
++	wl_list_insert(&memberkbs, &m->link);
++	LISTEN(&keyboard->base.events.destroy, &m->destroy, destroymemberkb);
++
+ 	/* Set the keymap to match the group keymap */
+ 	wlr_keyboard_set_keymap(keyboard, kb_group->wlr_group->keyboard.keymap);
+ 
+@@ -4788,6 +4802,9 @@ reloadkeymap(int signo, void *data)
+ 	confkeymap(&names, line, sizeof(line));
+ 	context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+ 	if ((keymap = xkb_keymap_new_from_names(context, &names, XKB_KEYMAP_COMPILE_NO_FLAGS))) {
++		MemberKb *m;
++		wl_list_for_each(m, &memberkbs, link)
++			wlr_keyboard_set_keymap(m->keyboard, keymap);
+ 		wlr_keyboard_set_keymap(&kb_group->wlr_group->keyboard, keymap);
+ 		xkb_keymap_unref(keymap);
+ 	}
+@@ -4795,6 +4812,15 @@ reloadkeymap(int signo, void *data)
+ 	return 0;
+ }
+ 
++void
++destroymemberkb(struct wl_listener *listener, void *data)
++{
++	MemberKb *m = wl_container_of(listener, m, destroy);
++	wl_list_remove(&m->link);
++	wl_list_remove(&m->destroy.link);
++	free(m);
++}
++
+ void
+ unblocksignals(void)
+ {

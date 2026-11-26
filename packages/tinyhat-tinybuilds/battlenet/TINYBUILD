@@ -1,0 +1,16 @@
+set pkgname battlenet
+set pkgver 1
+set pkgrel 1
+set pkgdesc "Blizzard's Battle.net launcher, downloaded and installed in Wine at first start"
+set arch x86_64
+set url https://www.battle.net
+set license BSD-3-Clause
+set depends wine wine-mono wine-gecko winetricks cabextract unzip curl foot
+set source battlenet battlenet.desktop
+set sha256sums 4bec4a3d55abd1c36388f3b1a01e27baff83eb55f6adb4381d0d6c9ed30629dc \
+    ea74b4685edacaea2ccc41e3bdcec06ad10c4782fc39f008a5ca6e125758127f
+
+function package
+    install -Dm755 battlenet "$pkgdir/usr/bin/battlenet"; or return
+    install -Dm644 battlenet.desktop "$pkgdir/usr/share/applications/battlenet.desktop"; or return
+end

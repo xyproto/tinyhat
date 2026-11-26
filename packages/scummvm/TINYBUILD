@@ -1,6 +1,6 @@
 set pkgname scummvm
 set pkgver 2026.4.0
-set pkgrel 5
+set pkgrel 6
 set pkgdesc 'Engine for classic adventure games'
 set arch i686 x32
 set url https://www.scummvm.org/
@@ -28,8 +28,14 @@ function build
     set -a CFLAGS -O3
     set -a CXXFLAGS -O3
     set LDFLAGS (string replace -- ,--gc-sections '' $LDFLAGS)
+    set -l sysroot
+    set -l host
+    if test "$cross" = 1
+        set sysroot $SYSROOT
+        set host --host=$CHOST
+    end
     mkdir -p pc; or return
-    for f in /usr/lib/pkgconfig/*.pc /usr/share/pkgconfig/*.pc
+    for f in "$sysroot"/usr/lib/pkgconfig/*.pc "$sysroot"/usr/share/pkgconfig/*.pc
         switch (path basename -- $f)
             case sdl.pc sdl2.pc 'SDL2_*.pc' sdl2-compat.pc
                 continue
@@ -37,7 +43,7 @@ function build
         ln -sf "$f" pc/; or return
     end
     set -lx PKG_CONFIG_LIBDIR "$PWD/pc"
-    STRINGS=strings ./configure --prefix=/usr --backend=sdl --enable-release-mode --disable-optimizations --disable-debug \
+    STRINGS=strings ./configure --prefix=/usr $host --backend=sdl --enable-release-mode --disable-optimizations --disable-debug \
         --disable-tts --disable-cloud --disable-libcurl --disable-discord --disable-eventrecorder \
         --disable-gtk --disable-sndio --disable-updates --disable-vpx --disable-taskbar --disable-text-console \
         --disable-sdlnet --disable-all-engines \

@@ -1,7 +1,7 @@
 pkgbase = gdb
 	pkgdesc = GNU debugger, without Python
 	pkgver = 18.1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://www.sourceware.org/gdb/
 	arch = i686
 	arch = x32

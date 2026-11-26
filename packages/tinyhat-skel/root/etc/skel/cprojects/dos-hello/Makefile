@@ -1,6 +1,6 @@
 export WATCOM = /usr/lib/watcom
 export INCLUDE = $(WATCOM)/h
-export PATH := $(WATCOM)/binl:$(PATH)
+export PATH := $(WATCOM)/bin:$(PATH)
 
 hello.exe: hello.c
 	wcl -q -bt=dos -ms -za99 -fe=$@ hello.c

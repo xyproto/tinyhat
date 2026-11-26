@@ -1,7 +1,7 @@
 pkgbase = cc65
 	pkgdesc = 6502 and 65816 C compiler and assembler
 	pkgver = 2.19+8d86ca7
-	pkgrel = 3
+	pkgrel = 4
 	url = https://cc65.github.io/
 	arch = i686
 	arch = x32

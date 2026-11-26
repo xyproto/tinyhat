@@ -22,6 +22,7 @@ missing() {
 		readelf -d "$f" 2>/dev/null | sed -n "s|.*(NEEDED).*\[\(.*\)\]|\1 ${f%/*}|p"
 	done | sort -u | while read -r so dir; do
 		[ -e "/usr/lib/$so" ] || [ -e "$dir/$so" ] || ldconfig -p 2>/dev/null | grep -qF " $so " && continue
+		compgen -G "/usr/lib/${so%%.so.*}.so.*" >/dev/null || continue
 		case $so in *.so.*) echo "${so%%.so.*}.so=${so#*.so.}-$bits" ;; esac
 	done | sort -u
 }

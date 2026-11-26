@@ -184,7 +184,7 @@
 +					return;
 +				}
 +				if (event->button == BTN_RIGHT && selmon->volx1 > selmon->volx0 && cx >= selmon->volx0 && cx < selmon->volx1) {
-+					volumehint(5, 0);
++					spawn(&(Arg){.v = (const char *[]){ "tinyhat-mixer", NULL }});
  					return;
  				}
  				if (event->button == BTN_LEFT && selmon->fanx1 > selmon->fanx0 && cx >= selmon->fanx0 && cx < selmon->fanx1) {

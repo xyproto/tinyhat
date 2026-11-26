@@ -1,0 +1,30 @@
+set pkgname angband
+set pkgver 4.2.6
+set pkgrel 1
+set pkgdesc 'A roguelike dungeon exploration game based on the writings of JRR Tolkien'
+set arch i686 x86_64 aarch64
+set url https://rephial.org
+set license GPL-2.0-only CC-BY-3.0 CC-BY-4.0
+set depends glibc ncurses
+set source "https://github.com/angband/angband/releases/download/$pkgver/Angband-$pkgver.tar.gz"
+set sha256sums 8c0ffa2b85d74bd0cc273752f61c0440dba93323cd790be460f90c8dced7cbf4
+set flags arch
+
+function prepare
+    cd Angband-$pkgver; or return
+    sed -i 's/^if head=\$(git rev-parse/if false \&\& head=$(git rev-parse/' scripts/version.sh; or return
+    grep -q '^if false' scripts/version.sh; or return
+end
+
+function build
+    cd Angband-$pkgver; or return
+    ./configure --prefix=/usr --bindir=/usr/bin --sysconfdir=/usr/share/angband \
+        --enable-curses --disable-x11 --disable-sdl2 --disable-sdl2-mixer; or return
+    make; or return
+end
+
+function package
+    cd Angband-$pkgver; or return
+    make DESTDIR="$pkgdir" install; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" docs/copying.rst; or return
+end

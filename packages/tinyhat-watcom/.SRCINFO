@@ -1,9 +1,11 @@
 pkgbase = tinyhat-watcom
 	pkgdesc = Open Watcom C/C++ for DOS, with its Tiny Hat menu entry and environment
 	pkgver = 1
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/xyproto/tinyhat
-	arch = any
+	arch = i686
+	arch = x86_64
+	arch = aarch64
 	license = BSD-3-Clause
 	license = Watcom-1.0
 	depends = tinyhat-desktop

@@ -2,7 +2,7 @@ set pkgbase gcc
 # C and C++ only: no Fortran, D, Go, Modula-2, Objective-C, Rust, COBOL or libgccjit, which nothing in Tiny Hat uses
 set pkgname gcc gcc-libs libasan libatomic libgcc libgomp libhwasan libitm liblsan libquadmath libstdc++ libtsan libubsan lto-dump
 set pkgver 16.2.1+r23+gd564253eb6c8
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'The GNU Compiler Collection'
 set arch i686
 set url https://gcc.gnu.org
@@ -216,9 +216,13 @@ end
 function package_libquadmath
     set pkgdesc 'GCC __float128 library'
     set depends 'glibc>=2.27' libgcc
-    set provides libquadmath.so
-    mv -v $pkgname/* "$pkgdir"; or return
-    _install_runtime_library_exception; or return
+    if count $pkgname/* >/dev/null
+        set provides libquadmath.so
+        mv -v $pkgname/* "$pkgdir"; or return
+        _install_runtime_library_exception; or return
+    else
+        touch "$pkgdir/this-is-a-dummy-package"; or return
+    end
 end
 
 function package_libstdc++

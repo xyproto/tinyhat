@@ -1,0 +1,52 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -494,6 +494,8 @@
+ static Client *focused_client;
+ static struct wl_display *dpy;
+ static struct wl_event_loop *event_loop;
++static int hatpressed;
++static struct wl_event_source *hattimer;
+ static struct wlr_backend *backend;
+ static struct wlr_scene *scene;
+ static struct wlr_scene_tree *layers[NUM_LAYERS];
+@@ -1912,6 +1914,14 @@
+ 	wl_list_remove(&buf->release.link);
+ }
+ 
++static int
++hatrelease(void *data)
++{
++	hatpressed = 0;
++	drawbars();
++	return 0;
++}
++
+ void
+ buttonpress(struct wl_listener *listener, void *data)
+ {
+@@ -1964,6 +1974,12 @@
+ 			while (cx >= x && ++i < LENGTH(tags));
+ 			if (cx < MENUW(selmon) + selmon->lrpad / 2) {
+ 				click = ClkMenu;
++				hatpressed = 1;
++				if (!hattimer)
++					hattimer = wl_event_loop_add_timer(event_loop, hatrelease, NULL);
++				if (hattimer)
++					wl_event_source_timer_update(hattimer, 200);
++				drawbars();
+ 			} else if (i < LENGTH(tags)) {
+ 				click = ClkTagBar;
+ 				arg.ui = 1 << i;
+@@ -2926,6 +2942,12 @@
+ 		{ 0, 8, 6, 24, 17 }, { 1, 8, 17, 24, 19 }, { 0, 8, 19, 24, 25 }, { 0, 2, 22, 30, 25 },
+ 	};
+ 	int h = m->b.height, s = h * 5 / 8, ox = (MENUW(m) - 28 * s / 19) / 2, oy = (h - s) / 2;
++	if (hatpressed) {
++		int d = MAX(1, s / 16);
++		inkrect(m, colors[SchemeSel][ColBg], 0, 0, MENUW(m), h);
++		ox += d;
++		oy += d;
++	}
+ 	for (int r = 0; r < 4; r++)
+ 		inkrect(m, hat[r][0] ? 0x494949ff : 0x922424ff, ox + (hat[r][1] - 2) * s / 19, oy + (hat[r][2] - 6) * s / 19,
+ 			ox + (hat[r][3] - 2) * s / 19, oy + (hat[r][4] - 6) * s / 19);

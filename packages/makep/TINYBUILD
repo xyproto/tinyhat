@@ -1,6 +1,6 @@
 set pkgname makep
 set pkgver 0.1.0
-set pkgrel 15
+set pkgrel 16
 set pkgdesc 'Builds pacman packages from TINYBUILD files, the fish-based package format of Tiny Hat'
 set arch any
 set url https://github.com/xyproto/tinyhat

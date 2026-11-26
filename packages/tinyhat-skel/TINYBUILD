@@ -1,6 +1,6 @@
 set pkgname tinyhat-skel
 set pkgver 1
-set pkgrel 5
+set pkgrel 9
 set pkgdesc 'Tiny Hat starter projects for new users'
 set arch any
 set url https://github.com/xyproto/tinyhat

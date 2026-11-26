@@ -1,0 +1,27 @@
+pkgbase = nethack
+	pkgdesc = A single player dungeon exploration game
+	pkgver = 5.0.0
+	pkgrel = 1
+	url = https://www.nethack.org
+	arch = i686
+	arch = x86_64
+	arch = aarch64
+	license = NGPL
+	makedepends = git
+	makedepends = mandoc
+	depends = filesystem
+	depends = glibc
+	depends = ncurses
+	depends = gzip
+	depends = lua54
+	depends = bash
+	depends = util-linux-libs
+	backup = etc/nethack/sysconf
+	source = nethack::git+https://github.com/NetHack/NetHack#tag=NetHack-5.0.0_Released
+	source = use-system-lua54.patch
+	source = tmpfiles.conf
+	sha256sums = a88e65fa6f5d20d3f83712e145f0b2b313be08be46d3c186dcd8fdadd3bf09e2
+	sha256sums = 9e83f363e5e79b8db770d535a7185fa7dac0c0b93db89d804837a34ef0ecded5
+	sha256sums = 5c68417ff1cf76705a2bf7dc9fa1900156792808cb528d62f53e337030c40ea4
+
+pkgname = nethack

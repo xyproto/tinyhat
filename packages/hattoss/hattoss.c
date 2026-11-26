@@ -83,13 +83,54 @@ static void vsync(void)
 		;
 }
 
+#define PIT_HZ 1193182UL
+
+static void timerstart(void)
+{
+	outp(0x43, 0x34);
+	outp(0x40, 0);
+	outp(0x40, 0);
+}
+
+static void timerstop(void)
+{
+	outp(0x43, 0x36);
+	outp(0x40, 0);
+	outp(0x40, 0);
+}
+
+/* The time in PIT clocks (1193182 per second), from the BIOS tick count and the PIT counter */
+static unsigned long now(void)
+{
+	volatile unsigned long far *ticks = (volatile unsigned long far *)MK_FP(0x40, 0x6c);
+	unsigned long t1, t2;
+	unsigned c;
+	do {
+		t1 = *ticks;
+		_disable();
+		outp(0x43, 0);
+		c = inp(0x40);
+		c |= inp(0x40) << 8;
+		_enable();
+		t2 = *ticks;
+	} while (t1 != t2);
+	return (t1 << 16) + (0xffffu - c);
+}
+
 static void rest(int ms)
 {
-	while (ms > 0) {
+	unsigned long start = now(), span = (unsigned long)ms * (PIT_HZ / 1000);
+	while (now() - start < span)
 		pollkeys();
-		delay(ms < 10 ? ms : 10);
-		ms -= 10;
-	}
+}
+
+static void frame(void)
+{
+	static unsigned long last;
+	while (now() - last < PIT_HZ / 100)
+		pollkeys();
+	vsync();
+	last = now();
 }
 
 static const char *ape[] = {
@@ -648,22 +689,30 @@ static int throwhat(int p, double angle, double speed)
 	double a = angle * 3.14159265 / 180, vx = cos(a) * speed, vy = -sin(a) * speed;
 	double x0 = gx[p] + (p ? 0 : 12), y0 = gy[p] - 4, t;
 	unsigned char under[6][6];
-	int ox = -100, oy = -100, i, j, ix = 0, iy = 0, step, idle = 0, done = 0, result = 0;
+	int ox = -100, oy = -100, i, j, ix = 0, iy = 0, idle = 0, done = 0, result = 0;
+	unsigned long prev = now();
+	double acc = 0.05;
 	if (p)
 		vx = -vx;
 	thing = rand() % 4;
 	drawape(p, 1);
 	sfx(0);
 	for (t = 0; t < 40 && !done;) {
+		unsigned long cur;
 		pollkeys();
-		vsync();
+		frame();
+		cur = now();
+		acc += (double)(cur - prev) * 7.0 / PIT_HZ;
+		prev = cur;
+		if (acc > 0.3)
+			acc = 0.3;
 		if (ox > -100)
 			for (j = 0; j < 6; j++)
 				for (i = 0; i < 6; i++)
 					if (oy + j >= 0)
 						pset(ox + i, oy + j, under[j][i]);
 		ox = -100;
-		for (step = 0; step < 2 && t < 40 && !done; step++, t += 0.05) {
+		for (; acc >= 0.05 && t < 40 && !done; acc -= 0.05, t += 0.05) {
 			ix = (int)(x0 + vx * t + wind * t * t / 2);
 			iy = (int)(y0 + vy * t + GRAV * t * t / 2);
 			if (t > 0.3 && !idle && gy[p] >= 0) {
@@ -833,6 +882,7 @@ int main(int argc, char **argv)
 	adlib = (argc > 1 && !stricmp(argv[1], "/ADLIB")) || adlibdetect();
 	if (adlib)
 		adlibinit();
+	timerstart();
 	mode(0x13);
 	palette();
 	while ((mode_ = title()) != 0) {
@@ -852,6 +902,7 @@ int main(int argc, char **argv)
 		}
 	}
 	quiet();
+	timerstop();
 	mode(3);
 	return 0;
 }

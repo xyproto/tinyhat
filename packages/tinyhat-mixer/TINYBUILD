@@ -1,0 +1,18 @@
+set pkgname tinyhat-mixer
+set pkgver 1
+set pkgrel 1
+set pkgdesc 'Tiny Hat volume control and sound device chooser for PipeWire'
+set arch i686 x32
+set url https://github.com/xyproto/tinyhat
+set license BSD-3-Clause
+set depends gtk4 libpipewire
+set source tinyhat-mixer.c
+set sha256sums e4ef27bac37e3c104295735c82706c6098b7b4ceed0e55d4337b4eb8a6d8b30a
+
+function build
+    $CC -std=gnu23 $CFLAGS (pkg-config --cflags gtk4 libpipewire-0.3 | string split -n ' ') -o tinyhat-mixer tinyhat-mixer.c $LDFLAGS (pkg-config --libs gtk4 libpipewire-0.3 | string split -n ' ') -lm; or return
+end
+
+function package
+    install -Dm755 tinyhat-mixer "$pkgdir/usr/bin/tinyhat-mixer"; or return
+end

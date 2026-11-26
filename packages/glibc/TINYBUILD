@@ -41,12 +41,14 @@ function build
         case i686
             # No ISA level marking, so that the libraries load on every i686 CPU (FS32#145)
             set -a flags libc_cv_include_x86_isa_level=no
-        case '*'
+        case x86_64
             # Control-flow enforcement and SFrame are for 64-bit x86 only
             set -a flags --enable-cet --enable-sframe
     end
     # _FORTIFY_SOURCE=3 is built in with --enable-fortify-source
     set CFLAGS (string replace -- -Wp,-D_FORTIFY_SOURCE=3 '' $CFLAGS)
+    set CFLAGS (string replace -- -fno-plt '' $CFLAGS)
+    set CXXFLAGS (string replace -- -fno-plt '' $CXXFLAGS)
     cd glibc-build; or return
     printf '%s\n' slibdir=/usr/lib rtlddir=/usr/lib sbindir=/usr/bin rootsbindir=/usr/bin >configparms
     "$srcdir"/glibc/configure $flags; or return

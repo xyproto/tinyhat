@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Battle.net
+Comment=Blizzard's game launcher, running in Wine
+Icon=applications-games
+Exec=battlenet
+Terminal=false
+Categories=Game;

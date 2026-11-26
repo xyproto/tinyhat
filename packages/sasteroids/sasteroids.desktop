@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Sasteroids
+Icon=applications-games
+Comment=Shoot asteroids in space, an asteroids game from 1994, ported to SDL3
+Exec=sasteroids
+Terminal=false
+Categories=Game;ArcadeGame;

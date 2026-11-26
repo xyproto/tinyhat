@@ -1,0 +1,17 @@
+pkgbase = angband
+	pkgdesc = A roguelike dungeon exploration game based on the writings of JRR Tolkien
+	pkgver = 4.2.6
+	pkgrel = 1
+	url = https://rephial.org
+	arch = i686
+	arch = x86_64
+	arch = aarch64
+	license = GPL-2.0-only
+	license = CC-BY-3.0
+	license = CC-BY-4.0
+	depends = glibc
+	depends = ncurses
+	source = https://github.com/angband/angband/releases/download/4.2.6/Angband-4.2.6.tar.gz
+	sha256sums = 8c0ffa2b85d74bd0cc273752f61c0440dba93323cd790be460f90c8dced7cbf4
+
+pkgname = angband

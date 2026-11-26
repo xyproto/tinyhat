@@ -1,0 +1,56 @@
+set pkgname nethack
+set pkgver 5.0.0
+set pkgrel 1
+set pkgdesc 'A single player dungeon exploration game'
+set arch i686 x86_64 aarch64
+set url https://www.nethack.org
+set license NGPL
+set depends filesystem glibc ncurses gzip lua54 bash util-linux-libs
+set makedepends git mandoc
+set backup etc/nethack/sysconf
+set source "nethack::git+https://github.com/NetHack/NetHack#tag=NetHack-$pkgver"_Released \
+    use-system-lua54.patch \
+    tmpfiles.conf
+set sha256sums a88e65fa6f5d20d3f83712e145f0b2b313be08be46d3c186dcd8fdadd3bf09e2 \
+    9e83f363e5e79b8db770d535a7185fa7dac0c0b93db89d804837a34ef0ecded5 \
+    5c68417ff1cf76705a2bf7dc9fa1900156792808cb528d62f53e337030c40ea4
+set flags arch
+
+function prepare
+    cd nethack; or return
+    patch -p1 -i "$srcdir/use-system-lua54.patch"; or return
+    sed -e 's|^/\* \(#define LINUX\) \*/|\1|' \
+        -e 's|^/\* \(#define TIMED_DELAY\) \*/|\1|' \
+        -i include/unixconf.h; or return
+    sed -e '/^HACKDIR/ s|/games/lib/\$(GAME)dir|/var/games/nethack/|' \
+        -e '/^SHELLDIR/ s|/games|/usr/bin|' \
+        -e '/^VARDIRPERM/ s|0755|0775|' \
+        -e '/^VARFILEPERM/ s|0600|0664|' \
+        -e /-DTIMED_DELAY/d \
+        -e 's|\(DSYSCF_FILE=\)\\\\"[^"]*\\\\"|\1\\\\"/etc/nethack/sysconf\\\\"|' \
+        -e 's|\(DHACKDIR=\)\\\\"[^"]*\\\\"|\1\\\\"/var/games/nethack/\\\\"|' \
+        -i sys/unix/hints/linux.500; or return
+    sed '/^#define __warn_unused_result__/ s,/\*empty\*/,__unused__,' -i include/tradstdc.h; or return
+    sed -e '/^FILEPERM\s*=/ s|0644|0664|' -e '/^DIRPERM\s*=/ s|0755|0775|' -i sys/unix/Makefile.top; or return
+    sh sys/unix/setup.sh sys/unix/hints/linux.500; or return
+end
+
+function build
+    cd nethack; or return
+    env LFLAGS="$LDFLAGS" make -j1 -o Guidebook USE_MANDOC=1 CCFLAGS="$CFLAGS $CPPFLAGS -DNHL_VERSION_EXPECTED=LUA_VERSION_RELEASE_NUM"; or return
+end
+
+function package
+    install -Dm644 tmpfiles.conf "$pkgdir/usr/lib/tmpfiles.d/nethack.conf"; or return
+    cd nethack; or return
+    install -dm755 "$pkgdir/usr/share/man/man6" "$pkgdir/usr/share/doc/nethack"; or return
+    install -dm775 "$pkgdir/var/games" "$pkgdir/var/games/nethack" "$pkgdir/etc/nethack"; or return
+    make USE_MANDOC=1 PREFIX="$pkgdir" MANDIR="$pkgdir/usr/share/man/man6" VARDIR="$pkgdir/var/games/nethack" \
+        HACKDIR="$pkgdir/usr/lib/nethack" -j1 install manpages; or return
+    mv "$pkgdir/usr/lib/nethack/nhdat" "$pkgdir/usr/lib/nethack/symbols" "$pkgdir/var/games/nethack/"; or return
+    mv "$pkgdir/usr/lib/nethack/sysconf" "$pkgdir/etc/nethack/"; or return
+    sed -e 's|^HACKDIR=.*|HACKDIR=/var/games/nethack/|' -e 's|HACK=$HACKDIR|HACK=/usr/lib/nethack|' -i "$pkgdir/usr/bin/nethack"; or return
+    install -Dm644 -t "$pkgdir/usr/share/doc/$pkgname" doc/Guidebook.txt; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" dat/license; or return
+    chmod o+w "$pkgdir/var/games/nethack/logfile" "$pkgdir/var/games/nethack/perm" "$pkgdir/var/games/nethack/record"; or return
+end

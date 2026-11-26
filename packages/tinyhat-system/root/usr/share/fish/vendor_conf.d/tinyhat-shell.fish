@@ -12,7 +12,7 @@ end
 # OpenWatcom
 set -gx WATCOM /usr/lib/watcom
 set -gx INCLUDE $WATCOM/h
-contains -- $WATCOM/binl $PATH; or set -a PATH $WATCOM/binl
+contains -- $WATCOM/bin $PATH; or set -a PATH $WATCOM/bin
 
 # DosBox and emulators
 set -gx DOSBOX_CONF /etc/tinyhat/dosbox-x.conf:/run/tinyhat-midi/dosbox-x.conf

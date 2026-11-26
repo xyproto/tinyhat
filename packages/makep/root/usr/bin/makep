@@ -388,18 +388,17 @@ if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m)
     set -gx PKG_CONFIG_LIBDIR $SYSROOT/usr/lib/pkgconfig:$SYSROOT/usr/share/pkgconfig
     set -g makep_crossdir (mktemp -d /tmp/makep-cross.XXXXXX)
     mkdir $makep_crossdir/bin
-    printf '%s\n' '#!/bin/sh' "$prefix-strip \"\$@\" 2>/dev/null || exec "(command -s strip)" \"\$@\"" \
-        >$makep_crossdir/bin/strip
+    printf '%s\n' '#!/bin/sh' "$prefix-strip \"\$@\" 2>/dev/null || exec "(command -s strip)" \"\$@\"" >$makep_crossdir/bin/strip
     chmod +x $makep_crossdir/bin/strip
     set -gx PATH $makep_crossdir/bin $PATH
-    printf '%s\n' "host_alias=$CHOST" "host=$CHOST" "build_alias=$CBUILD" "build=$CBUILD" cross_compiling=yes \
+    printf '%s\n' "if test -z \"\$host_alias\" || { test \"x\$host_alias\" != \"x\$build_alias\" && test \"x\$host_alias\" != \"x$CBUILD\"; }; then" \
+        "host_alias=$CHOST" "host=$CHOST" "build_alias=$CBUILD" "build=$CBUILD" cross_compiling=yes \
         "ac_tool_prefix=$prefix-" ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes \
         ac_cv_func_fnmatch_works=yes ac_cv_func_fnmatch_gnu=yes ac_cv_func_mmap_fixed_mapped=yes \
         ac_cv_func_strnlen_working=yes ac_cv_func_working_mktime=yes ac_cv_func_chown_works=yes \
         ac_cv_func_getgroups_works=yes ac_cv_func_lstat_dereferences_slashed_symlink=yes \
         ac_cv_func_stat_empty_string_bug=no ac_cv_func_lstat_empty_string_bug=no ac_cv_func_fork_works=yes \
-        ac_cv_func_vfork_works=yes ac_cv_func_strcoll_works=yes ac_cv_func_strtod=yes \
-        >$makep_crossdir/config.site
+        ac_cv_func_vfork_works=yes ac_cv_func_strcoll_works=yes ac_cv_func_strtod=yes fi >$makep_crossdir/config.site
     set -gx CONFIG_SITE $makep_crossdir/config.site
     set -l family $carch
     switch $carch
@@ -411,8 +410,7 @@ if test $CHOST != $CBUILD; and not test $CHOST = i686-pc-linux-gnu -a (uname -m)
     printf '%s\n' '[binaries]' "c = '$CC'" "cpp = '$CXX'" "ar = '$AR'" "strip = '$STRIP'" "pkg-config = 'pkg-config'" \
         "cmake = 'cmake'" '[properties]' "sys_root = '$SYSROOT'" "pkg_config_libdir = '$PKG_CONFIG_LIBDIR'" \
         'needs_exe_wrapper = true' "cmake_toolchain_file = '$makep_crossdir/toolchain.cmake'" \
-        '[host_machine]' "system = 'linux'" "cpu_family = '$family'" "cpu = '$carch'" "endian = 'little'" \
-        >$makep_crossdir/cross.ini
+        '[host_machine]' "system = 'linux'" "cpu_family = '$family'" "cpu = '$carch'" "endian = 'little'" >$makep_crossdir/cross.ini
     printf '%s\n' 'set(CMAKE_SYSTEM_NAME Linux)' "set(CMAKE_SYSTEM_PROCESSOR $carch)" "set(CMAKE_C_COMPILER $CC)" \
         "set(CMAKE_CXX_COMPILER $CXX)" "set(CMAKE_SYSROOT $SYSROOT)" 'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)' \
         'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)' 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)' \

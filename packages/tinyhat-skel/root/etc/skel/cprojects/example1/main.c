@@ -112,8 +112,16 @@ int main(int argc, char *argv[])
         stars[i].phase = SDL_randf() * 6.28f;
     }
 
+    const Uint64 step = SDL_NS_PER_SECOND / 60;
+    Uint64 prev = SDL_GetTicksNS(), lag = 0;
     while (running) {
         SDL_Event event;
+        Uint64 now = SDL_GetTicksNS();
+        lag += now - prev;
+        prev = now;
+        if (lag > step * 15) {
+            lag = step * 15;
+        }
 
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_EVENT_QUIT) {
@@ -142,19 +150,21 @@ int main(int argc, char *argv[])
             }
         }
 
-        dy += 0.15f;
-        x += dx;
-        y += dy;
-        if (x < 0 || x > W - 52) {
-            dx = -dx;
-            x = x < 0 ? 0 : W - 52;
-        }
-        if (y > H - 50) {
-            y = H - 50;
-            dy = -dy * 0.85f;
-            music_bounce();
-            if (dy > -2) {
-                dy = -5;
+        for (; lag >= step; lag -= step) {
+            dy += 0.15f;
+            x += dx;
+            y += dy;
+            if (x < 0 || x > W - 52) {
+                dx = -dx;
+                x = x < 0 ? 0 : W - 52;
+            }
+            if (y > H - 50) {
+                y = H - 50;
+                dy = -dy * 0.85f;
+                music_bounce();
+                if (dy > -2) {
+                    dy = -5;
+                }
             }
         }
 
@@ -168,6 +178,10 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(renderer, 0xb0, 0xc8, 0xc8, 0xff);
         draw_centered_text(renderer, "Arrows/Space: kick the hat  Esc: quit", H - 9);
         SDL_RenderPresent(renderer);
+        Uint64 spent = SDL_GetTicksNS() - now;
+        if (spent < step) {
+            SDL_DelayNS(step - spent);
+        }
     }
 
     return 0;

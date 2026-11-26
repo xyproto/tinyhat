@@ -1,6 +1,6 @@
 set pkgname gdb
 set pkgver 18.1
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'GNU debugger, without Python'
 set arch i686 x32 x86_64 aarch64
 set url https://www.sourceware.org/gdb/
@@ -12,7 +12,13 @@ set sha256sums cd9fc3fe2b47743840e42c1592d3d87f8302eb18639c0b8b4ba0898002e2348f
 function build
     mkdir -p build; or return
     cd build; or return
-    ../gdb-$pkgver/configure --prefix=/usr --disable-nls --disable-werror --disable-sim --disable-gdbserver --disable-gprofng \
+    set -l _libs
+    if test "$cross" = 1
+        for _lib in expat gmp mpfr
+            set -a _libs --with-lib$_lib-prefix=$SYSROOT/usr
+        end
+    end
+    ../gdb-$pkgver/configure --prefix=/usr $_libs --disable-nls --disable-werror --disable-sim --disable-gdbserver --disable-gprofng \
         --disable-binutils --disable-ld --disable-gas --disable-gold --disable-gprof --disable-inprocess-agent \
         --without-python --without-guile --without-babeltrace --without-debuginfod --without-intel-pt \
         --disable-source-highlight --without-xxhash --with-system-readline --with-system-zlib --with-expat \

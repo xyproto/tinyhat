@@ -1,0 +1,34 @@
+set pkgname koules
+set pkgver 1.4
+set pkgrel 1
+set pkgdesc 'Koules action game from 1995, ported to SDL3'
+set arch i686 x32
+set url https://www.ucw.cz/~hubicka/koules/English/
+set license GPL-2.0-or-later
+set depends glibc sdl3
+set nvchecker source=regex 'url=https://www.ucw.cz/~hubicka/koules/packages/' 'regex=koules([\d.]+)-src\.tar\.gz'
+set source "https://www.ucw.cz/~hubicka/koules/packages/koules$pkgver-src.tar.gz" \
+    sdl3.patch \
+    koules.desktop
+set sha256sums c36f93feafeebd59983bf44100240e67a84a8bacabd7ee528c93046defe4a21b \
+    1230bd52829abbf3a8b45965307e7348b18f7035d15d3c0999406d0c2c2ebed6 \
+    942957a0b15a04096172153c92a2133116752a271d43e37e8594bd002fba417f
+
+function prepare
+    cd koules$pkgver; or return
+    patch -Np1 -i ../sdl3.patch; or return
+end
+
+function build
+    cd koules$pkgver; or return
+    $CC $CFLAGS -Isdl -DSOUND -DHAVEUSLEEP '-DSOUNDDIR="/usr/share/koules"' (pkg-config --cflags sdl3 | string split -n ' ') -o koules koules.c menu.c gameplan.c font.c intro.c framebuffer.c cmap.c rcfiles.c sdl/*.c $LDFLAGS (pkg-config --libs sdl3 | string split -n ' ') -lm; or return
+end
+
+function package
+    cd koules$pkgver; or return
+    install -Dm755 koules "$pkgdir/usr/bin/koules"; or return
+    install -Dm644 -t "$pkgdir/usr/share/koules" sounds/*.raw; or return
+    install -Dm644 koules.6 "$pkgdir/usr/share/man/man6/koules.6"; or return
+    install -Dm644 -t "$pkgdir/usr/share/licenses/$pkgname" COPYING README; or return
+    install -Dm644 ../koules.desktop "$pkgdir/usr/share/applications/koules.desktop"; or return
+end

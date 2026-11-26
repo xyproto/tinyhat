@@ -1,0 +1,1818 @@
+diff -ruN a/cmap.c b/cmap.c
+--- a/cmap.c	1998-03-04 19:59:19.000000000 +0100
++++ b/cmap.c	2026-11-26 11:02:14.449479962 +0100
+@@ -38,7 +38,7 @@
+   /* 128-160   for green rockets */
+   /* 160-192   for blue rockets */
+   /* 192-256   gray cmap for stars */
+-  Palette         pal;
++  static Palette  pal;
+   int             i;
+   for (i = 0; i < 64; i++)
+     {
+diff -ruN a/font.c b/font.c
+--- a/font.c	1998-03-04 19:59:19.000000000 +0100
++++ b/font.c	2026-11-26 11:02:40.940276654 +0100
+@@ -433,8 +433,7 @@
+ #define BEST static
+ #endif
+ BEST void
+-fontc_ul (x, y, r)
+-     CONST int       x, y, r;
++fontc_ul (CONST int x, CONST int y, CONST int r)
+ {
+   int             r34;
+ 
+@@ -446,8 +445,7 @@
+ }
+ 
+ BEST void
+-fontc_ur (x, y, r)
+-     CONST int       x, y, r;
++fontc_ur (CONST int x, CONST int y, CONST int r)
+ {
+   int             r34;
+ 
+@@ -459,8 +457,7 @@
+ }
+ 
+ BEST void
+-fontc_ll (x, y, r)
+-     CONST int       x, y, r;
++fontc_ll (CONST int x, CONST int y, CONST int r)
+ {
+   int             r34;
+ 
+@@ -472,8 +469,7 @@
+ }
+ 
+ BEST void
+-fontc_lr (x, y, r)
+-     CONST int       x, y, r;
++fontc_lr (CONST int x, CONST int y, CONST int r)
+ {
+   int             r34;
+ 
+@@ -485,40 +481,35 @@
+ }
+ 
+ static void
+-fontc_l (x, y, r)
+-     CONST int       x, y, r;
++fontc_l (CONST int x, CONST int y, CONST int r)
+ {
+   fontc_ll (x, y, r);
+   fontc_lr (x, y, r);
+ }
+ 
+ static void
+-fontc_u (x, y, r)
+-     CONST int       x, y, r;
++fontc_u (CONST int x, CONST int y, CONST int r)
+ {
+   fontc_ul (x, y, r);
+   fontc_ur (x, y, r);
+ }
+ 
+ static void
+-fontc_r (x, y, r)
+-     CONST int       x, y, r;
++fontc_r (CONST int x, CONST int y, CONST int r)
+ {
+   fontc_ur (x, y, r);
+   fontc_lr (x, y, r);
+ }
+ 
+ static void
+-fontc_left (x, y, r)
+-     CONST int       x, y, r;
++fontc_left (CONST int x, CONST int y, CONST int r)
+ {
+   fontc_ul (x, y, r);
+   fontc_ll (x, y, r);
+ }
+ 
+ static void
+-fontcircle (x, y, r)
+-     CONST int       x, y, r;
++fontcircle (CONST int x, CONST int y, CONST int r)
+ {
+   fontc_u (x, y, r);
+   fontc_l (x, y, r);
+@@ -535,9 +526,7 @@
+ 
+ 
+ int
+-vgadrawtext (x, y, siz, str)
+-     CONST int       x, y, siz;
+-     CONST char     *str;
++vgadrawtext (CONST int x, CONST int y, CONST int siz, CONST char *str)
+ {
+   int             f, a, b, c, s1, s2, s3, s4, s5, s6, gap;
+   b = y;
+@@ -979,9 +968,7 @@
+ 
+ /* here's a new one - this gets how wide text will be */
+ int
+-vgatextsize (sizearg, str)
+-     CONST int       sizearg;
+-     CONST char     *str;
++vgatextsize (CONST int sizearg, CONST char *str)
+ {
+   int             r;
+ 
+@@ -993,8 +980,7 @@
+ 
+ 
+ void
+-set_max_text_width (width)
+-     CONST int       width;
++set_max_text_width (CONST int width)
+ {
+   stop_after_this_x = width;
+ }
+diff -ruN a/intro.c b/intro.c
+--- a/intro.c	1998-03-05 18:12:24.000000000 +0100
++++ b/intro.c	2026-11-26 11:02:09.507244995 +0100
+@@ -133,12 +133,7 @@
+   int             playx = 0, playy = 0;
+   int             bballx = 0, bbally = 0;
+   float           playr = RAD (0), playp = 0.03;
+-  long            VfTime = 0;
+-  long            VendSleep = 0;
+   int             sizes[300];
+-  struct timeval  VlastClk;
+-  struct timeval  VnewClk;
+-  int             wait = 0;
+ 
+   float           r1;
+   float           rp[3];
+@@ -146,13 +141,10 @@
+   fadeout ();
+   for (y = 0; y < TEXTSIZE; y++)
+     sizes[y] = -vgatextsize (TEXTH, text[y]) / 2;
+-  gettimeofday (&VlastClk, NULL);
+-  gettimeofday (&VnewClk, NULL);
+-  VendSleep = VlastClk.tv_usec;
+ #ifdef DEBUG
+-  VfTime = 1000000 / 200;
++  TimerStart (1000000 / 200);
+ #else
+-  VfTime = 1000000 / 65;
++  TimerStart (1000000 / 65);
+ #endif
+ 
+   r[1] = r[2] = r[0] = sqrt ((MAPWIDTH / 2) * (MAPWIDTH / 2) +
+@@ -165,11 +157,7 @@
+   Effect (S_START, 0);
+   for (i = -660; i < (TEXTSIZE + 10) * TEXTW; i += 1)
+     {
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (wait >= 0 || tbreak)
++      if (TimerOnTime () || tbreak)
+ 	{
+ 	  CopyVSToVS (starbackground, backscreen);
+ 	  SetScreen (backscreen);
+@@ -253,15 +241,7 @@
+ 	  playx = MAPWIDTH / 2, playy = MAPHEIGHT / 2, playr = RAD (180), rp[0] = 1.5 / DIV;
+ 	  Effect (S_CREATOR2, next);
+ 	}
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (tbreak)
+-	wait = VfTime, tbreak = 0;
+-      usleep (wait < 0 ? 0 : wait);
+-      VendSleep = VnewClk.tv_usec + wait;
+-      gettimeofday (&VlastClk, NULL);
++      TimerWait ();
+       UpdateInput ();
+       if (Pressed ())
+ 	{
+@@ -292,37 +272,25 @@
+   int             skey = 0;
+   int             key = 1;
+ 
+-  long            VfTime = 0;
+-  long            VendSleep = 0;
+ #ifdef __GNUC__
+   int             sizes[size];
+ #else
+   int             sizes[300];
+ #endif
+-  struct timeval  VlastClk;
+-  struct timeval  VnewClk;
+-  int             wait = 0;
+ 
+   fadeout ();
+   clearpoints ();
+   for (y = 0; y < size; y++)
+     sizes[y] = -vgatextsize (TEXTH, text[y]) / 2;
+-  gettimeofday (&VlastClk, NULL);
+-  gettimeofday (&VnewClk, NULL);
+-  VendSleep = VlastClk.tv_usec;
+ #ifdef DEBUG
+-  VfTime = 1000000 / 200;
++  TimerStart (1000000 / 200);
+ #else
+-  VfTime = 1000000 / 65;
++  TimerStart (1000000 / 65);
+ #endif
+ 
+   for (i = -660; i < (size + 4) * TEXTW; i += 1)
+     {
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (wait >= 0 || tbreak)
++      if (TimerOnTime () || tbreak)
+ 	{
+ 	  CopyVSToVS (starbackground, backscreen);
+ 	  SetScreen (backscreen);
+@@ -349,15 +317,7 @@
+ 	points1 ();
+ 
+ 
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (tbreak)
+-	wait = VfTime, tbreak = 0;
+-      usleep (wait < 0 ? 0 : wait);
+-      VendSleep = VnewClk.tv_usec + wait;
+-      gettimeofday (&VlastClk, NULL);
++      TimerWait ();
+       UpdateInput ();
+       if (actu >= 0)
+ 	{
+@@ -400,17 +360,12 @@
+   int             actu = 0;
+   float           width = 0;
+ 
+-  long            VfTime = 0;
+-  long            VendSleep = 0;
+   int             size = TEXTSIZE2;
+ #ifdef __GNUC__
+   int             sizes[size], nrockets1;
+ #else
+   int             sizes[300], nrockets1;
+ #endif
+-  struct timeval  VlastClk;
+-  struct timeval  VnewClk;
+-  int             wait = 0;
+   int		 first=1;
+   float           playy = MAPHEIGHT + 20;
+   float           playr = RAD (180);
+@@ -426,22 +381,15 @@
+     nrockets1 = 1;
+   for (y = 0; y < size; y++)
+     sizes[y] = -vgatextsize (TEXTH, text2[y]) / 2;
+-  gettimeofday (&VlastClk, NULL);
+-  gettimeofday (&VnewClk, NULL);
+-  VendSleep = VlastClk.tv_usec;
+ #ifdef DEBUG
+-  VfTime = 1000000 / 200;
++  TimerStart (1000000 / 200);
+ #else
+-  VfTime = 1000000 / 65;
++  TimerStart (1000000 / 65);
+ #endif
+   Effect (S_START, next);
+   for (i = -660; i < (size + 5) * TEXTW; i += 1)
+     {
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (wait >= 0 || tbreak)
++      if (TimerOnTime () || tbreak)
+ 	{
+ 	  CopyVSToVS (starbackground, backscreen);
+ 	  SetScreen (backscreen);
+@@ -500,15 +448,7 @@
+ 	      er += erp;
+ 	    }
+ 	}
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (tbreak)
+-	wait = VfTime, tbreak = 0;
+-      usleep (wait < 0 ? 0 : wait);
+-      VendSleep = VnewClk.tv_usec + wait;
+-      gettimeofday (&VlastClk, NULL);
++      TimerWait ();
+       UpdateInput ();
+       if (actu > 0)
+ 	{
+diff -ruN a/koules.6 b/koules.6
+--- a/koules.6	1970-01-01 01:00:00.000000000 +0100
++++ b/koules.6	2026-11-26 11:09:54.822137819 +0100
+@@ -0,0 +1,133 @@
++.TH KOULES 6 "3 apr 1996" "Linux" "games"
++
++.SH NAME
++koules \- Action game for linux
++
++.SH SYNOPSIS
++koules [-fMdh]
++
++.SH KOULES FROM THE TOP:
++.br
++
++.br
++                             .
++.br
++                 ---       .  .                    O
++.br
++                /   \\        . .
++.br
++               |     |    . . .. ---
++.br
++                \\   /           /   \\        X           O
++.br
++                 ---           |    O|
++.br
++                                \\  O/
++.br
++                                 ---       ---
++.br
++                .       O                 /O O\\
++.br
++             . . . .                     |     |
++.br
++              . . .                       \\   /
++.br
++            .  .X.  .          O           ---
++.br
++              . . .                         .
++.br
++             . . . .                       ...
++.br
++                .                         . . .
++.br
++                                         . . . .
++.br
++                                        .   .   .
++.br
++                        H A V E
++.br
++                          FUN
++.br
++                           !
++
++
++.SH DESCRIPTION
++.B Koules
++is an action game. The mission is to bounce all koules fighters from your 
++sector
++
++.SH "OPTIONS"
++.TP
++.B \-h 
++for help
++.TP
++.B \-f 
++start in fullscreen mode
++.TP
++.B \-M 
++disable mouse support
++.TP
++.B \-d 
++Disable sound support
++.SH "KEYS"
++.TP
++.B F11
++toggle fullscreen mode
++.TP
++.B P
++pause the game
++.TP
++.B H
++toggle help mode
++.TP
++.B Esc
++return to the menu
++.SH "Points:"
++.br
++  Bounce something         :  +1
++.br
++  Eat extension            :  +10
++.br
++  Eat thief		   :  -30
++.br
++  Eat friend		   :  +30
++.br
++.B  At end of level
++.br
++  every live               :  +20
++.br
++  every lost level         :  -100
++.br
++.B  In deathmatch mode
++.br
++  every destroyed concurrent:  +100
++
++
++.SH PORTABILITY
++
++The program is written in ANSI C and uses the SDL3 library for graphics,
++input and sound.
++
++.SH BUGS/LIMITATIONS
++
++Network play and joystick support are not available in this version.
++
++.SH SEE ALSO
++http://www.paru.cas.cz/~hubicka/koules/English/koules.html
++.SH AUTHOR
++Jan Hubicka
++
++.B email:
++hubicka@limax.paru.cas.cz
++.br
++
++.B smail:
++.br
++       Jan Hubicka
++.br
++       Dukelskych bojovniku 1944
++.br
++       Tabor 39001
++.br
++       Czech Republic
++
+diff -ruN a/koules.c b/koules.c
+--- a/koules.c	1998-03-08 22:06:00.000000000 +0100
++++ b/koules.c	2026-11-26 11:09:36.485310687 +0100
+@@ -335,15 +335,6 @@
+   return (1);
+ }
+ 
+-INLINE void
+-normalize (float *x, float *y, float size)
+-{
+-  float           length = sqrt ((*x) * (*x) + (*y) * (*y));
+-  if (length == 0)
+-    length = 1;
+-  *x *= size / length;
+-  *y *= size / length;
+-}
+ 
+ 
+ static void
+@@ -1315,6 +1306,77 @@
+ 
+ 
+ 
++#define HOLE_PULL_RANGE 150
++#define HOLE_PULL (BALL_SPEED * 0.4)
++
++static void
++hole_pull (CONST int i)
++{
++  int             r;
++  float           pull, xp, yp, d;
++  switch (object[i].type)
++    {
++    case ROCKET:
++      if (object[i].time)
++	return;
++      pull = HOLE_PULL / 3;
++      break;
++    case BALL:
++    case LBALL:
++    case BBALL:
++    case LUNATIC:
++    case INSPECTOR:
++      pull = HOLE_PULL;
++      break;
++    default:
++      return;
++    }
++  for (r = 0; r < nobjects; r++)
++    if (object[r].live && object[r].type == HOLE)
++      {
++	xp = object[r].x - object[i].x;
++	yp = object[r].y - object[i].y;
++	d = sqrt (xp * xp + yp * yp);
++	if (d > 0 && d < HOLE_PULL_RANGE)
++	  {
++	    normalize (&xp, &yp, pull * (1 - d / HOLE_PULL_RANGE));
++	    object[i].fx += xp;
++	    object[i].fy += yp;
++	  }
++      }
++}
++
++static void
++hole_field (CONST int i)
++{
++  float           a = RAD (rand () % 360);
++  float           d = HOLE_PULL_RANGE * (50 + rand () % 50) / 100.0;
++  float           speed = 2 + rand () % 3;
++  addpoint ((object[i].x + sin (a) * d) * 256, (object[i].y + cos (a) * d) * 256,
++	    -sin (a) * speed * 256, -cos (a) * speed * 256,
++	    ball (4) + rand () % 12, (d - HOLE_RADIUS) / speed);
++}
++
++static void
++swallow (CONST int hole, CONST int i)
++{
++  int             n, time;
++  int             c = color (object[i].type, i, object[i].letter);
++  float           a, d, x, y;
++  for (n = 0; n < 24; n++)
++    {
++      a = RAD (n * 15 + rand () % 15);
++      d = object[i].radius + rand () % 8;
++      x = object[i].x + sin (a) * d;
++      y = object[i].y + cos (a) * d;
++      time = 6 + rand () % 6;
++      addpoint (x * 256, y * 256,
++		(object[hole].x - x) * 256 / time,
++		(object[hole].y - y) * 256 / time,
++		c + rand () % 16, time);
++    }
++}
++
+ static void
+ update_forces ()
+ {
+@@ -1418,6 +1480,10 @@
+ 	      object[i].fx += xp;
+ 	      object[i].fy += yp;
+ 	    }
++	  if (object[i].type == HOLE)
++	    hole_field (i), hole_field (i);
++	  else
++	    hole_pull (i);
+ 	  object[i].fx *= SLOWDOWN,
+ 	    object[i].fy *= SLOWDOWN;
+ 	}
+@@ -1448,7 +1514,7 @@
+ 		if (object[i].type == HOLE || object[i].type == EHOLE)
+ 		  {
+ 		    if (object[y].type != APPLE)
+-		      destroy (y);
++		      swallow (i, y), destroy (y);
+ 		    if (object[i].type == EHOLE)
+ 		      destroy (i);
+ 		    continue;
+@@ -1456,7 +1522,7 @@
+ 		if (object[y].type == HOLE || object[y].type == EHOLE)
+ 		  {
+ 		    if (object[i].type != APPLE)
+-		      destroy (i);
++		      swallow (y, i), destroy (i);
+ 		    if (object[y].type == EHOLE)
+ 		      destroy (y);
+ 		    continue;
+@@ -1574,19 +1640,9 @@
+ void
+ game ()
+ {
+-  long            VfTime = 0;
+-  long            VendSleep = 0;
+-  struct timeval  VlastClk;
+-  struct timeval  VnewClk;
+-  int             wait = 0;
+-
+   load_rc ();
+   init_menu ();
+-  gettimeofday (&VlastClk, NULL);
+-  gettimeofday (&VnewClk, NULL);
+-  VendSleep = VlastClk.tv_usec;
+-  VfTime = 1000000 / 25;
+-
++  TimerStart (1000000 / 25);
+ 
+   while (1)
+     {
+@@ -1598,28 +1654,11 @@
+       colisions ();
+       move_objects ();
+       check_limit ();
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (wait > 0 || tbreak)
++      if (TimerOnTime () || tbreak)
+ 	draw_objects (1);
+       else
+ 	draw_objects (0);
+-      gettimeofday (&VnewClk, NULL);
+-      if (VnewClk.tv_usec < VendSleep)
+-	VendSleep -= 1000000;
+-      wait = (VfTime - VnewClk.tv_usec + VendSleep);
+-      if (tbreak)
+-	wait = VfTime;
+-      if (wait > 0)
+-	usleep (wait);
+-      VendSleep = VnewClk.tv_usec + wait;
+-      gettimeofday (&VlastClk, NULL);
+-      if (tbreak)
+-	tbreak = 0,
+-	  VendSleep = VlastClk.tv_usec;
+-
++      TimerWait ();
+     }
+ }
+ #ifdef NETSUPPORT
+diff -ruN a/koules.h b/koules.h
+--- a/koules.h	1998-03-04 19:59:19.000000000 +0100
++++ b/koules.h	2026-11-26 11:01:55.488529273 +0100
+@@ -284,13 +284,12 @@
+                 lunatic_bitmap, lball_bitmap[NLETTERS], circle_bitmap,
+                 hole_bitmap, ehole_bitmap, ball_bitmap, eye_bitmap[MAXROCKETS],
+                 rocket_bitmap[MAXROCKETS];
+-extern char     rocketcolor[5];
++extern unsigned char rocketcolor[5];
+ 
+ 
+ #endif
+ 
+-#if defined(__GNUC__)&&!defined(ONLYANSI)
+-extern inline void
++static INLINE void
+ normalize (float *x, float *y, CONST float size)
+ {
+   float           length = sqrt ((*x) * (*x) + (*y) * (*y));
+@@ -299,9 +298,6 @@
+   *x *= size / length;
+   *y *= size / length;
+ }
+-#else
+-extern void     normalize (float *, float *, CONST float);
+-#endif
+ 
+ extern void     addpoint (CONST int, CONST int, CONST int, CONST int, CONST int, CONST int);
+ extern void     destroy (CONST int);
+@@ -339,19 +335,10 @@
+ extern void     load_rc ();
+ extern void     save_rc ();
+ extern int      allow_finder ();
+-#if defined(__GNUC__)&&!defined(ONLYANSI)
+-extern int
+-find_possition (float *, float *, CONST float)
+-                __attribute ((const));
+-     extern int      radius (CONST int) __attribute ((const));
+-     extern float    M (CONST int) __attribute ((const));
+-     extern int      create_letter () __attribute ((const));
+-#else
+ extern int      find_possition (float *, float *, CONST float);
+ extern int      radius (CONST int);
+ extern float    M (CONST int);
+ extern int      create_letter ();
+-#endif
+ #ifndef NETSUPPORT
+ #define client 0
+ #define server 0
+diff -ruN a/menu.c b/menu.c
+--- a/menu.c	1998-03-09 16:48:23.000000000 +0100
++++ b/menu.c	2026-11-26 11:02:40.940403962 +0100
+@@ -50,7 +50,7 @@
+ static float    mx2, my2, mx2p, my2p;
+ static int      mtime;
+ static char     playertext[] = " 1  PLAYER";
+-static char     leveltext[] = "LEVEL  000 ";
++static char     leveltext[24] = "LEVEL  000 ";
+ #define YPOSITION(i) (MAPHEIGHT/2+20-5*nmenu+10*i)
+ #define XPOSITION(i) (MAPWIDTH/2-4*strlen(menu[i].text))
+ #define XPOSITION1(i) (MAPWIDTH/2+4*strlen(menu[i].text))
+diff -ruN a/rcfiles.c b/rcfiles.c
+--- a/rcfiles.c	1998-03-05 17:47:05.000000000 +0100
++++ b/rcfiles.c	2026-11-26 11:15:05.448824004 +0100
+@@ -23,6 +23,8 @@
+ #include "koules.h"
+ #ifdef XSUPPORT
+ static CONST char *name = ".xkoules-controls";
++#elif defined(SDLSUPPORT)
++static CONST char *name = ".koules-sdl-controls";
+ #else
+ #ifdef OS2DIVE
+ static CONST char *name = "koules.cfg";
+@@ -40,13 +42,21 @@
+ {
+   static char name1[200];
+   char *var=getenv(name);
+-  int i=strlen(var);
++  int i;
++  if(var==NULL) var=".";
++  i=strlen(var);
+   if(i>199) i=199;
+   memcpy(name1,var,i+1);
+   name1[199]=0;
+   return name1;
+ }
+ 
++static int
++readrc (void *data, size_t size, FILE * f)
++{
++  return fread (data, 1, size, f) == size;
++}
++
+ void
+ save_rc ()
+ {
+@@ -131,22 +141,22 @@
+       perror ("error");
+       goto skip;
+     }
+-  fread (keys, 1, sizeof (keys), controls);	/*save user defined keys */
++  readrc (keys, sizeof (keys), controls);	/*save user defined keys */
+ #ifdef MOUSE
+   if(!fread (&mouseplayer, 1, sizeof (int), controls)) mouseplayer=-1;	/*save mouseplayer */
+ #else
+-  fread (dummy, 1, sizeof (int), controls);
++  readrc (dummy, sizeof (int), controls);
+ #endif
+ #ifdef JOYSTICK
+   if(!fread (joystickplayer, 1, sizeof (joystickplayer), controls)) joystickplayer[0]=joystickplayer[1]=-1;
+ #else
+-  fread (dummy, 2, sizeof (int), controls);
++  readrc (dummy, 2 * sizeof (int), controls);
+ #endif
+-  fread (rotation, 1, sizeof (rotation), controls);
++  readrc (rotation, sizeof (rotation), controls);
+ #ifdef JOYSTICK
+-  fread (joystickmul, 1, sizeof (joystickmul), controls);
++  readrc (joystickmul, sizeof (joystickmul), controls);
+ #else
+-  fread (dummy, 2, sizeof (float), controls);
++  readrc (dummy, 2 * sizeof (float), controls);
+ #endif
+   fclose (controls);
+ skip:;
+@@ -163,11 +173,11 @@
+       return;
+     }
+ 
+-  fread (&maxlevel, 1, sizeof (int), levels);
+-  fread (&lastlevel, 1, sizeof (int), levels);
++  readrc (&maxlevel, sizeof (int), levels);
++  readrc (&lastlevel, sizeof (int), levels);
+   if(maxlevel>=100||maxlevel<0) maxlevel=0;
+   if(lastlevel>maxlevel||lastlevel<0) lastlevel=0;
+-  fread (&nrockets, 1, sizeof (int), levels);
++  readrc (&nrockets, sizeof (int), levels);
+   if(nrockets<1) nrockets=1;
+   if(nrockets>4) nrockets=1;
+   if (fread (&gameplan, 1, sizeof (int), levels) != sizeof (int))
+diff -ruN a/sdl/font8x8.c b/sdl/font8x8.c
+--- a/sdl/font8x8.c	1970-01-01 01:00:00.000000000 +0100
++++ b/sdl/font8x8.c	2026-11-26 10:59:50.039979701 +0100
+@@ -0,0 +1,150 @@
++
++/***********************************************************
++*                      K O U L E S                         *
++*----------------------------------------------------------*
++*  C1995 JAHUSOFT                                          *
++*        Jan Hubicka                                       *
++*        Dukelskych Bojovniku 1944                         *
++*        390 03 Tabor                                      *
++*        Czech Republic                                    *
++*        Phone: 0041-361-32613                             *
++*        eMail: hubicka@limax.paru.cas.cz                  *
++*----------------------------------------------------------*
++*   Copyright(c)1995,1996 by Jan Hubicka.See README for    *
++*                    licence details.                      *
++*----------------------------------------------------------*
++*  font8x8.c binary image of font..                        *
++***********************************************************/
++
++unsigned char   gl_font8x8[] =
++{
++  0, 0, 0, 0, 0, 0, 0, 0, 126, 129, 165, 129, 189, 129, 126, 0,		/* 0 to 15 */
++  126, 255, 219, 255, 195, 255, 126, 0, 54, 127, 127, 127, 62, 28, 8, 0,	/* 16 to 31 */
++  8, 28, 62, 127, 62, 28, 8, 0, 28, 28, 8, 107, 127, 107, 8, 28,	/* 32 to 47 */
++  8, 28, 62, 127, 62, 8, 28, 62, 0, 0, 24, 60, 60, 24, 0, 0,	/* 48 to 63 */
++  255, 255, 231, 195, 195, 231, 255, 255, 0, 60, 102, 66, 66, 102, 60, 0,	/* 64 to 79 */
++  255, 195, 153, 189, 189, 153, 195, 255, 15, 7, 13, 60, 102, 102, 102, 60,	/* 80 to 95 */
++  60, 102, 102, 102, 60, 24, 126, 24, 48, 56, 60, 54, 52, 112, 240, 224,	/* 96 to 111 */
++  127, 99, 127, 99, 99, 103, 230, 192, 24, 219, 126, 102, 102, 126, 219, 24,	/* 112 to 127 */
++  64, 112, 124, 127, 124, 112, 64, 0, 1, 7, 31, 127, 31, 7, 1, 0,	/* 128 to 143 */
++  24, 60, 126, 24, 24, 126, 60, 24, 102, 102, 102, 102, 102, 0, 102, 0,		/* 144 to 159 */
++  63, 122, 122, 58, 10, 10, 10, 0, 30, 51, 28, 54, 54, 28, 102, 60,	/* 160 to 175 */
++  0, 0, 0, 0, 126, 126, 126, 0, 24, 60, 126, 24, 126, 60, 24, 126,	/* 176 to 191 */
++  24, 60, 126, 24, 24, 24, 24, 0, 24, 24, 24, 24, 126, 60, 24, 0,	/* 192 to 207 */
++  0, 12, 14, 127, 14, 12, 0, 0, 0, 24, 56, 127, 56, 24, 0, 0,	/* 208 to 223 */
++  0, 0, 96, 96, 96, 127, 0, 0, 0, 36, 102, 255, 102, 36, 0, 0,	/* 224 to 239 */
++  0, 24, 60, 126, 255, 255, 0, 0, 0, 255, 255, 126, 60, 24, 0, 0,	/* 240 to 255 */
++  0, 0, 0, 0, 0, 0, 0, 0, 24, 24, 24, 24, 24, 0, 24, 0,		/* 256 to 271 */
++  102, 102, 102, 0, 0, 0, 0, 0, 108, 108, 254, 108, 254, 108, 108, 0,	/* 272 to 287 */
++  16, 124, 208, 124, 22, 124, 16, 0, 0, 198, 204, 24, 48, 102, 198, 0,	/* 288 to 303 */
++  56, 108, 56, 118, 220, 204, 118, 0, 24, 24, 48, 0, 0, 0, 0, 0,	/* 304 to 319 */
++  12, 24, 48, 48, 48, 24, 12, 0, 48, 24, 12, 12, 12, 24, 48, 0,		/* 320 to 335 */
++  0, 108, 56, 254, 56, 108, 0, 0, 0, 24, 24, 126, 24, 24, 0, 0,		/* 336 to 351 */
++  0, 0, 0, 0, 0, 24, 24, 48, 0, 0, 0, 126, 0, 0, 0, 0,	/* 352 to 367 */
++  0, 0, 0, 0, 0, 48, 48, 0, 0, 6, 12, 24, 48, 96, 192, 0,	/* 368 to 383 */
++  60, 102, 110, 126, 118, 102, 60, 0, 12, 28, 60, 12, 12, 12, 12, 0,	/* 384 to 399 */
++  60, 102, 6, 28, 48, 96, 126, 0, 60, 102, 6, 28, 6, 102, 60, 0,	/* 400 to 415 */
++  28, 60, 108, 204, 254, 12, 12, 0, 126, 96, 96, 124, 6, 102, 60, 0,	/* 416 to 431 */
++  60, 96, 96, 124, 102, 102, 60, 0, 126, 6, 6, 12, 24, 48, 48, 0,	/* 432 to 447 */
++  60, 102, 102, 60, 102, 102, 60, 0, 60, 102, 102, 62, 6, 6, 60, 0,	/* 448 to 463 */
++  0, 48, 48, 0, 0, 48, 48, 0, 0, 24, 24, 0, 0, 24, 24, 48,	/* 464 to 479 */
++  12, 24, 48, 96, 48, 24, 12, 0, 0, 0, 126, 0, 0, 126, 0, 0,	/* 480 to 495 */
++  48, 24, 12, 6, 12, 24, 48, 0, 60, 102, 6, 12, 24, 0, 24, 0,	/* 496 to 511 */
++  60, 102, 110, 110, 108, 96, 60, 0, 24, 60, 102, 102, 126, 102, 102, 0,	/* 512 to 527 */
++  124, 102, 102, 124, 102, 102, 124, 0, 60, 102, 96, 96, 96, 102, 60, 0,	/* 528 to 543 */
++  124, 102, 102, 102, 102, 102, 124, 0, 126, 96, 96, 124, 96, 96, 126, 0,	/* 544 to 559 */
++  126, 96, 96, 124, 96, 96, 96, 0, 60, 102, 96, 110, 102, 102, 60, 0,	/* 560 to 575 */
++  102, 102, 102, 126, 102, 102, 102, 0, 60, 24, 24, 24, 24, 24, 60, 0,	/* 576 to 591 */
++  6, 6, 6, 6, 102, 102, 60, 0, 102, 108, 120, 112, 120, 108, 102, 0,	/* 592 to 607 */
++  96, 96, 96, 96, 96, 96, 126, 0, 198, 238, 254, 214, 198, 198, 198, 0,		/* 608 to 623 */
++  102, 118, 126, 110, 102, 102, 102, 0, 60, 102, 102, 102, 102, 102, 60, 0,	/* 624 to 639 */
++  124, 102, 102, 124, 96, 96, 96, 0, 60, 102, 102, 102, 102, 110, 60, 6,	/* 640 to 655 */
++  124, 102, 102, 124, 102, 102, 102, 0, 60, 102, 96, 60, 6, 102, 60, 0,		/* 656 to 671 */
++  126, 24, 24, 24, 24, 24, 24, 0, 102, 102, 102, 102, 102, 102, 60, 0,	/* 672 to 687 */
++  102, 102, 102, 102, 102, 60, 24, 0, 198, 198, 198, 214, 254, 238, 198, 0,	/* 688 to 703 */
++  102, 102, 60, 24, 60, 102, 102, 0, 102, 102, 102, 60, 24, 24, 24, 0,	/* 704 to 719 */
++  126, 6, 12, 24, 48, 96, 126, 0, 60, 48, 48, 48, 48, 48, 60, 0,	/* 720 to 735 */
++  0, 192, 96, 48, 24, 12, 6, 0, 60, 12, 12, 12, 12, 12, 60, 0,	/* 736 to 751 */
++  24, 60, 102, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255,		/* 752 to 767 */
++  24, 24, 12, 0, 0, 0, 0, 0, 0, 0, 60, 6, 62, 102, 62, 0,	/* 768 to 783 */
++  96, 96, 96, 124, 102, 102, 124, 0, 0, 0, 60, 102, 96, 102, 60, 0,	/* 784 to 799 */
++  6, 6, 6, 62, 102, 102, 62, 0, 0, 0, 60, 102, 126, 96, 62, 0,	/* 800 to 815 */
++  28, 54, 48, 124, 48, 48, 48, 0, 0, 0, 62, 102, 102, 62, 6, 60,	/* 816 to 831 */
++  96, 96, 124, 102, 102, 102, 102, 0, 24, 0, 24, 24, 24, 24, 24, 0,	/* 832 to 847 */
++  12, 0, 12, 12, 12, 12, 108, 56, 96, 96, 102, 108, 120, 108, 102, 0,	/* 848 to 863 */
++  48, 48, 48, 48, 48, 48, 24, 0, 0, 0, 236, 254, 214, 214, 198, 0,	/* 864 to 879 */
++  0, 0, 124, 102, 102, 102, 102, 0, 0, 0, 60, 102, 102, 102, 60, 0,	/* 880 to 895 */
++  0, 0, 124, 102, 102, 124, 96, 96, 0, 0, 62, 102, 102, 62, 6, 6,	/* 896 to 911 */
++  0, 0, 124, 102, 96, 96, 96, 0, 0, 0, 62, 96, 60, 6, 124, 0,	/* 912 to 927 */
++  48, 48, 124, 48, 48, 54, 28, 0, 0, 0, 102, 102, 102, 102, 62, 0,	/* 928 to 943 */
++  0, 0, 102, 102, 102, 60, 24, 0, 0, 0, 198, 214, 254, 238, 68, 0,	/* 944 to 959 */
++  0, 0, 102, 60, 24, 60, 102, 0, 0, 0, 102, 102, 102, 62, 6, 60,	/* 960 to 975 */
++  0, 0, 126, 12, 24, 48, 126, 0, 28, 48, 48, 96, 48, 48, 28, 0,		/* 976 to 991 */
++  24, 24, 24, 24, 24, 24, 24, 0, 56, 12, 12, 6, 12, 12, 56, 0,	/* 992 to 1007 */
++  118, 220, 0, 0, 0, 0, 0, 0, 0, 0, 24, 60, 102, 102, 126, 0,	/* 1008 to 1023 */
++  60, 102, 96, 96, 102, 60, 24, 48, 102, 0, 102, 102, 102, 102, 62, 0,	/* 1024 to 1039 */
++  14, 0, 60, 102, 126, 96, 60, 0, 60, 102, 60, 6, 62, 102, 62, 0,	/* 1040 to 1055 */
++  102, 0, 60, 6, 62, 102, 62, 0, 112, 0, 60, 6, 62, 102, 62, 0,		/* 1056 to 1071 */
++  24, 24, 60, 6, 62, 102, 62, 0, 0, 0, 62, 96, 96, 62, 24, 48,	/* 1072 to 1087 */
++  60, 102, 60, 102, 126, 96, 60, 0, 102, 0, 60, 102, 126, 96, 60, 0,	/* 1088 to 1103 */
++  112, 0, 60, 102, 126, 96, 60, 0, 102, 0, 24, 24, 24, 24, 24, 0,	/* 1104 to 1119 */
++  60, 102, 24, 24, 24, 24, 24, 0, 112, 0, 24, 24, 24, 24, 24, 0,	/* 1120 to 1135 */
++  198, 56, 108, 198, 254, 198, 198, 0, 24, 24, 0, 60, 102, 126, 102, 0,		/* 1136 to 1151 */
++  14, 0, 124, 96, 120, 96, 124, 0, 0, 0, 126, 26, 126, 216, 126, 0,	/* 1152 to 1167 */
++  62, 120, 216, 222, 248, 216, 222, 0, 60, 102, 60, 102, 102, 102, 60, 0,	/* 1168 to 1183 */
++  102, 0, 60, 102, 102, 102, 60, 0, 112, 0, 60, 102, 102, 102, 60, 0,	/* 1184 to 1199 */
++  60, 102, 0, 102, 102, 102, 62, 0, 112, 0, 102, 102, 102, 102, 62, 0,	/* 1200 to 1215 */
++  102, 0, 102, 102, 102, 62, 6, 60, 102, 60, 102, 102, 102, 102, 60, 0,		/* 1216 to 1231 */
++  102, 0, 102, 102, 102, 102, 60, 0, 12, 12, 62, 96, 96, 62, 12, 12,	/* 1232 to 1247 */
++  56, 108, 96, 240, 96, 102, 252, 0, 102, 102, 60, 24, 126, 24, 126, 24,	/* 1248 to 1263 */
++  124, 102, 102, 124, 102, 111, 102, 99, 14, 27, 24, 60, 24, 24, 120, 48,	/* 1264 to 1279 */
++  14, 0, 60, 6, 62, 102, 62, 0, 14, 0, 24, 24, 24, 24, 24, 0,	/* 1280 to 1295 */
++  14, 0, 60, 102, 102, 102, 60, 0, 14, 0, 102, 102, 102, 102, 62, 0,	/* 1296 to 1311 */
++  118, 220, 0, 124, 102, 102, 102, 0, 126, 0, 102, 118, 126, 110, 102, 0,	/* 1312 to 1327 */
++  62, 102, 102, 62, 0, 126, 0, 0, 60, 102, 102, 60, 0, 126, 0, 0,	/* 1328 to 1343 */
++  24, 0, 24, 48, 96, 102, 60, 0, 0, 0, 0, 126, 96, 96, 0, 0,	/* 1344 to 1359 */
++  0, 0, 0, 126, 6, 6, 0, 0, 198, 204, 216, 62, 99, 198, 12, 31,		/* 1360 to 1375 */
++  198, 204, 216, 54, 110, 214, 31, 6, 24, 0, 24, 24, 24, 24, 24, 0,	/* 1376 to 1391 */
++  0, 54, 108, 216, 108, 54, 0, 0, 0, 216, 108, 54, 108, 216, 0, 0,	/* 1392 to 1407 */
++  34, 136, 34, 136, 34, 136, 34, 136, 85, 170, 85, 170, 85, 170, 85, 170,	/* 1408 to 1423 */
++  221, 119, 221, 119, 221, 119, 221, 119, 8, 8, 8, 8, 8, 8, 8, 8,	/* 1424 to 1439 */
++  8, 8, 8, 8, 248, 8, 8, 8, 8, 8, 8, 248, 248, 8, 8, 8,		/* 1440 to 1455 */
++  28, 28, 28, 28, 252, 28, 28, 28, 0, 0, 0, 0, 252, 28, 28, 28,		/* 1456 to 1471 */
++  0, 0, 0, 248, 248, 8, 8, 8, 28, 28, 28, 252, 252, 28, 28, 28,		/* 1472 to 1487 */
++  28, 28, 28, 28, 28, 28, 28, 28, 0, 0, 0, 252, 252, 28, 28, 28,	/* 1488 to 1503 */
++  28, 28, 28, 252, 252, 0, 0, 0, 28, 28, 28, 28, 252, 0, 0, 0,	/* 1504 to 1519 */
++  8, 8, 8, 248, 248, 0, 0, 0, 0, 0, 0, 0, 248, 8, 8, 8,		/* 1520 to 1535 */
++  8, 8, 8, 8, 15, 0, 0, 0, 8, 8, 8, 8, 255, 0, 0, 0,	/* 1536 to 1551 */
++  0, 0, 0, 0, 255, 8, 8, 8, 8, 8, 8, 8, 15, 8, 8, 8,	/* 1552 to 1567 */
++  0, 0, 0, 0, 255, 0, 0, 0, 8, 8, 8, 8, 255, 8, 8, 8,	/* 1568 to 1583 */
++  8, 8, 8, 15, 15, 8, 8, 8, 28, 28, 28, 28, 31, 28, 28, 28,	/* 1584 to 1599 */
++  28, 28, 28, 31, 31, 0, 0, 0, 0, 0, 0, 31, 31, 28, 28, 28,	/* 1600 to 1615 */
++  28, 28, 28, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255, 28, 28, 28,		/* 1616 to 1631 */
++  28, 28, 28, 31, 31, 28, 28, 28, 0, 0, 0, 255, 255, 0, 0, 0,	/* 1632 to 1647 */
++  28, 28, 28, 255, 255, 28, 28, 28, 8, 8, 8, 255, 255, 0, 0, 0,		/* 1648 to 1663 */
++  28, 28, 28, 28, 255, 0, 0, 0, 0, 0, 0, 255, 255, 8, 8, 8,	/* 1664 to 1679 */
++  0, 0, 0, 0, 255, 28, 28, 28, 28, 28, 28, 28, 31, 0, 0, 0,	/* 1680 to 1695 */
++  8, 8, 8, 15, 15, 0, 0, 0, 0, 0, 0, 15, 15, 8, 8, 8,	/* 1696 to 1711 */
++  0, 0, 0, 0, 31, 28, 28, 28, 28, 28, 28, 28, 255, 28, 28, 28,	/* 1712 to 1727 */
++  8, 8, 8, 255, 255, 8, 8, 8, 8, 8, 8, 8, 248, 0, 0, 0,		/* 1728 to 1743 */
++  0, 0, 0, 0, 15, 8, 8, 8, 255, 255, 255, 255, 255, 255, 255, 255,	/* 1744 to 1759 */
++  0, 0, 0, 0, 255, 255, 255, 255, 240, 240, 240, 240, 240, 240, 240, 240,	/* 1760 to 1775 */
++  15, 15, 15, 15, 15, 15, 15, 15, 255, 255, 255, 255, 0, 0, 0, 0,	/* 1776 to 1791 */
++  0, 0, 118, 204, 204, 204, 118, 0, 60, 102, 102, 124, 102, 102, 124, 96,	/* 1792 to 1807 */
++  126, 102, 96, 96, 96, 96, 96, 0, 0, 0, 254, 108, 108, 108, 102, 0,	/* 1808 to 1823 */
++  126, 102, 48, 24, 48, 102, 126, 0, 0, 0, 62, 108, 108, 108, 56, 0,	/* 1824 to 1839 */
++  0, 0, 102, 102, 102, 102, 127, 192, 0, 0, 126, 216, 24, 24, 12, 0,	/* 1840 to 1855 */
++  124, 56, 124, 214, 214, 124, 56, 124, 124, 198, 198, 254, 198, 198, 124, 0,	/* 1856 to 1871 */
++  124, 198, 198, 198, 108, 108, 238, 0, 30, 48, 24, 60, 102, 102, 60, 0,	/* 1872 to 1887 */
++  0, 0, 126, 219, 219, 126, 0, 0, 3, 6, 62, 107, 115, 62, 96, 192,	/* 1888 to 1903 */
++  30, 48, 96, 126, 96, 48, 30, 0, 124, 198, 198, 198, 198, 198, 198, 0,		/* 1904 to 1919 */
++  0, 126, 0, 126, 0, 126, 0, 0, 24, 24, 126, 24, 24, 0, 126, 0,		/* 1920 to 1935 */
++  48, 24, 12, 24, 48, 0, 126, 0, 12, 24, 48, 24, 12, 0, 126, 0,		/* 1936 to 1951 */
++  14, 27, 27, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 216, 216, 112,	/* 1952 to 1967 */
++  24, 24, 0, 126, 0, 24, 24, 0, 0, 118, 220, 0, 118, 220, 0, 0,		/* 1968 to 1983 */
++  60, 102, 102, 60, 0, 0, 0, 0, 0, 0, 0, 24, 24, 0, 0, 0,	/* 1984 to 1999 */
++  0, 0, 0, 0, 24, 0, 0, 0, 30, 24, 24, 24, 24, 216, 120, 56,	/* 2000 to 2015 */
++  120, 108, 108, 108, 108, 0, 0, 0, 56, 12, 24, 48, 60, 0, 0, 0,	/* 2016 to 2031 */
++  0, 0, 60, 60, 60, 60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0	/* 2032 to 2047 */
++};
++
+diff -ruN a/sdl/gl.c b/sdl/gl.c
+--- a/sdl/gl.c	1970-01-01 01:00:00.000000000 +0100
++++ b/sdl/gl.c	2026-11-26 11:02:25.586580320 +0100
+@@ -0,0 +1,194 @@
++/***********************************************************
++*                      K O U L E S                         *
++*----------------------------------------------------------*
++*  C1995 JAHUSOFT                                          *
++*        Jan Hubicka                                       *
++*----------------------------------------------------------*
++*   Copyright(c)1995,1996 by Jan Hubicka.See README for    *
++*                     licence details.                     *
++*----------------------------------------------------------*
++*  gl.c  8-bit software drawing into memory screens        *
++***********************************************************/
++#include "../koules.h"
++
++typedef unsigned char uchar;
++
++VScreenType     currentscreen;
++
++#define WIDTH MAPWIDTH
++#define HEIGHT (MAPHEIGHT + 20)
++#define PIXEL(x,y) (currentscreen->vbuf[(x) + (y) * WIDTH])
++
++void
++gl_setpixel (int x, int y, int c)
++{
++  if (x >= 0 && y >= 0 && x < WIDTH && y < HEIGHT)
++    PIXEL (x, y) = c;
++}
++
++void
++gl_hline (int x1, int y, int x2, int c)
++{
++  if (x1 > x2)
++    {
++      int             t = x1;
++      x1 = x2;
++      x2 = t;
++    }
++  if (y < 0 || y >= HEIGHT || x2 < 0 || x1 >= WIDTH)
++    return;
++  if (x1 < 0)
++    x1 = 0;
++  if (x2 >= WIDTH)
++    x2 = WIDTH - 1;
++  memset (&PIXEL (x1, y), c, x2 - x1 + 1);
++}
++
++void
++gl_fillbox (int x, int y, int w, int h, int c)
++{
++  if (x < 0)
++    w += x, x = 0;
++  if (y < 0)
++    h += y, y = 0;
++  if (x + w > WIDTH)
++    w = WIDTH - x;
++  if (y + h > HEIGHT)
++    h = HEIGHT - y;
++  if (w <= 0 || h <= 0)
++    return;
++  for (; h > 0; h--, y++)
++    memset (&PIXEL (x, y), c, w);
++}
++
++void
++gl_clearscreen (int c)
++{
++  memset (currentscreen->vbuf, c, WIDTH * HEIGHT);
++}
++
++void
++gl_line (int x1, int y1, int x2, int y2, int c)
++{
++  int             dx = abs (x2 - x1), dy = -abs (y2 - y1);
++  int             sx = x1 < x2 ? 1 : -1, sy = y1 < y2 ? 1 : -1;
++  int             err = dx + dy;
++  if ((x1 < 0 && x2 < 0) || (y1 < 0 && y2 < 0) ||
++      (x1 >= WIDTH && x2 >= WIDTH) || (y1 >= HEIGHT && y2 >= HEIGHT))
++    return;
++  for (;;)
++    {
++      int             e2;
++      gl_setpixel (x1, y1, c);
++      if (x1 == x2 && y1 == y2)
++	break;
++      e2 = 2 * err;
++      if (e2 >= dy)
++	err += dy, x1 += sx;
++      if (e2 <= dx)
++	err += dx, y1 += sy;
++    }
++}
++
++void
++gl_copyscreen (VScreenType source, VScreenType destination)
++{
++  memcpy (destination->vbuf, source->vbuf, WIDTH * HEIGHT);
++}
++
++/*
++ * Compiled bitmap format, one record per line:
++ * (<pixels to skip> <pixel count> <pixels>)* 0xff
++ * Pixel value 0 is transparent.
++ */
++char           *
++gl_compileboxmask (int w, int h, char *bitmap)
++{
++  uchar          *src = (uchar *) bitmap;
++  uchar          *out = malloc (w * h * 3 + h + 1), *p = out;
++  int             x, y;
++  if (out == NULL)
++    perror ("create_bitmap"), exit (1);
++  for (y = 0; y < h; y++)
++    {
++      x = 0;
++      while (x < w)
++	{
++	  int             skip = 0, count = 0;
++	  while (x < w && !src[x] && skip < 254)
++	    x++, skip++;
++	  if (x >= w)
++	    break;
++	  *p++ = skip;
++	  while (x + count < w && src[x + count] && count < 255)
++	    count++;
++	  *p++ = count;
++	  memcpy (p, src + x, count);
++	  p += count;
++	  x += count;
++	}
++      *p++ = 0xff;
++      src += w;
++    }
++  return (char *) out;
++}
++
++void
++gl_putboxmaskcompiled (int x0, int y0, int w, int h, char *bitmap)
++{
++  uchar          *dp = (uchar *) bitmap;
++  int             y;
++  (void) w;
++  for (y = y0; y < y0 + h; y++)
++    {
++      int             x = x0;
++      int             visible = y >= 0 && y < HEIGHT;
++      for (;;)
++	{
++	  int             count = *dp++;
++	  if (count == 0xff)
++	    break;
++	  x += count;
++	  count = *dp++;
++	  if (visible)
++	    {
++	      int             from = x < 0 ? -x : 0;
++	      int             to = x + count > WIDTH ? WIDTH - x : count;
++	      if (to > from)
++		memcpy (&PIXEL (x + from, y), dp + from, to - from);
++	    }
++	  x += count;
++	  dp += count;
++	}
++    }
++}
++
++void
++gl_expandfont (int fw, int fh, int fg, unsigned char *font, void *out)
++{
++  uchar          *f2 = out;
++  int             i, x, y, b = 0;
++  for (i = 0; i < 256; i++)
++    for (y = 0; y < fh; y++)
++      for (x = 0; x < fw; x++)
++	{
++	  if (x % 8 == 0)
++	    b = *font++;
++	  *f2++ = (b & (128 >> (x % 8))) ? fg : 0;
++	}
++}
++
++void
++gl_write (int x, int y, int mode, void *font, char *text)
++{
++  uchar          *glyphs = font;
++  for (; *text; text++, x += 8)
++    {
++      uchar          *g = glyphs + (uchar) * text * 64;
++      int             gx, gy;
++      for (gy = 0; gy < 8; gy++)
++	for (gx = 0; gx < 8; gx++, g++)
++	  if (*g || mode == WRITEMODE_OVERWRITE)
++	    gl_setpixel (x + gx, y + gy, *g);
++    }
++}
+diff -ruN a/sdl/init.c b/sdl/init.c
+--- a/sdl/init.c	1970-01-01 01:00:00.000000000 +0100
++++ b/sdl/init.c	2026-11-26 11:14:09.198902217 +0100
+@@ -0,0 +1,414 @@
++/***********************************************************
++*                      K O U L E S                         *
++*----------------------------------------------------------*
++*  C1995 JAHUSOFT                                          *
++*        Jan Hubicka                                       *
++*----------------------------------------------------------*
++*   Copyright(c)1995,1996 by Jan Hubicka.See README for    *
++*                   licence details.                       *
++*----------------------------------------------------------*
++*  init.c SDL3 initialization, display, input and timing   *
++***********************************************************/
++#define PLATFORM_VARIABLES_HERE
++#include "../koules.h"
++#include "../framebuffer.h"
++#include <time.h>
++
++VScreenType     physicalscreen, backscreen, starbackground, background;
++void           *fontblack;
++void           *fontwhite;
++
++int             GAMEWIDTH = 640;
++int             GAMEHEIGHT = 460;
++int             MAPWIDTH = 640;
++int             MAPHEIGHT = 460;
++int             DIV = 1;
++
++int             mousex, mousey;
++unsigned int    mousebuttons;
++
++extern unsigned char gl_font8x8[];
++extern void     starwars ();
++extern void     game ();
++extern void     setcustompalette (CONST int, CONST float);
++
++static SDL_Window *window;
++static SDL_Renderer *renderer;
++static SDL_Texture *texture;
++static Uint32   palette32[256];
++static int      fullscreen;
++static int      idle;
++static Uint64   lastpresent;
++static Uint64   period = 40000000, deadline;
++static Uint8    keystate[SDL_SCANCODE_COUNT];
++
++static VScreenType
++allocatescreen (void)
++{
++  VScreenType     s = malloc (sizeof (GraphicsContext));
++  if (s == NULL || (s->vbuf = calloc (MAPWIDTH, MAPHEIGHT + 20)) == NULL)
++    perror ("allocatescreen"), exit (1);
++  return s;
++}
++
++static void
++present (void)
++{
++  void           *pixels;
++  int             pitch, x, y;
++  if (renderer == NULL)
++    return;
++  if (SDL_LockTexture (texture, NULL, &pixels, &pitch))
++    {
++      unsigned char  *src = (unsigned char *) physicalscreen->vbuf;
++      for (y = 0; y < MAPHEIGHT + 20; y++)
++	{
++	  Uint32         *row = (Uint32 *) ((Uint8 *) pixels + y * pitch);
++	  for (x = 0; x < MAPWIDTH; x++)
++	    row[x] = palette32[*src++];
++	}
++      SDL_UnlockTexture (texture);
++    }
++  SDL_SetRenderDrawColor (renderer, 0, 0, 0, 255);
++  SDL_RenderClear (renderer);
++  SDL_RenderTexture (renderer, texture, NULL, NULL);
++  SDL_RenderPresent (renderer);
++  lastpresent = SDL_GetTicksNS ();
++  idle = 1;
++}
++
++void
++gl_showscreen (VScreenType source)
++{
++  if (source != physicalscreen)
++    gl_copyscreen (source, physicalscreen);
++  present ();
++}
++
++void
++gl_waitretrace (void)
++{
++  Uint64          retrace = lastpresent + SDL_NS_PER_SECOND / 60 - 2 * SDL_NS_PER_MS;
++  Uint64          now = SDL_GetTicksNS ();
++  if (now < retrace)
++    SDL_DelayNS (retrace - now);
++}
++
++void
++gl_setpalette (Palette * pal)
++{
++  int             i;
++  for (i = 0; i < 256; i++)
++    {
++      int             r = pal->color[i].red & 63, g = pal->color[i].green & 63,
++                      b = pal->color[i].blue & 63;
++      palette32[i] = 0xff000000u | (Uint32) ((r << 2 | r >> 4) << 16) |
++	(Uint32) ((g << 2 | g >> 4) << 8) | (Uint32) (b << 2 | b >> 4);
++    }
++  present ();
++}
++
++void
++TimerStart (long usec)
++{
++  period = (Uint64) usec *1000;
++  deadline = SDL_GetTicksNS () + period;
++}
++
++int
++TimerOnTime (void)
++{
++  return SDL_GetTicksNS () <= deadline;
++}
++
++void
++TimerWait (void)
++{
++  Uint64          now = SDL_GetTicksNS ();
++  if (tbreak)
++    {
++      tbreak = 0;
++      deadline = now + period;
++    }
++  if (deadline > now)
++    SDL_DelayNS (deadline - now);
++  else if (now - deadline > SDL_NS_PER_SECOND / 4)
++    deadline = now;
++  deadline += period;
++  idle = 1;
++}
++
++int
++IsPressed (int scancode)
++{
++  return scancode > SDL_SCANCODE_UNKNOWN && scancode < SDL_SCANCODE_COUNT &&
++    keystate[scancode];
++}
++
++int
++Pressed (void)
++{
++  int             i;
++  for (i = SDL_SCANCODE_UNKNOWN + 1; i < SDL_SCANCODE_COUNT; i++)
++    if (keystate[i])
++      return 1;
++  return mousebuttons && mousex > 0 && mousey > 0 &&
++    mousex < MAPWIDTH && mousey < MAPHEIGHT;
++}
++
++int
++GetKey (void)
++{
++  int             i, key = 0;
++  for (i = SDL_SCANCODE_UNKNOWN + 1; i < SDL_SCANCODE_COUNT; i++)
++    if (keystate[i])
++      {
++	if (key)
++	  return 0;
++	key = i;
++      }
++  return key;
++}
++
++static void
++setfullscreen (int on)
++{
++  fullscreen = on;
++  SDL_SetWindowFullscreen (window, on);
++}
++
++void
++ProcessEvents (void)
++{
++  SDL_Event       e;
++  float           wx, wy, lx, ly;
++  SDL_MouseButtonFlags buttons;
++  int             i;
++  if (!idle)
++    SDL_WaitEventTimeout (NULL, 5);
++  idle = 0;
++  for (i = 0; i < SDL_SCANCODE_COUNT; i++)
++    keystate[i] &= 1;
++  while (SDL_PollEvent (&e))
++    switch (e.type)
++      {
++      case SDL_EVENT_QUIT:
++	uninitialize ();
++	exit (0);
++      case SDL_EVENT_KEY_DOWN:
++	if (e.key.scancode == SDL_SCANCODE_F11)
++	  {
++	    if (!e.key.repeat)
++	      setfullscreen (!fullscreen);
++	  }
++	else if (e.key.scancode < SDL_SCANCODE_COUNT)
++	  keystate[e.key.scancode] = 1;
++	break;
++      case SDL_EVENT_KEY_UP:
++	if (e.key.scancode < SDL_SCANCODE_COUNT && keystate[e.key.scancode] == 1)
++	  keystate[e.key.scancode] = 2;
++	break;
++      case SDL_EVENT_WINDOW_FOCUS_LOST:
++	if (gamemode == GAME)
++	  keystate[SDL_SCANCODE_PAUSE] = 2;
++	break;
++      case SDL_EVENT_WINDOW_EXPOSED:
++      case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
++	present ();
++	break;
++      }
++  buttons = SDL_GetMouseState (&wx, &wy);
++  if (SDL_GetMouseFocus () == window &&
++      SDL_RenderCoordinatesFromWindow (renderer, wx, wy, &lx, &ly))
++    {
++      mousex = (int) lx;
++      mousey = (int) ly;
++      mousebuttons = (buttons & SDL_BUTTON_LMASK) != 0;
++    }
++  else
++    mousex = mousey = -1, mousebuttons = 0;
++}
++
++static void
++seticon (void)
++{
++  int             radius = 24, x, y, r;
++  SDL_Surface    *icon = SDL_CreateSurface (radius * 2, radius * 2, SDL_PIXELFORMAT_ARGB8888);
++  if (icon == NULL)
++    return;
++  for (y = 0; y < radius * 2; y++)
++    {
++      Uint32         *row = (Uint32 *) ((Uint8 *) icon->pixels + y * icon->pitch);
++      for (x = 0; x < radius * 2; x++)
++	{
++	  row[x] = 0;
++	  if ((x - radius) * (x - radius) + (y - radius) * (y - radius)
++	      < (radius - 0.5) * (radius - 0.5))
++	    {
++	      r = (x - 3 * radius / 4) * (x - 3 * radius / 4) +
++		(y - radius / 4) * (y - radius / 4);
++	      r = r * 32 / (1.5 * radius) / (1.5 * radius);
++	      if (r > 31)
++		r = 31;
++	      row[x] = palette32[4 * 32 + r];
++	    }
++	}
++    }
++  SDL_SetWindowIcon (window, icon);
++  SDL_DestroySurface (icon);
++}
++
++static void
++initialize (void)
++{
++  SDL_Rect        bounds;
++  int             scale = 1;
++  SDL_SetAppMetadata ("Koules", "1.4", "koules");
++  if (!SDL_Init (SDL_INIT_VIDEO | SDL_INIT_EVENTS))
++    {
++      fprintf (stderr, "SDL_Init: %s\n", SDL_GetError ());
++      exit (1);
++    }
++#ifdef SOUND
++  if (sndinit)
++    init_sound ();
++#endif
++  if (SDL_GetDisplayUsableBounds (SDL_GetPrimaryDisplay (), &bounds))
++    while ((scale + 1) * MAPWIDTH <= bounds.w &&
++	   (scale + 1) * (MAPHEIGHT + 20) + 64 <= bounds.h && scale < 4)
++      scale++;
++  if (!SDL_CreateWindowAndRenderer ("Koules", MAPWIDTH * scale, (MAPHEIGHT + 20) * scale,
++				    SDL_WINDOW_RESIZABLE | (fullscreen ? SDL_WINDOW_FULLSCREEN : 0),
++				    &window, &renderer))
++    {
++      fprintf (stderr, "SDL_CreateWindowAndRenderer: %s\n", SDL_GetError ());
++      exit (1);
++    }
++  SDL_SetWindowMinimumSize (window, MAPWIDTH / 2, (MAPHEIGHT + 20) / 2);
++  SDL_SetRenderVSync (renderer, 1);
++  SDL_SetRenderLogicalPresentation (renderer, MAPWIDTH, MAPHEIGHT + 20,
++				    SDL_LOGICAL_PRESENTATION_LETTERBOX);
++  texture = SDL_CreateTexture (renderer, SDL_PIXELFORMAT_XRGB8888,
++			       SDL_TEXTUREACCESS_STREAMING, MAPWIDTH, MAPHEIGHT + 20);
++  if (texture == NULL)
++    {
++      fprintf (stderr, "SDL_CreateTexture: %s\n", SDL_GetError ());
++      exit (1);
++    }
++#if SDL_VERSION_ATLEAST(3, 4, 0)
++  SDL_SetTextureScaleMode (texture, SDL_SCALEMODE_PIXELART);
++#else
++  SDL_SetTextureScaleMode (texture, SDL_SCALEMODE_NEAREST);
++#endif
++  SDL_HideCursor ();
++
++  physicalscreen = allocatescreen ();
++  backscreen = allocatescreen ();
++  background = allocatescreen ();
++  starbackground = allocatescreen ();
++  currentscreen = backscreen;
++  setcustompalette (0, 1);
++  seticon ();
++
++  fontblack = malloc (256 * 8 * 8);
++  fontwhite = malloc (256 * 8 * 8);
++  if (fontblack == NULL || fontwhite == NULL)
++    perror ("font"), exit (1);
++  gl_expandfont (8, 8, back (3), gl_font8x8, fontblack);
++  gl_expandfont (8, 8, 255, gl_font8x8, fontwhite);
++}
++
++void
++uninitialize ()
++{
++  static int      uninitialized = 0;
++  if (uninitialized)
++    return;
++  uninitialized = 1;
++#ifdef SOUND
++  if (sndinit)
++    kill_sound ();
++#endif
++  SDL_Quit ();
++}
++
++static void
++usage (const char *name)
++{
++  printf ("Usage: %s [options]\n"
++	  " -f  start in fullscreen mode (F11 toggles)\n"
++#ifdef SOUND
++	  " -d  disable sound\n"
++#endif
++	  " -M  disable mouse support\n"
++	  " -h  show this help\n", name);
++}
++
++int
++main (int argc, char **argv)
++{
++  int             c;
++  nrockets = 1;
++  while ((c = getopt (argc, argv, "fdMh")) != -1)
++    {
++      switch (c)
++	{
++	case 'f':
++	  fullscreen = 1;
++	  break;
++#ifdef SOUND
++	case 'd':
++	  sndinit = 0;
++	  break;
++#endif
++	case 'M':
++	  nomouse = 1;
++	  drawpointer = 0;
++	  break;
++	case 'h':
++	  usage (argv[0]);
++	  return 0;
++	default:
++	  usage (argv[0]);
++	  return 2;
++	}
++    }
++  srand (time (NULL));
++  create_bitmap ();
++  initialize ();
++#ifdef SOUND
++  sound = sndinit;
++#endif
++  gamemode = MENU;
++  drawbackground ();
++  drawstarbackground ();
++
++  keys[0][0] = SDL_SCANCODE_UP;
++  keys[0][1] = SDL_SCANCODE_DOWN;
++  keys[0][2] = SDL_SCANCODE_LEFT;
++  keys[0][3] = SDL_SCANCODE_RIGHT;
++
++  keys[1][0] = SDL_SCANCODE_W;
++  keys[1][1] = SDL_SCANCODE_S;
++  keys[1][2] = SDL_SCANCODE_A;
++  keys[1][3] = SDL_SCANCODE_D;
++
++  keys[2][0] = SDL_SCANCODE_I;
++  keys[2][1] = SDL_SCANCODE_K;
++  keys[2][2] = SDL_SCANCODE_J;
++  keys[2][3] = SDL_SCANCODE_L;
++
++  keys[3][0] = SDL_SCANCODE_KP_8;
++  keys[3][1] = SDL_SCANCODE_KP_5;
++  keys[3][2] = SDL_SCANCODE_KP_4;
++  keys[3][3] = SDL_SCANCODE_KP_6;
++
++  keys[4][0] = SDL_SCANCODE_HOME;
++  keys[4][1] = SDL_SCANCODE_END;
++  keys[4][2] = SDL_SCANCODE_DELETE;
++  keys[4][3] = SDL_SCANCODE_PAGEDOWN;
++  starwars ();
++  game ();
++  uninitialize ();
++  return 0;
++}
+diff -ruN a/sdl/input.h b/sdl/input.h
+--- a/sdl/input.h	1970-01-01 01:00:00.000000000 +0100
++++ b/sdl/input.h	2026-11-26 10:59:39.972959453 +0100
+@@ -0,0 +1,36 @@
++/***********************************************************
++*                      K O U L E S                         *
++*----------------------------------------------------------*
++*  C1995 JAHUSOFT                                          *
++*        Jan Hubicka                                       *
++*----------------------------------------------------------*
++*   Copyright(c)1995,1996 by Jan Hubicka.See README for    *
++*                     licence details.                     *
++*----------------------------------------------------------*
++*  input.h   keyboard and mouse input for SDL3             *
++***********************************************************/
++#define MOUSE
++
++extern int      mousex, mousey;
++extern unsigned int mousebuttons;
++
++extern void     ProcessEvents (void);
++extern int      IsPressed (int);
++extern int      Pressed (void);
++extern int      GetKey (void);
++
++#define UpdateInput() ProcessEvents ()
++#define MouseButtons() mousebuttons
++#define MouseX() mousex
++#define MouseY() mousey
++
++#define IsPressedEsc() IsPressed (SDL_SCANCODE_ESCAPE)
++#define IsPressedP() (IsPressed (SDL_SCANCODE_P) || IsPressed (SDL_SCANCODE_PAUSE))
++#define IsPressedH() IsPressed (SDL_SCANCODE_H)
++#define IsPressedEnter() (IsPressed (SDL_SCANCODE_RETURN) || \
++			  IsPressed (SDL_SCANCODE_SPACE) || \
++			  IsPressed (SDL_SCANCODE_KP_ENTER))
++#define IsPressedUp() (IsPressed (SDL_SCANCODE_UP) || IsPressed (SDL_SCANCODE_KP_8))
++#define IsPressedDown() (IsPressed (SDL_SCANCODE_DOWN) || IsPressed (SDL_SCANCODE_KP_2))
++#define IsPressedLeft() (IsPressed (SDL_SCANCODE_LEFT) || IsPressed (SDL_SCANCODE_KP_4))
++#define IsPressedRight() (IsPressed (SDL_SCANCODE_RIGHT) || IsPressed (SDL_SCANCODE_KP_6))
+diff -ruN a/sdl/interface.h b/sdl/interface.h
+--- a/sdl/interface.h	1970-01-01 01:00:00.000000000 +0100
++++ b/sdl/interface.h	2026-11-26 11:02:25.569273908 +0100
+@@ -0,0 +1,105 @@
++/***********************************************************
++*                      K O U L E S                         *
++*----------------------------------------------------------*
++*  C1995 JAHUSOFT                                          *
++*        Jan Hubicka                                       *
++*----------------------------------------------------------*
++*   Copyright(c)1995,1996 by Jan Hubicka.See README for    *
++*                    licence details.                      *
++*----------------------------------------------------------*
++*  interface.h   interface for SDL3                        *
++***********************************************************/
++#include <SDL3/SDL.h>
++#include <input.h>
++#define SDLSUPPORT
++#define EYE_RADIUS (DIV==1?5:6)
++#define MOUSE_RADIUS 4
++#define WRITEMODE_OVERWRITE 0
++#define WRITEMODE_MASKED 1
++
++typedef struct
++  {
++    char           *vbuf;
++  }
++GraphicsContext;
++
++typedef struct
++  {
++    struct
++      {
++	int             red, green, blue;
++      }
++    color[256];
++  }
++Palette;
++
++typedef char   *RawBitmapType;
++typedef char   *BitmapType;
++typedef GraphicsContext *VScreenType;
++
++#ifndef PLATFORM_VARIABLES_HERE
++extern int      GAMEWIDTH;
++extern int      GAMEHEIGHT;
++extern int      MAPWIDTH;
++extern int      MAPHEIGHT;
++extern int      DIV;
++
++extern void    *fontblack;
++extern void    *fontwhite;
++extern VScreenType physicalscreen;
++extern VScreenType backscreen;
++extern VScreenType background;
++extern VScreenType starbackground;
++#endif
++
++extern VScreenType currentscreen;
++
++extern void     gl_setpixel (int, int, int);
++extern void     gl_hline (int, int, int, int);
++extern void     gl_line (int, int, int, int, int);
++extern void     gl_fillbox (int, int, int, int, int);
++extern void     gl_clearscreen (int);
++extern void     gl_putboxmaskcompiled (int, int, int, int, char *);
++extern char    *gl_compileboxmask (int, int, char *);
++extern void     gl_expandfont (int, int, int, unsigned char *, void *);
++extern void     gl_write (int, int, int, void *, char *);
++extern void     gl_setpalette (Palette *);
++extern void     gl_waitretrace (void);
++extern void     gl_copyscreen (VScreenType, VScreenType);
++extern void     gl_showscreen (VScreenType);
++
++extern void     TimerStart (long);
++extern int      TimerOnTime (void);
++extern void     TimerWait (void);
++
++#define Truecolor 0
++#define FastAccess 1
++#define BitmapToBuffer(bitmap) (bitmap)
++#define VScreenToBuffer(screen) (screen)->vbuf
++#define SetPalette(palette) gl_setpalette (palette)
++#define SSetPixel(x,y,color) gl_setpixel((x),(y),(color))
++#define SMySetPixel(screen,x,y,color) *(VScreenToBuffer(screen)+(x)+((y)>>8)*MAPWIDTH)=color
++#define SetScreen(screen) (currentscreen=(screen))
++
++#define DrawBlackMaskedText(x,y,text) gl_write((x),(y),WRITEMODE_MASKED,fontblack,(text))
++#define DrawWhiteMaskedText(x,y,text) gl_write((x),(y),WRITEMODE_MASKED,fontwhite,(text))
++#define DrawText(x,y,text) gl_write((x),(y),WRITEMODE_OVERWRITE,fontwhite,(text))
++#define DrawRectangle(x1,y1,x2,y2,color) \
++  (gl_line ((x1), (y1), (x1), (y2), (color)), \
++   gl_line ((x1), (y2), (x2), (y2), (color)), \
++   gl_line ((x2), (y2), (x2), (y1), (color)), \
++   gl_line ((x2), (y1), (x1), (y1), (color)))
++#define CompileBitmap(x,y,bitmap) gl_compileboxmask((x),(y),(bitmap))
++#define FillRectangle(x,y,x1,y1,color) gl_fillbox((x),(y),(x1),(y1),(color))
++#define Line(x1,y1,x2,y2,color) gl_line((x1),(y1),(x2),(y2),(color))
++#define HLine(x1,y1,x2,color) gl_hline((x1),(y1),(x2),(color))
++#define PutBitmap(x,y,xsize,ysize,bitmap) gl_putboxmaskcompiled((x),(y),(xsize),(ysize),(bitmap))
++#define WaitRetrace() gl_waitretrace()
++#define EnableClipping() DUMMY
++#define DisableClipping() DUMMY
++#define ClearScreen() gl_clearscreen (0)
++#define CopyVSToVS(source,destination) gl_copyscreen((source),(destination))
++#define CopyToScreen(source) gl_showscreen(source)
++#define CharX 8
++#define CharY 8
++#define FAST_WIDELINE
+diff -ruN a/sdl/sound.c b/sdl/sound.c
+--- a/sdl/sound.c	1970-01-01 01:00:00.000000000 +0100
++++ b/sdl/sound.c	2026-11-26 11:01:40.296191607 +0100
+@@ -0,0 +1,126 @@
++/***********************************************************
++*                      K O U L E S                         *
++*----------------------------------------------------------*
++*  C1995 JAHUSOFT                                          *
++*        Jan Hubicka                                       *
++*----------------------------------------------------------*
++*   Copyright(c)1995,1996 by Jan Hubicka.See README for    *
++*                   licence details.                       *
++*----------------------------------------------------------*
++*  sound.c sample playback with SDL3 audio streams         *
++***********************************************************/
++#include "../koules.h"
++
++#define NVOICES 8
++
++static const char *names[NSAMPLES] =
++{
++  "start.raw",
++  "end.raw",
++  "colize.raw",
++  "destroy1.raw",
++  "destroy2.raw",
++  "creator1.raw",
++  "creator2.raw"
++};
++
++static void    *samples[NSAMPLES];
++static size_t   sizes[NSAMPLES];
++static SDL_AudioDeviceID device;
++static SDL_AudioStream *voices[NVOICES];
++
++static void    *
++loadsample (const char *name, size_t * size)
++{
++  char            path[1024];
++  const char     *base;
++  void           *data;
++  SDL_snprintf (path, sizeof (path), "%s/%s", SOUNDDIR, name);
++  if ((data = SDL_LoadFile (path, size)) != NULL)
++    return data;
++  if ((base = SDL_GetBasePath ()) != NULL)
++    {
++      SDL_snprintf (path, sizeof (path), "%ssounds/%s", base, name);
++      if ((data = SDL_LoadFile (path, size)) != NULL)
++	return data;
++    }
++  fprintf (stderr, "koules: could not load sound %s\n", name);
++  return NULL;
++}
++
++void
++init_sound ()
++{
++  SDL_AudioSpec   spec = {SDL_AUDIO_U8, 1, 8010};
++  int             i;
++  if (!SDL_InitSubSystem (SDL_INIT_AUDIO))
++    {
++      fprintf (stderr, "koules: audio unavailable: %s\n", SDL_GetError ());
++      sndinit = 0;
++      return;
++    }
++  device = SDL_OpenAudioDevice (SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
++  if (!device)
++    {
++      fprintf (stderr, "koules: could not open audio device: %s\n", SDL_GetError ());
++      sndinit = 0;
++      return;
++    }
++  for (i = 0; i < NVOICES; i++)
++    {
++      voices[i] = SDL_CreateAudioStream (&spec, NULL);
++      if (voices[i] == NULL)
++	{
++	  fprintf (stderr, "koules: SDL_CreateAudioStream: %s\n", SDL_GetError ());
++	  kill_sound ();
++	  sndinit = 0;
++	  return;
++	}
++      SDL_SetAudioStreamGain (voices[i], 0.5f);
++    }
++  if (!SDL_BindAudioStreams (device, voices, NVOICES))
++    {
++      fprintf (stderr, "koules: SDL_BindAudioStreams: %s\n", SDL_GetError ());
++      kill_sound ();
++      sndinit = 0;
++      return;
++    }
++  for (i = 0; i < NSAMPLES; i++)
++    samples[i] = loadsample (names[i], &sizes[i]);
++}
++
++int
++play_sound (int k)
++{
++  int             i, best = 0, bestqueued = -1;
++  if (!device || k < 0 || k >= NSAMPLES || samples[k] == NULL)
++    return 0;
++  for (i = 0; i < NVOICES; i++)
++    {
++      int             queued = SDL_GetAudioStreamQueued (voices[i]);
++      if (queued <= 0)
++	{
++	  best = i;
++	  break;
++	}
++      if (bestqueued < 0 || queued < bestqueued)
++	best = i, bestqueued = queued;
++    }
++  if (i == NVOICES)
++    SDL_ClearAudioStream (voices[best]);
++  SDL_PutAudioStreamData (voices[best], samples[k], (int) sizes[k]);
++  return 0;
++}
++
++void
++kill_sound ()
++{
++  int             i;
++  for (i = 0; i < NVOICES; i++)
++    if (voices[i] != NULL)
++      SDL_DestroyAudioStream (voices[i]), voices[i] = NULL;
++  if (device)
++    SDL_CloseAudioDevice (device), device = 0;
++  for (i = 0; i < NSAMPLES; i++)
++    SDL_free (samples[i]), samples[i] = NULL;
++}

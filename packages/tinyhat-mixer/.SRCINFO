@@ -1,0 +1,14 @@
+pkgbase = tinyhat-mixer
+	pkgdesc = Tiny Hat volume control and sound device chooser for PipeWire
+	pkgver = 1
+	pkgrel = 1
+	url = https://github.com/xyproto/tinyhat
+	arch = i686
+	arch = x32
+	license = BSD-3-Clause
+	depends = gtk4
+	depends = libpipewire
+	source = tinyhat-mixer.c
+	sha256sums = e4ef27bac37e3c104295735c82706c6098b7b4ceed0e55d4337b4eb8a6d8b30a
+
+pkgname = tinyhat-mixer

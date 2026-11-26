@@ -1,6 +1,6 @@
 set pkgname tinyhat-freedos tinyhat-dosgames
 set pkgver 1.4
-set pkgrel 10
+set pkgrel 11
 set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu'
 set arch any
 set url https://www.freedos.org/
