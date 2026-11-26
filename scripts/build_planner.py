@@ -1095,7 +1095,7 @@ def cmd_pkgfiles(repodir, arch, names, without=(), image=False):
 
 def cross_bases(by_base, roots, arch="i686"):
     """The package index of all TINYBUILDs, and the package directories that ROOTS need for i686 (cross_rules)."""
-    idx = package_index(list(by_base.values()), ("arch", "tinyhat"))
+    idx = package_index(list(by_base.values()), ("arch", "tinyhat"), ("i686", "any") + ((arch,) if arch != "i686" else ()))
     need, todo = set(), list(roots)
     while todo:
         name = idx.resolve(todo.pop())

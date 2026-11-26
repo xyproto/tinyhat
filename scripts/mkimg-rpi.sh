@@ -21,8 +21,12 @@ cp "$initrd" "$work/boot/initramfs.img"
 cp "$sfs" "$work/root/tinyhat/root.sfs"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${boot_mib}M" "$work/boot.img"
-"$top/scripts/inbuildroot.sh" "$top/build/buildroot" --bind "$work" /img \
-  /bin/sh -ec 'mkfs.fat --invariant -F 32 -n TINYHATBOOT /img/boot.img >/dev/null; mcopy -s -m -i /img/boot.img /img/boot/* ::/'
+mtools=$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import pkg; print(pkg.arch_files(sys.argv[2], "x86_64")["mtools"])' "$top/scripts" "$top/build/repo")
+mkdir -p "$work/mtools"
+bsdtar -xf "$mtools" -C "$work/mtools" usr/bin
+"$top/scripts/inbuildroot.sh" "$top/build/buildroot-x86_64" --bind "$work" /img \
+  /bin/sh -ec 'mkfs.fat --invariant -F 32 -n TINYHATBOOT /img/boot.img >/dev/null; /img/mtools/usr/bin/mcopy -s -m -i /img/boot.img /img/boot/* ::/'
+rm -rf "$work/mtools"
 rm -f "$out.tmp"
 "$top/scripts/mkdisk.sh" "$out.tmp" "$work/root" "$work/boot.img" c "$boot_mib"
 mv "$out.tmp" "$out"

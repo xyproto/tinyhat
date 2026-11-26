@@ -47,7 +47,7 @@ chown 1000:1000 "$root/home/tinyhat"
 chmod 700 "$root/home/tinyhat"
 
 # Only the firmware that the kernel modules ask for
-python3 scripts/fwprune.py "$root"
+scripts/fwprune.sh "$root"
 
 rm -f "$sfs"
 scripts/x86_64-tool.sh mksquashfs "$root" "$sfs" -comp xz -Xbcj x86 -b 1M -noappend -quiet

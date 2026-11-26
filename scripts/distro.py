@@ -191,10 +191,6 @@ def deny_files():
     return list(section("deny").get("files", []))
 
 
-def prebuilt_listed():
-    return [base for base, t in tables().items() if t.get("prebuilt")]
-
-
 def sources():
     return {name: (s["sha256"], s["url"]) for name, s in section("sources").items()}
 

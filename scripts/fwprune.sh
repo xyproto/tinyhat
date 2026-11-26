@@ -1,6 +1,4 @@
 #!/bin/bash
-# Removes firmware from a root file system that no kernel module in it asks for: whole directories whose driver is
-# not built, i915 firmware that the i915 module does not list, and older iwlwifi firmware versions
 set -euo pipefail
 shopt -s nullglob globstar
 
@@ -8,6 +6,8 @@ root=${1:?usage: fwprune.sh ROOT}
 fw=$root/usr/lib/firmware
 kernel=("$root"/usr/lib/modules/*/kernel)
 
+# Firmware (glob patterns under usr/lib/firmware) and the modules that load it. Firmware that no module in the
+# image loads is removed, such as the firmware for 64-bit era hardware that the i686 kernel has no drivers for
 declare -A owners=(
     [amdgpu]="amdgpu"
     [xe]="xe"
@@ -29,7 +29,8 @@ size() {
 
 for d in "${!owners[@]}"; do
     found=0
-    for n in ${owners[$d]}; do
+    read -ra names <<<"${owners[$d]}"
+    for n in "${names[@]}"; do
         for k in "${kernel[@]}"; do
             for m in "$k"/**/$n.ko*; do
                 found=1
@@ -76,10 +77,10 @@ fwdir=$fw/intel/iwlwifi
 mods=()
 for k in "${kernel[@]}"; do mods+=("$k"/drivers/net/wireless/intel/iwlwifi/iwlwifi.ko*); done
 [ -d "$fwdir" ] && [ ${#mods[@]} -gt 0 ] || exit 0
+# The modules of the older chips (iwldvm, iwlmvm, and iwl3945 and iwl4965 in iwlegacy) declare firmware too
 for k in "${kernel[@]}"; do mods+=("$k"/drivers/net/wireless/intel/iwl*/**/*.ko*); done
 mapfile -t mods < <(printf '%s\n' "${mods[@]}" | sort -u)
 
-# NAME-[c]VERSION.ucode[.EXT]: the chip is NAME and the c flag, and each module asks for its newest VERSION
 ucode='^(.*)-(c?)([0-9]+)\.ucode(\.[a-z]+)?$'
 declare -A wanted=() family=()
 for mod in "${mods[@]}"; do

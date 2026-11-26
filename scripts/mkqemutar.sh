@@ -4,14 +4,15 @@ img=$1
 out=$2
 size=$3
 [ -f "$img" ] && [ -n "$out" ] || exit 2
+top=$(dirname "$(dirname "$(readlink -f "$0")")")
 
 name=$(basename "$out" .tar.gz)
 work="$out.work"
 rm -rf "$work" "$out.tmp"
 mkdir -p "$work/$name"
 
-qemu-img convert -c -O qcow2 "$img" "$work/$name/$name.qcow2"
-qemu-img resize -q "$work/$name/$name.qcow2" "$size"
+"$top/scripts/x86_64-tool.sh" qemu-img convert -c -O qcow2 "$img" "$work/$name/$name.qcow2"
+"$top/scripts/x86_64-tool.sh" qemu-img resize -q "$work/$name/$name.qcow2" "$size"
 
 cat > "$work/$name/run.sh" << EOF
 #!/bin/sh

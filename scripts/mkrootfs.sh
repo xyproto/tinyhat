@@ -19,7 +19,7 @@ elif userland | grep -q -- '-aarch64\.pkg\.tar'; then
   arch=aarch64
   repo=$top/build/repo-aarch64
   section=image-aarch64
-  strip=aarch64-linux-gnu-strip
+  strip=llvm-strip
   bcj=arm64
 elif userland | grep -q -- '-x86_64\.pkg\.tar'; then
   arch=x86_64
@@ -70,7 +70,7 @@ case $mode in
     fi
     for p in $(python3 scripts/distro.py packages image strip_unneeded); do
       for f in "$root"/$p; do
-        [ ! -e "$f" ] || "$strip" --strip-unneeded "$f"
+        [ ! -e "$f" ] || scripts/x86_64-tool.sh "$strip" --strip-unneeded "$f"
       done
     done
 
@@ -80,7 +80,7 @@ case $mode in
     done
     rm -f "$root/etc/fonts/conf.d/70-no-bitmaps-except-emoji.conf"
 
-    python3 scripts/fwprune.py "$root"
+    scripts/fwprune.sh "$root"
     python3 - "$root"/usr/lib/systemd/libsystemd-core-*.so << 'EOF'
 import sys
 d = open(sys.argv[1], "rb").read()

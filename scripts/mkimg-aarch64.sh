@@ -42,8 +42,12 @@ mkdir -p "$work/efi/EFI/BOOT" "$work/efi/tinyhat"
 rm -rf "$work/grub" "$work/grubarm" "$work/kbd"
 find "$work" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
 truncate -s "${esp_mib}M" "$work/esp.img"
-"$top/scripts/inbuildroot.sh" "$br" --bind "$work" /img \
-  /bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; mcopy -s -i /img/esp.img /img/efi/EFI ::/EFI; mcopy -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat'
+mtools=$(python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import pkg; print(pkg.arch_files(sys.argv[2], "x86_64")["mtools"])' "$top/scripts" "$top/build/repo")
+mkdir -p "$work/mtools"
+bsdtar -xf "$mtools" -C "$work/mtools" usr/bin
+"$top/scripts/inbuildroot.sh" "$top/build/buildroot-x86_64" --bind "$work" /img \
+  /bin/sh -ec 'mkfs.fat --invariant -F 16 /img/esp.img >/dev/null; m=/img/mtools/usr/bin/mcopy; $m -s -i /img/esp.img /img/efi/EFI ::/EFI; $m -s -i /img/esp.img /img/efi/tinyhat ::/tinyhat'
+rm -rf "$work/mtools"
 rm -f "$out.tmp"
 "$top/scripts/mkdisk.sh" "$out.tmp" "$work/root" "$work/esp.img" ef "$esp_mib"
 mv "$out.tmp" "$out"

@@ -121,7 +121,7 @@ def main():
         for name, st in failed.items():
             when = time.strftime("%F %H:%M", time.localtime(float(st.get("end", 0))))
             print(f"  {name} ({when}): {first_error(os.path.join(TOP, st.get('log', '')))}")
-    # The newest make run log (scripts/failfast.py)
+    # The newest make run log (scripts/failfast.sh)
     runs = glob.glob(os.path.join(B, "log", "make-*.log"))
     if runs:
         with open(max(runs, key=os.path.getmtime), errors="replace") as f:

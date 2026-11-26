@@ -71,9 +71,9 @@ for img in "$@"; do
     mv "$gz.tmp" "$gz"
   fi
   ln -f "$gz" "$out/img.gz"
-  cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$ver\"" \
-    -o "$out/$prog-$ver-linux-x86_64" "$top/programs/tinyhat-write.c" \
-    $(pkg-config --cflags --libs gtk4)
+  "$top/scripts/inbuildroot.sh" "$top/build/buildroot-x86_64" --bind "$out" /out --ro-bind "$top/programs" /src \
+    --chdir /out /bin/sh -c 'exec cc -Os -s -static-libgcc -DEMBED_IMG -DTW_VERSION="\"$1\"" -o "$2" \
+    /src/tinyhat-write.c $(pkg-config --cflags --libs gtk4)' sh "$ver" "/out/$prog-$ver-linux-x86_64"
   rm -f "$out/img.gz"
   imgsha=$(sha256sum "$gz" | awk '{ print $1 }')
   cat > "$system/$formula.rb" << EOF
