@@ -3,7 +3,7 @@ VERSION := 1.0.8
 UNAME := $(shell uname -s)
 
 # On macOS every goal is passed on to the build container, so file goals like build/tinyhat32.img are phony there too
-.PHONY: help all img iso ova qemu up sumcheck i686 x32 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x32_iso x86_64_iso aarch64_iso dist distbuild sign packages cross orbiton x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check vendor-release autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container FORCE $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
+.PHONY: help all img iso ova qemu up sumcheck i686 x86_64 32 64 arm64 aarch64 rpi4 i686_iso x86_64_iso aarch64_iso dist dist_nosign dist86 dist86_nosign dist_full dist_full_nosign sign packages cross orbiton x32packages aarch64packages x86_64packages fetch sources licenses lock lock-aarch64 lock-x86_64 lock-check vendor-release autoupdate latest import srcinfo test patchcheck sourcecheck fuzzelcheck fishcheck run boottest qemutest boottest-i686 boottest-x86_64 boottest-aarch64 boottest-rpi4 status cleantest cleanchroot clean distclean container FORCE $(if $(filter Darwin,$(UNAME)),$(or $(MAKECMDGOALS),help))
 
 ifeq ($(UNAME),Darwin)
 PODMAN ?= podman
@@ -49,6 +49,22 @@ run: container
 		-audiodev coreaudio,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000 -display cocoa,zoom-to-fit=on
 else
+ifeq ($(MAKELEVEL),0)
+TOOL_GOALS := autoupdate latest import srcinfo lock lock-aarch64 lock-x86_64 lock-check sumcheck fishcheck sourcecheck
+CHECK_GOALS := $(filter-out help status clean distclean cleantest cleanchroot,$(or $(MAKECMDGOALS),help))
+ifneq ($(CHECK_GOALS),)
+HOST_DEPS := fish git python
+HOST_DEPS += $(if $(filter-out $(TOOL_GOALS),$(CHECK_GOALS)),bubblewrap cpio ninja)
+HOST_DEPS += $(if $(filter autoupdate latest,$(CHECK_GOALS)),nvchecker pacman-contrib python-jq python-lxml)
+HOST_DEPS += $(if $(filter run qemutest boottest%,$(CHECK_GOALS)),qemu-system-x86 qemu-system-aarch64 edk2-aarch64 imagemagick)
+HOST_MISSING := $(shell command -v pacman >/dev/null && for p in $$(pacman -T $(HOST_DEPS)); do \
+	case $$p in (bubblewrap) c=bwrap ;; (python) c=python3 ;; (imagemagick) c=magick ;; (qemu-system-x86) c=qemu-system-x86_64 ;; (*) c=$$p ;; esac; \
+	command -v $$c >/dev/null || echo $$p; done)
+ifneq ($(HOST_MISSING),)
+$(error Missing packages: $(HOST_MISSING) (install them with: sudo pacman -S --needed $(HOST_MISSING)))
+endif
+endif
+endif
 ifndef SOURCE_DATE_EPOCH
 SOURCE_DATE_EPOCH := $(shell git log -1 --format=%ct 2>/dev/null || echo 315532800)
 endif
@@ -91,11 +107,13 @@ IMG_X32 := $(B)/tinyhat64x32.img
 IMG_X86_64 := $(B)/tinyhat64.img
 IMG_AARCH64 := $(B)/tinyhat-aarch64.img
 IMG_RPI4 := $(B)/tinyhat-rpi4.img
-IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64) $(IMG_AARCH64) $(IMG_RPI4)
-ISOS := $(IMG_I686:.img=.iso) $(IMG_X32:.img=.iso) $(IMG_X86_64:.img=.iso) $(IMG_AARCH64:.img=.iso)
-X86_IMGS := $(IMG_I686) $(IMG_X32) $(IMG_X86_64)
+IMGS := $(IMG_I686) $(IMG_X86_64) $(IMG_AARCH64) $(IMG_RPI4)
+ISOS := $(IMG_I686:.img=.iso) $(IMG_X86_64:.img=.iso) $(IMG_AARCH64:.img=.iso)
+X86_IMGS := $(IMG_I686) $(IMG_X86_64)
 QEMU_TARS := $(IMG_AARCH64:.img=.tar.gz)
 OVAS := $(X86_IMGS:.img=.ova)
+DIST86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(OVAS)
+DIST_FULL_FILES := $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
 X86_FILES := $(X86_IMGS) $(X86_IMGS:.img=.iso) $(OVAS)
 RUST_DIST := vendor/src/rust-1.99.1-i686-unknown-linux-gnu.tar.xz
 RUST_STD_I586 := vendor/src/rust-std-1.99.1-i586-unknown-linux-gnu.tar.xz
@@ -114,7 +132,7 @@ C_OFF := \033[0m
 comma := ,
 
 define target
-	@printf '  $(C_TGT)%-14s$(C_OFF) %s\n' $(1) $(2)
+	@printf '  $(C_TGT)%-17s$(C_OFF) %s\n' $(1) $(2)
 endef
 
 help:
@@ -123,20 +141,21 @@ help:
 	@printf '$(C_GRP)Images$(C_OFF)\n'
 	$(call target,32,"32-bit x86 image ($(IMG_I686))$(comma) (make i686 also works)")
 	$(call target,64,"64-bit x86 image ($(IMG_X86_64))$(comma) with Arch Linux packages (make x86_64 also works)")
-	$(call target,x32,"64-bit x86 with 32-bit pointers image ($(IMG_X32))")
 	$(call target,arm64,"64-bit ARM UEFI image ($(IMG_AARCH64)) (make aarch64 also works)")
 	$(call target,rpi4,"64-bit ARM Raspberry Pi 4 image ($(IMG_RPI4))")
 	@printf '\n$(C_GRP)CD/DVD/USB ISO images$(C_OFF)\n'
 	$(call target,i686_iso,"32-bit x86 ISO")
-	$(call target,x32_iso,"x32 ISO")
 	$(call target,x86_64_iso,"64-bit x86 ISO")
 	$(call target,aarch64_iso,"64-bit ARM UEFI ISO")
-	$(call target,iso,"all four ISO images")
+	$(call target,iso,"all three ISO images")
 	@printf '\n$(C_GRP)Groups and releases$(C_OFF)\n'
-	$(call target,ova,"VirtualBox appliances (i686$(comma) x32$(comma) x86_64)")
+	$(call target,ova,"VirtualBox appliances (i686 and x86_64)")
 	$(call target,qemu,"aarch64 QEMU disk image and run script (.tar.gz)")
 	$(call target,all,"every .img$(comma) .iso$(comma) .ova and .tar.gz")
-	$(call target,dist,"release files in $(B)/dist$(comma) signed")
+	$(call target,dist86,"release files for the x86 images in $(B)/dist$(comma) signed (also: dist)")
+	$(call target,dist86_nosign,"the same$(comma) not signed (also: dist_nosign)")
+	$(call target,dist_full,"release files for every image$(comma) signed")
+	$(call target,dist_full_nosign,"the same$(comma) not signed")
 	@printf '\n$(C_GRP)Packages and maintenance$(C_OFF)\n'
 	$(call target,packages,"build or fetch every package the images need")
 	$(call target,cross,"build the i686 packages of [image-orbiton] from our TINYBUILDs$(comma) with the i686-cross toolchain")
@@ -148,15 +167,13 @@ help:
 	$(call target,latest,"list TINYBUILDs that are behind upstream (pkgctl version check)")
 	$(call target,test,"run the checks")
 	$(call target,boottest,"boot every image headless in QEMU (also boottest-i686 and so on)")
-	$(call target,qemutest,"boot the i686$(comma) x32$(comma) x86_64 and aarch64 images in QEMU$(comma) one at a time")
+	$(call target,qemutest,"boot the i686$(comma) x86_64 and aarch64 images in QEMU$(comma) one at a time")
 	$(call target,run,"boot the i686 image in QEMU")
 	$(call target,status,"show what still needs building")
 	$(call target,clean,"remove build output")
 	@printf '\n'
 
 i686: $(IMG_I686)
-
-x32: $(IMG_X32)
 
 x86_64: $(IMG_X86_64)
 
@@ -171,8 +188,6 @@ aarch64: $(IMG_AARCH64)
 rpi4: $(IMG_RPI4)
 
 i686_iso: $(IMG_I686:.img=.iso)
-
-x32_iso: $(IMG_X32:.img=.iso)
 
 x86_64_iso: $(IMG_X86_64:.img=.iso)
 
@@ -227,11 +242,11 @@ $(IMG_I686): $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs $(IMG_DEPS)
 	scripts/mkimg.sh $@ $(B)/vmlinuz $(B)/initramfs.img $(B)/root.sfs
 	@ls -l $@
 
-$(IMG_RPI4): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)/.buildroot scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
+$(IMG_RPI4): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)/.buildroot $(B)/.buildroot-x86_64 $(B)/pkg/x86_64/mtools scripts/mkimg-rpi.sh scripts/mkdisk.sh scripts/xfsnormalize.py config/rpi/config.txt config/rpi/cmdline.txt
 	scripts/mkimg-rpi.sh $@ $(B)/initramfs-aarch64.img $(B)/root-rpi4.sfs $(B)/Image-arm64
 	@ls -l $@
 
-$(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/.buildroot-x86_64 $(B)/pkg/i686/grub $(B)/pkg/aarch64/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
+$(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/.buildroot $(B)/.buildroot-aarch64 $(B)/.buildroot-x86_64 $(B)/pkg/x86_64/mtools $(B)/pkg/i686/grub $(B)/pkg/aarch64/grub $(B)/pkg/i686/kbd scripts/mkimg-aarch64.sh scripts/mkdisk.sh scripts/xfsnormalize.py scripts/mkgrubtheme.py config/grub.cfg config/grub-early.cfg
 	scripts/mkimg-aarch64.sh $@ $(B)/initramfs-aarch64.img $(B)/root-aarch64.sfs $(B)/Image-arm64
 	@ls -l $@
 
@@ -239,7 +254,7 @@ $(IMG_AARCH64): $(B)/Image-arm64 $(B)/initramfs-aarch64.img $(B)/root-aarch64.sf
 	scripts/mkova.sh $< $@ $(if $(filter $(IMG_I686),$<),ArchLinux,ArchLinux_64) $(VERSION) $(DISK_SIZE)
 	@ls -l $@
 
-%.tar.gz: %.img scripts/mkqemutar.sh
+%.tar.gz: %.img scripts/mkqemutar.sh scripts/x86_64-tool.sh $(B)/.buildroot-x86_64
 	scripts/mkqemutar.sh $< $@ $(DISK_SIZE)
 	@ls -l $@
 
@@ -247,7 +262,7 @@ $(IMG_X32): $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs $(IMG_DEPS) $(B)
 	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root64.sfs efi64 $(SB_KEYS)
 	@ls -l $@
 
-# The 64-bit x86 image boots the kernel and initramfs of the x32 image, with packages from Arch Linux
+# The 64-bit x86 image boots the 64-bit kernel (vmlinuz-x32, which has x32 support) and the shared initramfs
 $(IMG_X86_64): $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root-x86_64.sfs $(IMG_DEPS) $(B)/pkg/i686/grub-efi64 $(B)/pkg/i686/sbsigntools vendor/src/shim-x64-16.1-10.x86_64.rpm $(SB_KEYS)/tinyhat.cer
 	scripts/mkimg.sh $@ $(B)/vmlinuz-x32 $(B)/initramfs.img $(B)/root-x86_64.sfs efi64 $(SB_KEYS)
 	@ls -l $@
@@ -336,16 +351,26 @@ test: patchcheck sourcecheck fuzzelcheck fishcheck
 	@scripts/inbuildroot.sh $(B)/buildroot --bind $(CURDIR)/config /cfg grub-script-check /cfg/grub.cfg
 	@echo "grub.cfg: ok"
 
-dist: distbuild
+dist: dist86
+
+dist_nosign: dist86_nosign
+
+dist86: dist86_nosign
 	@$(MAKE) --no-print-directory sign
 
-distbuild: $(IMGS) $(ISOS) $(OVAS) $(QEMU_TARS)
-distbuild:
+dist86_nosign: $(DIST86_FILES)
+	$(MKDIST) $^
+	@ls -l $(B)/dist
+
+dist_full: dist_full_nosign
+	@$(MAKE) --no-print-directory sign
+
+dist_full_nosign: $(DIST_FULL_FILES)
 	$(MKDIST) $^
 	@ls -l $(B)/dist
 
 sign:
-	@test -f $(B)/dist/SHA256SUMS || { echo "make sign: no $(B)/dist/SHA256SUMS, run make distbuild first" >&2; exit 1; }
+	@test -f $(B)/dist/SHA256SUMS || { echo "make sign: no $(B)/dist/SHA256SUMS, run make dist86_nosign or dist_full_nosign first" >&2; exit 1; }
 	gpg --batch --yes --armor --detach-sign $${GPG_KEY:+-u "$$GPG_KEY"} -o $(B)/dist/SHA256SUMS.asc $(B)/dist/SHA256SUMS
 	@ls -l $(B)/dist/SHA256SUMS.asc
 
@@ -472,7 +497,7 @@ $(B)/.licenses-rpi4: $(B)/rootfs-rpi4.lock $(B)/pkg/i686/licenses $(SOURCES) scr
 	python3 scripts/mklicenses.py $(B)/rootfs-rpi4.lock $(B)/licenses-rpi4 aarch64 aarch64
 	@touch $@
 
-ROOTFS_BASE_DEPS := $(B)/.buildroot-x86_64 scripts/x86_64-tool.sh $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/pkg.py scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.py scripts/elfshrink.py
+ROOTFS_BASE_DEPS := $(B)/.buildroot-x86_64 scripts/x86_64-tool.sh $(B)/image.toml $(B)/theme.toml scripts/mkrootfs.sh scripts/pkg.py scripts/inrootfs.sh scripts/mklocaldb.py scripts/fwprune.sh scripts/elfshrink.py
 ROOTFS_FINAL_DEPS := $(B)/version $(B)/theme.toml $(ETC_CONFIG) scripts/forbidcheck.py scripts/sonamecheck.py scripts/elfcheck.py scripts/symcheck.sh scripts/elfshrink.py
 
 $(B)/rootfs.base.stamp: $(ROOTFS_BASE_DEPS) $(B)/rootfs.lock
@@ -527,17 +552,13 @@ run: $(B)/test-usb.img
 		-audiodev pa,id=snd -device intel-hda -device hda-duplex,audiodev=snd \
 		-nic user,model=e1000
 
-boottest: boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64 boottest-rpi4
+boottest: boottest-i686 boottest-x86_64 boottest-aarch64 boottest-rpi4
 
 qemutest:
-	$(MAKE) -j1 boottest-i686 boottest-x32 boottest-x86_64 boottest-aarch64
+	$(MAKE) -j1 boottest-i686 boottest-x86_64 boottest-aarch64
 
 boottest-i686: $(IMG_I686)
 	python3 scripts/qemutest.py $<
-
-boottest-x32: $(IMG_X32)
-	python3 scripts/qemutest.py $<
-	python3 scripts/qemutest.py $< --uefi
 
 boottest-x86_64: $(IMG_X86_64)
 	python3 scripts/qemutest.py $<
@@ -557,7 +578,6 @@ cleanchroot:
 
 status:
 	@python3 scripts/buildstatus.py $(IMG_I686)
-	@python3 scripts/buildstatus.py $(IMG_X32)
 	@python3 scripts/buildstatus.py cross
 
 clean:

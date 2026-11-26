@@ -6,9 +6,8 @@ DRIVE=${DRIVE#/dev/}
 case $EDITION in
   32 | i686) IMG=build/tinyhat32.img ;;
   64 | x86_64) IMG=build/tinyhat64.img ;;
-  x32 | 64x32) IMG=build/tinyhat64x32.img ;;
   *)
-    echo "REFUSING: unknown edition $EDITION (use 32, 64 or x32)"
+    echo "REFUSING: unknown edition $EDITION (use 32 or 64)"
     exit 1
     ;;
 esac
