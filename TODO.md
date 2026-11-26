@@ -1,6 +1,12 @@
 ## Plans
 
-- [ ] Provide `x86_64_v2` as an additional platform.
+- [ ] When closing LibreSprite with alt-shift-w and it asks if the user wants to save,
+      don't close the window after N seconds. LibreSprite is an exception.
+- [ ] Improve the TinySurf browser so that the Go Tutorial works well in it.
+- [ ] Remove ski jump from the FreeDOS image.
+- [ ] Fix the performance issues in sasteroids.
+- [ ] Fix the FPS timing and also sound effects in koules.
+- [ ] Provide `x32_v3` as an additional platform (x86_64 v3 instructions, 32-bit pointers).
 - [ ] Report all the issues found in Arch Linux packages as part of creating Tiny Hat to the Arch Linux GitLab page.
 - [ ] Make it possible to install a `tinyhat-desktop` package on Arch Linux and get a similar experience on Arch.
 - [ ] Split out all custom Tiny Hat programs into one or more separate repos.
