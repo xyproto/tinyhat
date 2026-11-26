@@ -23,9 +23,11 @@ jobs:
     container: archlinux:base-devel
     steps:
       - name: Install tools
-        run: pacman -Syu --noconfirm --needed git make python fish nvchecker python-lxml python-jq pacman-contrib curl
+        run: |
+          sudo pacman -Syu
+          sudo pacman -S --noconfirm --needed git make python fish nvchecker python-lxml python-jq pacman-contrib curl
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Add a build user (makepkg refuses to run as root)
         run: |
@@ -36,7 +38,10 @@ jobs:
       - name: Update packages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: sudo -u builder --preserve-env=GITHUB_TOKEN make autoupdate
+        run: |
+          sudo pacman -Syu
+          sudo pacman -S fish --noconfirm --needed
+          sudo -u builder --preserve-env=GITHUB_TOKEN make autoupdate
 
       - name: Show the report
         run: cat build/autoupdate.md >>"$GITHUB_STEP_SUMMARY"
