@@ -152,6 +152,11 @@ func rel(p string) string {
 	return p
 }
 
+// isFailfast tells if a process is scripts/failfast.sh, run as a script or with bash
+func isFailfast(a []string) bool {
+	return len(a) > 1 && (filepath.Base(a[0]) == "bash" || filepath.Base(a[0]) == "sh") && filepath.Base(a[1]) == "failfast.sh"
+}
+
 func stepFor(a []string) string {
 	arg := func(i int) string {
 		if i < len(a) {
@@ -180,7 +185,7 @@ func stepFor(a []string) string {
 		return "collecting license files"
 	case script == "elfshrink.py":
 		return "shrinking programs with UPX and sstrip"
-	case script == "fwprune.py":
+	case script == "fwprune.sh":
 		return "pruning firmware"
 	case script == "pkg.py" && arg(1) == "extract":
 		return "unpacking packages into " + rel(arg(4))
@@ -315,7 +320,7 @@ func (s *sampler) sample() *snapshot {
 	jobLog, jobLogAt := "", 0.0
 	for _, p := range procs {
 		a := p.argv
-		if (a[0] == "make" && !slices.Contains(a, "-q") && !slices.Contains(a, "-n")) || (len(a) > 1 && a[0] == "python3" && a[1] == "scripts/failfast.py") {
+		if (a[0] == "make" && !slices.Contains(a, "-q") && !slices.Contains(a, "-n")) || isFailfast(a) {
 			if t := s.procStart(p.pid); start == 0 || t < start {
 				start = t
 			}
@@ -353,7 +358,7 @@ func (s *sampler) sample() *snapshot {
 				steps[step] = secs
 			}
 		}
-		if len(a) > 1 && a[0] == "python3" && a[1] == "scripts/failfast.py" {
+		if isFailfast(a) {
 			if t := fdTarget(p.pid, 1); t != "" && !slices.Contains(logFiles, t) {
 				logFiles = append(logFiles, t)
 			}
@@ -578,7 +583,7 @@ func (s *sampler) sample() *snapshot {
 	snap.Info = s.ccache + "     " + disk
 
 	if len(logFiles) == 0 {
-		// The newest make run log (scripts/failfast.py)
+		// The newest make run log (scripts/failfast.sh)
 		newestLog := 0.0
 		if es, err := os.ReadDir(filepath.Join(bdir, "log")); err == nil {
 			for _, e := range es {
@@ -605,7 +610,7 @@ func (s *sampler) sample() *snapshot {
 	}
 	snap.LogName = strings.Join(names, ", ")
 	for _, l := range snap.Logs {
-		if strings.Contains(l, "failfast.py: stopping") || strings.Contains(l, "*** ") {
+		if strings.Contains(l, "failfast.sh: stopping") || strings.Contains(l, "*** ") {
 			snap.Failed = true
 		}
 	}
