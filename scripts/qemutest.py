@@ -89,7 +89,9 @@ def qemu_command(img, disk, uefi, serial, sock):
         shutil.copyfile(OVMF_X64_VARS, vars_copy)
         firmware = ["-machine", "q35", "-drive", f"if=pflash,format=raw,readonly=on,file={OVMF_X64}",
                     "-drive", f"if=pflash,format=raw,file={vars_copy}"]
-    return [qemu, "-enable-kvm", "-cpu", "host", "-smp", "2", "-m", os.environ.get("QEMU_MEM", "1024")] + firmware + [
+    cpu = os.environ.get("QEMU_CPU")
+    accel = ["-accel", "tcg,thread=multi", "-cpu", cpu] if cpu else ["-enable-kvm", "-cpu", "host"]
+    return [qemu] + accel + ["-smp", "2", "-m", os.environ.get("QEMU_MEM", "1024")] + firmware + [
         "-drive", f"if=none,id=stick,file={disk},format=raw",
         "-device", "qemu-xhci", "-device", "usb-storage,drive=stick,bootindex=0",
         "-device", "usb-tablet", "-vga", "std",
@@ -211,7 +213,7 @@ def main():
                 ok = True
                 if k == "rpi4":
                     break
-                slow = k == "aarch64"
+                slow = k == "aarch64" or bool(os.environ.get("QEMU_CPU"))
                 monitor(sock, "sendkey ctrl-alt-r")
                 time.sleep(20 if slow else 3)
                 type_text(sock, REPORT.format(tty="ttyS0" if k in ("i686", "x32") else "ttyAMA0"))
