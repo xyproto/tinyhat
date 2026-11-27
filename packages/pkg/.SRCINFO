@@ -1,13 +1,13 @@
 pkgbase = pkg
 	pkgdesc = Installs packages from Tiny Hat, Arch Linux, Alpine Linux and TINYBUILDs, also as pacman and apk
 	pkgver = 1
-	pkgrel = 2
+	pkgrel = 3
 	url = https://github.com/xyproto/tinyhat
 	arch = any
 	license = BSD-3-Clause
 	depends = bash
 	depends = opendoas
 	source = pkg.sh
-	sha256sums = b03760816760cffb6c4358eed19afc7bfef82f8c3b5a4f7c3010ee4513058e9a
+	sha256sums = bb1b099d06f255e73e43ee690fdcf0bec965affc9b880926cdf6422afc577e11
 
 pkgname = pkg

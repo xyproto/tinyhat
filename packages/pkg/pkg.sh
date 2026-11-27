@@ -4,7 +4,18 @@ al=/usr/bin/tinyhat-alpine
 tb=/usr/lib/tinyhat/pacman-tinybuild
 
 alpine() {
-	[ -x "$al" ] && [ -d /usr/lib/alpine/etc/apk ]
+	[ -x "$al" ] && [ -d /usr/lib/alpine/etc/apk ] || return 1
+	case $(uname -m) in
+	i?86) grep -qw sse2 /proc/cpuinfo ;;
+	esac
+}
+
+no_alpine() {
+	case $(uname -m) in
+	i?86) grep -qw sse2 /proc/cpuinfo || { echo "$1: Alpine Linux packages for 32-bit x86 need a CPU with SSE2, and this CPU has none" >&2; exit 1; } ;;
+	esac
+	echo "$1: the Alpine Linux root in /usr/lib/alpine is missing" >&2
+	exit 1
 }
 
 alpine_index() {
@@ -49,6 +60,7 @@ asroot() {
 usage() {
 	cat <<'EOF'
 pkg install PACKAGE...   install packages, or package files
+                         (alpine/PACKAGE installs from Alpine Linux, arch/PACKAGE from Arch Linux)
 pkg remove PACKAGE...    remove packages and the dependencies nothing else needs
 pkg update               download the latest package lists
 pkg upgrade              upgrade the installed packages
@@ -92,11 +104,17 @@ pkg_remove() {
 	apk=
 	rest=
 	for a in "$@"; do
-		if alpine_installed "$a"; then
-			apk="$apk $a"
-		else
-			rest="$rest $a"
-		fi
+		case $a in
+		alpine/*) apk="$apk ${a#alpine/}" ;;
+		arch/*) rest="$rest ${a#arch/}" ;;
+		*)
+			if alpine_installed "$a"; then
+				apk="$apk $a"
+			else
+				rest="$rest $a"
+			fi
+			;;
+		esac
 	done
 	rc=0
 	[ -z "$rest" ] || /usr/bin/pacman -Rs $rest || rc=1
@@ -231,6 +249,16 @@ pkg_search() {
 pkg_info() {
 	[ $# -gt 0 ] || exec $pm -Qi
 	for a in "$@"; do
+		case $a in
+		alpine/*)
+			"$al" apk info -a "${a#alpine/}"
+			continue
+			;;
+		arch/*)
+			$pm -Si "${a#arch/}"
+			continue
+			;;
+		esac
 		if $pm -Q "$a" >/dev/null 2>&1; then
 			$pm -Qi "$a"
 		elif alpine_installed "$a"; then
@@ -342,7 +370,7 @@ EOF
 		exit 0
 		;;
 	*)
-		alpine || { echo "apk: the Alpine Linux root in /usr/lib/alpine is missing" >&2; exit 1; }
+		alpine || no_alpine apk
 		if [ "$(id -u)" = 0 ]; then
 			exec "$al" --apk "$cmd" "$@"
 		fi
@@ -415,6 +443,15 @@ case $1 in
 			optarg=1
 			;;
 		-*) keep="$keep $a" ;;
+		alpine/*)
+			if [ -z "$withalpine" ]; then
+				echo "pacman: $a is an Alpine package, install it with \"pkg install $a\"" >&2
+				exit 1
+			fi
+			alpine || no_alpine pkg
+			apks="$apks ${a#alpine/}"
+			;;
+		arch/*) rest="$rest ${a#arch/}" ;;
 		*)
 			if [ -x "$tb" ] && tinybuild "$a"; then
 				tinybuilds="$tinybuilds $a"
