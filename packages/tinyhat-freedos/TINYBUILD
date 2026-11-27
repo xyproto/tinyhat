@@ -1,11 +1,11 @@
 set pkgname tinyhat-freedos tinyhat-dosgames
 set pkgver 1.4
-set pkgrel 11
+set pkgrel 12
 set pkgdesc 'FreeDOS 1.4 live boot disk with free DOS games, EDIT, NASM and DEBUG, for the GRUB menu'
 set arch any
 set url https://www.freedos.org/
-set license GPL-2.0-or-later GPL-2.0-only BSD-2-Clause BSD-3-Clause MIT GPL-3.0-only LicenseRef-CWSDPMI LicenseRef-PSRINVAD
-set makedepends mtools hattoss
+set license GPL-2.0-or-later GPL-2.0-only BSD-2-Clause BSD-3-Clause MIT GPL-3.0-only LicenseRef-CWSDPMI LicenseRef-PSRINVAD LicenseRef-Bananoid
+set makedepends mtools hattoss unzip
 set _games https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/games
 set _dosgames https://dosgames.com/files
 set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/distributions/$pkgver/FD14-FloppyEdition.zip \
@@ -15,8 +15,8 @@ set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/fr
     edit-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/edit.zip \
     debug-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/debug.zip \
     nasm-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/devel/nasm.zip \
-    $_dosgames/dpacman.zip $_dosgames/sj313.zip
-set noextract FD14-FloppyEdition.zip vitetris-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip debug-$pkgver.zip nasm-$pkgver.zip dpacman.zip sj313.zip
+    $_dosgames/dpacman.zip $_dosgames/bananoid.zip
+set noextract FD14-FloppyEdition.zip vitetris-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip debug-$pkgver.zip nasm-$pkgver.zip dpacman.zip bananoid.zip
 set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a \
     53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843 \
     ae391d32165e83625da8fbed772d1571269399e62116da30a55ee0207a922818 \
@@ -25,7 +25,7 @@ set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a 
     edece56e84709d23c745733bcd1fbd076b8a6ee2aea2e2bd814f9dd1ca9ca479 \
     f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe \
     a1d48a73ec21c267d032e5f5cf67b761d3147f7a4492fba371304d4f4126e2a7 \
-    9ebad4b03fa663ff21ee1a507e6d65406b8fc01c826ce93a0257684002f2fa53
+    e962bb4723bdff521d7933d3bbc918040356f8976977f50259b7168e113085f9
 
 function _dosfile -a path
     string join \r\n -- $argv[2..] '' >$path
@@ -52,11 +52,11 @@ function build
         'SHELL=\FREEDOS\BIN\COMMAND.COM \FREEDOS\BIN /E:2048 /P=\FDAUTO.BAT'
     mcopy -o -i $img floppy/FDCONFIG.SYS ::/FDCONFIG.SYS; or return
     mcopy -o -i $img floppy/FDAUTO.BAT ::/FDAUTO.BAT; or return
-    mkdir -p games/BATLINKS games/GAMES/DPACMAN games/GAMES/SKIJUMP; or return
+    mkdir -p games/BATLINKS games/GAMES/DPACMAN games/GAMES/BANANOID; or return
     bsdtar -xf dpacman.zip -C games/GAMES/DPACMAN --exclude dpacman.bat --exclude dpacman.ico; or return
-    bsdtar -xf sj313.zip -C games/GAMES/SKIJUMP; or return
+    unzip -q bananoid.zip -d games/GAMES/BANANOID; or return
     _dosfile games/BATLINKS/DPACMAN.BAT '@echo off' 'cd %DOSDRV%\GAMES\DPACMAN' 'LOADFIX PACMAN.EXE %1 %2 %3' 'cd \\'
-    _dosfile games/BATLINKS/SKIJUMP.BAT '@echo off' 'cd %DOSDRV%\GAMES\SKIJUMP' 'SJ3.EXE %1 %2 %3' 'cd \\'
+    _dosfile games/BATLINKS/BANANOID.BAT '@echo off' 'cd %DOSDRV%\GAMES\BANANOID' 'BANANOID.EXE %1 %2 %3' 'cd \\'
     bsdtar -xf vitetris-$pkgver.zip -C games GAMES/VITETRIS/TETRIS.EXE GAMES/VITETRIS/CWSDPMI.EXE GAMES/VITETRIS/CWSDPMI.DOC GAMES/VITETRIS/LICENCE.TXT GAMES/VITETRIS/README.TXT GAMES/VITETRIS/VITETRIS.CFG; or return
     _dosfile games/BATLINKS/TETRIS.BAT '@echo off' 'cd %DOSDRV%\GAMES\VITETRIS' 'CWSDPMI.EXE -p -s- >NUL' 'vcls /fGray /bBlack' 'TETRIS.EXE %1 %2 %3' 'CWSDPMI.EXE -u >NUL' 'cd \\'
     bsdtar -xf psrinvad-$pkgver.zip -C games GAMES/PSRINVAD/INVADERS.COM GAMES/PSRINVAD/INVADERS.DOC APPINFO/PSRINVAD.LSM; or return
@@ -71,14 +71,15 @@ function build
         'vgotoxy /x21 /y24' 'vecho /fDarkGray /bBlack "Use the arrow keys and Enter to choose"' \
         'vframe /x18 /y4 /w44 /h16 /fLightCyan /bBlue Double Shadow' \
         'vecho /fWhite "  Games"' 'vecho /fLightGreen "  Hat Toss"' 'vecho /fLightGreen "  Invaders"' \
-        'vecho /fLightCyan "  Tetris"' 'vecho /fLightCyan "  Double Pacman"' \
-        'vecho /fLightCyan "  Ski Jump International"' 'vecho' 'vecho /fWhite "  System"' \
-        'vecho /fYellow "  Text editor"' 'vecho /fYellow "  DOS Prompt"' 'vecho /fYellow "  Restart the computer"' \
-        'vecho /fYellow "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  Shutdown the computer"' \
+        'vecho /fLightGreen "  Tetris"' 'vecho /fLightGreen "  Double Pacman"' \
+        'vecho /fLightGreen "  Bananoid"' vecho 'vecho /fWhite "  System"' \
+        'vecho /fLightCyan "  Text editor"' 'vecho /fLightCyan "  DOS Prompt"' \
+        'vecho /fLightCyan "  Install FreeDOS on a hard disk"' 'vecho /fYellow "  Restart the computer"' \
+        'vecho /fYellow "  Shutdown the computer"' \
         'if "%SEL%"=="" set SEL=2' ':Choose' 'vchoice /fBlack /bCyan /p %SEL%' 'if errorlevel 100 goto Moved' \
-        'if errorlevel 12 goto Shutdown' 'if errorlevel 11 goto Setup' 'if errorlevel 10 goto Restart' \
+        'if errorlevel 12 goto Shutdown' 'if errorlevel 11 goto Restart' 'if errorlevel 10 goto Setup' \
         'if errorlevel 9 goto Prompt' 'if errorlevel 8 goto Edit' 'if errorlevel 7 goto Choose' \
-        'if errorlevel 6 set GAME=SKIJUMP' 'if errorlevel 6 goto Run' \
+        'if errorlevel 6 set GAME=BANANOID' 'if errorlevel 6 goto Run' \
         'if errorlevel 5 set GAME=DPACMAN' 'if errorlevel 5 goto Run' \
         'if errorlevel 4 set GAME=TETRIS' 'if errorlevel 4 goto Run' \
         'if errorlevel 3 set GAME=INVADERS' 'if errorlevel 3 goto Run' \
@@ -97,7 +98,7 @@ function build
         'if errorlevel 107 if not errorlevel 108 goto System' 'goto Choose' ':System' 'if "%SEL%"=="6" goto SysDown' \
         'set SEL=6' 'goto Choose' ':SysDown' 'set SEL=8' 'goto Choose' \
         ':Run' 'vcls /fGray /bBlack' 'vcursor small' 'call %GAME%.BAT' 'set GAME=' 'goto Menu' \
-        ':Edit' 'vcls /fGray /bBlack' 'vcursor small' 'EDIT' 'goto Menu' \
+        ':Edit' 'vcls /fGray /bBlack' 'vcursor small' EDIT 'goto Menu' \
         ':Setup' 'vcls /fGray /bBlack' 'vcursor small' 'cd \\' 'if exist %DOSDRV%\SETUP.BAT call %DOSDRV%\SETUP.BAT' 'goto Menu' \
         ':Restart' 'vcls /fGray /bBlack' 'fdapm warmboot >NUL' \
         ':Shutdown' 'vcls /fGray /bBlack' 'fdapm poweroff >NUL' \
@@ -138,7 +139,7 @@ function package_tinyhat-dosgames
     set pkgdesc 'Free DOS games and EDIT from the FreeDOS boot disk, with launchers that run them in DOSBox-X'
     set -l dos $pkgdir/usr/share/tinyhat/dos
     install -d $dos/GAMES; or return
-    for g in PSRINVAD VITETRIS DPACMAN SKIJUMP
+    for g in PSRINVAD VITETRIS DPACMAN BANANOID
         cp -r games/GAMES/$g $dos/GAMES/; or return
     end
     install -Dm644 -t $dos games/BIN/EDIT.EXE games/BIN/EDIT.HLP; or return
@@ -153,7 +154,7 @@ end
 function _doslicenses
     set -l l $pkgdir/usr/share/licenses/$pkgname
     install -Dm644 games/GAMES/DPACMAN/gpl-2.0.txt $l/DPACMAN; or return
-    install -Dm644 games/GAMES/SKIJUMP/CREDITS.TXT $l/SKIJUMP; or return
+    printf '%s\n' 'Bananoid (1989) by Banana Development, Inc. is freeware and may be copied freely.' >$l/BANANOID; or return
     install -Dm644 games/GAMES/VITETRIS/LICENCE.TXT $l/VITETRIS; or return
     install -Dm644 games/APPINFO/PSRINVAD.LSM $l/PSRINVAD; or return
     install -Dm644 games/DOC/EDIT/COPYING $l/EDIT

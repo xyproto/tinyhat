@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Bananoid (DOS)
+Icon=applications-games
+Comment=Breakout with power-ups, freeware from 1989 (DOS game, in DOSBox-X)
+Exec=tinyhat-dosgame BANANOID BANANOID.EXE
+Terminal=false
+Keywords=DOS;
+Categories=Game;ArcadeGame;
