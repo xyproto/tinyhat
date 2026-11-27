@@ -3,8 +3,8 @@ Type=Application
 Name=Python
 GenericName=Python REPL
 Icon=python
-Comment=Interactive Python in a large font, with turtle graphics
-Exec=foot -T Python -f "JetBrains Mono NL:size=18" env PYTHONSTARTUP=/usr/share/tinyhat/python-startup.py python3
+Comment=Interactive Python in a large font
+Exec=foot -T Python -f "JetBrains Mono NL:size=24" env PYTHONSTARTUP=/usr/share/tinyhat/python-startup.py python3
 Keywords=repl;turtle;
 Terminal=false
 Categories=Development;
