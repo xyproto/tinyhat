@@ -1,0 +1,59 @@
+# Shared steps for the "Install ..." menu entries, sourced by their scripts
+
+fail() {
+	printf '\n%s\nPress Enter to close.\n' "$1"
+	read -r _
+	exit 1
+}
+
+mib() {
+	echo $((($1 + 1048575) / 1048576))
+}
+
+free_bytes() {
+	df -B1 --output=avail "$1" 2>/dev/null | tail -n 1 | tr -d ' '
+}
+
+# th_prepare starts pacman, refreshes the package databases and the keyrings
+th_prepare() {
+	doas systemctl start tinyhat-pacman-init.service
+	doas /usr/lib/tinyhat/pacman -Sy --noconfirm || fail "Could not update the package database. Is the network connected?"
+	doas /usr/lib/tinyhat/pacman -S --needed --noconfirm $(pacman -Qq archlinux32-keyring archlinux-keyring archlinuxarm-keyring 2>/dev/null) ||
+		fail "Could not update the pacman keyrings."
+}
+
+# th_space EXTRA_BYTES PACKAGE... fails early, with a clear message, if the packages and EXTRA_BYTES will not fit
+th_space() {
+	extra=$1
+	shift
+	sizes=$(pacman -Sp --needed --noconfirm --print-format '%s' "$@" 2>/dev/null) || sizes=
+	download=0
+	for s in $sizes; do
+		case $s in *[!0-9]*) ;; *) download=$((download + s)) ;; esac
+	done
+	need=$((download * 3 + extra + 64 * 1048576))
+	have=$(free_bytes /)
+	[ -n "$have" ] || return 0
+	if [ "$have" -lt "$need" ]; then
+		where="in memory"
+		mountpoint -q /persist && where="on the USB stick"
+		fail "This needs about $(mib "$need") MiB of free space, but only $(mib "$have") MiB are free $where.
+Remove programs you do not use (pkg remove NAME), or use a larger USB stick."
+	fi
+}
+
+# th_install PACKAGE... installs packages, explains a failure and removes the downloaded package files
+th_install() {
+	log=$(mktemp) || fail "Could not make a temporary file."
+	{
+		doas /usr/lib/tinyhat/pacman -S --needed --noconfirm --ask 4 "$@" 2>&1
+		echo $? >"$log.rc"
+	} | tee "$log"
+	rc=$(cat "$log.rc")
+	nospace=$(grep -c -i -e 'not enough free disk space' -e 'no space left' "$log")
+	rm -f "$log" "$log.rc"
+	doas find /var/cache/pacman/pkg -maxdepth 1 -type f -name '*.pkg.tar*' -delete 2>/dev/null
+	[ "$rc" = 0 ] && return 0
+	[ "$nospace" = 0 ] || fail "There was not enough free space. Remove programs you do not use (pkg remove NAME), or use a larger USB stick."
+	fail "Could not install $*. Try again later; the package mirrors may be updating."
+}
