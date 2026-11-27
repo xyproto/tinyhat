@@ -1,6 +1,6 @@
 set pkgname tinyhat-guru
 set pkgver 1
-set pkgrel 2
+set pkgrel 3
 set pkgdesc 'Tiny Hat crash screen, with a QR code for reporting the crash'
 set arch i686 x32
 set url https://github.com/xyproto/tinyhat
@@ -9,7 +9,7 @@ set depends glibc
 set -g _qr 1.8.0
 set source tinyhat-guru.c \
     "QR-Code-generator-$_qr.tar.gz::https://github.com/nayuki/QR-Code-generator/archive/refs/tags/v$_qr.tar.gz"
-set sha256sums cb04efd46a8c79ab466a5ce2abfc38b22229998d224838bd239bce0df1e1f3d3 \
+set sha256sums 2278bf6afb125ed4ab382666840a2596259f12b41ca6e0c6aeaf3ccaa09327fb \
     2ec0a4d33d6f521c942eeaf473d42d5fe139abcfa57d2beffe10c5cf7d34ae60
 
 function build

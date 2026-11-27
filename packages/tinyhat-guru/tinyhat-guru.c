@@ -188,7 +188,8 @@ int main(int argc, char** argv)
     printf("\033[9;3HTiny Hat %s, Linux %s %s", version, u.release, u.machine);
 
     int row = 11;
-    printf("\033[%d;3H\033[1mKeys\033[0;37;40m", row++);
+    if (*keys)
+        printf("\033[%d;3H\033[1mKeys\033[0;37;40m", row++);
     char kbuf[256];
     snprintf(kbuf, sizeof(kbuf), "%s", keys);
     for (char* k = strtok(kbuf, ","); k; k = strtok(NULL, ",")) {
