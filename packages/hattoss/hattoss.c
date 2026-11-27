@@ -695,6 +695,10 @@ static int throwhat(int p, double angle, double speed)
 	if (p)
 		vx = -vx;
 	thing = rand() % 4;
+	if (sunhappy) {
+		sunhappy = 0;
+		drawsun();
+	}
 	drawape(p, 1);
 	sfx(0);
 	for (t = 0; t < 40 && !done;) {
