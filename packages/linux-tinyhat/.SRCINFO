@@ -1,7 +1,7 @@
 pkgbase = linux-tinyhat
 	pkgdesc = The Tiny Hat Linux kernel, its modules and the xpadneo driver
 	pkgver = 7.3.5
-	pkgrel = 2
+	pkgrel = 3
 	url = https://www.kernel.org/
 	arch = i686
 	arch = x86_64
@@ -46,7 +46,7 @@ pkgbase = linux-tinyhat
 	sha256sums = 76690a40947a625dee233a9faa79932e9862e174f3287302e67ae020898cbb60
 	sha256sums = 2b3fb3af3750d7461d22af9e465033f8130ba03ab676f593a92d814340444971
 	sha256sums = dbd8389ea55f59c8c5b60a4a187294f9db92918874e56d87b67cd233affae663
-	sha256sums = 56448a09ea884654200d0d636ae58ef3d75f5a1d5b6f5c868396cda957a800db
+	sha256sums = bca380fc5c4e32a4f023e5b9649a58ac4266b741e79f76a18e11d0f7665b4598
 	sha256sums = 13acdb1a14e30b2dbd33b9b5cd3e17d360e001e08d92756d9afd4e64477ae77f
 	sha256sums = 1c5c8d973ac13445076b0a47db6e28111de7de3e8fb3f6dd8a67547b8abcb717
 	sha256sums = d80ce0f9209b350bdabce7cabd574883aa93687cf1bd0c1978b6c7addfd257d5

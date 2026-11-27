@@ -3,7 +3,7 @@
 # shell and no busybox
 set pkgname tinyhat-mountroot
 set pkgver 1
-set pkgrel 1
+set pkgrel 2
 set pkgdesc 'Tiny Hat initramfs init: finds the boot medium and mounts the root file system'
 set arch i686 x86_64 aarch64
 set url https://github.com/xyproto/tinyhat
@@ -11,7 +11,7 @@ set license BSD-3-Clause
 set makedepends go-tinyhat
 set options '!buildflags'
 set source main.go go.mod sysnum_386.go sysnum_amd64.go sysnum_arm64.go LICENSE
-set sha256sums cd4bc00ccd443f402f19f6365452bd6899cd05051b7bfed18d28b1cb8541dbf7 \
+set sha256sums af1a1eb78fdc40bf9a05b94cfb2497df939d5f4e0e02a494db0f18023a2b775e \
     9470c9fc7e5c294bfd9e4d435d45d1a6a77ef0ba628168645164c5b3b573296a \
     78188cb91b852b5a40f7917dc6ced432b7a3e261c3da03dd969c62ddbeb90ff4 \
     2dc7251e7ca44591827ad61732767632ea035005af0aed33a7c3aa090bad2009 \

@@ -1,7 +1,7 @@
 pkgbase = tinyhat-mountroot
 	pkgdesc = Tiny Hat initramfs init: finds the boot medium and mounts the root file system
 	pkgver = 1
-	pkgrel = 1
+	pkgrel = 2
 	url = https://github.com/xyproto/tinyhat
 	arch = i686
 	arch = x86_64
@@ -15,7 +15,7 @@ pkgbase = tinyhat-mountroot
 	source = sysnum_amd64.go
 	source = sysnum_arm64.go
 	source = LICENSE
-	sha256sums = cd4bc00ccd443f402f19f6365452bd6899cd05051b7bfed18d28b1cb8541dbf7
+	sha256sums = af1a1eb78fdc40bf9a05b94cfb2497df939d5f4e0e02a494db0f18023a2b775e
 	sha256sums = 9470c9fc7e5c294bfd9e4d435d45d1a6a77ef0ba628168645164c5b3b573296a
 	sha256sums = 78188cb91b852b5a40f7917dc6ced432b7a3e261c3da03dd969c62ddbeb90ff4
 	sha256sums = 2dc7251e7ca44591827ad61732767632ea035005af0aed33a7c3aa090bad2009

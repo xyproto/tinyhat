@@ -1,6 +1,6 @@
 set pkgname linux-tinyhat
 set pkgver 7.3.5
-set pkgrel 2
+set pkgrel 3
 set -g _xpadneo 0.10.5
 set pkgdesc 'The Tiny Hat Linux kernel, its modules and the xpadneo driver'
 set arch i686 x86_64 aarch64
@@ -20,7 +20,7 @@ set sha256sums 8f293f83d54f0b7b9be56863ebc5e4ea79d73e530b4ae55c572be97ef39f0990 
     76690a40947a625dee233a9faa79932e9862e174f3287302e67ae020898cbb60 \
     2b3fb3af3750d7461d22af9e465033f8130ba03ab676f593a92d814340444971 \
     dbd8389ea55f59c8c5b60a4a187294f9db92918874e56d87b67cd233affae663 \
-    56448a09ea884654200d0d636ae58ef3d75f5a1d5b6f5c868396cda957a800db \
+    bca380fc5c4e32a4f023e5b9649a58ac4266b741e79f76a18e11d0f7665b4598 \
     13acdb1a14e30b2dbd33b9b5cd3e17d360e001e08d92756d9afd4e64477ae77f \
     1c5c8d973ac13445076b0a47db6e28111de7de3e8fb3f6dd8a67547b8abcb717 \
     d80ce0f9209b350bdabce7cabd574883aa93687cf1bd0c1978b6c7addfd257d5 \

@@ -276,14 +276,10 @@ func guru(what string, retry bool) {
 		lines = lines[len(lines)-30:]
 	}
 	writeFile("/run/guru.log", strings.Join(append(lines, what), "\n")+"\n")
-	keys := "R=Restart,P=Power off"
-	if retry {
-		keys = "Enter=Try again," + keys
-	}
 	for {
 		code := -1
 		if exists("/bin/tinyhat-guru") {
-			cmd := exec.Command("/bin/tinyhat-guru", "Tiny Hat could not start: "+what, "2", "/run/guru.log", keys)
+			cmd := exec.Command("/bin/tinyhat-guru", "Tiny Hat could not start: "+what, "2", "/run/guru.log", "")
 			cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
 			err := cmd.Run()
 			code = 0
