@@ -177,7 +177,7 @@ description = "Close window (Alt+F4 also works)"
 [[key]]
 hotkey = "Alt+Shift+F"
 action = "fullscreen"
-description = "Toggle fullscreen (Alt+Enter also works in some applications)."
+description = "Toggle fullscreen (Alt+Enter also works in some applications)"
 
 [[key]]
 hotkey = "Alt+Tab"
@@ -188,7 +188,7 @@ description = "Jump between windows"
 [[key]]
 hotkey = "Win+F"
 action = "togglelayout"
-description = "Toggle Floating and Tiling mode"
+description = "Toggle Floating / Tiling mode"
 
 [[key]]
 hotkey = "Ctrl+Alt+Up"
@@ -362,7 +362,7 @@ description = "Toggle background"
 
 [[key]]
 shown = "Right click a window title"
-description = "Maximize or restore (middle click to close)"
+description = "Maximize or restore (Middle click to close)"
 
 [[key]]
 shown = "Alt+Left drag"
