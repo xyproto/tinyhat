@@ -15,7 +15,7 @@ set source FD14-FloppyEdition.zip::https://www.ibiblio.org/pub/micro/pc-stuff/fr
     edit-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/edit.zip \
     debug-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/base/debug.zip \
     nasm-$pkgver.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/$pkgver/devel/nasm.zip \
-    $_dosgames/dpacman.zip $_dosgames/bananoid.zip
+    $_dosgames/dpacman.zip $_dosgames/bananoid.zip main.asm
 set noextract FD14-FloppyEdition.zip vitetris-$pkgver.zip psrinvad-$pkgver.zip ctmouse-$pkgver.zip edit-$pkgver.zip debug-$pkgver.zip nasm-$pkgver.zip dpacman.zip bananoid.zip
 set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a \
     53a0be1c42ae9f2cb3e501d9cbf5e4b9d1d829b934966e2ca0d6ab0486dd7843 \
@@ -25,7 +25,8 @@ set sha256sums 45b1fa7c52dd996c3bfa5e352ffcd410781b952a6ad629f15a4c9ec4bbaefc5a 
     edece56e84709d23c745733bcd1fbd076b8a6ee2aea2e2bd814f9dd1ca9ca479 \
     f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe \
     a1d48a73ec21c267d032e5f5cf67b761d3147f7a4492fba371304d4f4126e2a7 \
-    e962bb4723bdff521d7933d3bbc918040356f8976977f50259b7168e113085f9
+    e962bb4723bdff521d7933d3bbc918040356f8976977f50259b7168e113085f9 \
+    e8b4edf0a5a71934daa9ce09aed1949b9d944a83ad8e13bf6e591df6232d830b
 
 function _dosfile -a path
     string join \r\n -- $argv[2..] '' >$path
@@ -102,8 +103,10 @@ function build
         ':Setup' 'vcls /fGray /bBlack' 'vcursor small' 'cd \\' 'if exist %DOSDRV%\SETUP.BAT call %DOSDRV%\SETUP.BAT' 'goto Menu' \
         ':Restart' 'vcls /fGray /bBlack' 'fdapm warmboot >NUL' \
         ':Shutdown' 'vcls /fGray /bBlack' 'fdapm poweroff >NUL' \
-        ':Prompt' 'vcls /fGray /bBlack' 'vcursor small' 'echo Type MENU or EXIT to return to the menu.' \
-        'echo Programming tools: EDIT (text editor), NASM (assembler) and DEBUG.'
+        ':Prompt' 'vcls /fGray /bBlack' 'vcursor small' 'CWSDPMI.EXE -p -s- >NUL' 'cd %DOSDRV%\CODE' \
+        'echo Type MENU or EXIT to return to the menu.' \
+        'echo Programming tools: EDIT (text editor), NASM (assembler) and DEBUG.' \
+        'echo Example: EDIT MAIN.ASM, then NASM -f bin -o MAIN.COM MAIN.ASM, then MAIN'
     _dosfile games/BATLINKS/INVADERS.BAT '@echo off' 'cd %DOSDRV%\GAMES\PSRINVAD' 'INVADERS.COM %1 %2 %3' 'cd \\'
     bsdtar -xf ctmouse-$pkgver.zip -C games BIN/CTMOUSE.EXE; or return
     mcopy -i $img games/BIN/CTMOUSE.EXE games/BIN/EDIT.EXE games/BIN/EDIT.HLP games/BIN/DEBUG.COM ::/FREEDOS/BIN/; or return
@@ -120,6 +123,8 @@ function build
         mcopy -s -i $disk $f ::; or return
     end
     mcopy -s -i $disk games/GAMES ::/; or return
+    mmd -i $disk ::/CODE; or return
+    mcopy -t -i $disk main.asm ::/CODE/MAIN.ASM; or return
     mcopy -i $disk games/BATLINKS/*.BAT ::/FREEDOS/BIN/; or return
     mcopy -i $disk games/DEVEL/NASM/nasm.exe ::/FREEDOS/BIN/NASM.EXE; or return
     mcopy -i $disk games/DEVEL/NASM/ndisasm.exe ::/FREEDOS/BIN/NDISASM.EXE; or return

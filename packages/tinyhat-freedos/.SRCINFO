@@ -25,6 +25,7 @@ pkgbase = tinyhat-freedos
 	source = nasm-1.4.zip::https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/repositories/1.4/devel/nasm.zip
 	source = https://dosgames.com/files/dpacman.zip
 	source = https://dosgames.com/files/bananoid.zip
+	source = main.asm
 	noextract = FD14-FloppyEdition.zip
 	noextract = vitetris-1.4.zip
 	noextract = psrinvad-1.4.zip
@@ -43,6 +44,7 @@ pkgbase = tinyhat-freedos
 	sha256sums = f3497ec94f76b508a74904926a479cf33d75f6da332c432dfa72d5aaa2903cbe
 	sha256sums = a1d48a73ec21c267d032e5f5cf67b761d3147f7a4492fba371304d4f4126e2a7
 	sha256sums = e962bb4723bdff521d7933d3bbc918040356f8976977f50259b7168e113085f9
+	sha256sums = e8b4edf0a5a71934daa9ce09aed1949b9d944a83ad8e13bf6e591df6232d830b
 
 pkgname = tinyhat-freedos
 
