@@ -1,10 +1,9 @@
 ## Plans
 
-- [ ] Update the Linux kernel to 7.4 when it's out. 7.3.6 is out too.
+- [x] Update the Linux kernel to 7.4 once it's out (it's 7.4-rc4 for now, because it might contain audio improvements).
 - [ ] When closing LibreSprite with alt-shift-w and it asks if the user wants to save,
       don't close the window after N seconds. LibreSprite is an exception.
 - [ ] Improve the TinySurf browser so that the Go Tutorial works well in it.
-- [ ] Remove ski jump from the FreeDOS image.
 - [ ] Fix the performance issues in sasteroids.
 - [ ] Fix the FPS timing and also sound effects in koules.
 - [ ] Provide `x32_v3` as an additional platform (x86_64 v3 instructions, 32-bit pointers).
