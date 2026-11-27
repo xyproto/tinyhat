@@ -1,0 +1,36 @@
+diff --git a/conf/keybindings.conf b/conf/keybindings.conf
+index 3d35a4a..8c03e03 100644
+--- a/conf/keybindings.conf
++++ b/conf/keybindings.conf
+@@ -62,7 +62,6 @@ Escape      quit 0
+ i           toggleillegal
+ q           quit 0
+ Backspace   clear
+-c           console
+ F12         save goboard.bmp
+ 
+ # Mousebuttons, nice for playing lots of games as white (nonexperimental is not needed)
+diff --git a/keybindings.go b/keybindings.go
+index aeaaa97..5639c22 100644
+--- a/keybindings.go
++++ b/keybindings.go
+@@ -199,7 +199,6 @@ func (kb *Keybindings) loadDefaults() {
+ 	kb.Keys[ScancodeI] = Binding{Command: "toggleillegal"}
+ 	kb.Keys[ScancodeQ] = Binding{Command: "quit", Args: []string{"0"}}
+ 	kb.Keys[ScancodeBackspace] = Binding{Command: "clear"}
+-	kb.Keys[ScancodeC] = Binding{Command: "console"}
+ 	kb.Keys[ScancodeF12] = Binding{Command: "save", Args: []string{"goboard.bmp"}}
+ 
+ 	// Mouse
+diff --git a/main.go b/main.go
+index 9992118..6f4099c 100644
+--- a/main.go
++++ b/main.go
+@@ -58,7 +58,6 @@ Keybindings:
+   s                Save SGF
+   l                Reload SGF
+   i                Toggle illegal moves
+-  c                GTP console (interactive)
+   o                Show future white moves
+   t                Set time (5s main)
+   x                Show move probabilities
